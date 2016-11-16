@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using TowseyLibrary;
 using AnalysisBase.ResultBases;
 using Acoustics.Shared;
@@ -17,7 +15,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
     /// <summary>
     /// This class used to contain only two methods:  (1) StitchPartialSpectrograms()   and    (2) ConcatenateSpectralIndexFiles()
-    /// Now it contains several versions to concatenate Index files. HTis is because there are now several use cases.
+    /// Now it contains several versions to concatenate Index files. This is because there are now several use cases.
     /// 
     /// 
     /// Here are the original two methods: 
@@ -84,39 +82,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// The files to be concatenated must be somewhere in the subdirectory structure of the passed list of data directories
         /// Read them into a dictionary
         /// </summary>
-        /// <param name="directories"></param>
+        /// <param name="indexPropertiesConfigFileInfo"></param>
         /// <param name="opDir"></param>
-        /// <param name="site"></param>
-        /// <param name="dto"></param>
-        //public static Dictionary<string, double[,]> ConcatenateSpectralIndexFilesForOneDay(DirectoryInfo[] directories,
-        //                                 DirectoryInfo opDir,
-        //                                 string filestem,
-        //                                 DateTimeOffset dto,
-        //                                 IndexGenerationData indexGenerationData,
-        //                                 string[] keys,
-        //                                 bool verbose = false)
-        //{
-        //    // 1. PATTERN SEARCH FOR CORRECT CSV FILES
-        //    string analysisType = "Towsey.Acoustic";
-        //    string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
-
-        //    string fileStemPattern = "*" + dateString + "*__" + analysisType;
-        //    var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(directories, fileStemPattern, keys, indexGenerationData, verbose);
-
-        //    // 2. SAVE SPECTRAL INDEX DATA as CSV file TO OUTPUT DIRECTORY
-        //    string opFileStem = String.Format("{0}_{1}", filestem, dateString);
-        //    //TwoDimensionalArray orient = TwoDimensionalArray.ColumnMajor;
-        //    TwoDimensionalArray orient = TwoDimensionalArray.ColumnMajorFlipped;
-        //    foreach (var key in keys)
-        //    {
-        //        var filename = FilenameHelpers.AnalysisResultPath(opDir, opFileStem, key, "csv").ToFileInfo();
-        //        Csv.WriteMatrixToCsv(filename, dictionary[key], orient);
-        //    }
-
-        //    return dictionary;
-        //}
-
-
+        /// <param name="dictionary"></param>
+        /// <param name="sgConfig"></param>
+        /// <param name="indexGenerationData"></param>
+        /// <param name="siteDescription"></param>
+        /// <param name="sunriseDataFile"></param>
+        /// <param name="segmentErrors"></param>
+        /// <param name="verbose"></param>
         /// <summary>
         /// MOST RECENT METHOD TO CONCATENATE Spectral INDEX.CSV FILES - Early September 2015.
         /// It is designed to deal with Yvonne's case where want to concatenate files distributed over arbitrary directories.
@@ -136,31 +110,34 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             dictionary = IndexMatrices.AddDerivedIndices(dictionary);
 
             // Calculate the index distribution statistics and write to a json file. Also save as png image
-            DateTimeOffset dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
-            string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
-            string opFileStem = String.Format("{0}_{1}", siteDescription.SiteName, dateString);
+            if (indexGenerationData.RecordingStartDate != null)
+            {
+                DateTimeOffset dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
+                string dateString = $"{dto.Year}{dto.Month:D2}{dto.Day:D2}";
+                string opFileStem = $"{siteDescription.SiteName}_{dateString}";
 
-            var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionary, opDir, opFileStem);
+                var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionary, opDir, opFileStem);
 
-            SummaryIndexBase[] summaryIndices = null;
-            string analysisType = "Towsey.Acoustic";
+                SummaryIndexBase[] summaryIndices = null;
+                string analysisType = "Towsey.Acoustic";
 
-            Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
-            opDir, // topLevelDirectories[0], // this should not be required but it is - because things have gotten complicated !
-            opDir,
-            sgConfig,
-            indexPropertiesConfigFileInfo,
-            indexGenerationData,
-            opFileStem,
-            analysisType,
-            dictionary,
-            summaryIndices,
-            indexDistributions,
-            siteDescription,
-            sunriseDataFile,
-            segmentErrors,
-            ImageChrome.With,
-            verbose);
+                Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+                    opDir, // topLevelDirectories[0], // this should not be required but it is - because things have gotten complicated !
+                    opDir,
+                    sgConfig,
+                    indexPropertiesConfigFileInfo,
+                    indexGenerationData,
+                    opFileStem,
+                    analysisType,
+                    dictionary,
+                    summaryIndices,
+                    indexDistributions,
+                    siteDescription,
+                    sunriseDataFile,
+                    segmentErrors,
+                    ImageChrome.With,
+                    verbose);
+            }
         }
 
 
@@ -169,13 +146,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         // ####################################  SUMMARY  INDEX METHODS BELOW HERE  ##################################
 
 
-
+/*
         public static FileInfo[] GetSummaryIndexFilesForOneDay(DirectoryInfo[] directories, DateTimeOffset dto)
         {
             string pattern = "*__Towsey.Acoustic.Indices.csv";
            // LDSpectrogramStitching.IndexType, LDSpectrogramStitching.CsvFileExt
 
-            string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
+            string dateString = $"{dto.Year}{dto.Month:D2}{dto.Day:D2}";
             //string opFileStem = String.Format("{0}_{1}", site, dateString);
 
             // 2. PATTERN SEARCH FOR CORRECT SUMMARY CSV FILES AND READ INTO DICTIONARY
@@ -184,7 +161,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             FileInfo[] files = IndexMatrices.GetFilesInDirectories(directories, fileStemPattern);
             return files;
         }
-
+*/
+/*
         public static FileInfo[] GetSummaryIndexFilesForOneDay(SortedDictionary<DateTimeOffset, FileInfo> dict, DateTimeOffset dto)
         {
             string pattern = "Towsey.Acoustic.Indices.csv";
@@ -204,7 +182,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
             return matchFiles.ToArray();
         }
-
+*/
+/*
         public static SortedDictionary<DateTimeOffset, FileInfo> GetFilesForOneDay(SortedDictionary<DateTimeOffset, FileInfo> dict, DateTimeOffset dto)
         {
             var keys = dict.Keys;
@@ -218,7 +197,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
             return matchFiles;
         }
-
+*/
         public static FileInfo[] GetFileArrayForOneDay(SortedDictionary<DateTimeOffset, FileInfo> dict, DateTimeOffset dto)
         {
             var keys = dict.Keys;
@@ -250,7 +229,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
-
+/*
         public static Dictionary<string, double[]> ConcatenateSummaryIndexFiles_DEPRACATED(FileInfo[] summaryIndexFiles, 
                                                                             DirectoryInfo opDir, 
                                                                             FileInfo indicesCsvfile, 
@@ -284,7 +263,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             return dictionaryOfsummaryIndices;
         }
-
+*/
 
         public static void DrawSummaryIndexFiles(Dictionary<string, double[]> dictionaryOfCsvColumns,
                                                 IndexGenerationData indexGenerationData,
@@ -298,16 +277,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             DateTimeOffset dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
 
-            string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
-            string opFileStem = String.Format("{0}_{1}", siteDescription.SiteName, dateString);
+            string dateString = $"{dto.Year}{dto.Month:D2}{dto.Day:D2}";
+            string opFileStem = $"{siteDescription.SiteName}_{dateString}";
 
             // Calculate the index distribution statistics and write to a json file. Also save as png image
             var indexDistributions = IndexDistributions.WriteSummaryIndexDistributionStatistics(dictionaryOfCsvColumns, opDir, opFileStem);
 
             TimeSpan start = ((DateTimeOffset)indexGenerationData.RecordingStartDate).TimeOfDay;
-            string startTime = string.Format("{0:d2}{1:d2}h", start.Hours, start.Minutes);
+            string startTime = $"{start.Hours:d2}{start.Minutes:d2}h";
             if((start.Hours == 0) && (start.Minutes == 0)) startTime = "midnight";
-            string titletext = string.Format("SOURCE: \"{0}\".     Starts at {1}                       (c) QUT.EDU.AU", opFileStem, startTime);
+            string titletext =
+                $"SOURCE: \"{opFileStem}\".     Starts at {startTime}                       (c) QUT.EDU.AU";
             Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndices(
                                  IndexProperties.GetIndexProperties(indexPropertiesConfigFileInfo),
                                  dictionaryOfCsvColumns,
@@ -376,6 +356,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var indexResolution = indexGenerationData.IndexCalculationDuration;
 
             var summaryIndices = IndexMatrices.ConcatenateSummaryIndexFilesWithTimeCheck(summaryIndexFiles, indexResolution);
+            if (summaryIndices.Count == 0)
+            {
+                LoggedConsole.WriteErrorLine("WARNING: LDSpectrogramStitching.ConcatenateAllSummaryIndexFiles() !");
+                LoggedConsole.WriteErrorLine("        An empty List of SUMMARY indices was returned !!! ");
+                return null;
+            }
 
             // check length of data and make adjustments if required.
             int totalRowMinutes = (int)Math.Round(summaryIndices.Count() * indexResolution.TotalMinutes);
@@ -387,29 +373,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var path = FilenameHelpers.AnalysisResultPath(opDir, opFileStem, indexType, "FileNames.json");
             Json.Serialise(new FileInfo(path), arrayOfFileNames);
 
-            //now put summary indices into a dictionary. WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
-            var dictionaryOfSummaryIndices = IndexMatrices.GetDictionaryOfSummaryIndices(summaryIndices);
-            if (dictionaryOfSummaryIndices.Count == 0)
-            {
-                LoggedConsole.WriteErrorLine("WARNING from method LDSpectrogramStitching.ConcatenateSummaryIndexFiles() !!!");
-                LoggedConsole.WriteErrorLine("        An empty dictionary of SUMMARY indices was returned !!! ");
-                return null;
-            }
-
-            // now add in derived indices i.e. NCDI etc
+            // Now add in derived indices i.e. NCDI etc
+            // Decided NOT to do this anymore
             // dictionaryOfSummaryIndices = IndexMatrices.AddDerivedIndices(dictionaryOfSummaryIndices);
 
-            // Calculate the index distribution statistics and write to a json file. Also save as png image
-            var indexDistributions = IndexDistributions.WriteSummaryIndexDistributionStatistics(dictionaryOfSummaryIndices, opDir, opFileStem);
-            string csvFileExt = "csv";
-
+            const string csvFileExt = "csv";
             var indicesFile = FilenameHelpers.AnalysisResultPath(opDir, opFileStem, indexType, csvFileExt);
             var indicesCsvfile = new FileInfo(indicesFile);
-            //serialiseFunc(indicesFile, results);
-            //Csv.WriteMatrixToCsv(indicesCsvfile, summaryIndices);
-            //CsvTools.WriteMatrix2CSV(summaryIndices, headers, indicesCsvfile);
-            CsvTools.WriteDictionaryOfDoubles2CSV(dictionaryOfSummaryIndices, indicesCsvfile);
-
+            Csv.WriteToCsv(indicesCsvfile, summaryIndices);
+            //now put summary indices into a dictionary. WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
+            var dictionaryOfSummaryIndices = IndexMatrices.GetDictionaryOfSummaryIndices(summaryIndices);
+            // return the dictionary - it will be used later to produce an index tracks image.
             return dictionaryOfSummaryIndices;
         }
 
@@ -434,18 +408,18 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             double verticalScaleReduction = 0.4;
             int width = 785;
-            System.Drawing.Image spacer = new Bitmap(width, 8);
+            Image spacer = new Bitmap(width, 8);
             // float standardresolution = 96;
             float standardresolution = ((Bitmap)spacer).VerticalResolution;
-            System.Drawing.Graphics g = Graphics.FromImage(spacer);
+            Graphics g = Graphics.FromImage(spacer);
             g.Clear(Color.LightGray);
 
             var imageList = new List<Image>();
             foreach (FileInfo file in files)
             {
-                System.Drawing.Image image = ImageTools.ReadImage2Bitmap(file.FullName);
+                Image image = ImageTools.ReadImage2Bitmap(file.FullName);
                 float verticalresolution = ((Bitmap)image).VerticalResolution;
-                float horizontalresolution = ((Bitmap)image).HorizontalResolution;
+                //float horizontalresolution = ((Bitmap)image).HorizontalResolution;
                 ((Bitmap)image).SetResolution(standardresolution, (float)(verticalresolution / verticalScaleReduction)); 
                 imageList.Add(image);
                 imageList.Add(spacer);
@@ -508,8 +482,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 if (interpolateSpacer)
                 {
                     var spacer = new Bitmap(spacerWidth, image.Height);
-
-
                     imagePair[0] = image;
                     imagePair[1] = spacer;
                     image = (Bitmap)ImageTools.CombineImagesInLine(imagePair);
@@ -517,20 +489,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 images.Add(image);
             }
-            Image compositeBmp = ImageTools.CombineImagesInLine(images.ToArray());
+            var compositeBmp = ImageTools.CombineImagesInLine(images.ToArray());
 
-            TimeSpan fullDuration = TimeSpan.FromMinutes(compositeBmp.Width);
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, minOffset, xAxisTicInterval, compositeBmp.Width, trackHeight, "hours");
+            var fullDuration = TimeSpan.FromMinutes(compositeBmp.Width);
+            var timeBmp = Image_Track.DrawTimeTrack(fullDuration, minOffset, xAxisTicInterval, compositeBmp.Width, trackHeight, "hours");
 
-            Graphics gr = Graphics.FromImage(compositeBmp);
+            var gr = Graphics.FromImage(compositeBmp);
             int halfHeight = compositeBmp.Height / 2;
 
             //add in the title bars
-            string title = string.Format("24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = {0})         (c) QUT.EDU.AU.  ", "BGN-AVG-CVR");
-            Bitmap titleBmp = Image_Track.DrawTitleTrack(compositeBmp.Width, trackHeight, title);
+            string title = "24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = BGN-AVG-CVR)         (c) QUT.EDU.AU.  ";
+            var titleBmp = Image_Track.DrawTitleTrack(compositeBmp.Width, trackHeight, title);
             int offset = 0;
             gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
-            title = string.Format("24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = {0})         (c) QUT.EDU.AU.  ", "ACI-ENT-EVN");
+            title = "24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = ACI-ENT-EVN)         (c) QUT.EDU.AU.  ";
             titleBmp = Image_Track.DrawTitleTrack(compositeBmp.Width, trackHeight, title);
             offset = halfHeight;
             gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
