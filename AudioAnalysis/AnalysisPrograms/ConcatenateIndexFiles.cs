@@ -871,5 +871,130 @@ namespace AnalysisPrograms
         }
 
 
+
+        public static void ConcatenateAcousticEventFiles(DirectoryInfo[] dataDirs, string pattern, DirectoryInfo outputDirectory, string opFileStem)
+        {
+            //get the csv files
+            FileInfo[] csvFiles = IndexMatrices.GetFilesInDirectories(dataDirs, pattern);
+            int lineCount = 0;
+
+            var lines = FileTools.ReadTextFile(csvFiles[0].FullName);
+
+            // add ribbon files to list
+            var output = new List<string>();
+            //output.Add(lines[0]);
+
+            foreach (FileInfo file in csvFiles)
+            {
+                lines = FileTools.ReadTextFile(file.FullName);
+                lines.RemoveAt(0);
+                output.AddRange(lines);
+                lineCount += lines.Count;
+                Console.WriteLine($"   # events = {lines.Count - 1}"); // ignore header
+
+                // draw on the tidal and sun info IFF available.
+                //dto = dto.Add(oneday);
+                //Console.WriteLine(dto.ToString());
+
+            }
+
+            var indexArray = ConvertEventsToSummaryIndices(output);
+            indexArray = DataTools.normalise(indexArray);
+
+            Image image = ImageTools.DrawGraph("Canetoad events", indexArray, 40);
+
+            string imagePath = Path.Combine(outputDirectory.FullName, opFileStem + ".png");
+            image.Save(imagePath);
+
+            Console.WriteLine($"MaxValue = {indexArray.Max()}");
+            Console.WriteLine($"Final number of FILES = {csvFiles.Length}");
+            Console.WriteLine($"Final number of events = {lineCount}");
+
+        } //ConcatenateAcousticEventFiles
+
+
+        public static double[] ConvertEventsToSummaryIndices(List<string> events)
+        {
+            // Assume that each line in events = one event
+            // assume one minute resolution for events index 
+            TimeSpan? offsetHint = new TimeSpan(9, 0, 0);
+            //int unitTime = 60; // one minute resolution
+            // get start and end time from first and last file name
+            string line = events[1];
+            string[] fields = line.Split(',');
+            string fileName = fields[14];
+            //string[] times = fileName.Split('_');
+            //string startOffset = fields[15];
+            DateTimeOffset startTime = DataTools.Time_ConvertDateString2DateTime(fileName);
+            line = events[events.Count-1];
+            fields = line.Split(',');
+            fileName = fields[14];
+            DateTimeOffset endTime = DataTools.Time_ConvertDateString2DateTime(fileName);
+
+            string[] parts = fileName.Split('_');
+            int addOn = int.Parse(parts[2].Substring(0, parts[2].Length-3));
+            //var addOnTime = new DateTime(0, 0, 0, 0, addOn, 0);
+
+            TimeSpan duration = endTime - startTime;
+            // get whole minutes
+            int unitCount = (int)Math.Floor(addOn + duration.TotalMinutes);
+
+            // to store event counts
+            var eventsPerUnitTime = new double[unitCount];
+
+            foreach (var line1 in events)
+            {
+                fields = line1.Split(',');
+                // note: absolute determines what value is used
+                // EventStartSeconds (relative to segment)
+                // StartOffset (relative to recording)
+
+                fileName = fields[14];
+                DateTimeOffset evTime = DataTools.Time_ConvertDateString2DateTime(fileName);
+                duration = evTime - startTime;
+
+                parts = fileName.Split('_');
+                addOn = int.Parse(parts[2].Substring(0, parts[2].Length - 3));
+                int minuteId = addOn + duration.Minutes;
+                eventsPerUnitTime[minuteId] ++;
+
+                //double eventStart = ev.StartOffset.TotalSeconds : ev.EventStartSeconds;
+                //var timeUnit = (int)(eventStart / unitTime.TotalSeconds);
+
+                /*
+                // NOTE: eventScore filter replaced with greater then as opposed to not equal to
+                if (eventScore >= 0.0)
+                {
+                    eventsPerUnitTime[timeUnit]++;
+                }
+
+                if (eventScore > scoreThreshold)
+                {
+                    bigEvsPerUnitTime[timeUnit]++;
+                }
+                */
+            }
+
+            /*
+            var indices = new SummaryIndexBase[eventsPerUnitTime.Length];
+
+            for (int i = 0; i < eventsPerUnitTime.Length; i++)
+            {
+                var newIndex = new EventIndex
+                {
+                    StartOffset = unitTime.Multiply(i),
+                    EventsTotal = eventsPerUnitTime[i],
+                    EventsTotalThresholded = bigEvsPerUnitTime[i],
+                    SegmentDuration = absolute ? unitTime : duration
+                };
+
+                indices[i] = newIndex;
+            }
+            */
+
+            //return indices;
+            return eventsPerUnitTime;
+        }
+
     }
 }

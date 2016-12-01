@@ -49,8 +49,20 @@ namespace AnalysisPrograms
             Log.Verbosity = 1;
             Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
-            // experiments with Otsu Thresholder
+            // concatenation of recognizer index files.
             if (true)
+            {
+                string dirName = @"C:\SensorNetworks\OutputDataSets\GrooteCaneToad\SD Card A";
+                var topDir = new DirectoryInfo(dirName);
+                DirectoryInfo[] dataDirs = topDir.GetDirectories();
+                string pattern = "*__Towsey.RhinellaMarina.Events.csv";
+                DirectoryInfo outputDirectory = new DirectoryInfo(@"C:\SensorNetworks\Output\Frogs\Canetoad\Groote");
+                string opFileStem = "CanetoadEvents_SiteA";
+                ConcatenateIndexFiles.ConcatenateAcousticEventFiles(dataDirs, pattern, outputDirectory, opFileStem);
+            }
+
+            // experiments with Otsu Thresholder
+            if (false)
             {
                 // check that Otsu thresholder is still working
                 //OtsuThresholder.Execute(null);
