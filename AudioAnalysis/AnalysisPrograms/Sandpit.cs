@@ -52,12 +52,14 @@ namespace AnalysisPrograms
             // concatenation of recognizer index files.
             if (true)
             {
-                string dirName = @"C:\SensorNetworks\OutputDataSets\GrooteCaneToad\SD Card A";
+                //string dirName = @"G:\SensorNetworks\OutputDataSets\GrooteCaneToad_Job120\SD Card B";
+                string dirName = @"G:\SensorNetworks\OutputDataSets\GrooteCaneToad_Job120\USBDriveViaMichael-Lin-Deb";
                 var topDir = new DirectoryInfo(dirName);
                 DirectoryInfo[] dataDirs = topDir.GetDirectories();
                 string pattern = "*__Towsey.RhinellaMarina.Events.csv";
-                DirectoryInfo outputDirectory = new DirectoryInfo(@"C:\SensorNetworks\Output\Frogs\Canetoad\Groote");
-                string opFileStem = "CanetoadEvents_SiteA";
+                DirectoryInfo outputDirectory = new DirectoryInfo(@"C:\SensorNetworks\Output\Frogs\Canetoad\ConcatGroote_Job120");
+                //string opFileStem = "CanetoadEvents_SiteA";
+                string opFileStem = "CanetoadEvents_USBStick";
                 ConcatenateIndexFiles.ConcatenateAcousticEventFiles(dataDirs, pattern, outputDirectory, opFileStem);
             }
 
