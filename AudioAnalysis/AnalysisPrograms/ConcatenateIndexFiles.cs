@@ -157,7 +157,8 @@ namespace AnalysisPrograms
             // ################################ CONCATENATE GROOTE DATA 
             // This data derived from Groote recordings I brought back from JCU, July 2016.
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\Frogs\\Canetoad\\2016Oct28-174219 - Michael, Towsey.Indices, #120\\SD Card A"),
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\Frogs\\Canetoad\\2016Oct28-174219 - Michael, Towsey.Indices, #120\\SD Card A"),
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"G:\\SensorNetworks\\OutputDataSets\\GrooteAcousticIndices_Job120\\SD Card A"),
                                                    };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
             string testPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\ExpectedOutput";
@@ -169,8 +170,8 @@ namespace AnalysisPrograms
             string opPath = $"{drive}:\\SensorNetworks\\Output\\Frogs\\Canetoad\\ConcatGroote_Job120";
             bool concatenateEverythingYouCanLayYourHandsOn = false; // 24 hour blocks only
             // start and end dates INCLUSIVE
-            dtoStart = new DateTimeOffset(2016, 08, 03, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2016, 08, 03, 0, 0, 0, TimeSpan.Zero);
+            dtoStart = new DateTimeOffset(2016, 08, 06, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2016, 08, 06, 0, 0, 0, TimeSpan.Zero);
 
 
 
@@ -877,38 +878,47 @@ namespace AnalysisPrograms
             //get the csv files
             FileInfo[] csvFiles = IndexMatrices.GetFilesInDirectories(dataDirs, pattern);
             int lineCount = 0;
-
-            var lines = FileTools.ReadTextFile(csvFiles[0].FullName);
-
-            // add ribbon files to list
             var output = new List<string>();
-            //output.Add(lines[0]);
 
             foreach (FileInfo file in csvFiles)
             {
-                lines = FileTools.ReadTextFile(file.FullName);
+                var lines = FileTools.ReadTextFile(file.FullName);
                 lines.RemoveAt(0);
                 output.AddRange(lines);
                 lineCount += lines.Count;
-                Console.WriteLine($"   # events = {lines.Count - 1}"); // ignore header
-
-                // draw on the tidal and sun info IFF available.
-                //dto = dto.Add(oneday);
-                //Console.WriteLine(dto.ToString());
-
+                Console.WriteLine($"  # events = {lines.Count}"); // ignore header
             }
 
+            Console.WriteLine($"Final number of FILES = {csvFiles.Length}");
+            Console.WriteLine($"Final number of lines = {lineCount}");
+            Console.WriteLine($"Final number of lines = {output.Count}");
+
             var indexArray = ConvertEventsToSummaryIndices(output);
+            Console.WriteLine($"Final number of events  = {indexArray.Sum()}");
+            double maxValue = indexArray.Max();
+            Console.WriteLine($"Max Value in any minute = {maxValue}");
             indexArray = DataTools.normalise(indexArray);
 
-            Image image = ImageTools.DrawGraph("Canetoad events", indexArray, 40);
+            Image image = ImageTools.DrawGraph("Canetoad events", indexArray, 100);
+
+            string title = string.Format("Canetoad events: {0}                       Max value={1:f0}", opFileStem, maxValue);
+            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, indexArray.Length);
+
+            string firstFileName = csvFiles[0].Name;
+            DateTimeOffset startTime = DataTools.Time_ConvertDateString2DateTime(firstFileName);
+            var duration = new TimeSpan(0, indexArray.Length, 0);
+
+            int trackHeight = 20;
+            Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(duration, indexArray.Length, trackHeight);
+            //Bitmap timeBmp2 = (Bitmap)timeBmp1.Clone();
+            Bitmap timeBmp2 = Image_Track.DrawTimeTrack(duration, startTime, indexArray.Length, trackHeight);
+
+            var imageList = new List<Image> { titleBar, timeBmp1, image, timeBmp2 };
+            Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
 
             string imagePath = Path.Combine(outputDirectory.FullName, opFileStem + ".png");
-            image.Save(imagePath);
+            compositeBmp.Save(imagePath);
 
-            Console.WriteLine($"MaxValue = {indexArray.Max()}");
-            Console.WriteLine($"Final number of FILES = {csvFiles.Length}");
-            Console.WriteLine($"Final number of events = {lineCount}");
 
         } //ConcatenateAcousticEventFiles
 
@@ -919,44 +929,49 @@ namespace AnalysisPrograms
             // assume one minute resolution for events index 
             TimeSpan? offsetHint = new TimeSpan(9, 0, 0);
             //int unitTime = 60; // one minute resolution
+
             // get start and end time from first and last file name
-            string line = events[1];
+            string line = events[0];
             string[] fields = line.Split(',');
-            string fileName = fields[14];
+            string fstartFileName = fields[14];
             //string[] times = fileName.Split('_');
             //string startOffset = fields[15];
-            DateTimeOffset startTime = DataTools.Time_ConvertDateString2DateTime(fileName);
+            DateTimeOffset startTime = DataTools.Time_ConvertDateString2DateTime(fstartFileName);
+
+            // get last event
             line = events[events.Count-1];
             fields = line.Split(',');
-            fileName = fields[14];
-            DateTimeOffset endTime = DataTools.Time_ConvertDateString2DateTime(fileName);
+            string endFileName = fields[14];
+            DateTimeOffset endTime = DataTools.Time_ConvertDateString2DateTime(endFileName);
 
-            string[] parts = fileName.Split('_');
+            string[] parts = endFileName.Split('_');
             int addOn = int.Parse(parts[2].Substring(0, parts[2].Length-3));
             //var addOnTime = new DateTime(0, 0, 0, 0, addOn, 0);
 
             TimeSpan duration = endTime - startTime;
             // get whole minutes
-            int unitCount = (int)Math.Floor(addOn + duration.TotalMinutes);
+            int minuteCount = addOn + (int)Math.Ceiling(duration.TotalMinutes) + 1;
 
             // to store event counts
-            var eventsPerUnitTime = new double[unitCount];
+            var eventsPerUnitTime = new double[minuteCount];
 
             foreach (var line1 in events)
             {
-                fields = line1.Split(',');
+                string[] fieldArray = line1.Split(',');
                 // note: absolute determines what value is used
                 // EventStartSeconds (relative to segment)
                 // StartOffset (relative to recording)
 
-                fileName = fields[14];
+                string fileName = fieldArray[14];
                 DateTimeOffset evTime = DataTools.Time_ConvertDateString2DateTime(fileName);
-                duration = evTime - startTime;
+                TimeSpan elapsedTime = evTime - startTime;
 
                 parts = fileName.Split('_');
-                addOn = int.Parse(parts[2].Substring(0, parts[2].Length - 3));
-                int minuteId = addOn + duration.Minutes;
+                int addOn1 = int.Parse(parts[2].Substring(0, parts[2].Length - 3));
+                int minuteId = addOn1 + (int)Math.Round(elapsedTime.TotalMinutes);
                 eventsPerUnitTime[minuteId] ++;
+
+                // Console.WriteLine($"minuteId={minuteId}  elapsedTimeFromStart.Minutes={elapsedTime.TotalMinutes}");
 
                 //double eventStart = ev.StartOffset.TotalSeconds : ev.EventStartSeconds;
                 //var timeUnit = (int)(eventStart / unitTime.TotalSeconds);
