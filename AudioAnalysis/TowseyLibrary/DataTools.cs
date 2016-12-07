@@ -4054,16 +4054,16 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="dateString"></param>
         /// <returns></returns>
-  public static DateTime Time_ConvertDateString2DayOfYear(string dateString)
-  {
-        // file name has following structure:  SERF_20130314.SpectralIndices.PivotTable.csv
-        var yr = dateString.Substring(0, 4);
-        var mn = dateString.Substring(4, 2);
-        var dy = dateString.Substring(6, 2);
+  //public static DateTime Time_ConvertDateString2DayOfYear(string dateString)
+  //{
+  //      // file name has following structure:  SERF_20130314.SpectralIndices.PivotTable.csv
+  //      var yr = dateString.Substring(0, 4);
+  //      var mn = dateString.Substring(4, 2);
+  //      var dy = dateString.Substring(6, 2);
 
-      var dt = new DateTime(Int32.Parse(yr), Int32.Parse(mn), Int32.Parse(dy));
-      return dt;
-  }
+  //    var dt = new DateTime(Int32.Parse(yr), Int32.Parse(mn), Int32.Parse(dy));
+  //    return dt;
+  //}
 
   public static string[] MonthNames = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
 

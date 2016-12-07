@@ -158,20 +158,20 @@ namespace AnalysisPrograms
             // This data derived from Groote recordings I brought back from JCU, July 2016.
             // top level directory
             //DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\Frogs\\Canetoad\\2016Oct28-174219 - Michael, Towsey.Indices, #120\\SD Card A"),
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"G:\\SensorNetworks\\OutputDataSets\\GrooteAcousticIndices_Job120\\SD Card A"),
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"G:\\SensorNetworks\\OutputDataSets\\GrooteAcousticIndices_Job120\\SD Card B"),
                                                    };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
             string testPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\ExpectedOutput";
             var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\TEST_SpectrogramFalseColourConfig.yml");
-            timeSpanOffsetHint = TimeSpan.FromHours(10);
+            timeSpanOffsetHint = TimeSpan.FromHours(9.5);
             FileInfo sunriseDatafile = null;
             doTest = false;
-            string opFileStem = "ConcatGrooteJCU_";
+            string opFileStem = "ConcatGrooteJCU";
             string opPath = $"{drive}:\\SensorNetworks\\Output\\Frogs\\Canetoad\\ConcatGroote_Job120";
             bool concatenateEverythingYouCanLayYourHandsOn = false; // 24 hour blocks only
             // start and end dates INCLUSIVE
-            dtoStart = new DateTimeOffset(2016, 08, 06, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2016, 08, 06, 0, 0, 0, TimeSpan.Zero);
+            dtoStart = new DateTimeOffset(2016, 08, 09, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd   = new DateTimeOffset(2016, 08, 09, 0, 0, 0, TimeSpan.Zero);
 
 
 
@@ -637,12 +637,19 @@ namespace AnalysisPrograms
                 }
 
                 // CREATE DAY LEVEL OUTPUT DIRECTORY for this day
-                string dateString = $"{thisday.Year}{thisday.Month:D2}{thisday.Day:D2}";
+                string format = "yyyyMMdd";
+                string dateString = thisday.ToString(format);
                 resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, arguments.FileStemName, dateString));
                 if (!resultsDir.Exists) resultsDir.Create();
 
                 var opFileStem1 = $"{arguments.FileStemName}_{dateString}";
-                //var indicesFile = FilenameHelpers.AnalysisResultPath(resultsDir, opFileStem1, LDSpectrogramStitching.SummaryIndicesStr, LDSpectrogramStitching.CsvFileExt);
+                
+                // Recalculate <thisDay> to include the start time - not just the date. This is for time scale on false-colour spectrograms.
+                DateTimeOffset dt;
+                if (FileDateHelpers.FileNameContainsDateTime(indexFiles[0].Name, out dt, arguments.TimeSpanOffsetHint))
+                {
+                    thisday = dt;
+                } // else <thisday> will not contain the start time of the day.
 
                 // CONCATENATE the SUMMARY INDEX FILES
                 var summaryDict = LDSpectrogramStitching.ConcatenateAllSummaryIndexFiles(indexFiles, resultsDir, indexGenerationData, opFileStem1);
