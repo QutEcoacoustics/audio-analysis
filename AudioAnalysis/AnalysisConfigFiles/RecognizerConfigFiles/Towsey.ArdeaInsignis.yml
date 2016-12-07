@@ -33,7 +33,7 @@ ResampleRate: 22050
 # SegmentDuration: units=minutes;    
 SegmentDuration: 1
 # SegmentOverlap: units=seconds;
-SegmentOverlap: 0
+SegmentOverlap: 10
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
 SaveSonogramImages: true
