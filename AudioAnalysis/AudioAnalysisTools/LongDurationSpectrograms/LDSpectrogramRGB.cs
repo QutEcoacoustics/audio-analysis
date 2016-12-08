@@ -1267,10 +1267,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="analysisType"></param>
         /// <param name="indexSpectrograms"> Optional spectra to pass in. If specified the spectra will not be loaded from disk!
         /// </param>
+        /// <param name="summaryIndices"></param>
         /// <param name="indexDistributions"></param>
         /// <param name="siteDescription">Optionally specify details about the site where the audio was recorded.</param>
+        /// <param name="sunriseDataFile"></param>
+        /// <param name="segmentErrors"></param>
         /// <param name="imageChrome">If true, this method generates and returns separate chromeless images.</param>
-        /// <param name="longDurationSpectrogramConfig"> </param>
+        /// <param name="verbose"></param>
         public static Tuple<Image, string>[] DrawSpectrogramsFromSpectralIndices(
             DirectoryInfo inputDirectory,
             DirectoryInfo outputDirectory,
@@ -1286,7 +1289,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             FileInfo sunriseDataFile = null,
             List<ErroneousIndexSegments> segmentErrors = null,
             ImageChrome imageChrome = ImageChrome.With,
-            bool Verbose = false)
+            bool verbose = false)
         {
             LdSpectrogramConfig config = ldSpectrogramConfig;
 
@@ -1334,20 +1337,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             if (indexSpectrograms == null)
             {
                 var sw = Stopwatch.StartNew();
-                if (Verbose) Logger.Info("Reading spectra files from disk");
+                if (verbose) Logger.Info("Reading spectra files from disk");
                 
                 // reads all known files spectral indices
                 cs1.ReadCSVFiles(inputDirectory, fileStem, cs1.SpectrogramKeys);
                 DateTime now2 = DateTime.Now;
                 sw.Stop();
-                if (Verbose)
+                if (verbose)
                 {
                     LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds.ToString(CultureInfo.InvariantCulture) + " seconds");
                 }
             }
             else
             {
-                if (Verbose)
+                if (verbose)
                 {
                     Logger.Info("Spectra loaded from memory");
                 }
@@ -1416,9 +1419,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             CreateTwoMapsImage(outputDirectory, fileStem, image1, imageX, image2);
 
-            Image ribbon;
             //ribbon = cs1.GetSummaryIndexRibbon(colorMap1);
-            ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap1);
+            var ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap1);
 
             ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap1 + ".SummaryRibbon", "png"));
             //ribbon = cs1.GetSummaryIndexRibbon(colorMap2);

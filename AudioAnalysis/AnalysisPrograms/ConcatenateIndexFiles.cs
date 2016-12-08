@@ -22,6 +22,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
+using System.Web.UI;
 using Acoustics.Shared.Csv;
 
 namespace AnalysisPrograms
@@ -100,6 +101,12 @@ namespace AnalysisPrograms
             [ArgDescription("Set true only when concatenating more than 24-hours of data into one image - e.g. PNG/Indonesian data.")]
             public bool ConcatenateEverythingYouCanLayYourHandsOn { get; set; }
 
+            [ArgDescription("One or more directories where the RECOGNIZER event scores are located in csv files. This is optional")]
+            public DirectoryInfo[] EventDataDirectories { get; set; }
+
+            [ArgDescription("Used only to get Event Recognizer files.")]
+            public string EventFilePattern { get; set; }
+            
             [ArgDescription("Default = false. For use by software manager only.")]
             internal bool DoTest { get; set; }
             [ArgDescription("Directory containing benchmark TEST files. For use by software manager only.")]
@@ -122,7 +129,7 @@ namespace AnalysisPrograms
 
             DateTimeOffset? dtoStart = null;
             DateTimeOffset? dtoEnd = null;
-
+            DirectoryInfo[] eventDirs = null;
 
             // The drive: local = C; work = G; home = E
             string drive = "C";
@@ -158,7 +165,7 @@ namespace AnalysisPrograms
             // This data derived from Groote recordings I brought back from JCU, July 2016.
             // top level directory
             //DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\Frogs\\Canetoad\\2016Oct28-174219 - Michael, Towsey.Indices, #120\\SD Card A"),
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"G:\\SensorNetworks\\OutputDataSets\\GrooteAcousticIndices_Job120\\SD Card B"),
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"G:\\SensorNetworks\\OutputDataSets\\GrooteAcousticIndices_Job120\\SD Card A"),
                                                    };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
             string testPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\ExpectedOutput";
@@ -170,8 +177,12 @@ namespace AnalysisPrograms
             string opPath = $"{drive}:\\SensorNetworks\\Output\\Frogs\\Canetoad\\ConcatGroote_Job120";
             bool concatenateEverythingYouCanLayYourHandsOn = false; // 24 hour blocks only
             // start and end dates INCLUSIVE
-            dtoStart = new DateTimeOffset(2016, 08, 09, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd   = new DateTimeOffset(2016, 08, 09, 0, 0, 0, TimeSpan.Zero);
+            dtoStart = new DateTimeOffset(2016, 08, 03, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd   = new DateTimeOffset(2016, 08, 03, 0, 0, 0, TimeSpan.Zero);
+
+            eventDirs = new DirectoryInfo[1];
+            eventDirs[0] = new DirectoryInfo(@"G:\SensorNetworks\OutputDataSets\GrooteCaneToad_Job120\\SD Card A");
+            string eventFilePattern = "*_Towsey.RhinellaMarina.Events.csv";
 
 
 
@@ -344,6 +355,9 @@ namespace AnalysisPrograms
                 DrawImages = drawImages,
                 Verbose = true,
                 DoTest = doTest,
+                // following used to add in a recognizer score track
+                EventDataDirectories = eventDirs,
+                EventFilePattern = eventFilePattern,
             };
             throw new NoDeveloperMethodException();
     }
@@ -702,21 +716,54 @@ namespace AnalysisPrograms
                 // DRAW SPECTRAL INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
                 if (arguments.DrawImages)
                 {
-                    Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
-                            subDirectories[0],
-                            resultsDir,
-                            ldSpectrogramConfig,
-                            indexPropertiesConfig,
-                            indexGenerationData,
-                            opFileStem1,
-                            analysisType,
-                            dictionaryOfSpectralIndices2,
-                            /*summaryIndices = */null,
-                            /*indexDistributions*/ null,
-                            siteDescription,
-                            arguments.SunRiseDataFile,
-                            indexErrors,
-                            ImageChrome.With);
+                    LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+                        subDirectories[0],
+                        resultsDir,
+                        ldSpectrogramConfig,
+                        indexPropertiesConfig,
+                        indexGenerationData,
+                        opFileStem1,
+                        analysisType,
+                        dictionaryOfSpectralIndices2,
+                        /*summaryIndices = */null,
+                        /*indexDistributions*/ null,
+                        siteDescription,
+                        arguments.SunRiseDataFile,
+                        indexErrors,
+                        ImageChrome.With);
+
+
+                    if (arguments.EventDataDirectories != null)
+                    {
+                        var candidateFiles = IndexMatrices.GetFilesInDirectories(arguments.EventDataDirectories, arguments.EventFilePattern);
+                        var sortedDictionaryOfEventFiles = FileDateHelpers.FilterFilesForDates(candidateFiles, arguments.TimeSpanOffsetHint);
+                        var eventFiles = LDSpectrogramStitching.GetFileArrayForOneDay(sortedDictionaryOfEventFiles, thisday);
+
+                        //int lineCount = 0;
+                        var output = new List<string>();
+                        foreach (FileInfo file in eventFiles)
+                        {
+                            var lines = FileTools.ReadTextFile(file.FullName);
+                            lines.RemoveAt(0); // ignore header
+                            output.AddRange(lines);
+                            //lineCount += lines.Count;
+                            //Console.WriteLine($"  # events = {lines.Count}"); 
+                        }
+                        var indexArray = ConcatenateIndexFiles.ConvertEventsToSummaryIndices(output);
+
+                        double[] normalisedScores;
+                        double normalisedThreshold;
+                        DataTools.Normalise(indexArray, 2, out normalisedScores, out normalisedThreshold);
+                        //var plot = new Plot("Cane Toad", normalisedScores, normalisedThreshold);
+                        Image recognizerTrack = ImageTools.DrawGraph("Canetoad events", normalisedScores, 32);
+                        string imageFilePath = Path.Combine(resultsDir.FullName, opFileStem + "_"+ dateString + "__2Maps" + ".png");
+                        Image twoMaps = ImageTools.ReadImage2Bitmap(imageFilePath);
+                        var imageList = new List<Image> { twoMaps, recognizerTrack };
+                        Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
+
+                        string imagePath2 = Path.Combine(resultsDir.FullName, opFileStem + "_" + dateString + ".png");
+                        compositeBmp.Save(imagePath2);
+                    }
                 }
 
                 WriteSpectralIndexFiles(subDirectories[0], opFileStem1, analysisType, dictionaryOfSpectralIndices2);
