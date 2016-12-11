@@ -24,6 +24,7 @@ data <- cbind(cluster.list, indices_norm_summary)
 num_clus <- unique(data$cluster.list)
 num_clus <- 1:length(num_clus)
 
+# the clara function is used for large datasets
 library(cluster) # needed for pam/clara functions
 medoids <- NULL
 for(i in 1:length(num_clus)) {
@@ -71,15 +72,15 @@ colnames(dd)[] <- c("clust", "BGN","SNR","ACT",
 #  radarchart(rbind(rep(1,12), rep(0,12), dd[i,-1]))
 #})
 
-library(fmsb)
+library(fmsb) #Functions for Medical Statistics Book with some Demographic Data
 
 rain <- c(59,18,10,54,2,21,38,60)
 wind <- c(42,47,51,56,52,45,8,40,24,19,46,28,9,25,30,20)
-birds <- c(58,43,57,37,11,3,33,15,14,39,4)
-insects <- c(17,1,27,22,26,29)
-cicada <- c(48,34,44,7,12,32,16)
+birds <- c(43,37,57,11,58,3,33,15,14,39,4)
+insects <- c(29,17,1,27,22,26)
+cicada <- c(48,44,34,7,12,32,16)
 planes <- c(49,23)
-quiet <- c(6,53,36,31,50,35,55,41,13,5)
+quiet <- c(13,5,6,53,36,31,50,35,55,41)
 rain1 <- rain[1:4]
 rain2 <- rain[5:8]
 wind1 <- wind[1:4]
@@ -96,46 +97,134 @@ cicada2 <- cicada[5:7]
 quiet1 <- quiet[1:4]
 quiet2 <- quiet[5:8]
 quiet3 <- quiet[9:10]
-all <- c(rain1, rain2, wind1, wind2, wind3, wind4,
-         birds1, birds2, birds3, insects1, insects2,
-         cicada1, cicada2, quiet1, quiet2, quiet3)
 
-all <- c("rain1", "rain2", "wind1", "wind2", "wind3", "wind4",
-         "birds1", "birds2", "birds3", "insects1", "insects2",
-         "cicada1", "cicada2", "quiet1", "quiet2", "quiet3","planes")
+colours <- c("#0072B2", "#0072B2", # rain
+             "#56B4E9", "#56B4E9","#56B4E9", "#56B4E9", # wind
+             "#009E73", "#009E73","#009E73", # birds
+             "#F0E442", "#F0E442", # insects
+             "#D55E00", "#D55E00", # cicada
+             "#999999", "#999999","#999999", # quiet
+             "#CC79A7") #planes
+# colourblind pallet
+#cbPalette <- c("#999999", "#E69F00", "#56B4E9", 
+#               "#009E73", "#F0E442", "#0072B2", 
+#               "#D55E00", "#CC79A7")
+                # grey, orange, lightblue, 
+                #green, yellow, darkblue, 
+                #burntorange, purplepink
 
 dd <- data.frame(dd)
+all <- c("rain1", "rain2", 
+         "wind1", "wind2", "wind3", "wind4",
+         "birds1", "birds2", "birds3", 
+         "insects1", "insects2",
+         "cicada1", "cicada2", 
+         "quiet1", "quiet2", "quiet3",
+         "planes")
+
+ref <- 1
 for(i in all) {
-  png(paste("radarPlots/plot_",i,".png",sep = ""), width = 1000, 
-      height = 1000)
-  par(mfrow=c(2,2), mar=c(1, 1, 1, 1), xpd=NA) #decrease default margin
+  png(paste("radarPlots/plot_",i,".png",sep = ""), 
+      width = 1000, height = 1000)
+  par(mfrow=c(2,2), mar=c(2, 2, 2, 2), #xpd=NA, #decrease default margin
+      mgp = c(0, 0.5, 0), xpd=NA, oma=c(0,1,0,0)) 
+  if(i==all[1]|i==all[2]) {label <- "RAIN"}
+  if(i==all[3]|i==all[4]|i==all[5]|i==all[6]) {label <- "WIND"}
+  if(i==all[7]|i==all[8]|i==all[9]) {label <- "BIRDS"}
+  if(i==all[10]|i==all[11]) {label <- "INSECTS"}
+  if(i==all[12]|i==all[13]) {label <- "CICADAS"}
+  if(i==all[14]|i==all[15]|i==all[16]) {label <- "QUIET"}
+  if(i==all[17]) {label <- "PLANES"}
   lapply(get(i), function(i) {
-    radarchart(rbind(rep(1,60), rep(0,60), dd[i,-1]), seg = 10,
-               centerzero = TRUE)
-    text(x = -1.2, y = 1.2, paste("Cluster:",i))
+    radarchart(rbind(rep(1,60), rep(0,60), dd[i,-1]), 
+               pfcol=colours[ref], seg = 5, vlcex = 3, axistype=2,
+               centerzero = TRUE, plwd = 1.5, cglcol = "black", 
+               pdensity = 50, cglwd = 1.2, cglty = 1)
+    text(x = -1, y = 1.37, paste("Cluster:",i), cex = 3.2)
+    #text(x = -1.1, y = 1.17, paste(label), cex = 3)
   })
+  ref <- ref + 1
+  dev.off()
+}
+
+rain1 <- rain[1:8]
+wind1 <- wind[1:8]
+wind2 <- wind[9:16]
+birds1 <- birds[1:8]
+birds2 <- birds[9:11]
+insects1 <- insects[1:6]
+cicada1 <- cicada[1:7]
+quiet1 <- quiet[1:8]
+quiet2 <- quiet[9:10]
+
+colours <- c("#0072B2",  # rain
+             "#56B4E9", "#56B4E9", # wind
+             "#009E73", "#009E73", # birds
+             "#F0E442",  # insects
+             "#D55E00",  # cicada
+             "#999999", "#999999", # quiet
+             "#CC79A7") #planes
+# colourblind pallet
+#cbPalette <- c("#999999", "#E69F00", "#56B4E9", 
+#               "#009E73", "#F0E442", "#0072B2", 
+#               "#D55E00", "#CC79A7")
+# grey, orange, lightblue, 
+#green, yellow, darkblue, 
+#burntorange, purplepink
+
+dd <- data.frame(dd)
+all <- c("rain1",
+         "wind1", "wind2", 
+         "birds1", "birds2", 
+         "insects1", 
+         "cicada1", 
+         "quiet1", "quiet2",
+         "planes")
+
+#all <- all[1]
+ref <- 1
+for(i in all) {
+  png(paste("radarPlots/plot_",i,"4by2.png",sep = ""), 
+      width = 1050, height = 500)
+  par(mfrow=c(2,4), mar=c(0.5, 1.2, 0.5, 0), xpd=NA, #decrease default margin
+      mgp = c(0, 0.2, 0)) 
+  lapply(get(i), function(i) {
+    radarchart(rbind(rep(1,60), rep(0,60), dd[i,-1]), 
+               pfcol=colours[ref], seg = 5, vlcex = 1.8, axistype=2,
+               centerzero = TRUE, plwd = 1.5, 
+               pdensity = 60)
+    text(x = -0.9, y = 1.26, paste("Cluster:",i), cex = 2)
+  })
+  ref <- ref + 1
   dev.off()
 }
 
 
-text(x = -1.6, y = 1, paste("Cluster:",i))
-text(x = -1.6, y = -1.6, deparse(substitute(class)))
-if(length(class)==1) {
-  text(x = 1.2, y = -1.2, paste(names(class)))  
-}
-if(length(class)==2) {
-  mtext(side = 1, deparse(substitute(class)))  
-}
-if(length(class)==3) {
-  text(x = 1.6, y = 1.6, paste("Here"))  
-}
-if(length(class)==4) {
-  text(x = -1.6, y = 1.6, paste("Here"))  
-}
+wind1 <- wind[1:16]
+birds1 <- birds[1:11]
+quiet1 <- quiet[1:10]
 
+colours <- c("#56B4E9", # wind 
+             "#009E73", # birds
+             "#999999") # quiet 
+all <- c("wind1", "birds1", "quiet1")
 
-abc <- 5
-get("abc")
+ref <- 1
+for(i in all) {
+  png(paste("radarPlots/plot_",i,"4by4.png",sep = ""), 
+      width = 1050, height = 1000)
+  par(mfrow=c(4,4), mar=c(0.5, 1.2, 0.5, 0), xpd=NA, #decrease default margin
+      mgp = c(0, 0.2, 0)) 
+  lapply(get(i), function(i) {
+    radarchart(rbind(rep(1,60), rep(0,60), dd[i,-1]), 
+               pfcol=colours[ref], seg = 5, vlcex = 1.8, axistype=2,
+               centerzero = TRUE, plwd = 1.5, 
+               pdensity = 60)
+    text(x = -0.9, y = 1.26, paste("Cluster:",i), cex = 2)
+  })
+  ref <- ref + 1
+  dev.off()
+}
 
 ###############################
 setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")

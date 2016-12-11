@@ -3,7 +3,10 @@ library(biovizBase)
 library(scales)
 library(grDevices)
 # The palette with grey:
-cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", 
+               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+# grey, orange, lightblue, green, 
+#yellow, darkblue, burntorange, purplepink
 show_col(cbPalette)
 colour_1 <- col2rgb(cbPalette)
 colour_1 <- t(colour_1)

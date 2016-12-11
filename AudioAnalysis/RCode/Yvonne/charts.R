@@ -310,15 +310,16 @@ dev.off()
 # rose diagrams
 #################################################################
 library(circular)
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j")
-cluster.list <- read.csv("hybrid_clust_knn_17500_3.csv", header = T)
+folder <- "C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j"
+cluster.list <- read.csv(paste(folder,"/hybrid_clust_knn_17500_3.csv",sep = ""), header = T)
 
 #hour.sequence <- rep(rep(seq(0,23.9,0.1), each=6),222)
 hour.sequence <- rep(rep(seq(0,23.99,(1/60)),222))
 
 cluster.list <- cbind(cluster.list, hour.sequence)
 
-dataset <- read.csv("hybrid_clust_knn_17500_3_k30_2hour_full111days.csv",header=T)
+dataset <- read.csv(paste(folder,"/hybrid_clust_knn_17500_3_k30_2hour_full111days.csv",sep = ""),
+                          header=T)
 dates <- unique(dataset$as.character.dates2.)
 dataset$as.character.dates2. <- as.Date(dataset$as.character.dates2., format = "%d/%m/%Y")
 dates1 <- unique(substring(dataset$as.character.dates2.,1,7))
