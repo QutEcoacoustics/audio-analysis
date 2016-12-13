@@ -254,6 +254,7 @@
     <Compile Include="Recognizers\LitoriaWatjulumensis.cs" />
     <Compile Include="Recognizers\LitoriaBicolor.cs" />
     <Compile Include="Recognizers\CriniaTinnula.cs" />
+    <Compile Include="Recognizers\UperoleiaLithomoda.cs" />
     <Compile Include="Recognizers\PlatyplectrumOrnatum.cs" />
     <Compile Include="Recognizers\LimnodynastesConvex.cs" />
     <Compile Include="Recognizers\ExempliGratia.cs" />
@@ -261,7 +262,6 @@
     <Compile Include="Recognizers\ArdeaInsignis.cs" />
     <Compile Include="Recognizers\CriniaRemota.cs" />
     <Compile Include="Recognizers\LitoriaCaerulea.cs" />
-    <Compile Include="Recognizers\UperoleiaLithomoda.cs" />
     <Compile Include="Recognizers\UperoleiaInundata.cs" />
     <Compile Include="Recognizers\LitoriaPallida.cs" />
     <Compile Include="Recognizers\LitoriaRubella.cs" />
