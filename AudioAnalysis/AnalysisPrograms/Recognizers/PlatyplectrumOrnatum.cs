@@ -15,11 +15,9 @@ namespace AnalysisPrograms.Recognizers
     using System.Reflection;
 
     using Acoustics.Shared;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
-    using AnalysisPrograms.Recognizers.Base;
+    using Recognizers.Base;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -39,7 +37,8 @@ namespace AnalysisPrograms.Recognizers
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// 
-    /// There are two different recognizer algorithms in this class, in methods Algorithm1() and Algorithm2(). They differ in the sequence of their filtering steps.
+    /// There are two different recognizer algorithms in this class, in methods Algorithm1() and Algorithm2(). 
+    /// They differ in the sequence of their filtering steps.
     /// 
     /// Algorithm1:  
     /// 1: Loop through spgm and find dominant freq bin and its amplitude in each frame
@@ -58,7 +57,7 @@ namespace AnalysisPrograms.Recognizers
 
         public override string SpeciesName => "PlatyplectrumOrnatum";
 
-        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        //private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
 
         /// <summary>
@@ -101,21 +100,16 @@ namespace AnalysisPrograms.Recognizers
             */
 
 
+            // DIFFERENT WAYS to get value from CONFIG file.
             // Get a value from the config file - with a backup default
-            int minHz = (int?)configuration[AnalysisKeys.MinHz] ?? 600;
-
+            //          int minHz = (int?)configuration[AnalysisKeys.MinHz] ?? 600;
             // Get a value from the config file - with no default, throw an exception if value is not present
-            //int maxHz = ((int?)configuration[AnalysisKeys.MaxHz]).Value;
-
+            //          int maxHz = ((int?)configuration[AnalysisKeys.MaxHz]).Value;
             // Get a value from the config file - without a string accessor, as a double
-            double someExampleSettingA = (double?)configuration.someExampleSettingA ?? 0.0;
-
+            //          double someExampleSettingA = (double?)configuration.someExampleSettingA ?? 0.0;
             // common properties
-            var speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            var abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-
-
-
+            //          var speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            //          var abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             //RecognizerResults results = Algorithm1(recording, configuration, outputDirectory);
             RecognizerResults results = Algorithm2(audioRecording, configuration, outputDirectory);
@@ -132,9 +126,9 @@ namespace AnalysisPrograms.Recognizers
             {
                 WindowSize = 256,
                 NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = noiseReductionParameter
+                NoiseReductionParameter = noiseReductionParameter,
+                WindowOverlap = 0.0
             };
-            config.WindowOverlap = 0.0;
 
             // now construct the standard decibel spectrogram WITH noise removal
             // get frame parameters for the analysis
@@ -146,16 +140,16 @@ namespace AnalysisPrograms.Recognizers
             int rowCount = spg.GetLength(0);
             int colCount = spg.GetLength(1);
 
-            double epsilon = Math.Pow(0.5, audioRecording.BitsPerSample - 1);
+            // double epsilon = Math.Pow(0.5, audioRecording.BitsPerSample - 1);
             int frameSize = colCount * 2;
             int frameStep = frameSize; // this default = zero overlap
-            double frameDurationInSeconds = frameSize / (double)sampleRate;
+            // double frameDurationInSeconds = frameSize / (double)sampleRate;
             double frameStepInSeconds = frameStep / (double)sampleRate;
             double framesPerSec = 1 / frameStepInSeconds;
             double herzPerBin = sampleRate / 2 / (double)colCount;
 
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            // string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            // string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             // ## THREE THRESHOLDS ---- only one of these is given to user.
             // minimum dB to register a dominant freq peak. After noise removal
@@ -168,8 +162,8 @@ namespace AnalysisPrograms.Recognizers
             // IMPORTANT: The following frame durations assume a sampling rate = 22050 and window size of 512.
             int minFrameWidth = 2;
             int maxFrameWidth = 5;  // this is larger than actual to accomodate an echo.
-            double minDuration = (minFrameWidth - 1) * frameStepInSeconds;
-            double maxDuration = maxFrameWidth * frameStepInSeconds;
+            // double minDuration = (minFrameWidth - 1) * frameStepInSeconds;
+            // double maxDuration = maxFrameWidth * frameStepInSeconds;
 
             // minimum number of bins covering frequency bandwidth of call
             int callBinWidth = 19;
@@ -205,12 +199,12 @@ namespace AnalysisPrograms.Recognizers
                 double maxAmplitude = -Double.MaxValue;
                 int maxId = 0;
                 // loop through bandwidth of call and look for dominant frequency
-                for (int binID = 5; binID < dominantBinMax; binID++)
+                for (int binId = 5; binId < dominantBinMax; binId++)
                 {
-                    if (spectrum[binID] > maxAmplitude)
+                    if (spectrum[binId] > maxAmplitude)
                     {
-                        maxAmplitude = spectrum[binID];
-                        maxId = binID;
+                        maxAmplitude = spectrum[binId];
+                        maxId = binId;
                     }
                 }
 
@@ -301,7 +295,8 @@ namespace AnalysisPrograms.Recognizers
                 var debugPlot = new Plot(this.DisplayName, normalisedScores, normalisedThreshold);
                 var debugPlots = new List<Plot> { debugPlot, plot };
                 var debugImage = DisplayDebugImage(sonogram, potentialEvents, debugPlots, hits);
-                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.BaseName), this.Identifier, "png", "DebugSpectrogram"));
+                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.BaseName), 
+                                                        this.Identifier, "png", "DebugSpectrogram"));
                 debugImage.Save(debugPath.FullName);
             }
 
@@ -320,6 +315,17 @@ namespace AnalysisPrograms.Recognizers
             };
         }
 
+
+        /// <summary>
+        /// Algorithm2: 
+        /// 1: Loop through spgm and find dominant freq bin and its amplitude in each frame
+        /// 2: If frame passes amplitude test, then calculate a similarity cosine score for that frame. Simlarity score is wrt a template matrix.
+        /// 3: If similarity score exceeds threshold, then assign event score based on the amplitude. 
+        /// </summary>
+        /// <param name="recording"></param>
+        /// <param name="configuration"></param>
+        /// <param name="outputDirectory"></param>
+        /// <returns></returns>
         internal RecognizerResults Algorithm2(AudioRecording recording, dynamic configuration, DirectoryInfo outputDirectory)
         {
             double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 0.1;
@@ -328,9 +334,9 @@ namespace AnalysisPrograms.Recognizers
             {
                 WindowSize = 256,
                 NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = noiseReductionParameter
+                NoiseReductionParameter = noiseReductionParameter,
+                WindowOverlap = 0.0
             };
-            config.WindowOverlap = 0.0;
 
             // now construct the standard decibel spectrogram WITH noise removal
             // get frame parameters for the analysis
@@ -342,16 +348,16 @@ namespace AnalysisPrograms.Recognizers
             int rowCount = spg.GetLength(0);
             int colCount = spg.GetLength(1);
 
-            double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
+            //double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
             int frameSize = colCount * 2;
             int frameStep = frameSize; // this default = zero overlap
-            double frameDurationInSeconds = frameSize / (double)sampleRate;
+            //double frameDurationInSeconds = frameSize / (double)sampleRate;
             double frameStepInSeconds = frameStep / (double)sampleRate;
             double framesPerSec = 1 / frameStepInSeconds;
-            double herzPerBin = sampleRate / 2 / (double)colCount;
+            double herzPerBin = sampleRate / 2.0 / colCount;
 
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            //string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            //string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             // ## THREE THRESHOLDS ---- only one of these is given to user.
             // minimum dB to register a dominant freq peak. After noise removal
@@ -362,14 +368,14 @@ namespace AnalysisPrograms.Recognizers
             double eventSimilarityThreshold = (double?)configuration["EventSimilarityThreshold"] ?? 0.2;
 
             // IMPORTANT: The following frame durations assume a sampling rate = 22050 and window size of 512.
-            int minFrameWidth = 2;
-            int maxFrameWidth = 5;  // this is larger than actual to accomodate an echo.
+            //int minFrameWidth = 2;
+            //int maxFrameWidth = 5;  // this is larger than actual to accomodate an echo.
             //double minDuration = (minFrameWidth - 1) * frameStepInSeconds;
             //double maxDuration = maxFrameWidth * frameStepInSeconds;
 
 
             // minimum number of frames and bins covering the call
-            // The PlatyplectrumOrnatum call has a duration of 3-5 frames GIVEN THE ABOVE SETTINGS!
+            // The PlatyplectrumOrnatum call has a duration of 3-5 frames GIVEN THE ABOVE SAMPLING and WINDOW SETTINGS!
             int callFrameDuration;
             int callBinWidth;
             // Get the call templates and their dimensions
@@ -379,7 +385,7 @@ namespace AnalysisPrograms.Recognizers
 
             const int hzBuffer = 100;
             int dominantBin = (int)Math.Round(dominantFrequency / herzPerBin);
-            int binBuffer = (int)Math.Round(hzBuffer / herzPerBin); ;
+            int binBuffer = (int)Math.Round(hzBuffer / herzPerBin);
             int dominantBinMin = dominantBin - binBuffer;
             int dominantBinMax = dominantBin + binBuffer;
             int bottomBin = 1;
@@ -390,20 +396,20 @@ namespace AnalysisPrograms.Recognizers
             double[] amplitudeScores = new double[rowCount];
             double[,] hits = new double[rowCount, colCount];
 
-            // loop through all spectra/rows of the spectrogram - NB: the spectrogram is rotated to vertical, i.e. rows = spectra, columns= freq bins
-            // mark the hits in hitMatrix
+            // loop through all spectra/rows of the spectrogram
+            // NB: the spectrogram is rotated to vertical, i.e. rows = spectra, columns= freq bins mark the hits in hitMatrix
             for (int s = 1; s < rowCount - callFrameDuration; s++)
             {
                 double[] spectrum = MatrixTools.GetRow(spg, s);
                 double maxAmplitude = -Double.MaxValue;
                 int maxId = 0;
                 // loop through bandwidth of call and look for dominant frequency
-                for (int binID = 8; binID <= dominantBinMax; binID++)
+                for (int binId = 8; binId <= dominantBinMax; binId++)
                 {
-                    if (spectrum[binID] > maxAmplitude)
+                    if (spectrum[binId] > maxAmplitude)
                     {
-                        maxAmplitude = spectrum[binID];
-                        maxId = binID;
+                        maxAmplitude = spectrum[binId];
+                        maxId = binId;
                     }
                 }
 
@@ -414,7 +420,7 @@ namespace AnalysisPrograms.Recognizers
                 //now calculate similarity with template 
                 var locality = MatrixTools.Submatrix(spg, s-1, bottomBin, s + callFrameDuration - 2, topBin); // s-1 because first row of template is zeros.
                 int localMaxBin = maxId - bottomBin;
-                double callAmplitude = (locality[1, localMaxBin] + locality[2, localMaxBin] + locality[3, localMaxBin]) / (double)3;
+                double callAmplitude = (locality[1, localMaxBin] + locality[2, localMaxBin] + locality[3, localMaxBin]) / 3.0;
 
                 // use the following lines to write out call templates for use as recognizer
                 //double[] columnSums = MatrixTools.SumColumns(locality);
@@ -434,8 +440,7 @@ namespace AnalysisPrograms.Recognizers
 
             // loop through all spectra/rows of the spectrogram for a second time
             // NB: the spectrogram is rotated to vertical, i.e. rows = spectra, columns= freq bins
-            // We now have a list of potential hits. This needs to be filtered.
-            // mark the hits in hitMatrix
+            // We now have a list of potential hits. This needs to be filtered. Mark the hits in hitMatrix
             var events = new List<AcousticEvent>();
 
             for (int s = 1; s < rowCount - callFrameDuration; s++)
