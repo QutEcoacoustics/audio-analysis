@@ -196,6 +196,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 int value = (int)Math.Round(scoreValues[x] * trackHeight);
                 for (int y = 1; y < value; y++)
                 {
+                    if (y > trackHeight) break;
                     trackImage.SetPixel(x, trackHeight - y, Color.Black);
                 }
             }
