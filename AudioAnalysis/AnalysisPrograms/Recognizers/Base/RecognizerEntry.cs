@@ -44,9 +44,9 @@ namespace AnalysisPrograms.Recognizers.Base
             // The MULTI-RECOGNISER
             // Canetoad, Litoria fallax and Limnodynastes convex.
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\MultiLabel\Gympie_CaneToad_Lnasuta_Lfallax.wav";
-            string outputPath    = @"G:\SensorNetworks\Output\Frogs\Multirecognizer_2016December";
-            string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Ecosounds.MultiRecognizer.yml";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\MultiLabel\Gympie_CaneToad_Lnasuta_Lfallax.wav";
+            //string outputPath    = @"G:\SensorNetworks\Output\Frogs\Multirecognizer_2016December";
+            //string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Ecosounds.MultiRecognizer.yml";
 
             //Ardea insignis (The White-bellied Herron
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\Heron_commonCall_downsampled.wav";
@@ -54,11 +54,11 @@ namespace AnalysisPrograms.Recognizers.Base
             //string recordingPath = @"E:\SensorNetworks\WavFiles\Bhutan\waklaytar_site3_1379_347093_20160404_061431_130_0.wav";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\Both call types of Heron.wav";
             //string recordingPath = @"E:\SensorNetworks\WavFiles\Bhutan\waklaytar_site3_1379_347103_20160329_133319_130_0.wav";
-            //string recordingPath = @"E:\SensorNetworks\WavFiles\Bhutan\waklaytar_site3_1379_347093_20160404_062131_40_0.wav";
-            //string outputPath = @"G:\SensorNetworks\Output\Bhutan\";
+            string recordingPath = @"E:\SensorNetworks\WavFiles\Bhutan\waklaytar_site3_1379_347093_20160404_062131_40_0.wav";
+            string outputPath = @"G:\SensorNetworks\Output\Bhutan\";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TsheringDema\WBH12HOURS-D_20160403_120000_238min.wav";
             //string outputPath = @"C:\SensorNetworks\Output\TsheringDema";
-            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.ArdeaInsignis.yml";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.ArdeaInsignis.yml";
 
             // Path from Anthony 
             //"C:\Users\Administrator\Desktop\Sensors Analysis\ParallelExecutables\2\AnalysisPrograms.exe" audio2csv - source "Y:\Tshering\WBH_Walaytar\201505 - second deployment\Site2_Waklaytar\24Hours WBH_28032016\WBH12HOURS-D_20160403_120000.wav" - config "C:\Users\Administrator\Desktop\Sensors Analysis\Towsey.ArdeaInsignis.Parallel.yml" - output "Y:\Results\2016Oct31-145124\Tshering\WBH_Walaytar\201505 - second deployment\Site2_Waklaytar\24Hours WBH_28032016\WBH12HOURS-D_20160403_120000.wav" - tempdir F:\2 - m True - n
