@@ -149,6 +149,8 @@ namespace AnalysisPrograms.Recognizers
             double[,] hits = new double[rowCount, colCount];
 
             const int maxTemplateLength = 20;
+            //gapBetweenPeaks + templateEndPadding
+            const int templateEndPadding = 7;
             const int templateOffset = 14;
             const int minimumGap = 4;
             const int maximumGap = 100;
@@ -169,7 +171,7 @@ namespace AnalysisPrograms.Recognizers
             var endTemplate = GetEndTemplateForAlgorithm2();
 
             // now search for peaks that are the correct distance apart.
-            for (int i = 2; i < amplitudeArray.Length - maxTemplateLength; i++)
+            for (int i = 2; i < amplitudeArray.Length - maxTemplateLength - templateEndPadding; i++)
             {
                 if (!peakArray[i]) continue;
 
@@ -195,11 +197,11 @@ namespace AnalysisPrograms.Recognizers
                     if (start < 0) start = 0;
                     var endLocality = DataTools.Subarray(amplitudeArray, start, endTemplate.Length); 
                     double endScore = DataTools.CosineSimilarity(endLocality, endTemplate);
-                    for (int t = -templateOffset; t < (endTemplate.Length- templateOffset); t++)
+                    for (int to = -templateOffset; to < (endTemplate.Length- templateOffset); to++)
                     {
-                        if (endScore > amplitudeScores[i + t])
+                        if (endScore > amplitudeScores[i + to])
                         {
-                            amplitudeScores[i + t] = endScore;
+                            amplitudeScores[i + to] = endScore;
                             //hits[i, minBin] = 10;
                         }
                     }
@@ -212,7 +214,7 @@ namespace AnalysisPrograms.Recognizers
                 }
 
                 // Get the start template which depends on distance to next peak.
-                var startTemplate = GetTemplateForAlgorithm2(distanceToNextPeak);
+                var startTemplate = GetTemplateForAlgorithm2(distanceToNextPeak, templateEndPadding);
 
                 // now calculate similarity of locality with the startTemplate 
                 var locality = DataTools.Subarray(amplitudeArray, i-2, startTemplate.Length); // i-2 because first two places should be zero.
@@ -311,9 +313,9 @@ namespace AnalysisPrograms.Recognizers
         }
 
 
-        public static double[] GetTemplateForAlgorithm2(int gapBetweenPeaks)
+        public static double[] GetTemplateForAlgorithm2(int gapBetweenPeaks, int templateEndPadding)
         {
-            int templateLength = gapBetweenPeaks + 7;
+            int templateLength = gapBetweenPeaks + templateEndPadding;
             var template = new double[templateLength];
             template[2] = 1.0;
             template[3] = 1.0;
