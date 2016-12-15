@@ -252,6 +252,7 @@
     <Compile Include="Recognizers\CriniaTinnula_OBSOLETE.cs" />
     <Compile Include="Recognizers\IctalurusFurcatus.cs" />
     <Compile Include="Recognizers\LewiniaPectoralis.cs" />
+    <Compile Include="Recognizers\LitoriaFreycineti.cs" />
     <Compile Include="Recognizers\LitoriaWatjulumensis.cs" />
     <Compile Include="Recognizers\LitoriaBicolor.cs" />
     <Compile Include="Recognizers\PlatyplectrumOrnatum.cs" />

@@ -1,19 +1,19 @@
 ---
-AnalysisName: Towsey.LitoriaFallax
-SpeciesName: Litoria fallax
-AbbreviatedSpeciesName: L.fallax
+AnalysisName: Stark.LitoriaFreycineti
+SpeciesName: Litoria freycineti
+AbbreviatedSpeciesName: L.freycineti
 
 # min and max of the freq band to search
-MinHz: 3800          
-MaxHz: 5100
+MinHz: 1400          
+MaxHz: 1900
 # duration of DCT in seconds 
-DctDuration: 0.15
+DctDuration: 0.10
 # minimum acceptable value of a DCT coefficient
-DctThreshold: 0.45
+DctThreshold: 0.60
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
-MinOcilFreq: 45     
-MaxOcilFreq: 150
+MinOcilFreq: 90     
+MaxOcilFreq: 120
 # Minimum and maximum duration for the length of a true call.
 MinDuration: 0.04
 MaxDuration: 0.8

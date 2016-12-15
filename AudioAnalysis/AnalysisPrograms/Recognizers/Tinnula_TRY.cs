@@ -205,7 +205,7 @@ namespace AnalysisPrograms.Recognizers
                 // Use a simple template for the honk and calculate cosine similarity to the template.
                 // Template has three dominant frequenices.
                 // minimum number of bins covering frequency bandwidth of C. tinnula call// minimum number of bins covering frequency bandwidth of L.convex call
-                int callBinWidth = 11;
+                int callBinWidth = 14;
                 var templates = GetCtinnulaTemplates(callBinWidth);
                 var eventMatrix = MatrixTools.Submatrix(spg, point.X, (avDominantBin - callBinWidth + 2), point.Y, avDominantBin + 1);
                 double eventScore = GetEventScore(eventMatrix, templates);
@@ -302,36 +302,24 @@ namespace AnalysisPrograms.Recognizers
             var templates = new List<double[]>();
             // template 1
             double[] t1 = new double[callBinWidth];
-            t1[0] = 0.5;
-            t1[1] = 1.0;
-            t1[2] = 1.0;
-            t1[3] = 1.0;
+            t1[0] = 0;
+            t1[1] = 0;
+            t1[2] = 0.3;
+            t1[3] = 0.5;
             t1[4] = 1.0;
-            t1[5] = 0;
-            t1[6] = 1.0;
-            t1[7] = 1.0;
-            t1[8] = 1.0;
+            t1[5] = 0.5;
+            t1[6] = 0;
+            t1[7] = 0;
+            t1[8] = 0.5;
             t1[9] = 1.0;
             t1[10] = 0.5;
+            t1[11] = 0.3;
+            t1[12] = 0;
+            t1[13] = 0;
  
             templates.Add(t1);
 
-            // template 2
-            double[] t2 = new double[callBinWidth];
-            t1[0] = 0.5;
-            t1[1] = 0.5;
-            t1[2] = 0.5;
-            t1[3] = 1.0;
-            t1[4] = 1.0;
-            t1[5] = 0;
-            t1[6] = 0;
-            t1[7] = 1.0;
-            t1[8] = 1.0;
-            t1[9] = 0.5;
-            t1[10] = 0.5;
-            templates.Add(t2);
-    
-
+  
 
             //templates.Add(new[] {0.0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0});
 
