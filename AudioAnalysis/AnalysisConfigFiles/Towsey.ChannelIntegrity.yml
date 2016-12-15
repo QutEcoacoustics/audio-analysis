@@ -37,7 +37,7 @@ ParallelProcessing: false
 RequireDateInFilename: false
 
 IndexPropertiesConfig: './IndexPropertiesConfig.yml'
-# No events currently used
-EventThreshold: ~
+
+
 ...
 

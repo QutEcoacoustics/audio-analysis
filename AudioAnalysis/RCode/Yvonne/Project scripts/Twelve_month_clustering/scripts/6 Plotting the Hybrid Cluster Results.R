@@ -2,8 +2,9 @@
 # Author: Yvonne Phillips
 # Date:  24 September 2016
 
-# Use SHIFT, ALT, J to navigate to each of sections or
+# Important!! Use SHIFT, ALT, J to navigate to each of sections or
 # functions
+
 # 1.  ID3 separation plots
 # 2.  Composite spectrogram images 
 # 3.  2 hour plots
@@ -20,14 +21,14 @@ rm(list = ls())
 ID3_values <- read.csv("ID3_values.csv")
 #col <- c("red", "blue", "green", "orange", 
 #         "black", "purple","magenta")
-Jcol <- rep("black",8)
+col <- rep("black",8)
 pch = c(15,20,17,18,16,21,22,23)
 labels <- as.character(seq(12500, 30000, 2500))
 x <- seq(5, 100, 5)
 ylimit <- c(1.1, 2.3)
 xlimit <- c(40,100)
 
-png("ID3_separation_plot.png", height = 600, width = 600)
+png("ID3_distance_plot.png", height = 600, width = 600)
 par(mar=c(3.5, 3.5, 2.8, 1.5), cex=1.5)
 #plot(x,ID3_values[1:20,3], type = "o", 
 #     col=col[1], pch=15, ylim=ylim, las=1)
@@ -38,9 +39,9 @@ par(mar=c(3.5, 3.5, 2.8, 1.5), cex=1.5)
 #par(new=T)
 plot(x,ID3_values[41:60,3], type = "o", 
      col=col, pch=pch[2], ylim=ylimit,
-     xlab = "k2", ylab = "ID3 separation", las=1, 
+     xlab = "k2", ylab = "ID3 distance", las=1, 
      xlim = xlimit, mgp = c(2.1, 0.6, 0))
-mtext("ID3 separation (clustering of 24 hour fingerprints)", side = 3, 
+mtext("ID3 distance (clustering of 24 hour fingerprints)", side = 3, 
       cex = 1.8, line = 1.2)
 mtext("12 days out of 796 days", side = 3, 
       cex = 1.4, line = 0.3)
@@ -237,6 +238,7 @@ for(j in 1:k2_value) {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # remove all objects in the global environment
 rm(list = ls())
+#setwd("C:/Work/Projects/Twelve_month_clustering/Saving_dataset")
 
 # *** Set the cluster set variables
 k1_value <- 25000
@@ -315,12 +317,15 @@ a <- as.data.frame(a)
 z <- which(a$Var1==1000)
 na_reference <- a[z,3]
 
-plot_2hour_files <- function(clust_num) {
-  if(clust_num<10) {
+# function for more compact plots
+plot_2hour_files <- function(clust_num, num_plots) {
+  if(clust_num < 10) {
   png(filename = paste("data/2hour_plots_", k1_value, "_",
                        k2_value,"/2hourPlot_Cluster",
                       "0",clust_num,"_", k1_value, "_", k2_value, 
-                       ".png", sep = ""), width = 800, height = 668, 
+                       ".png", sep = ""), 
+      width = 800, 
+      height = 668, 
       units = "px")
   }
   if(clust_num >= 10) {
@@ -341,22 +346,26 @@ plot_2hour_files <- function(clust_num) {
     (cluster_reference$days_per_period - (cluster_reference$na_reference/120))
   cluster_reference$output <- round(cluster_reference$output,2)
   
-  months <- unique(substr(cluster_list$dates,1,6))
-  for(i in 1:length(months)) {
-    if(substr(months[i],5,6)=="01") {months[i] <- paste("Jan", substr(months[i],1,4), sep=" ")}
-    if(substr(months[i],5,6)=="02") {months[i] <- paste("Feb", substr(months[i],1,4), sep=" ")}
-    if(substr(months[i],5,6)=="03") {months[i] <- paste("Mar", substr(months[i],1,4), sep=" ")}  
-    if(substr(months[i],5,6)=="04") {months[i] <- paste("Apr", substr(months[i],1,4), sep=" ")}  
-    if(substr(months[i],5,6)=="05") {months[i] <- paste("May", substr(months[i],1,4), sep=" ")}
-    if(substr(months[i],5,6)=="06") {months[i] <- paste("Jun", substr(months[i],1,4), sep=" ")}
-    if(substr(months[i],5,6)=="07") {months[i] <- paste("Jul", substr(months[i],1,4), sep=" ")}  
-    if(substr(months[i],5,6)=="08") {months[i] <- paste("Aug", substr(months[i],1,4), sep=" ")}  
-    if(substr(months[i],5,6)=="09") {months[i] <- paste("Sept", substr(months[i],1,4), sep=" ")}
-    if(substr(months[i],5,6)=="10") {months[i] <- paste("Oct", substr(months[i],1,4), sep=" ")}
-    if(substr(months[i],5,6)=="11") {months[i] <- paste("Nov", substr(months[i],1,4), sep=" ")}  
-    if(substr(months[i],5,6)=="12") {months[i] <- paste("Dec", substr(months[i],1,4), sep=" ")}  
+  if(clust_num < ceiling(num_plots/2)) {
+    months <- unique(substr(cluster_list$dates,1,6))
+    for(i in 1:length(months)) {
+      if(substr(months[i],5,6)=="01") {months[i] <- paste("Jan", substr(months[i],1,4), sep=" ")}
+      if(substr(months[i],5,6)=="02") {months[i] <- paste("Feb", substr(months[i],1,4), sep=" ")}
+      if(substr(months[i],5,6)=="03") {months[i] <- paste("Mar", substr(months[i],1,4), sep=" ")}  
+      if(substr(months[i],5,6)=="04") {months[i] <- paste("Apr", substr(months[i],1,4), sep=" ")}  
+      if(substr(months[i],5,6)=="05") {months[i] <- paste("May", substr(months[i],1,4), sep=" ")}
+      if(substr(months[i],5,6)=="06") {months[i] <- paste("Jun", substr(months[i],1,4), sep=" ")}
+      if(substr(months[i],5,6)=="07") {months[i] <- paste("Jul", substr(months[i],1,4), sep=" ")}  
+      if(substr(months[i],5,6)=="08") {months[i] <- paste("Aug", substr(months[i],1,4), sep=" ")}  
+      if(substr(months[i],5,6)=="09") {months[i] <- paste("Sept", substr(months[i],1,4), sep=" ")}
+      if(substr(months[i],5,6)=="10") {months[i] <- paste("Oct", substr(months[i],1,4), sep=" ")}
+      if(substr(months[i],5,6)=="11") {months[i] <- paste("Nov", substr(months[i],1,4), sep=" ")}  
+      if(substr(months[i],5,6)=="12") {months[i] <- paste("Dec", substr(months[i],1,4), sep=" ")}  
+    }
   }
-  
+  if(clust_num > ceiling(num_plots/2)) {
+   months[i] <- "" 
+  }
   started <- seq(1,nrow(cluster_reference),12)
   finished <- started + 11
   
@@ -412,8 +421,112 @@ plot_2hour_files <- function(clust_num) {
   dev.off()
 }
 
-for(i in 1:k2_value){
-  plot_2hour_files(i)  
+# function for long plots
+plot_2hour_files <- function(clust_num, colour) {
+  if(clust_num < 10) {
+    png(filename = paste("data/2hour_plots_", k1_value, "_",
+                         k2_value,"/2hourPlot_Cluster_colour",
+                         "0", clust_num,"_", k1_value, "_", k2_value, 
+                         ".png", sep = ""), 
+        width = 1600, 
+        height = 500, 
+        units = "px")
+  }
+  if(clust_num >= 10) {
+    png(filename = paste("data/2hour_plots_", k1_value, "_",
+                         k2_value,"/2hourPlot_Cluster_colour",
+                         clust_num,"_", k1_value, "_", k2_value, 
+                         ".png", sep = ""), 
+        width = 1600, 
+        height = 500, 
+        units = "px")
+  }
+  # produce a list of when each cluster occured
+  y <- which(a$Var1==clust_num)
+  cluster_reference <- a[y,3]
+  cluster_reference <- cbind(cluster_reference, 
+                             days_per_period,
+                             na_reference)
+  cluster_reference <- as.data.frame(cluster_reference)
+  cluster_reference$output <- cluster_reference$cluster_reference/
+    (cluster_reference$days_per_period - (cluster_reference$na_reference/120))
+  cluster_reference$output <- round(cluster_reference$output,2)
+  
+  months <- unique(substr(cluster_list$dates,1,6))
+  for(i in 1:length(months)) {
+    if(substr(months[i],5,6)=="01") {months[i] <- paste("JAN", substr(months[i],3,4), sep=" ")}
+    if(substr(months[i],5,6)=="02") {months[i] <- paste("FEB", substr(months[i],3,4), sep=" ")}
+    if(substr(months[i],5,6)=="03") {months[i] <- paste("MAR", substr(months[i],3,4), sep=" ")}  
+    if(substr(months[i],5,6)=="04") {months[i] <- paste("APR", substr(months[i],3,4), sep=" ")}  
+    if(substr(months[i],5,6)=="05") {months[i] <- paste("MAY", substr(months[i],3,4), sep=" ")}
+    if(substr(months[i],5,6)=="06") {months[i] <- paste("JUN", substr(months[i],3,4), sep=" ")}
+    if(substr(months[i],5,6)=="07") {months[i] <- paste("JUL", substr(months[i],3,4), sep=" ")}  
+    if(substr(months[i],5,6)=="08") {months[i] <- paste("AUG", substr(months[i],3,4), sep=" ")}  
+    if(substr(months[i],5,6)=="09") {months[i] <- paste("SEP", substr(months[i],3,4), sep=" ")}
+    if(substr(months[i],5,6)=="10") {months[i] <- paste("OCT", substr(months[i],3,4), sep=" ")}
+    if(substr(months[i],5,6)=="11") {months[i] <- paste("NOV", substr(months[i],3,4), sep=" ")}  
+    if(substr(months[i],5,6)=="12") {months[i] <- paste("DEC", substr(months[i],3,4), sep=" ")}  
+  }
+  started <- seq(1,nrow(cluster_reference),12)
+  finished <- started + 11
+  
+  months <- rep(months, 2)
+  #barplot(cluster_reference$output[1:nrow(cluster_reference)/2],
+  #        las=1)
+  num_of_plots <- length(started)
+  max <- max(cluster_reference$output)
+  par(mfrow=c(2,ceiling(num_of_plots/2)), 
+      mar=c(1,1,5,0), oma=c(2,5,2.5,2), xpd = NA,
+      cex.axis=1.6)
+  for(i in 1:num_of_plots) { # num_of_plots should be even
+    # The y-axis labels are plotted for the 1st and 15th plots
+    num1 <- c(1,15)
+    if(i %in% num1) {
+      barplot(cluster_reference$output[started[i]:finished[i]],
+              ylim=c(0, max), col = colour, xlab = "", las=1,
+              cex.axis = 2.4)
+      Axis(side = 1, labels = FALSE, 
+           at = seq.int(0.8, 14, length.out = 12))
+    }
+    num2 <- c(2:14,16:28) 
+    if(i %in% num2) {
+      barplot(cluster_reference$output[started[i]:finished[i]],
+              ylim=c(0,max), col = colour, xlab = "", axes=FALSE)
+      Axis(side = 2, labels=FALSE)
+      Axis(side = 1, labels = FALSE, at = seq.int(0.8, 14, length.out = 12))
+    }
+    mtext(side = 3, paste(months[i]), line = 0.3, cex = 1.6)
+    mtext(side = 1, text = c(as.character(seq(0,24,12))), 
+          at = c(0,7,14), line=0.8, cex = 1.3)
+  }
+  mtext(side = 3, line = -0.5, paste("Cluster ", clust_num,
+                                 "  -  (k1 = ",k1_value,", k2 = ", k2_value,")", 
+                                 sep=""), cex=2, outer = T)
+  mtext(side = 3, line = -2.9, adj = 0,
+        "     Gympie NP", cex= 1.2, outer = T)
+  mtext(side = 3, line = -27, adj = 0,
+        "     Woondum NP", cex= 1.2, outer = T)
+  mtext(side = 2, line = 3,
+        "Average number of minutes in 2 hour period", 
+        cex = 1.6, outer = T)
+  dev.off()
+}
+
+#cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+# grey, orange, lightblue, green, yellow, darkblue, burntorange, purplepink
+
+# colours for each class
+insects <- "#F0E442"
+rain <- "#0072B2"
+wind <- "#56B4E9"
+birds <- "#009E73"
+cicadas <- "#E69F00"
+quiet <- "#999999"
+planes <- "#CC79A7"
+
+cluster <- 48
+for(i in cluster:cluster) {     #k2_value) {
+  plot_2hour_files(i, colour = cicadas)  
 }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -424,9 +537,14 @@ for(i in 1:k2_value){
 # 1. As individual clusters 
 # 2. As agglomerated clusters ie grouping all clusters 
 # classified as the same feature together
+# Choose either ordinary colours (greater range) or
+# colourblind colours (limited range) for the plot
 
 # remove all objects in the global environment
 rm(list = ls())
+
+# choose a colour version to be used in col_func.R 
+version <- "colourblind" # choice: "ordinary" or "colourblind"
 
 # *** Set the cluster set variables
 k1_value <- 25000
@@ -444,7 +562,7 @@ rm(site1, site2)
 start <-  strptime("20150622", format="%Y%m%d")
 finish <-  strptime("20160723", format="%Y%m%d")
 dates <- seq(start, finish, by = "1440 mins")
-any(is.na(dates)) #FALSE
+#any(is.na(dates)) #FALSE
 date.list <- NULL
 for (i in 1:length(dates)) {
   dat <- substr(as.character(dates[i]),1,10)
@@ -505,11 +623,21 @@ if(!exists("col_func", mode="function")) source("scripts/col_func.R")
 # Generate colour list using col_func
 # Note col_func requires a csv file containing customed
 # colour information for each cluster 
-col_func(cluster_colours)
+
+col_func(cluster_colours, version = version)
 
 cluster_list$descpt <- 0
 list <- unique(cluster_colours$Feature)
 list <- as.character(list[1:(length(list)-1)])
+
+rain <- c(59,18,10,54,2,21,38,60)
+wind <- c(42,47,51,56,52,45,8,40,24,19,46,28,9,25,30,20)
+birds <- c(43,37,57,3,58,11,33,15,14,39,4)
+insects <- c(29,17,1,27,22,26)
+cicada <- c(48,44,34,7,12,32,16)
+plane <- c(49,23)
+quiet <- c(13,5,6,53,36,31,50,35,55,41)
+na <- 61
 
 # Add a description column
 for(i in 1:(length(unique(cluster_list$cluster_list))-1)) {
@@ -524,6 +652,33 @@ for(i in 1:(length(unique(cluster_list$cluster_list))-1)) {
 # complete the description column by adding NAs
 a <- which(cluster_list$descpt=="0")
 cluster_list$descpt[a] <- "NA"
+
+if(version=="colourblind") {
+  cluster_colours$Feature <- NULL
+  for(i in 1:61) {
+    if(i %in% rain) {
+      cluster_colours$Feature[i] <- "RAIN"
+    }
+    if(i %in% wind) {
+      cluster_colours$Feature[i] <- "WIND"
+    }
+    if(i %in% birds) {
+      cluster_colours$Feature[i] <- "BIRD"
+    }
+    if(i %in% insects) {
+      cluster_colours$Feature[i] <- "INSECT"
+    }
+    if(i %in% cicada) {
+      cluster_colours$Feature[i] <- "CICADA"
+    }
+    if(i %in% plane) {
+      cluster_colours$Feature[i] <- "PLANE"
+    }
+    if(i %in% na) {
+      cluster_colours$Feature[i] <- "NA"
+    }
+  }
+}
 
 # Find the number of each class 
 num_class <- dataFrame(colClasses=c(a="list", 
@@ -572,14 +727,12 @@ total_wind <- sum(as.numeric(num_class$Percent_total[g]))
 g <- grep("BIRDS", num_class$class)
 h <- grep("MORNING CHORUS", num_class$class)
 total_birds <- sum(as.numeric(num_class$Percent_total[c(g,h)]))
-
 g <- grep("INSECTS", num_class$class)
 h <- grep("QUIET INSECTS", num_class$class)
 total_insects <- sum(as.numeric(num_class$Percent_total[g])) -
   sum(as.numeric(num_class$Percent_total[h]))
 g <- grep("CICADAS", num_class$class)
 total_cicadas <- sum(as.numeric(num_class$Percent_total[g]))
-
 
 # not needed for agg
 #cluster_list$R <- 0
@@ -603,10 +756,10 @@ a <- data.frame(a)
 ref1 <- 1
 ref2 <- (length(list)+1)
 selected_rows <- NULL
+
 i <- 0
 for(i in 1:(nrow(a)/(length(list)+1))) {
   b <- which(a$Freq[ref1:ref2]==max(a$Freq[ref1:ref2]))
-  
   if(length(b)==1) {
     print(b)
     b <- b + ref1 - 1
@@ -626,6 +779,25 @@ dominant_agglomerated_clusters <- a[selected_rows,]
 dominant_agglomerated_clusters <- data.frame(dominant_agglomerated_clusters)
 
 feature_colours <- read.csv("data/datasets/Feature_colours.csv")
+# colours for each class
+insect_col <- "#F0E442"
+rain_col <- "#0072B2"
+wind_col <- "#56B4E9"
+bird_col <- "#009E73"
+cicada_col <- "#E69F00"
+quiet_col <- "#999999"
+plane_col <- "#CC79A7"
+na_col <- "white"
+
+if(version=="colourblind") {
+  feature_colours <- NULL
+  feature_colours$Feature <- c("INSECTS", "BIRDS", "WIND",
+                               "RAIN", "CICADAS", "QUIET",
+                               "PLANE", "NA")
+  feature_colours$colour <- c(insect_col, bird_col, wind_col,
+                              rain_col, cicada_col, quiet_col,
+                              plane_col, na_col)
+}
 
 # Separate cluster_list into sites
 nrow_dom_cluster <- nrow(dominant_agglomerated_clusters)
@@ -635,10 +807,104 @@ dom_agg_cl_woon <- dominant_agglomerated_clusters[(nrow_dom_cluster/2 + 1):
 colnames(dom_agg_cl_gym) <- c("feature", "date", "frequency")
 colnames(dom_agg_cl_woon) <- c("feature", "date", "frequency")
 
+# The factors are simplified for the colourblind version because there
+# are only seven colours + white used
+if(version=="colourblind") {
+  dom_agg_cl_gym_colblind <- dom_agg_cl_gym
+  dom_agg_cl_gym_colblind$feature <- as.character(dom_agg_cl_gym_colblind$feature)
+  a <- which(dom_agg_cl_gym_colblind$feature=="RAIN LIGHT")
+  dom_agg_cl_gym_colblind$feature[a] <- as.character("RAIN")
+  a <- which(dom_agg_cl_gym_colblind$feature=="QUIET FAIRLY")
+  dom_agg_cl_gym_colblind$feature[a] <- as.character("QUIET")
+  a <- which(dom_agg_cl_gym_colblind$feature=="QUIET MOSTLY")
+  dom_agg_cl_gym_colblind$feature[a] <- as.character("QUIET")
+  a <- which(dom_agg_cl_gym_colblind$feature=="WIND MODERATE")
+  dom_agg_cl_gym_colblind$feature[a] <- as.character("WIND")
+  a <- which(dom_agg_cl_gym_colblind$feature=="RAIN MODERATE")
+  dom_agg_cl_gym_colblind$feature[a] <- as.character("RAIN")
+  a <- which(dom_agg_cl_gym_colblind$feature=="QUIET INSECTS")
+  dom_agg_cl_gym_colblind$feature[a] <- as.character("QUIET")
+  a <- which(dom_agg_cl_gym_colblind$feature=="LOW FREQUENCY")
+  dom_agg_cl_gym_colblind$feature[a] <- as.character("PLANES")
+  a <- which(dom_agg_cl_gym_colblind$feature=="WIND STRONG")
+  dom_agg_cl_gym_colblind$feature[a] <- as.character("WIND")
+  a <- which(dom_agg_cl_gym_colblind$feature=="WIND SLIGHT")
+  dom_agg_cl_gym_colblind$feature[a] <- as.character("WIND")
+  a <- which(dom_agg_cl_gym_colblind$feature=="MORNING CHORUS")
+  dom_agg_cl_gym_colblind$feature[a] <- as.character("BIRDS")
+  a <- which(dom_agg_cl_gym_colblind$feature=="WIND VERY STRONG")
+  dom_agg_cl_gym_colblind$feature[a] <- as.character("WIND")
+  a <- which(dom_agg_cl_gym_colblind$feature=="BIRDS LOUD")
+  dom_agg_cl_gym_colblind$feature[a] <- as.character("BIRDS")
+  a <- which(dom_agg_cl_gym_colblind$feature=="RAIN HEAVY")
+  dom_agg_cl_gym_colblind$feature[a] <- as.character("RAIN")
+  dom_agg_cl_gym <- dom_agg_cl_gym_colblind
+  dom_agg_cl_woon_colblind <- dom_agg_cl_woon
+  dom_agg_cl_woon_colblind$feature <- as.character(dom_agg_cl_woon_colblind$feature)
+  a <- which(dom_agg_cl_woon_colblind$feature=="RAIN LIGHT")
+  dom_agg_cl_woon_colblind$feature[a] <- as.character("RAIN")
+  a <- which(dom_agg_cl_woon_colblind$feature=="QUIET FAIRLY")
+  dom_agg_cl_woon_colblind$feature[a] <- as.character("QUIET")
+  a <- which(dom_agg_cl_woon_colblind$feature=="QUIET MOSTLY")
+  dom_agg_cl_woon_colblind$feature[a] <- as.character("QUIET")
+  a <- which(dom_agg_cl_woon_colblind$feature=="WIND MODERATE")
+  dom_agg_cl_woon_colblind$feature[a] <- as.character("WIND")
+  a <- which(dom_agg_cl_woon_colblind$feature=="RAIN MODERATE")
+  dom_agg_cl_woon_colblind$feature[a] <- as.character("RAIN")
+  a <- which(dom_agg_cl_woon_colblind$feature=="QUIET INSECTS")
+  dom_agg_cl_woon_colblind$feature[a] <- as.character("QUIET")
+  a <- which(dom_agg_cl_woon_colblind$feature=="LOW FREQUENCY")
+  dom_agg_cl_woon_colblind$feature[a] <- as.character("PLANES")
+  a <- which(dom_agg_cl_woon_colblind$feature=="WIND STRONG")
+  dom_agg_cl_woon_colblind$feature[a] <- as.character("WIND")
+  a <- which(dom_agg_cl_woon_colblind$feature=="WIND SLIGHT")
+  dom_agg_cl_woon_colblind$feature[a] <- as.character("WIND")
+  a <- which(dom_agg_cl_woon_colblind$feature=="MORNING CHORUS")
+  dom_agg_cl_woon_colblind$feature[a] <- as.character("BIRDS")
+  a <- which(dom_agg_cl_woon_colblind$feature=="WIND VERY STRONG")
+  dom_agg_cl_woon_colblind$feature[a] <- as.character("WIND")
+  a <- which(dom_agg_cl_woon_colblind$feature=="BIRDS LOUD")
+  dom_agg_cl_woon_colblind$feature[a] <- as.character("BIRDS")
+  a <- which(dom_agg_cl_woon_colblind$feature=="RAIN HEAVY")
+  dom_agg_cl_woon_colblind$feature[a] <- as.character("RAIN")
+  dom_agg_cl_woon <- dom_agg_cl_woon_colblind
+}
+cum_date <- cumsum(days_per_month)+1
+cum_date <- cum_date[1:(length(cum_date)-1)]
+labels <- unique(dates)[(cum_date)]
+for(i in 1:length(labels)) {
+  if(substr(labels[i],5,6)=="01") {labels[i] <- paste("JAN", substr(labels[i],3,4), sep=" ")}
+  if(substr(labels[i],5,6)=="02") {labels[i] <- paste("FEB", substr(labels[i],3,4), sep=" ")}
+  if(substr(labels[i],5,6)=="03") {labels[i] <- paste("MAR", substr(labels[i],3,4), sep=" ")}  
+  if(substr(labels[i],5,6)=="04") {labels[i] <- paste("APR", substr(labels[i],3,4), sep=" ")}  
+  if(substr(labels[i],5,6)=="05") {labels[i] <- paste("MAY", substr(labels[i],3,4), sep=" ")}
+  if(substr(labels[i],5,6)=="06") {labels[i] <- paste("JUN", substr(labels[i],3,4), sep=" ")}
+  if(substr(labels[i],5,6)=="07") {labels[i] <- paste("JUL", substr(labels[i],3,4), sep=" ")}  
+  if(substr(labels[i],5,6)=="08") {labels[i] <- paste("AUG", substr(labels[i],3,4), sep=" ")}  
+  if(substr(labels[i],5,6)=="09") {labels[i] <- paste("SEP", substr(labels[i],3,4), sep=" ")}
+  if(substr(labels[i],5,6)=="10") {labels[i] <- paste("OCT", substr(labels[i],3,4), sep=" ")}
+  if(substr(labels[i],5,6)=="11") {labels[i] <- paste("NOV", substr(labels[i],3,4), sep=" ")}  
+  if(substr(labels[i],5,6)=="12") {labels[i] <- paste("DEC", substr(labels[i],3,4), sep=" ")}  
+}
+
+# generate labels1 
+labels1 <- NULL
+uniq_dates <- unique(dates)
+for(i in 1:length(uniq_dates)) {
+  lab <- substr(uniq_dates[i],7,8)
+  labels1 <- c(labels1, lab)
+}
+
+shape <- "polygon" # Choices "circle" and "polygon"
+if(shape=="circle") {
+  library(plotrix)
+}
+
 # Using dom_agg_cl_gym and feature_colours
-png("plots/dom_agg_gym_test.png", 
-    width = 5000, height = 5000)
-par(mar=c(2, 2.5, 2, 2.5))
+# This plot takes 3-4 minutes to generate
+png(paste("plots/dom_agg_gym_", version,"_",shape, 
+          ".png", sep = ""), width = 5000, height = 5000)
+par(mar=c(5, 5, 1, 1), xpd=FALSE, oma=c(3,3,0,0))
 # Plot an empty plot with no axes or frame
 plot(c(0, nrow(dom_agg_cl_gym)), 
      c(nrow(dom_agg_cl_gym), 1), 
@@ -651,54 +917,64 @@ for(i in 1:length(feature_colours$Feature)) {
   for(j in a) {
     for(k in a) {
       ref <- i
-      R_code <- intToHex(feature_colours[ref,2])
-      # add padding if necessary
-      if(nchar(R_code)==1) {
-        R_code <- paste("0", R_code, sep="")
+      if(version=="ordinary") {
+        R_code <- intToHex(feature_colours[ref,2])
+        # add padding if necessary
+        if(nchar(R_code)==1) {
+          R_code <- paste("0", R_code, sep="")
+        }
+        G_code <- intToHex(feature_colours[ref,3])
+        if(nchar(G_code)==1) {
+          G_code <- paste("0", G_code, sep="")
+        }
+        B_code <- intToHex(feature_colours[ref,4])
+        if(nchar(B_code)==1) {
+          B_code <- paste("0", B_code, sep="")
+        }
+        col_code <- paste("#",
+                          R_code, 
+                          G_code,
+                          B_code,
+                          sep = "")
       }
-      G_code <- intToHex(feature_colours[ref,3])
-      if(nchar(G_code)==1) {
-        G_code <- paste("0", G_code, sep="")
+      if(version=="colourblind") {
+        col_code <- feature_colours$colour[i]
       }
-      B_code <- intToHex(feature_colours[ref,4])
-      if(nchar(B_code)==1) {
-        B_code <- paste("0", B_code, sep="")
+      if(shape=="polygon") {
+        #polygon(c(k,k,k+1,k+1), c(j,(j-1),(j-1),j),
+        polygon(c(k-1,k-1,k,k), c((j-1),j, j,(j-1)),
+                col=col_code, border = NA)  
       }
-      col_code <- paste("#",
-                        R_code, 
-                        G_code,
-                        B_code,
-                        sep = "")
-      #polygon(c(k,k,k+1,k+1), c(j,(j-1),(j-1),j),
-      polygon(c(k-1,k-1,k,k), c((j-1),j, j,(j-1)),
-              col=col_code, border = NA)
+      if(shape=="circle") {
+        points(k,j, pch=46, col = col_code, cex=0.3)
+      }
     }
   }
 }
-# Add axes labels (which in this case will be dates)
-at <- seq(12, 4776, by = 12)
-#axis(1, line = -5.5, at = at, #line=NA,
-#     labels = c("2","4","6","8","10","12","14","16","18","20",
-#                "22", "24"), cex.axis=2.1, outer = TRUE,
-#     las=T, pos = NA)
-#at <- seq(0, 1440, by = 10)
-#axis(1, line = -5.5, at = at, tick = TRUE,
-#     labels = FALSE, outer=TRUE)
-abline (v=seq(0, 4776, 12), h=seq(0,4776,12), lty=2, lwd=0.02, xpd=FALSE)
-#at <- seq(0, 1440, by = 120)
-#axis(2, line = 0.01, at = at, 
-#     labels = c("0","2","4","6","8","10",
-#                "12","14","16","18","20",
-#                "22", "24"), cex.axis=2.1, las=T, pos=NA)
-#at <- seq(0, 1440, by = 10)
-#axis(2, line = 0.01, at = at, tick = TRUE,
-#     labels = FALSE, pos=NA)
+at <- seq(0, (nrow(dom_agg_cl_gym)-1), 12)
+# Add first of the month dates on both axes
+axis(side = 1, line = -8.8, at = at[cum_date+2], las=1, 
+     labels= labels, cex.axis = 5, cex.lab = 5, tick = F, 
+     lwd = 0)
+axis(side = 2, line = -10, at = at[cum_date+2], las=1, 
+     labels= labels, cex.axis = 5, cex.lab = 5, tick = F,
+     lwd = 0)
+# Add ticks on both axes
+axis(side = 1, line = -12.5, at = at, las=1, 
+     labels= labels1, cex.axis = 0.8, cex.lab = 0.8, tick = T)
+axis(side = 2, line = -12.5, at = (at + 0.5), las=1, 
+     labels= labels1, cex.axis = 0.8, cex.lab = 0.8, tick = T)
+# Add vertical and horizontal lines
+par(xpd=FALSE)
+abline(v = at[cum_date], lty = 2, lwd = 0.8)
+abline(h = (at[cum_date] + 0.5), lty = 2, lwd = 0.8)
 dev.off()
 
-# Using dom_agg_cl_gym and feature_colours
-png("plots/dom_agg_woon_test.png", 
-    width = 5000, height = 5000)
-par(mar=c(2, 2.5, 2, 2.5))
+# Using dom_agg_cl_woon and feature_colours
+# This plot takes 3-4 minutes to generate
+png(paste("plots/dom_agg_woon_", version,"_",shape, 
+          ".png", sep = ""), width = 5000, height = 5000)
+par(mar=c(5, 5, 1, 1), xpd=FALSE, oma=c(3,3,0,0))
 # Plot an empty plot with no axes or frame
 plot(c(0, nrow(dom_agg_cl_woon)), 
      c(nrow(dom_agg_cl_woon), 1), 
@@ -711,48 +987,57 @@ for(i in 1:length(feature_colours$Feature)) {
   for(j in a) {
     for(k in a) {
       ref <- i
-      R_code <- intToHex(feature_colours[ref,2])
-      # add padding if necessary
-      if(nchar(R_code)==1) {
-        R_code <- paste("0", R_code, sep="")
+      if(version=="ordinary") {
+        R_code <- intToHex(feature_colours[ref,2])
+        # add padding if necessary
+        if(nchar(R_code)==1) {
+          R_code <- paste("0", R_code, sep="")
+        }
+        G_code <- intToHex(feature_colours[ref,3])
+        if(nchar(G_code)==1) {
+          G_code <- paste("0", G_code, sep="")
+        }
+        B_code <- intToHex(feature_colours[ref,4])
+        if(nchar(B_code)==1) {
+          B_code <- paste("0", B_code, sep="")
+        }
+        col_code <- paste("#",
+                          R_code, 
+                          G_code,
+                          B_code,
+                          sep = "")
       }
-      G_code <- intToHex(feature_colours[ref,3])
-      if(nchar(G_code)==1) {
-        G_code <- paste("0", G_code, sep="")
+      if(version=="colourblind") {
+        col_code <- feature_colours$colour[i]
       }
-      B_code <- intToHex(feature_colours[ref,4])
-      if(nchar(B_code)==1) {
-        B_code <- paste("0", B_code, sep="")
+      if(shape=="polygon") {
+        #polygon(c(k,k,k+1,k+1), c(j,(j-1),(j-1),j),
+        polygon(c(k-1,k-1,k,k), c((j-1),j, j,(j-1)),
+                col=col_code, border = NA)  
       }
-      col_code <- paste("#",
-                        R_code, 
-                        G_code,
-                        B_code,
-                        sep = "")
-      #polygon(c(k,k,k+1,k+1), c(j,(j-1),(j-1),j),
-      polygon(c(k-1,k-1,k,k), c((j-1),j, j,(j-1)),
-              col=col_code, border = NA)
+      if(shape=="circle") {
+        points(k,j, pch=46, col = col_code, cex=0.3)
+      }
     }
   }
 }
-# Add axes labels (which in this case will be dates)
-at <- seq(12, 4776, by = 12)
-#axis(1, line = -5.5, at = at, #line=NA,
-#     labels = c("2","4","6","8","10","12","14","16","18","20",
-#                "22", "24"), cex.axis=2.1, outer = TRUE,
-#     las=T, pos = NA)
-#at <- seq(0, 1440, by = 10)
-#axis(1, line = -5.5, at = at, tick = TRUE,
-#     labels = FALSE, outer=TRUE)
-abline (v=seq(0, 4776, 12), h=seq(0,4776,12), lty=2, lwd=0.02, xpd=FALSE)
-#at <- seq(0, 1440, by = 120)
-#axis(2, line = 0.01, at = at, 
-#     labels = c("0","2","4","6","8","10",
-#                "12","14","16","18","20",
-#                "22", "24"), cex.axis=2.1, las=T, pos=NA)
-#at <- seq(0, 1440, by = 10)
-#axis(2, line = 0.01, at = at, tick = TRUE,
-#     labels = FALSE, pos=NA)
+at <- seq(0, (nrow(dom_agg_cl_gym)-1), 12)
+# Add first of the month dates on both axes
+axis(side = 1, line = -8.8, at = at[cum_date+2], las=1, 
+     labels= labels, cex.axis = 5, cex.lab = 5, tick = F, 
+     lwd = 0)
+axis(side = 2, line = -10, at = at[cum_date+2], las=1, 
+     labels= labels, cex.axis = 5, cex.lab = 5, tick = F,
+     lwd = 0)
+# Add ticks on both axes
+axis(side = 1, line = -12.5, at = at, las=1, 
+     labels= labels1, cex.axis = 0.8, cex.lab = 0.8, tick = T)
+axis(side = 2, line = -12.5, at = (at + 0.5), las=1, 
+     labels= labels1, cex.axis = 0.8, cex.lab = 0.8, tick = T)
+# Add vertical and horizontal lines
+par(xpd=FALSE)
+abline(v = at[cum_date], lty = 2, lwd = 0.8)
+abline(h = (at[cum_date] + 0.5), lty = 2, lwd = 0.8)
 dev.off()
 
 # Separate the site lists
@@ -1068,7 +1353,7 @@ if(!exists("col_func", mode="function")) source("scripts/col_func.R")
 # Generate colour list using col_func
 # Note col_func requires a csv file containing customed
 # colour information for each cluster 
-col_func(cluster_colours)
+col_func(cluster_colours, version = "ordinary")
 
 # Name the colours
 cols <- structure(cols, names=c(1:(length(cols)-1),"1000"))
@@ -1370,7 +1655,8 @@ if(!exists("col_func", mode="function")) source("scripts/col_func.R")
 # Generate colour list using col_func
 # Note col_func requires a csv file containing customed
 # colour information for each cluster 
-col_func(cluster_colours)
+# version is either 'ordinary' or 'colourblind'
+col_func(cluster_colours, version = "ordinary")
 
 # Generate and save the cluster diel plots
 for (k in 1:2) {
@@ -1381,10 +1667,9 @@ for (k in 1:2) {
   interval <- 1440
   end <- start + as.difftime(days, units="days")
   dates <- seq(from=start, by=interval*60, to=end)
-  
-  png(filename = paste("plots/Cluster_plot_",site[k],"_", type,"_", index, ".png", sep = ""),
+  png(filename = paste("plots/Cluster_plot_ordinary",site[k],"_", type,"_", index, ".png", sep = ""),
       width = 2000, height = 1000, units = "px")
-  par(mar=c(2, 2.5, 2, 2.5))
+  par(mar=c(2, 3.4, 2, 3.4), mgp = c(3,0.8,0))
   # Plot an empty plot with no axes or frame
   plot(c(0,1440), c(398,1), type = "n", axes=FALSE, 
        frame.plot=FALSE,
@@ -1394,7 +1679,7 @@ for (k in 1:2) {
         paste("Cluster plot - ", site[k]," ", format(dates[1], "%d %B %Y")," - ", 
               format(dates[length(dates)-1], "%d %B %Y"), 
               sep=""), 
-        cex=1.8)
+        cex=2)
   # Create the sub-heading
   mtext(side=3, line = -1.5, 
         paste(type, " Indices: ", 
@@ -1443,30 +1728,32 @@ for (k in 1:2) {
                   "6 am","8 am","10 am",
                   "12","2 pm","4 pm","6 pm",
                   "8 pm","10 pm","12 pm"), 
-       cex.axis=1.4, line = -2.6)
+       cex.axis=1.8, line = -2.6)
   # plot the left axes
   axis(side = 2, at = first_of_each_month, tick = FALSE, 
        labels=format(dates[first_of_month],"%b %Y"), 
-       cex.axis=1.3, las=1, line = -5)
+       cex.axis=1.6, las=1, line = -5)
   axis(side = 2, at = c(days), tick = FALSE, 
        labels=format(dates[1],"%d %b %Y"), 
-       cex.axis=1.3, las=1, line = -5)
+       cex.axis=1.6, las=1, line = -5)
   # plot the left axes
   axis(side = 4, at = first_of_each_month, tick = FALSE, 
        labels=format(dates[first_of_month],"%b %Y"), 
-       cex.axis=1.3, las=1, line = -5)
+       cex.axis=1.6, las=1, line = -5)
   axis(side = 4, at = c(days), tick = FALSE, 
        labels=format(dates[1],"%d %b %Y"), 
-       cex.axis=1.3, las=1, line = -5)
+       cex.axis=1.6, las=1, line = -5)
   
   at <- seq(0, 1440, 240)
+  
   # add the indices names to the plot
-  indices <- colnames(indices_all)
-  j <- days - (days - (length(indices)*8))/2
-  for(i in 1:length(indices)) {
-    text(65, j, indices[i], cex = 1)
-    j <- j - 8 
-  }
+  #indices <- colnames(indices_all)
+  #j <- days - (days - (length(indices)*8))/2
+  #for(i in 1:length(indices)) {
+  #  text(65, j, indices[i], cex = 1)
+  #  j <- j - 8 
+  #}
+  
   # draw yellow dotted line to show civil-dawn
   for(i in length(civ_dawn):1) {
     lines(c(civ_dawn+1), c(length(civ_dawn):1),  
@@ -1487,5 +1774,309 @@ for (k in 1:2) {
     lines(c(sunset+1), c(length(sunset):1),  
           lwd=0.4, lty="16", col="yellow")
   }
+  dev.off()
+}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# 6. Original one day dot matrix plots ------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Description:  Plots clusters in each minute 
+#               period across days
+# 1. As individual clusters 
+# 2. As agglomerated clusters ie grouping all clusters 
+# classified as the same feature together
+# Choose either ordinary colours (greater range) or
+# colourblind colours (limited range) for the plot
+
+# remove all objects in the global environment
+rm(list = ls())
+
+# choose a colour version to be used in col_func.R 
+version <- "colourblind" # choice: "ordinary" or "colourblind"
+
+# *** Set the cluster set variables
+k1_value <- 25000
+k2_value <- 60
+
+cluster_list <- read.csv(paste("data/datasets/chosen_cluster_list_",
+                               k1_value, "_", k2_value, ".csv", sep=""), header = T)
+
+site1 <- rep("GympieNP", nrow(cluster_list)/2)
+site2 <- rep("WoondumNP", nrow(cluster_list)/2)
+site <- c(site1, site2)
+rm(site1, site2)
+
+# generate a sequence of dates
+start <-  strptime("20150622", format="%Y%m%d")
+finish <-  strptime("20160723", format="%Y%m%d")
+dates <- seq(start, finish, by = "1440 mins")
+#any(is.na(dates)) #FALSE
+date.list <- NULL
+for (i in 1:length(dates)) {
+  dat <- substr(as.character(dates[i]),1,10)
+  date.list <- c(date.list, dat)
+}
+
+# Convert dates to YYYYMMDD format
+for (i in 1:length(dates)) {
+  x <- "-"
+  date.list[i] <- gsub(x, "",date.list[i])  
+}
+dates <- date.list
+rm(date.list)
+# duplicate dates 1440 times
+dates <- rep(dates, each = 1440)
+dates <- rep(dates, 2)
+# Add site and dates columns to dataframe
+cluster_list <- cbind(cluster_list, site, dates)
+
+# determine the number of days in each month at each site
+days_per_month <- NULL
+year_month <- unique(substr(cluster_list$dates,1,6))
+for(i in 1:length(year_month)) {
+  count <- which(substr(cluster_list$dates, 1, 6)==year_month[i])
+  count <- length(count)/1440
+  days_per_month <- c(days_per_month, count/2)
+}
+days_per_period <- rep(days_per_month, each =12)
+days_per_period <- rep(days_per_period, 2)
+
+# Check for col_func in globalEnv otherwise source function
+if(!exists("col_func", mode="function")) source("scripts/col_func.R")
+
+# Generate colour list using col_func
+# Note col_func requires a csv file containing customed
+# colour information for each cluster 
+
+col_func(cluster_colours, version = version)
+
+cluster_list$descpt <- 0
+list <- unique(cluster_colours$Feature)
+list <- as.character(list[1:(length(list)-1)])
+
+rain <- c(59,18,10,54,2,21,38,60)
+wind <- c(42,47,51,56,52,45,8,40,24,19,46,28,9,25,30,20)
+birds <- c(43,37,57,3,58,11,33,15,14,39,4)
+insects <- c(29,17,1,27,22,26)
+cicada <- c(48,44,34,7,12,32,16)
+plane <- c(49,23)
+quiet <- c(13,5,6,53,36,31,50,35,55,41)
+na <- 61
+
+# Add a description column
+for(i in 1:(length(unique(cluster_list$cluster_list))-1)) {
+  # Obtain a list of clusters corresponding to the 
+  # first feature in the list
+  a <- which(as.character(cluster_colours$Feature)==list[i])
+  for(j in 1:length(a)) {
+    a1 <- which(cluster_list$cluster_list==a[j])  
+    cluster_list[a1,5] <- as.character(list[i])
+  }
+}
+# complete the description column by adding NAs
+a <- which(cluster_list$descpt=="0")
+cluster_list$descpt[a] <- "NA"
+
+if(version=="colourblind") {
+  cluster_colours$Feature <- NULL
+  for(i in 1:61) {
+    if(i %in% rain) {
+      cluster_colours$Feature[i] <- "RAIN"
+    }
+    if(i %in% wind) {
+      cluster_colours$Feature[i] <- "WIND"
+    }
+    if(i %in% birds) {
+      cluster_colours$Feature[i] <- "BIRD"
+    }
+    if(i %in% insects) {
+      cluster_colours$Feature[i] <- "INSECT"
+    }
+    if(i %in% cicada) {
+      cluster_colours$Feature[i] <- "CICADA"
+    }
+    if(i %in% plane) {
+      cluster_colours$Feature[i] <- "PLANE"
+    }
+    if(i %in% na) {
+      cluster_colours$Feature[i] <- "NA"
+    }
+  }
+}
+
+feature_colours <- read.csv("data/datasets/Feature_colours.csv")
+# colours for each class
+insect_col <- "#F0E442"
+rain_col <- "#0072B2"
+wind_col <- "#56B4E9"
+bird_col <- "#009E73"
+cicada_col <- "#E69F00"
+quiet_col <- "#999999"
+plane_col <- "#CC79A7"
+na_col <- "white"
+
+if(version=="colourblind") {
+  feature_colours <- NULL
+  feature_colours$Feature <- c("INSECTS", "BIRDS", "WIND",
+                               "RAIN", "CICADAS", "QUIET",
+                               "PLANE", "NA")
+  feature_colours$colour <- c(insect_col, bird_col, wind_col,
+                              rain_col, cicada_col, quiet_col,
+                              plane_col, na_col)
+}
+
+#
+cluster_list$col <- NULL
+unique_description <- unique(cluster_list$descpt)
+# The factors are simplified for the colourblind version because there
+# are only seven colours + white used
+cluster_list$class <- "0"
+cluster_list$col <- "0"
+if(version=="colourblind") {
+  a <- which(cluster_list$descpt=="BIRDS")
+  cluster_list$class[a] <- as.character("BIRDS")
+  cluster_list$col[a] <- bird_col
+  a <- which(cluster_list$descpt=="NA")
+  cluster_list$class[a] <- as.character("NA")
+  cluster_list$col[a] <- na_col
+  a <- which(cluster_list$descpt=="CICADAS")
+  cluster_list$class[a] <- as.character("CICADAS")
+  cluster_list$col[a] <- cicada_col
+  a <- which(cluster_list$descpt=="QUIET VERY")
+  cluster_list$class[a] <- as.character("QUIET")
+  cluster_list$col[a] <- quiet_col
+  a <- which(cluster_list$descpt=="QUIET/planes")
+  cluster_list$class[a] <- as.character("QUIET")
+  cluster_list$col[a] <- quiet_col
+  a <- which(cluster_list$descpt=="INSECTS")
+  cluster_list$class[a] <- as.character("INSECTS")
+  cluster_list$col[a] <- insect_col
+  a <- which(cluster_list$descpt=="RAIN LIGHT")
+  cluster_list$class[a] <- as.character("RAIN")
+  cluster_list$col[a] <- rain_col
+  a <- which(cluster_list$descpt=="QUIET FAIRLY")
+  cluster_list$class[a] <- as.character("QUIET")
+  cluster_list$col[a] <- quiet_col
+  a <- which(cluster_list$descpt=="QUIET MOSTLY")
+  cluster_list$class[a] <- as.character("QUIET")
+  cluster_list$col[a] <- quiet_col
+  a <- which(cluster_list$descpt=="WIND MODERATE")
+  cluster_list$class[a] <- as.character("WIND")
+  cluster_list$col[a] <- wind_col
+  a <- which(cluster_list$descpt=="RAIN MODERATE")
+  cluster_list$class[a] <- as.character("RAIN")
+  cluster_list$col[a] <- rain_col
+  a <- which(cluster_list$descpt=="QUIET INSECTS")
+  cluster_list$class[a] <- as.character("QUIET")
+  cluster_list$col[a] <- quiet_col
+  a <- which(cluster_list$descpt=="LOW FREQUENCY")
+  cluster_list$class[a] <- as.character("PLANES")
+  cluster_list$col[a] <- plane_col
+  a <- which(cluster_list$descpt=="WIND STRONG")
+  cluster_list$class[a] <- as.character("WIND")
+  cluster_list$col[a] <- wind_col
+  a <- which(cluster_list$descpt=="WIND SLIGHT")
+  cluster_list$class[a] <- as.character("WIND")
+  cluster_list$col[a] <- wind_col
+  a <- which(cluster_list$descpt=="MORNING CHORUS")
+  cluster_list$class[a] <- as.character("BIRDS")
+  cluster_list$col[a] <- bird_col
+  a <- which(cluster_list$descpt=="WIND VERY STRONG")
+  cluster_list$class[a] <- as.character("WIND")
+  cluster_list$col[a] <- wind_col
+  a <- which(cluster_list$descpt=="BIRDS LOUD")
+  cluster_list$class[a] <- as.character("BIRDS")
+  cluster_list$col[a] <- bird_col
+  a <- which(cluster_list$descpt=="RAIN HEAVY")
+  cluster_list$class[a] <- as.character("RAIN")
+  cluster_list$col[a] <- rain_col
+}
+a <- which(cluster_list$site=="GympieNP")
+gym_cluster_list <- cluster_list[a,]
+a <- which(cluster_list$site=="WoondumNP")
+woon_cluster_list <- cluster_list[a,]
+
+# Using dom_agg_cl_gym and feature_colours
+# This plot takes 3-4 minutes to generate
+shape <- "polygon"
+dates1 <- unique(dates)
+site <- "WoondumNP"
+for(l in 41:length(dates1)) {
+  png(paste("plots/daily_dot_matrix/daily_dot_matrix_",site,"_", dates1[l], 
+            ".png", sep = ""), width = 1658, height = 1658)
+  gym_test <- woon_cluster_list[(1440*l-1440+1):(l*1440),]
+  par(mar=c(3, 3, 1, 1))
+  # Plot an empty plot with no axes or frame
+  plot(c(0, 1440), c(1440, 1), 
+       type = "n",axes=FALSE, frame.plot=FALSE,
+       xlab="", ylab="")
+  for(i in 1:length(feature_colours$Feature)) {
+    feature <- as.character(feature_colours$Feature[i])
+    a <- which(gym_test$class==feature)
+    for(j in a) {
+      for(k in a) {
+        ref <- i
+        if(version=="ordinary") {
+          R_code <- intToHex(feature_colours[ref,2])
+          # add padding if necessary
+          if(nchar(R_code)==1) {
+            R_code <- paste("0", R_code, sep="")
+          }
+          G_code <- intToHex(feature_colours[ref,3])
+          if(nchar(G_code)==1) {
+            G_code <- paste("0", G_code, sep="")
+          }
+          B_code <- intToHex(feature_colours[ref,4])
+          if(nchar(B_code)==1) {
+            B_code <- paste("0", B_code, sep="")
+          }
+          col_code <- paste("#",
+                            R_code, 
+                            G_code,
+                            B_code,
+                            sep = "")
+        }
+        if(version=="colourblind") {
+          col_code <- feature_colours$colour[i]
+        }
+        if(shape=="polygon") {
+          polygon(c(k-1,k-1,k,k), c((j-1),j, j,(j-1)),
+                  col=col_code, border = NA)  
+        }
+      }
+    }
+  }
+  # plot title
+  title(paste(site, " ", dates1[l]), cex.main=3, line = -2)
+  # x axis labels
+  at <- seq(120, 1440, by = 120)
+  axis(side = 1, at = at, line = -7, 
+       labels = c("2","4","6","8","10","12","14","16","18","20",
+                  "22", "24"), cex.axis=2.1, outer = TRUE,
+       las=T, pos = NA)
+  # x axis ticks
+  at <- seq(0, 1440, by = 10)
+  axis(1, line = -7, at = at, tick = TRUE,
+       labels = FALSE, outer=TRUE)
+  # vertical and horizontal dotted lines
+  #abline (v=seq(120, 1440, 120), 
+  #        h=seq(120, 1440, 120), 
+  #        lty=2, lwd=0.1)
+  x <- c(seq(120, 1440, 120))
+  y <- c(seq(121,1441, 120))
+  segments(x0 = x, y0 = 0, x1 = x, y1 = 1440,
+           lty = 2, lwd = 0.1)
+  segments(x0 = 0, y0 = y, x1 = 1441, y1 = y,
+           lty = 2, lwd = 0.1)
+  # y axis labels
+  at <- seq(1, 1441, by = 120)
+  axis(2, at = at, line = -4, 
+       labels = c("0","2","4","6","8","10",
+                  "12","14","16","18","20",
+                  "22", "24"), cex.axis=2.1, las=T, pos=NA)
+  # y axis ticks
+  at <- seq(1, 1441, by = 10)
+  axis(2, line = -4, at = at, tick = TRUE,
+       labels = FALSE, pos=NA)
   dev.off()
 }

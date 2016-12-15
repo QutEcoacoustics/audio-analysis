@@ -103,6 +103,10 @@ namespace AnalysisPrograms.Production
                                       new ExceptionStyle() {ErrorCode = 104, PrintUsage = false }
                                   },
                                   {
+                                      typeof(InvalidAudioChannelException),
+                                      new ExceptionStyle() {ErrorCode = 105, PrintUsage = false }
+                                  },
+                                  {
                                       typeof(AnalysisOptionDevilException), 
                                       new ExceptionStyle
                                           {
@@ -215,6 +219,18 @@ namespace AnalysisPrograms.Production
         #region Constructors and Destructors
 
         public InvalidStartOrEndException(string message)
+            : base(message)
+        {
+        }
+
+        #endregion
+    }
+
+    public class InvalidAudioChannelException : Exception
+    {
+        #region Constructors and Destructors
+
+        public InvalidAudioChannelException(string message)
             : base(message)
         {
         }

@@ -2,19 +2,14 @@
 # Author: Yvonne Phillips
 # Date:  16 October 2016
 
-# Description: This code renames files in the folder specified
+# Description: Rename fileNames to newNames
 
 folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\concatOutput"
-myFiles <- list.files(path = folder, recursive = T, full.names = T,
-                      pattern = "*.SpectralRibbon.png")
-# Use this to check that it is doing what you want
-name <- myFiles[1] # store original name 
-myFiles <- myFiles[1]
+fileNames <- list.files(path = folder, recursive = T, full.names = T,
+                        pattern = "*\\.SpectralRib")
 
-newPath <- NULL
-for(i in 1:length(myFiles)) {
-  newPath <- paste(substr(myFiles[i], 1,122), "_",
-                  substr(myFiles[i], 124, nchar(myFiles[i])), 
-                  sep = "")
-  file.rename(myFiles[i], newPath)
-}
+# Replace dot in filename with underscore
+newNames <- gsub(".S", "_S", fileNames, fixed=TRUE)
+
+# rename filename to NewNames
+file.rename(fileNames, newNames)

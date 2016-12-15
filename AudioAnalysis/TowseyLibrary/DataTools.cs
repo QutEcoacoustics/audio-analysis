@@ -4054,36 +4054,40 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="dateString"></param>
         /// <returns></returns>
-  public static DateTime Time_ConvertDateString2DayOfYear(string dateString)
-  {
-      // file name has following structure:  SERF_20130314.SpectralIndices.PivotTable.csv
-      string yr = dateString.Substring(0, 4);
-      string mn = dateString.Substring(4, 2);
-      string dy = dateString.Substring(6, 2);
+  //public static DateTime Time_ConvertDateString2DayOfYear(string dateString)
+  //{
+  //      // file name has following structure:  SERF_20130314.SpectralIndices.PivotTable.csv
+  //      var yr = dateString.Substring(0, 4);
+  //      var mn = dateString.Substring(4, 2);
+  //      var dy = dateString.Substring(6, 2);
 
-      DateTime dt = new DateTime(Int32.Parse(yr), Int32.Parse(mn), Int32.Parse(dy));
-      return dt;
-  }
+  //    var dt = new DateTime(Int32.Parse(yr), Int32.Parse(mn), Int32.Parse(dy));
+  //    return dt;
+  //}
+
   public static string[] MonthNames = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
-  //============================================================================================================================
 
 
-  public static int String2Int(string str)
-  {
-      int int32 = 0;
-      try
-      {
-          int32 = Int32.Parse(str);
-      }
-      catch (System.FormatException ex)
-      {
-          System.LoggedConsole.WriteLine("DataTools.String2Int(string str): WARNING! INVALID INTEGER=" + str);
-          System.LoggedConsole.WriteLine(ex);
-          int32 = 0;
-      }
-      return int32;
-  }
+        /// <summary>
+        /// Assume string has format YYYYMMDD_hhmmss*
+        /// </summary>
+        /// <param name="dateString"></param>
+        /// <returns></returns>
+    public static DateTime Time_ConvertDateString2DateTime(string dateString)
+    {
+        // file name has following structure:  SERF_20130314.SpectralIndices.PivotTable.csv
+        var yr = dateString.Substring(0, 4);
+            var mn = dateString.Substring(4, 2);
+            var dy = dateString.Substring(6, 2);
 
+            var hur = dateString.Substring(9, 2);
+            var min = dateString.Substring(11, 2);
+            var sec = dateString.Substring(13, 2);
+
+        var dt = new DateTime(int.Parse(yr), int.Parse(mn), int.Parse(dy), int.Parse(hur), int.Parse(min), int.Parse(sec));
+        return dt;
+    }
+        //============================================================================================================================
 
 
   //*************************************************************************************************************************************

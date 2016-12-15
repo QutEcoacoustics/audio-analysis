@@ -18,7 +18,7 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
-    using AnalysisPrograms.Recognizers.Base;
+    using Recognizers.Base;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -88,19 +88,16 @@ namespace AnalysisPrograms.Recognizers
             }
             */
 
-
-            // Get a value from the config file - with a backup default
-            int minHz = (int?)configuration[AnalysisKeys.MinHz] ?? 600;
-
-            // Get a value from the config file - with no default, throw an exception if value is not present
-            //int maxHz = ((int?)configuration[AnalysisKeys.MaxHz]).Value;
-
-            // Get a value from the config file - without a string accessor, as a double
-            double someExampleSettingA = (double?)configuration.someExampleSettingA ?? 0.0;
-
-            // common properties
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            //DIFFERENT WAYS to get value from CONFIG file.
+            //Get a value from the config file - with a backup default
+            //      int minHz = (int?)configuration[AnalysisKeys.MinHz] ?? 600;
+            //Get a value from the config file - with no default, throw an exception if value is not present
+            //      int maxHz = ((int?)configuration[AnalysisKeys.MaxHz]).Value;
+            //Get a value from the config file - without a string accessor, as a double
+            //      double someExampleSettingA = (double?)configuration.someExampleSettingA ?? 0.0;
+            //Common properties
+            //      string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            //      string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             RecognizerResults results = Gruntwork(audioRecording, configuration, outputDirectory);
 
@@ -130,15 +127,15 @@ namespace AnalysisPrograms.Recognizers
             int rowCount = spg.GetLength(0);
             int colCount = spg.GetLength(1);
 
-            double epsilon = Math.Pow(0.5, audioRecording.BitsPerSample - 1);
+            //double epsilon = Math.Pow(0.5, audioRecording.BitsPerSample - 1);
             int frameSize = colCount * 2;
             int frameStep = frameSize; // this default = zero overlap
-            double frameDurationInSeconds = frameSize / (double)sampleRate;
+            //double frameDurationInSeconds = frameSize / (double)sampleRate;
             double frameStepInSeconds = frameStep / (double)sampleRate;
             double framesPerSec = 1 / frameStepInSeconds;
-            double herzPerBin = sampleRate / 2 / (double)colCount;
+            double herzPerBin = sampleRate / 2.0 / colCount;
 
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            //string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             // ## THREE THRESHOLDS ---- only one of these is given to user.
@@ -152,8 +149,8 @@ namespace AnalysisPrograms.Recognizers
             // IMPORTANT: The following frame durations assume a sampling rate = 22050 and window size of 512.
             int minFrameWidth = 3;
             int maxFrameWidth = 5;
-            double minDuration = (minFrameWidth - 1) * frameStepInSeconds;
-            double maxDuration = maxFrameWidth * frameStepInSeconds;
+            //double minDuration = (minFrameWidth - 1) * frameStepInSeconds;
+            //double maxDuration = maxFrameWidth * frameStepInSeconds;
 
             // minimum number of bins covering frequency bandwidth of L.convex call
             int callBinWidth = 25;
@@ -186,10 +183,10 @@ namespace AnalysisPrograms.Recognizers
 
             int hzBuffer = 250;
             int dominantBin = (int)Math.Round(dominantFrequency / herzPerBin);
-            int binBuffer = (int)Math.Round(hzBuffer / herzPerBin); ;
+            int binBuffer = (int)Math.Round(hzBuffer / herzPerBin); 
             int dominantBinMin = dominantBin - binBuffer;
             int dominantBinMax = dominantBin + binBuffer;
-            int bandwidth = dominantBinMax - dominantBinMin + 1;
+            //int bandwidth = dominantBinMax - dominantBinMin + 1;
 
             int[] dominantBins = new int[rowCount]; // predefinition of events max frequency
             double[] scores = new double[rowCount]; // predefinition of score array
@@ -203,12 +200,12 @@ namespace AnalysisPrograms.Recognizers
                 double maxAmplitude = -Double.MaxValue;
                 int maxId = 0;
                 // loop through bandwidth of L.onvex call and look for dominant frequency
-                for (int binID = 5; binID < dominantBinMax; binID++)
+                for (int binId = 5; binId < dominantBinMax; binId++)
                 {
-                    if (spectrum[binID] > maxAmplitude)
+                    if (spectrum[binId] > maxAmplitude)
                     {
-                        maxAmplitude = spectrum[binID];
-                        maxId = binID;
+                        maxAmplitude = spectrum[binId];
+                        maxId = binId;
                     }
                 }
 
@@ -271,9 +268,11 @@ namespace AnalysisPrograms.Recognizers
 
                 double startTime = point.X * frameStepInSeconds;
                 double durationTime = eventWidth * frameStepInSeconds;
-                var newEvent = new AcousticEvent(startTime, durationTime, bottomFreqForEvent, topFreqForEvent);
-                newEvent.DominantFreq = avDominantFreq;
-                newEvent.Score = eventScore;
+                var newEvent = new AcousticEvent(startTime, durationTime, bottomFreqForEvent, topFreqForEvent)
+                {
+                    DominantFreq = avDominantFreq,
+                    Score = eventScore
+                };
                 newEvent.SetTimeAndFreqScales(framesPerSec, herzPerBin);
                 newEvent.Name = ""; // remove name because it hides spectral content of the event.
 

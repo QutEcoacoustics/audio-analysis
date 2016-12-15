@@ -78,7 +78,8 @@ plot(x,I3D.average,type = "b",pch=15, ylim = c(1.3,1.85),
      cex=1.3,cex.axis=1.6,cex.main=1.5)
 par(new=TRUE)
 plot(x,I3D.wardD2,type = "b",pch=19,ylim = c(1.3,1.85),
-     yaxt="n",ylab = "",xlab = "k",cex=1.3,cex.axis=1.5)
+     yaxt="n",ylab = "",xlab = "k", xaxt ="n",
+     cex=1.3,cex.axis=1.5)
 legend("bottomright",pch = c(15, 19),
        c("hclust (average)","hclust (ward.D2)"),bty = "n",cex=1.5)
 dev.off()
@@ -309,15 +310,16 @@ dev.off()
 # rose diagrams
 #################################################################
 library(circular)
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j")
-cluster.list <- read.csv("hybrid_clust_knn_17500_3.csv", header = T)
+folder <- "C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j"
+cluster.list <- read.csv(paste(folder,"/hybrid_clust_knn_17500_3.csv",sep = ""), header = T)
 
 #hour.sequence <- rep(rep(seq(0,23.9,0.1), each=6),222)
 hour.sequence <- rep(rep(seq(0,23.99,(1/60)),222))
 
 cluster.list <- cbind(cluster.list, hour.sequence)
 
-dataset <- read.csv("hybrid_clust_knn_17500_3_k30_2hour_full111days.csv",header=T)
+dataset <- read.csv(paste(folder,"/hybrid_clust_knn_17500_3_k30_2hour_full111days.csv",sep = ""),
+                          header=T)
 dates <- unique(dataset$as.character.dates2.)
 dataset$as.character.dates2. <- as.Date(dataset$as.character.dates2., format = "%d/%m/%Y")
 dates1 <- unique(substring(dataset$as.character.dates2.,1,7))

@@ -125,11 +125,11 @@ Output  to  directory: {1}
 
             DirectoryInfo[] searchPaths = { configFile.Directory };
             FileInfo ipConfig = ConfigFile.ResolveConfigFile((string)configuration.IndexPropertiesConfig, searchPaths);
-            LoggedConsole.WriteLine("# IndexProperties Cfg: " + ipConfig);
+            LoggedConsole.WriteLine("# Resolved IndexProperties Cfg: " + ipConfig);
 
             // min score for an acceptable event
             double scoreThreshold = 0.2;
-            if (((double?)configuration[AnalysisKeys.EventThreshold]) != null)
+            if ((double?)configuration[AnalysisKeys.EventThreshold] != null)
             {
                 scoreThreshold = (double)configuration[AnalysisKeys.EventThreshold];
                 Log.Info("Minimum event threshold has been set to " + scoreThreshold);
@@ -198,6 +198,18 @@ Output  to  directory: {1}
                 analysisSettings.SegmentMaxDuration = TimeSpan.FromMinutes(1.0);
                 Log.Warn("Can't read SegmentMaxDuration from config file (exceptions squashed, default value of " + analysisSettings.SegmentMaxDuration + " used)");
             }
+
+            try
+            {
+                int rawOverlap = configuration[AnalysisKeys.SegmentOverlap];
+                analysisSettings.SegmentOverlapDuration = TimeSpan.FromSeconds(rawOverlap);
+            }
+            catch (Exception ex)
+            {
+                analysisSettings.SegmentOverlapDuration = TimeSpan.Zero;
+                Log.Warn("Can't read SegmentOverlapDuration from config file (exceptions squashed, default value of " + analysisSettings.SegmentOverlapDuration + " used)");
+            }
+
 
             // set target sample rate
             try
