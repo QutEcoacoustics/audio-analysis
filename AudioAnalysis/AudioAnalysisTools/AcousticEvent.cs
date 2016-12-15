@@ -1152,24 +1152,16 @@ namespace AudioAnalysisTools
         }//end method ConvertScoreArray2Events()
 
 
-
         /// <summary>
         /// Extracts an array of scores from a list of events.
         /// The events are required to have the passed name.
         /// The events are assumed to contain sufficient info about frame rate in order to populate the array.
-        /// This method is only called when visualising HTK scores
         /// </summary>
         /// <param name="events"></param>
-        /// <param name="frameCount">the size of the array to return</param>
-        /// <param name="windowOffset"></param>
-        /// <param name="targetClass"></param>
-        /// <param name="scoreThreshold"></param>
-        /// <param name="qualityMean"></param>
-        /// <param name="qualitySD"></param>
-        /// <param name="qualityThreshold"></param>
+        /// <param name="arraySize"></param>
+        /// <param name="nameOfTargetEvent"></param>
         /// <returns></returns>
-        public static double[] ExtractScoreArrayFromEvents(List<AcousticEvent> events, int arraySize, string targetName)
-        //public static double[] ExtractScoreArray(List<AcousticEvent> events, string iniFile, int arraySize, string targetName)
+        public static double[] ExtractScoreArrayFromEvents(List<AcousticEvent> events, int arraySize, string nameOfTargetEvent)
         {
             double[] scores = new double[arraySize];
             if ((events == null) || (events.Count == 0)) return scores;
@@ -1177,29 +1169,16 @@ namespace AudioAnalysisTools
             double windowOffset = events[0].FrameOffset;
             double frameRate = 1 / windowOffset; //frames per second
 
-            //for (int i = 0; i < arraySize; i++) scores[i] = Double.NaN; //init to NaNs.
             int count = events.Count;
-
-            //double avScore = 0.0;
-            //double avDuration = 0.0;
-            //double avFrames = 0.0;
-            for (int i = 0; i < count; i++)
+            foreach( AcousticEvent ae in events)
             {
-                if (!events[i].Name.Equals(targetName)) continue; //skip irrelevant events
+                if (!ae.Name.Equals(nameOfTargetEvent)) continue; //skip irrelevant events
 
-                //           double scoreThreshold = config.GetDouble(vocalName + "HTK_THRESHOLD");
-                //           double qualityMean = config.GetDouble(vocalName + "DURATION_MEAN");
-                //           double qualitySD = config.GetDouble(vocalName + "DURATION_SD");
-                //           double qualityThreshold = config.GetDouble("Key_SD_THRESHOLD");
-                int startFrame = (int)(events[i].TimeStart * frameRate);
-                int endFrame = (int)((events[i].TimeStart + events[i].Duration) * frameRate);
-                double frameLength = events[i].Duration * frameRate;
+                int startFrame = (int)(ae.TimeStart * frameRate);
+                int endFrame = (int)((ae.TimeStart + ae.Duration) * frameRate);
 
-                //avScore    += events[i].Score;
-                //avDuration += events[i].Duration;
-                //avFrames   += frameLength;
-
-                for (int s = startFrame; s <= endFrame; s++) scores[s] = events[i].ScoreNormalised;
+                for (int s = startFrame; s <= endFrame; s++)
+                { scores[s] = ae.Score_MaxInEvent; }
             }
             return scores;
         } //end method
