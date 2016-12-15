@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="CriniaTinnula.cs" company="QutBioacoustics">
+// <copyright file="LitoriaFallax.cs" company="QutBioacoustics">
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
 // <summary>
@@ -35,20 +35,19 @@ namespace AnalysisPrograms.Recognizers
     using TowseyLibrary;
 
     /// <summary>
-    /// This is a frog recognizer is designed to detect a short honk (30ms long) that has the structure of stacked harmonics, similar to crow, female koala etc.
+    /// This is a frog recognizer based on the "ribit" or "washboard" template
+    /// It detects ribit type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
     /// 
-    /// Step 1: It detects energy in relevant frequency band.
-    /// 
-    /// This type recognizer was first developed for Crinia tinnula and could be duplicated for other frogs with similar call structure
+    /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs 
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// 
     /// </summary>
-    class CriniaTinnula : RecognizerBase
+    class LitoriaFreycineti : RecognizerBase
     {
-        public override string Author => "Towsey";
+        public override string Author => "Stark";
 
-        public override string SpeciesName => "CriniaTinnula";
+        public override string SpeciesName => "LitoriaFreycineti";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -131,7 +130,7 @@ namespace AnalysisPrograms.Recognizers
                 WindowSize = FrameSize,
                 WindowOverlap = windowOverlap,
                 //NoiseReductionType = NoiseReductionType.NONE,
-                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.1
             };
 
@@ -217,7 +216,7 @@ namespace AnalysisPrograms.Recognizers
                 var sonoConfig2 = new SonogramConfig
                     {
                         SourceFName = recording.BaseName,
-                        WindowSize = 1024,
+                        WindowSize = 128,
                         WindowOverlap = 0,
                         NoiseReductionType = NoiseReductionType.None,
                         //NoiseReductionType = NoiseReductionType.STANDARD,
