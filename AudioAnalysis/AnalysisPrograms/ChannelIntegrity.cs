@@ -7,6 +7,8 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
+using AnalysisPrograms.Production;
+
 namespace AnalysisPrograms
 {
     using System;
@@ -48,7 +50,7 @@ namespace AnalysisPrograms
             // do some sanity checks
             if (recording.WavReader.Channels != 2)
             {
-                throw new InvalidOperationException("The channel integrity analyzer requires exactly two channels");
+                throw new InvalidAudioChannelException($"The channel integrity analyzer requires exactly two channels but {recording.WavReader.Channels} channels found in file ({audioFile.FullName}");
             }
 
 

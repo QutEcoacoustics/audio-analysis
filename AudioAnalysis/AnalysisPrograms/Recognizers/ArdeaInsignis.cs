@@ -149,14 +149,15 @@ namespace AnalysisPrograms.Recognizers
             double[,] hits = new double[rowCount, colCount];
 
             const int maxTemplateLength = 20;
-            const int maxTemplateOffset = 14;
+            //gapBetweenPeaks + templateEndPadding
+            const int templateEndPadding = 7;
+            const int templateOffset = 14;
             const int minimumGap = 4;
-            // the following is a hopeful shot in the dark to stop an array overflow. Have not checked it.
-            // There is no logic to it! 
-            int totalOffset = maxTemplateLength + maxTemplateOffset + minimumGap;
+            const int maximumGap = 100;
+
 
             // first find the amplitude peaks
-            for (int j = 2; j < amplitudeArray.Length - totalOffset; j++)
+            for (int j = 1; j < amplitudeArray.Length - 1; j++)
             {
                 if (amplitudeArray[j] < decibelThreshold) continue;
                 if ((amplitudeArray[j] > amplitudeArray[j - 1]) && (amplitudeArray[j] > amplitudeArray[j + 1]))
@@ -166,9 +167,11 @@ namespace AnalysisPrograms.Recognizers
 
             }
 
+            // get template for end of Herron call
+            var endTemplate = GetEndTemplateForAlgorithm2();
 
             // now search for peaks that are the correct distance apart.
-            for (int i = 2; i < amplitudeArray.Length - maxTemplateLength; i++)
+            for (int i = 2; i < amplitudeArray.Length - maxTemplateLength - templateEndPadding; i++)
             {
                 if (!peakArray[i]) continue;
 
@@ -178,21 +181,27 @@ namespace AnalysisPrograms.Recognizers
 
                 if (distanceToNextPeak < minimumGap)
                 {
-                    //i += minimumGap;
                     continue;
                 }
 
-                int templateOffset = maxTemplateOffset;
+                // skip large gaps
+                if (distanceToNextPeak > maximumGap)
+                {
+                    continue;
+                }
+
+                // check for end of call using end template
                 if (distanceToNextPeak > maxTemplateLength)
                 {
-                    var endTemplate = GetEndTemplateForAlgorithm2();
-                    var endLocality = DataTools.Subarray(amplitudeArray, i - templateOffset, endTemplate.Length); // i-2 because first two places should be zero.
+                    int start = i - templateOffset;
+                    if (start < 0) start = 0;
+                    var endLocality = DataTools.Subarray(amplitudeArray, start, endTemplate.Length); 
                     double endScore = DataTools.CosineSimilarity(endLocality, endTemplate);
-                    for (int t = -templateOffset; t < (endTemplate.Length- templateOffset); t++)
+                    for (int to = -templateOffset; to < (endTemplate.Length- templateOffset); to++)
                     {
-                        if (endScore > amplitudeScores[i + t])
+                        if (endScore > amplitudeScores[i + to])
                         {
-                            amplitudeScores[i + t] = endScore;
+                            amplitudeScores[i + to] = endScore;
                             //hits[i, minBin] = 10;
                         }
                     }
@@ -204,23 +213,13 @@ namespace AnalysisPrograms.Recognizers
                     continue;                  
                 }
 
-                var template = GetTemplateForAlgorithm2(distanceToNextPeak);
+                // Get the start template which depends on distance to next peak.
+                var startTemplate = GetTemplateForAlgorithm2(distanceToNextPeak, templateEndPadding);
 
-                // now calculate similarity of locality with template 
-                //var locality = DataTools.Subarray(amplitudeArray, i - 2, templateLength); // i-2 because first two polaces should be zero.
-                var locality = DataTools.Subarray(amplitudeArray, i-2, template.Length); // i-2 because first two places should be zero.
-                double score = DataTools.CosineSimilarity(locality, template);
-                //double maxScore = 0.0;
-                //foreach (var template in templates)
-                //{
-                //    double score = DataTools.CosineSimilarity(locality, template);
-                //    if (score > maxScore)
-                //    {
-                //        maxScore = score;
-                //    }
-
-                //}
-                for (int t = 0; t < template.Length; t++)
+                // now calculate similarity of locality with the startTemplate 
+                var locality = DataTools.Subarray(amplitudeArray, i-2, startTemplate.Length); // i-2 because first two places should be zero.
+                double score = DataTools.CosineSimilarity(locality, startTemplate);
+                for (int t = 0; t < startTemplate.Length; t++)
                 {
                     if (score > amplitudeScores[i + t])
                     {
@@ -228,7 +227,9 @@ namespace AnalysisPrograms.Recognizers
                         hits[i, minBin] = 10;
                     }
                 }
-            }
+
+            } // loop over peak array
+
 
             var smoothedScores = DataTools.filterMovingAverageOdd(amplitudeScores, 3);
 
@@ -312,9 +313,9 @@ namespace AnalysisPrograms.Recognizers
         }
 
 
-        public static double[] GetTemplateForAlgorithm2(int gapBetweenPeaks)
+        public static double[] GetTemplateForAlgorithm2(int gapBetweenPeaks, int templateEndPadding)
         {
-            int templateLength = gapBetweenPeaks + 7;
+            int templateLength = gapBetweenPeaks + templateEndPadding;
             var template = new double[templateLength];
             template[2] = 1.0;
             template[3] = 1.0;

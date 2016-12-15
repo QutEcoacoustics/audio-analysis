@@ -140,8 +140,13 @@ namespace AnalysisRunner
                     aggregate += segments[index];
 
                     // include overlap
-                    currentSegment.SegmentEndOffset =
-                        startOffset.Add(TimeSpan.FromMilliseconds(aggregate)).Add(settings.SegmentOverlapDuration);
+                    var segmentEndOffset = startOffset.Add(TimeSpan.FromMilliseconds(aggregate)).Add(settings.SegmentOverlapDuration);
+                    // don't allow overflow past desired end point
+                    if (segmentEndOffset > endOffset)
+                    {
+                        segmentEndOffset = endOffset;
+                    }
+                    currentSegment.SegmentEndOffset = segmentEndOffset;
 
                     yield return currentSegment;
                 }

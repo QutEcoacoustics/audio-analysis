@@ -17,8 +17,8 @@ DecibelThreshold: 4.0
 MinPeriod: 0.4
 #MaxPeriod: 1.0
 # Minimum and maximum duration for the length of a true call.
-MinDuration: 4.0
-MaxDuration: 8.0
+MinDuration: 3.0
+MaxDuration: 7.0
 # Event threshold - use this to determine FP / FN trade-off for events.
 EventThreshold: 0.30
 
@@ -33,7 +33,7 @@ ResampleRate: 22050
 # SegmentDuration: units=minutes;    
 SegmentDuration: 1
 # SegmentOverlap: units=seconds;
-SegmentOverlap: 0
+SegmentOverlap: 5
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
 SaveSonogramImages: true

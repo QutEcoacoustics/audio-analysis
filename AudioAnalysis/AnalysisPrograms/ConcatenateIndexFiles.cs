@@ -22,6 +22,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
+using System.Web.UI;
 using Acoustics.Shared.Csv;
 
 namespace AnalysisPrograms
@@ -100,6 +101,12 @@ namespace AnalysisPrograms
             [ArgDescription("Set true only when concatenating more than 24-hours of data into one image - e.g. PNG/Indonesian data.")]
             public bool ConcatenateEverythingYouCanLayYourHandsOn { get; set; }
 
+            [ArgDescription("One or more directories where the RECOGNIZER event scores are located in csv files. This is optional")]
+            public DirectoryInfo[] EventDataDirectories { get; set; }
+
+            [ArgDescription("Used only to get Event Recognizer files.")]
+            public string EventFilePattern { get; set; }
+            
             [ArgDescription("Default = false. For use by software manager only.")]
             internal bool DoTest { get; set; }
             [ArgDescription("Directory containing benchmark TEST files. For use by software manager only.")]
@@ -116,39 +123,67 @@ namespace AnalysisPrograms
         {
             // set the default values here
             var indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
-            var timeSpanOffsetHint = TimeSpan.FromHours(10); // Brisbane time
+            var timeSpanOffsetHint = TimeSpan.FromHours(10); // default = Brisbane time
             bool drawImages = true;
-            bool doTest = false;
+            bool doTest = true;
 
             DateTimeOffset? dtoStart = null;
             DateTimeOffset? dtoEnd = null;
+            DirectoryInfo[] eventDirs = null;
 
+            // The drive: local = C; work = G; home = E
+            string drive = "C";
 
-            // ########################## TESTING OF CONCATENATION 
-            // Test data derived from ZuZZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016. THis teste set up October 2016.
-            // The drive: work = G; home = E
-            string drive = "G";
+            /*
+                        // ########################## TESTING OF CONCATENATION 
+                        // Test data derived from ZuZZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016. THis teste set up October 2016.
+                        // The drive: work = G; home = E
+                        // top level directory
+                        DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\Indonesia_2\\"),
+                                                   };
+                        string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
+                        string testPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\ExpectedOutput\\";
+                        indexPropertiesConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\Concat_TEST_IndexPropertiesConfig.yml");
+                        var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\TEST_SpectrogramFalseColourConfig.yml");
+                        timeSpanOffsetHint = TimeSpan.FromHours(8);
+                        FileInfo sunriseDatafile = null;
+                        doTest = true;
+                        // ########################## TEST 1 CONCATENATION 
+                        //string opFileStem = "Concat_Test1"; // this should be a unique site identifier
+                        //string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test1_Output\\";
+                        //bool concatenateEverythingYouCanLayYourHandsOn = true;
+                        // ########################## TEST 2 CONCATENATION 
+                        string opFileStem = "Concat_Test2";
+                        string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test2_Output\\";
+                        bool concatenateEverythingYouCanLayYourHandsOn = false; // 24 hour blocks only
+                        dtoStart = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
+                        dtoEnd = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
+                        // ########################## END of TEST ARGUMENTS
+            */
+
+            // ################################ CONCATENATE GROOTE DATA 
+            // This data derived from Groote recordings I brought back from JCU, July 2016.
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\Indonesia_2\\"),
-                                       };
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\Frogs\\Canetoad\\2016Oct28-174219 - Michael, Towsey.Indices, #120\\SD Card A"),
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"G:\\SensorNetworks\\OutputDataSets\\GrooteAcousticIndices_Job120\\SD Card A"),
+                                                   };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
-            string testPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\ExpectedOutput\\";
-            indexPropertiesConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\Concat_TEST_IndexPropertiesConfig.yml");
+            string testPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\ExpectedOutput";
             var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\TEST_SpectrogramFalseColourConfig.yml");
-            timeSpanOffsetHint = TimeSpan.FromHours(8);
+            timeSpanOffsetHint = TimeSpan.FromHours(9.5);
             FileInfo sunriseDatafile = null;
-            doTest = true;
-            // ########################## TEST 1 CONCATENATION 
-            //string opFileStem = "Concat_Test1"; // this should be a unique site identifier
-            //string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test1_Output\\";
-            //bool concatenateEverythingYouCanLayYourHandsOn = true;
-            // ########################## TEST 2 CONCATENATION 
-            string opFileStem = "Concat_Test2";
-            string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test2_Output\\";
+            doTest = false;
+            string opFileStem = "ConcatGrooteJCU";
+            string opPath = $"{drive}:\\SensorNetworks\\Output\\Frogs\\Canetoad\\ConcatGroote_Job120";
             bool concatenateEverythingYouCanLayYourHandsOn = false; // 24 hour blocks only
-            dtoStart = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
-            // ########################## END of TEST ARGUMENTS
+            // start and end dates INCLUSIVE
+            dtoStart = new DateTimeOffset(2016, 08, 03, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd   = new DateTimeOffset(2016, 08, 03, 0, 0, 0, TimeSpan.Zero);
+
+            eventDirs = new DirectoryInfo[1];
+            eventDirs[0] = new DirectoryInfo(@"G:\SensorNetworks\OutputDataSets\GrooteCaneToad_Job120\\SD Card A");
+            string eventFilePattern = "*_Towsey.RhinellaMarina.Events.csv";
+
 
 
             //// ########################## MARINE RECORDINGS          
@@ -320,6 +355,9 @@ namespace AnalysisPrograms
                 DrawImages = drawImages,
                 Verbose = true,
                 DoTest = doTest,
+                // following used to add in a recognizer score track
+                EventDataDirectories = eventDirs,
+                EventFilePattern = eventFilePattern,
             };
             throw new NoDeveloperMethodException();
     }
@@ -565,7 +603,7 @@ namespace AnalysisPrograms
                             ImageChrome.With);
                 }
 
-                WriteSpectrumIndicesFiles(resultsDir, opFileStem, analysisType, dictionaryOfSpectralIndices1);
+                WriteSpectralIndexFiles(resultsDir, opFileStem, analysisType, dictionaryOfSpectralIndices1);
 
                 if (arguments.DoTest)
                 {
@@ -613,12 +651,19 @@ namespace AnalysisPrograms
                 }
 
                 // CREATE DAY LEVEL OUTPUT DIRECTORY for this day
-                string dateString = $"{thisday.Year}{thisday.Month:D2}{thisday.Day:D2}";
+                string format = "yyyyMMdd";
+                string dateString = thisday.ToString(format);
                 resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, arguments.FileStemName, dateString));
                 if (!resultsDir.Exists) resultsDir.Create();
 
                 var opFileStem1 = $"{arguments.FileStemName}_{dateString}";
-                //var indicesFile = FilenameHelpers.AnalysisResultPath(resultsDir, opFileStem1, LDSpectrogramStitching.SummaryIndicesStr, LDSpectrogramStitching.CsvFileExt);
+                
+                // Recalculate <thisDay> to include the start time - not just the date. This is for time scale on false-colour spectrograms.
+                DateTimeOffset dt;
+                if (FileDateHelpers.FileNameContainsDateTime(indexFiles[0].Name, out dt, arguments.TimeSpanOffsetHint))
+                {
+                    thisday = dt;
+                } // else <thisday> will not contain the start time of the day.
 
                 // CONCATENATE the SUMMARY INDEX FILES
                 var summaryDict = LDSpectrogramStitching.ConcatenateAllSummaryIndexFiles(indexFiles, resultsDir, indexGenerationData, opFileStem1);
@@ -671,24 +716,57 @@ namespace AnalysisPrograms
                 // DRAW SPECTRAL INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
                 if (arguments.DrawImages)
                 {
-                    Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
-                            subDirectories[0],
-                            resultsDir,
-                            ldSpectrogramConfig,
-                            indexPropertiesConfig,
-                            indexGenerationData,
-                            opFileStem1,
-                            analysisType,
-                            dictionaryOfSpectralIndices2,
-                            /*summaryIndices = */null,
-                            /*indexDistributions*/ null,
-                            siteDescription,
-                            arguments.SunRiseDataFile,
-                            indexErrors,
-                            ImageChrome.With);
+                    LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+                        subDirectories[0],
+                        resultsDir,
+                        ldSpectrogramConfig,
+                        indexPropertiesConfig,
+                        indexGenerationData,
+                        opFileStem1,
+                        analysisType,
+                        dictionaryOfSpectralIndices2,
+                        /*summaryIndices = */null,
+                        /*indexDistributions*/ null,
+                        siteDescription,
+                        arguments.SunRiseDataFile,
+                        indexErrors,
+                        ImageChrome.With);
+
+
+                    if (arguments.EventDataDirectories != null)
+                    {
+                        var candidateFiles = IndexMatrices.GetFilesInDirectories(arguments.EventDataDirectories, arguments.EventFilePattern);
+                        var sortedDictionaryOfEventFiles = FileDateHelpers.FilterFilesForDates(candidateFiles, arguments.TimeSpanOffsetHint);
+                        var eventFiles = LDSpectrogramStitching.GetFileArrayForOneDay(sortedDictionaryOfEventFiles, thisday);
+
+                        //int lineCount = 0;
+                        var output = new List<string>();
+                        foreach (FileInfo file in eventFiles)
+                        {
+                            var lines = FileTools.ReadTextFile(file.FullName);
+                            lines.RemoveAt(0); // ignore header
+                            output.AddRange(lines);
+                            //lineCount += lines.Count;
+                            //Console.WriteLine($"  # events = {lines.Count}"); 
+                        }
+                        var indexArray = ConcatenateIndexFiles.ConvertEventsToSummaryIndices(output);
+
+                        double[] normalisedScores;
+                        double normalisedThreshold;
+                        DataTools.Normalise(indexArray, 2, out normalisedScores, out normalisedThreshold);
+                        //var plot = new Plot("Cane Toad", normalisedScores, normalisedThreshold);
+                        Image recognizerTrack = ImageTools.DrawGraph("Canetoad events", normalisedScores, 32);
+                        string imageFilePath = Path.Combine(resultsDir.FullName, opFileStem + "_"+ dateString + "__2Maps" + ".png");
+                        Image twoMaps = ImageTools.ReadImage2Bitmap(imageFilePath);
+                        var imageList = new List<Image> { twoMaps, recognizerTrack };
+                        Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
+
+                        string imagePath2 = Path.Combine(resultsDir.FullName, opFileStem + "_" + dateString + ".png");
+                        compositeBmp.Save(imagePath2);
+                    }
                 }
 
-                WriteSpectrumIndicesFiles(subDirectories[0], opFileStem1, analysisType, dictionaryOfSpectralIndices2);
+                WriteSpectralIndexFiles(subDirectories[0], opFileStem1, analysisType, dictionaryOfSpectralIndices2);
 
             } // over days
 
@@ -715,7 +793,7 @@ namespace AnalysisPrograms
         } // Execute()
 
 
-        public static List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, string identifier, Dictionary<string, double[,]> results)
+        public static List<FileInfo> WriteSpectralIndexFiles(DirectoryInfo destination, string fileNameBase, string identifier, Dictionary<string, double[,]> results)
         {
 
             Log.Info("Writing spectral indices");
@@ -847,6 +925,145 @@ namespace AnalysisPrograms
             }
         }
 
+
+
+        public static void ConcatenateAcousticEventFiles(DirectoryInfo[] dataDirs, string pattern, DirectoryInfo outputDirectory, string opFileStem)
+        {
+            //get the csv files
+            FileInfo[] csvFiles = IndexMatrices.GetFilesInDirectories(dataDirs, pattern);
+            int lineCount = 0;
+            var output = new List<string>();
+
+            foreach (FileInfo file in csvFiles)
+            {
+                var lines = FileTools.ReadTextFile(file.FullName);
+                lines.RemoveAt(0);
+                output.AddRange(lines);
+                lineCount += lines.Count;
+                Console.WriteLine($"  # events = {lines.Count}"); // ignore header
+            }
+
+            Console.WriteLine($"Final number of FILES = {csvFiles.Length}");
+            Console.WriteLine($"Final number of lines = {lineCount}");
+            Console.WriteLine($"Final number of lines = {output.Count}");
+
+            var indexArray = ConvertEventsToSummaryIndices(output);
+            Console.WriteLine($"Final number of events  = {indexArray.Sum()}");
+            double maxValue = indexArray.Max();
+            Console.WriteLine($"Max Value in any minute = {maxValue}");
+            indexArray = DataTools.normalise(indexArray);
+
+            Image image = ImageTools.DrawGraph("Canetoad events", indexArray, 100);
+
+            string title = string.Format("Canetoad events: {0}                       Max value={1:f0}", opFileStem, maxValue);
+            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, indexArray.Length);
+
+            string firstFileName = csvFiles[0].Name;
+            DateTimeOffset startTime = DataTools.Time_ConvertDateString2DateTime(firstFileName);
+            var duration = new TimeSpan(0, indexArray.Length, 0);
+
+            int trackHeight = 20;
+            Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(duration, indexArray.Length, trackHeight);
+            //Bitmap timeBmp2 = (Bitmap)timeBmp1.Clone();
+            Bitmap timeBmp2 = Image_Track.DrawTimeTrack(duration, startTime, indexArray.Length, trackHeight);
+
+            var imageList = new List<Image> { titleBar, timeBmp1, image, timeBmp2 };
+            Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
+
+            string imagePath = Path.Combine(outputDirectory.FullName, opFileStem + ".png");
+            compositeBmp.Save(imagePath);
+
+
+        } //ConcatenateAcousticEventFiles
+
+
+        public static double[] ConvertEventsToSummaryIndices(List<string> events)
+        {
+            // Assume that each line in events = one event
+            // assume one minute resolution for events index 
+            TimeSpan? offsetHint = new TimeSpan(9, 0, 0);
+            //int unitTime = 60; // one minute resolution
+
+            // get start and end time from first and last file name
+            string line = events[0];
+            string[] fields = line.Split(',');
+            string fstartFileName = fields[14];
+            //string[] times = fileName.Split('_');
+            //string startOffset = fields[15];
+            DateTimeOffset startTime = DataTools.Time_ConvertDateString2DateTime(fstartFileName);
+
+            // get last event
+            line = events[events.Count-1];
+            fields = line.Split(',');
+            string endFileName = fields[14];
+            DateTimeOffset endTime = DataTools.Time_ConvertDateString2DateTime(endFileName);
+
+            string[] parts = endFileName.Split('_');
+            int addOn = int.Parse(parts[2].Substring(0, parts[2].Length-3));
+            //var addOnTime = new DateTime(0, 0, 0, 0, addOn, 0);
+
+            TimeSpan duration = endTime - startTime;
+            // get whole minutes
+            int minuteCount = addOn + (int)Math.Ceiling(duration.TotalMinutes) + 1;
+
+            // to store event counts
+            var eventsPerUnitTime = new double[minuteCount];
+
+            foreach (var line1 in events)
+            {
+                string[] fieldArray = line1.Split(',');
+                // note: absolute determines what value is used
+                // EventStartSeconds (relative to segment)
+                // StartOffset (relative to recording)
+
+                string fileName = fieldArray[14];
+                DateTimeOffset evTime = DataTools.Time_ConvertDateString2DateTime(fileName);
+                TimeSpan elapsedTime = evTime - startTime;
+
+                parts = fileName.Split('_');
+                int addOn1 = int.Parse(parts[2].Substring(0, parts[2].Length - 3));
+                int minuteId = addOn1 + (int)Math.Round(elapsedTime.TotalMinutes);
+                eventsPerUnitTime[minuteId] ++;
+
+                // Console.WriteLine($"minuteId={minuteId}  elapsedTimeFromStart.Minutes={elapsedTime.TotalMinutes}");
+
+                //double eventStart = ev.StartOffset.TotalSeconds : ev.EventStartSeconds;
+                //var timeUnit = (int)(eventStart / unitTime.TotalSeconds);
+
+                /*
+                // NOTE: eventScore filter replaced with greater then as opposed to not equal to
+                if (eventScore >= 0.0)
+                {
+                    eventsPerUnitTime[timeUnit]++;
+                }
+
+                if (eventScore > scoreThreshold)
+                {
+                    bigEvsPerUnitTime[timeUnit]++;
+                }
+                */
+            }
+
+            /*
+            var indices = new SummaryIndexBase[eventsPerUnitTime.Length];
+
+            for (int i = 0; i < eventsPerUnitTime.Length; i++)
+            {
+                var newIndex = new EventIndex
+                {
+                    StartOffset = unitTime.Multiply(i),
+                    EventsTotal = eventsPerUnitTime[i],
+                    EventsTotalThresholded = bigEvsPerUnitTime[i],
+                    SegmentDuration = absolute ? unitTime : duration
+                };
+
+                indices[i] = newIndex;
+            }
+            */
+
+            //return indices;
+            return eventsPerUnitTime;
+        }
 
     }
 }

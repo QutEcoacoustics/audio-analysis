@@ -267,9 +267,18 @@ namespace AnalysisPrograms
             const string FatalMessage = "FATAL ERROR:\n\t";
 
             var ex = (Exception)unhandledExceptionEventArgs.ExceptionObject;
+
             ExceptionLookup.ExceptionStyle style;
-            
-            bool found = ExceptionLookup.ErrorLevels.TryGetValue(ex.GetType(), out style);            
+            bool found = false;
+            if (ex is AggregateException)
+            {
+                var original = (AggregateException) ex;
+                found = ExceptionLookup.ErrorLevels.TryGetValue(original.InnerException.GetType(), out style);
+            }
+            else
+            {
+                found = ExceptionLookup.ErrorLevels.TryGetValue(ex.GetType(), out style);
+            }
             found = found && style.Handle;
 
             // if found, print message only if usage printing disabled
@@ -339,7 +348,7 @@ namespace AnalysisPrograms
                 //}
             }
 
-            int returnCode = style ==  null ? ExceptionLookup.SpecialExceptionErrorLevel : style.ErrorCode;
+            int returnCode = style?.ErrorCode ?? ExceptionLookup.SpecialExceptionErrorLevel;
 
             // finally return error level
             NoConsole.Log.Info("ERRORLEVEL: " + returnCode);

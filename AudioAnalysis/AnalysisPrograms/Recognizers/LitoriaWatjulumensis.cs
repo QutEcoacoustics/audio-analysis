@@ -156,7 +156,7 @@ namespace AnalysisPrograms.Recognizers
             }
 
             // do a recognizer TEST.
-            if (true)
+            if (false)
             {
                 var testDir = new DirectoryInfo(outputDirectory.Parent.Parent.FullName);
                 TestTools.RecognizerScoresTest(recording.BaseName, testDir, recognizerConfig.AnalysisName, scoreArray);

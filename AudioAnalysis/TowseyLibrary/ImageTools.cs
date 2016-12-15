@@ -2710,6 +2710,55 @@ namespace TowseyLibrary
             return bmp;
         }
 
+        /// <summary>
+        /// Assumes passed data has been normalised in 0,1.
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="normalisedData"></param>
+        /// <param name="imageHeight"></param>
+        /// <returns></returns>
+        public static Image DrawGraph(string label, double[] normalisedData, int imageHeight)
+        {
+            int imageWidth = normalisedData.Length;
+            Pen pen1 = new Pen(Color.White);
+            //Pen pen2 = new Pen(Color.Red);
+            Pen pen3 = new Pen(Color.Wheat);
+            //Pen pen4 = new Pen(Color.Purple);
+            SolidBrush brush = new SolidBrush(Color.Red);
+            Font stringFont = new Font("Arial", 9);
+            //Font stringFont = new Font("Tahoma", 9);
+            //SizeF stringSize = new SizeF();
+
+            Bitmap bmp1 = new Bitmap(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
+            Graphics g1 = Graphics.FromImage(bmp1);
+            g1.Clear(Color.Black);
+
+            //for (int i = 1; i < 10; i++)
+            //{
+            //    int grid = imageWidth * i / 10;
+            //    g1.DrawLine(pen3, grid, height - 1, grid, 0);
+            //}
+            //g1.DrawLine(pen1, 0, height - 1, imageWidth, imageHeight - 1);
+            // draw mode bin and upper percentile bound
+            //g.DrawLine(pen4, modeBin, height - 1, modeBin, 0);
+            //g.DrawLine(pen4, upperBound, height - 1, upperBound, 0);
+
+            for (int b = 0; b < imageWidth; b++)
+            {
+                int X = b;
+                int Y = (int)Math.Ceiling(normalisedData[b] * imageHeight);
+                g1.FillRectangle(brush, X, imageHeight - Y - 1, 1, Y);
+            }
+
+            Bitmap bmp2 = new Bitmap(imageWidth, 20, PixelFormat.Format24bppRgb);
+            Graphics g2 = Graphics.FromImage(bmp2);
+            g2.DrawLine(pen1, 0, bmp2.Height - 1, imageWidth, bmp2.Height - 1);
+            g2.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
+
+            Image[] images = { bmp2, bmp1 };
+            Image bmp = ImageTools.CombineImagesVertically(images);
+            return bmp;
+        }
 
         public static Image DrawGraph(string label, double[] histogram, int imageWidth, int height, int scalingFactor)
         {

@@ -297,7 +297,7 @@ namespace AnalysisPrograms
             cs1.IndexCalculationDuration = dataScale;
             cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
 
-            cs1.spectrogramMatrices = spectra;
+            cs1.SpectrogramMatrices = spectra;
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
                 LoggedConsole.WriteLine("WARNING:  " + fileStem + ":   No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
@@ -393,7 +393,7 @@ namespace AnalysisPrograms
             cs1.BackgroundFilter = backgroundFilter;
             cs1.IndexCalculationDuration = dataScale;
             cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
-            cs1.spectrogramMatrices = spectra;
+            cs1.SpectrogramMatrices = spectra;
 
             Image image1 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap, withChrome);
             TimeSpan fullDuration = TimeSpan.FromSeconds(image1.Width * dataScale.TotalSeconds);
@@ -476,7 +476,7 @@ namespace AnalysisPrograms
             cs1.IndexCalculationDuration = dataScale;
             cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
 
-            cs1.spectrogramMatrices = spectra;
+            cs1.SpectrogramMatrices = spectra;
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
                 LoggedConsole.WriteLine("WARNING:  " + fileStem + ":   No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
