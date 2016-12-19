@@ -114,7 +114,7 @@ namespace AnalysisPrograms.Recognizers.Base
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LitoriaBicolor.yml";
 
             // Litoria caerulea Common green tree frog
-            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Groote\EmeraldRiver_LitoriaCaerulea_20131223_220522.wav";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Groote\EmeraldRiver_LitoriaCaerulea_Lrothii_20131223_220522.wav";
             //string outputPath = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016November";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LitoriaCaerulea.yml";
 
@@ -124,7 +124,8 @@ namespace AnalysisPrograms.Recognizers.Base
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaFallax.yml";
 
             // Litoria nasuta
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Groote\EmeraldRiver_LitoriaNasuta_Lbicolor_20131225_223700_30_0.wav";
+            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\43 Litoria nasuta.mp3";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Groote\EmeraldRiver_LitoriaNasuta_Lbicolor_20131225_223700_30_0.wav";
             string outputPath    = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016December";
             string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaNasuta.yml";
 

@@ -34,7 +34,9 @@ namespace AnalysisPrograms.Recognizers
     /// This is a frog recognizer based on the "croak" or "honk" template. 
     /// The algorithm is similar to L.caerulea without the use of DCT to detect pulse trains.
     /// It detects croak type calls by extracting three features: croak bandwidth, dominant frequency, croak duration.
-    /// It may also look for trains of repeated croaks and set a minimum pulse train duration.
+    /// 
+    /// The Stewart CD recording of L.nasuta exhibits a long pulse train - a DCT could be used to pickup the pulse train.
+    /// However in the recording from Karlina, L.nasuta does not exhibit a long pulse train.
     /// 
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
@@ -170,6 +172,7 @@ namespace AnalysisPrograms.Recognizers
                                                                           freqBinWidth, recognizerConfig.EventThreshold,
                                                                           recognizerConfig.MinCroakDuration, recognizerConfig.MaxCroakDuration);
             // add necesary info into the candidate events
+            double[,] hits = null;
             var prunedEvents = new List<AcousticEvent>();
             foreach (var ae in croakEvents)
             {
@@ -181,6 +184,10 @@ namespace AnalysisPrograms.Recognizers
                 prunedEvents.Add(ae);
             }
 
+
+            /*
+            // DO NOT LOOK FOR  A PULSE TRAIN because recording from Karlina does not have one for L.nasuta.
+
             // With those events that survive the above Array2Events process, we now extract a new array croak scores
             croakScoreArray = AcousticEvent.ExtractScoreArrayFromEvents(prunedEvents, rowCount, recognizerConfig.AbbreviatedSpeciesName);
             DataTools.Normalise(croakScoreArray, decibelThreshold, out normalisedScores, out normalisedThreshold);
@@ -190,7 +197,7 @@ namespace AnalysisPrograms.Recognizers
 
             // Look for oscillations in the difference array
             // duration of DCT in seconds 
-            //croakScoreArray = DataTools.filterMovingAverageOdd(croakScoreArray, 5);
+            croakScoreArray = DataTools.filterMovingAverageOdd(croakScoreArray, 5);
             double dctDuration = recognizerConfig.DctDuration;
             // minimum acceptable value of a DCT coefficient
             double dctThreshold = recognizerConfig.DctThreshold;
@@ -204,7 +211,6 @@ namespace AnalysisPrograms.Recognizers
             var events = AcousticEvent.ConvertScoreArray2Events(dctScores, recognizerConfig.MinHz, recognizerConfig.MaxHz, sonogram.FramesPerSecond,
                                                                           freqBinWidth, recognizerConfig.EventThreshold, 
                                                                           recognizerConfig.MinDuration, recognizerConfig.MaxDuration);
-            double[,] hits = null;
             prunedEvents = new List<AcousticEvent>();
             foreach (var ae in events)
             {
@@ -215,7 +221,8 @@ namespace AnalysisPrograms.Recognizers
                 ae.Name = recognizerConfig.AbbreviatedSpeciesName;
                 prunedEvents.Add(ae);
             }
-
+            var scoresPlot = new Plot(this.DisplayName, dctScores, recognizerConfig.EventThreshold);
+            */
 
             // do a recognizer test.
             if (MainEntry.InDEBUG)
@@ -223,8 +230,8 @@ namespace AnalysisPrograms.Recognizers
                 //TestTools.RecognizerScoresTest(scores, new FileInfo(recording.FilePath));
                 //AcousticEvent.TestToCompareEvents(prunedEvents, new FileInfo(recording.FilePath));
             }
-
-            var scoresPlot = new Plot(this.DisplayName, dctScores, recognizerConfig.EventThreshold);
+            
+            var scoresPlot = new Plot(this.DisplayName, croakScoreArray, recognizerConfig.EventThreshold);
 
 
             if (true)
@@ -235,7 +242,7 @@ namespace AnalysisPrograms.Recognizers
                 DataTools.Normalise(amplitudeArray, decibelThreshold, out normalisedScores, out normalisedThreshold);
                 var amplPlot = new Plot("Band amplitude", normalisedScores, normalisedThreshold);
 
-                var debugPlots = new List<Plot> { scoresPlot, croakPlot2, croakPlot1, amplPlot };
+                var debugPlots = new List<Plot> { scoresPlot, /*croakPlot2,*/ croakPlot1, amplPlot };
                 // NOTE: This DrawDebugImage() method can be over-written in this class.
                 var debugImage = RecognizerBase.DrawDebugImage(sonogram, prunedEvents, debugPlots, hits);
                 var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, SpeciesName, "png", "DebugSpectrogram");
