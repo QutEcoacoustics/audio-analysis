@@ -4,7 +4,7 @@ SpeciesName: Litoria fallax
 AbbreviatedSpeciesName: L.fallax
 
 # min and max of the freq band to search
-MinHz: 3800          
+MinHz: 3800
 MaxHz: 5100
 # duration of DCT in seconds 
 DctDuration: 0.15
@@ -12,7 +12,7 @@ DctDuration: 0.15
 DctThreshold: 0.45
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
-MinOcilFreq: 45     
+MinOcilFreq: 45
 MaxOcilFreq: 150
 # Minimum and maximum duration for the length of a true call.
 MinDuration: 0.04
