@@ -207,7 +207,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             // ####################### DRAW ZOOMED-IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
-            Log.Info("START DRAWING ZOOMED-IN FRAME SPECTROGRAMS");
+            Log.Warn("ZOOMED-IN FRAME SPECTROGRAMS HAVE BEEN DISABLED IN THIS BUILD");
+            /*Log.Info("START DRAWING ZOOMED-IN FRAME SPECTROGRAMS");
 
             TimeSpan dataDuration = TimeSpan.FromTicks(spectra["POW"].GetLength(1) * indexGeneration.IndexCalculationDuration.Ticks);
             var segmentDurationInSeconds = (int)zoomConfig.SegmentDuration.TotalSeconds;
@@ -287,7 +288,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     }
                     
                 }
-            }
+            }*/
 
             Log.Info("Tiling complete");
         }

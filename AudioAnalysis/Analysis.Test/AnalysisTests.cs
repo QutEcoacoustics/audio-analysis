@@ -2,6 +2,7 @@
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
+using AnalysisPrograms.SourcePreparers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Ecosounds.Test.AnalysisPrograms
@@ -12,7 +13,6 @@ namespace Ecosounds.Test.AnalysisPrograms
 
     using global::AnalysisPrograms;
     using Acoustics.Shared;
-    using AnalysisRunner;
     using AnalysisBase;
     using AudioBase;
 

@@ -236,6 +236,18 @@
                             MediaType = MediaTypes.MediaTypeMp3,
                             BitsPerSample = 16
                         }
+                },
+                {
+                    "4min test.mp3",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromSeconds(300.113),
+                            SampleRate = 44100,
+                            ChannelCount = 1,
+                            BitsPerSecond = 128000,
+                            MediaType = MediaTypes.MediaTypeMp3,
+                            BitsPerSample = 16
+                        }
                 }
             };
 

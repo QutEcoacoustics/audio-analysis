@@ -7,6 +7,8 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
+using AnalysisPrograms.SourcePreparers;
+
 namespace AnalysisPrograms.AnalyseLongRecordings
 {
     using System;
@@ -27,9 +29,6 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using AnalysisBase.ResultBases;
 
     using AnalysisPrograms.Production;
-
-    using AnalysisRunner;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
 
