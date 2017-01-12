@@ -1,9 +1,10 @@
-﻿namespace AudioBrowser
+﻿using AnalysisPrograms.SourcePreparers;
+
+namespace AudioBrowser
 {
     using Acoustics.Shared;
     using Acoustics.Tools.Audio;
     using AnalysisBase;
-    using AnalysisRunner;
     using AudioAnalysisTools;
     using AudioBase;
     using log4net;

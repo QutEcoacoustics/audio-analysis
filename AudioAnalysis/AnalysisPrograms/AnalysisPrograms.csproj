@@ -274,6 +274,7 @@
     <Compile Include="Recognizers\LitoriaOlong.cs" />
     <Compile Include="Recognizers\LitoriaFallax.cs" />
     <Compile Include="Recognizers\RhinellaMarina.cs" />
+    <Compile Include="SourcePreparers\LocalSourcePreparer.cs" />
     <Compile Include="SURFAnalysis.cs" />
     <Compile Include="OscillationsGeneric.cs" />
     <Compile Include="DifferenceSpectrogram.cs" />
@@ -340,10 +341,6 @@
     <ProjectReference Include="..\AnalysisBase\AnalysisBase.csproj">
       <Project>{80BC795A-A987-45AB-B29B-76CF190384BA}</Project>
       <Name>AnalysisBase</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AnalysisRunner\AnalysisRunner.csproj">
-      <Project>{EEB8AE89-A07B-4974-8685-88BDCFF22C78}</Project>
-      <Name>AnalysisRunner</Name>
     </ProjectReference>
     <ProjectReference Include="..\AudioAnalysisTools\AudioAnalysisTools.csproj">
       <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>

@@ -18,7 +18,6 @@
 
     using AnalysisBase;
     using AnalysisPrograms;
-    using AnalysisRunner;
     using AudioAnalysisTools;
     using TowseyLibrary;
 

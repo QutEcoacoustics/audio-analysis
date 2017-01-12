@@ -1,22 +1,25 @@
-namespace AnalysisRunner
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Acoustics.Shared;
+using Acoustics.Tools;
+using Acoustics.Tools.Audio;
+using AnalysisBase;
+
+namespace AnalysisPrograms.SourcePreparers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Threading.Tasks;
+    using System.Reflection;
 
-    using Acoustics.Shared;
-    using Acoustics.Tools;
-    using Acoustics.Tools.Audio;
-
-    using AnalysisBase;
+    using log4net;
 
     /// <summary>
     /// Local source file preparer.
     /// </summary>
     public class LocalSourcePreparer : ISourcePreparer
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         /// <summary>
         /// Prepare an audio file. This will be a single segment of a larger audio file, modified based on the analysisSettings.
         /// </summary>
@@ -99,6 +102,31 @@ namespace AnalysisRunner
                 var endOffset = fileSegment.SegmentEndOffset ?? info.Duration.Value;
                 fileSegment.TargetFileDuration = info.Duration.Value;
                 fileSegment.TargetFileSampleRate = info.SampleRate.Value;
+
+                // process time alignment
+                if (fileSegment.Alignment != TimeAlignment.None)
+                {
+                    // FileSegment should have already verified a date will be present
+                    // ReSharper disable once PossibleInvalidOperationException
+                    var startDate = fileSegment.TargetFileStartDate.Value;
+
+                    // if there's a zero second to the time
+                    if (startDate.TimeOfDay.Seconds == 0 && startDate.TimeOfDay.Milliseconds == 0)
+                    {
+                        // then do nothing
+                        Log.Debug("TimeAlignment ignored because start date is already aligned");
+                    }
+                    else
+                    {
+                        // calculate the delta to the next minute
+                        var nextMinute = startDate.Date.AddHours(startDate.Hour).AddMinutes(startDate.Minute);
+                        var delta = nextMinute - startDate;
+
+                        // advance the start offset by the delta
+                        startOffset += delta;
+                        // TODO: BROKEN!!!!!!!!!!!!!!!!!!!!!!
+                    }
+                }
 
                 var fileSegmentDuration = (endOffset - startOffset).TotalMilliseconds;
 

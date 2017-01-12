@@ -27,7 +27,7 @@ namespace AnalysisBase
     /// <summary>
     /// Represents a segment of a target file. It can also store the parent file that a new segment has been derived from. 
     /// A segment is just a stored start and end for a target file - it represents a future, or a request.
-    /// Other functions can take the segment request, cut out the selected ranage, and return a new file segment.
+    /// Other functions can take the segment request, cut out the selected range, and return a new file segment.
     /// New file segments, or so segments that represent a whole file, will not have the segment properties set because they do not represent a request anymore.
     /// </summary>
     public class FileSegment : ICloneable
@@ -41,10 +41,12 @@ namespace AnalysisBase
             /// Try and parse the file's absolute date
             /// </summary>
             Try,
+
             /// <summary>
             /// Parse the file's absolute date and fail if unsuccessful
             /// </summary>
             Required,
+
             /// <summary>
             /// Do no try and parse the file's date at all.
             /// </summary>
@@ -80,6 +82,20 @@ namespace AnalysisBase
                 }
             }
         }
+
+        /// <summary>
+        /// Allow specifying an absolutely aligned (to the nearest minute) file segment.
+        /// Implies `FileDateBeavior.Required`.
+        /// </summary>
+        public FileSegment(FileInfo targetFile, int sampleRate, TimeSpan duration, TimeAlignment alignment) : this(targetFile, sampleRate, duration, FileDateBeavior.Required)
+        {
+            this.Alignment = alignment;
+        }
+
+        /// <summary>
+        /// Gets the style of alignment padding to use - shifts bad start dates to the nearest minute.
+        /// </summary>
+        public TimeAlignment Alignment { get; private set; } = TimeAlignment.None;
 
         /// <summary>
         /// Gets the target file for this file segment.
