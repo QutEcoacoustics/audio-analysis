@@ -1873,38 +1873,6 @@ for(i in 1:(length(unique(cluster_list$cluster_list))-1)) {
     cluster_list[a1,5] <- as.character(list[i])
   }
 }
-# complete the description column by adding NAs
-a <- which(cluster_list$descpt=="0")
-cluster_list$descpt[a] <- "NA"
-
-if(version=="colourblind") {
-  cluster_colours$Feature <- NULL
-  for(i in 1:61) {
-    if(i %in% rain) {
-      cluster_colours$Feature[i] <- "RAIN"
-    }
-    if(i %in% wind) {
-      cluster_colours$Feature[i] <- "WIND"
-    }
-    if(i %in% birds) {
-      cluster_colours$Feature[i] <- "BIRD"
-    }
-    if(i %in% insects) {
-      cluster_colours$Feature[i] <- "INSECT"
-    }
-    if(i %in% cicada) {
-      cluster_colours$Feature[i] <- "CICADA"
-    }
-    if(i %in% plane) {
-      cluster_colours$Feature[i] <- "PLANE"
-    }
-    if(i %in% na) {
-      cluster_colours$Feature[i] <- "NA"
-    }
-  }
-}
-
-feature_colours <- read.csv("data/datasets/Feature_colours.csv")
 # colours for each class
 insect_col <- "#F0E442"
 rain_col <- "#0072B2"
@@ -1915,11 +1883,56 @@ quiet_col <- "#999999"
 plane_col <- "#CC79A7"
 na_col <- "white"
 
+# complete the description column by adding NAs
+a <- which(cluster_list$descpt=="0")
+cluster_list$descpt[a] <- "NA"
+cluster_colours$col <- "0"
+if(version=="colourblind") {
+  cluster_colours$Feature <- NULL
+  for(i in 1:61) {
+    if(i %in% rain) {
+      cluster_colours$Feature[i] <- "RAIN"
+      cluster_colours$col[i] <- rain_col
+    }
+    if(i %in% wind) {
+      cluster_colours$Feature[i] <- "WIND"
+      cluster_colours$col[i] <- wind_col
+    }
+    if(i %in% birds) {
+      cluster_colours$Feature[i] <- "BIRD"
+      cluster_colours$col[i] <- bird_col
+    }
+    if(i %in% insects) {
+      cluster_colours$Feature[i] <- "INSECT"
+      cluster_colours$col[i] <- insect_col
+    }
+    if(i %in% cicada) {
+      cluster_colours$Feature[i] <- "CICADA"
+      cluster_colours$col[i] <- cicada_col
+    }
+    if(i %in% plane) {
+      cluster_colours$Feature[i] <- "PLANE"
+      cluster_colours$col[i] <- plane_col
+    }
+    if(i %in% quiet) {
+      cluster_colours$Feature[i] <- "QUIET"
+      cluster_colours$col[i] <- quiet_col
+    }
+    if(i %in% na) {
+      cluster_colours$Feature[i] <- "NA"
+      cluster_colours$col[i] <- na_col
+    }
+  }
+}
+if(version=="ordinary") {
+feature_colours <- read.csv("data/datasets/Feature_colours.csv")
+}
+
 if(version=="colourblind") {
   feature_colours <- NULL
   feature_colours$Feature <- c("INSECTS", "BIRDS", "WIND",
                                "RAIN", "CICADAS", "QUIET",
-                               "PLANE", "NA")
+                               "PLANES", "NA")
   feature_colours$colour <- c(insect_col, bird_col, wind_col,
                               rain_col, cicada_col, quiet_col,
                               plane_col, na_col)
@@ -1990,6 +2003,9 @@ if(version=="colourblind") {
   a <- which(cluster_list$descpt=="RAIN HEAVY")
   cluster_list$class[a] <- as.character("RAIN")
   cluster_list$col[a] <- rain_col
+  a <- which(cluster_list$descpt=="PLANES")
+  cluster_list$class[a] <- as.character("PLANES")
+  cluster_list$col[a] <- plane_col
 }
 a <- which(cluster_list$site=="GympieNP")
 gym_cluster_list <- cluster_list[a,]
@@ -2001,10 +2017,17 @@ woon_cluster_list <- cluster_list[a,]
 shape <- "polygon"
 dates1 <- unique(dates)
 site <- "WoondumNP"
-for(l in 41:length(dates1)) {
-  png(paste("plots/daily_dot_matrix/daily_dot_matrix_",site,"_", dates1[l], 
+if(site=="GympieNP") {
+  file <- "gym_cluster_list"  
+}
+if(site=="WoondumNP") {
+  file <- "woon_cluster_list"  
+}
+
+for(l in 1:length(dates1)) {
+  png(paste("plots/daily_dot_matrix1/daily_dot_matrix_",site,"_", dates1[l], 
             ".png", sep = ""), width = 1658, height = 1658)
-  gym_test <- woon_cluster_list[(1440*l-1440+1):(l*1440),]
+  df <- get(file)[(1440*l-1440+1):(l*1440),]
   par(mar=c(3, 3, 1, 1))
   # Plot an empty plot with no axes or frame
   plot(c(0, 1440), c(1440, 1), 
@@ -2012,7 +2035,7 @@ for(l in 41:length(dates1)) {
        xlab="", ylab="")
   for(i in 1:length(feature_colours$Feature)) {
     feature <- as.character(feature_colours$Feature[i])
-    a <- which(gym_test$class==feature)
+    a <- which(df$class==feature)
     for(j in a) {
       for(k in a) {
         ref <- i

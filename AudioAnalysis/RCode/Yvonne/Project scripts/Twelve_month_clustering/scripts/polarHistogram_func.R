@@ -1978,6 +1978,30 @@ for(i in a[n]) {
   dev.off()
 }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# finding values of specific peaks in rose plots
+cluster <- "cluster44"
+month <- "i  Feb 16"
+time <- "18:45"
+site <- "WoondumNP"
+gym_df <- df[1:(nrow(df)/2),]
+woon_df <- df[(nrow(df)/2+1):nrow(df),]
+
+if(site=="GympieNP") {
+a <- which(gym_df$score==cluster)
+b <- which(gym_df$family==month)
+c <- which(gym_df$item==time)
+d <- intersect(a,b)
+e <- intersect(d,c)
+}
+if(site=="WoondumNP") {
+  a <- which(woon_df$score==cluster)
+  b <- which(woon_df$family==month)
+  c <- which(woon_df$item==time)
+  d <- intersect(a,b)
+  e <- intersect(d,c)
+  peak_value <- sum(woon_df$value[e])
+}
+
 # viewport experimentation
 #library(grid)
 #
@@ -2011,3 +2035,323 @@ for(i in a[n]) {
 #dateSeq5sec = seq(from=startDate, to=endDate, by="1800 sec")
 
 #times <- substr(dateSeq5sec, 12, 16)
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# association plots -------------------------------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# remove all objects in the global environment
+rm(list = ls())
+
+# read file containing summary of 30 minute segments
+df <- read.csv("polarHistograms/polar_data.csv", header = T)
+
+# convert from 30 minute to 24 hour summaries
+length <- nrow(df)
+gym_df <- df[1:(length/2),]
+woon_df <- df[(1+length/2):length,]
+
+days <- floor(nrow(gym_df)/(48*60))
+clust <- unique(df$score)
+ref <- 1440/30 * length(clust)
+gym_total <- NULL
+for(i in 1:days) {
+  gym_df_day <- gym_df[(1+ref*(i-1)):(i*ref),]
+  for(j in 1:length(clust)) {
+    a <- which(gym_df_day$score==clust[j])
+    gym_df_cl <- gym_df_day[a,]
+    tot <-sum(gym_df_cl$value)
+    gym_total <- c(gym_total, tot)
+  }
+}
+
+woon_total <- NULL
+for(i in 1:days) {
+  woon_df_day <- woon_df[(1+ref*(i-1)):(i*ref),]
+  for(j in 1:length(clust)) {
+    a <- which(woon_df_day$score==clust[j])
+    woon_df_cl <- woon_df_day[a,]
+    tot <-sum(woon_df_cl$value)
+    woon_total <- c(woon_total, tot)
+  }
+}
+
+gym_matrix <- matrix(gym_total, nrow = days, 
+                     ncol = length(clust), byrow = TRUE)
+woon_matrix <- matrix(woon_total, nrow = days, 
+                     ncol = length(clust), byrow = TRUE)
+
+# generate a sequence of dates
+start <-  strptime("20150622", format="%Y%m%d")
+finish <- strptime("20160723", format="%Y%m%d")
+dates <- seq(start, finish, by = "1440 mins")
+any(is.na(dates)) #FALSE
+date.list <- NULL
+for (i in 1:length(dates)) {
+  dat <- substr(as.character(dates[i]),1,10)
+  date.list <- c(date.list, dat)
+}
+# set all dates to "" except the 1st of each month
+a <- which(!substr(date.list, 9, 10)=="01")
+date.list[a] <- ""
+
+# colours for each class
+insect_col <- "#F0E442"
+rain_col <- "#0072B2"
+wind_col <- "#56B4E9"
+bird_col <- "#009E73"
+cicada_col <- "#E69F00"
+quiet_col <- "#999999"
+plane_col <- "#CC79A7"
+na_col <- "white"
+
+library(plotrix)
+n <- 96:1
+x <- cbind(gym_matrix[n,59], 
+           gym_matrix[n,18],
+           gym_matrix[n,10],
+           gym_matrix[n,54]
+)
+y <- cbind( gym_matrix[n, 29],
+  gym_matrix[n, 1],
+  gym_matrix[n, 22],
+  gym_matrix[n, 17], #,
+  gym_matrix[n, 27]
+)
+cor(rowSums(x), rowSums(y))
+#[1] 0.485318 days 1:90; 1,22,17,27 & 59,18,10,54
+#[1] 0.4895683 days 3 to 93; 1,22,17,27 & 59,18,10,54
+#[1] 0.4917921 days 3 to 96; 1,22,17,27 & 59,18,10,54
+#[1] 0.4907895 days 1 to 96; 1,22,17,27 & 59,18,10,54
+#[1] 0.4678658 days 1:90; 29,1,22,17,27 & 59,18,10,54
+
+a <- which(substr(date.list, 9, 10)=="01")
+# repeat date in the next position
+date.list[a+1] <- date.list[a]
+blank_date_list <- rep("", length(date.list))
+b <- max(n)- a + 1
+#library(plotrix)
+#laxlab <- rep("", max(rowSums(x)))
+#raxlab <- rep("", max(rowSums(x)))
+#gap <- 10
+
+#png("plots/Rain_Insect_gympie.png", height = 2000, width = 900)
+#par(xpd=TRUE)
+#pyramid.plot(lx = rowSums(x), rx = rowSums(y), 
+#             labels = blank_date_list[n], 
+#             #laxlab = laxlab, raxlab = laxlab,
+#             gap=gap, unit = "minutes",
+#             top.labels = c("","",""),
+#             lxcol=rain_col, rxcol = insect_col,
+#             labelcex = 0.2, ppmar = c(0, 0.5, 7, 5),
+#             space = 0.3)
+#for(i in 1:length(b)) {
+#  segments(x0=max(rowSums(y)),
+#           y0=b[i],
+#           x1 = -max(rowSums(x)),
+#           y1 = b[i])
+#}
+#abline(h=b)
+#axis(side = 3, at = (seq(0,max(rowSums(x)),50)+gap), 
+#     seq(0, max(rowSums(x)), 50), cex.axis=3.5)
+#axis(side = 3, at = -(seq(0,max(rowSums(x)),50)+gap), 
+#     seq(0, max(rowSums(x)), 50), cex.axis=3.5)
+#for(i in 1:length(a)) {
+#  text(x = max(rowSums(y))-20, y = b[i], 
+#       paste("                   ",
+#             date.list[a[i]],sep = ""), cex = 3, srt=-90) 
+#}
+#title("Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)",line = 3)
+#par(font=2)
+#text(x = (max(rowSums(y))+40), y=mean(n), 
+#  "GympieNP - Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)",
+#      cex = 3.5, srt=-90)
+#par(font=1)
+#text(x = 0,y=length(n)+5.2, 
+#     "Minutes per day", cex = 3.2)
+#dev.off()
+
+# select the days, the order must be reversed
+n <- 96:1
+x <- cbind(woon_matrix[n,59], 
+         woon_matrix[n,18],
+         woon_matrix[n,10],
+         woon_matrix[n,54])
+y <- cbind(woon_matrix[n, 29],
+         woon_matrix[n, 1],
+         woon_matrix[n, 22],
+         woon_matrix[n, 17],
+         woon_matrix[n, 27])
+cor(rowSums(x), rowSums(y))
+#library(plotrix)
+#laxlab <- rep("", max(rowSums(x)))
+#raxlab <- rep("", max(rowSums(x)))
+#gap <- 10
+
+#png("plots/Rain_Insect_woondum.png", height = 2000, width = 900)
+#par(xpd=TRUE)
+#pyramid.plot(lx = rowSums(x), rx = rowSums(y), 
+#             labels = blank_date_list[n], 
+#             #laxlab = laxlab, raxlab = laxlab,
+#             gap=gap, unit = "minutes",
+#             top.labels = c("","",""),
+#             lxcol=rain_col, rxcol = insect_col,
+#             labelcex = 0.2, ppmar = c(0, 0.5, 7, 5),
+#             space = 0.3)
+#for(i in 1:length(b)) {
+#  segments(x0=max(rowSums(y)),
+#           y0=b[i],
+#           x1 = -max(rowSums(x)),
+#           y1 = b[i])
+#}
+#abline(h=b)
+#axis(side = 3, at = (seq(0,max(rowSums(x)),50)+gap), 
+#     seq(0, max(rowSums(x)), 50), cex.axis=3.5)
+#axis(side = 3, at = -(seq(0,max(rowSums(x)),50)+gap), 
+#     seq(0, max(rowSums(x)), 50), cex.axis=3.5)
+#for(i in 1:length(a)) {
+#  text(x = max(rowSums(y))-20, y = b[i], 
+#       paste("                   ",
+#             date.list[a[i]],sep = ""), cex = 3, srt=-90) 
+#}
+#title("Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)",line = 3)
+#par(font=2)
+#text(x = (max(rowSums(y))+60), y=mean(n), 
+#     "WoondumNP - Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)",
+#     cex = 3.5, srt=-90)
+#par(font=1)
+#text(x = 0,y=length(n)+5.2, 
+#     "Minutes per day", cex = 3.2)
+#dev.off()
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+n <- 1:96
+x <- cbind(gym_matrix[n,59], 
+           gym_matrix[n,18],
+           gym_matrix[n,10],
+           gym_matrix[n,54]
+)
+y <- cbind( gym_matrix[n, 29],
+            gym_matrix[n, 1],
+            gym_matrix[n, 22],
+            gym_matrix[n, 17], #,
+            gym_matrix[n, 27]
+)
+cor(rowSums(x), rowSums(y))
+gym_x <- rowSums(x)
+gym_y <- rowSums(y)
+
+max_x <- max(gym_x)
+max_y <- max(gym_y)
+
+# Plot an empty plot with no axes or frame
+png("plots/Rain_Insect_gympie.png", height = 900, width = 2000)
+par(mar=c(1,3,3,0))
+# space between sets not columns
+gap <- 10
+# width and spacing of columns
+width <- 5
+space <- 2
+
+plot(x = c(0,((width+space)*(length(n)-1))), type = "n",
+     y = c(-(max_x+12),(max_y+12)),
+     frame.plot = FALSE, axes = FALSE) 
+ref <- 0
+for(i in 1:length(gym_x)) {
+  rect(ref, -gap, ref+width, -(gym_x[i]+gap), col = rain_col)
+  ref <- ref + (width+space)
+}
+ref <- 0
+for(i in 1:length(gym_x)) {
+  rect(ref, gap, ref+width, gym_y[i]+gap, col = insect_col)
+  ref <- ref + (width+space)
+}
+axis(side = 2, at = (seq(0, max(rowSums(x)),50)+gap), 
+     seq(0, max(rowSums(x)), 50), cex.axis= 3.5, 
+     line = -3.2)
+axis(side = 2, at = -(seq(0,max(rowSums(x)),50)+gap), 
+     seq(0, max(rowSums(x)), 50), cex.axis=3.5, 
+     line = -3.2)
+for(i in 1:length(a)) {
+  text(x = (a[i]*(width+space) + 35), 
+       y = (max(rowSums(y))-20),  
+       paste(date.list[a[i]]),
+       cex = 3.5) 
+}
+abline(v=((a-1)*(width+space)))
+#title("Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)",line = 3)
+par(font=2)
+#text(x = (width+space)*length(n)/2, 
+#     y = (max(rowSums(y)) + 0), cex = 3,
+#     "WoondumNP - Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)" )
+mtext(side = 3, "GympieNP - Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)",
+      outer = F, cex = 3)
+par(font=1)
+mtext(side = 2, "Minutes per day", 
+      cex = 3.2, line = 0.9)
+dev.off()
+
+# Woondum
+n <- 1:96
+x <- cbind(woon_matrix[n,59], 
+           woon_matrix[n,18],
+           woon_matrix[n,10],
+           woon_matrix[n,54]
+)
+y <- cbind( woon_matrix[n, 29],
+            woon_matrix[n, 1],
+            woon_matrix[n, 22],
+            woon_matrix[n, 17], #,
+            woon_matrix[n, 27]
+)
+cor(rowSums(x), rowSums(y))
+woon_x <- rowSums(x)
+woon_y <- rowSums(y)
+
+max_x <- max(woon_x)
+max_y <- max(woon_y)
+png(png("plots/Rain_Insect_woondum.png", height = 900, width = 2000), height = 900, width = 2000)
+par(mar=c(2,3,3,0))
+# space between sets not columns
+gap <- 10
+# width and spacing of columns
+width <- 5
+space <- 2
+
+plot(x = c(0,((width+space)*(length(n)-1))), type = "n",
+     y = c(-(max_x+12),(max_y+12)),
+     frame.plot = FALSE, axes = FALSE) 
+ref <- 0
+for(i in 1:length(woon_x)) {
+  rect(ref, -gap, ref+width, -(woon_x[i]+gap), 
+       col = rain_col)
+  ref <- ref + (width+space)
+}
+ref <- 0
+for(i in 1:length(woon_x)) {
+  rect(ref, gap, ref+width, woon_y[i]+gap, 
+       col = insect_col)
+  ref <- ref + (width+space)
+}
+axis(side = 2, at = (seq(0, max(rowSums(x)),50)+gap), 
+     seq(0, max(rowSums(x)), 50), cex.axis= 3.5, 
+     line = -3.2)
+axis(side = 2, at = -(seq(0,max(rowSums(x)),50)+gap), 
+     seq(0, max(rowSums(x)), 50), cex.axis=3.5, 
+     line = -3.2)
+for(i in 1:length(a)) {
+  text(x = (a[i]*(width+space) + 35), 
+       y = (max(rowSums(y))-20),  
+       paste(date.list[a[i]]),
+       cex = 3) 
+}
+abline(v=((a-1)*(width+space)))
+#title("Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)",line = 3)
+par(font=2)
+#text(x = (width+space)*length(n)/2, 
+#     y = (max(rowSums(y)) + 0), cex = 3,
+#     "WoondumNP - Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)" )
+mtext(side = 3, "WoondumNP - Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)",
+      outer = F, cex = 3)
+par(font=1)
+mtext(side = 2, "Minutes per day", 
+      cex = 3.2, line = 0.9)
+dev.off()
