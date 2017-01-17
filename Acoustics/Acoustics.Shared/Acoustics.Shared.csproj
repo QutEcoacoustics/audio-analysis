@@ -229,6 +229,7 @@
     <Compile Include="Range.cs" />
     <Compile Include="ResultProperty.cs" />
     <Compile Include="SegmentPolicy.cs" />
+    <Compile Include="Span.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
     <Compile Include="StatDescriptive.cs" />
     <Compile Include="StringKeyValueStore.cs" />
