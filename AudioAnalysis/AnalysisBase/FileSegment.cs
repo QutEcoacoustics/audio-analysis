@@ -66,7 +66,26 @@ namespace AnalysisBase
             this.TargetFile = targetFile;
             this.TargetFileSampleRate = sampleRate;
             this.TargetFileDuration = duration;
+            this.Alignment = TimeAlignment.None;
 
+            this.ParseDate();
+        }
+
+        /// <summary>
+        /// Allow specifying an absolutely aligned (to the nearest minute) file segment.
+        /// Implies `FileDateBeavior.Required`.
+        /// </summary>
+        public FileSegment(FileInfo targetFile, TimeAlignment alignment)
+        {
+            this.dateBeavior = alignment == TimeAlignment.None ? FileDateBeavior.Try : FileDateBeavior.Required;
+            this.TargetFile = targetFile;
+            this.Alignment = alignment;
+
+            this.ParseDate();
+        }
+
+        private void ParseDate()
+        {
             if (this.dateBeavior != FileDateBeavior.None)
             {
                 this.triedToParseDate = true;
@@ -76,26 +95,16 @@ namespace AnalysisBase
                 {
                     if (!this.fileStartDate.HasValue)
                     {
-                        throw new InvalidFileDateException(
-                            "A file date is required but one has not been successfully parsed");
+                        throw new InvalidFileDateException("A file date is required but one has not been successfully parsed");
                     }
                 }
             }
         }
 
         /// <summary>
-        /// Allow specifying an absolutely aligned (to the nearest minute) file segment.
-        /// Implies `FileDateBeavior.Required`.
+        /// Gets the style of alignment padding to use - indicates that bad start dates *should* be shifted to the nearest minute.
         /// </summary>
-        public FileSegment(FileInfo targetFile, int sampleRate, TimeSpan duration, TimeAlignment alignment) : this(targetFile, sampleRate, duration, FileDateBeavior.Required)
-        {
-            this.Alignment = alignment;
-        }
-
-        /// <summary>
-        /// Gets the style of alignment padding to use - shifts bad start dates to the nearest minute.
-        /// </summary>
-        public TimeAlignment Alignment { get; private set; } = TimeAlignment.None;
+        public TimeAlignment Alignment { get; private set; }
 
         /// <summary>
         /// Gets the target file for this file segment.

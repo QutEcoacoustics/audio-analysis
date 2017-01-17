@@ -241,7 +241,7 @@
                     "4min test.mp3",
                     new AudioUtilityInfo
                         {
-                            Duration = TimeSpan.FromSeconds(300.113),
+                            Duration = TimeSpan.FromSeconds(240.113),
                             SampleRate = 44100,
                             ChannelCount = 1,
                             BitsPerSecond = 128000,
