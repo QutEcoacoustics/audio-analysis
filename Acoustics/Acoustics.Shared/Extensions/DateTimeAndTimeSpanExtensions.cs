@@ -303,5 +303,25 @@ namespace System
         {
             return TimeSpan.FromTicks((long)(multiplicand.Ticks * multiplier));
         }
+
+        // https://github.com/exceptionless/Exceptionless.DateTimeExtensions/blob/master/src/Exceptionless.DateTimeExtensions/DateTimeOffsetExtensions.cs#L222
+        public static DateTimeOffset Floor(this DateTimeOffset date, TimeSpan interval)
+        {
+            return date.AddTicks(-(date.Ticks % interval.Ticks));
+        }
+
+        // https://github.com/exceptionless/Exceptionless.DateTimeExtensions/blob/master/src/Exceptionless.DateTimeExtensions/DateTimeOffsetExtensions.cs#L226
+        public static DateTimeOffset Ceiling(this DateTimeOffset date, TimeSpan interval)
+        {
+            return date.AddTicks(interval.Ticks - (date.Ticks % interval.Ticks));
+        }
+
+        // https://github.com/exceptionless/Exceptionless.DateTimeExtensions/blob/master/src/Exceptionless.DateTimeExtensions/DateTimeOffsetExtensions.cs#L230
+        public static DateTimeOffset Round(this DateTimeOffset date, TimeSpan roundingInterval)
+        {
+            var halfIntervalTicks = ((roundingInterval.Ticks + 1) >> 1);
+            return date.AddTicks(halfIntervalTicks - ((date.Ticks + halfIntervalTicks) % roundingInterval.Ticks));
+        }
+
     }
 }

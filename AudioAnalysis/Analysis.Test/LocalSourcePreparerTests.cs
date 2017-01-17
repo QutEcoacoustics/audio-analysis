@@ -16,16 +16,16 @@ namespace Analysis.Test
     public class LocalSourcePreparerTests : BaseTest
     {
         private LocalSourcePreparer preparer;
-        private FileInfo sourceFile = TestHelper.GetAudioFile("4min test.mp3");
+        private readonly FileInfo sourceFile = TestHelper.GetAudioFile("4min test.mp3");
         private AnalysisSettings settings;
         private DirectoryInfo testDirectory;
 
         [TestInitialize]
         public void Initialize()
         {
-            testDirectory = TestHelper.GetTempDir();
-            preparer = new LocalSourcePreparer();
-            settings = new AnalysisSettings()
+            this.testDirectory = TestHelper.GetTempDir();
+            this.preparer = new LocalSourcePreparer();
+            this.settings = new AnalysisSettings()
             {
                 SegmentTargetSampleRate = 22050,
                 SegmentDuration = TimeSpan.FromSeconds(60)
@@ -35,16 +35,16 @@ namespace Analysis.Test
         [TestCleanup]
         public void Cleanup()
         {
-            testDirectory.Delete(true);
+            this.testDirectory.Delete(true);
         }
 
         [TestMethod]
         public void ShouldDoBasicSplits()
         {
-            var source = TestHelper.AudioDetails[sourceFile.Name];
-            var fileSegment = new FileSegment(sourceFile, source.SampleRate, source.Duration);
+            var source = TestHelper.AudioDetails[this.sourceFile.Name];
+            var fileSegment = new FileSegment(this.sourceFile, source.SampleRate, source.Duration);
 
-            var analysisSegments = preparer.CalculateSegments(new[] {fileSegment}, settings).ToArray();
+            var analysisSegments = this.preparer.CalculateSegments(new[] {fileSegment}, this.settings).ToArray();
 
             var expected = new[]
             {
@@ -71,12 +71,12 @@ namespace Analysis.Test
         [TestMethod]
         public void ShouldHonorLimits()
         {
-            var source = TestHelper.AudioDetails[sourceFile.Name];
-            var fileSegment = new FileSegment(sourceFile, source.SampleRate, source.Duration);
+            var source = TestHelper.AudioDetails[this.sourceFile.Name];
+            var fileSegment = new FileSegment(this.sourceFile, source.SampleRate, source.Duration);
             fileSegment.SegmentStartOffset = TimeSpan.FromMinutes(1);
             fileSegment.SegmentEndOffset = TimeSpan.FromMinutes(3);
 
-            var analysisSegments = preparer.CalculateSegments(new[] { fileSegment }, settings).ToArray();
+            var analysisSegments = this.preparer.CalculateSegments(new[] { fileSegment }, this.settings).ToArray();
 
             var expected = new[]
             {
@@ -91,12 +91,12 @@ namespace Analysis.Test
         [TestMethod]
         public void ShouldSupportOverlap()
         {
-            var source = TestHelper.AudioDetails[sourceFile.Name];
-            var fileSegment = new FileSegment(sourceFile, source.SampleRate, source.Duration);
+            var source = TestHelper.AudioDetails[this.sourceFile.Name];
+            var fileSegment = new FileSegment(this.sourceFile, source.SampleRate, source.Duration);
 
-            settings.SegmentOverlapDuration = TimeSpan.FromSeconds(30);
+            this.settings.SegmentOverlapDuration = TimeSpan.FromSeconds(30);
 
-            var analysisSegments = preparer.CalculateSegments(new[] { fileSegment }, settings).ToArray();
+            var analysisSegments = this.preparer.CalculateSegments(new[] { fileSegment }, this.settings).ToArray();
 
             var expected = new[]
             {
@@ -114,14 +114,14 @@ namespace Analysis.Test
         [TestMethod]
         public void AbsoluteTimeAlignmentHasNoEffectWhenOffsetIsZero()
         {
-            var source = TestHelper.AudioDetails[sourceFile.Name];
+            var source = TestHelper.AudioDetails[this.sourceFile.Name];
 
-            var newFile = testDirectory.CombineFile("4minute test_20161006-013000.wav");
-            sourceFile.CopyTo(newFile.FullName);
+            var newFile = this.testDirectory.CombineFile("4minute test_20161006-013000Z.mp3");
+            this.sourceFile.CopyTo(newFile.FullName);
 
-            var fileSegment = new FileSegment(sourceFile, source.SampleRate, source.Duration);
+            var fileSegment = new FileSegment(newFile, TimeAlignment.TrimBoth);
 
-            var analysisSegments = preparer.CalculateSegments(new[] { fileSegment }, settings).ToArray();
+            var analysisSegments = this.preparer.CalculateSegments(new[] { fileSegment }, this.settings).ToArray();
 
             var expected = new[]
             {
@@ -139,32 +139,32 @@ namespace Analysis.Test
         [TestMethod]
         public void AbsoluteTimeAlignmentFailsWithoutDate()
         {
-            var source = TestHelper.AudioDetails[sourceFile.Name];
+            var source = TestHelper.AudioDetails[this.sourceFile.Name];
+            Assert.Throws<InvalidFileDateException>(
+                () =>
+                    {
 
+                        var fileSegment = new FileSegment(this.sourceFile, TimeAlignment.TrimBoth);
 
-            var fileSegment = new FileSegment(sourceFile, source.SampleRate, source.Duration);
+                    });
 
-            Assert.Throws<InvalidFileDateException>(() =>
-            {
-                preparer.CalculateSegments(new[] {fileSegment}, settings).ToArray();
-            });
         }
 
 
         [TestMethod]
         public void ShouldSupportOffsetsAndAbsoluteTimeAlignment()
         {
-            var source = TestHelper.AudioDetails[sourceFile.Name];
+            var source = TestHelper.AudioDetails[this.sourceFile.Name];
 
-            var newFile = testDirectory.CombineFile("4minute test_20161006-013012.wav");
-            sourceFile.CopyTo(newFile.FullName);
+            var newFile = this.testDirectory.CombineFile("4minute test_20161006-013012Z.mp3");
+            this.sourceFile.CopyTo(newFile.FullName);
 
-            var fileSegment = new FileSegment(sourceFile, source.SampleRate, source.Duration);
+            var fileSegment = new FileSegment(newFile, TimeAlignment.TrimBoth);
 
             fileSegment.SegmentStartOffset = TimeSpan.FromMinutes(1);
             fileSegment.SegmentEndOffset = TimeSpan.FromMinutes(3);
 
-            var analysisSegments = preparer.CalculateSegments(new[] { fileSegment }, settings).ToArray();
+            var analysisSegments = this.preparer.CalculateSegments(new[] { fileSegment }, this.settings).ToArray();
 
             var d = 48.0;
             var expected = new[]
@@ -178,14 +178,14 @@ namespace Analysis.Test
         [TestMethod]
         public void ShouldSupportAbsoluteTimeAlignmentTrimBoth()
         {
-            var source = TestHelper.AudioDetails[sourceFile.Name];
+            var source = TestHelper.AudioDetails[this.sourceFile.Name];
 
-            var newFile = testDirectory.CombineFile("4minute test_20161006-013012.wav");
-            sourceFile.CopyTo(newFile.FullName);
+            var newFile = this.testDirectory.CombineFile("4minute test_20161006-013012Z.mp3");
+            this.sourceFile.CopyTo(newFile.FullName);
 
-            var fileSegment = new FileSegment(sourceFile, source.SampleRate, source.Duration);
+            var fileSegment = new FileSegment(newFile, TimeAlignment.TrimBoth);
 
-            var analysisSegments = preparer.CalculateSegments(new[] { fileSegment }, settings).ToArray();
+            var analysisSegments = this.preparer.CalculateSegments(new[] { fileSegment }, this.settings).ToArray();
 
             var d = 48.0;
             var expected = new[]
@@ -201,14 +201,14 @@ namespace Analysis.Test
         [TestMethod]
         public void ShouldSupportAbsoluteTimeAlignmentTrimNeither()
         {
-            var source = TestHelper.AudioDetails[sourceFile.Name];
+            var source = TestHelper.AudioDetails[this.sourceFile.Name];
 
-            var newFile = testDirectory.CombineFile("4minute test_20161006-013012.wav");
-            sourceFile.CopyTo(newFile.FullName);
+            var newFile = this.testDirectory.CombineFile("4minute test_20161006-013012Z.mp3");
+            this.sourceFile.CopyTo(newFile.FullName);
 
-            var fileSegment = new FileSegment(sourceFile, source.SampleRate, source.Duration);
+            var fileSegment = new FileSegment(newFile, TimeAlignment.TrimNeither);
 
-            var analysisSegments = preparer.CalculateSegments(new[] { fileSegment }, settings).ToArray();
+            var analysisSegments = this.preparer.CalculateSegments(new[] { fileSegment }, this.settings).ToArray();
 
             var d = 48.0;
             var expected = new[]
@@ -228,14 +228,14 @@ namespace Analysis.Test
         [TestMethod]
         public void ShouldSupportAbsoluteTimeAlignmentTrimStart()
         {
-            var source = TestHelper.AudioDetails[sourceFile.Name];
+            var source = TestHelper.AudioDetails[this.sourceFile.Name];
 
-            var newFile = testDirectory.CombineFile("4minute test_20161006-013012.wav");
-            sourceFile.CopyTo(newFile.FullName);
+            var newFile = this.testDirectory.CombineFile("4minute test_20161006-013012Z.mp3");
+            this.sourceFile.CopyTo(newFile.FullName);
 
-            var fileSegment = new FileSegment(sourceFile, source.SampleRate, source.Duration);
+            var fileSegment = new FileSegment(newFile, TimeAlignment.TrimStart);
 
-            var analysisSegments = preparer.CalculateSegments(new[] { fileSegment }, settings).ToArray();
+            var analysisSegments = this.preparer.CalculateSegments(new[] { fileSegment }, this.settings).ToArray();
 
             var d = 48.0;
             var expected = new[]
@@ -255,22 +255,22 @@ namespace Analysis.Test
         [TestMethod]
         public void ShouldSupportAbsoluteTimeAlignmentTrimEnd()
         {
-            var source = TestHelper.AudioDetails[sourceFile.Name];
+            var source = TestHelper.AudioDetails[this.sourceFile.Name];
 
-            var newFile = testDirectory.CombineFile("4minute test_20161006-013012.wav");
-            sourceFile.CopyTo(newFile.FullName);
+            var newFile = this.testDirectory.CombineFile("4minute test_20161006-013012Z.mp3");
+            this.sourceFile.CopyTo(newFile.FullName);
 
-            var fileSegment = new FileSegment(sourceFile, source.SampleRate, source.Duration);
+            var fileSegment = new FileSegment(newFile, TimeAlignment.TrimEnd);
 
-            var analysisSegments = preparer.CalculateSegments(new[] { fileSegment }, settings).ToArray();
+            var analysisSegments = this.preparer.CalculateSegments(new[] { fileSegment }, this.settings).ToArray();
 
             var d = 48.0;
             var expected = new[]
             {
+                Tuple.Create(0.0, d),
                 Tuple.Create(0.0 + d, 60.0 + d),
                 Tuple.Create(60.0 + d, 120.0 + d),
-                Tuple.Create(120.0 + d, 180.0 + d),
-                Tuple.Create(180.0 + d, 240.113)
+                Tuple.Create(120.0 + d, 180.0 + d)
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);

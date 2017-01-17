@@ -11,12 +11,15 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 {
     using System.IO;
 
+    using AnalysisBase;
+
     using AnalysisPrograms.Production;
 
     using PowerArgs;
 
     public partial class AnalyseLongRecording
     {
+        [CustomDetailedDescription]
         public class Arguments : SourceConfigOutputDirArguments, IArgClassValidator
         {
             public Arguments()
@@ -38,6 +41,11 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             [ArgDescription("The end offset to stop analyzing (in seconds)")]
             [ArgRange(0, double.MaxValue)]
             public double? EndOffset { get; set; }
+
+            [ArgDescription("Allow advancing the start of the analysis to the nearest minute. A valid datetime must be available in the file name. Seed additional notes for options.")]
+            [DefaultValue(TimeAlignment.None)]
+            [ArgExample("help spt", "will print help for the spt action")]
+            public TimeAlignment AlignToMinute { get; set; } = TimeAlignment.None;
 
             [ArgDescription("An array of channels to select. Default is all channels.")]
             public int[] Channels { get; set; } = null;
@@ -74,6 +82,17 @@ namespace AnalysisPrograms.AnalyseLongRecordings
         [DefaultValue(false)]
 #endif
             public bool WhenExitCopyConfig { get; set; }
+
+            public static string AdditionalNotes()
+            {
+                return @"
+AlignToMinute Options:
+  - None:        does no alignment (default) 
+  - TrimBoth:    does alignment and removes fractional sections 
+  - TrimNeither: does alignment and keeps fractional sections 
+  - TrimStart:   does alignment and keeps last fractional segment 
+  - TrimEnd:     does alignment and keeps first fractional segment ";
+            }
         }
     }
 }

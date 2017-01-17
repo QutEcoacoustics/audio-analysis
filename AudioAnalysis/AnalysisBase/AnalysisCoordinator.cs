@@ -202,6 +202,7 @@ namespace AnalysisBase
             var duration = finalSegment.SegmentEndOffset - finalSegment.SegmentStartOffset;
             if (duration < settings.SegmentMinDuration)
             {
+                Log.Warn($"Analysis segment removed because it was too short (less than {settings.SegmentMinDuration}): {finalSegment}");
                 analysisSegments.Remove(finalSegment);
             }
 

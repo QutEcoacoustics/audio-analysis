@@ -162,7 +162,7 @@ Output  to  directory: {1}
 
             // 4. get the segment of audio to be analysed
             // if tiling output, specify that FileSegment needs to be able to read the date
-            var fileSegment = new FileSegment(sourceAudio, null, null, defaultBeavior); 
+            var fileSegment = new FileSegment(sourceAudio, arguments.AlignToMinute); 
             var bothOffsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
             if (bothOffsetsProvided)
             {
