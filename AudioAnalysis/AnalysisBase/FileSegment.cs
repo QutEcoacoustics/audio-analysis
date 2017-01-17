@@ -35,7 +35,7 @@ namespace AnalysisBase
         /// <summary>
         /// How FileSegment should try and parse the file's absolute date.
         /// </summary>
-        public enum FileDateBeavior
+        public enum FileDateBehavior
         {
             /// <summary>
             /// Try and parse the file's absolute date
@@ -53,16 +53,16 @@ namespace AnalysisBase
             None
         }
 
-        private readonly FileDateBeavior dateBeavior;
+        private readonly FileDateBehavior dateBehavior;
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private DateTimeOffset? fileStartDate;
         private bool triedToParseDate = false;
 
-        public FileSegment(FileInfo targetFile, int? sampleRate = null, TimeSpan? duration = null, FileDateBeavior dateBeavior = FileDateBeavior.None)
+        public FileSegment(FileInfo targetFile, int? sampleRate = null, TimeSpan? duration = null, FileDateBehavior dateBehavior = FileDateBehavior.None)
         {
-            this.dateBeavior = dateBeavior;
+            this.dateBehavior = dateBehavior;
             this.TargetFile = targetFile;
             this.TargetFileSampleRate = sampleRate;
             this.TargetFileDuration = duration;
@@ -73,11 +73,11 @@ namespace AnalysisBase
 
         /// <summary>
         /// Allow specifying an absolutely aligned (to the nearest minute) file segment.
-        /// Implies `FileDateBeavior.Required`.
+        /// Implies `FileDateBehavior.Required`.
         /// </summary>
         public FileSegment(FileInfo targetFile, TimeAlignment alignment)
         {
-            this.dateBeavior = alignment == TimeAlignment.None ? FileDateBeavior.Try : FileDateBeavior.Required;
+            this.dateBehavior = alignment == TimeAlignment.None ? FileDateBehavior.Try : FileDateBehavior.Required;
             this.TargetFile = targetFile;
             this.Alignment = alignment;
 
@@ -86,12 +86,12 @@ namespace AnalysisBase
 
         private void ParseDate()
         {
-            if (this.dateBeavior != FileDateBeavior.None)
+            if (this.dateBehavior != FileDateBehavior.None)
             {
                 this.triedToParseDate = true;
                 this.fileStartDate = this.AudioFileStart();
 
-                if (this.dateBeavior == FileDateBeavior.Required)
+                if (this.dateBehavior == FileDateBehavior.Required)
                 {
                     if (!this.fileStartDate.HasValue)
                     {
@@ -169,7 +169,7 @@ namespace AnalysisBase
                 return false;
             }
 
-            if (this.dateBeavior == FileDateBeavior.Required && this.fileStartDate == null)
+            if (this.dateBehavior == FileDateBehavior.Required && this.fileStartDate == null)
             {
                 return false;
             }
@@ -208,9 +208,9 @@ namespace AnalysisBase
                 targetFile: this.TargetFile,
                 sampleRate: this.TargetFileSampleRate,
                 duration: this.TargetFileDuration,
-                dateBeavior: FileDateBeavior.None);
+                dateBehavior: FileDateBehavior.None);
 
-            if (this.dateBeavior != FileDateBeavior.None)
+            if (this.dateBehavior != FileDateBehavior.None)
             {
                 newSegment.fileStartDate = this.TargetFileStartDate;
             }
@@ -249,7 +249,7 @@ namespace AnalysisBase
                 return parsedDate;
             }
 
-            if (this.dateBeavior == FileDateBeavior.Required)
+            if (this.dateBehavior == FileDateBehavior.Required)
             {
                 return null;
             }
