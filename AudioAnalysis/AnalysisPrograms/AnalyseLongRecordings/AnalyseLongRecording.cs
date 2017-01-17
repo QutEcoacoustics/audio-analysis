@@ -139,7 +139,7 @@ Output  to  directory: {1}
                 Log.Warn("Minimum event threshold has been set to the default: " + scoreThreshold);
             }
 
-            FileSegment.FileDateBeavior defaultBeavior = FileSegment.FileDateBeavior.Try;
+            FileSegment.FileDateBehavior defaultBehavior = FileSegment.FileDateBehavior.Try;
             if (filenameDate)
             {
                 if (!FileDateHelpers.FileNameContainsDateTime(sourceAudio.Name))
@@ -147,7 +147,7 @@ Output  to  directory: {1}
                     throw new InvalidFileDateException("When RequireDateInFilename option is set, the filename of the source audio file must contain a valid AND UNAMBIGUOUS date. Such a date was not able to be parsed.");
                 }
 
-                defaultBeavior = FileSegment.FileDateBeavior.Required;
+                defaultBehavior = FileSegment.FileDateBehavior.Required;
             }
 
 
