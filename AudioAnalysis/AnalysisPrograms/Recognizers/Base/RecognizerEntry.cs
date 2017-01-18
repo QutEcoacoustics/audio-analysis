@@ -70,8 +70,10 @@ namespace AnalysisPrograms.Recognizers.Base
             //string recordingPath = @"C:\Work\GitHub\recognizer-tests\tests\species\Rhinella_marina\data\TruckMotor_20150603_004248.wav"; // Negative call
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Canetoad\FalsePositives\FalsePosFromPaul_2015-06-02-031015_downsampled.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Canetoad\FalsePositives\FalsePosFromPaul_2015-06-03-004248_downsampled.wav";
-            //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016November";
-            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.RhinellaMarina.yml";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\CaneToads_rural1_20.mp3";
+            string recordingPath = @"Y:\Groote\2016 March\Emerald River\CardA\Data\EMERALD_20150703_103506.wav";
+            string outputPath = @"C:\SensorNetworks\Output\Frogs\Canetoad\Rural1";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.RhinellaMarina.yml";
 
             //Crinia remota
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\CriniaSpecies\EmeraldRiver_CriniaRemota_20140206_032030.wav";
@@ -123,11 +125,11 @@ namespace AnalysisPrograms.Recognizers.Base
             //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\Test";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaFallax.yml";
 
-            // Litoria nasuta
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\43 Litoria nasuta.mp3";
+            // Litoria nasuta - WORKING ON THIS JUST BEFORE 2016 CHRISTMAS BREAK
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\43 Litoria nasuta.mp3";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Groote\EmeraldRiver_LitoriaNasuta_Lbicolor_20131225_223700_30_0.wav";
-            string outputPath    = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016December";
-            string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaNasuta.yml";
+            //string outputPath    = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016December";
+            //string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaNasuta.yml";
 
             // Litoria olongburensis
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\TEST_16000Hz_LitoriaOlongburensis.wav";
