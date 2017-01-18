@@ -9,13 +9,13 @@ MaxHz: 900
 # duration of DCT in seconds 
 DctDuration: 0.6
 # minimum acceptable value of a DCT coefficient
-DctThreshold: 0.4
+DctThreshold: 0.5
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
 MinOcilFreq: 10        
 MaxOcilFreq: 25
 # Minimum and maximum duration for the length of a true advertisement call.
-MinDuration: 5.0
+MinDuration: 9.0
 MaxDuration: 60.0
 # Event threshold - use this to determine FP / FN trade-off for events.
 EventThreshold: 0.45
