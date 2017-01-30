@@ -211,6 +211,7 @@ namespace AnalysisPrograms.Production
                 analysisSettings.SummaryIndicesFile = FilenameHelpers.AnalysisResultPath(resultDirectory, fileNameBase, "Indices", "csv").ToFileInfo();
                 analysisSettings.SpectrumIndicesDirectory = resultDirectory;
                 analysisSettings.ImageFile = FilenameHelpers.AnalysisResultPath(resultDirectory, fileNameBase, "Image", "png").ToFileInfo();
+                analysisSettings.SegmentSaveBehavior = SaveBehavior.Always;
             }
 
             analysisSettings.Configuration = Yaml.Deserialise(this.Config);

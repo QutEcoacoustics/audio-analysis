@@ -15,9 +15,11 @@ MinDuration: 6
 # Event threshold - use this to adjust FP / FN trade-off for events.
 IntensityThreshold: 0.13
 
-SaveIntermediateWavFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
-SaveSonogramImages: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
 DoNoiseReduction: true
 BgNoiseThreshold: 3.0
 ...

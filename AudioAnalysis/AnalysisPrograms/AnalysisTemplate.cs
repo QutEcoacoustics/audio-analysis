@@ -264,7 +264,7 @@ namespace AnalysisPrograms
                 analysisResults.IndicesFile = null;
 
             //save image of sonograms
-            if ((sonogram != null) && (analysisSettings.ImageFile != null))
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Data.Rows.Count))
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
                 double eventThreshold = 0.1;

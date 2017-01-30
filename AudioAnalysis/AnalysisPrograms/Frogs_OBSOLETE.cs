@@ -283,7 +283,7 @@ namespace AnalysisPrograms
                 result.IndicesFile = null;
 
             //save image of sonograms
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(result.Data.Rows.Count))
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
                 Image image = DrawSonogram(sonogram, hits, scores, predictedEvents);

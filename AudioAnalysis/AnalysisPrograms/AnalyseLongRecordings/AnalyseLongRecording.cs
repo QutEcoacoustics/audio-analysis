@@ -103,9 +103,9 @@ Output  to  directory: {1}
             // 2. get the analysis config
             dynamic configuration = Yaml.Deserialise(configFile);
 
-            bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
+            SaveBehavior saveIntermediateWavFiles = (SaveBehavior?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? SaveBehavior.Never;
             bool saveIntermediateCsvFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
-            bool saveSonogramsImages = (bool?)configuration[AnalysisKeys.SaveSonogramImages] ?? false;
+            SaveBehavior saveSonogramsImages = (SaveBehavior?)configuration[AnalysisKeys.SaveSonogramImages] ?? SaveBehavior.Never;
             bool doParallelProcessing = (bool?)configuration[AnalysisKeys.ParallelProcessing] ?? false;
             
             bool filenameDate = (bool?)configuration[AnalysisKeys.RequireDateInFilename] ?? false;
@@ -155,7 +155,7 @@ Output  to  directory: {1}
             var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonogramsImages, saveIntermediateCsvFiles, arguments.Channels, arguments.MixDownToMono)
             {
                 // create and delete directories
-                DeleteFinished = !saveIntermediateWavFiles,  
+                DeleteFinished = true,  
                 IsParallel = doParallelProcessing,
                 SubFoldersUnique = false
             };

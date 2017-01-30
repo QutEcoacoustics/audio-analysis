@@ -122,13 +122,13 @@ namespace AnalysisPrograms.Recognizers.Base
                         analysisResults.SpectralIndices);
             }
 
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
-                const double eventThreshold = 0.1;
+                const double EventThreshold = 0.1;
                 var plots = results.Plots ?? new List<Plot>();
 
-                Image image = this.DrawSonogram(sonogram, hits,plots, predictedEvents, eventThreshold);
+                Image image = this.DrawSonogram(sonogram, hits,plots, predictedEvents, EventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
                 analysisResults.ImageFile = analysisSettings.ImageFile;
 

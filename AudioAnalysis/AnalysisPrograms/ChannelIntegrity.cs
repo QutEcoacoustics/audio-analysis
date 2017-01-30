@@ -98,7 +98,7 @@ namespace AnalysisPrograms
                 analysisResults.SummaryIndicesFile = analysisSettings.SummaryIndicesFile;
             }
 
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 throw new NotImplementedException();
             }

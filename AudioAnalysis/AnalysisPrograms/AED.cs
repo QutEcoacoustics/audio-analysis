@@ -322,7 +322,7 @@ namespace AnalysisPrograms
 
 
             // save image of sonograms
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 Image image = DrawSonogram(sonogram, results.Item1);
                 image.Save(analysisSettings.ImageFile.FullName, ImageFormat.Png);
