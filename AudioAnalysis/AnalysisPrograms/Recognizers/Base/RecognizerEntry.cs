@@ -309,6 +309,9 @@ namespace AnalysisPrograms.Recognizers.Base
                 analysisSettings.AudioFile.Delete();
             }
 
+            int eventCount = results?.Events?.Length ?? 0;
+            LoggedConsole.WriteLine($"Number of detected events: {eventCount}");
+
             Log.Success(recognizer.Identifier + " recognizer has completed");
         }
     }
