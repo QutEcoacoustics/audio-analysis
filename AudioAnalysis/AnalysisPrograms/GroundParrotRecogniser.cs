@@ -312,7 +312,7 @@ namespace AnalysisPrograms
 
 
             // save image of sonograms
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 Image image = Aed.DrawSonogram(sonogram, results.Item2);
                 image.Save(analysisSettings.ImageFile.FullName, ImageFormat.Png);

@@ -7,9 +7,11 @@ ResampleRate: 22050
 EprNormalizedMinScore: ~
 
 ## IAnalyzer Settings
-SaveIntermediateWavFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: true
-SaveSonogramImages: true
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
 ParallelProcessing: true
 
 IndexPropertiesConfig: ".\\IndexPropertiesConfig.yml"

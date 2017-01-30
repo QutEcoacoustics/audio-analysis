@@ -901,7 +901,7 @@ namespace AnalysisPrograms
 
             // this analysis produces no results!
             // but we still print images (that is the point)
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResult.Events.Length))
             {
                 Debug.Assert(analysisSettings.ImageFile.Exists);
             }

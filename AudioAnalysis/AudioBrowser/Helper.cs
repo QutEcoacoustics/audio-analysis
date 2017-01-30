@@ -154,7 +154,7 @@ namespace AudioBrowser
                 displayCsvImage = ConfigDictionary.GetBoolean(AnalysisKeys.DisplayCsvImage, (settings.ConfigDict));
 
             //initilise classes that will do the analysis
-            this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonogramImages, saveIntermediateCsvFiles)
+            this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles ? SaveBehavior.Always : SaveBehavior.Never, saveSonogramImages ? SaveBehavior.Always : SaveBehavior.Never, saveIntermediateCsvFiles)
             {
                 DeleteFinished = (!saveIntermediateWavFiles), // create and delete directories 
                 IsParallel = doParallelProcessing,         // ########### PARALLEL OR SEQUENTIAL ??????????????

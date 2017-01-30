@@ -376,7 +376,7 @@ namespace AnalysisPrograms
                 this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, result.SummaryIndices);
             }
 
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(result.Events.Length))
             {
                 throw new NotImplementedException();
             }

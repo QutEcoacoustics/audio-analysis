@@ -272,7 +272,7 @@ namespace AnalysisPrograms
             }
 
             //save image of sonograms
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(result.Data.Rows.Count))
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
                 double eventThreshold = 0.1;

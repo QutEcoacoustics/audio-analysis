@@ -55,9 +55,11 @@ KOALAMALE_MaxDuration: 2.5
 KOALAMALE_EventThreshold: 0.2
 
 #######################################
-SaveIntermediateWavFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
-SaveSonogramImages: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
 DoNoiseReduction: false
 BgNoiseThreshold: 3.0
 ParallelProcessing: true
