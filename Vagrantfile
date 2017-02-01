@@ -47,6 +47,12 @@ Vagrant.configure(2) do |config|
     # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
     # documentation for more information about their specific syntax and use.
     config.vm.provision "shell", path: "Provisioning/mono_install.sh"
+    
+    # setup audio tools
+    config.vm.provision "ansible_local" do |ansible|
+      ansible.playbook = "Provisioning/audio_tools.yml"
+      ansible.install_mode = :pip
+    end
   end
   
  
