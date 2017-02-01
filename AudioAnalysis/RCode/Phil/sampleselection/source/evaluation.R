@@ -94,8 +94,9 @@ ChooseRankingsToComapre <- function (ranks, subset.rankings = NULL) {
     # creates a subset
     colnames(ranks$data) <- ConsistentRankNames(colnames(ranks$data))
     if (!is.null(subset.rankings)) {
-        subset.rankings <- ConsistentRankNames(subset.rankings)    
-        ranks$data <- ranks$data[,subset.rankings]    
+        subset.rankings <- ConsistentRankNames(subset.rankings)
+        ranks$data <- ranks$data[,colnames(ranks$data) %in% subset.rankings, drop=FALSE]
+        #ranks$data <- ranks$data[,subset.rankings]    
     }
     return(ranks)  
 }

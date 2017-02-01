@@ -13,18 +13,32 @@ TestNoiseReduction <- function (sp) {
 }
 
 
-DoNoiseReduction <- function (m) {
+
+DoNoiseReduction <- function (m, quantile = 0.5, blur.amount = 1) {
+    # if m is a matrix, do noise reduction. 
+    # if m is a spectrogram, call this function with the matrix of vals and return
+        
+    if (class(m) == "spectrogram") {
+        
+        m$vals <- DoNoiseReduction(m$vals, quantile, blur.amount)
+        return(m)
+    }
     
     m <- Normalize(m)
     #np <- GetNoiseProfile.histdy(m)
-    m <- Blur(m)
-    m <- MedianSubtraction(m)
+    if (blur.amount > 0) {
+        for (i in 1:blur.amount) {
+            m <- Blur(m)
+        }
+    }
+    
+    m <- MedianSubtraction(m, quantile)
     return(m)
     
 }
 
-MedianSubtraction <- function (m) {
-    np <- GetNoiseProfile.median(m)
+MedianSubtraction <- function (m, quantile = 0.5) {
+    np <- GetNoiseProfile.quantile(m, quantile.value = quantile)
     np.matrix <- matrix(np, ncol = ncol(m), nrow = nrow(m))
     m2 <- m - np.matrix
     m2[m2 < 0] <- 0
@@ -32,8 +46,8 @@ MedianSubtraction <- function (m) {
 }
 
 
-GetNoiseProfile.median <- function (m) {
-    np <- apply(m, 1, median)
+GetNoiseProfile.quantile <- function (m, quantile.value = 0.5) {
+    np <- apply(m, 1, quantile, quantile.value)
     return(np)
 }
 

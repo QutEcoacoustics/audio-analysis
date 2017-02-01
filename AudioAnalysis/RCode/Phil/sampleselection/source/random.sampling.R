@@ -187,3 +187,83 @@ GetDawnMins <- function (dates = "2010-10-13",  sites = "NW") {
     
 }
 
+
+
+WeightedRandomSamples <- function (speciesmins = NA, species.in.each.sample= NA, 
+                           mins = NA, 
+                           num.repetitions = 10, 
+                           weighting = NA, 
+                           temporal.dispersal = 0,
+                           use.cached = TRUE) {
+    # repeatedly performs a sample selection from random selection of dawn minutes
+    # 
+    # Args:
+    #   speciesmins: data.frame; list of annotations
+    #   species.in.each.sample: list; the species present in each minute of the target mins
+    #   num.repetitions: int; how many times to run random sampling (more produces a smoother average)
+    #   mins: integer vector; the minute ids to include
+    #   weighting: vector summing to 1 of the relative weight of each sample. For example, to bias to dawn
+    #   temporal.dispersal: number in range [0,1). After each selection, the bias weights are adjusted by multiplying each one by (1- temporal.dispersal^[distance from selected sample])
+    # 
+    # Value:
+    #   list: mean: the mean species count progression (count only)
+    #   list: sd: the standard deviation minute by minute
+    
+    #species.in.each.min is optional param
+    # if ommited, go and get it from the DB
+    if (class(species.in.each.sample) != 'list') {
+        if (class(speciesmins) != 'data.frame') {
+            speciesmins <- GetTags()
+        }
+        species.in.each.sample <- ListSpeciesInEachMinute(speciesmins, mins = mins$min.id) 
+    }
+    
+    
+    # results will go into a matrix
+    repetitions <- matrix(rep(NA, num.repetitions * nrow(mins)), ncol = num.repetitions)
+    
+    Report(4, 'performing', num.repetitions, 'repetitions of RSAD')
+    
+    num.mins <- length(mins)
+    
+    # get the progression for random mins many times
+    for (i in 1:num.repetitions) {
+        
+        if (i %% 10) {
+            Dot()
+        }
+        
+        
+        if (temporal.dispersal == 0) {
+        
+            jumbled.min.ids <- sample(min.ids, num.mins, replace = FALSE, prob = weighting)
+
+            
+        } else {
+            
+            jumbled.min.ids <- rep(NA, num.minutes)
+            
+            # if we have temporal dispersal, then we need to iteratively select then adjust the probability
+            for (m in 1:num.minutes) {
+                
+                sample(min.ids, 1, replace = FALSE, prob = weighting)
+                
+                # unfinished.
+                # the bias to dawn needs to be very strong I think for this to work. 
+                
+            }
+            
+        }
+        
+        
+        found.species.progression <- GetProgression(species.in.each.sample, jumbled.min.ids)
+        repetitions[,i] <- found.species.progression$count  
+    }
+    #get average progression of counts 
+    progression.average <- apply(repetitions, 1, mean)
+    #progression.average <- round(progression.average)
+    progression.sd <- apply(repetitions, 1, sd)
+    
+    Report(5, "RSAD complete")
+    return(list(mean = progression.average, sd = progression.sd)) 
+}
