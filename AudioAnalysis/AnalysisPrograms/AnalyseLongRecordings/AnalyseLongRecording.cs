@@ -1,11 +1,13 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AnalyseLongRecording.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the AnalyseLongRecording type.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+using AnalysisPrograms.SourcePreparers;
 
 namespace AnalysisPrograms.AnalyseLongRecordings
 {
@@ -20,15 +22,13 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using System.Reflection;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools.Audio;
 
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
     using AnalysisPrograms.Production;
-
-    using AnalysisRunner;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
 
@@ -83,7 +83,10 @@ Output  to  directory: {1}
             else if (!configFile.Exists)
             {
                 Log.Warn($"Config file {configFile.FullName} not found... attempting to resolve config file");
-                configFile = ConfigFile.ResolveConfigFile(configFile.Name, Directory.GetCurrentDirectory().ToDirectoryInfo());
+                // we use .ToString() here to get the original input string - Using fullname always produces an absolute path wrt to pwd... we don't want to prematurely make asusmptions:
+                // e.g. We require a missing absolute path to fail... that wouldn't work with .Name
+                // e.g. We require a relative path to try and resolve, using .FullName would fail the first absolute check inside ResolveConfigFile
+                configFile = ConfigFile.ResolveConfigFile(configFile.ToString(), Directory.GetCurrentDirectory().ToDirectoryInfo());
             }
 
             LoggedConsole.WriteLine("# Recording file:      " + sourceAudio.FullName);
@@ -100,9 +103,9 @@ Output  to  directory: {1}
             // 2. get the analysis config
             dynamic configuration = Yaml.Deserialise(configFile);
 
-            bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
+            SaveBehavior saveIntermediateWavFiles = (SaveBehavior?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? SaveBehavior.Never;
             bool saveIntermediateCsvFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
-            bool saveSonogramsImages = (bool?)configuration[AnalysisKeys.SaveSonogramImages] ?? false;
+            SaveBehavior saveSonogramsImages = (SaveBehavior?)configuration[AnalysisKeys.SaveSonogramImages] ?? SaveBehavior.Never;
             bool doParallelProcessing = (bool?)configuration[AnalysisKeys.ParallelProcessing] ?? false;
             
             bool filenameDate = (bool?)configuration[AnalysisKeys.RequireDateInFilename] ?? false;
@@ -121,11 +124,11 @@ Output  to  directory: {1}
 
             DirectoryInfo[] searchPaths = { configFile.Directory };
             FileInfo ipConfig = ConfigFile.ResolveConfigFile((string)configuration.IndexPropertiesConfig, searchPaths);
-            LoggedConsole.WriteLine("# IndexProperties Cfg: " + ipConfig);
+            LoggedConsole.WriteLine("# Resolved IndexProperties Cfg: " + ipConfig);
 
             // min score for an acceptable event
             double scoreThreshold = 0.2;
-            if (((double?)configuration[AnalysisKeys.EventThreshold]) != null)
+            if ((double?)configuration[AnalysisKeys.EventThreshold] != null)
             {
                 scoreThreshold = (double)configuration[AnalysisKeys.EventThreshold];
                 Log.Info("Minimum event threshold has been set to " + scoreThreshold);
@@ -136,12 +139,15 @@ Output  to  directory: {1}
                 Log.Warn("Minimum event threshold has been set to the default: " + scoreThreshold);
             }
 
+            FileSegment.FileDateBehavior defaultBehavior = FileSegment.FileDateBehavior.Try;
             if (filenameDate)
             {
                 if (!FileDateHelpers.FileNameContainsDateTime(sourceAudio.Name))
                 {
                     throw new InvalidFileDateException("When RequireDateInFilename option is set, the filename of the source audio file must contain a valid AND UNAMBIGUOUS date. Such a date was not able to be parsed.");
                 }
+
+                defaultBehavior = FileSegment.FileDateBehavior.Required;
             }
 
 
@@ -149,14 +155,14 @@ Output  to  directory: {1}
             var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonogramsImages, saveIntermediateCsvFiles, arguments.Channels, arguments.MixDownToMono)
             {
                 // create and delete directories
-                DeleteFinished = !saveIntermediateWavFiles,  
+                DeleteFinished = true,  
                 IsParallel = doParallelProcessing,
                 SubFoldersUnique = false
             };
 
             // 4. get the segment of audio to be analysed
             // if tiling output, specify that FileSegment needs to be able to read the date
-            var fileSegment = new FileSegment(sourceAudio, filenameDate, true); 
+            var fileSegment = new FileSegment(sourceAudio, arguments.AlignToMinute); 
             var bothOffsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
             if (bothOffsetsProvided)
             {
@@ -165,7 +171,7 @@ Output  to  directory: {1}
             }
             else
             {
-                Log.Warn("Neither start nor end segment offsets provided. Therefore ignored");
+                Log.Debug("Neither start nor end segment offsets provided. Therefore both were ignored.");
             }
 
             // 5. initialise the analyser
@@ -191,6 +197,18 @@ Output  to  directory: {1}
                 analysisSettings.SegmentMaxDuration = TimeSpan.FromMinutes(1.0);
                 Log.Warn("Can't read SegmentMaxDuration from config file (exceptions squashed, default value of " + analysisSettings.SegmentMaxDuration + " used)");
             }
+
+            try
+            {
+                int rawOverlap = configuration[AnalysisKeys.SegmentOverlap];
+                analysisSettings.SegmentOverlapDuration = TimeSpan.FromSeconds(rawOverlap);
+            }
+            catch (Exception ex)
+            {
+                analysisSettings.SegmentOverlapDuration = TimeSpan.Zero;
+                Log.Warn("Can't read SegmentOverlapDuration from config file (exceptions squashed, default value of " + analysisSettings.SegmentOverlapDuration + " used)");
+            }
+
 
             // set target sample rate
             try
@@ -250,9 +268,9 @@ Output  to  directory: {1}
             var sourceInfo = audioUtility.Info(sourceAudio);
 
             // updated by reference all the way down in LocalSourcePreparer
-            Debug.Assert(fileSegment.OriginalFileDuration == sourceInfo.Duration);
+            Debug.Assert(fileSegment.TargetFileDuration == sourceInfo.Duration);
 #endif
-            var duration = fileSegment.OriginalFileDuration;
+            var duration = fileSegment.TargetFileDuration.Value;
 
             ResultsTools.ConvertEventsToIndices(analyser, mergedEventResults, ref mergedIndicesResults, duration, scoreThreshold);
             int eventsCount = mergedEventResults?.Length ?? 0;
@@ -267,7 +285,7 @@ Output  to  directory: {1}
             // this allows the summariser to write results to the same output directory as each analysis segment
             analysisSettings.AnalysisInstanceOutputDirectory = instanceOutputDirectory;
             Debug.Assert(analysisSettings.AnalysisInstanceOutputDirectory == instanceOutputDirectory, "The instance result directory should be the same as the base analysis directory");
-            Debug.Assert(analysisSettings.SourceFile == fileSegment.OriginalFile);
+            Debug.Assert(analysisSettings.SourceFile == fileSegment.TargetFile);
 
             // 11. IMPORTANT - this is where IAnalyser2's post processer gets called.
             // Produces all spectrograms and images of SPECTRAL INDICES.
@@ -314,8 +332,8 @@ Output  to  directory: {1}
                             indicesFile,
                             imageTitle,
                             timeScale,
-                            fileSegment.OriginalFileStartDate);
-                    var imagePath = FilenameHelpers.AnalysisResultName(instanceOutputDirectory, basename, "SummaryIndices", ImagefileExt);
+                            fileSegment.TargetFileStartDate);
+                    var imagePath = FilenameHelpers.AnalysisResultPath(instanceOutputDirectory, basename, "SummaryIndices", ImagefileExt);
                     tracksImage.Save(imagePath);
                 }
             }

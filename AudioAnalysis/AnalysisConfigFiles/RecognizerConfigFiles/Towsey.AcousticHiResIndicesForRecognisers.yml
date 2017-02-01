@@ -44,7 +44,8 @@ SaveTwoMapsSpectrograms: true
 SaveRidgeSpectrograms: true
 SaveGrayScaleSpectrograms: true
 # One-minute standard spectrograms. WE DO NOT DO THIS ANY MORE.
-SaveSonogramImages: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
 
 
 

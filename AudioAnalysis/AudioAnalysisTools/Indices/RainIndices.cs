@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="RainIndices.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the RainIndices type.
@@ -115,7 +115,7 @@ namespace AudioAnalysisTools.Indices
 
             //FOR PREPARING SEE.5 DATA   ------    write indices and clsasification info to file
             //string opDir = @"C:\SensorNetworks\Output\Rain";
-            //string opPath = Path.Combine(opDir, recording.FileName + ".Rain.csv");
+            //string opPath = Path.Combine(opDir, recording.BaseName + ".Rain.csv");
             //FileTools.WriteTextFile(opPath, sb.ToString());
 
             Dictionary<string, double> dict = ConvertClassifcations2Dictionary(classifications);

@@ -1,11 +1,13 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ChannelIntegrity.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the ChannelIntegrity type.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+using AnalysisPrograms.Production;
 
 namespace AnalysisPrograms
 {
@@ -48,7 +50,7 @@ namespace AnalysisPrograms
             // do some sanity checks
             if (recording.WavReader.Channels != 2)
             {
-                throw new InvalidOperationException("The channel integrity analyzer requires exactly two channels");
+                throw new InvalidAudioChannelException($"The channel integrity analyzer requires exactly two channels but {recording.WavReader.Channels} channels found in file ({audioFile.FullName}");
             }
 
 
@@ -96,7 +98,7 @@ namespace AnalysisPrograms
                 analysisResults.SummaryIndicesFile = analysisSettings.SummaryIndicesFile;
             }
 
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 throw new NotImplementedException();
             }

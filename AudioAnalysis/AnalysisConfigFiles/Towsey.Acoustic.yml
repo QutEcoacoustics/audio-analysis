@@ -39,7 +39,8 @@ MidFreqBound: 8000
 DisplayWeightedIndices: false
 
 # SAVE INTERMEDIARY FILES
-SaveIntermediateWavFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
 
 # SAVE SONOGRAM DATA FILES FOR SUBSEQUENT ZOOMING SPECTROGRAMS
@@ -56,8 +57,10 @@ SaveSonogramData: false
 FrameStep: 441
 
 # One-minute spectrograms can be saved in any analysis task.
-SaveSonogramImages: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
 
+# DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 DoNoiseReduction: true
 BgNoiseThreshold: 3.0

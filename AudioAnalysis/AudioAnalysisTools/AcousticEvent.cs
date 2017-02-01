@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AcousticEvent.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the AcousticEvent type.
@@ -18,7 +18,6 @@ namespace AudioAnalysisTools
     using System.Text;
     using System.Text.RegularExpressions;
 
-    using Acoustics.Shared;
     using Acoustics.Shared.Csv;
 
     using AnalysisBase.ResultBases;
@@ -27,8 +26,6 @@ namespace AudioAnalysisTools
     using AudioAnalysisTools.StandardSpectrograms;
 
     using CsvHelper.Configuration;
-    using CsvHelper.TypeConversion;
-
     using TowseyLibrary;
 
     public class AcousticEvent : EventBase
@@ -73,7 +70,7 @@ namespace AudioAnalysisTools
 
         public static readonly Color DefaultBorderColor = Color.FromArgb(255, Color.Crimson);
 
-        public static readonly Color DefaultScoreColor = Color.FromArgb(255, Color.DarkGray);
+        public static readonly Color DefaultScoreColor = Color.FromArgb(255, Color.Lime);
 
         /// <summary>
         /// Units = seconds
@@ -264,6 +261,11 @@ namespace AudioAnalysisTools
         /// <summary>in seconds</summary>
         public double Duration { get; set; }
 
+        /// <summary>
+        /// Which profile (combination of settings in a config file) produced this event
+        /// </summary>
+        public string Profile { get; set; }
+
         public void DoMelScale(bool doMelscale, int freqBinCount)
         {
             this.IsMelscale = doMelscale;
@@ -405,10 +407,13 @@ namespace AudioAnalysisTools
             int scoreHt = (int)Math.Round(height * this.ScoreNormalised);
             int y1 = y + height;
             int y2 = y1 - scoreHt;
-            g.DrawLine(scorePen, t1 + 1, y1, t1 + 1, y2);
-            g.DrawLine(scorePen, t1 + 2, y1, t1 + 2, y2);
-            //g.DrawLine(p2, t1 + 3, y1, t1 + 3, y2);
-            g.DrawString(this.Name, new Font("Tahoma", 8), Brushes.Black, new PointF(t1, y - 1));
+            //g.DrawLine(scorePen, t1 + 1, y1, t1 + 1, y2);
+            //g.DrawLine(scorePen, t1 + 2, y1, t1 + 2, y2);
+            g.DrawLine(scorePen, t1, y1, t1, y2);
+            g.DrawString(this.Name, new Font("Tahoma", 6), Brushes.Black, new PointF(t1, y - 1));
+
+            // ################ draw quality: this is hack for Michael. Please keep this - Oct 2016
+            g.DrawString($"{this.Quality}", new Font("Tahoma", 6), Brushes.Black, new PointF(t1, y - 10));
         }
 
 
@@ -1071,7 +1076,7 @@ namespace AudioAnalysisTools
         /// <summary>
         /// A general method to convert an array of score values to a list of AcousticEvents.
         /// The method uses the passed scoreThreshold in order to calculate a normalised score.
-        /// Max possible score := threshold * 5
+        /// Max possible score := threshold * 5.
         /// normalised score := score / maxPossibleScore.
         /// Some analysis techniques (e.g. OD) have their own methods for extracting events from score arrays.
         /// </summary>
@@ -1147,24 +1152,16 @@ namespace AudioAnalysisTools
         }//end method ConvertScoreArray2Events()
 
 
-
         /// <summary>
         /// Extracts an array of scores from a list of events.
         /// The events are required to have the passed name.
         /// The events are assumed to contain sufficient info about frame rate in order to populate the array.
-        /// This method is only called when visualising HTK scores
         /// </summary>
         /// <param name="events"></param>
-        /// <param name="frameCount">the size of the array to return</param>
-        /// <param name="windowOffset"></param>
-        /// <param name="targetClass"></param>
-        /// <param name="scoreThreshold"></param>
-        /// <param name="qualityMean"></param>
-        /// <param name="qualitySD"></param>
-        /// <param name="qualityThreshold"></param>
+        /// <param name="arraySize"></param>
+        /// <param name="nameOfTargetEvent"></param>
         /// <returns></returns>
-        public static double[] ExtractScoreArrayFromEvents(List<AcousticEvent> events, int arraySize, string targetName)
-        //public static double[] ExtractScoreArray(List<AcousticEvent> events, string iniFile, int arraySize, string targetName)
+        public static double[] ExtractScoreArrayFromEvents(List<AcousticEvent> events, int arraySize, string nameOfTargetEvent)
         {
             double[] scores = new double[arraySize];
             if ((events == null) || (events.Count == 0)) return scores;
@@ -1172,34 +1169,121 @@ namespace AudioAnalysisTools
             double windowOffset = events[0].FrameOffset;
             double frameRate = 1 / windowOffset; //frames per second
 
-            //for (int i = 0; i < arraySize; i++) scores[i] = Double.NaN; //init to NaNs.
             int count = events.Count;
-
-            //double avScore = 0.0;
-            //double avDuration = 0.0;
-            //double avFrames = 0.0;
-            for (int i = 0; i < count; i++)
+            foreach( AcousticEvent ae in events)
             {
-                if (!events[i].Name.Equals(targetName)) continue; //skip irrelevant events
+                if (!ae.Name.Equals(nameOfTargetEvent)) continue; //skip irrelevant events
 
-                //           double scoreThreshold = config.GetDouble(vocalName + "HTK_THRESHOLD");
-                //           double qualityMean = config.GetDouble(vocalName + "DURATION_MEAN");
-                //           double qualitySD = config.GetDouble(vocalName + "DURATION_SD");
-                //           double qualityThreshold = config.GetDouble("Key_SD_THRESHOLD");
-                int startFrame = (int)(events[i].TimeStart * frameRate);
-                int endFrame = (int)((events[i].TimeStart + events[i].Duration) * frameRate);
-                double frameLength = events[i].Duration * frameRate;
+                int startFrame = (int)(ae.TimeStart * frameRate);
+                int endFrame = (int)((ae.TimeStart + ae.Duration) * frameRate);
 
-                //avScore    += events[i].Score;
-                //avDuration += events[i].Duration;
-                //avFrames   += frameLength;
-
-                for (int s = startFrame; s <= endFrame; s++) scores[s] = events[i].ScoreNormalised;
+                for (int s = startFrame; s <= endFrame; s++)
+                { scores[s] = ae.Score_MaxInEvent; }
             }
             return scores;
         } //end method
 
         //##############################################################################################################################################
+
+
+        /// <summary>
+        /// This method is used to do unit test on lists of events.
+        /// First developed for frog recognizers - October 2016.
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="opDir"></param>
+        /// <param name="testName"></param>
+        /// <param name="events"></param>
+        public static void TestToCompareEvents(string fileName, DirectoryInfo opDir, string testName, List<AcousticEvent> events)
+        {
+            var testDir = new DirectoryInfo(opDir + $"\\UnitTest_{testName}");
+            var benchmarkDir = new DirectoryInfo(testDir + "\\ExpectedOutput");
+            if (!benchmarkDir.Exists) benchmarkDir.Create();
+            var benchmarkFilePath = Path.Combine(benchmarkDir.FullName, fileName + ".TestEvents.csv");
+            var eventsFilePath    = Path.Combine(testDir.FullName,      fileName + ".Events.csv");
+            var eventsFile = new FileInfo(eventsFilePath);
+            Csv.WriteToCsv<EventBase>(eventsFile, events);
+
+            LoggedConsole.WriteLine($"# EVENTS TEST: Camparing List of {testName} events with those in benchmark file:");
+            var benchmarkFile = new FileInfo(benchmarkFilePath);
+            if (!benchmarkFile.Exists)
+            {
+                LoggedConsole.WriteWarnLine("   A file of test/benchmark events does not exist.  Writing output as future events-test file");
+                Csv.WriteToCsv<EventBase>(benchmarkFile, events);
+            }
+            else // compare the test events with benchmark
+            {
+                TestTools.FileEqualityTest("Compare acoustic events.", eventsFile, benchmarkFile);
+            }
+        }
+
+
+        public static List<List<AcousticEvent>> ClusterEvents(AcousticEvent[] events)
+        {
+            LoggedConsole.WriteLine("# CLUSTERING EVENTS");
+            var clusters = new List<List<AcousticEvent>>();
+
+            var firstCluster = new List<AcousticEvent> {events[0]};
+            clusters.Add(firstCluster);
+
+            for (int e = 1; e < events.Length; e++)
+            {
+                const double tolerance = 0.01;
+
+                double[] scoreArray = new double[clusters.Count];
+                for (int c = 0; c < clusters.Count; c++)
+                {
+                    double distance = DistanceFromCluster(events[e], clusters[c]);
+                    scoreArray[c] = distance;
+                }
+                int minId = DataTools.GetMinIndex(scoreArray);
+
+
+                if (scoreArray[minId] < tolerance)
+                {
+                    clusters[minId].Add(events[e]);
+                }
+                else
+                {
+                    // if get to here, we have no match and therefore create a new cluster.
+                    var newCluster = new List<AcousticEvent> {events[e]};
+                    clusters.Add(newCluster);
+                }
+            } 
+            return clusters;
+        }
+
+
+        public static double DistanceFromCluster(AcousticEvent ae, List<AcousticEvent> cluster )
+        {
+            // take first event as the centroid
+            var centroid = cluster[0];
+
+            // now compare the time duration of the event with the cluster 
+            double distance = centroid.Duration - ae.Duration;
+            if (Math.Abs(distance) > 0.75) return 1.0;
+
+            double topFreqDifference = centroid.MaxFreq - ae.MaxFreq;
+            if (Math.Abs(topFreqDifference) > 300) return 1.0;
+
+            double bottomFreqDifference = centroid.MinFreq - ae.MinFreq;
+            if (Math.Abs(bottomFreqDifference) > 300) return 1.0;
+
+            return 0.0;
+        }
+
+        public static void AssignClusterIds(List<List<AcousticEvent>> clusters)
+        {
+            LoggedConsole.WriteLine("# ASSIGN CLUSTER IDs");
+
+            for (int c = 0; c < clusters.Count; c++)
+            {
+                for (int e = 0; e < clusters[c].Count; e++)
+                {
+                    clusters[c][e].Quality = c;
+                }
+            }
+        } // AssignClusterIds
 
 
     }

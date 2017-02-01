@@ -101,19 +101,19 @@ namespace AnalysisPrograms
 
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(arguments.Source.FullName);
-            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+            //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // THIS METHOD CALL IS OBSOLETE
             int sr = recording.SampleRate;
 
             //ii: MAKE SONOGRAM
             Log.WriteLine("Start sonogram.");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName = recording.FileName;
+            sonoConfig.SourceFName = recording.BaseName;
             sonoConfig.WindowOverlap = FeltFrameOverlap;      // set default value
             sonoConfig.DoMelScale = false;
-            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+            sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
             AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
             SpectrogramStandard sonogram = new SpectrogramStandard(basegram);  //spectrogram has dim[N,257]
-            recording.Dispose(); //DO NOT DISPOSE BECAUSE REQUIRE AGAIN
+
 
             Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
             Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",

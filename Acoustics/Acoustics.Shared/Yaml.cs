@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="Yaml.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the Yaml type.
@@ -11,24 +11,41 @@ namespace Acoustics.Shared
 {
     using System;
     using System.IO;
+    using System.Linq;
     using System.Text.RegularExpressions;
 
     using YamlDotNet.Core;
     using YamlDotNet.Core.Events;
     using YamlDotNet.Dynamic;
+    using YamlDotNet.RepresentationModel;
     using YamlDotNet.Serialization;
 
     public class Yaml
     {
-        static Yaml()
-        {
-        }
-
         public static DynamicYaml Deserialise(FileInfo file)
         {
             using (var stream = file.OpenText())
             {
-                var data = new DynamicYaml(stream);
+                // allow merging in yaml back references
+                var parser = new EventReader(new MergingParser(new Parser(stream)));
+
+                // MEGA HACK TIME - I APOLOGIZE TO FUTURE ME :-(
+                // There's a bug in the YamlStream implementation that does not allow the MergingParser's magic to work because it produces a 
+                // a duplicate key in an object mapping graph in a yaml back referencing scenario.
+                // So to deserialize the graph properly, we first deserialize it generically - which expands all the yaml back references - and we 
+                // then reserialize to an in memory string, which we can finally send to DynamicYaml (which uses yamlDocument.Load under the sheets).
+                // TODO: file a bug against the YamlDotNet project.
+                var d = new Deserializer();
+                var deserializedObject = d.Deserialize(parser);
+                var s = new Serializer();
+
+                DynamicYaml data;
+                using (var stream2 = new StringWriter())
+                {
+                    s.Serialize(stream2, deserializedObject);
+
+                    data = new DynamicYaml(stream2.ToString());
+                }
                 return data;
             }
         }
@@ -43,8 +60,11 @@ namespace Acoustics.Shared
         {
             using (var stream = file.OpenText())
             {
-                var deserialiser = new Deserializer();
-                return deserialiser.Deserialize<T>(stream);
+                // allow merging in yaml back references
+                var parser = new EventReader(new MergingParser(new Parser(stream)));
+                var deserializer = new Deserializer();
+                
+                return deserializer.Deserialize<T>(parser);
             }
         }
 
@@ -52,8 +72,8 @@ namespace Acoustics.Shared
         {
             using (var stream = file.CreateText())
             {
-                var serialiser = new Serializer(SerializationOptions.EmitDefaults);
-                serialiser.Serialize(stream, obj);
+                var serializer = new Serializer(SerializationOptions.EmitDefaults);
+                serializer.Serialize(stream, obj);
             }   
         }
     }

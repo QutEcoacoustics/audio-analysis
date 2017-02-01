@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="MainEntryUtilities.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the MainEntry type.
@@ -46,8 +46,8 @@ namespace AnalysisPrograms
         private static DateTime RetrieveLinkerTimestamp()
         {
             string filePath = System.Reflection.Assembly.GetCallingAssembly().Location;
-            const int PeHeaderOffset = 60;
-            const int LinkerTimestampOffset = 8;
+            const int peHeaderOffset = 60;
+            const int linkerTimestampOffset = 8;
             byte[] b = new byte[2048];
             System.IO.Stream s = null;
 
@@ -58,14 +58,11 @@ namespace AnalysisPrograms
             }
             finally
             {
-                if (s != null)
-                {
-                    s.Close();
-                }
+                s?.Close();
             }
 
-            int i = System.BitConverter.ToInt32(b, PeHeaderOffset);
-            int secondsSince1970 = System.BitConverter.ToInt32(b, i + LinkerTimestampOffset);
+            int i = System.BitConverter.ToInt32(b, peHeaderOffset);
+            int secondsSince1970 = System.BitConverter.ToInt32(b, i + linkerTimestampOffset);
             DateTime dt = new DateTime(1970, 1, 1, 0, 0, 0);
             dt = dt.AddSeconds(secondsSince1970);
             dt = dt.AddHours(TimeZone.CurrentTimeZone.GetUtcOffset(dt).Hours);
@@ -199,11 +196,13 @@ namespace AnalysisPrograms
                                                                        NoOptionsMessage = "<< no arguments >>"
                                                                    };
 
+        private const string ApPlainLogging = "AP_PLAIN_LOGGING";
+
         internal static void PrintUsage(string message, Usages usageStyle, string actionName = null)
         {
             //Contract.Requires(usageStyle != Usages.Single || actionName != null);
 
-            if (!String.IsNullOrWhiteSpace(message))
+            if (!string.IsNullOrWhiteSpace(message))
             {
                 LoggedConsole.WriteErrorLine(message);
             }
@@ -211,8 +210,7 @@ namespace AnalysisPrograms
             if (usageStyle == Usages.All)
             {
                 // print entire usage
-
-                LoggedConsole.WriteLine(ArgUsage.GetStyledUsage<MainEntryArguments>(options: UsagePrintOptions).ToString());
+                LoggedConsole.WriteLine(InsertEnvironmentVariablesIntoUsage(ArgUsage.GetStyledUsage<MainEntryArguments>(options: UsagePrintOptions).ToString()));
             }
             else if (usageStyle == Usages.Single)
             {
@@ -223,7 +221,7 @@ namespace AnalysisPrograms
                 else
                 {
                     var usage = ArgUsage.GetStyledUsage<MainEntryArguments>(options: UsagePrintOptions, includedActions: new[] { actionName });
-                    LoggedConsole.WriteLine(usage.ToString());
+                    LoggedConsole.WriteLine(InsertEnvironmentVariablesIntoUsage(usage.ToString()));
                 }
             }
             else if (usageStyle == Usages.ListAvailable)
@@ -236,7 +234,7 @@ namespace AnalysisPrograms
 
                 foreach (var tuple in actions)
                 {
-                    sb.AppendLine("\t" + tuple.Item2 + (string.IsNullOrWhiteSpace(tuple.Item3) ? "" : " - " + tuple.Item3));
+                    sb.AppendLine("\t" + tuple.Item2 + (string.IsNullOrWhiteSpace(tuple.Item3) ? string.Empty : " - " + tuple.Item3));
                 }
 
                 LoggedConsole.WriteLine(sb.ToString());
@@ -245,13 +243,20 @@ namespace AnalysisPrograms
             {
                 var usage = ArgUsage.GetStyledUsage<MainEntryArguments>(options: UsagePrintOptions, includedActions: new[] { "list", "help" });
 
-                LoggedConsole.WriteLine(usage.ToString());
+                LoggedConsole.WriteLine(InsertEnvironmentVariablesIntoUsage(usage.ToString()));
             }
             else
             {
                 throw new InvalidOperationException();
             }
 
+        }
+
+        internal static string InsertEnvironmentVariablesIntoUsage(string usage)
+        {
+            return usage.Insert(usage.IndexOf("Global options:", StringComparison.Ordinal),
+                "Environment variables:\n" +
+                "    " + ApPlainLogging + "  [true|false]\t Enable simpler logging - the default value is `false`\n");
         }
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
@@ -262,9 +267,18 @@ namespace AnalysisPrograms
             const string FatalMessage = "FATAL ERROR:\n\t";
 
             var ex = (Exception)unhandledExceptionEventArgs.ExceptionObject;
+
             ExceptionLookup.ExceptionStyle style;
-            
-            bool found = ExceptionLookup.ErrorLevels.TryGetValue(ex.GetType(), out style);            
+            bool found = false;
+            if (ex is AggregateException)
+            {
+                var original = (AggregateException) ex;
+                found = ExceptionLookup.ErrorLevels.TryGetValue(original.InnerException.GetType(), out style);
+            }
+            else
+            {
+                found = ExceptionLookup.ErrorLevels.TryGetValue(ex.GetType(), out style);
+            }
             found = found && style.Handle;
 
             // if found, print message only if usage printing disabled
@@ -334,7 +348,7 @@ namespace AnalysisPrograms
                 //}
             }
 
-            int returnCode = style ==  null ? ExceptionLookup.SpecialExceptionErrorLevel : style.ErrorCode;
+            int returnCode = style?.ErrorCode ?? ExceptionLookup.SpecialExceptionErrorLevel;
 
             // finally return error level
             NoConsole.Log.Info("ERRORLEVEL: " + returnCode);
@@ -419,10 +433,29 @@ namespace AnalysisPrograms
             Process parentProcess = ProcessExtensions.ParentProcessUtilities.GetParentProcess();
             if (parentProcess.ProcessName == "devenv")
             {
-                LoggedConsole.WriteLine("FINISHED: Press RETURN key to exit.");
+                LoggedConsole.WriteSuccessLine("FINISHED: Press RETURN key to exit.");
                 Console.ReadLine();
             }
 #endif
+        }
+
+        private static void ParseEnvirionemnt()
+        {
+            bool isTrue;
+            var simpleLogging = bool.TryParse(Environment.GetEnvironmentVariable(ApPlainLogging), out isTrue) && isTrue;
+            var repository = (log4net.Repository.Hierarchy.Hierarchy) LogManager.GetRepository();
+            var root = repository.Root;
+            var cleanLogger = (Logger) repository.GetLogger("CleanLogger");
+
+            if (simpleLogging)
+            {
+                root.RemoveAppender("ConsoleAppender");
+                cleanLogger.RemoveAppender("CleanConsoleAppender");
+            }
+            else
+            {
+                root.RemoveAppender("SimpleConsoleAppender");
+            }
         }
 
         private static void ModifyVerbosity(MainEntryArguments arguments)
@@ -445,6 +478,12 @@ namespace AnalysisPrograms
                 case LogVerbosity.Debug:
                     modifiedLevel = Level.Debug;
                     break;
+                case LogVerbosity.Trace:
+                    modifiedLevel = Level.Trace;
+                    break;
+                case LogVerbosity.Verbose:
+                    modifiedLevel = Level.Verbose;
+                    break;
                 case LogVerbosity.All:
                     modifiedLevel = Level.All;
                     break;
@@ -456,24 +495,19 @@ namespace AnalysisPrograms
             repository.Root.Level = modifiedLevel;
             repository.Threshold = modifiedLevel;
 
-//            foreach (var appender in repository.GetAppenders())
-//            {
-//                IFilter filter = ((AppenderSkeleton)appender).FilterHead;
-//                while (filter.GetType() != typeof(LevelRangeFilter) && filter != null)
-//                {
-//                    filter = filter.Next;
-//                }
-//
-//                // only modify filters with RangeFilters on them
-//                if (filter == null)
-//                {
-//                    continue;
-//                }
-//                else
-//                {
-//                    ((LevelRangeFilter)filter).LevelMin = modifiedLevel;
-//                }
-//            }
+            if (arguments.QuietConsole)
+            {
+                var appenders = repository.GetAppenders();
+
+                foreach (var appender in appenders)
+                {
+                    if (appender is ConsoleAppender || appender is ManagedColoredConsoleAppender ||
+                        appender is ColoredConsoleAppender)
+                    {
+                        ((AppenderSkeleton)appender).Threshold = Level.Notice;
+                    }
+                }
+            }
 
             repository.RaiseConfigurationChanged(EventArgs.Empty);
             

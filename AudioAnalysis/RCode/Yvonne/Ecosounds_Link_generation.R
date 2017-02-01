@@ -1,7 +1,7 @@
-# Generate links to select random minutes from Ecosounds website
-# for Jason Wimmer
-# 24 December 2015
-#
+# Description: Plotting Summary Indices PCA plot
+# Author: Yvonne Phillips
+# Date: 24 December 2015
+
 # Set cluster number
 n <- 24
 

@@ -7,18 +7,21 @@ Usage is obtained by running the program without arguments:
 
 Which will produce output like:
 ```
-QUT Bioacoustic Analysis Program - version 16.06.3430.0 (RELEASE build, 23/06/2016 11:29)
-Git branch-version: master-16a11bad5e3c2423bb92386ec83773c700eb4be0
+QUT Bioacoustic Analysis Program - version 16.10.3596.0 (DEBUG build, 11/10/2016 11:07 AM)
+Git branch-version: master-e2a88694390d39216bfab3a88a77d21f96be2f4a
 Copyright QUT 2016
 An action is required to run the program, here are some suggestions:
 Usage: AnalysisPrograms <action> options
 
+Environment variables:
+    AP_PLAIN_LOGGING  [true|false]       Enable simpler logging - the default is value is `false`
 Global options:
-    -d   -debug     [switch]        *
-    -n   -nodebug   [switch]        *
-    -l   -loglevel  [logverbosity]  *
-    -v   -verbose   [switch]        *
-    -vv  -vverbose  [switch]        *
+    -d    -debug      [switch]        *  Do not show the debug prompt AND automatically attach a debugger. Has no effect in RELEASE builds
+    -n    -nodebug    [switch]        *  Do not show the debug prompt or attach a debugger. Has no effect in RELEASE builds
+    -l    -loglevel   [logverbosity]  *  Set the logging. Valid values: None = 0, Error = 1, Warn = 2, Info = 3, Debug = 4, Trace = 5, Verbose = 6, All = 7
+    -v    -verbose    [switch]        *  Set the logging to be verbose. Equivalent to LogLevel = Debug = 4
+    -vv   -vverbose   [switch]        *  Set the logging to very verbose. Equivalent to LogLevel = Trace = 4
+    -vvv  -vvverbose  [switch]        *  Set the logging to very very verbose. Equivalent to LogLevel = ALL = 7
 Actions:
   list - Prints the available program actions
     << no arguments >>
@@ -38,6 +41,10 @@ And help for a specific action:
 
     $ AnalysisPrograms.exe help audio2csv
 
+Importantly, to get a list of the available `IAnalyzer2` analyses (which are used by `audio2csv`), run:
+
+    $ AnalysisPrograms.exe analysesavailable
+
 ## Gotchas 
 
  - **Never** finish a double quoted argument with a backslash (`\`). The parsing rules for such 
@@ -48,21 +55,78 @@ details.
  - If an input argument is an array (e.g. `directoryinfo[]`) any commas in the argument will delimit
 the values. For example `"Y:\Results\abc, 123, doo-dah-dee"` will be parsed as
 `"Y:\Results\abc"`, `" 123"`, `" doo-dah-dee"`. 
+
+## Version numbering
+
+Our program uses an automatic version numbering system. A version number such as `16.06.3430.0` can be deciphered as:
+
+```
+<2-digit-year>.<2-digit-month>.<number-of-repository-commits>.0
+```
+
+It is important that before building releases that the local repository is clean and up-to-date - otherwise the 
+build number won't increment.
+
+The version information is also printed when the program first starts:
+
+```
+QUT Bioacoustic Analysis Program - version 16.06.3430.0 (RELEASE build, 23/06/2016 11:29)
+Git branch-version: master-16a11bad5e3c2423bb92386ec83773c700eb4be0
+```
+
+In the above output you can see the:
+```
+<program-name> - version <version-number> (<build-type> build, <assembly-creation-date>)
+Git branch-version: <git-branch-when-built>-<lastest-commit-hash-when-built>
+```
+  
+
 ## Sub-program types
 There are, in broad terms, these types of sub-programs:
 
  - Main actions
-	 - Process large amounts of information (like `audio2csv`)
+   - Process large amounts of information (like `audio2csv`)
  - Development / small scale actions
-	 - Small data / development entry points 
+   - Small data / development entry points
+   - `eventrecognizer` which is a generic program for running different recognizers
  - Utility actions
-	 - DummyAnalyser
-	 - audiocutter
+   - DummyAnalyser
+   - audiocutter
  - Meta actions
-	 - CLI usage
-	 - `analysesavailable`
+   - help and documentation usage (`help` & `list`)
+   - `analysesavailable`
 
-Most development actions correlate to an implementation of `IAnalyser` or a custom algorithm. For details on implementing the `IAnalyser` work-flow refer to [AboutIAnalyser.md](AudioAnalysis/AboutIAnalyser.md)
+### IAnalyzer[2]
+
+`IAnalyzer2` is a pattern code must adhere to in order to be run by `audio2csv`. `audio2csv` is our mass,
+parallel, analysis runner that is used to analyze very long files.
+
+It is common for each analysis type to have **both** a _development sub-program type_ which is used for
+testing and an _IAnalyzer_ implementation which is used in production. 
+
+For example, the canetoad recognizer has:
+
+- Sub-program type: canetoad (for short testing recordings, <2min)
+
+  ```
+  $ AnalysisPrograms.exe canetoad ... ->  CanetoadOld.Execute -> CanetoadOld.Analysis -> RhinellaMarina.Analysis
+  ```
+- audio2csv + IAnalyzer: Rhinella.Marina (for very long files, >2min)
+  
+  ```
+  $ AnalysisPrograms.exe audio2csv ... -c Rhinella.Marina.yml ...->  AnalyseLongRecording.Execute -> RhinellaMarina.Analysis
+  ```
+
+
+**Warning:** Our newer event recognizers no longer have their own _sub-program types_. Instead they are run
+in devleopment through a generic _sub-program_ named _eventrecognizer_
+
+- eventrecognizer + IAnalyzer: Rhinella.Marina  (for short testing recordings, <2min)
+  
+  ```
+  $ AnalysisPrograms.exe eventrecognizer ... -c Rhinella.Marina.yml ... ->  RecognizerEntry.Execute -> RecognizerBase.Analysis -> RhinellaMarina.Analysis
+  ```
+
 
 ## Documentation for specific sub-programs
 

@@ -15,9 +15,11 @@ MaxDuration: 0.7
 IntensityThreshold: 0.18
 DisplayColumns: count,avAmp-dB
 
-SaveIntermediateWavFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
-SaveSonogramImages: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
 #DoNoiseReduction: true
 #BgNoiseThreshold: 3.0
 ...

@@ -1,13 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="FileInfoExtensions.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+// <summary>
+//   Defines the FileInfoExtensions type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
+// ReSharper disable once CheckNamespace
 namespace System
 {
+    using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Diagnostics.Contracts;
     using System.IO;
+    using System.Linq;
+    using System.Text;
 
     public static class FileInfoExtensions
     {
@@ -64,6 +73,24 @@ namespace System
             }
 
             return new DirectoryInfo(str);
+        }
+    }
+
+    public class FileInfoNameComparer : IComparer<FileInfo>, IEqualityComparer<FileInfo>
+    {
+        public int Compare(FileInfo x, FileInfo y)
+        {
+            return string.Compare(x.FullName, y.FullName, StringComparison.Ordinal);
+        }
+
+        public bool Equals(FileInfo x, FileInfo y)
+        {
+            return this.Compare(x, y) == 0;
+        }
+
+        public int GetHashCode(FileInfo obj)
+        {
+            return obj.FullName.GetHashCode();
         }
     }
 }

@@ -1,0 +1,45 @@
+---
+AnalysisName: Towsey.CriniaRemota
+SpeciesName: Crinia remota
+AbbreviatedSpeciesName: C.remota
+
+# do not change the below
+ResampleRate: 22050
+FrameSize: 128
+# Standard settings
+#DoNoiseReduction: false
+#BgNoiseThreshold: 3.0
+
+# min and max of the freq band to search
+MinHz: 3200          
+MaxHz: 4300
+Dominantfreq: 3500
+# duration of DCT in seconds - default = 0.4
+DctDuration: 0.2
+# minimum acceptable value of a DCT coefficient  # default = 0.6
+DctThreshold: 0.2  
+# Minimum and maximum duration in seconds for the length of a true call.
+MinDuration: 0.25
+MaxDuration: 0.80
+# Event threshold - use this to determine FP / FN trade-off for events.
+EventThreshold: 0.5
+
+## Specifically for AnalyzeLongRecording
+# SegmentDuration: units=minutes;    
+SegmentDuration: 1
+# SegmentOverlap: units=seconds;
+SegmentOverlap: 0
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+SaveIntermediateCsvFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
+# DisplayCsvImage is obsolete - ensure it remains set to: false
+DisplayCsvImage: false
+ParallelProcessing: false
+## End section for AnalyzeLongRecording
+
+# Other config files to reference
+IndexPropertiesConfig: "./IndexPropertiesConfigHiRes.yml"
+HighResolutionIndicesConfig: "./Towsey.AcousticHiResIndicesForRecognisers.yml"
+...

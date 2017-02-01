@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="BaseSonogramConfig.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the SonogramConfig type.
@@ -123,8 +123,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
             config.SetPair(ConfigKeys.EndpointDetection.Key_VocalGap, "0.2");
             config.SetPair(ConfigKeys.EndpointDetection.Key_MinVocalDuration, "0.075");
 
-            config.SetPair(AnalysisKeys.NoiseReductionType, NoiseReductionType.NONE.ToString());
+            config.SetPair(AnalysisKeys.NoiseReductionType, NoiseReductionType.None.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_WindowFunction, WindowFunctions.HAMMING.ToString());
+            //config.SetPair(ConfigKeys.Mfcc.Key_WindowFunction, WindowFunctions.HANNING.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_NPointSmoothFFT, "3");
             config.SetPair(ConfigKeys.Mfcc.Key_DoMelScale, false.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_FilterbankCount, "64");
@@ -183,7 +184,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //NOISE REDUCTION PARAMETERS  
             this.DoSnr = true; // set false if only want to 
             string noisereduce = config.GetString(AnalysisKeys.NoiseReductionType);
-            this.NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noisereduce.ToUpperInvariant());
+            //this.NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noisereduce.ToUpperInvariant());
+            this.NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noisereduce);
             //NoiseReductionParameter       = config.GetDouble(SNR.key_Snr.key_);
 
             //FREQ BAND PARAMETERS
@@ -231,7 +233,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             //NOISE REDUCTION PARAMETERS  
             this.DoSnr = true; // set false if only want to 
-            this.NoiseReductionType = NoiseReductionType.NONE;
+            this.NoiseReductionType = NoiseReductionType.None;
             if (configDict.ContainsKey(AnalysisKeys.NoiseReductionType))
             {
                 string noiseReductionType = configDict[AnalysisKeys.NoiseReductionType];

@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="IndexCalculate.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the AcousticFeatures type.
@@ -13,11 +13,9 @@ namespace AudioAnalysisTools.Indices
     using System.Collections.Generic;
     using System.Data;
     using System.Diagnostics.CodeAnalysis;
-    using System.Drawing;
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using System.Text;
 
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -26,7 +24,6 @@ namespace AudioAnalysisTools.Indices
     using log4net;
 
     using TowseyLibrary;
-    using Acoustics.Shared;
 
     /// <summary>
     /// Core class that calculates indices.
@@ -51,7 +48,7 @@ namespace AudioAnalysisTools.Indices
 
         private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private static bool warned = false;
+        //private static bool warned = false;
 
         /// <summary>
         /// a set of parameters derived from ini file.
@@ -132,7 +129,7 @@ namespace AudioAnalysisTools.Indices
             dynamic configuration, 
             bool returnSonogramInfo = true)
         {
-            string recordingFileName = recording.FileName;
+            string recordingFileName = recording.BaseName;
             double epsilon   = Math.Pow(0.5, recording.BitsPerSample - 1);
             int signalLength = recording.WavReader.GetChannel(0).Length;
             int sampleRate   = recording.WavReader.SampleRate; 
@@ -155,12 +152,12 @@ namespace AudioAnalysisTools.Indices
             // get frequency parameters for the analysis
             int freqBinCount = frameSize / 2;
             double freqBinWidth = recording.Nyquist / (double)freqBinCount;
-            int LowFreqBound = (int?)config[AnalysisKeys.LowFreqBound] ?? IndexCalculate.DefaultLowFreqBound;
-            int MidFreqBound = (int?)config[AnalysisKeys.MidFreqBound] ?? IndexCalculate.DefaultMidFreqBound;
-            int HihFreqBound = (int?)config[AnalysisKeys.HighFreqBound] ?? IndexCalculate.DefaultHighFreqBound;
+            int lowFreqBound = (int?)config[AnalysisKeys.LowFreqBound] ?? IndexCalculate.DefaultLowFreqBound;
+            int midFreqBound = (int?)config[AnalysisKeys.MidFreqBound] ?? IndexCalculate.DefaultMidFreqBound;
+            //int hihFreqBound = (int?)config[AnalysisKeys.HighFreqBound] ?? IndexCalculate.DefaultHighFreqBound;
 
             // get TimeSpans and durations
-            TimeSpan subsegmentTimeSpan = indexCalculationDuration;
+            var subsegmentTimeSpan = indexCalculationDuration;
             double subsegmentSecondsDuration = subsegmentTimeSpan.TotalSeconds;
             TimeSpan ts = subsegmentOffsetTimeSpan;
             double subsegmentOffset = ts.TotalSeconds;
@@ -237,7 +234,7 @@ namespace AudioAnalysisTools.Indices
             // EXTRACT ENVELOPE and SPECTROGRAM FROM BACKGROUND NOISE SUBSEGMENT
             var dspOutput2 = DSP_Frames.ExtractEnvelopeAndFFTs(bgnRecording, frameSize, frameStep);
             // i. convert signal to dB and subtract background noise. Noise SDs to calculate threshold = ZERO by default
-            double signalBGN = NoiseRemoval_Modal.CalculateBackgroundNoise(dspOutput2.Envelope);
+            double signalBGN = NoiseRemovalModal.CalculateBackgroundNoise(dspOutput2.Envelope);
             // ii.: calculate the noise profile from the amplitude sepctrogram
             double[] spectralAmplitudeBGN = NoiseProfile.CalculateBackgroundNoise(dspOutput2.amplitudeSpectrogram);
             // iii: generate deciBel spectrogram and calculate the dB noise profile
@@ -329,9 +326,9 @@ namespace AudioAnalysisTools.Indices
             spectralIndices.SUM = MatrixTools.SumColumns(amplitudeSpectrogram);
 
             // calculate bin id of boundary between low & mid frequency bands. This is to avoid low freq bins that likely contain anthropogenic noise.
-            int lowerBinBound = (int)Math.Ceiling(LowFreqBound / dspOutput1.FreqBinWidth);
+            int lowerBinBound = (int)Math.Ceiling(lowFreqBound / dspOutput1.FreqBinWidth);
             // calculate bin id of upper boundary of bird-band. This is to avoid high freq artefacts due to mp3 compression.
-            int upperBinBound = (int)Math.Ceiling(MidFreqBound / dspOutput1.FreqBinWidth);
+            int upperBinBound = (int)Math.Ceiling(midFreqBound / dspOutput1.FreqBinWidth);
             // calculate number of freq bins in the reduced bird-band.
             //int reducedFreqBinCount = amplitudeSpectrogram.GetLength(1) - lowerBinBound;
             int midBandBinCount = upperBinBound - lowerBinBound + 1;
@@ -424,7 +421,7 @@ namespace AudioAnalysisTools.Indices
 
             // iv: CALCULATE SPECTRAL COVER. NOTE: spectrogram is a noise reduced decibel spectrogram
             double dBThreshold = ActivityAndCover.DefaultActivityThresholdDb; // dB THRESHOLD for calculating spectral coverage
-            var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameStepTimeSpan, LowFreqBound, MidFreqBound, freqBinWidth);
+            var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameStepTimeSpan, lowFreqBound, midFreqBound, freqBinWidth);
             spectralIndices.CVR = spActivity.coverSpectrum;
             spectralIndices.EVN = spActivity.eventSpectrum;
 
@@ -472,12 +469,12 @@ namespace AudioAnalysisTools.Indices
                 sonoConfig.WindowSize = (int?)config[AnalysisKeys.FrameLength] ?? 1024; // the default
                 sonoConfig.WindowOverlap = (double?)config[AnalysisKeys.FrameOverlap] ?? 0.0; // the default
 
-                sonoConfig.NoiseReductionType = NoiseReductionType.NONE; // the default
+                sonoConfig.NoiseReductionType = NoiseReductionType.None; // the default
                 bool doNoiseReduction = (bool?)config[AnalysisKeys.NoiseDoReduction] ?? false;  // the default
 
                 if (doNoiseReduction)
                 {
-                    sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+                    sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
                 }
 
                 // init sonogram

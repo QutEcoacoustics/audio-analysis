@@ -25,7 +25,7 @@
       </Rules>
       <AnalyzerSettings>
         <StringProperty Name="CompanyName">QutBioacoustics</StringProperty>
-        <StringProperty Name="Copyright">All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).</StringProperty>
+        <StringProperty Name="Copyright">All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).</StringProperty>
         <BooleanProperty Name="IncludeFields">False</BooleanProperty>
       </AnalyzerSettings>
     </Analyzer>
@@ -38,6 +38,16 @@
           <Value>y</Value>
         </CollectionProperty>
       </AnalyzerSettings>
+    </Analyzer>
+    <Analyzer AnalyzerId="StyleCop.CSharp.SpacingRules">
+      <Rules>
+        <Rule Name="SingleLineCommentsMustBeginWithSingleSpace">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+      </Rules>
+      <AnalyzerSettings />
     </Analyzer>
   </Analyzers>
 </StyleCopSettings>

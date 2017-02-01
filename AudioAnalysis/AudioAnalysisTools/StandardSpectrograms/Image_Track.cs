@@ -295,6 +295,7 @@
             {
                 int start = (int)Math.Round(w     * subSample);
                 int end   = (int)Math.Round((w+1) * subSample);
+                if (end >= doubleData.Length) continue;
                 double max = -Double.MaxValue;
                 int location = 0;
                 for (int x = start; x < end; x++) //find max value in subsample
@@ -317,7 +318,7 @@
             int lineID = this.Height - 1 - (int)(this.Height * f);
             if (lineID < 0) return bmp;
             if (lineID > this.Height) return bmp;
-            for (int x = 0; x < bmp.Width; x++) bmp.SetPixel(x, topOffset + lineID, Color.White);
+            for (int x = 0; x < bmp.Width; x++) bmp.SetPixel(x, topOffset + lineID, Color.Lime);
             return bmp;
         }
 
@@ -368,7 +369,7 @@
             int lineID = this.Height - 1 - (int)(this.Height * f);
             if (lineID < 0) return bmp;
             if (lineID > this.Height) return bmp;
-            for (int x = 0; x < bmp.Width; x++) bmp.SetPixel(x, topOffset + lineID, Color.White);
+            for (int x = 0; x < bmp.Width; x++) bmp.SetPixel(x, topOffset + lineID, Color.Lime);
             return bmp;
         }
         /// <summary>

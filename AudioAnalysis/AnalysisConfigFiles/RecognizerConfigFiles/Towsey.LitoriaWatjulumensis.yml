@@ -1,0 +1,49 @@
+---
+AnalysisName: Towsey.LitoriaWatjulumensis
+SpeciesName: Litoria watjulumensis
+CommonName: Watjulum frog
+AbbreviatedSpeciesName: L.watjulum
+
+UpperFreqBandTop: 3500
+UpperFreqBandBottom: 2500
+LowerFreqBandTop: 1500
+LowerFreqBandBottom: 1000
+DecibelThreshold: 5.0
+
+Profiles:
+    Trill: &Standard
+        # Periodicity of oscillation
+        # Ignore oscillation rates whose period is below min & above max threshold
+        MinPeriod: 0.02
+        MaxPeriod: 0.05
+        # Minimum and maximum duration in seconds for the length of a true TRILL.
+        MinDuration: 0.2
+        MaxDuration: 0.8
+        # Threshold for oscillation intensity found by DCT
+        IntensityThreshold: 0.4
+        EventThreshold: 0.4 
+    Tink:    
+        #<<: *Standard
+        MinDuration: 0.01
+        MaxDuration: 0.03
+        EventThreshold: 0.4
+
+## Specifically for AnalyzeLongRecording
+# SegmentDuration: units=minutes;    
+SegmentDuration: 1
+# SegmentOverlap: units=seconds;
+SegmentOverlap: 0
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+SaveIntermediateCsvFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
+# DisplayCsvImage is obsolete - ensure it remains set to: false
+DisplayCsvImage: false
+ParallelProcessing: false
+## End section for AnalyzeLongRecording
+
+# Other config files to reference
+IndexPropertiesConfig: "./IndexPropertiesConfigHiRes.yml"
+HighResolutionIndicesConfig: "./Towsey.AcousticHiResIndicesForRecognisers.yml"
+...

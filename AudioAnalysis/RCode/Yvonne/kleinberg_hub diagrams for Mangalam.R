@@ -1,8 +1,8 @@
-#################################################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This code plots network diagrams and calculates centrality measures
 # from cluster lists
 # 8 April 2016
-#################################################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 setwd("C:\\Work\\Mangalam_data\\")
 data <- read.csv("Minute_cluster mapping - all.csv", 
                  header = TRUE)
@@ -25,9 +25,9 @@ for(c in 1:length(ref)) {
 }
 nrow(data)
 #View(data)
-############################
-# occupancy matrix
-############################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# occupancy matrix ------------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 summary <- matrix(data = NA, nrow=12, ncol=27)
 for (i in 1:12) {
   t <- table(data[2:length(data[,1]),i])
@@ -51,9 +51,9 @@ library(qgraph)
 library(gridBase)
 library(grid)
 library(gridExtra)
-####################################
-# Set up layout with first data set
-###################################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Set up layout with first data set-------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 i=2
 site <- data[1,i]
 site
@@ -77,9 +77,9 @@ layout_qgraph <- layout.star(g, 21)
 auth_score <- matrix(data = NA, nrow=27, ncol=12)
 hub_score <- matrix(data = NA, nrow=27, ncol=12)
 
-#####################################
-# Complete all with the same layout
-####################################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Complete all with the same layout-----------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for(i in 1:12) {
   site <- data[1,i]
   site
@@ -217,7 +217,7 @@ for(i in 1:12) {
   
   dev.off()
   
-  ###############################################################
+  #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   # Transition matrix
   transmat <- matrix(datafr[,3],nrow=27)
   #View(transmat)
@@ -228,9 +228,9 @@ for(i in 1:12) {
 colnms <- data[1,1:12]
 colnames(auth_score) <- colnms
 colnames(hub_score) <- colnms
-############################
-# dotMatrix plots using seqinr
-############################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# dotMatrix plots using seqinr --------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 library(seqinr)
 
 library(graphics)
@@ -496,9 +496,9 @@ distances <- cbind(site, smith_waterman,
 distances
 #write.csv(distances, "distances.csv", row.names = FALSE)
 
-##############################
-# Gympie data
-##############################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Gympie data ---------------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 gym_clust <- read.csv("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j\\hybrid_clust_knn_17500_3.csv", header=T)
 gym_clust_30 <- gym_clust[,6]
 gym_clust_60 <- gym_clust[,12]
@@ -520,9 +520,9 @@ g_c_60[2:1441,] <- data.frame(matrix(unlist(gym_clust_60), nrow=1440, byrow=FALS
 #g_c_30 <- g_c_60
 setwd("C:\\Work\\CSV files\\FourMonths_repeat\\Dot_matrix_plot\\")
 
-############################
-# generate a sequence of dates
-############################
+##%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# generate a sequence of dates------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 start <-  strptime("20150622", format="%Y%m%d")
 finish <-  strptime("20151010", format="%Y%m%d")
 dates <- seq(start, finish, by = "1440 mins")
@@ -555,9 +555,9 @@ date <- dates
 date <- rep(date, 2)
 g_c_30[1,] <- date1
 g_c_60[1,] <- date1
-############################
-# dotMatrix plots using seqinr
-############################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# dotMatrix plots using seqinr-----------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 library(seqinr)
 library(graphics)
 site <- NULL
@@ -799,9 +799,9 @@ for (j in c(198:198)) {
   #ham.dist <- hamming.distance(data[,j],data[,(j+1)])
   #hamming_distance <- c(hamming_distance, ham.dist)
 dev.off()
-###########################
-### Two 2 day images for SERF
-###########################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Two 2 day images for SERF--------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #library(seqinr)
 seq_SERF <- seq(1, 12, 2)
 for (day.ref in seq_SERF) {   
@@ -899,7 +899,7 @@ for (day.ref in seq_SERF) {
   dev.off()
 }
 
-##################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 smith_waterman <- round(smith_waterman, 2)
 distances <- cbind(site, smith_waterman,
                    hamming_distance, 
@@ -1142,9 +1142,9 @@ plot(distance1[8541:10080], type="l",
 plot(distance1[10080:11520], type="l",
      main=paste("n =",n,"d =",d, sep = " "))
 
-#################################
-# ten minute
-#################################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# ten minute----------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 n <- 2 # period in minutes
 unique_clus <- NULL
 unit.numbers <- matrix(data = NA, nrow=length(g_c_30$X1), 
@@ -1171,9 +1171,9 @@ write.csv(unit.numbers[,112:222], paste("woondum_", n,"min.csv"),
           row.names = FALSE)
 write.csv(g_c_30, "gympie_30clusters.csv", row.names = FALSE)
 
-####################################
-# coloured dot matrix plots
-###################################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# coloured dot matrix plots-----------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 setwd("C:\\Work\\CSV files\\FourMonths_repeat\\Dot_matrix_plot\\")
 data <- g_c_30[2:1441,]
 
@@ -1208,9 +1208,9 @@ plot(r, xaxt="n", yaxt="n", axes=FALSE,
 }
 dev.off()
 
-###################################
-# colour dot matrix plots
-##################################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# colour dot matrix plots---------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #colour schemes
 cols <- c(
   '0' = "#F2F2F2FF", '1' = "#00B917", '2' = "#788231",   '3' = "#FF0000",
@@ -1312,9 +1312,9 @@ asratio = (ymax-ymin)/(xmax-xmin)
 #clus_labels <- c(LETTERS[1:26], letters[1:26])
 #clus_labels1 <- c("-", clus_labels[1:num_clus], "-")
 #names(brk) <- clus_labels1[1:(num_clus+1)]
-#####################################
-# dot matrix plot quarters
-####################################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# dot matrix plot quarters-------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for(day.ref in 1:222) {
   day.ref <- day.ref
   data1 <- g_c_30[2:(min+1),day.ref]
@@ -1493,9 +1493,9 @@ for(day.ref in 1:222) {
   dev.off()
 }  
   
-####################################
-# original one day dot matrix plots
-###################################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# original one day dot matrix plots ------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 library(graphics)
 for(day.ref in 1:2) {
   day.ref <- day.ref
@@ -1554,7 +1554,7 @@ for (i in 1:(length(cols)-1)) {
   rect(99+i, 300, 100+i,340, col = cols[i+1], border = "transparent")
 }
 dev.off()
-##############################################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 library(fields);   library(graphics)
 setwd("C:\\Work\\CSV files\\FourMonths_repeat\\Dot_matrix_plot\\")
 xmin <- 0
@@ -1644,7 +1644,7 @@ for(day.ref in 1:12) {
 library(munsell)
 plot_hex(cols) #this plots the colours
 
-##############################################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 colours <- c("#F2F2F2FF","#00FF00","#001544","#FF0000",
              "#01FFFE","#FE8900","#006401","#FFDB66",
              "#010067","#95003A","#007DB5","#9E008E",
@@ -1721,7 +1721,9 @@ for(day.ref in 12:12) {
   dev.off()
 }
 
-########### Model ############
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Model ---------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #library(raster)
 r <- raster(xmn = 0, xmx = 20, ymn = 0, ymx = 20, 
             nrows = 10, ncols =10, crs=NA)
@@ -1735,9 +1737,9 @@ r <- raster(xmn = 0, xmx = 30, ymn = 0, ymx = 30,
 r[] <- test
 plot(r)
 
-########################################
-# Transition matrix using TraMineR
-########################################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Transition matrix using TraMineR --------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 setwd("C:\\Work\\Mangalam_data\\")
 data <- read.csv("Minute_cluster mapping - all.csv", 
                  header = TRUE)

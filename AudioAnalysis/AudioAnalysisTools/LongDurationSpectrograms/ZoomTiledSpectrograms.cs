@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright company="QutBioacoustics" file="ZoomTiledSpectrograms.cs">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace AudioAnalysisTools.LongDurationSpectrograms
@@ -16,6 +16,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Reflection;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
 
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.TileImage;
@@ -146,7 +147,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string[] keys = indexProperties.Keys.ToArray();
 
             Stopwatch timer = Stopwatch.StartNew();
-            Dictionary<string, double[,]> spectra = IndexMatrices.ReadCSVFiles(
+            Dictionary<string, double[,]> spectra = IndexMatrices.ReadCsvFiles(
                 inputDirectory,
                 fileStem + FilenameHelpers.BasenameSeparator + analysisType,
                 keys);
@@ -206,7 +207,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             // ####################### DRAW ZOOMED-IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
-            Log.Info("START DRAWING ZOOMED-IN FRAME SPECTROGRAMS");
+            Log.Warn("ZOOMED-IN FRAME SPECTROGRAMS HAVE BEEN DISABLED IN THIS BUILD");
+            /*Log.Info("START DRAWING ZOOMED-IN FRAME SPECTROGRAMS");
 
             TimeSpan dataDuration = TimeSpan.FromTicks(spectra["POW"].GetLength(1) * indexGeneration.IndexCalculationDuration.Ticks);
             var segmentDurationInSeconds = (int)zoomConfig.SegmentDuration.TotalSeconds;
@@ -286,7 +288,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     }
                     
                 }
-            }
+            }*/
 
             Log.Info("Tiling complete");
         }

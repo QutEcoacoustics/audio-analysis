@@ -114,36 +114,37 @@ namespace AudioAnalysisTools
         public static Bitmap AddSunTrackToImage(int width, DateTimeOffset? dateTimeOffset, FileInfo sunriseDatafile)
         {
             // AT: I DON'T UNDERSTAND THIS CODE! I CAN'T FIX IT
-            throw new NotImplementedException();
-//            if (!sunriseDatafile.Exists)
-//                return null;
-//<<<<<<< HEAD
-//            }
-//
-//            if (siteName.StartsWith("Gympie") || siteName.StartsWith("Woondum3") || siteName.StartsWith("SERF"))
-//            {
-//                int dayOfYear = ((DateTimeOffset)dateTimeOffset).DayOfYear;
-//                double moonPhase = SunAndMoon.GetPhaseOfMoon((DateTimeOffset)dateTimeOffset);
-//                string strMoonPhase = SunAndMoon.ConvertMoonPhaseToString(moonPhase);
-//                throw new NotSupportedException("THE FOLLOWING FAILS IN PRODUCTION");
-//                Bitmap suntrack = SunAndMoon.AddSunTrackToImage(width, SunAndMoon.BrisbaneSunriseDatafile, dayOfYear, strMoonPhase);
-//                return suntrack;
-//            }
-//
-//            return null;
-//        }
-//
-//        public static Bitmap AddSunTrackToImage(int width, DateTimeOffset? dateTimeOffset, SiteDescription siteDescription)
-//        {
-//            return AddSunTrackToImage(width, dateTimeOffset, siteDescription.SiteName, siteDescription.Latitude, siteDescription.Longitude);        
-//=======
-//            int year = ((DateTimeOffset)dateTimeOffset).Year;
-//            int dayOfYear = ((DateTimeOffset)dateTimeOffset).DayOfYear;
-//            double moonPhase = SunAndMoon.GetPhaseOfMoon((DateTimeOffset)dateTimeOffset);
-//            string strMoonPhase = SunAndMoon.ConvertMoonPhaseToString(moonPhase);
-//            Bitmap suntrack = SunAndMoon.AddSunTrackToImage(width, sunriseDatafile, year, dayOfYear, strMoonPhase);
-//            return suntrack;
-//>>>>>>> master
+            LoggedConsole.WriteErrorLine("Sun track generation disabled - broken in merge");
+            return null;
+            //            if (!sunriseDatafile.Exists)
+            //                return null;
+            //<<<<<<< HEAD
+            //            }
+            //
+            //            if (siteName.StartsWith("Gympie") || siteName.StartsWith("Woondum3") || siteName.StartsWith("SERF"))
+            //            {
+            //                int dayOfYear = ((DateTimeOffset)dateTimeOffset).DayOfYear;
+            //                double moonPhase = SunAndMoon.GetPhaseOfMoon((DateTimeOffset)dateTimeOffset);
+            //                string strMoonPhase = SunAndMoon.ConvertMoonPhaseToString(moonPhase);
+            //                throw new NotSupportedException("THE FOLLOWING FAILS IN PRODUCTION");
+            //                Bitmap suntrack = SunAndMoon.AddSunTrackToImage(width, SunAndMoon.BrisbaneSunriseDatafile, dayOfYear, strMoonPhase);
+            //                return suntrack;
+            //            }
+            //
+            //            return null;
+            //        }
+            //
+            //        public static Bitmap AddSunTrackToImage(int width, DateTimeOffset? dateTimeOffset, SiteDescription siteDescription)
+            //        {
+            //            return AddSunTrackToImage(width, dateTimeOffset, siteDescription.SiteName, siteDescription.Latitude, siteDescription.Longitude);        
+            //=======
+            //            int year = ((DateTimeOffset)dateTimeOffset).Year;
+            //            int dayOfYear = ((DateTimeOffset)dateTimeOffset).DayOfYear;
+            //            double moonPhase = SunAndMoon.GetPhaseOfMoon((DateTimeOffset)dateTimeOffset);
+            //            string strMoonPhase = SunAndMoon.ConvertMoonPhaseToString(moonPhase);
+            //            Bitmap suntrack = SunAndMoon.AddSunTrackToImage(width, sunriseDatafile, year, dayOfYear, strMoonPhase);
+            //            return suntrack;
+            //>>>>>>> master
         }
 
         /// <summary>

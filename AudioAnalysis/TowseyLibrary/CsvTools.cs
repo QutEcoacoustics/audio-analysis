@@ -1,39 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Data;
 using System.IO;
 
 
 namespace TowseyLibrary
 {
-    using Acoustics.Shared.Extensions;
-
-    using CsvHelper;
-    using CsvHelper.Configuration;
-
-    using TowseyLibrary;
 
     [Obsolete]
     public static class CsvTools
     {
 
-
         //READING A TABLE FROM A CSV FILE
-
-         public static void TransferCSVToTable(DataTable dt, string  filePath)
-           {
-               string[] csvRows = System.IO.File.ReadAllLines(filePath);
-               string[] fields = null; 
-               foreach(string csvRow in csvRows)
-               {
-                  fields = csvRow.Split(',');
-                  DataRow row = dt.NewRow();
-                  row.ItemArray = fields;
-                  dt.Rows.Add(row);
-               }
-           }
 
          /// <summary>
          /// loads a data table with data in given csv file.
@@ -61,12 +40,11 @@ namespace TowseyLibrary
                  csvRows[0] = null; //remove header row
              }
 
-             string[] fields = null;
              foreach (string csvRow in csvRows)
              {
                  if (csvRow == null) continue; //skip header row
-                 fields = csvRow.Split(',');
-                 DataRow row = dt.NewRow();
+                 var fields = csvRow.Split(',');
+                 var row = dt.NewRow();
                  row.ItemArray = MakeItemArray(fields, types);
                  dt.Rows.Add(row);
              }
@@ -107,13 +85,11 @@ namespace TowseyLibrary
              }
 
              //fill the DataTable
-             string[] fields = null;
              foreach (string csvRow in csvRows)
              {
                  if (csvRow == null) continue; //skip header row
-                 fields = csvRow.Split(',');
-                 DataRow row = dt.NewRow();
-                 //row.ItemArray = fields; //use this line only if fields are strings
+                 var fields = csvRow.Split(',');
+                 var row = dt.NewRow();
                  row.ItemArray = MakeItemArray(fields, types);
                  dt.Rows.Add(row);
              }
@@ -175,84 +151,8 @@ namespace TowseyLibrary
             return output;
         }
 
-
-        //#######################################################################################
-        //READING A TABLE FROM A CSV FILE
-
-        // using System.Data;
-        // using System.Data.OleDb;
-        // using System.Globalization;
-        // using System.IO;
-/*
-        static DataTable GetDataTableFromCsv(string path, bool isFirstRowHeader)
-        {
-            string header = isFirstRowHeader ? "Yes" : "No";
-
-            string pathOnly = Path.GetDirectoryName(path);
-            string fileName = Path.GetFileName(path);
-
-            string sql = @"SELECT * FROM [" + fileName + "]";
-
-            using(OleDbConnection connection = new OleDbConnection(
-                      @"Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + pathOnly + 
-                      ";Extended Properties=\"Text;HDR=" + header + "\""))
-            using(OleDbCommand command = new OleDbCommand(sql, connection))
-            using(OleDbDataAdapter adapter = new OleDbDataAdapter(command))
-            {
-                DataTable dataTable = new DataTable();
-                dataTable.Locale = CultureInfo.CurrentCulture;
-                adapter.Fill(dataTable);
-                return dataTable;
-            }
-        }
-
- * 
- */ 
  
         //#######################################################################################
-        //WRITE A CSV FILE FROM A MATRIX and headers
-        public static void WriteMatrix2CSV(double[,] M, string[] headers, FileInfo opFile)
-         {
-            if (M == null) return;
-            int rowCount = M.GetLength(0);
-            int colCount = M.GetLength(1);
-            if (colCount != headers.Length)
-            {
-                Exception e = new Exception();
-                LoggedConsole.WriteFatalLine("", e);
-                return;
-            }
-
-
-            StreamWriter sw = new StreamWriter(opFile.FullName, false);
-
-            // First we will write the headers.
-            sw.Write(headers[0]);
-            for (int i = 1; i < colCount; i++)
-            {
-                sw.Write("," + headers[i]);
-            }
-            sw.Write(sw.NewLine);
-
-            // Now write all the rows.
-            for (int r = 0; r < rowCount; r++)
-            {
-                string str = String.Format("{0:f4}", M[r, 0]);
-                sw.Write(str);
-                for (int c = 1; c < colCount; c++)
-                {
-                    if (!Convert.IsDBNull(M[r,c]))
-                    {
-                        str = String.Format("{0:f4}", M[r, c]);
-                        sw.Write("," + str);
-                    }
-                }
-                sw.Write(sw.NewLine);
-            }
-            sw.Close();
-        } // WriteMatrix2CSV()
-
-
         //WRITE A CSV FILE FROM A MATRIX and headers
         public static void WriteDictionaryOfDoubles2CSV(Dictionary<string, double[]> dictionary, FileInfo opFile)
         {
@@ -275,14 +175,14 @@ namespace TowseyLibrary
             for (int r = 0; r < rowCount; r++)
             {
                 double value = dictionary[headers[0]][r];
-                string str = String.Format("{0:f4}", value);
+                string str = $"{value:f4}";
                 sw.Write(str);
                 for (int c = 1; c < colCount; c++)
                 {
                     value = dictionary[headers[c]][r];
                     if (!Convert.IsDBNull(value))
                     {
-                        str = String.Format("{0:f4}", value);
+                        str = $"{value:f4}";
                         sw.Write("," + str);
                     }
                 }
@@ -323,14 +223,14 @@ namespace TowseyLibrary
                      {
                          if (types[i] == typeof(double))
                          {
-                             string str = String.Format("{0:f4}", dr[i]);
+                             string str = $"{dr[i]:f4}";
                              sw.Write(str);
                          }
                          else
                              if (types[i] == typeof(TimeSpan))
                              {
-                                 TimeSpan ts = (TimeSpan)dr[i];
-                                 string str = String.Format("{0:f4}", ts.TotalSeconds);
+                                 var ts = (TimeSpan)dr[i];
+                                 string str = $"{ts.TotalSeconds:f4}";
                                  sw.Write(str);
                              }
                              else
@@ -347,63 +247,6 @@ namespace TowseyLibrary
          } // DataTable2CSV()
 
 
-
-        //#######################################################################################
-        //WRITE A CSV FILE FROM A TABLE
-
-        public static void DataTable2CSV(DataTable table, string strFilePath, string seperateChar)
-        {
-
-            StreamWriter sr = null;
-
-            try
-            {
-
-            sr = new StreamWriter(strFilePath);
-            string seperator = "";
-            StringBuilder builder = new StringBuilder();
-            foreach (DataColumn col in table.Columns)
-            {
-                builder.Append(seperator).Append(col.ColumnName);
-                seperator = seperateChar;
-            }
-            sr.WriteLine(builder.ToString());
-
-            foreach (DataRow row in table.Rows)
-            {
-                seperator = "";
-                builder = new StringBuilder();
-                foreach (DataColumn col in table.Columns)
-                {
-                    builder.Append(seperator).Append(row[col.ColumnName]);
-                    seperator = seperateChar;
-                }
-
-                sr.WriteLine(builder.ToString());
-
-            }
-            }
-            finally
-            {
-                if (sr != null)	{ sr.Close();}
-            }
-        } // DataTable2CSV()
-
-
-        public static string WriteDataTableRow(DataRow row, string seperateChar)
-        {
-            string seperator = "";
-            StringBuilder builder = new StringBuilder();
-            foreach (object item in row.ItemArray)
-            {
-                builder.Append(seperator).Append(item);
-                seperator = seperateChar;
-            }
-            return builder.ToString();
-        } // WriteDataTableRow()
-
-
-
         /// <summary>
         /// returns a list of the column values in a csv file plus the column headings
         /// ASSUMED to be doubles
@@ -414,17 +257,14 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static System.Tuple<List<string>, List<double[]>> ReadCSVFile(string csvFileName)
         {
-            string dir = Path.GetDirectoryName(csvFileName);
-            string pathSansExtention = Path.GetFileNameWithoutExtension(csvFileName);
-            //string opFile = Path.Combine(dir, pathSansExtention + ".png");
-            List<string> lines = FileTools.ReadTextFile(csvFileName);
+            var lines = FileTools.ReadTextFile(csvFileName);
 
             int lineCount = lines.Count;
             string[] words = lines[0].Split(',');
             int columnCount = words.Length;
 
             //GET the CSV COLUMN HEADINGS
-            List<string> headers = new List<string>();
+            var headers = new List<string>();
             for (int c = 0; c < columnCount; c++) headers.Add(words[c]);
 
             //GET the CSV COLUMN HEADINGS
@@ -458,26 +298,12 @@ namespace TowseyLibrary
         }
 
 
-        public static Dictionary<string, double[]> ReadCSVFileToDictionary(string csvFileName)
-        {
-            Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvFileName);
-            string[] headers = tuple.Item1.ToArray();
-            double[][] columns = tuple.Item2.ToArray();
-            var dictionary = new Dictionary<string, double[]>();
-            for(int i=0; i < headers.Length; i++)
-            {
-                dictionary.Add(headers[i], columns[i]);
-            }
-            return dictionary;
-        }
-
         public static List<double[]> ReadCSVFileOfDoubles(string csvFileName, bool skipHeader, bool skipFirstColumn)
         {
             var list = new List<double[]>();
             using (TextReader reader = new StreamReader(csvFileName))
             {
                 string line;
-                string[] words;
                 int firstIndex = 0;
                 if (skipFirstColumn) firstIndex = 1;
                 if (skipHeader) 
@@ -485,7 +311,7 @@ namespace TowseyLibrary
                 while ((line = reader.ReadLine()) != null)
                 {
                     //read one line at a time in string array
-                    words = line.Split(',');
+                    var words = line.Split(',');
                     var values = new double[words.Length - firstIndex];
                     for (int c = firstIndex; c < words.Length; c++)
                     {
@@ -497,33 +323,6 @@ namespace TowseyLibrary
             return list;
         }
 
-        public static double[,] ReadCSVFileOfDoubles2Matrix(string csvFileName, bool skipHeader, bool skipFirstColumn, int rowCount, int colCount)
-        {
-            int firstIndex = 0;
-            if (skipFirstColumn) firstIndex = 1;
-
-            var M = new double[rowCount, colCount];
-            using (TextReader reader = new StreamReader(csvFileName))
-            {
-                string line;
-                string[] words;
-                if (skipHeader)
-                    line = reader.ReadLine(); // skip first header line
-                int row = 0;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    //read one line at a time in string array
-                    words = line.Split(',');
-                    var values = new double[words.Length - firstIndex];
-                    for (int c = firstIndex; c < words.Length; c++)
-                    {
-                        M[row, c - firstIndex] = Double.Parse(words[c]);
-                    }
-                    row++;
-                }//end while
-            }//end using
-            return M;
-        }
 
         /// <summary>
         /// returns a Dictionary of the column values in a csv file with column headings as keys
@@ -534,22 +333,19 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static Dictionary<string, double[]> ReadCSVFile2Dictionary(string csvFileName)
         {
-            string dir = Path.GetDirectoryName(csvFileName);
-            string pathSansExtention = Path.GetFileNameWithoutExtension(csvFileName);
-            //string opFile = Path.Combine(dir, pathSansExtention + ".png");
-            List<string> lines = FileTools.ReadTextFile(csvFileName);
+            var lines = FileTools.ReadTextFile(csvFileName);
 
             int lineCount = lines.Count;
             string[] words = lines[0].Split(',');
             int columnCount = words.Length;
 
             //GET the CSV COLUMN HEADINGS
-            List<string> headers = new List<string>();
+            var headers = new List<string>();
             for (int c = 0; c < columnCount; c++) headers.Add(words[c]);
 
             //GET the CSV COLUMN HEADINGS
             //set up the matrix as List of arrays
-            List<double[]> values = new List<double[]>();
+            var values = new List<double[]>();
             for (int c = 0; c < columnCount; c++)
             {
                 double[] array = new double[lineCount - 1];
@@ -592,6 +388,7 @@ namespace TowseyLibrary
             }
             return dict;
         }
+
         public static double[,] ReadCSVFile2Matrix(string csvFileName)
         {
             Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvFileName);
@@ -636,55 +433,5 @@ namespace TowseyLibrary
             }//end 
             return array;
         }
-
-        public static void AddColumnOfValuesToCSVFile(string csvFileName, string header, double[] values, string opFileName)
-        {
-            List<string> lines = FileTools.ReadTextFile(csvFileName);
-            //String.Concat(lines[0], ",", header);
-            lines[0] += ("," + header);
-            for (int i = 1; i < lines.Count; i++) //ignore first line = header.
-            {
-                //String.Concat(lines[i], ",", values[i-1]);
-                lines[i] += ("," + values[i - 1]);
-            }//end 
-
-            FileTools.WriteTextFile(opFileName, lines);
-        }
-
-        /// <summary>
-        /// This method assumes that the first item in each row of CSV is a row number.
-        /// It also assumes that the first row contains simple string headers.
-        /// </summary>
-        /// <param name="csvFilePath"></param>
-        /// <param name="data"></param>
-        public static void AppendRow2CSVFile(string csvFilePath, int rowID, double[] data)
-        {
-            int length = data.Length;
-
-            FileInfo fi = new FileInfo(csvFilePath);
-
-            bool saveExistingFile = false;
-            if (! fi.Exists)
-            {
-                int year = DateTime.Now.Year;
-                int month = DateTime.Now.Month;
-                int day = DateTime.Now.Day;
-                int hour = DateTime.Now.Hour;
-                int min = DateTime.Now.Minute;
-                StringBuilder sb1 = new StringBuilder(string.Format("{0}-{1}-{2}-{3}-{4}", year, month, day, hour, min));
-                for (int i = 0; i < length; i++) sb1.Append(",h" + i);
-                sb1.Append("\n" + rowID);
-                for (int i = 0; i < length; i++) sb1.Append("," + data[i]);
-                //sb.Append("\n");
-                FileTools.WriteTextFile(csvFilePath, sb1.ToString());
-            }
-            else
-            {
-                StringBuilder sb2 = new StringBuilder(rowID.ToString());
-                for (int i = 0; i < length; i++) sb2.Append("," + data[i]);
-                //sb.Append("\n");
-                FileTools.Append2TextFile(csvFilePath, sb2.ToString(), saveExistingFile);
-            }
-        }// end AppendRow2CSVFile()
     }
 }

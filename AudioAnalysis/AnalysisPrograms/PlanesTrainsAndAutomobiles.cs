@@ -247,7 +247,7 @@ namespace AnalysisPrograms
             }
 
             //save image of sonograms
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Data.Rows.Count))
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
                 double eventThreshold = 0.1;
@@ -299,7 +299,6 @@ namespace AnalysisPrograms
 
             //#############################################################################################################################################
             var results = DetectHarmonics(recording, intensityThreshold, minHz, minFormantgap, maxFormantgap, minDuration, frameLength, windowOverlap); //uses XCORR and FFT
-            recording.Dispose();
             //#############################################################################################################################################
 
             var sonogram = results.Item1;
@@ -308,7 +307,7 @@ namespace AnalysisPrograms
             var predictedEvents = results.Item4;
             foreach (AcousticEvent ev in predictedEvents)
             {
-                ev.FileName = recording.FileName;
+                ev.FileName = recording.BaseName;
                 ev.Name = analysisName;
             }
 
@@ -395,7 +394,7 @@ namespace AnalysisPrograms
             //NoiseReductionType nrt = SNR.Key2NoiseReductionType("NONE");
             NoiseReductionType nrt = SNR.KeyToNoiseReductionType("STANDARD");
 
-            var sonogram = (BaseSonogram)SpectrogramStandard.GetSpectralSonogram(recording.FileName, windowSize, windowOverlap, bitsPerSample, windowPower, sr, duration, nrt, matrix);
+            var sonogram = (BaseSonogram)SpectrogramStandard.GetSpectralSonogram(recording.BaseName, windowSize, windowOverlap, bitsPerSample, windowPower, sr, duration, nrt, matrix);
 
             sonogram.DecibelsNormalised = new double[rowCount];
             for (int i = 0; i < rowCount; i++) //foreach frame or time step

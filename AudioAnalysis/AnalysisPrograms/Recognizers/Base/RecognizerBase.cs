@@ -1,15 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="RecognizerBase.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+// <summary>
+//   Defines the RecognizerBase type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms.Recognizers.Base
 {
+    using System;
+    using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
+    using System.Linq;
     using System.Threading;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using Acoustics.Tools.Wav;
 
@@ -55,21 +64,29 @@ namespace AnalysisPrograms.Recognizers.Base
             // get a lazily calculated indices function - if you never get the lazy value, the indices will never be calculated
             var lazyIndices = this.GetLazyIndices(recording, analysisSettings, acousticIndicesParsedConfiguration);
 
+            // determine imageWidth for output images
+            int imageWidth = (int)Math.Floor(recording.Duration().TotalSeconds / acousticIndicesParsedConfiguration.IndexCalculationDuration.TotalSeconds);
+
             // execute actual analysis
             dynamic configuration = analysisSettings.Configuration;
             RecognizerResults results = this.Recognize(
                 recording,
                 analysisSettings.Configuration,
                 analysisSettings.SegmentStartOffset.Value,
-                lazyIndices, 
-                (int)(recording.Duration().TotalSeconds / acousticIndicesParsedConfiguration.IndexCalculationDuration.TotalSeconds));
+                lazyIndices,
+                analysisSettings.AnalysisInstanceOutputDirectory,
+                imageWidth);
 
             var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
 
             BaseSonogram sonogram = results.Sonogram;
             double[,] hits = results.Hits;
-            Plot scores = results.Plot;
             var predictedEvents = results.Events;
+
+            foreach (var predictedEvent in predictedEvents)
+            {
+                predictedEvent.SegmentStartOffset = analysisSettings.SegmentStartOffset.Value;
+            }
 
             analysisResults.Events = predictedEvents.ToArray();
 
@@ -105,11 +122,13 @@ namespace AnalysisPrograms.Recognizers.Base
                         analysisResults.SpectralIndices);
             }
 
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
                 const double EventThreshold = 0.1;
-                Image image = this.DrawSonogram(sonogram, hits, scores, predictedEvents, EventThreshold);
+                var plots = results.Plots ?? new List<Plot>();
+
+                Image image = this.DrawSonogram(sonogram, hits,plots, predictedEvents, EventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
                 analysisResults.ImageFile = analysisSettings.ImageFile;
 
@@ -119,7 +138,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 {
                     this.DrawLongDurationSpectrogram(
                         analysisSettings.AnalysisInstanceOutputDirectory,
-                        recording.FileName,
+                        recording.BaseName,
                         results.ScoreTrack,
                         lazyIndices.Value,
                         acousticIndicesParsedConfiguration);
@@ -172,25 +191,25 @@ namespace AnalysisPrograms.Recognizers.Base
                 // 1: DRAW the coloured ridge spectrograms 
 
                 // passed null for first argument on purpose: we don't want to read files off disk
-                Image ridgeSpectrogram = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(null, ipConfig, fileStem, (double)hiResScale, dictionaryOfSpectra);
+                var ridgeSpectrogram = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(null, ipConfig, fileStem, (double)hiResScale, dictionaryOfSpectra);
                 //var opImages = new List<Image>();
                 //opImages.Add(ridgeSpectrogram);
                 //opImages.Add(scoreTrackImage);
                 // combine and save
                 //Image opImage = ImageTools.CombineImagesVertically(opImages);
 
-                var fileName = FilenameHelpers.AnalysisResultName(ldfcSpectrogramArguments.OutputDirectory, fileStem, "Ridges", ".png");
+                var fileName = FilenameHelpers.AnalysisResultPath(ldfcSpectrogramArguments.OutputDirectory, fileStem, "Ridges", ".png");
                 //opImage.Save(fileName);
                 ridgeSpectrogram.Save(fileName);
             } // if (saveRidgeSpectrograms)
 
             // 2. DRAW the aggregated GREY-SCALE SPECTROGRAMS of SPECTRAL INDICES
-            Image opImage = null;
+            Image opImage;
             bool saveGrayScaleSpectrograms = (bool?)highResolutionConfiguration["SaveGrayScaleSpectrograms"] ?? false;
             if (saveGrayScaleSpectrograms)
             {
                 opImage = DrawLongDurationSpectrograms.DrawGrayScaleSpectrograms(ldfcSpectrogramArguments, fileStem, hiResTimeScale, dictionaryOfSpectra);
-                var fileName = FilenameHelpers.AnalysisResultName(ldfcSpectrogramArguments.OutputDirectory, fileStem, "CombinedGreyScale", ".png");
+                var fileName = FilenameHelpers.AnalysisResultPath(ldfcSpectrogramArguments.OutputDirectory, fileStem, "CombinedGreyScale", ".png");
                 opImage.Save(fileName);
             }
 
@@ -199,11 +218,9 @@ namespace AnalysisPrograms.Recognizers.Base
             if (saveTwoMapsSpectrograms)
             {
                 opImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(ldfcSpectrogramArguments, fileStem, dictionaryOfSpectra);
-                var opImages = new List<Image>();
-                opImages.Add(opImage);
-                opImages.Add(scoreTrack);
+                var opImages = new List<Image> {opImage, scoreTrack};
                 opImage = ImageTools.CombineImagesVertically(opImages);
-                var fileName = FilenameHelpers.AnalysisResultName(ldfcSpectrogramArguments.OutputDirectory, fileStem, "TwoMaps", ".png");
+                var fileName = FilenameHelpers.AnalysisResultPath(ldfcSpectrogramArguments.OutputDirectory, fileStem, "TwoMaps", ".png");
                 opImage.Save(fileName);
             }
         }
@@ -215,7 +232,6 @@ namespace AnalysisPrograms.Recognizers.Base
         /// <param name="analysisResults"></param>
         /// <param name="indexResults"></param>
         /// <param name="highResolutionParsedConfiguration"></param>
-        /// <param name="highResolutionConfig"></param>
         private void SummarizeHighResolutionIndices(
             AnalysisResult2 analysisResults, 
             IndexCalculateResult[] indexResults, 
@@ -239,8 +255,7 @@ namespace AnalysisPrograms.Recognizers.Base
             }
 
             // Place LOW RESOLUTION SPECTRAL INDICES INTO analysisResults before returning. 
-            int windowLength = (int?)highResolutionConfig[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
-            int spectrumLength = windowLength / 2;
+            //int windowLength = (int?)highResolutionConfig[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
             var indexProperties = IndexProperties.GetIndexProperties(highResolutionParsedConfiguration.IndexPropertiesFile);
             SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);
 
@@ -258,7 +273,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
             //TODO TODO TODO
             // ALSO NEED TO COMPRESS THE analysisResults.SummaryIndices To LOW RESOLUTION
-            var summaryIndexValues = new SummaryIndexValues();
+            //var summaryIndexValues = new SummaryIndexValues();
             //summaryIndexValues.BackgroundNoise = ETC;
             // ETC
             //var summaryiv = new SummaryIndexValues[1];
@@ -290,7 +305,7 @@ namespace AnalysisPrograms.Recognizers.Base
             foreach (var kvp in selectors)
             {
                 // write spectrum to disk as CSV file
-                var filename = FilenameHelpers.AnalysisResultName(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv").ToFileInfo();
+                var filename = FilenameHelpers.AnalysisResultPath(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv").ToFileInfo();
                 spectralIndexFiles.Add(filename);
                 Csv.WriteMatrixToCsv(filename, results, kvp.Value);
             }
@@ -298,18 +313,18 @@ namespace AnalysisPrograms.Recognizers.Base
             return spectralIndexFiles;
         }
 
-        public abstract RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int imageWidth);
+        public abstract RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth);
 
         protected virtual Image DrawSonogram(
             BaseSonogram sonogram,
             double[,] hits,
-            Plot scores,
+            List<Plot> scores,
             List<AcousticEvent> predictedEvents,
             double eventThreshold)
         {
-            const bool DoHighlightSubband = false;
-            const bool Add1KHzLines = true;
-            var image = new Image_MultiTrack(sonogram.GetImage(DoHighlightSubband, Add1KHzLines));
+            const bool doHighlightSubband = false;
+            const bool add1KHzLines = true;
+            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines));
 
             ////System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
             ////img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
@@ -317,9 +332,13 @@ namespace AnalysisPrograms.Recognizers.Base
             ////Image_MultiTrack image = new Image_MultiTrack(img);
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+
             if (scores != null)
             {
-                image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
+                foreach (var plot in scores)
+                {
+                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
+                }
             }
 
             if (hits != null)
@@ -336,7 +355,9 @@ namespace AnalysisPrograms.Recognizers.Base
                     sonogram.FramesPerSecond);
             }
 
-            return image.GetImage();
+            var result =  image.GetImage();
+
+            return result;
         }
 
 
@@ -395,6 +416,32 @@ namespace AnalysisPrograms.Recognizers.Base
                     return subsegmentResults;
                 };
             return new Lazy<IndexCalculateResult[]>(callback, LazyThreadSafetyMode.ExecutionAndPublication);
-        } 
+        }
+
+        public static Image DrawDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
+        {
+            const bool doHighlightSubband = false;
+            const bool add1KHzLines = true;
+            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines));
+
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            if (scores != null)
+            {
+                foreach (var plot in scores)
+                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
+            }
+            if (hits != null) image.OverlayRainbowTransparency(hits);
+
+            if (events.Count > 0)
+            {
+                foreach (var ev in events) // set colour for the events
+                {
+                    ev.BorderColour = AcousticEvent.DefaultBorderColor;
+                    ev.ScoreColour = AcousticEvent.DefaultScoreColor;
+                }
+                image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+            }
+            return image.GetImage();
+        }
     }
 }

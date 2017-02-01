@@ -130,7 +130,7 @@ namespace QutBioacosutics.Xie
                 // Step.1 Generate spectrogarm
                 // A. Generate spectrogram for extracting tracks, entropy and harmonic
 
-                var spectrogramLongConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.9, WindowSize = windowSize };
+                var spectrogramLongConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.None, WindowOverlap = 0.9, WindowSize = windowSize };
                 var spectrogramLong = new SpectrogramStandard(spectrogramLongConfig, recording.WavReader);
 
                 // B. Generate spectrogram for extracting oscillation rate
@@ -140,7 +140,7 @@ namespace QutBioacosutics.Xie
                 // Calculate windowOverlap
                 //double windowOverlap = XieFunction.CalculateRequiredWindowOverlap(recording.SampleRate, windowSize, canetoadConfig.MaximumOscillationNumberCanetoad);
 
-                var spectrogramShortConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5, WindowSize = windowSize };
+                var spectrogramShortConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.None, WindowOverlap = 0.5, WindowSize = windowSize };
                 var spectrogramShort = new SpectrogramStandard(spectrogramShortConfig, recording.WavReader);
 
 

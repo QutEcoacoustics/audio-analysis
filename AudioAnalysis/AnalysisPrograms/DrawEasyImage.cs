@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="DrawLongDurationSpectrograms.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 // <summary>
@@ -322,7 +322,7 @@ namespace AnalysisPrograms
                 string dateString = String.Format("{0}{1:D2}{2:D2}", thisday.Year, thisday.Month, thisday.Day);
 
                 string opFileStem = String.Format("{0}_{1}", arguments.FileStemName, dateString);
-                //var indicesFile = FilenameHelpers.AnalysisResultName(resultsDir, opFileStem, LDSpectrogramStitching.SummaryIndicesStr, LDSpectrogramStitching.CsvFileExt);
+                //var indicesFile = FilenameHelpers.AnalysisResultPath(resultsDir, opFileStem, LDSpectrogramStitching.SummaryIndicesStr, LDSpectrogramStitching.CsvFileExt);
 
                 tuple = CsvTools.ReadCSVFile(csvFiles[d].FullName);
                 var arrays = tuple.Item2;

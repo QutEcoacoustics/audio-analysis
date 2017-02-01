@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="Audio2Sonogram.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the Audio2Sonogram type.
@@ -276,7 +276,7 @@ namespace AnalysisPrograms
                 SonogramConfig sonoConfig = new SonogramConfig(configDict); // default values config
 
                 // disable noise removal
-                sonoConfig.NoiseReductionType = NoiseReductionType.NONE;
+                sonoConfig.NoiseReductionType = NoiseReductionType.None;
                 Log.Warn("Noise removal disabled!");
 
                 var sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
@@ -294,7 +294,7 @@ namespace AnalysisPrograms
                 
                 // disable noise removal for first two spectrograms
                 var disabledNoiseReductionType = sonoConfig.NoiseReductionType;
-                sonoConfig.NoiseReductionType = NoiseReductionType.NONE;
+                sonoConfig.NoiseReductionType = NoiseReductionType.None;
 
                 BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
                 // remove the DC bin
@@ -425,6 +425,7 @@ namespace AnalysisPrograms
         public string DisplayName { get; private set; }
 
         public string Identifier { get; private set; }
+        public string Description => "This analyzer simply generates short (i.e. one minute) spectrograms and outputs them to CSV files. It does not accumulate data or other indices over a long recording.";
 
         public AnalysisSettings DefaultSettings { get; private set; }
 
@@ -462,7 +463,7 @@ namespace AnalysisPrograms
 
             // this analysis produces no results!
             // but we still print images (that is the point)
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResult.Events.Length))
             {
                 Debug.Assert(analysisSettings.ImageFile.Exists);
             }

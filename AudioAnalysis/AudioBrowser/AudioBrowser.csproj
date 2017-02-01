@@ -184,10 +184,6 @@
       <Project>{EC323929-0160-46BC-A04B-B4A66D02E757}</Project>
       <Name>AnalysisPrograms</Name>
     </ProjectReference>
-    <ProjectReference Include="..\AnalysisRunner\AnalysisRunner.csproj">
-      <Project>{EEB8AE89-A07B-4974-8685-88BDCFF22C78}</Project>
-      <Name>AnalysisRunner</Name>
-    </ProjectReference>
     <ProjectReference Include="..\AudioAnalysisTools\AudioAnalysisTools.csproj">
       <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>
       <Name>AudioAnalysisTools</Name>

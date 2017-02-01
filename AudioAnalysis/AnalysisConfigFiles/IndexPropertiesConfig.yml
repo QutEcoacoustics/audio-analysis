@@ -313,7 +313,7 @@ ClusterCount:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0
-  NormMax: 20
+  NormMax: 50
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: true
@@ -337,7 +337,7 @@ ThreeGramCount:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0
-  NormMax: 200
+  NormMax: 1500
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: false
@@ -349,7 +349,7 @@ SptDensity:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 20.0
+  NormMax: 10.0
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: false
@@ -575,9 +575,9 @@ BGN:
   DefaultValue: -100.0
   DoDisplay: true
   # min = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20 = -80-20 = -100, 
-  # -20 adds more contrast into BGN spectrogram
+  # Usual value is -30. However -20 adds more contrast into BGN spectrogram
   NormMin: -100.0
-  NormMax: -30.0
+  NormMax: -20.0
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -663,7 +663,7 @@ POW:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 7.0
+  NormMax: 6.0
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -675,7 +675,7 @@ SPT:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.05
-  NormMax: 0.11
+  NormMax: 0.7
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -686,8 +686,8 @@ RHZ:
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 0.0
-  NormMax: 0.8
+  NormMin: 0.1
+  NormMax: 1.5
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices

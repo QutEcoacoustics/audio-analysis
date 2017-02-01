@@ -1,0 +1,53 @@
+---
+AnalysisName: Towsey.CycloranaNovaehollandiae
+SpeciesName: Cyclorana novaehollandiae
+AbbreviatedSpeciesName: C.novae
+
+# min and max of the freq band to search
+MinHz: 400          
+MaxHz: 600
+# duration of DCT in seconds 
+DctDuration: 0.1
+# minimum acceptable value of a DCT coefficient
+DctThreshold: 0.45
+# ignore oscillation rates below the min & above the max threshold
+# OSCILLATIONS PER SECOND
+MinOcilFreq: 200        
+MaxOcilFreq: 240
+# Minimum and maximum duration for the length of a true advertisement call.
+# As of 4 June 2015, the Code for Canetoad recogniser was changed to include recognition of release calls.
+# The min duration setting of 5 seconds should not be changed because it is boundary between advert calls ( >5s duration) and release calls (<5s duration).
+# The min duration for a release call will be set = to the DCT duration in the code. 
+MinDuration: 0.2
+MaxDuration: 0.3
+# Event threshold - use this to determine FP / FN trade-off for events.
+EventThreshold: 0.40
+
+# Standard settings
+#DoNoiseReduction: false
+#BgNoiseThreshold: 3.0
+
+# Resample rate must be 2 X the desired Nyquist
+# ResampleRate: 17640
+ResampleRate: 22050
+FrameSize: 64
+
+## Specifically for AnalyzeLongRecording
+# SegmentDuration: units=minutes;    
+SegmentDuration: 1
+# SegmentOverlap: units=seconds;
+SegmentOverlap: 0
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+SaveIntermediateCsvFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
+# DisplayCsvImage is obsolete - ensure it remains set to: false
+DisplayCsvImage: false
+ParallelProcessing: false
+## End section for AnalyzeLongRecording
+
+# Other config files to reference
+IndexPropertiesConfig: "./IndexPropertiesConfigHiRes.yml"
+HighResolutionIndicesConfig: "./Towsey.AcousticHiResIndicesForRecognisers.yml"
+...

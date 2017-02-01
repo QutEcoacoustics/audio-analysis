@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="MainEntry.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the MainEntry type.
@@ -27,15 +27,17 @@ namespace AnalysisPrograms
 
         public static int Main(string[] args)
         {
+            // HACK: Disable the following two line when argument refactoring is done
+            //var options = DebugOptions.Yes;
+            //AttachDebugger(ref options);
+
+            ParseEnvirionemnt();
+
             Copyright();
 
             AttachExceptionHandler();
 
             NoConsole.Log.Info("Executable called with these arguments: {1}{0}{1}".Format2(Environment.CommandLine, Environment.NewLine));
-
-            // HACK: Remove the following two line when argument refactoring is done
-            //var options = DebugOptions.Yes;
-            //AttachDebugger(ref options);
 
             Arguments = ParseArguments(args);
 

@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="LDSpectrogram3D.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   This class generates three dimensional false-colour spectrograms of long duration audio recordings.
@@ -20,23 +20,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System;
     using System.Collections.Generic;
     using System.Drawing;
-    using System.Drawing.Imaging;
     using System.IO;
-    using System.Linq;
     using System.Reflection;
 
     using Acoustics.Shared;
-
-    using AnalysisBase.ResultBases;
-
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
 
     using log4net;
 
     using TowseyLibrary;
-    using Acoustics.Shared.Csv;
-    using System.Text;
 
     /// <summary>
     /// This class generates false-colour spectrograms of long duration audio recordings.
@@ -50,35 +43,33 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     /// and then call config.WritConfigToYAML(FileInfo path).
     /// Then pass that path to the above static method.
     /// </summary>
-    public static class LDSpectrogram3D
+    public static class LdSpectrogram3D
     {
-        public const string keyYear      = "Year";
-        public const string keyDayOfYear = "DayOfYear";
-        public const string keyMinOfDay  = "MinOfDay";
-        public const string keyFreqBin   = "FreqBin";
+        public const string KeyYear      = "Year";
+        public const string KeyDayOfYear = "DayOfYear";
+        public const string KeyMinOfDay  = "MinOfDay";
+        public const string KeyFreqBin   = "FreqBin";
 
-        public const int Total_Minutes_In_Day = 1440;
-        public const int Total_Days_In_Year   = 365;
+        public const int TotalMinutesInDay = 1440;
+        public const int TotalDaysInYear   = 365;
 
 
         private static Arguments Dev()
         {
             DateTime time = DateTime.Now;
-            string datestamp = String.Format("{0}{1:d2}{2:d2}", time.Year, time.Month, time.Day);
-            return new Arguments
-            {
-                IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
-                BrisbaneSunriseDatafile = @"C:\SensorNetworks\OutputDataSets\SunRiseSet\SunriseSet2013Brisbane.csv".ToFileInfo(),
-                //Source = @"Y:\Results\2013Feb05-184941 - Indicies Analysis of all of availae\SERF\Veg".ToDirectoryInfo(),
-                InputDir = @"C:\SensorNetworks\OutputDataSets\SERF - November 2013 Download".ToDirectoryInfo(),
-                //Source = @"Y:\Results\2013Nov30-023140 - SERF - November 2013 Download\SERF\November 2013 Download\Veg Plot WAV".ToDirectoryInfo(),
-                //SonoConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
-                TableDir = (@"C:\SensorNetworks\OutputDataSets\Spectrograms3D\").ToDirectoryInfo(),
-                OutputDir = (@"C:\SensorNetworks\Output\FalseColourSpectrograms\Spectrograms3D\"/* + datestamp*/).ToDirectoryInfo(),
-                SampleRate = 17640,
-                FrameSize  = 512,
-                Verbose = true
-            };
+            string datestamp = $"{time.Year}{time.Month:d2}{time.Day:d2}";
+            var dev = new Arguments();
+            dev.IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml"
+                .ToFileInfo();
+            dev.BrisbaneSunriseDatafile = @"C:\SensorNetworks\OutputDataSets\SunRiseSet\SunriseSet2013Brisbane.csv".ToFileInfo();
+            dev.InputDir = @"C:\SensorNetworks\OutputDataSets\SERF - November 2013 Download".ToDirectoryInfo();
+            dev.TableDir = (@"C:\SensorNetworks\OutputDataSets\Spectrograms3D\").ToDirectoryInfo();
+            dev.OutputDir = (@"C:\SensorNetworks\Output\FalseColourSpectrograms\Spectrograms3D\" /* + datestamp*/)
+                .ToDirectoryInfo();
+            dev.SampleRate = 17640;
+            dev.FrameSize = 512;
+            dev.Verbose = true;
+            return dev;
         }
 
         // use the following paths for the command line for the <audio2sonogram> task. 
@@ -91,8 +82,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //public FileInfo     SonoConfig { get; set; }
             public DirectoryInfo  TableDir { get; set; } // intermediate storage for pivot table files
             public DirectoryInfo OutputDir { get; set; }
-            public Int32 SampleRate { get; set; }
-            public Int32 FrameSize  { get; set; }
+            public int SampleRate { get; set; }
+            public int FrameSize  { get; set; }
             public static string Description()
             {
                 return "Reads Pivot-table files to create 3-D spectrograms.";
@@ -121,9 +112,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 arguments.OutputDir.Create();
             }
 
-            const string Title = "# READ LD data table files to prepare a 3D Spectrogram";
+            const string title = "# READ LD data table files to prepare a 3D Spectrogram";
             string dateNow = "# DATE AND TIME: " + DateTime.Now;
-            LoggedConsole.WriteLine(Title);
+            LoggedConsole.WriteLine(title);
             LoggedConsole.WriteLine(dateNow);
             LoggedConsole.WriteLine("# Index    Properties: " + arguments.IndexPropertiesConfig.Name);
             LoggedConsole.WriteLine("# Input     directory: " + arguments.InputDir.Name);
@@ -143,8 +134,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // FileInfo configFile = arguments.SonoConfig;
             FileInfo indexPropertiesConfig = arguments.IndexPropertiesConfig;
             FileInfo sunriseSetData = arguments.BrisbaneSunriseDatafile;
-            Int32 sampleRate = arguments.SampleRate;
-            Int32 frameSize  = arguments.FrameSize;
+            int sampleRate = arguments.SampleRate;
+            int frameSize  = arguments.FrameSize;
             int nyquistFreq = sampleRate / 2;
             int freqBinCount = frameSize / 2;
             double freqBinWidth = nyquistFreq / (double)freqBinCount;
@@ -157,13 +148,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
             // ############ use next seven lines to obtain slices at constant DAY OF YEAR
-            string key = keyDayOfYear;
+            string key = KeyDayOfYear;
             int step = 1;
             int firstIndex = 71;
-            int maxSliceCount = LDSpectrogram3D.Total_Days_In_Year + 1;
-            var XInterval = TimeSpan.FromMinutes(60); // one hour intervals = 60 pixels
-            int rowID = 3; // FreqBin
-            int colID = 2; // MinOfDay
+            int maxSliceCount = LdSpectrogram3D.TotalDaysInYear + 1;
+            var xInterval = TimeSpan.FromMinutes(60); // one hour intervals = 60 pixels
+            int rowId = 3; // FreqBin
+            int colId = 2; // MinOfDay
 
             // ############ use next seven lines to obtain slices at constant FREQUENCY
             //string key = keyFreqBin;
@@ -186,58 +177,58 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // These are the column names and order in the csv data strings.
             // Year, DayOfYear, MinOfDay, FreqBin, ACI, AVG, BGN, CVR, TEN, VAR
             string colorMap = "ACI-TEN-CVR";
-            int redID = 4; // ACI
-            int grnID = 8; // TEN
-            int bluID = 7; // CVR
+            int redId = 4; // ACI
+            int grnId = 8; // TEN
+            int bluId = 7; // CVR
             int year = 2013;
 
-            for (int sliceID = firstIndex; sliceID < maxSliceCount; sliceID += step)
+            for (int sliceId = firstIndex; sliceId < maxSliceCount; sliceId += step)
             {
                 // DEFINE THE SLICE
                 //sliceID = 300; // Herz
-                int arrayID = sliceID;
+                int arrayId = sliceId;
                 if (key == "FreqBin")
-                    arrayID = (int)Math.Round(sliceID / (double)freqBinWidth);
-                string fileStem = String.Format("SERF_2013_" + key + "_{0:d4}", arrayID);
+                    arrayId = (int)Math.Round(sliceId / (double)freqBinWidth);
+                var fileStem = string.Format("SERF_2013_" + key + "_{0:d4}", arrayId);
 
                 // 3. Read a data slice from the data table files
                 List<string> data;
-                string outputFileName = String.Format("{0}.csv", fileStem);
-                string path = Path.Combine(opDir.FullName, outputFileName);
+                var outputFileName = string.Format("{0}.csv", fileStem);
+                var path = Path.Combine(opDir.FullName, outputFileName);
                 if (File.Exists(path))
                 {
                     data = FileTools.ReadTextFile(path);
                 }
                 else
                 {
-                    if (key == keyDayOfYear)
+                    if (key == KeyDayOfYear)
                     {
-                        data = LDSpectrogram3D.GetDaySlice(dataTableDirInfo, year, arrayID);
+                        data = LdSpectrogram3D.GetDaySlice(dataTableDirInfo, year, arrayId);
                     }
                     else
                     {
-                        data = LDSpectrogram3D.GetDataSlice(dataTableDirInfo, key, arrayID);
+                        data = LdSpectrogram3D.GetDataSlice(dataTableDirInfo, key, arrayId);
                     }
                     FileTools.WriteTextFile(path, data);
                 }
 
 
                 // 4. Read the yaml file describing the Index Properties 
-                Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfig);
-                dictIP = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(dictIP);
+                Dictionary<string, IndexProperties> dictIp = IndexProperties.GetIndexProperties(indexPropertiesConfig);
+                dictIp = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(dictIp);
 
                 // 5. Convert data slice to image
                 string[] indexNames = colorMap.Split('-');
-                IndexProperties ipRed = dictIP[indexNames[0]];
-                IndexProperties ipGrn = dictIP[indexNames[1]];
-                IndexProperties ipBlu = dictIP[indexNames[2]];
-                Image image = LDSpectrogram3D.GetImageSlice(key, data, rowID, colID, redID, grnID, bluID, ipRed, ipGrn, ipBlu, freqBinCount);
+                IndexProperties ipRed = dictIp[indexNames[0]];
+                IndexProperties ipGrn = dictIp[indexNames[1]];
+                IndexProperties ipBlu = dictIp[indexNames[2]];
+                Image image = LdSpectrogram3D.GetImageSlice(key, data, rowId, colId, redId, grnId, bluId, ipRed, ipGrn, ipBlu, freqBinCount);
 
                 // 6. frame the image and save
-                image = LDSpectrogram3D.Frame3DSpectrogram(image, key, arrayID, year, colorMap, XInterval, nyquistFreq, sliceID, sunriseSetData);
+                image = LdSpectrogram3D.Frame3DSpectrogram(image, key, arrayId, year, colorMap, xInterval, nyquistFreq, sliceId, sunriseSetData);
 
                 // 7. save the image
-                outputFileName = String.Format("{0}.png", fileStem);
+                outputFileName = string.Format("{0}.png", fileStem);
                 path = Path.Combine(opDir.FullName, outputFileName);
                 image.Save(path);
             } // end loop through slices
@@ -245,44 +236,41 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         } // end Main()
 
 
-        public static Image GetImageSlice(string key, List<string> data, int rowID, int colID, int redID, int grnID, int bluID,
+        public static Image GetImageSlice(string key, List<string> data, int rowId, int colId, int redId, int grnId, int bluId,
                                            IndexProperties ipRed, IndexProperties ipGrn, IndexProperties ipBlu, int freqBinCount)
         {
             Bitmap image = null;
-            if (key == keyFreqBin)
+            switch (key)
             {
-                image = new Bitmap(LDSpectrogram3D.Total_Minutes_In_Day, LDSpectrogram3D.Total_Days_In_Year);
-            } else
-                if (key == keyDayOfYear)
-                {
-                    image = new Bitmap(LDSpectrogram3D.Total_Minutes_In_Day, freqBinCount);
-                }
-                else
-                    if (key == keyMinOfDay)
-                    {
-                        image = new Bitmap(LDSpectrogram3D.Total_Days_In_Year, freqBinCount);
-                    }
+                case KeyFreqBin:
+                    image = new Bitmap(LdSpectrogram3D.TotalMinutesInDay, LdSpectrogram3D.TotalDaysInYear);
+                    break;
+                case KeyDayOfYear:
+                    image = new Bitmap(LdSpectrogram3D.TotalMinutesInDay, freqBinCount);
+                    break;
+                case KeyMinOfDay:
+                    image = new Bitmap(LdSpectrogram3D.TotalDaysInYear, freqBinCount);
+                    break;
+            }
 
 
-            int MaxRGBValue = 255;
-            int r, b, g;
-            double redValue, grnValue, bluValue;
+            int maxRgbValue = 255;
 
             foreach (string line in data)
             {
                 string[] fields = line.Split(',');
-                int row = Int32.Parse(fields[rowID]);
-                int col = Int32.Parse(fields[colID]);
+                int row = int.Parse(fields[rowId]);
+                int col = int.Parse(fields[colId]);
 
                 // these images must be inverted to show zero Hz at bottom
-                if ((key == keyMinOfDay) || (key == keyDayOfYear))
+                if ((key == KeyMinOfDay) || (key == KeyDayOfYear))
                 {
                     row = freqBinCount -1 - row;
                 }
 
-                redValue = Double.Parse(fields[redID]);
-                grnValue = Double.Parse(fields[grnID]);
-                bluValue = Double.Parse(fields[bluID]);
+                var redValue = double.Parse(fields[redId]);
+                var grnValue = double.Parse(fields[grnId]);
+                var bluValue = double.Parse(fields[bluId]);
 
                 redValue = ipRed.NormaliseValue(redValue);
                 grnValue = ipGrn.NormaliseValue(1 - grnValue); // temporal entropy
@@ -292,10 +280,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 //MatrixTools.FilterBackgroundValues(matrix, this.BackgroundFilter);
 
 
-                r = Convert.ToInt32(Math.Max(0, redValue * MaxRGBValue));
-                g = Convert.ToInt32(Math.Max(0, grnValue * MaxRGBValue));
-                b = Convert.ToInt32(Math.Max(0, bluValue * MaxRGBValue));
-                Color colour = Color.FromArgb(r, g, b);
+                var r = Convert.ToInt32(Math.Max(0, redValue * maxRgbValue));
+                var g = Convert.ToInt32(Math.Max(0, grnValue * maxRgbValue));
+                var b = Convert.ToInt32(Math.Max(0, bluValue * maxRgbValue));
+                var colour = Color.FromArgb(r, g, b);
                 image.SetPixel(col, row, colour);
             }
 
@@ -305,26 +293,26 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return image;
         }
 
-        public static Image Frame3DSpectrogram(Image image, string key, int value, int year, string colorMap, TimeSpan X_interval, int nyquistFreq, int unitValue, FileInfo sunriseSetData)
+        public static Image Frame3DSpectrogram(Image image, string key, int value, int year, string colorMap, TimeSpan xInterval, int nyquistFreq, int unitValue, FileInfo sunriseSetData)
         {
 
-            if (key == LDSpectrogram3D.keyDayOfYear)
+            if (key == LdSpectrogram3D.KeyDayOfYear)
             {
-                string title = string.Format("SPECTROGRAM (hours x Herz): {0}={1}      (R-G-B={2})", key, value, colorMap, unitValue);
-                Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
-                return FrameSliceOf3DSpectrogram_DayOfYear(image, titleBar, year, value, X_interval, unitValue, sunriseSetData, nyquistFreq);
+                var title = string.Format("SPECTROGRAM (hours x Herz): {0}={1}      (R-G-B={2})", key, value, colorMap, unitValue);
+                var titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
+                return FrameSliceOf3DSpectrogram_DayOfYear(image, titleBar, year, value, xInterval, unitValue, sunriseSetData, nyquistFreq);
             }
             else
-            if (key == LDSpectrogram3D.keyFreqBin)
+            if (key == LdSpectrogram3D.KeyFreqBin)
             {
-                string title = string.Format("SPECTROGRAM (hours x months): {0}={1}      (R-G-B={2})", key, value, colorMap, unitValue);
-                Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
-                return FrameSliceOf3DSpectrogram_ConstantFreq(image, titleBar, X_interval, unitValue, sunriseSetData, nyquistFreq);
+                var title = string.Format("SPECTROGRAM (hours x months): {0}={1}      (R-G-B={2})", key, value, colorMap, unitValue);
+                var titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
+                return FrameSliceOf3DSpectrogram_ConstantFreq(image, titleBar, xInterval, unitValue, sunriseSetData, nyquistFreq);
             } else
-            if (key == LDSpectrogram3D.keyMinOfDay)
+            if (key == LdSpectrogram3D.KeyMinOfDay)
             {
-                string title = string.Format("SPECTROGRAM (months x Herz): {0}={1}       (R-G-B={2})", key, value, colorMap, unitValue);
-                Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
+                var title = string.Format("SPECTROGRAM (months x Herz): {0}={1}       (R-G-B={2})", key, value, colorMap, unitValue);
+                var titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
                 return FrameSliceOf3DSpectrogram_ConstantMin((Bitmap)image, titleBar, nyquistFreq, unitValue, sunriseSetData);
             }
 
@@ -332,7 +320,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
-        public static Image FrameSliceOf3DSpectrogram_DayOfYear(Image bmp1, Image titleBar, int year, int dayOfYear, TimeSpan X_interval, int HerzValue, FileInfo sunriseSetData, int nyquistFreq)
+        public static Image FrameSliceOf3DSpectrogram_DayOfYear(Image bmp1, Image titleBar, int year, int dayOfYear, TimeSpan xInterval, int herzValue, FileInfo sunriseSetData, int nyquistFreq)
         {
 
             Bitmap suntrack = SunAndMoon.AddSunTrackToImage(bmp1.Width, sunriseSetData, year, dayOfYear);
@@ -343,26 +331,26 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //Font stringFont = new Font("Tahoma", 9);
 
             DateTime theDate = new DateTime(year, 1, 1).AddDays(dayOfYear-1);
-            string dateString = String.Format("{0} {1} {2:d2}", year, DataTools.MonthNames[theDate.Month-1], theDate.Day);
+            string dateString = string.Format("{0} {1} {2:d2}", year, DataTools.MonthNames[theDate.Month-1], theDate.Day);
             g.DrawString(dateString, stringFont, Brushes.Wheat, new PointF(10, 3));
 
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
             var minuteOffset = TimeSpan.Zero;
             double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp1.Width;
             TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, minuteOffset, fullDuration, X_interval, nyquistFreq, 1000);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, minuteOffset, fullDuration, xInterval, nyquistFreq, 1000);
 
             int trackHeight = 20;
             int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
             TimeSpan xAxisTicInterval = TimeSpan.FromMinutes(60); // assume 60 pixels per hour
-            Bitmap timeScale24hour = Image_Track.DrawTimeTrack(fullDuration, minuteOffset, xAxisTicInterval, bmp1.Width, trackHeight, "hours");
+            Bitmap timeScale24Hour = Image_Track.DrawTimeTrack(fullDuration, minuteOffset, xAxisTicInterval, bmp1.Width, trackHeight, "hours");
 
             var imageList = new List<Image>();
             imageList.Add(titleBar);
-            imageList.Add(timeScale24hour);
+            imageList.Add(timeScale24Hour);
             imageList.Add(suntrack);
             imageList.Add(bmp1);
-            imageList.Add(timeScale24hour);
+            imageList.Add(timeScale24Hour);
             Image compositeBmp = ImageTools.CombineImagesVertically(imageList.ToArray());
 
             trackHeight = compositeBmp.Height;
@@ -380,45 +368,39 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
-        public static Image FrameSliceOf3DSpectrogram_ConstantFreq(Image bmp1, Image titleBar, TimeSpan X_interval, int HerzValue, FileInfo sunriseSetData, int nyquistFreq)
+        public static Image FrameSliceOf3DSpectrogram_ConstantFreq(Image bmp1, Image titleBar, TimeSpan xInterval, int herzValue, FileInfo sunriseSetData, int nyquistFreq)
         {
 
             SunAndMoon.AddSunRiseSetLinesToImage((Bitmap)bmp1, sunriseSetData, 0 , 365, 1);// assume full year and 1px/day
             
-            Graphics g = Graphics.FromImage(bmp1);
-            Pen pen = new Pen(Color.White);
-            Font stringFont = new Font("Arial", 12);
+            var g = Graphics.FromImage(bmp1);
+            var pen = new Pen(Color.White);
+            var stringFont = new Font("Arial", 12);
             //Font stringFont = new Font("Tahoma", 9);
 
-            string str = String.Format("Freq = {0} Hz", HerzValue);
+            var str = string.Format("Freq = {0} Hz", herzValue);
             g.DrawString(str, stringFont, Brushes.Wheat, new PointF(10, 7));
 
-            TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
+            var xAxisPixelDuration = TimeSpan.FromSeconds(60);
             var startOffset = TimeSpan.Zero;
             double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp1.Width;
-            TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, fullDuration, X_interval, nyquistFreq, 1000);
+            var fullDuration = TimeSpan.FromSeconds(secondsDuration);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, fullDuration, xInterval, nyquistFreq, 1000);
 
             int trackHeight = 20;
-            int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
-            TimeSpan xAxisTicInterval = TimeSpan.FromMinutes(60); // assume 60 pixels per hour
-            Bitmap timeScale24hour = Image_Track.DrawTimeTrack(fullDuration, startOffset, xAxisTicInterval, bmp1.Width, trackHeight, "hours");
+            //int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
+            var xAxisTicInterval = TimeSpan.FromMinutes(60); // assume 60 pixels per hour
+            var timeScale24Hour = Image_Track.DrawTimeTrack(fullDuration, startOffset, xAxisTicInterval, bmp1.Width, trackHeight, "hours");
 
-            var imageList = new List<Image>();
-            imageList.Add(titleBar);
-            imageList.Add(timeScale24hour);
-            imageList.Add(bmp1);
-            imageList.Add(timeScale24hour);
-            Image compositeBmp = ImageTools.CombineImagesVertically(imageList.ToArray());
+            var imageList = new List<Image> {titleBar, timeScale24Hour, bmp1, timeScale24Hour};
+            var compositeBmp = ImageTools.CombineImagesVertically(imageList.ToArray());
+            if (compositeBmp == null) throw new ArgumentNullException(nameof(compositeBmp));
 
             trackHeight = compositeBmp.Height;
             Bitmap timeScale12Months = Image_Track.DrawYearScale_vertical(40, trackHeight);
-            Bitmap freqScale = DrawFreqScale_vertical(40, trackHeight, HerzValue, nyquistFreq);
+            Bitmap freqScale = DrawFreqScale_vertical(40, trackHeight, herzValue, nyquistFreq);
 
-            imageList = new List<Image>();
-            imageList.Add(timeScale12Months);
-            imageList.Add(compositeBmp);
-            imageList.Add(freqScale);
+            imageList = new List<Image> {timeScale12Months, compositeBmp, freqScale};
             compositeBmp = ImageTools.CombineImagesInLine(imageList.ToArray());
 
             return compositeBmp;
@@ -426,41 +408,41 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
         // mark off Y-axis frequency scale.
-        public static Bitmap DrawFreqScale_vertical(int Yoffset, int trackHeight, int HerzValue, int nyquistFreq)
+        public static Bitmap DrawFreqScale_vertical(int yoffset, int trackHeight, int herzValue, int nyquistFreq)
         {
 
-            double herzPerPixel = nyquistFreq / (double)(trackHeight - Yoffset);
+            double herzPerPixel = nyquistFreq / (double)(trackHeight - yoffset);
             double gridInterval = 1000 / herzPerPixel;
-            int Ymark = trackHeight - (int)Math.Round(HerzValue / herzPerPixel);
+            int ymark = trackHeight - (int)Math.Round(herzValue / herzPerPixel);
             int gridCount = nyquistFreq / 1000;
 
-            int Xoffset = 10;
+            int xoffset = 10;
             int trackWidth = 45;
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.LightGray);
-            g.FillRectangle(Brushes.Black, Xoffset, 0, bmp.Width - 1, bmp.Height - 1);
+            g.FillRectangle(Brushes.Black, xoffset, 0, bmp.Width - 1, bmp.Height - 1);
 
             Pen grayPen = new Pen(Color.DarkGray);
             Pen whitePen = new Pen(Color.White);
             Font stringFont = new Font("Arial", 9);
-            g.DrawString("Herz", stringFont, Brushes.Yellow, new PointF(Xoffset+2, 6)); //draw label
-            g.DrawString("Scale", stringFont, Brushes.Yellow, new PointF(Xoffset, 19)); //draw label
-            g.DrawLine(whitePen, Xoffset, Yoffset, trackWidth, Yoffset);
-            g.DrawLine(whitePen, Xoffset, Yoffset - 1, trackWidth, Yoffset - 1);
+            g.DrawString("Herz", stringFont, Brushes.Yellow, new PointF(xoffset+2, 6)); //draw label
+            g.DrawString("Scale", stringFont, Brushes.Yellow, new PointF(xoffset, 19)); //draw label
+            g.DrawLine(whitePen, xoffset, yoffset, trackWidth, yoffset);
+            g.DrawLine(whitePen, xoffset, yoffset - 1, trackWidth, yoffset - 1);
 
             for (int i = 1; i <= gridCount; i++) //for pixels in the line
             {
-                int Y = trackHeight - (int)Math.Round(i * gridInterval);
-                g.DrawLine(whitePen, Xoffset, Y, trackWidth, Y);
+                int y = trackHeight - (int)Math.Round(i * gridInterval);
+                g.DrawLine(whitePen, xoffset, y, trackWidth, y);
             } // end over all pixels
 
 
             // draw the current herz mark
             Pen yellowPen = new Pen(Color.Yellow);
-            g.DrawLine(yellowPen, Xoffset, Ymark,     trackWidth, Ymark);
-            g.DrawLine(yellowPen, Xoffset, Ymark - 1, trackWidth, Ymark - 1);
-            g.DrawString(HerzValue.ToString(), stringFont, Brushes.White, new PointF(Xoffset+1, Ymark - 14)); //draw time
+            g.DrawLine(yellowPen, xoffset, ymark,     trackWidth, ymark);
+            g.DrawLine(yellowPen, xoffset, ymark - 1, trackWidth, ymark - 1);
+            g.DrawString(herzValue.ToString(), stringFont, Brushes.White, new PointF(xoffset+1, ymark - 14)); //draw time
             //g.DrawLine(whitePen, 0, daysInYear + offset, trackWidth, daysInYear + offset);
             //g.DrawLine(whitePen, 0, offset, trackWidth, offset);          //draw lower boundary
             // g.DrawLine(whitePen, duration, 0, duration, trackHeight - 1);//draw right end boundary
@@ -480,7 +462,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //Font stringFont = new Font("Tahoma", 9);
 
             TimeSpan time = TimeSpan.FromMinutes((double)minuteOfDay);
-            string str = String.Format("Time = {0}h:{1}m", time.Hours, time.Minutes);
+            string str = string.Format("Time = {0}h:{1}m", time.Hours, time.Minutes);
             g.DrawString(str, stringFont, Brushes.Wheat, new PointF(10, 7));
 
             int binCount = 512;
@@ -490,37 +472,28 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             for (int i = 1; i <= lineCount; i++)
             {
-                int Y = imageHeight - (int)Math.Round(i * gridLineInterval);
-                for (int X = 1; X < imageWidth; X++)
+                int y = imageHeight - (int)Math.Round(i * gridLineInterval);
+                for (int x = 1; x < imageWidth; x++)
                 {
-                    bmp1.SetPixel(X, Y, Color.White);
-                    bmp1.SetPixel(X-1, Y, Color.Black);
-                    X++;
+                    bmp1.SetPixel(x, y, Color.White);
+                    bmp1.SetPixel(x-1, y, Color.Black);
+                    x++;
                 }
             }
 
             AddDaylightMinutesToImage(bmp1, sunriseSetData, minuteOfDay);
 
-
             //TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
             //var minOffset = TimeSpan.Zero;
             //SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, minOffset, X_interval, xAxisPixelDuration, 120, 10);
 
-            int trackHeight = 20;
-            Bitmap timeScale12Months = Image_Track.DrawYearScale_horizontal(imageWidth, trackHeight);
+            const int trackHeight = 20;
+            var timeScale12Months = Image_Track.DrawYearScale_horizontal(imageWidth, trackHeight);
+            var imageList = new List<Image> {titleBar, timeScale12Months, bmp1, timeScale12Months};
+            var compositeBmp = ImageTools.CombineImagesVertically(imageList.ToArray());
 
-            //int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
-
-            var imageList = new List<Image>();
-            imageList.Add(titleBar);
-            imageList.Add(timeScale12Months);
-            imageList.Add(bmp1);
-            imageList.Add(timeScale12Months);
-            Image compositeBmp = ImageTools.CombineImagesVertically(imageList.ToArray());
-
-            imageWidth = compositeBmp.Height;
-
-            imageList = new List<Image>();
+            //imageWidth = compositeBmp.Height;
+            //imageList = new List<Image>();
             //imageList.Add(timeScale12Months);
             //imageList.Add(compositeBmp);
             //compositeBmp = ImageTools.CombineImagesInLine(imageList.ToArray());
@@ -534,7 +507,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             if (minuteOfDay < 180) return;
             if (minuteOfDay > 1260) return;
 
-            List<string> lines = FileTools.ReadTextFile(sunriseSetData.FullName);
+            var lines = FileTools.ReadTextFile(sunriseSetData.FullName);
 
             for (int i = 1; i <= 365; i++) // skip header
             {
@@ -543,13 +516,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 // DayOfyear	Date	Astro start	Astro end	Naut start	Naut end	Civil start	Civil end	Sunrise	  Sunset
                 //    1	      1-Jan-13	3:24 AM	     8:19 PM	3:58 AM	     7:45 PM	4:30 AM	    7:13 PM	    4:56 AM	  6:47 PM
 
-                int dayOfYear = Int32.Parse(fields[0]);
+                int dayOfYear = int.Parse(fields[0]);
                 string[] sunriseArray = fields[6].Split(' ');
                 string[] sunsetArray = fields[7].Split(' ');
                 sunriseArray = sunriseArray[0].Split(':');
                 sunsetArray = sunsetArray[0].Split(':');
-                int sunriseMinute = (Int32.Parse(sunriseArray[0]) * 60) + Int32.Parse(sunriseArray[1]);
-                int sunsetMinute = (Int32.Parse(sunsetArray[0]) * 60) + Int32.Parse(sunsetArray[1]) + 720;
+                int sunriseMinute = (int.Parse(sunriseArray[0]) * 60) + int.Parse(sunriseArray[1]);
+                int sunsetMinute = (int.Parse(sunsetArray[0]) * 60) + int.Parse(sunsetArray[1]) + 720;
 
                 if ((minuteOfDay >= sunriseMinute) && (minuteOfDay <= sunsetMinute))
                 {
@@ -567,11 +540,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// The method assumes that the file name has following structure:  XXXXX_YYYYMMDD.SpectralIndices.PivotTable.csv
         /// </summary>
         /// <param name="dataTableDir"></param>
-        /// <param name="value"></param>
+        /// <param name="year"></param>
+        /// <param name="dayOfYear"></param>
         /// <returns></returns>
         public static List<string> GetDaySlice(DirectoryInfo dataTableDir, int year, int dayOfYear)
         {
-            string key = keyDayOfYear;
+            string key = KeyDayOfYear;
             LoggedConsole.WriteLine("GetDataSlice() for DayOfYear=" + dayOfYear + ": ");
 
             //get structure of the first file name in the directory
@@ -584,7 +558,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             DateTime date = new DateTime(year, 1, 1).AddDays(dayOfYear - 1); 
             
             //string stem = stemParts[0] + "_" + date.Year + date.Month + date.Day + "." + nameParts[1] + "." + nameParts[2] + nameParts[3];
-            string stem = String.Format("{0}_{1:d4}{2:d2}{3:d2}.{4}.{5}.{6}", stemParts[0], date.Year, date.Month, date.Day, nameParts[1], nameParts[2], nameParts[3]);
+            string stem =
+                $"{stemParts[0]}_{date.Year:d4}{date.Month:d2}{date.Day:d2}.{nameParts[1]}.{nameParts[2]}.{nameParts[3]}";
 
 
             string path = Path.Combine(dataTableDir.FullName, stem);
@@ -623,22 +598,23 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             dynamic configuration = Yaml.Deserialise(configFile);
 
-            var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
-
-            configDict[AnalysisKeys.AddAxes] = ((bool?)configuration[AnalysisKeys.AddAxes] ?? true).ToString();
-            configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true;
-
+            var configDict = new Dictionary<string, string>((Dictionary<string, string>) configuration)
+            {
+                [AnalysisKeys.AddAxes] = ((bool?) configuration[AnalysisKeys.AddAxes] ?? true).ToString(),
+                [AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true,
+                [AnalysisKeys.AddTimeScale] = (string) configuration[AnalysisKeys.AddTimeScale] ?? "true",
+                [AnalysisKeys.AddAxes] = (string) configuration[AnalysisKeys.AddAxes] ?? "true",
+                [AnalysisKeys.AddSegmentationTrack] =
+                (string) configuration[AnalysisKeys.AddSegmentationTrack] ?? "true"
+            };
             ////bool makeSoxSonogram = (bool?)configuration[AnalysisKeys.MakeSoxSonogram] ?? false;
-            configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
-            configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes] ?? "true";
-            configDict[AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
             return configDict;
         }
 
 
 
 
-        //public string FileName { get; set; }
+        //public string BaseName { get; set; }
 
         private static readonly ILog Logger =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -783,13 +759,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         //        int frameWidth = configuration.FrameLength;
 
         //        var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap2);
-        //        cs1.FileName = configuration.FileName;
+        //        cs1.BaseName = configuration.BaseName;
         //        cs1.BackgroundFilter = backgroundFilterCoeff;
         //        cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
 
         //        // reads all known files spectral indices
         //        Logger.Info("Reading spectra files from disk");
-        //        cs1.ReadCSVFiles(configuration.InputDirectoryInfo, configuration.FileName);
+        //        cs1.ReadCSVFiles(configuration.InputDirectoryInfo, configuration.BaseName);
 
         //        if (cs1.GetCountOfSpectrogramMatrices() == 0)
         //        {

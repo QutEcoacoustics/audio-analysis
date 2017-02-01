@@ -286,7 +286,7 @@ namespace AnalysisPrograms
                 result.IndicesFile = null;
 
             //save image of sonograms
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(result.Data.Rows.Count))
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
                 Image image = DrawSonogram(sonogram, hits, scores, predictedEvents);
@@ -338,7 +338,7 @@ namespace AnalysisPrograms
 
             //i: MAKE SONOGRAM
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName = recording.FileName;
+            sonoConfig.SourceFName = recording.BaseName;
             sonoConfig.WindowSize = frameSize;
             sonoConfig.WindowOverlap = windowOverlap;
             //sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
@@ -352,7 +352,6 @@ namespace AnalysisPrograms
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
-            recording.Dispose();
 
             //#############################################################################################################################################
             //window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins

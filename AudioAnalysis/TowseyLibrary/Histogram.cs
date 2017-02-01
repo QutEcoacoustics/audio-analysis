@@ -80,7 +80,7 @@ namespace TowseyLibrary
 
 
 
-        static public int[] Histo(double[,] data, int binCount, out double binWidth, out double min, out double max)
+        public static int[] Histo(double[,] data, int binCount, out double binWidth, out double min, out double max)
         {
             int rows = data.GetLength(0);
             int cols = data.GetLength(1);
@@ -103,6 +103,24 @@ namespace TowseyLibrary
         }
 
 
+        public static int[] Histo(byte[,] data, out byte min, out byte max)
+        {
+            int rows = data.GetLength(0);
+            int cols = data.GetLength(1);
+            int[] histo = new int[256];
+            DataTools.MinMax(data, out min, out max);
+
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    histo[data[i, j]]++;
+                }
+            }
+            return histo;
+        }
+
+
 
         /// <summary>
         /// HISTOGRAM from a matrix of double
@@ -110,12 +128,12 @@ namespace TowseyLibrary
         /// <param name="data"></param>
         /// <param name="binCount"></param>
         /// <returns></returns>
-        static public int[] Histo(double[,] data, int binCount)
+        public static int[] Histo(double[,] data, int binCount)
         {
             double min;
             double max;
             DataTools.MinMax(data, out min, out max);
-            double binWidth = (max - min) / (double)binCount;
+            double binWidth = (max - min) / binCount;
             //LoggedConsole.WriteLine("data min=" + min + "  data max=" + max + " binwidth=" + binWidth);
 
             return Histo(data, binCount, min, max, binWidth);
@@ -271,6 +289,46 @@ namespace TowseyLibrary
 
             return histo;
         }
+
+
+
+        static public void GetHistogramOfWaveAmplitudes(double[] waveform, int window, out int[] histogramOfAmplitudes, out double minAmplitude, out double maxAmplitude, out double binWidth)
+        {
+            int binCount = 100;
+            int windowCount = waveform.Length / window;
+            double[] amplitudeArray = new double[windowCount]; 
+
+            for (int i = 0; i < windowCount; i++)
+            {
+                double[] subsample = DataTools.Subarray(waveform, i * window, window);
+                double min;
+                double max;
+                DataTools.MinMax(subsample, out min, out max);
+                amplitudeArray[i] = max - min;
+            }
+            histogramOfAmplitudes = Histo(amplitudeArray, binCount, out binWidth, out minAmplitude, out maxAmplitude);
+        }
+
+        /// <summary>
+        /// Returns the bin ID that coincides with the passed percentile
+        /// </summary>
+        /// <param name="histogram"></param>
+        /// <param name="percentile"></param>
+        /// <returns></returns>
+        static public int GetPercentileBin(int[] histogram, int percentile)
+        {
+            if (percentile > 99) throw new Exception("percentile must be < 100");
+            double percentAsfraction = percentile/(double)100;
+            int sum = histogram.Sum();
+            int percentileSum = 0;
+            for (int i = 0; i < histogram.Length; i++)
+            {
+                percentileSum += histogram[i];
+                if ((percentileSum / (double)sum) > percentAsfraction) return i;
+            }
+            return histogram.Length - 1;
+        }
+
 
         static public int[] Histo_addition(double[,] data, int[] histo, double min, double max, double binWidth)
         {

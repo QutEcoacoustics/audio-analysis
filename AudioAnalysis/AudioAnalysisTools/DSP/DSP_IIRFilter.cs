@@ -21,6 +21,8 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// method to convert string codes to a specific IIR filter.
         /// FOR EACH NEW FILTER ADD LINE HERE AND WRITE NEW METHOD TO CREATE FILTER
+        /// 
+        /// IMPORTANT: These filters assume a SAMPLE RATE = 22050!!!!!!!!!!!!!
         /// </summary>
         /// <param name="filterName"></param>
         /// <returns></returns>
@@ -300,7 +302,7 @@ namespace AudioAnalysisTools.DSP
                 //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
 
                 //SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-                //sonoConfig.SourceFName = recording.FileName;
+                //sonoConfig.SourceFName = recording.BaseName;
                 //sonoConfig.WindowOverlap = 0.5;      // set default value
                 //sonoConfig.DoMelScale = false;
                 //sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
@@ -342,7 +344,22 @@ namespace AudioAnalysisTools.DSP
 
             LoggedConsole.WriteLine("FINISHED!!");
             Console.ReadLine();
-        }//end Main()
+        }//end Main
+
+
+
+        /// <summary>
+        /// This method implements a crude form of high pass filtering 
+        /// </summary>
+        /// <param name="inputSignal"></param>
+        /// <param name="windowLength"></param>
+        /// <param name="outputSignal"></param>
+        public static void ApplyMovingAvHighPassFilter(double[] inputSignal, int windowLength, out double[] outputSignal)
+        {
+            double[] smoothed = DataTools.filterMovingAverageOdd(inputSignal, windowLength);
+            outputSignal = DataTools.SubtractVectors(inputSignal, smoothed);
+        }
+
 
     }//end class DSP
 }

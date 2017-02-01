@@ -1,0 +1,31 @@
+---
+AnalysisName: Towsey.RheobatrachusSilus
+SpeciesName: Rheobatrachus silus
+AbbreviatedSpeciesName: R.silus
+
+# min and max of the freq band to search
+MinHz:           
+MaxHz: 
+
+# BELOW PARAMETERS FROM ORIGINAl RECOGNISER
+#SegmentDuration: minutes,   SegmentOverlap=seconds        
+SegmentDuration: 1
+SegmentOverlap: 0
+MinPeriod: 0.01
+MaxPeriod: 0.04
+MinDuration: 0.3
+MaxDuration: 0.8
+#use this threshold if averaging over a period - averaging seems to work better
+IntensityThreshold: 0.22
+#use this threshold if obtaining max value over a period
+#IntensityThreshold: 0.1
+#######################################
+# save sonograms and other files 
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+SaveIntermediateCsvFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
+DoNoiseReduction: false
+BgNoiseThreshold: 3.0
+...

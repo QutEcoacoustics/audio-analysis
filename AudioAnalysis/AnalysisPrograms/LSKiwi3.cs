@@ -265,7 +265,7 @@ namespace AnalysisPrograms
             }
 
             //save image of sonograms
-            if ((sonogram != null) && (analysisSettings.ImageFile != null))
+            if ((sonogram != null) && (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Data.Rows.Count)))
             {
                 var fileExists = File.Exists(analysisSettings.ImageFile.FullName);
                 string imagePath = analysisSettings.ImageFile.FullName;
@@ -331,10 +331,10 @@ namespace AnalysisPrograms
 
             //i: MAKE SONOGRAM
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName = recording.FileName;
+            sonoConfig.SourceFName = recording.BaseName;
             sonoConfig.WindowSize = frameLength;
             sonoConfig.WindowOverlap = frameOverlap;
-            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD; //MUST DO NOISE REMOVAL - XCORR only works well if do noise removal
+            sonoConfig.NoiseReductionType = NoiseReductionType.Standard; //MUST DO NOISE REMOVAL - XCORR only works well if do noise removal
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
             //DETECT MALE KIWI

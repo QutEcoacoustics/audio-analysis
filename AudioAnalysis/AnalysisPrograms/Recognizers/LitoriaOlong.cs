@@ -1,13 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="LitoriaOlong.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+// <summary>
+//   This is a recognizer for the Litoria olong
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms.Recognizers
 {
+    using System;
+    using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
+    using System.Text;
 
     using Acoustics.Tools.Wav;
 
@@ -27,7 +35,7 @@ namespace AnalysisPrograms.Recognizers
     using TowseyLibrary;
 
     /// <summary>
-    /// This is a template recognizer
+    /// This is a recognizer for the Litoria olong
     /// </summary>
     class LitoriaOlong : RecognizerBase
     {
@@ -60,9 +68,10 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="configuration"></param>
         /// <param name="segmentStartOffset"></param>
         /// <param name="getSpectralIndexes"></param>
+        /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int imageWidth)
+        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
 
             // WARNING: TODO TODO TODO = this method simply duplicates the CANETOAD analyser!!!!!!!!!!!!!!!!!!!!! ###################
@@ -93,6 +102,11 @@ namespace AnalysisPrograms.Recognizers
 
             // max duration of event in seconds                 
             double maxDuration = (double)configuration[AnalysisKeys.MaxDuration];
+            
+            // The default was 512 for Canetoad.
+            // Framesize = 128 seems to work for Littoria fallax.
+            // frame size
+            int frameSize = (int)configuration[AnalysisKeys.KeyFrameSize];
 
             // min score for an acceptable event
             double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
@@ -102,22 +116,19 @@ namespace AnalysisPrograms.Recognizers
                 throw new InvalidOperationException("Requires a 22050Hz file");
             }
 
-            // The default was 512 for Canetoad.
-            // Framesize = 128 seems to work for Littoria fallax.
-            const int FrameSize = 128;
             double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
                 recording.SampleRate,
-                FrameSize,
+                frameSize,
                 maxOscilFreq);
             //windowOverlap = 0.75; // previous default
 
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
             {
-                SourceFName = recording.FileName,
-                WindowSize = FrameSize,
+                SourceFName = recording.BaseName,
+                WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
-                NoiseReductionType = NoiseReductionType.NONE
+                NoiseReductionType = NoiseReductionType.None
             };
 
             // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
@@ -137,7 +148,6 @@ namespace AnalysisPrograms.Recognizers
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
-            recording.Dispose();
 
             // double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
 
@@ -177,7 +187,7 @@ namespace AnalysisPrograms.Recognizers
             {
                 Sonogram = sonogram,
                 Hits = hits,
-                Plot = plot,
+                Plots = plot.AsList(),
                 Events = acousticEvents
             };
         }

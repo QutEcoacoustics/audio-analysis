@@ -1,0 +1,39 @@
+---
+# Summary: Runs a list of event recognizers that implement the IEventRecognizer interface.
+#
+AnalysisName: Ecosounds.MultiRecognizer
+#SpeciesName:
+#AbbreviatedSpeciesName:
+
+# LIST OF REQUIRED SPECIES RECOGNISERS
+# The items in this list need to match the value for `AnalysisName` in each of the individual species config files.
+# Note also, that the config file paths are resolved my appending '.yml' to the end of each item in the species list.
+SpeciesList:
+  - Towsey.BlueCatfish
+#  - Truskinger.ExempliGratia
+
+# Standard settings
+EventThreshold: 0.2
+
+# Resample rate must be 2 X the desired Nyquist
+# ResampleRate: 17640
+ResampleRate: 22050
+
+## Specifically for AnalyzeLongRecording
+# SegmentDuration: units=minutes;    
+SegmentDuration: 1
+# SegmentOverlap: units=seconds;
+SegmentOverlap: 0
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+SaveIntermediateCsvFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
+# DisplayCsvImage is obsolete - ensure it remains set to: false
+DisplayCsvImage: false
+ParallelProcessing: false
+## End section for AnalyzeLongRecording
+
+# Other config files to reference
+IndexPropertiesConfig: "./IndexPropertiesConfigHiRes.yml"
+HighResolutionIndicesConfig: "./Towsey.AcousticHiResIndicesForRecognisers.yml"

@@ -162,16 +162,13 @@ namespace AnalysisPrograms
         {
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(wavPath.FullName);
-            // WARNING!!!!!!! THE FOLLOWING METHOD CALL IS UNSAFE AND SHOULD NOT BE USED.
-            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
 
             //ii: MAKE SONOGRAM
             Log.WriteLine("# Start sonogram.");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.WindowOverlap = frameOverlap;
-            sonoConfig.SourceFName = recording.FileName;
+            sonoConfig.SourceFName = recording.BaseName;
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-            recording.Dispose();
 
             //iii: DETECT SEGMENTS
             Log.WriteLine("# Start event detection");

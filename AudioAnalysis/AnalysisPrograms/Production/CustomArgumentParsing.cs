@@ -264,6 +264,11 @@ namespace AnalysisPrograms.Production
         [ArgReviver]
         public static DirectoryInfo DirectoryInfoReviver(string property, string value)
         {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                throw new ArgException($"{property} argument is null or empty - please provide a value");
+            }
+
             var di = new DirectoryInfo(value);
             return di;
         }
@@ -271,6 +276,11 @@ namespace AnalysisPrograms.Production
         [ArgReviver]
         public static FileInfo FileInfoReviver(string property, string value)
         {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                throw new ArgException($"{property} argument is null or empty - please provide a value");
+            }
+
             var fi = new FileInfo(value);
             return fi;
         }

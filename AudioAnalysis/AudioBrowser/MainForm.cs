@@ -18,7 +18,6 @@
 
     using AnalysisBase;
     using AnalysisPrograms;
-    using AnalysisRunner;
     using AudioAnalysisTools;
     using TowseyLibrary;
 
@@ -115,7 +114,7 @@
 
 
 
-            var audioFileName = item.FileName;
+            var audioFileName = item.BaseName;
             var fiSourceRecording = item.FullName;
             Helper.fiSourceRecording = fiSourceRecording;
             LoggedConsole.WriteLine("# Source audio - filename: " + Path.GetFileName(fiSourceRecording.Name));
