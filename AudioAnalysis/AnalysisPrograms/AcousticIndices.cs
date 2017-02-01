@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AcousticIndices.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the Acoustic type.
@@ -21,6 +21,7 @@ namespace AnalysisPrograms
     using System.Runtime.Serialization;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using Acoustics.Shared.Extensions;
 
@@ -148,6 +149,9 @@ namespace AnalysisPrograms
                 return TowseyAcoustic;
             }
         }
+
+        public string Description
+            => "Generates all our default acoustic indices, including summary indices and spectral indices. Also generates false color spectrograms IFF IndexCalculationDuration==60.0";
 
 
         public static void Dev(Arguments arguments)
@@ -404,7 +408,7 @@ namespace AnalysisPrograms
             // write the segment spectrogram (typically of one minute duration) to CSV
             // this is required if you want to produced zoomed spectrograms at a resolution greater than 0.2 seconds/pixel 
             bool saveSonogramData = (bool?)analysisSettings.Configuration[AnalysisKeys.SaveSonogramData] ?? false;
-            if (saveSonogramData || analysisSettings.ImageFile != null) 
+            if (saveSonogramData || analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length)) 
             {
                 var sonoConfig = new SonogramConfig(); // default values config
                 sonoConfig.SourceFName = recording.FilePath;
@@ -430,7 +434,7 @@ namespace AnalysisPrograms
 
                 if (saveSonogramData)
                 {
-                    string csvPath = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
+                    string csvPath = Path.Combine(outputDirectory.FullName, recording.BaseName + ".csv");
                     Csv.WriteMatrixToCsv(csvPath.ToFileInfo(), sonogram.Data);
                 }
             }
@@ -457,7 +461,7 @@ namespace AnalysisPrograms
             foreach (var kvp in selectors)
             {
                 // write spectrogram to disk as CSV file
-                var filename = FilenameHelpers.AnalysisResultName(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv").ToFileInfo();
+                var filename = FilenameHelpers.AnalysisResultPath(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv").ToFileInfo();
                 spectralIndexFiles.Add(filename);
                 Csv.WriteMatrixToCsv(filename, results, kvp.Value);
             }
@@ -479,7 +483,7 @@ namespace AnalysisPrograms
         {
             var acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)settings.AnalyzerSpecificConfiguration;
 
-            var sourceAudio = inputFileSegment.OriginalFile;
+            var sourceAudio = inputFileSegment.TargetFile;
             var resultsDirectory = settings.AnalysisInstanceOutputDirectory;
             bool tileOutput = acousticIndicesParsedConfiguration.TileOutput;
 
@@ -501,19 +505,19 @@ namespace AnalysisPrograms
              */
             var indexConfigData = new IndexGenerationData()
                                       {
-                                          RecordingType  = inputFileSegment.OriginalFile.Extension,
-                                          RecordingStartDate = inputFileSegment.OriginalFileStartDate,
-                                          SampleRateOriginal = (int)inputFileSegment.OriginalFileSampleRate,
+                                          RecordingType  = inputFileSegment.TargetFile.Extension,
+                                          RecordingStartDate = inputFileSegment.TargetFileStartDate,
+                                          SampleRateOriginal = inputFileSegment.TargetFileSampleRate.Value,
                                           SampleRateResampled = sampleRate,
                                           FrameLength = frameWidth,
-                                          FrameStep = settings.Configuration[AnalysisKeys.FrameStep],
+                                          FrameStep = (int?)settings.Configuration[AnalysisKeys.FrameStep] ?? (int?)settings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize,
                                           IndexCalculationDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration,
                                           BGNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
                                           MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
                                           BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
                                           LongDurationSpectrogramConfig = ldSpectrogramConfig
                                       };
-            var icdPath = FilenameHelpers.AnalysisResultName(
+            var icdPath = FilenameHelpers.AnalysisResultPath(
                 resultsDirectory,
                 basename,
                 IndexGenerationData.FileNameFragment,
@@ -550,7 +554,7 @@ namespace AnalysisPrograms
                         analysisType: this.Identifier,
                         indexSpectrograms: dictionaryOfSpectra,
                         indexDistributions: indexDistributions,
-                        imageChrome: tileOutput.ToImageChrome());
+                        imageChrome: (!tileOutput).ToImageChrome());
 
                 if (tileOutput)
                 {
@@ -560,7 +564,7 @@ namespace AnalysisPrograms
 
                     foreach (var image in images)
                     {
-                        TileOutput(resultsDirectory, Path.GetFileNameWithoutExtension(sourceAudio.Name), image.Item2 + ".Tile", inputFileSegment.OriginalFileStartDate.Value, image.Item1);
+                        TileOutput(resultsDirectory, Path.GetFileNameWithoutExtension(sourceAudio.Name), image.Item2 + ".Tile", inputFileSegment.TargetFileStartDate.Value, image.Item1);
                     }                    
                 }
             }

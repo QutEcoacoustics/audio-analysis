@@ -8,7 +8,7 @@ ALL RIGHTS ARE RESERVED.
 
 THIS CODE BELONGS TO QUT. THIS CODE IS THE COPYRIGHT OF QUT.
 
-INTELLECTUAL PROPERTY OF ALL CONCEPTS WITH THIS REPOSITORY REMAINS PROPERTY OF QUT WITH THE EXCEPTION OF STUDENT'S CODE.
+INTELLECTUAL PROPERTY OF ALL CONCEPTS WITHIN THIS REPOSITORY REMAIN PROPERTY OF QUT WITH THE EXCEPTION OF STUDENT'S CODE.
 IF STUDENTS ASSIGN THEIR INTELLECTUAL PROPERTY TO QUT THEN THOSE CONCEPTS ALSO BELONG TO QUT.
 OTHERWISE, THE INTELLECTUAL PROPERTY OF CONCEPTS WRITTEN BY STUDENTS IN THIS REPOSITORY BELONGS TO THEM.
 
@@ -72,3 +72,11 @@ Not all BLOBs are stored in git-lfs. So far only the audio files in
 ### Matalab
 
 - Matlab
+
+# Making a release
+
+ 1. Pull latest changes to your local computer
+ 2. Make sure the repo is clean (no uncommitted changes)
+ 8. Open a prompt, `cd` to the git repo folder
+ 9. Run `. .\release.ps1`
+ 10. Profit :sparkles: :moneybag: :dollar: :heavy_dollar_sign: :sparkles:

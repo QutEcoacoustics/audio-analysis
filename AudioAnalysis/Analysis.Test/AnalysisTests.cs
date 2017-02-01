@@ -2,6 +2,7 @@
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
+using AnalysisPrograms.SourcePreparers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Ecosounds.Test.AnalysisPrograms
@@ -12,7 +13,6 @@ namespace Ecosounds.Test.AnalysisPrograms
 
     using global::AnalysisPrograms;
     using Acoustics.Shared;
-    using AnalysisRunner;
     using AnalysisBase;
     using AudioBase;
 
@@ -25,7 +25,7 @@ namespace Ecosounds.Test.AnalysisPrograms
             keyValueStore.LoadFromAppConfig();
 
             var preparer = new LocalSourcePreparer();
-            var coord = new AnalysisCoordinator(preparer, false, false, false);
+            var coord = new AnalysisCoordinator(preparer, SaveBehavior.Never, SaveBehavior.Never, false);
             coord.IsParallel = true;
             coord.SubFoldersUnique = false;
 
@@ -79,7 +79,7 @@ namespace Ecosounds.Test.AnalysisPrograms
         [TestMethod]
         public void Canetoad()
         {
-//            var canetoad = new Canetoad();
+//            var canetoad = new CanetoadOld();
 //            var settings = canetoad.DefaultSettings;
 //
 //            var inputFile = TestHelper.GetTestAudioFile("cane toad.wav");

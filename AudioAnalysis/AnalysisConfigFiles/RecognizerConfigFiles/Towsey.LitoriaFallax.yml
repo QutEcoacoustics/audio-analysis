@@ -4,21 +4,59 @@ SpeciesName: Litoria fallax
 AbbreviatedSpeciesName: L.fallax
 
 # min and max of the freq band to search
-MinHz: 3500          
-MaxHz: 4500
+MinHz: 3800
+MaxHz: 5100
 # duration of DCT in seconds 
-DctDuration: 0.2
+DctDuration: 0.15
 # minimum acceptable value of a DCT coefficient
-DctThreshold: 0.6
+DctThreshold: 0.45
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
-MinOcilFreq: 40        
-MaxOcilFreq: 60
+MinOcilFreq: 45
+MaxOcilFreq: 150
 # Minimum and maximum duration for the length of a true call.
-MinDuration: 0.1
-MaxDuration: 0.5
+MinDuration: 0.04
+MaxDuration: 0.8
 # Event threshold - use this to determine FP / FN trade-off for events.
 EventThreshold: 0.30
+
+Profiles:
+    Standard: &Standard
+        # min and max of the freq band to search
+        MinHz: 3000          
+        MaxHz: 5000
+        # duration of DCT in seconds 
+        DctDuration: 0.15
+        # minimum acceptable value of a DCT coefficient
+        DctThreshold: 0.6
+        # ignore oscillation rates below the min & above the max threshold
+        # OSCILLATIONS PER SECOND
+        MinOcilFreq: 50        
+        MaxOcilFreq: 140
+        # Minimum and maximum duration for the length of a true call.
+        MinDuration: 0.1
+        MaxDuration: 0.8
+        # Event threshold - use this to determine FP / FN trade-off for events.
+        EventThreshold: 0.30
+    HighFrequency:
+        # Debra wrote this for high oscillation rate calls in Aura 
+        <<: *Standard
+        MinHz: 3800          
+        MaxHz: 5100
+        DctDuration: 0.15
+        DctThreshold: 0.45
+        MinOcilFreq: 100       
+        MaxOcilFreq: 150
+        MinDuration: 0.04
+        MaxDuration: 0.8
+    LowFrequency: 
+        # Debra wrote this for low oscillation rate calls in Aura
+        <<: *Standard
+        MinHz: 3800          
+        MaxHz: 5100
+        MinOcilFreq: 45        
+        MaxOcilFreq: 60
+        MinDuration: 0.04
 
 # Standard settings
 #DoNoiseReduction: false
@@ -33,9 +71,12 @@ ResampleRate: 22050
 SegmentDuration: 1
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
-SaveIntermediateWavFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
-SaveSonogramImages: true
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
+# DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 ParallelProcessing: false
 ## End section for AnalyzeLongRecording

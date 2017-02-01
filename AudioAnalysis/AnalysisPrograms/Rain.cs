@@ -283,7 +283,7 @@ namespace AnalysisPrograms
             //var sonogram = results.Item3;
             //var scores = results.Item4;
 
-            //if ((sonogram != null) && (analysisSettings.ImageFile != null))
+            //if ((sonogram != null) && (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length)))
             //{
             //    string imagePath = Path.Combine(diOutputDir.FullName, analysisSettings.ImageFile.Name);
             //    var image = DrawSonogram(sonogram, scores);

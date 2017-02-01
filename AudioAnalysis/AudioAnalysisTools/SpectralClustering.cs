@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="SpectralClustering.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the SpectralClustering type.
@@ -428,7 +428,7 @@ namespace AudioAnalysisTools
 
             //NORMAL WAY TO DO THINGS
             var recording = new AudioRecording(wavFilePath); // get recording segment
-            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = frameOverlap };
+            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.Standard, WindowOverlap = frameOverlap };
             config.NoiseReductionParameter = 0.0; // backgroundNeighbourhood noise reduction in dB
             var spectrogram = new SpectrogramStandard(config, recording.WavReader);
             Plot scores = null;

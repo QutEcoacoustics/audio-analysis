@@ -8,8 +8,37 @@ AbbreviatedSpeciesName: E.gratia
 
 # Custom settings
 
-someExampleSettingA: 3.0
+SomeExampleSettingA: 3.0
 
+# Each of these profiles will be analyzed
+Profiles:
+  # The below settings are a template
+  Standard: &STANDARD
+    # min and max of the freq band to search
+    MinHz: 3000          
+    MaxHz: 5000
+    # duration of DCT in seconds 
+    DctDuration: 0.15
+    # minimum acceptable value of a DCT coefficient
+    DctThreshold: 0.6
+    # ignore oscillation rates below the min & above the max threshold
+    # OSCILLATIONS PER SECOND
+    MinOcilFreq: 50        
+    MaxOcilFreq: 140
+    # Minimum and maximum duration for the length of a true call.
+    MinDuration: 0.1
+    MaxDuration: 0.8
+    # Event threshold - use this to determine FP / FN trade-off for events.
+    EventThreshold: 0.30
+  # This notation means the Groote profile has all of the settings that the Standard profile has,
+  # however, the MinHz and MaxHz properties have been overridden.
+  Groote:
+    <<: *STANDARD
+    MinHz: 4000          
+    MaxHz: 6000
+  FemaleRelease:
+    <<: *STANDARD
+    DctDuration: 0.3
 
 # Standard settings
 DoNoiseReduction: false
@@ -26,9 +55,12 @@ ResampleRate: 22050
 SegmentDuration: 1
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
-SaveIntermediateWavFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
-SaveSonogramImages: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
+# DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 ParallelProcessing: false
 ## End section for AnalyzeLongRecording

@@ -40,9 +40,11 @@ namespace AnalysisPrograms.Production
         [ArgPosition(0)]
         public string Action { get; set; }
 
+        [ArgDescription("Do not show the debug prompt AND automatically attach a debugger. Has no effect in RELEASE builds")]
         [DefaultValue(false)]
         public bool Debug { get; set; }
 
+        [ArgDescription("Do not show the debug prompt or attach a debugger. Has no effect in RELEASE builds")]
         [DefaultValue(false)]
         public bool NoDebug { get; set; }
 
@@ -84,6 +86,7 @@ namespace AnalysisPrograms.Production
         }
 
         [DefaultValue(LogVerbosity.Info)]
+        [ArgDescription("Set the logging. Valid values: None = 0, Error = 1, Warn = 2, Info = 3, Debug = 4, Trace = 5, Verbose = 6, All = 7")]
         public LogVerbosity LogLevel
         {
             get
@@ -95,7 +98,12 @@ namespace AnalysisPrograms.Production
 
                 if (this.VVerbose)
                 {
-                    return  LogVerbosity.All;
+                    return LogVerbosity.Trace;
+                }
+
+                if (this.VVVerbose)
+                {
+                    return LogVerbosity.All;
                 }
                 
                 return this.logLevel;
@@ -103,16 +111,24 @@ namespace AnalysisPrograms.Production
             set
             {
                 this.Verbose = value == LogVerbosity.Debug;
-
-                this.VVerbose = value == LogVerbosity.All;
+                this.VVerbose = value == LogVerbosity.Trace;
+                this.VVVerbose = value == LogVerbosity.All;
                 
                 this.logLevel = value;
             }
         }
 
+        [ArgDescription("Set the logging to be verbose. Equivalent to LogLevel = Debug = 4")]
         public bool Verbose { get; set; }
 
+        [ArgDescription("Set the logging to very verbose. Equivalent to LogLevel = Trace = 4")]
         public bool VVerbose { get; set; }
+
+        [ArgDescription("Set the logging to very very verbose. Equivalent to LogLevel = ALL = 7")]
+        public bool VVVerbose { get; set; }
+
+        [ArgDescription("Reduce StdOut logging to WARN and ERROR. The default is false.")]
+        public bool QuietConsole { get; set; }
     }
 
     public enum LogVerbosity
@@ -122,7 +138,9 @@ namespace AnalysisPrograms.Production
         Warn = 2,
         Info = 3,
         Debug = 4,
-        All = 5
+        Trace = 5,
+        Verbose = 6,
+        All = 7
     }
 
     public class HelpArguments
@@ -169,7 +187,7 @@ namespace AnalysisPrograms.Production
         /// <returns>
         /// An AnalysisSettings object.
         /// </returns>
-        public virtual AnalysisSettings ToAnalysisSettings(AnalysisSettings defaults = null, bool outputIntermediate = false)
+        public virtual AnalysisSettings ToAnalysisSettings(AnalysisSettings defaults = null, bool outputIntermediate = false, string resultSubDirectory = null)
         {
             var analysisSettings = defaults ?? new AnalysisSettings();
 
@@ -177,17 +195,23 @@ namespace AnalysisPrograms.Production
             analysisSettings.SourceFile = this.Source;
             analysisSettings.AudioFile = this.Source;
             analysisSettings.ConfigFile = this.Config;
-            analysisSettings.AnalysisInstanceOutputDirectory = this.Output;
+
+            var resultDirectory = resultSubDirectory.IsNullOrEmpty() ? this.Output : this.Output.Combine(resultSubDirectory);
+
+            resultDirectory.Create();
+
+            analysisSettings.AnalysisInstanceOutputDirectory = resultDirectory;
             analysisSettings.AnalysisBaseOutputDirectory = this.Output;
             analysisSettings.AnalysisBaseTempDirectory = this.Output;
 
             if (outputIntermediate)
             {
                 string fileNameBase = Path.GetFileNameWithoutExtension(this.Source.Name);
-                analysisSettings.EventsFile = FilenameHelpers.AnalysisResultName(this.Output, fileNameBase, "Events", ".csv").ToFileInfo();
-                analysisSettings.SummaryIndicesFile = FilenameHelpers.AnalysisResultName(this.Output, fileNameBase, "Indices", ".csv").ToFileInfo();
-                analysisSettings.SpectrumIndicesDirectory = this.Output;
-                analysisSettings.ImageFile = FilenameHelpers.AnalysisResultName(this.Output, fileNameBase, "Image", ".png").ToFileInfo();
+                analysisSettings.EventsFile = FilenameHelpers.AnalysisResultPath(resultDirectory, fileNameBase, "Events", "csv").ToFileInfo();
+                analysisSettings.SummaryIndicesFile = FilenameHelpers.AnalysisResultPath(resultDirectory, fileNameBase, "Indices", "csv").ToFileInfo();
+                analysisSettings.SpectrumIndicesDirectory = resultDirectory;
+                analysisSettings.ImageFile = FilenameHelpers.AnalysisResultPath(resultDirectory, fileNameBase, "Image", "png").ToFileInfo();
+                analysisSettings.SegmentSaveBehavior = SaveBehavior.Always;
             }
 
             analysisSettings.Configuration = Yaml.Deserialise(this.Config);
@@ -216,7 +240,7 @@ namespace AnalysisPrograms.Production
         public double? Duration { get; set; }
 
 
-        public override AnalysisSettings ToAnalysisSettings(AnalysisSettings defaults = null, bool outputIntermediate = false)
+        public AnalysisSettings ToAnalysisSettings(AnalysisSettings defaults = null, bool outputIntermediate = false)
         {
             var analysisSettings = base.ToAnalysisSettings(defaults, false);
 

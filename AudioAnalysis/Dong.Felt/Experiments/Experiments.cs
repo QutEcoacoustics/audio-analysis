@@ -193,8 +193,8 @@ namespace Dong.Felt.Experiments
         ////Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
         //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist,
         //    eventThreshold, poiList, compressConfig.CompressRate);
-        //var FileName = new FileInfo(inputFilePath);
-        //string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-compressed spectrogram-0.125.png");
+        //var BaseName = new FileInfo(inputFilePath);
+        //string annotatedImageFileName = Path.ChangeExtension(BaseName.Name, "-compressed spectrogram-0.125.png");
         //var inputDirect = @"C:\XUEYAN\PHD research work\Second experiment\Training recordings2";
         //string annotatedImagePath = Path.Combine(inputDirect, annotatedImageFileName);
         //Bitmap bmp = (Bitmap)image;
@@ -299,7 +299,7 @@ namespace Dong.Felt.Experiments
         ////// each region should have same nhCount, here we just get it from the first region item. 
         ////var dataOutputFile = @"C:\XUEYAN\DICTA Conference data\Spectrogram data for Toad.csv";
         ////var audioFilePath = "DM420008_262m_00s__264m_00s - Faint Toad.wav";
-        ////results.Add(new List<string>() { "FileName", "rowIndex", "colIndex", "value"});
+        ////results.Add(new List<string>() { "BaseName", "rowIndex", "colIndex", "value"});
         ////for (int i = 0; i < matrix.GetLength(0); i++)
         ////{
         ////    for (int j = 0; j < matrix.GetLength(1); j++)
@@ -311,7 +311,7 @@ namespace Dong.Felt.Experiments
 
         ///// Read the spectrogram.data into csv for Liang. 
         ////var result = new List<List<string>>();
-        ////result.Add(new List<string>() { "FileName", "Value" });
+        ////result.Add(new List<string>() { "BaseName", "Value" });
         ////string fileName = "SE_SE727_20101014-074900-075000";
         ////string csvPath = Path.Combine(outputDirectory, fileName + ".csv");   
         ////for (int rowIndex = 0; rowIndex < rows; rowIndex++)

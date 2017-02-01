@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
-
 using MathNet.Numerics;
 
 
@@ -211,9 +209,9 @@ namespace TowseyLibrary
 
 
 
-        public static List<Double[]> RemoveNullElementsFromList(List<Double[]> list)
+        public static List<double[]> RemoveNullElementsFromList(List<double[]> list)
         {
-            var newList = new List<Double[]>();
+            var newList = new List<double[]>();
             for (int i = 0; i < list.Count; i++)
             {
                 if (list[i] != null) newList.Add(list[i]);
@@ -256,45 +254,6 @@ namespace TowseyLibrary
             return op;
         }
 
-        /*
-         * converts a matrix to a vector by concatenating columns.
-         */
-        public static double[] Matrix2Array(double[,] M)
-        {
-            int ht = M.GetLength(0);
-            int width = M.GetLength(1);
-            double[] v = new double[ht * width];
-
-            int id = 0;
-            for (int col = 0; col < width; col++)
-            {
-                for (int row = 0; row < ht; row++)
-                {
-                    v[id++] = M[row, col];
-                }
-            }
-            return v;
-        }
-
-        /*
-         * converts a matrix to a vector by concatenating columns.
-         */
-        public static int[] Matrix2Array(int[,] M)
-        {
-            int ht = M.GetLength(0);
-            int width = M.GetLength(1);
-            int[] v = new int[ht * width];
-
-            int id = 0;
-            for (int col = 0; col < width; col++)
-            {
-                for (int row = 0; row < ht; row++)
-                {
-                    v[id++] = M[row, col];
-                }
-            }
-            return v;
-        }
 
         /*
          * converts a matrix to a vector by concatenating columns.
@@ -315,10 +274,75 @@ namespace TowseyLibrary
         }
 
 
+        
+        /// <summary>
+        /// Converts a matrix to a vector by concatenating columns.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static double[] Matrix2Array(double[,] m)
+        {
+            int ht = m.GetLength(0);
+            int width = m.GetLength(1);
+            double[] v = new double[ht * width];
 
-        /*
-         * converts a matrix to a vector by concatenating columns.
-         */
+            int id = 0;
+            for (int col = 0; col < width; col++)
+            {
+                for (int row = 0; row < ht; row++)
+                {
+                    v[id++] = m[row, col];
+                }
+            }
+            return v;
+        }
+
+        // *
+        // * converts a matrix to a vector by concatenating columns.
+        // 
+        public static int[] Matrix2Array(int[,] m)
+        {
+            int ht = m.GetLength(0);
+            int width = m.GetLength(1);
+            int[] v = new int[ht * width];
+
+            int id = 0;
+            for (int col = 0; col < width; col++)
+            {
+                for (int row = 0; row < ht; row++)
+                {
+                    v[id++] = m[row, col];
+                }
+            }
+            return v;
+        }
+
+
+/*
+        /// <summary>
+        /// Converts a matrix to a vector by concatenating columns.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static T[] Matrix2Array(T[,] m)
+        {
+            int ht = m.GetLength(0);
+            int width = m.GetLength(1);
+            T[] v = new T[ht * width];
+
+            int id = 0;
+            for (int col = 0; col < width; col++)
+            {
+                for (int row = 0; row < ht; row++)
+                {
+                    v[id++] = m[row, col];
+                }
+            }
+            return v;
+        }
+
+*/
+        
         public static byte[] Matrix2Array(byte[,] M)
         {
             int ht = M.GetLength(0);
@@ -335,6 +359,8 @@ namespace TowseyLibrary
             }
             return v;
         }
+
+
 
         /*
          * converts a 3-D matrix to a vector by concatenating columns and columns.
@@ -707,7 +733,7 @@ namespace TowseyLibrary
             double result = 0;
             for (int i = 0; i < array.Length; i++)
             {
-                if (! Double.TryParse(array[i], out result)) return false;
+                if (!double.TryParse(array[i], out result)) return false;
             }
             return true;
         }
@@ -743,7 +769,7 @@ namespace TowseyLibrary
                 sort[i] = clone[maxIndex];
                 //if(i % 100==0)
                 //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
-                clone[maxIndex] = -Double.MaxValue;
+                clone[maxIndex] = -double.MaxValue;
             }
             return Tuple.Create(rankOrder, sort);
         }
@@ -770,7 +796,7 @@ namespace TowseyLibrary
                 sort[i] = clone[minIndex];
                 //if(i % 100==0)
                 //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
-                clone[minIndex] = Double.MaxValue;
+                clone[minIndex] = double.MaxValue;
             }
             return Tuple.Create(rankOrder, sort);
         }
@@ -1356,7 +1382,18 @@ namespace TowseyLibrary
           LoggedConsole.WriteLine(i + "  " + array[i]);
   }
 
-  public static void WriteArrayInLine(double[] array, string format)
+    public static string WriteArrayAsCsvLine(double[] array, string format)
+    {
+        var sb = new StringBuilder(array[0].ToString(format));
+        int count = array.Length;//dimension
+        for (int i = 1; i < count; i++)
+        {
+            sb.Append("," + array[i].ToString(format));
+        }
+        return sb.ToString();
+    }
+
+        public static void WriteArrayInLine(double[] array, string format)
   {
       int count = array.Length;//dimension
       for (int i = 0; i < count; i++)
@@ -1785,8 +1822,28 @@ namespace TowseyLibrary
 
 
 
+    public static double[] SumMinusDifference(double[] lowerArray, double[] upperArray)
+    {
+        if (lowerArray.Length != upperArray.Length)
+        {
+            LoggedConsole.WriteWarnLine("DataTools.SumMinusDifference(): Two vectors are not the same length");
+            return null;
+        }
+
+        var smdVector = new double[lowerArray.Length];
+        for (int i = 0; i < lowerArray.Length; i++)
+        {
+            smdVector[i] = lowerArray[i] + upperArray[i] - Math.Abs(lowerArray[i] - upperArray[i]);
+        }
+        return smdVector;
+    }
+
+
+
+
+
         //copy first n values of vector1 into vector 2}
-    public static double[] CopyVector(int n, double[] v1)
+        public static double[] CopyVector(int n, double[] v1)
     {
         double[] v2 = new double[v1.Length];
         for (int i = 0; i < n; i++) v2[i] = v1[i];
@@ -1852,8 +1909,8 @@ namespace TowseyLibrary
 		/// </summary>
 		public static double[,] normalise(double[,] m)
 		{
-			double min = Double.MaxValue;
-			double max = -Double.MaxValue;
+			double min = double.MaxValue;
+			double max = -double.MaxValue;
 
 			int rows = m.GetLength(0);
 			int cols = m.GetLength(1);
@@ -2033,8 +2090,8 @@ namespace TowseyLibrary
         {
             int L = array.Length;
             //CALCULATE THE MIN AND MAX OF THE ARRAY
-            double min = Double.MaxValue;
-            double max = -Double.MaxValue;
+            double min = double.MaxValue;
+            double max = -double.MaxValue;
             for (int i = 0; i < L; i++)
             {
                 if (array[i] < min) min = array[i];
@@ -2147,6 +2204,40 @@ namespace TowseyLibrary
             double sum = 0.0;
             for (int i = 0; i < L; i++) sum += (v1[i] * v2[i]);
             return sum;
+        }
+
+        public static double CosineSimilarity(double[] v1, double[] v2)
+        {
+            //assume v1 and v2 have same dimensions
+            double sum = 0.0;
+            double v1Squared = 0.0;
+            double v2Squared = 0.0;
+            for (int i = 0; i < v1.Length; i++)
+            {
+                sum += (v1[i] * v2[i]);
+                v1Squared += (v1[i] * v1[i]);
+                v2Squared += (v2[i] * v2[i]);
+            }
+
+            return sum / (Math.Sqrt(v1Squared) * Math.Sqrt(v2Squared));
+        }
+
+        public static double CosineSimilarity(double[,] m1, double[,] m2)
+        {
+            //assume m1 and m2 have same dimensions
+            double sum = 0.0;
+            double m1Squared = 0.0;
+            double m2Squared = 0.0;
+            for (int r = 0; r < m1.GetLength(0); r++)
+            {
+                for (int c = 0; c < m1.GetLength(1); c++)
+                {
+                    sum += (m1[r,c] * m2[r, c]);
+                    m1Squared += (m1[r, c] * m1[r, c]);
+                    m2Squared += (m2[r, c] * m2[r, c]);
+                }
+            }
+            return sum / (Math.Sqrt(m1Squared) * Math.Sqrt(m2Squared));
         }
 
         /// <summary>
@@ -2265,8 +2356,8 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static double[,] DeciBels(double[,] m, out double min, out double max)
         {
-            min = Double.MaxValue;
-            max = -Double.MaxValue;
+            min = double.MaxValue;
+            max = -double.MaxValue;
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
@@ -2311,8 +2402,8 @@ namespace TowseyLibrary
         public static double[,] Normalise(double[,] m, double normMin, double normMax)
         {
             //m = normalise(m);
-            double min = Double.MaxValue;
-            double max = -Double.MaxValue;
+            double min = double.MaxValue;
+            double max = -double.MaxValue;
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
@@ -2350,8 +2441,8 @@ namespace TowseyLibrary
         public static double[] Normalise(double[] v, double normMin, double normMax)
         {
             //m = normalise(m);
-            double min = Double.MaxValue;
-            double max = -Double.MaxValue;
+            double min = double.MaxValue;
+            double max = -double.MaxValue;
 
             int length = v.Length;
             double[] ret = new double[length];
@@ -2512,8 +2603,8 @@ namespace TowseyLibrary
         public static double[] normalise(double[] v)
         {
             //find min an max
-            double min = Double.MaxValue;
-            double max = -Double.MaxValue;
+            double min = double.MaxValue;
+            double max = -double.MaxValue;
             for (int i = 0; i < v.Length; i++)
             {
                 if (v[i] > max) max = v[i];
@@ -2528,6 +2619,43 @@ namespace TowseyLibrary
                 ret[i] = (v[i] - min) / diff;
 
             return (ret);
+        }
+
+        /// <summary>
+        /// Normalises a vector in 0, 1 and also returns a threshold value accordingly normalised.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="threshold"></param>
+        /// <param name="output"></param>
+        /// <param name="normalisedThreshold"></param>
+        public static void Normalise(double[] v, double threshold, out double[] output, out double normalisedThreshold)
+        {
+            //find min and max
+            double min = double.MaxValue;
+            double max = -double.MaxValue;
+            for (int i = 0; i < v.Length; i++)
+            {
+                if (v[i] > max) max = v[i];
+                if (v[i] < min) min = v[i];
+            }
+            var diff = max - min;
+            output = new double[v.Length];
+            normalisedThreshold = 0.0;
+
+            double tolerance = 0.00000000001;
+            if (Math.Abs(diff) < tolerance)
+            {
+                LoggedConsole.WriteErrorLine("Cannot normalise vector in method DataTools.Normalise(). Min = Max.");
+                return;
+            }
+
+            // calculate the scaling factor for normalisation
+            normalisedThreshold = threshold/max;
+            for (int i = 0; i < v.Length; i++)
+            {
+                output[i] = (v[i] - min) / diff;
+                
+            }
         }
 
         /// <summary>
@@ -2640,8 +2768,8 @@ namespace TowseyLibrary
             for (int i = 1; i < cols-1; i++) m[rows-1, i] = edge; 
 
             //find min and max
-            double min = Double.MaxValue;
-            double max = -Double.MaxValue;
+            double min = double.MaxValue;
+            double max = -double.MaxValue;
             for (int i = 0; i < rows; i++)
                 for (int j = 0; j < cols; j++)
                 {
@@ -2838,7 +2966,7 @@ namespace TowseyLibrary
     {
         //some safety checks but unlikely to happen
         int posCount = v.Count(p => p > 0.0);
-        if (posCount == 0) return Double.NaN; // cannot calculate entropy
+        if (posCount == 0) return double.NaN; // cannot calculate entropy
         if (posCount == 1) return 0.0;        // energy concentrated in one value - i.e. zero entropy
         
         double[] pmf2 = DataTools.Normalise2Probabilites(v); //pmf = probability mass funciton
@@ -2849,7 +2977,7 @@ namespace TowseyLibrary
     {
         //some safety checks but unlikely to happen
         int posCount = v.Count(p => p > 0.0);
-        if (posCount == 0) return Double.NaN; // cannot calculate entropy
+        if (posCount == 0) return double.NaN; // cannot calculate entropy
         if (posCount == 1) return 0.0;        // energy concentrated in one value - i.e. zero entropy
 
         double[] pmf2 = DataTools.NormaliseArea(v); //pmf = probability mass funciton
@@ -2934,7 +3062,7 @@ namespace TowseyLibrary
  	{
         //some safety checks but unlikely to happen
         int posCount = distr.Count(p => p > 0.0);
-        if (posCount == 0) return Double.NaN; // cannot calculate entropy
+        if (posCount == 0) return double.NaN; // cannot calculate entropy
         if (posCount == 1) return 0.0;        // energy concentrated in one value - i.e. zero entropy
 
         int length = distr.Length;
@@ -2973,19 +3101,28 @@ namespace TowseyLibrary
   /// <param name="data">array ofintegers</param>
   /// <param name="min">min value to return</param>
   /// <param name="max">max value to return</param>
-  static public void MinMax(int[] data, out int min, out int max)
+  public static void MinMax(int[] data, out int min, out int max)
   { min = data[0];
     max = data[0];
     for(int i=1; i<data.Length; i++)
     { if(data[i] < min) min = data[i];
       if(data[i] > max) max = data[i];
     }
-    //LoggedConsole.WriteLine(data.Length+"  min="+min+" max="+max);
   }
+        public static void MinMax(byte[] data, out byte min, out byte max)
+        {
+            min = data[0];
+            max = data[0];
+            for (int i = 1; i < data.Length; i++)
+            {
+                if (data[i] < min) min = data[i];
+                if (data[i] > max) max = data[i];
+            }
+        }
 
-//=============================================================================
+        //=============================================================================
 
-        static public void MinMax(double[] data, out double min, out double max)
+        public static void MinMax(double[] data, out double min, out double max)
         {
             min = data[0];
             max = data[0];
@@ -3002,7 +3139,7 @@ namespace TowseyLibrary
             }
         }
 
-        static public void MinMaxAv(double[] data, out double min, out double max, out double av)
+        public static void MinMaxAv(double[] data, out double min, out double max, out double av)
         {
             min = data[0];
             max = data[0];
@@ -3026,14 +3163,14 @@ namespace TowseyLibrary
         /// <summary>
         /// returns the min and max values in a matrix of doubles
         /// </summary>
-        static public void MinMax(double[,] data, out double min, out double max)
+        public static void MinMax(double[,] data, out double min, out double max)
         {
             int rows = data.GetLength(0);
             int cols = data.GetLength(1);
             min = data[0, 0];
             max = data[0, 0];
-            for (int i = 1; i < rows; i++)
-            for (int j = 1; j < cols; j++)
+            for (int i = 0; i < rows; i++)
+            for (int j = 0; j < cols; j++)
             {
                 if (data[i,j] < min)
                     min = data[i,j];
@@ -3042,13 +3179,53 @@ namespace TowseyLibrary
             }//end double loop
         }
 
+        /// <summary>
+        /// returns the min and max values in a matrix of byte
+        /// </summary>
+        public static void MinMax(byte[,] data, out byte min, out byte max)
+        {
+            int rows = data.GetLength(0);
+            int cols = data.GetLength(1);
+            min = data[0, 0];
+            max = data[0, 0];
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    if (data[i, j] < min)
+                        min = data[i, j];
+                    else if (data[i, j] > max)
+                        max = data[i, j];
+                }
+            }
+        }
+
+        /// <summary>
+        /// returns the min and max values in a matrix of byte
+        /// </summary>
+        public static int[] GetByteDistribution(byte[,] data)
+        {
+            int rows = data.GetLength(0);
+            int cols = data.GetLength(1);
+            var byteDistribution = new int[256];
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    byteDistribution[data[i, j]]++;
+                } 
+            }
+            return byteDistribution;            
+        }
+
+
         /**
          * returns the min and max of an array of doubles
          * and the index for both.
          * @param data
          * @return 
-         */  
-  static public void MinMax(double[] data, out int indexMin, out int indexMax, out double min, out double max)
+         */
+        public static void MinMax(double[] data, out int indexMin, out int indexMax, out double min, out double max)
   {
       indexMin = 0;
       indexMax = 0;
@@ -3247,7 +3424,7 @@ namespace TowseyLibrary
     {   int maxIndex;
         getMaxIndex(dataCopy, out maxIndex);
     	order[i] = maxIndex;
-    	dataCopy[maxIndex] = -Double.MaxValue;
+    	dataCopy[maxIndex] = -double.MaxValue;
     }
     return order;
   }
@@ -3268,34 +3445,34 @@ namespace TowseyLibrary
       {
           minIndex = DataTools.GetMinIndex(dataCopy);
           order[i] = minIndex;
-          dataCopy[minIndex] = Double.MaxValue;
+          dataCopy[minIndex] = double.MaxValue;
       }
       return order;
   }
 
   static public double GetNthSmallestValue(double[] data, int N)
   {
-      if ((data == null) || (data.Length == 0) || (data.Length < N)) return -Double.MaxValue;
+      if ((data == null) || (data.Length == 0) || (data.Length < N)) return -double.MaxValue;
       double[] dataCopy = (double[])data.Clone();
       int minIndex = 0;
 
       for (int i = 0; i < N; i++)
       {
           minIndex = DataTools.GetMinIndex(dataCopy);
-          dataCopy[minIndex] = Double.MaxValue;
+          dataCopy[minIndex] = double.MaxValue;
       }
       return data[minIndex];
   }
   static public double GetNthLargestValue(double[] data, int N)
   {
-      if ((data == null) || (data.Length == 0) || (data.Length < N)) return -Double.MaxValue;
+      if ((data == null) || (data.Length == 0) || (data.Length < N)) return -double.MaxValue;
       double[] dataCopy = (double[])data.Clone();
       int maxValue = 0;
 
       for (int i = 0; i < N; i++)
       {
           maxValue = DataTools.GetMaxIndex(dataCopy);
-          dataCopy[maxValue] = -Double.MaxValue;
+          dataCopy[maxValue] = -double.MaxValue;
       }
       return data[maxValue];
   }
@@ -3877,36 +4054,40 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="dateString"></param>
         /// <returns></returns>
-  public static DateTime Time_ConvertDateString2DayOfYear(string dateString)
-  {
-      // file name has following structure:  SERF_20130314.SpectralIndices.PivotTable.csv
-      string yr = dateString.Substring(0, 4);
-      string mn = dateString.Substring(4, 2);
-      string dy = dateString.Substring(6, 2);
+  //public static DateTime Time_ConvertDateString2DayOfYear(string dateString)
+  //{
+  //      // file name has following structure:  SERF_20130314.SpectralIndices.PivotTable.csv
+  //      var yr = dateString.Substring(0, 4);
+  //      var mn = dateString.Substring(4, 2);
+  //      var dy = dateString.Substring(6, 2);
 
-      DateTime dt = new DateTime(Int32.Parse(yr), Int32.Parse(mn), Int32.Parse(dy));
-      return dt;
-  }
+  //    var dt = new DateTime(Int32.Parse(yr), Int32.Parse(mn), Int32.Parse(dy));
+  //    return dt;
+  //}
+
   public static string[] MonthNames = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
-  //============================================================================================================================
 
 
-  public static int String2Int(string str)
-  {
-      int int32 = 0;
-      try
-      {
-          int32 = Int32.Parse(str);
-      }
-      catch (System.FormatException ex)
-      {
-          System.LoggedConsole.WriteLine("DataTools.String2Int(string str): WARNING! INVALID INTEGER=" + str);
-          System.LoggedConsole.WriteLine(ex);
-          int32 = 0;
-      }
-      return int32;
-  }
+        /// <summary>
+        /// Assume string has format YYYYMMDD_hhmmss*
+        /// </summary>
+        /// <param name="dateString"></param>
+        /// <returns></returns>
+    public static DateTime Time_ConvertDateString2DateTime(string dateString)
+    {
+        // file name has following structure:  SERF_20130314.SpectralIndices.PivotTable.csv
+        var yr = dateString.Substring(0, 4);
+            var mn = dateString.Substring(4, 2);
+            var dy = dateString.Substring(6, 2);
 
+            var hur = dateString.Substring(9, 2);
+            var min = dateString.Substring(11, 2);
+            var sec = dateString.Substring(13, 2);
+
+        var dt = new DateTime(int.Parse(yr), int.Parse(mn), int.Parse(dy), int.Parse(hur), int.Parse(min), int.Parse(sec));
+        return dt;
+    }
+        //============================================================================================================================
 
 
   //*************************************************************************************************************************************

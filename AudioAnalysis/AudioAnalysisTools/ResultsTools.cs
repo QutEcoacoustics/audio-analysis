@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ResultsTools.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   
@@ -498,8 +498,8 @@ namespace AudioAnalysisTools
             }
 
             
-            var reportfilePath = FilenameHelpers.AnalysisResultName(outputDirectory, resultFilenamebase, analysisTag, ReportFileExt).ToFileInfo();
-            var reportfilePathBackup = FilenameHelpers.AnalysisResultName(outputDirectory, resultFilenamebase, analysisTag, ReportFileExt, "BACKUP").ToFileInfo();
+            var reportfilePath = FilenameHelpers.AnalysisResultPath(outputDirectory, resultFilenamebase, analysisTag, ReportFileExt).ToFileInfo();
+            var reportfilePathBackup = FilenameHelpers.AnalysisResultPath(outputDirectory, resultFilenamebase, analysisTag, ReportFileExt, "BACKUP").ToFileInfo();
 
             serialiseFunc(reportfilePath, results);
 

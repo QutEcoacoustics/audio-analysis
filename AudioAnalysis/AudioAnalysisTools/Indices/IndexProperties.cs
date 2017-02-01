@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="IndexProperties.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   This class stores the properties of a particular index.
@@ -20,6 +20,7 @@ namespace AudioAnalysisTools.Indices
     using System.IO;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
 
     using TowseyLibrary;
 

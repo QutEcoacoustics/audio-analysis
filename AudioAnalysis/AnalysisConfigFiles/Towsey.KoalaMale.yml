@@ -20,9 +20,12 @@ MaxDuration: 2.5
 # Event threshold - Determines FP / FN trade-off for events.
 EventThreshold: 0.2
 ################################################################################
-SaveIntermediateWavFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
-SaveSonogramImages: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
+# DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 ParallelProcessing: false
 #DoNoiseReduction: true

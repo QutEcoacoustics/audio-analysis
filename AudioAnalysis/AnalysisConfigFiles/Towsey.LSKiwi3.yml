@@ -38,8 +38,10 @@ EXCLUDE_IF_RULE: EvIntensity_LT_0.1
 EXCLUDE_IF_RULE: DeltaPeriodScore_LT_0.1
 
 #SAVE INTERMEDIARY FILES
-SaveIntermediateWavFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
-SaveSonogramImages: true
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
 ParallelProcessing: false
 ...

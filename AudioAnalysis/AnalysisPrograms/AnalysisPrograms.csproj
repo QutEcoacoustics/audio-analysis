@@ -49,7 +49,7 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <UseVSHostingProcess>true</UseVSHostingProcess>
-    <CodeContractsEnableRuntimeChecking>False</CodeContractsEnableRuntimeChecking>
+    <CodeContractsEnableRuntimeChecking>True</CodeContractsEnableRuntimeChecking>
     <CodeContractsRuntimeOnlyPublicSurface>False</CodeContractsRuntimeOnlyPublicSurface>
     <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
     <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
@@ -85,6 +85,15 @@
     <CodeContractsAnalysisWarningLevel>3</CodeContractsAnalysisWarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <CodeContractsAssertsToContractsCheckBox>True</CodeContractsAssertsToContractsCheckBox>
+    <CodeContractsRedundantTests>True</CodeContractsRedundantTests>
+    <CodeContractsMissingPublicEnsuresAsWarnings>False</CodeContractsMissingPublicEnsuresAsWarnings>
+    <CodeContractsInferEnsuresAutoProperties>True</CodeContractsInferEnsuresAutoProperties>
+    <CodeContractsSuggestAssumptionsForCallees>False</CodeContractsSuggestAssumptionsForCallees>
+    <CodeContractsNecessaryEnsures>True</CodeContractsNecessaryEnsures>
+    <CodeContractsSuggestReadonly>True</CodeContractsSuggestReadonly>
+    <CodeContractsSkipAnalysisIfCannotConnectToCache>False</CodeContractsSkipAnalysisIfCannotConnectToCache>
+    <CodeContractsBeingOptimisticOnExternal>True</CodeContractsBeingOptimisticOnExternal>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -205,13 +214,13 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="YamlDotNet, Version=2.0.1.41986, Culture=neutral, PublicKeyToken=2b53052c5884d7a1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Extra Assemblies\YamlDotNet\YamlDotNet.dll</HintPath>
+    <Reference Include="YamlDotNet, Version=3.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\YamlDotNet.3.9.0\lib\net35\YamlDotNet.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="YamlDotNet.Dynamic, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Extra Assemblies\YamlDotNet\YamlDotNet.Dynamic.dll</HintPath>
+    <Reference Include="YamlDotNet.Dynamic, Version=3.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\YamlDotNet.Dynamic.3.2.3\lib\net40\YamlDotNet.Dynamic.dll</HintPath>
+      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -225,9 +234,9 @@
     <Compile Include="Audio2Sonogram.cs" />
     <Compile Include="AudioCutter.cs" />
     <Compile Include="AudioFileCheck.cs" />
-    <Compile Include="LitoriaFallax.cs" />
-    <Compile Include="LimnodynastesConvex.cs" />
-    <Compile Include="Canetoad.cs" />
+    <Compile Include="LitoriaFallax_OBSOLETE.cs" />
+    <Compile Include="LimnodynastesConvex_OBSOLETE.cs" />
+    <Compile Include="CanetoadOld.cs" />
     <Compile Include="Audio2InputForConvCNN.cs" />
     <Compile Include="ChannelIntegrity.cs" />
     <Compile Include="DrawEasyImage.cs" />
@@ -240,9 +249,32 @@
     <Compile Include="Recognizers\Base\RecognizerBase.cs" />
     <Compile Include="Recognizers\Base\RecognizerEntry.cs" />
     <Compile Include="Recognizers\Base\RecognizerResults.cs" />
+    <Compile Include="Recognizers\CriniaTinnula_OBSOLETE.cs" />
+    <Compile Include="Recognizers\IctalurusFurcatus.cs" />
+    <Compile Include="Recognizers\LewiniaPectoralis.cs" />
+    <Compile Include="Recognizers\LitoriaNasuta.cs" />
+    <Compile Include="Recognizers\LitoriaFreycineti.cs" />
+    <Compile Include="Recognizers\LitoriaWatjulumensis.cs" />
+    <Compile Include="Recognizers\LitoriaBicolor.cs" />
+    <Compile Include="Recognizers\UperoleiaLithomoda.cs" />
+    <Compile Include="Recognizers\PlatyplectrumOrnatum.cs" />
+    <Compile Include="Recognizers\LimnodynastesConvex.cs" />
     <Compile Include="Recognizers\ExempliGratia.cs" />
+    <Compile Include="Recognizers\CycloranaNovaehollandiae.cs" />
+    <Compile Include="Recognizers\ArdeaInsignis.cs" />
+    <Compile Include="Recognizers\Tinnula_TRY.cs" />
+    <Compile Include="Recognizers\CriniaRemota.cs" />
+    <Compile Include="Recognizers\LitoriaCaerulea.cs" />
+    <Compile Include="Recognizers\UperoleiaInundata.cs" />
+    <Compile Include="Recognizers\LitoriaPallida.cs" />
+    <Compile Include="Recognizers\LitoriaRubella.cs" />
+    <Compile Include="Recognizers\UperoleiaMimula.cs" />
+    <Compile Include="Recognizers\LitoriaNasutaOLD.cs" />
+    <Compile Include="Recognizers\LitoriaRothii.cs" />
     <Compile Include="Recognizers\LitoriaOlong.cs" />
     <Compile Include="Recognizers\LitoriaFallax.cs" />
+    <Compile Include="Recognizers\RhinellaMarina.cs" />
+    <Compile Include="SourcePreparers\LocalSourcePreparer.cs" />
     <Compile Include="SURFAnalysis.cs" />
     <Compile Include="OscillationsGeneric.cs" />
     <Compile Include="DifferenceSpectrogram.cs" />
@@ -251,7 +283,7 @@
     <Compile Include="DummyAnalyser.cs" />
     <Compile Include="EPR.cs" />
     <Compile Include="FileRenamer.cs" />
-    <Compile Include="Frogs.cs" />
+    <Compile Include="Frogs_OBSOLETE.cs" />
     <Compile Include="GroundParrotRecogniser.cs" />
     <Compile Include="Production\Actions.cs" />
     <Compile Include="Production\CustomArgumentParsing.cs" />
@@ -264,7 +296,7 @@
     <Compile Include="Human1.cs" />
     <Compile Include="DrawSummaryIndexTracks.cs" />
     <Compile Include="KoalaMale.cs" />
-    <Compile Include="LewinsRail3.cs" />
+    <Compile Include="LewinsRail3OBSOLETE.cs" />
     <Compile Include="LSKiwi3.cs" />
     <Compile Include="LSKiwiHelper.cs" />
     <Compile Include="LSKiwiROC.cs" />
@@ -280,7 +312,7 @@
     <Compile Include="Sandpit.cs" />
     <Compile Include="SpeciesAccumulationCurve.cs" />
     <Compile Include="AcousticIndices.cs" />
-    <Compile Include="FrogRibit.cs" />
+    <Compile Include="FrogRibit_OBSOLETE.cs" />
     <Compile Include="FeltTemplate_Edit.cs" />
     <Compile Include="FeltTemplate_Create.cs" />
     <Compile Include="FeltTemplates_Use.cs" />
@@ -289,7 +321,7 @@
     <Compile Include="Segment.cs" />
     <Compile Include="SnrAnalysis.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SPR.cs" />
+    <Compile Include="SPR_OBSOLETE.cs" />
     <Compile Include="Spt.cs" />
     <Compile Include="XiesAnalysis.cs" />
   </ItemGroup>
@@ -303,16 +335,12 @@
       <Name>Acoustics.Tools</Name>
     </ProjectReference>
     <ProjectReference Include="..\AED\AED\AED.fsproj">
-      <Project>{993980A0-8D06-4635-8296-40E9FFF9C301}</Project>
+      <Project>{993980a0-8d06-4635-8296-40e9fff9c301}</Project>
       <Name>AED</Name>
     </ProjectReference>
     <ProjectReference Include="..\AnalysisBase\AnalysisBase.csproj">
       <Project>{80BC795A-A987-45AB-B29B-76CF190384BA}</Project>
       <Name>AnalysisBase</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AnalysisRunner\AnalysisRunner.csproj">
-      <Project>{EEB8AE89-A07B-4974-8685-88BDCFF22C78}</Project>
-      <Name>AnalysisRunner</Name>
     </ProjectReference>
     <ProjectReference Include="..\AudioAnalysisTools\AudioAnalysisTools.csproj">
       <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>

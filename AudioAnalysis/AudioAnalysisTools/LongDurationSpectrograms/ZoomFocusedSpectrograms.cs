@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 using Acoustics.Shared;
 using AudioAnalysisTools.Indices;
-using log4net;
-using log4net.Repository.Hierarchy;
 
 using TowseyLibrary;
-using Acoustics.Shared.Csv;
 
 /*
     Action code for this analysis = ZoomingSpectrograms
@@ -56,7 +51,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
             var sw = Stopwatch.StartNew();
             string[] keys = { "ACI", "POW", "BGN", "CVR", "DIF", "ENT", "EVN", "RHZ", "RVT", "RPS", "RNG", "SUM", "SPT" };
-            Dictionary<string, double[,]> spectra = IndexMatrices.ReadCSVFiles(inputDirectory, fileStem + "__" + analysisType, keys);
+            Dictionary<string, double[,]> spectra = IndexMatrices.ReadCsvFiles(inputDirectory, fileStem + "__" + analysisType, keys);
             sw.Stop();
             LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
 
@@ -87,7 +82,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             sw.Stop();
             LoggedConsole.WriteLine("Finished spectrograms derived from spectral indices. Elapsed time = " + sw.Elapsed.TotalSeconds + " seconds");
 
-            /***
+            
             // ####################### DERIVE ZOOMED IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
             int[] compressionFactor = { 8, 4, 2, 1 };
             int compressionCount = compressionFactor.Length;
@@ -131,7 +126,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             sw.Stop();
             LoggedConsole.WriteLine("Finished spectrograms derived from standard frames. Elapsed time = " + sw.Elapsed.TotalSeconds + " seconds");
-            *****/
+            
 
             // combine the images into a stack  
             Image combinedImage = ImageTools.CombineImagesVertically(imageList);
@@ -586,7 +581,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             // Do NOISE REDUCTION
             double noiseReductionParameter = 2.0;
-            var tuple = SNR.NoiseReduce(dbSpectrogramData, NoiseReductionType.STANDARD, noiseReductionParameter);
+            var tuple = SNR.NoiseReduce(dbSpectrogramData, NoiseReductionType.Standard, noiseReductionParameter);
             double[,] nrSpectrogramData = tuple.Item1;   // store data matrix
 
             double ridgeThreshold = 2.5;

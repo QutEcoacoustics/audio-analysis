@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="IAnalyser2.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Interface a compatible analysis must implement.
@@ -33,6 +33,11 @@ namespace AnalysisBase
         /// Gets Identifier. This should be a dotted uniquely identifying name. E.g. <code>Towsey.MultiAnalyser</code>.
         /// </summary>
         string Identifier { get; }
+
+        /// <summary>
+        /// A user friendly string describing the analyzer. Intending for printing in the console.
+        /// </summary>
+        string Description { get; }
 
         /// <summary>
         /// Gets the initial (default) settings for the analysis.

@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="LDSpectrogramConfig.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -53,6 +53,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         ///  pass two colour maps because interesting to draw a double image.
         /// </summary>
         public string ColorMap2 { get; set; }
+
+        /// <summary>
+        /// Determines colour intensity of the lower index values relative to the higher index values. Good value is 2.0
+        /// </summary>
+        public double? ColourGain { get; set; }
+
+        /// <summary>
+        /// Value must be < 1.0. Good value is 0.75
+        /// </summary>
+        public double? ColourFilter { get; set; }
 
         /// <summary>
         /// The default is one minute spectra i.e. 60 per hour

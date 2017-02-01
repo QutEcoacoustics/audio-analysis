@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="KoalaMale.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace AnalysisPrograms
@@ -299,10 +299,10 @@ namespace AnalysisPrograms
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
                                  {
-                                     SourceFName = recording.FileName, 
+                                     SourceFName = recording.BaseName, 
                                      WindowSize = FrameSize, 
                                      WindowOverlap = windowOverlap, 
-                                     NoiseReductionType = NoiseReductionType.NONE
+                                     NoiseReductionType = NoiseReductionType.None
                                  };
 
             ////sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
@@ -318,7 +318,6 @@ namespace AnalysisPrograms
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
-            recording.Dispose();
 
             //double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
 
@@ -535,7 +534,7 @@ namespace AnalysisPrograms
                 this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
                 const double EventThreshold = 0.1;

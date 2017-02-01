@@ -1,0 +1,112 @@
+
+
+- name: Setup analysis node
+  hosts: 127.0.0.1
+  tasks:
+    # tasks file for audio_tools
+    
+    # bloody ffmpeg
+    - name: Add Jessie Backports PPA
+      apt_repository:
+        repo: deb http://ftp.debian.org/debian jessie-backports main
+        update_cache: true
+      become: true
+    #
+    # Required binaries
+    #
+    - name: Install base dependencies (imagemagick)
+      apt: name=imagemagick state=present
+      become: true
+
+    - name: Install base dependencies (wavpack)
+      apt: name=wavpack state=present
+      become: true
+
+    - name: Install base dependencies (libsox-fmt-all)
+      apt: name=libsox-fmt-all state=present
+      become: true
+
+    - name: Install base dependencies (sox)
+      apt: name=sox state=present
+      become: true
+
+    - name: Install base dependencies (shntool)
+      apt: name=shntool state=present
+      become: true
+
+    - name: Install base dependencies (mp3splt)
+      apt: name=mp3splt state=present
+      become: true
+
+    - name: Install base dependencies (libav-tools)
+      apt: name=libav-tools state=present
+      become: true
+
+    #
+    # More binaries
+    #
+    - name: Install base dependencies (g++)
+      apt: name='g++' state=latest
+      become: true
+
+    - name: Install base dependencies (libsndfile1-dev)
+      apt: name='libsndfile1-dev' state=latest
+      become: true
+
+    - name: Install base dependencies (libpng++-dev
+      apt: name='libpng++-dev' state=latest
+      become: true
+
+    - name: Install base dependencies (libpng12-dev)
+      apt: name='libpng12-dev' state=latest
+      become: true
+
+    - name: Install base dependencies (libboost-program-options-dev)
+      apt: name='libboost-program-options-dev' state=latest
+      become: true
+
+
+    #
+    # FFMPEG
+    #
+    - name: Install base dependencies (FFMPEG)
+      apt: name=ffmpeg state=present
+      become: true
+     
+    - name: FILE | Aliasing ffmpeg binaries
+      file:
+        src: /usr/bin/{{ item[0] }}
+        dest: "{{ item[1] }}/{{ item[0] }}"
+        state: link
+      with_nested:
+        - [ffmpeg, ffprobe]
+        - [ '/usr/local/bin' ]
+      become: true   
+      
+    #
+    # install wav2png
+    #
+    - name: bioacoustics/downloads/wav2png folder creation
+      file: path=~/wav2png state=directory
+      tags: wav2png
+
+    - name: Get wav2png source
+      git:
+        dest: '~/wav2png'
+        repo: 'https://github.com/beschulz/wav2png.git'
+      register: wav2png_result
+      tags: wav2png
+
+    - name: Building wav2png binaries
+      command: make -C ./build all BINARY='~/wav2png.build'
+      args:
+        creates: '~/wav2png.build'
+        chdir: '~/wav2png'
+      when: wav2png_result.changed
+      tags: wav2png
+
+    - name: Copying wav2png binaries
+      command: "cp /home/{{ansible_user}}/wav2png.build /usr/local/bin/wav2png"
+      become: true
+      when: wav2png_result.changed
+      tags: wav2png

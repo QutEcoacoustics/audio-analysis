@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="GroundParrotRecogniser.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   
@@ -18,6 +18,7 @@ namespace AnalysisPrograms
     using System.Reflection;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
 
     using AnalysisBase;
@@ -311,7 +312,7 @@ namespace AnalysisPrograms
 
 
             // save image of sonograms
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 Image image = Aed.DrawSonogram(sonogram, results.Item2);
                 image.Save(analysisSettings.ImageFile.FullName, ImageFormat.Png);

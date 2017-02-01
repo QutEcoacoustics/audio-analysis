@@ -4,7 +4,6 @@
     using Acoustics.Tools.Audio;
     using AnalysisBase;
     using AnalysisPrograms.Production;
-    using AnalysisRunner;
     using log4net;
     using PowerArgs;
     using System;

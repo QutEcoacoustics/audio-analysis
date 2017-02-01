@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="Audio2InputForConvCNN.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the Audio2InputForConvCNN type.
@@ -733,7 +733,7 @@ namespace AnalysisPrograms
             SonogramConfig sonoConfig = new SonogramConfig(configDict); 
                 
             // disable noise removal for first two spectrograms
-            sonoConfig.NoiseReductionType = NoiseReductionType.NONE;
+            sonoConfig.NoiseReductionType = NoiseReductionType.None;
 
             BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
 
@@ -798,7 +798,7 @@ namespace AnalysisPrograms
             double[,] dbSpectrogramData = (double[,])sonogram.Data.Clone();
 
             // 4) now draw the noise reduced decibel spectrogram
-            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+            sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
             sonoConfig.NoiseReductionParameter = 3;
             ////sonoConfig.NoiseReductionType = NoiseReductionType.SHORT_RECORDING;
             ////sonoConfig.NoiseReductionParameter = 50;
@@ -863,6 +863,7 @@ namespace AnalysisPrograms
         public string DisplayName { get; private set; }
 
         public string Identifier { get; private set; }
+        public string Description => "This analyzer preprocesses short audio segments a few seconds to maximum 1 minute long for processing by a convolutional Deep NN. It does not accumulate data or other indices over a long recording.";
 
         public AnalysisSettings DefaultSettings { get; private set; }
 
@@ -900,7 +901,7 @@ namespace AnalysisPrograms
 
             // this analysis produces no results!
             // but we still print images (that is the point)
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResult.Events.Length))
             {
                 Debug.Assert(analysisSettings.ImageFile.Exists);
             }

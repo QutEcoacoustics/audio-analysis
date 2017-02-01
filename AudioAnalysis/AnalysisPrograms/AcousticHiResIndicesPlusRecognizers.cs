@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AcousticIndices.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the Acoustic type.
@@ -21,6 +21,7 @@ namespace AnalysisPrograms
     using System.Runtime.Serialization;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using Acoustics.Shared.Extensions;
 
@@ -150,6 +151,8 @@ namespace AnalysisPrograms
                 return TowseyAcoustic;
             }
         }
+
+        public string Description => "[OBSOLETE] This is the old way of doing a multi recognizer!";
 
 
         public static void Dev(Arguments arguments)
@@ -460,7 +463,7 @@ namespace AnalysisPrograms
             // Assemble arguments for drawing the GRAY-SCALE and RIDGE SPECTROGRAMS
             var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
             {
-                InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.FileName + ".csv")),
+                InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.BaseName + ".csv")),
                 OutputDirectory = new DirectoryInfo(outputDirectory.FullName + @"/SpectrogramImages"),
                 SpectrogramConfigPath = acousticIndicesParsedConfiguration.SpectrogramConfigFile,
                 IndexPropertiesConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile,
@@ -477,7 +480,7 @@ namespace AnalysisPrograms
             }
 
             string fileName = null;
-            string fileStem = recording.FileName;
+            string fileStem = recording.BaseName;
 
             bool saveRidgeSpectrograms = (bool?)analysisSettings.Configuration["SaveRidgeSpectrograms"] ?? false;
             if (saveRidgeSpectrograms)
@@ -522,7 +525,7 @@ namespace AnalysisPrograms
             bool saveSonogramImages = (bool?)analysisSettings.Configuration["SaveSonogramImages"] ?? false;
             if (saveSonogramImages)
             {
-                //    string csvPath = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
+                //    string csvPath = Path.Combine(outputDirectory.FullName, recording.BaseName + ".csv");
                 //    Csv.WriteMatrixToCsv(csvPath.ToFileInfo(), sonogram.Data);
                 LoggedConsole.WriteErrorLine("WARNING: STANDARD SPECTROGRAMS ARE NOT SAVED IN THIS TASK.");
             }
@@ -621,7 +624,7 @@ namespace AnalysisPrograms
         /// Writes a csv file containing results for all species detections
         /// Previous csv files coded by Anthony had the following headings:
         /// EventStartSeconds, EventEndSeconds, Duration, MinHz	MaxHz, FreqBinCount, FreqBinWidth, FrameDuration, FrameCount, SegmentStartOffset,
-        /// 	   Score	EventCount	FileName	StartOffset	SegmentDuration	StartOffsetMinute	Bottom	Top	Left	Right	HitElements
+        /// 	   Score	EventCount	BaseName	StartOffset	SegmentDuration	StartOffsetMinute	Bottom	Top	Left	Right	HitElements
         /// </summary>
         /// <param name="destination"></param>
         /// <param name="results"></param>
@@ -629,7 +632,7 @@ namespace AnalysisPrograms
         {
             var lines = new List<string>();
             //string line = "Start,Duration,SpeciesName,CallType,MinFreq,MaxFreq,Score,Score2";
-            string line = "EvStartSec,evEndSec,Duration,MinFreq,MaxFreq,SegmentStartOffset,SegmentDuration,Score,Score2,CallName,SpeciesName,FileName";
+            string line = "EvStartSec,evEndSec,Duration,MinFreq,MaxFreq,SegmentStartOffset,SegmentDuration,Score,Score2,CallName,SpeciesName,BaseName";
 
 
             lines.Add(line);
@@ -669,7 +672,7 @@ namespace AnalysisPrograms
             foreach (var kvp in selectors)
             {
                 // write spectrogram to disk as CSV file
-                var filename = FilenameHelpers.AnalysisResultName(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv").ToFileInfo();
+                var filename = FilenameHelpers.AnalysisResultPath(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv").ToFileInfo();
                 spectralIndexFiles.Add(filename);
                 Csv.WriteMatrixToCsv(filename, results, kvp.Value);
             }
@@ -691,7 +694,7 @@ namespace AnalysisPrograms
         {
             var acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)settings.AnalyzerSpecificConfiguration;
 
-            var sourceAudio = inputFileSegment.OriginalFile;
+            var sourceAudio = inputFileSegment.TargetFile;
             var resultsDirectory = settings.AnalysisInstanceOutputDirectory;
             bool tileOutput = acousticIndicesParsedConfiguration.TileOutput;
 
@@ -713,9 +716,9 @@ namespace AnalysisPrograms
              */
             var indexConfigData = new IndexGenerationData()
                                       {
-                                          RecordingType  = inputFileSegment.OriginalFile.Extension,
-                                          RecordingStartDate = inputFileSegment.OriginalFileStartDate,
-                                          SampleRateOriginal = (int)inputFileSegment.OriginalFileSampleRate,
+                                          RecordingType  = inputFileSegment.TargetFile.Extension,
+                                          RecordingStartDate = inputFileSegment.TargetFileStartDate,
+                                          SampleRateOriginal = inputFileSegment.TargetFileSampleRate.Value,
                                           SampleRateResampled = sampleRate,
                                           FrameLength = frameWidth,
                                           FrameStep = settings.Configuration[AnalysisKeys.FrameStep],
@@ -725,7 +728,7 @@ namespace AnalysisPrograms
                                           BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
                                           LongDurationSpectrogramConfig = ldSpectrogramConfig
                                       };
-            var icdPath = FilenameHelpers.AnalysisResultName(
+            var icdPath = FilenameHelpers.AnalysisResultPath(
                 resultsDirectory,
                 basename,
                 IndexGenerationData.FileNameFragment,
@@ -772,7 +775,7 @@ namespace AnalysisPrograms
 
                     foreach (var image in images)
                     {
-                        TileOutput(resultsDirectory, Path.GetFileNameWithoutExtension(sourceAudio.Name), image.Item2 + ".Tile", inputFileSegment.OriginalFileStartDate.Value, image.Item1);
+                        TileOutput(resultsDirectory, Path.GetFileNameWithoutExtension(sourceAudio.Name), image.Item2 + ".Tile", inputFileSegment.TargetFileStartDate.Value, image.Item1);
                     }                    
                 }
             }

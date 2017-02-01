@@ -1,0 +1,56 @@
+---
+AnalysisName: Towsey.LitoriaRothii
+SpeciesName: Litoria rothii
+AbbreviatedSpeciesName: L.rothi
+
+# Noise removal: 0=Least severe.  >5=Most severe. Best value depends on the call and background noise.
+SeverityOfNoiseRemoval: 1.0
+
+# min and max of the freq band to search
+MinHz: 1200          
+MaxHz: 2200
+
+# User should not change the three below parameters: 
+# ResampleRate is fixed = 22050 Hz
+# Frame Size is fixed = 256
+# Frame overlap is fixed = 0.0
+# Duration of DCT is also calculated automatically
+
+# minimum acceptable value of a DCT coefficient  # default = 0.4
+DctThreshold: 0.4  
+
+# OSCILLATIONS PER SECOND
+# ignore oscillation rates below the min & above the max threshold
+MinOcilFreq: 10        
+MaxOcilFreq: 30
+
+# Minimum and maximum duration in seconds for the length of a true call.
+MinDuration: 0.4
+MaxDuration: 1.4
+
+# Decibel threshold - minimum amplitude to be included in consideration for event.
+DecibelThreshold: 6.0
+
+# Event threshold - use this to determine FP / FN trade-off for events.
+EventThreshold: 0.3
+
+
+## Specifically for AnalyzeLongRecording
+# SegmentDuration: units=minutes;    
+SegmentDuration: 1
+# SegmentOverlap: units=seconds;
+SegmentOverlap: 0
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+SaveIntermediateCsvFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
+# DisplayCsvImage is obsolete - ensure it remains set to: false
+DisplayCsvImage: false
+ParallelProcessing: false
+## End section for AnalyzeLongRecording
+
+# Other config files to reference
+IndexPropertiesConfig: "./IndexPropertiesConfigHiRes.yml"
+HighResolutionIndicesConfig: "./Towsey.AcousticHiResIndicesForRecognisers.yml"
+...

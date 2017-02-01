@@ -352,7 +352,7 @@ using System.Drawing;
                 eprEvents.Add(ae);
             }
 
-            string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
+            string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.BaseName) + ".png");
 
             bool doHighlightSubband = false; bool add1kHzLines = true;
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));

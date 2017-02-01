@@ -1,0 +1,53 @@
+---
+AnalysisName: Towsey.LitoriaMicrobelos
+SpeciesName: Litoria microbelos
+AbbreviatedSpeciesName: L.microbelos
+
+# min and max of the freq band to search
+DominantFreq: 7000
+MinHz: 6500          
+MaxHz: 7500
+# duration of DCT in seconds 
+# default for Stewart CD DctDuration: 0.4
+DctDuration: 0.1
+# minimum acceptable value of a DCT coefficient  # default = 0.6
+DctThreshold: 0.5  
+# ignore oscillation rates below the min & above the max threshold
+# OSCILLATIONS PER SECOND Default=8-15
+MinOcilFreq: 120        
+MaxOcilFreq: 130
+# Minimum and maximum duration in seconds for the length of a true call.
+MinDuration: 0.2
+MaxDuration: 0.3
+# Event threshold - use this to determine FP / FN trade-off for events.
+EventThreshold: 0.5
+
+FrameSize: 256
+
+# Standard settings
+#DoNoiseReduction: false
+#BgNoiseThreshold: 3.0
+
+# Resample rate must be 2 X the desired Nyquist
+# ResampleRate: 17640
+ResampleRate: 22050
+
+## Specifically for AnalyzeLongRecording
+# SegmentDuration: units=minutes;    
+SegmentDuration: 1
+# SegmentOverlap: units=seconds;
+SegmentOverlap: 0
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+SaveIntermediateCsvFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
+# DisplayCsvImage is obsolete - ensure it remains set to: false
+DisplayCsvImage: false
+ParallelProcessing: false
+## End section for AnalyzeLongRecording
+
+# Other config files to reference
+IndexPropertiesConfig: "./IndexPropertiesConfigHiRes.yml"
+HighResolutionIndicesConfig: "./Towsey.AcousticHiResIndicesForRecognisers.yml"
+...

@@ -1,0 +1,51 @@
+---
+AnalysisName: Towsey.LitoriaWatjulum
+SpeciesName: Litoria watjulumensis
+AbbreviatedSpeciesName: L.watju
+
+# min and max of the freq band to search
+MinHz: 2600          
+MaxHz: 3000
+# duration of DCT in seconds 
+DctDuration: 1.0
+# minimum acceptable value of a DCT coefficient  # default = 0.6
+DctThreshold: 0.5  
+# ignore oscillation rates below the min & above the max threshold
+# OSCILLATIONS PER SECOND
+MinOcilFreq: 15        
+MaxOcilFreq: 25
+# Minimum and maximum duration in seconds for the length of a true call.
+MinDuration: 2.0
+MaxDuration: 8.0
+# Event threshold - use this to determine FP / FN trade-off for events.
+EventThreshold: 0.6
+
+FrameSize: 256
+
+# Standard settings
+#DoNoiseReduction: false
+#BgNoiseThreshold: 3.0
+
+# Resample rate must be 2 X the desired Nyquist
+# ResampleRate: 17640
+ResampleRate: 22050
+
+## Specifically for AnalyzeLongRecording
+# SegmentDuration: units=minutes;    
+SegmentDuration: 1
+# SegmentOverlap: units=seconds;
+SegmentOverlap: 0
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+SaveIntermediateCsvFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
+# DisplayCsvImage is obsolete - ensure it remains set to: false
+DisplayCsvImage: false
+ParallelProcessing: false
+## End section for AnalyzeLongRecording
+
+# Other config files to reference
+IndexPropertiesConfig: "./IndexPropertiesConfigHiRes.yml"
+HighResolutionIndicesConfig: "./Towsey.AcousticHiResIndicesForRecognisers.yml"
+...

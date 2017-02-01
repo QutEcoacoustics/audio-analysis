@@ -134,7 +134,7 @@ namespace AnalysisPrograms
 
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(recordingPath.FullName);
-            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+            //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // THIS METHOD CALL IS OBSOLETE
             int sr = recording.SampleRate;
 
             //ii: READ PARAMETER VALUES FROM INI FILE
@@ -196,13 +196,13 @@ namespace AnalysisPrograms
         {
             //ii: MAKE SONOGRAM
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName = recording.FileName;
+            sonoConfig.SourceFName = recording.BaseName;
             //sonoConfig.WindowSize = windowSize;
             sonoConfig.WindowOverlap = frameOverlap;
             
 
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-            recording.Dispose();
+
             Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f2}%, Offset={3:f1}ms, Frames/s={4:f1}",
                                        sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
                                       (sonogram.FrameStep * 1000), sonogram.FramesPerSecond, frameOverlap);

@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AnalysisCoordinator.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Prepares, runs and completes analyses.
@@ -41,17 +41,16 @@ namespace AnalysisBase
     /// </remarks>
     public class AnalysisCoordinator
     {
-        private readonly int[] channelSelection;
-
-        private readonly bool mixDownToMono;
-
         private const string StartingItem = "Starting item {0}: {1}.";
         private const string CancelledItem = "Cancellation requested for {0} analysis {1}. Finished item {2}: {3}.";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly bool saveIntermediateWavFiles;
-        private readonly bool saveImageFiles;
+        private readonly int[] channelSelection;
+        private readonly bool mixDownToMono;
+        
+        private readonly SaveBehavior saveIntermediateWavFiles;
+        private readonly SaveBehavior saveImageFiles;
         private readonly bool saveIntermediateCsvFiles;
 
         /// <summary>
@@ -60,10 +59,10 @@ namespace AnalysisBase
         /// <param name="sourcePreparer">
         /// The source Preparer. The prepared files can be stored anywhere, they just need to be readable.
         /// </param>
-        /// <param name="saveIntermediateWavFiles"></param>
-        /// <param name="saveImageFiles"></param>
-        /// <param name="saveIntermediateCsvFiles"></param>
-        public AnalysisCoordinator(ISourcePreparer sourcePreparer, bool saveIntermediateWavFiles, bool saveImageFiles, bool saveIntermediateCsvFiles)
+        /// <param name="saveIntermediateWavFiles">Whether or not to save the WAVE file used for each segment</param>
+        /// <param name="saveImageFiles">Whether or not to save image files generated in each segment</param>
+        /// <param name="saveIntermediateCsvFiles">Whether or not to </param>
+        public AnalysisCoordinator(ISourcePreparer sourcePreparer, SaveBehavior saveIntermediateWavFiles, SaveBehavior saveImageFiles, bool saveIntermediateCsvFiles)
         {
             Contract.Requires(sourcePreparer != null);
 
@@ -91,7 +90,7 @@ namespace AnalysisBase
         /// <param name="saveIntermediateCsvFiles"></param>
         /// <param name="channelSelection"></param>
         /// <param name="mixDownToMono"></param>
-        public AnalysisCoordinator(ISourcePreparer sourcePreparer, bool saveIntermediateWavFiles, bool saveImageFiles, bool saveIntermediateCsvFiles, int[] channelSelection, bool mixDownToMono = true) :
+        public AnalysisCoordinator(ISourcePreparer sourcePreparer, SaveBehavior saveIntermediateWavFiles, SaveBehavior saveImageFiles, bool saveIntermediateCsvFiles, int[] channelSelection, bool mixDownToMono = true) :
             this(sourcePreparer, saveIntermediateWavFiles, saveImageFiles, saveIntermediateCsvFiles)
         {
             this.channelSelection = channelSelection;
@@ -186,15 +185,15 @@ namespace AnalysisBase
             var analysisSegments = this.SourcePreparer.CalculateSegments(fileSegments, settings).ToList();
 
             // do not allow the program to continue
-            // if there are no possible segments to process because the orginal file
+            // if there are no possible segments to process because the original file
             // is too short.
-            var tooShort = fileSegments.FirstOrDefault(fileSegment => fileSegment.OriginalFileDuration < settings.SegmentMinDuration);
+            var tooShort = fileSegments.FirstOrDefault(fileSegment => fileSegment.TargetFileDuration < settings.SegmentMinDuration);
             if (tooShort != null)
             {
                 Log.Fatal("Provided audio recording is too short too analyze!");
                 throw new AudioRecordingTooShortException(
                     "{0} is too short to analyze with current analysisSettings.SegmentMinDuration ({1})"
-                    .Format2(tooShort.OriginalFile.FullName, settings.SegmentMinDuration));
+                    .Format2(tooShort.TargetFile.FullName, settings.SegmentMinDuration));
             }
 
             // check last segment and remove if too short
@@ -202,12 +201,13 @@ namespace AnalysisBase
             var duration = finalSegment.SegmentEndOffset - finalSegment.SegmentStartOffset;
             if (duration < settings.SegmentMinDuration)
             {
+                Log.Warn($"Analysis segment removed because it was too short (less than {settings.SegmentMinDuration}): {finalSegment}");
                 analysisSegments.Remove(finalSegment);
             }
 
             AnalysisResult2[] results;
 
-            // clone analysis settings for parallelism conerns:
+            // clone analysis settings for parallelism concerns:
             //  - as each iteration modifies settings. This causes hard to track down bugs
             // clones are made for sequential runs to to ensure consistency
             var settingsForThisItem = (AnalysisSettings)settings.Clone();
@@ -365,7 +365,7 @@ namespace AnalysisBase
             Contract.Requires(fileSegment.Validate(), "File Segment must be valid.");
 
             var start = fileSegment.SegmentStartOffset ?? TimeSpan.Zero;
-            var end = fileSegment.SegmentEndOffset ?? fileSegment.OriginalFileDuration;
+            var end = fileSegment.SegmentEndOffset ?? fileSegment.TargetFileDuration.Value;
            
            // set directories
             this.PrepareDirectories(analyser, localCopyOfSettings);
@@ -376,7 +376,7 @@ namespace AnalysisBase
             // save created audio file to settings.AnalysisInstanceTempDirectory if given, otherwise settings.AnalysisInstanceOutputDirectory
             var preparedFile = this.SourcePreparer.PrepareFile(
                 this.GetInstanceDirTempElseOutput(localCopyOfSettings),
-                fileSegment.OriginalFile,
+                fileSegment.TargetFile,
                 localCopyOfSettings.SegmentMediaType,
                 start,
                 end,
@@ -385,21 +385,23 @@ namespace AnalysisBase
                 this.channelSelection, 
                 this.mixDownToMono);
 
-            var preparedFilePath = preparedFile.OriginalFile;
-            var preparedFileDuration = preparedFile.OriginalFileDuration;
+            var preparedFilePath = preparedFile.TargetFile;
+            var preparedFileDuration = preparedFile.TargetFileDuration.Value;
 
             // Store sample rate of original audio file in the Settings object.
             // May need original SR during the analysis, esp if have upsampled from the original SR.
-            localCopyOfSettings.SampleRateOfOriginalAudioFile = preparedFile.OriginalFileSampleRate;
+            localCopyOfSettings.SampleRateOfOriginalAudioFile = fileSegment.TargetFileSampleRate;
 
             localCopyOfSettings.AudioFile = preparedFilePath;
             localCopyOfSettings.SegmentStartOffset = start;
             localCopyOfSettings.SegmentDuration = end - start;
 
-            string fileName = Path.GetFileNameWithoutExtension(preparedFile.OriginalFile.Name);
+            string fileName = Path.GetFileNameWithoutExtension(preparedFile.TargetFile.Name);
+
+           localCopyOfSettings.SegmentSaveBehavior = this.saveImageFiles;
 
             // if user requests, save the sonogram files 
-            if (this.saveImageFiles)
+            if (this.saveImageFiles != SaveBehavior.Never)
             {
                 // save spectrogram to output dir - saving to temp dir means possibility of being overwritten
                 localCopyOfSettings.ImageFile =
@@ -449,9 +451,9 @@ namespace AnalysisBase
             else if (this.DeleteFinished && !this.SubFoldersUnique)
             {
                 // delete the prepared audio file segment. Don't delete the directory - all instances use the same directory!
-                if (this.saveIntermediateWavFiles)
+                if (this.saveIntermediateWavFiles.ShouldSave(result.Events.Length))
                 {
-                    Log.DebugFormat("File {0} not deleted because saveIntermediateWavFiles was set to true", localCopyOfSettings.AudioFile.FullName);
+                    Log.DebugFormat("File {0} not deleted because saveIntermediateWavFiles was set to Always/WhenEventsDetected", localCopyOfSettings.AudioFile.FullName);
                 }       
                 else
                 {
@@ -464,10 +466,7 @@ namespace AnalysisBase
                     {
                         // this error is not fatal, but it does mean we'll be leaving an audio file behind.
                         Log.Warn(
-                            string.Format(
-                                "Item {0} could not delete audio file {1}.",
-                                localCopyOfSettings.InstanceId,
-                                localCopyOfSettings.AudioFile.FullName),
+                            $"Item {localCopyOfSettings.InstanceId} could not delete audio file {localCopyOfSettings.AudioFile.FullName}.",
                             ex);
                     }
                 }
@@ -490,12 +489,19 @@ namespace AnalysisBase
             }
 
            Debug.Assert(result.SettingsUsed != null, "The settings used in the analysis must be populated in the analysis result.");
-           Debug.Assert(result.SegmentStartOffset == start, "The segmen start offset of the result should match the start offset that it was instructed to analyse");
-           Debug.Assert(Math.Abs((result.SegmentAudioDuration - preparedFileDuration).TotalMilliseconds) < 1.0, "The duration analysed (reported by the analysis result) should be withing a millisecond of the provided audio file");
+           Debug.Assert(result.SegmentStartOffset == start, "The segment start offset of the result should match the start offset that it was instructed to analyse");
+           Debug.Assert(Math.Abs((result.SegmentAudioDuration - preparedFileDuration).TotalMilliseconds) < 1.0, "The duration analyzed (reported by the analysis result) should be withing a millisecond of the provided audio file");
 
            if (preAnalysisSettings.ImageFile != null)
            {
-               Debug.Assert(preAnalysisSettings.ImageFile.Exists, "If the analysis was instructed to produce an image file, then it should exist");
+               if (preAnalysisSettings.SegmentSaveBehavior == SaveBehavior.Always
+                   || (preAnalysisSettings.SegmentSaveBehavior == SaveBehavior.WhenEventsDetected
+                       && result.Events.Length > 0))
+               {
+                   Debug.Assert(
+                       preAnalysisSettings.ImageFile.Exists,
+                       "If the analysis was instructed to produce an image file, then it should exist");
+               }
            }
 
            Debug.Assert(result.Events != null, "The Events array should never be null. No events should be represted by a zero length Events array.");
@@ -672,7 +678,7 @@ namespace AnalysisBase
 
         private DirectoryInfo GetInstanceDirTempElseOutput(AnalysisSettings settings)
         {
-            if (settings.AnalysisBaseTempDirectory != null && settings.AnalysisInstanceTempDirectory != null && !this.saveIntermediateWavFiles)
+            if (settings.AnalysisBaseTempDirectory != null && settings.AnalysisInstanceTempDirectory != null && this.saveIntermediateWavFiles == SaveBehavior.Never)
             {
                 return settings.AnalysisInstanceTempDirectory;
             }

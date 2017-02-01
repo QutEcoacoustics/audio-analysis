@@ -201,7 +201,7 @@
     
         let snippetToSpectrogram (wavSource:AudioRecording) =
             // can enable noise reduction here
-            let config = new SonogramConfig( NoiseReductionType = NoiseReductionType.NONE )
+            let config = new SonogramConfig( NoiseReductionType = NoiseReductionType.None )
 
             let sp = new SpectrogramStandard(config, wavSource.WavReader);
             sp

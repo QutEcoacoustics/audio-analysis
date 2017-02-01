@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AbstractStrongAnalyser.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Provides sensible defaults for some of the functionality required by IAnalyser2.
@@ -23,6 +23,8 @@ namespace AnalysisBase
         public abstract string DisplayName { get; }
 
         public abstract string Identifier { get; }
+
+        public virtual string Description => "YOU SHOULD IMPLEMENT THIS!";
 
         public virtual AnalysisSettings DefaultSettings
         {

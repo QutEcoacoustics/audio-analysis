@@ -1,24 +1,24 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="DrawLongDurationSpectrograms.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the DrawLongDurationSpectrograms type.
 //
 // Action code for this analysis = ColourSpectrogram
-/// Activity Codes for other tasks to do with spectrograms and audio files:
-/// 
-/// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
-/// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
-/// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
-/// colourspectrogram - Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.
-/// zoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
-/// differencespectrogram - Calls DifferenceSpectrogram.Execute():  Produces Long duration difference spectrograms
-///
-/// audiofilecheck - Writes information about audio files to a csv file.
-/// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
-/// audiocutter - Cuts audio into segments of desired length and format
-/// createfoursonograms 
+// Activity Codes for other tasks to do with spectrograms and audio files:
+// 
+// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
+// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
+// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
+// colourspectrogram - Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.
+// zoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
+// differencespectrogram - Calls DifferenceSpectrogram.Execute():  Produces Long duration difference spectrograms
+//
+// audiofilecheck - Writes information about audio files to a csv file.
+// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
+// audiocutter - Cuts audio into segments of desired length and format
+// createfoursonograms 
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -26,6 +26,7 @@ namespace AnalysisPrograms
 {
     using System;
     using System.IO;
+    using System.Linq;
 
     using Acoustics.Shared;
 
@@ -90,7 +91,6 @@ namespace AnalysisPrograms
         /// audiocutter - Cuts audio into segments of desired length and format
         /// createfoursonograms 
         /// </summary>
-        /// <param name="arguments"></param>
         public static Arguments Dev()
         {
             // INPUT and OUTPUT DIRECTORIES
@@ -98,6 +98,9 @@ namespace AnalysisPrograms
             //string ipFileName = "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
             //string ipdir = @"C:\SensorNetworks\Output\SERF\2014May06-100720 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
             //string opdir = @"C:\SensorNetworks\Output\Test\RibbonTest";
+
+            string ipdir = @"G:\SensorNetworks\OutputDataSets\2014May06-100720 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";            
+            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Test_2016Sept";
 
             //string ipFileName = "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
             //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
@@ -130,8 +133,11 @@ namespace AnalysisPrograms
 
             // false-colour spectrograms
             //string ipFileName = "TEST_Farmstay_ECLIPSE3_20121114-060001+1000"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
-            string ipdir = @"C:\SensorNetworks\Output\Test\Test2\Towsey.Acoustic";
-            string opdir = @"C:\SensorNetworks\Output\Test\Test2";
+
+            //string ipdir = @"C:\SensorNetworks\Output\Test\Test2\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\Test\Test2";
+            //string ipdir = @"C:\SensorNetworks\Output\QueenMaryUL\concatenated\frogmary-concatenated\20160117";
+            //string opdir = @"C:\SensorNetworks\Output\QueenMaryUL\concatenated";
 
             // false-colour spectrograms
             //string ipFileName = "Farmstay_ECLIPSE3_20121114_060001TEST"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
@@ -150,8 +156,8 @@ namespace AnalysisPrograms
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
 
 
-            DirectoryInfo ipDir = new DirectoryInfo(ipdir);
-            DirectoryInfo opDir = new DirectoryInfo(opdir);
+            var ipDir = new DirectoryInfo(ipdir);
+            var opDir = new DirectoryInfo(opdir);
 
             //FileInfo fiSpectrogramConfig = null;
             FileInfo fiSpectrogramConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramFalseColourConfig.yml");
@@ -236,7 +242,8 @@ namespace AnalysisPrograms
         public static int DrawAggregatedSpectrograms(Arguments arguments, string fileStem, Dictionary<string, double[,]> spectra = null)
         {
             // note: the spectra are oriented as per visual orientation, i.e. xAxis = time frames
-            int frameCount = spectra["ACI"].GetLength(1);
+            var keys = spectra.Keys.ToArray();
+            int frameCount = spectra[keys[0]].GetLength(1);
             double spectrogramScale = 0.1;
             TimeSpan timeScale = TimeSpan.FromSeconds(spectrogramScale);
             DirectoryInfo outputDirectory = arguments.OutputDirectory;
@@ -271,7 +278,7 @@ namespace AnalysisPrograms
             {
                 var sw = Stopwatch.StartNew();
                 //C:\SensorNetworks\Output\BIRD50\Training\ID0001\Towsey.Acoustic\ID0001__Towsey.Acoustic.ACI
-                spectra = IndexMatrices.ReadCSVFiles(inputDirectory, fileStem + "__" + analysisType, keys);
+                spectra = IndexMatrices.ReadCsvFiles(inputDirectory, fileStem + "__" + analysisType, keys);
                 sw.Stop();
                 LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
             }
@@ -290,7 +297,7 @@ namespace AnalysisPrograms
             cs1.IndexCalculationDuration = dataScale;
             cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
 
-            cs1.spectrogramMatrices = spectra;
+            cs1.SpectrogramMatrices = spectra;
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
                 LoggedConsole.WriteLine("WARNING:  " + fileStem + ":   No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
@@ -350,7 +357,7 @@ namespace AnalysisPrograms
             Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
 
             DrawLongDurationSpectrograms.Arguments args = new DrawLongDurationSpectrograms.Arguments();
-            //args.InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.FileName + ".csv")),
+            //args.InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.BaseName + ".csv")),
             //args.OutputDirectory = new DirectoryInfo(outputDirectory.FullName + @"/SpectrogramImages");
             args.SpectrogramConfigPath = null;
             args.IndexPropertiesConfig = indexPropertiesConfig;
@@ -386,7 +393,7 @@ namespace AnalysisPrograms
             cs1.BackgroundFilter = backgroundFilter;
             cs1.IndexCalculationDuration = dataScale;
             cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
-            cs1.spectrogramMatrices = spectra;
+            cs1.SpectrogramMatrices = spectra;
 
             Image image1 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap, withChrome);
             TimeSpan fullDuration = TimeSpan.FromSeconds(image1.Width * dataScale.TotalSeconds);
@@ -451,7 +458,7 @@ namespace AnalysisPrograms
             {
                 var sw = Stopwatch.StartNew();
                 //C:\SensorNetworks\Output\BIRD50\Training\ID0001\Towsey.Acoustic\ID0001__Towsey.Acoustic.ACI
-                spectra = IndexMatrices.ReadCSVFiles(inputDirectory, fileStem + "__" + analysisType, keys);
+                spectra = IndexMatrices.ReadCsvFiles(inputDirectory, fileStem + "__" + analysisType, keys);
                 sw.Stop();
                 LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
             }
@@ -469,7 +476,7 @@ namespace AnalysisPrograms
             cs1.IndexCalculationDuration = dataScale;
             cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
 
-            cs1.spectrogramMatrices = spectra;
+            cs1.SpectrogramMatrices = spectra;
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
                 LoggedConsole.WriteLine("WARNING:  " + fileStem + ":   No spectrogram matrices in the dictionary. Spectrogram files do not exist?");

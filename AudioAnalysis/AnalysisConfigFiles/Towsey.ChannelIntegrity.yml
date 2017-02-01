@@ -20,9 +20,11 @@ ResampleRate: 22050
 DisplayWeightedIndices: false
 
 # SAVE INTERMEDIARY FILES
-SaveIntermediateWavFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
 
+# DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 ParallelProcessing: false
 
@@ -37,7 +39,7 @@ ParallelProcessing: false
 RequireDateInFilename: false
 
 IndexPropertiesConfig: './IndexPropertiesConfig.yml'
-# No events currently used
-EventThreshold: ~
+
+
 ...
 

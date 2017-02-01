@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="SummaryIndexValues.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace AudioAnalysisTools.Indices
@@ -115,11 +115,11 @@ namespace AudioAnalysisTools.Indices
         public double EntropyOfCoVSpectrum { get; set; }
 
         // meaningless when calculated over short
-        public int ClusterCount { get; set; }
+        public double ClusterCount { get; set; }
 
         // public TimeSpan AvgClusterDuration { get; set; }
 
-        public int ThreeGramCount { get; set; }
+        public double ThreeGramCount { get; set; }
 
         // public double SptPerSecond { get; set; }
 
@@ -139,6 +139,8 @@ namespace AudioAnalysisTools.Indices
         public SummaryIndexValues()
         {
             // serialization entry
+            BackgroundNoise = -100;
+            AvgSignalAmplitude = -100;
         }
 
         public SummaryIndexValues(TimeSpan wavDuration, Dictionary<string, IndexProperties> indexProperties)
@@ -206,19 +208,25 @@ namespace AudioAnalysisTools.Indices
 
         public SpectralIndexValues(int spectrumLength, Dictionary<string, IndexProperties> indexProperties)
         {
-            foreach (var kvp in indexProperties)
+            foreach (var cachedSetter in CachedSetters)
             {
-                if (!kvp.Value.IsSpectralIndex)
+                var defaultValue = 0.0;
+
+                if (indexProperties.ContainsKey(cachedSetter.Key))
                 {
-                    continue;
+                    var indexProperty = indexProperties[cachedSetter.Key];
+                    if (indexProperty.IsSpectralIndex)
+                    {
+                        defaultValue = indexProperty.DefaultValue;
+                    }
                 }
 
-                double[] initArray = (new double[spectrumLength]).FastFill(kvp.Value.DefaultValue);
+                double[] initArray = (new double[spectrumLength]).FastFill(defaultValue);
 
                 // WARNING: Potential throw site
                 // No need to give following warning because should call CheckExistenceOfSpectralIndexValues() method before entering loop.
                 // This prevents multiple warnings through loop.
-                this.SetPropertyValue(kvp.Key, initArray);
+                this.SetPropertyValue(cachedSetter.Key, initArray);
             }
         }
 

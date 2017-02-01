@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="DrawZoomingSpectrograms.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace AnalysisPrograms
@@ -254,7 +254,8 @@ namespace AnalysisPrograms
 
             #region Public Properties
 
-            public int? FocusMinute { get; set; }
+            [ArgDescription("When doing a `Focused` stack, which minute to center on. Accepts partial minutes.")]
+            public float? FocusMinute { get; set; }
 
             [ArgDescription("A directory to write output to")]
             [Production.ArgExistingDirectory(createIfNotExists: true)]

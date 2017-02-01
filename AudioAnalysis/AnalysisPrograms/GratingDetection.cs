@@ -355,7 +355,7 @@ namespace AnalysisPrograms
             int bitsPerSample = recording.WavReader.BitsPerSample;
             //NoiseReductionType nrt = SNR.Key2NoiseReductionType("NONE");
             NoiseReductionType nrt = SNR.KeyToNoiseReductionType("STANDARD");
-            var sonogram = (BaseSonogram)SpectrogramStandard.GetSpectralSonogram(recording.FileName, frameSize, windowOverlap, bitsPerSample, windowPower, sr, tsRecordingtDuration, nrt, spectrogram);
+            var sonogram = (BaseSonogram)SpectrogramStandard.GetSpectralSonogram(recording.BaseName, frameSize, windowOverlap, bitsPerSample, windowPower, sr, tsRecordingtDuration, nrt, spectrogram);
             sonogram.DecibelsNormalised = new double[sonogram.FrameCount];
             for (int i = 0; i < sonogram.FrameCount; i++) //foreach frame or time step
             {

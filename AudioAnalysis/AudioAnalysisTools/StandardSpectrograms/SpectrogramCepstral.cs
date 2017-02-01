@@ -165,7 +165,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         {
             Log.WriteLine("# Extract spectrogram and cepstrogram from from file: " + Path.GetFileName(path));
             AudioRecording recording = new AudioRecording(path);
-            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+            // if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // THIS METHOD CALL IS OBSOLETE
             var tuple = GetAllSonograms(recording, sonoConfig, minHz, maxHz);
             return tuple;
         }
@@ -181,17 +181,16 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <returns></returns>
         public static System.Tuple<SpectrogramStandard, SpectrogramCepstral, double[], double[]> GetAllSonograms(AudioRecording recording, SonogramConfig sonoConfig, int minHz, int maxHz)
         {
-            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+            //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // THIS METHOD CALL IS OBSOLETE
             int sr = recording.SampleRate;
             bool doMelScale = sonoConfig.DoMelScale;
             int ccCount = sonoConfig.mfccConfig.CcCount;
             bool includeDelta = sonoConfig.mfccConfig.IncludeDelta;
             bool includeDoubleDelta = sonoConfig.mfccConfig.IncludeDoubleDelta;
-            sonoConfig.SourceFName = recording.FileName;
+            sonoConfig.SourceFName = recording.BaseName;
 
             AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
             SpectrogramStandard sonogram = new SpectrogramStandard(basegram);  //spectrogram has dim[N,257]
-            recording.Dispose();
 
             Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
             Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",

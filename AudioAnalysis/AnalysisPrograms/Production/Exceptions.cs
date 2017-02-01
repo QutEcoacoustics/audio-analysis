@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="Exceptions.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace AnalysisPrograms.Production
@@ -10,6 +10,7 @@ namespace AnalysisPrograms.Production
     using System.IO;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
 
     using PowerArgs;
     using AnalysisBase;
@@ -18,7 +19,10 @@ namespace AnalysisPrograms.Production
     {
         #region Constants
 
-        public const int UnhandledExceptionErrorCode = 1000;
+        /// <summary>
+        /// The default exit code to use for exceptions not recognised. Must not be greater than 255.
+        /// </summary>
+        public const int UnhandledExceptionErrorCode = 200;
 
         #endregion
 
@@ -30,8 +34,12 @@ namespace AnalysisPrograms.Production
 
         #region Constructors and Destructors
 
+        /// <summary>
+        ///
+        /// </summary>
         static ExceptionLookup()
         {
+            // WARNING: EXIT CODES CANNOT BE > 255 (for linux compatibility)
             ErrorLevels = new Dictionary<Type, ExceptionStyle>
                               {
                                   {
@@ -95,16 +103,20 @@ namespace AnalysisPrograms.Production
                                       new ExceptionStyle() {ErrorCode = 104, PrintUsage = false }
                                   },
                                   {
+                                      typeof(InvalidAudioChannelException),
+                                      new ExceptionStyle() {ErrorCode = 105, PrintUsage = false }
+                                  },
+                                  {
                                       typeof(AnalysisOptionDevilException), 
                                       new ExceptionStyle
                                           {
-                                              ErrorCode = 666, 
+                                              ErrorCode = 66, 
                                               Handle = false
                                           }
                                   }, 
                                   {
                                       typeof(NoDeveloperMethodException), 
-                                      new ExceptionStyle { ErrorCode = 999 }
+                                      new ExceptionStyle { ErrorCode = 199 }
                                   }, 
                                   {
                                       typeof(Exception), 
@@ -207,6 +219,18 @@ namespace AnalysisPrograms.Production
         #region Constructors and Destructors
 
         public InvalidStartOrEndException(string message)
+            : base(message)
+        {
+        }
+
+        #endregion
+    }
+
+    public class InvalidAudioChannelException : Exception
+    {
+        #region Constructors and Destructors
+
+        public InvalidAudioChannelException(string message)
             : base(message)
         {
         }

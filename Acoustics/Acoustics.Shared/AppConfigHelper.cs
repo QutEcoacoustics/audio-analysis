@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AppConfigHelper.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the AppConfigHelper type.
@@ -23,13 +23,7 @@ namespace Acoustics.Shared
     {
         public const string DefaultTargetSampleRateKey = "DefaultTargetSampleRate";
 
-        public static int DefaultTargetSampleRate
-        {
-            get
-            {
-                return GetInt(DefaultTargetSampleRateKey);
-            }
-        }
+        public static int DefaultTargetSampleRate => GetInt(DefaultTargetSampleRateKey);
 
         /// <summary>
         /// Warning: do not use this format to print dates as strings - it will include a colon in the time zone offset :-(
@@ -417,7 +411,7 @@ namespace Acoustics.Shared
             var value = GetString(key);
 
             bool valueParsed;
-            if (Boolean.TryParse(value, out valueParsed))
+            if (bool.TryParse(value, out valueParsed))
             {
                 return valueParsed;
             }
@@ -431,7 +425,7 @@ namespace Acoustics.Shared
             var value = GetString(key);
 
             int valueParsed;
-            if (Int32.TryParse(value, out valueParsed))
+            if (int.TryParse(value, out valueParsed))
             {
                 return valueParsed;
             }
@@ -445,7 +439,7 @@ namespace Acoustics.Shared
             var value = GetString(key);
 
             double valueParsed;
-            if (Double.TryParse(value, out valueParsed))
+            if (double.TryParse(value, out valueParsed))
             {
                 return valueParsed;
             }
