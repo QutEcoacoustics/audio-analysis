@@ -50,8 +50,24 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
             // concatenation of recognizer index files.
+            if (false)
+            {
+                double lowerBound = 1000;
+                int subbandCount = 3;
+                OctaveFreqScale.GetFractionalOctaveBands(lowerBound, subbandCount);
+            }
+
             if (true)
             {
+                double lowerBound = 15;
+                double upperBound = 11025;
+
+                int subbandCount = 27;
+                OctaveFreqScale.GetFractionalOctaveBands(lowerBound, upperBound, subbandCount);
+            }
+
+            if (false)
+            { 
                 //string dirName = @"G:\SensorNetworks\OutputDataSets\GrooteCaneToad_Job120\SD Card B";
                 string dirName = @"G:\SensorNetworks\OutputDataSets\GrooteCaneToad_Job120\USBDriveViaMichael-Lin-Deb";
                 var topDir = new DirectoryInfo(dirName);
