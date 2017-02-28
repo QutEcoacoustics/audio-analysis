@@ -17,10 +17,43 @@
 #   distinct from another three day set.  
 # Note:  the code that generated the normalised .Rdata files 
 # see the end of code
+load(file="data/datasets/kmeans_results/kmeansclusters25000.RData")
 
-#############################################
-# Load the SUMMARY indices
-#############################################
+hybrid_clusters <- read.csv("hybrid_dataset_centers_25000_60.csv", header = T)[,1]
+clusters25000$clust <- 0
+for(i in 1:length(unique(hybrid_clusters))) {
+  a <- which(hybrid_clusters==i)
+  for(j in 1:length(a)) {
+    b <- which(clusters25000$cluster==a[j])
+    clusters25000$clust[b] <- i
+  }
+}
+new_cluster_list25000_60 <- clusters25000$clust
+new_cluster_list25000_60 <- data.frame(new_cluster_list25000_60)
+write.csv(new_cluster_list25000_60, "new_cluster_list.csv", row.names = F)
+
+k1_value <- 25000
+k2_value <- 60
+column <- k2_value/5
+
+file_name <- paste("C:/Work/Projects/Twelve_month_clustering/Saving_dataset/data/datasets/hclust_results/hclust_clusters",
+                   k1_value, ".RData", sep = "")
+file_name_short <- paste("hclust_clusters_",k1_value, sep = "")
+# remove unneeded values
+load(file_name)
+# load the cluster list 
+cluster_list <- get(file_name_short, envir=globalenv())[,column]
+
+new_cluster_list25000_60$old_list <- cluster_list
+write.csv(cluster_list, "cluster_list.csv", row.names = F)
+diff <- NULL
+for(i in 1:length(cluster_list)) {
+  diff[i] <- new_cluster_list25000_60[i] - as.numeric(cluster_list)[i]  
+}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Load the SUMMARY indices ---------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # remove all objects in the global environment
 rm(list = ls())
 
@@ -33,9 +66,9 @@ length(indices_norm_summary[,1])
 # load normalised spectral indices
 # load(file="data/datasets/normalised_spectral_indices.RData")
 
-################################
-# Hybrid Method 
-################################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Hybrid Method -------------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #Step 1 Partitioning using kmeans
 
 #library(MASS)
@@ -65,9 +98,9 @@ for (k in 1:1) {
   }
 }
 
-################################################
-# Step 2:  Hierarchical clustering of centers
-################################################
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Step 2:  Hierarchical clustering of centers ---------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 paste(Sys.time(), "Starting hclust")
 folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\datasets\\kmeans_results"
 
@@ -111,6 +144,10 @@ assign(paste("hclust_clusters_", k1[k], sep = ""), clusters)
 save(list = paste("hclust_clusters_", k1[k], sep = ""), 
      file = paste("data/datasets/hclust_results/hclust_clusters", 
                   k1[k],".Rdata",sep=""))
+
+# Instead of knn the centers should have been used to assign the 
+# whole dataset
+
 
 ################################################################
 ################################################################

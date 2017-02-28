@@ -5,6 +5,15 @@ library(grDevices)
 # The palette with grey:
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", 
                "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+# grey 153, 153, 153
+# orange 230, 159, 0
+# lightblue 86, 180, 233
+# green 0, 158, 115
+# yellow 240, 228, 66
+# darkblue 0, 114, 178
+# burntorange 213, 94, 0
+# purplepink 204, 121, 167
+
 # grey, orange, lightblue, green, 
 #yellow, darkblue, burntorange, purplepink
 show_col(cbPalette)

@@ -354,7 +354,7 @@ for(i in 1:(length(myFiles_BGN)-1)) {
   BGN_data <- read.csv(myFiles_BGN[i], header = T)
   spectral_averages <- NULL
   BGN_data <- 10^(BGN_data/10)
-  BGN_data[,1] <- 1:1440
+  BGN_data[,1] <- 0:1439
   spect_avg <- data.frame(ID = BGN_data[,1], 
                           BGN_0Hz = rowMeans(BGN_data[,c(2:24)]),
                           BGN_1000Hz = rowMeans(BGN_data[,c(25:47)]),
@@ -769,7 +769,7 @@ for(i in 1:(length(myFiles_BGN)-1)) {
   BGN_data <- read.csv(myFiles_BGN[i], header = T)
   spectral_averages <- NULL
   BGN_data <- 10^(BGN_data/10)
-  BGN_data[,1] <- 1:1440
+  BGN_data[,1] <- 0:1439
   spect_avg <- data.frame(ID = BGN_data[,1], 
                           BGN_0Hz = rowMeans(BGN_data[,c(2:24)]),
                           BGN_1000Hz = rowMeans(BGN_data[,c(25:47)]),

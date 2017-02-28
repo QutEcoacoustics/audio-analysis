@@ -3,9 +3,10 @@
 # from cluster lists
 # 8 April 2016
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-setwd("C:\\Work\\Mangalam_data\\")
-data <- read.csv("Minute_cluster mapping - all.csv", 
+setwd("E:\\Mangalam_data\\")
+data <- read.csv("E:\\Mangalam_data\\Minute_cluster mapping - all.csv", 
                  header = TRUE)
+
 # transpose data table
 data <- t(data)
 
