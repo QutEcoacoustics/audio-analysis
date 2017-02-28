@@ -667,3 +667,21 @@ ValidateParams <- function (ok, message = "Invalid Parameters") {
         stop(message)
     }
 }
+
+LogDefinedVariables <- function (file.name = "R_variables.csv", path = ".") {
+    
+    var.names <- ls()
+    log <- data.frame(variable = var.names, value = character(length(var.names)))
+    
+    values <- sapply(var.names, function (var.name) {
+        return(str(eval(parse(text = var.name))))
+    })
+    
+    log$value = values
+    
+    write.csv(log, file.path(path, file.name))
+    
+}
+
+
+

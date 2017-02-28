@@ -40,11 +40,13 @@ SonogramQuantisation: 128
 
 # IAnalyzer options
 # Save chunked files
-SaveIntermediateWavFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
 # Output spectrogram csv
 SaveIntermediateCsvFiles: true
 # Output sonogram (composite) images
-SaveSonogramImages: true
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
 ParallelProcessing: false
 ...
 

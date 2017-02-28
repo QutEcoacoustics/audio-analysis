@@ -95,10 +95,13 @@ ReadTargetTagsFromDb <- function (fields = c('start_date',
         start.date.time <- DbDateTime(range$start.date, start.time) 
         end.date.time <- DbDateTime(range$end.date, end.time) 
         
+        sites <- range$sites
+        
     } else {
         
         start.date.time <- NULL
         end.date.time <- NULL
+        sites <- NULL
     }
     
     
@@ -117,7 +120,7 @@ ReadTargetTagsFromDb <- function (fields = c('start_date',
 
 
 
-ReadTagsFromDb <- function (fields, sites = NULL, start.date.time = NULL, end.date.time = NULL, no.duplicates = TRUE, reference.tags = FALSE, species.id = FALSE) {
+ReadTagsFromDb <- function (fields, sites = NULL, start.date.time = NULL, end.date.time = NULL, no.duplicates = TRUE, reference.tags = FALSE, species.id = NULL) {
     # does a database query with the supplied constraints
     require('RMySQL')
     sites <- MapSites(sites)    
@@ -281,7 +284,7 @@ DayByDaySummary <- function () {
 }
 
 DbDateTime <- function (date, time, quote = "'") {
-    return(paste0(quote,date," ",time))
+    return(paste0(date," ",time))
 }
 
 

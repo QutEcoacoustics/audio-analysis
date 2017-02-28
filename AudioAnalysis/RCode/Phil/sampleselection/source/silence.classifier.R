@@ -539,11 +539,7 @@ CalculateSilenceFeaturesForFile <- function (af.path, seconds, wavecol, segment.
     # meaning that the cache gets bigger than necessary and also the total pipeline takes longer than necessary. I think this is because the frame width is different
     # consider using the same frame width for tdccs as for silence features (would probably need to re-train model). I am not sure how much difference it makes for either. 
     
-
-    
     spectro <- Sp.CreateFromFile(af.path)
-    
-
     
     seconds.selection <- seconds[,wavecol] == af.path
     af.seconds <- seconds[seconds.selection, ]

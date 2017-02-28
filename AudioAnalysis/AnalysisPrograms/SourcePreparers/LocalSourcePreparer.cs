@@ -104,11 +104,13 @@ namespace AnalysisPrograms.SourcePreparers
                 fileSegment.TargetFileSampleRate = info.SampleRate.Value;
 
                 // process time alignment
+                var startDelta = TimeSpan.Zero;
+                var endDelta = TimeSpan.Zero;
                 if (fileSegment.Alignment != TimeAlignment.None)
                 {
                     // FileSegment should have already verified a date will be present
                     // ReSharper disable once PossibleInvalidOperationException
-                    var startDate = fileSegment.TargetFileStartDate.Value;
+                    var startDate = fileSegment.TargetFileStartDate.Value.ToUniversalTime();
 
                     // if there's a zero second to the time
                     if (startDate.TimeOfDay.Seconds == 0 && startDate.TimeOfDay.Milliseconds == 0)
@@ -119,16 +121,21 @@ namespace AnalysisPrograms.SourcePreparers
                     else
                     {
                         // calculate the delta to the next minute
-                        var nextMinute = startDate.Date.AddHours(startDate.Hour).AddMinutes(startDate.Minute);
-                        var delta = nextMinute - startDate;
+                        // 1:23:45, startOffset = 15
+                        // 1:38:45 - start date with offset
+                        // 1:39:00 - next minute
+                        var dateWithStartOffset = startDate.Add(startOffset);
+                        var nextMinute = dateWithStartOffset.Ceiling(TimeSpan.FromMinutes(1));
+                        startDelta = nextMinute - dateWithStartOffset;
 
-                        // advance the start offset by the delta
-                        startOffset += delta;
-                        // TODO: BROKEN!!!!!!!!!!!!!!!!!!!!!!
+                        var dateWithEndOffset = startDate.Add(endOffset);
+                        var lastMinute = dateWithEndOffset.Floor(TimeSpan.FromMinutes(1));
+                        endDelta = dateWithEndOffset - lastMinute;
                     }
                 }
 
-                var fileSegmentDuration = (endOffset - startOffset).TotalMilliseconds;
+                // the rest of the duration (excluding the start and end fractions from the time alignment)
+                var fileSegmentDuration = (endOffset - startOffset - startDelta - endDelta).TotalMilliseconds;
 
                 var analysisSegmentMaxDuration = settings.SegmentMaxDuration?.TotalMilliseconds ?? fileSegmentDuration;
 
@@ -149,36 +156,79 @@ namespace AnalysisPrograms.SourcePreparers
                 // --OR--
                 // --------------------------------------------
                 // segment into exact chunks - all but the last chunk will be equal to the max duration
-                var segments =
-                    AudioFilePreparer.DivideExactLeaveLeftoversAtEnd(
-                        Convert.ToInt64(fileSegmentDuration),
-                        Convert.ToInt64(analysisSegmentMaxDuration)).ToList();
+                var segments = AudioFilePreparer.DivideExactLeaveLeftoversAtEnd(
+                    Convert.ToInt64(fileSegmentDuration),
+                    Convert.ToInt64(analysisSegmentMaxDuration));
 
                 // --------------------------------------------
+
+                var overlap = settings.SegmentOverlapDuration;
                 long aggregate = 0;
 
-                for (var index = 0; index < segments.Count; index++)
+
+                // include fractional segment cut from time alignment
+                if ((fileSegment.Alignment == TimeAlignment.TrimEnd
+                     || fileSegment.Alignment == TimeAlignment.TrimNeither) && startDelta > TimeSpan.Zero)
                 {
-                    // So we aren't actually cutting any files, rather we're preparing to cut files.
-                    // Thus the clone the object and set new offsets.
-                    var currentSegment = (FileSegment)fileSegment.Clone();
+                    Log.Debug($"Generated fractional segment for time alignment ({startOffset} - {startOffset + startDelta})");
+                    var startAlignDelta = Convert.ToInt64(startDelta.TotalMilliseconds);
+                    yield return
+                        CreateSegment(ref aggregate, startAlignDelta, fileSegment, startOffset, endOffset, overlap);
+                }
+                else
+                {
+                    // advance the counter but don't produce the first segment
+                    aggregate += Convert.ToInt64(startDelta.TotalMilliseconds);
+                }
 
-                    currentSegment.SegmentStartOffset = startOffset.Add(TimeSpan.FromMilliseconds(aggregate));
+                // yield each normal segment
+                foreach (long offset in segments)
+                {
+                    yield return 
+                        CreateSegment(ref aggregate, offset, fileSegment, startOffset, endOffset, overlap);
+                }
 
-                    aggregate += segments[index];
-
-                    // include overlap
-                    var segmentEndOffset = startOffset.Add(TimeSpan.FromMilliseconds(aggregate)).Add(settings.SegmentOverlapDuration);
-                    // don't allow overflow past desired end point
-                    if (segmentEndOffset > endOffset)
-                    {
-                        segmentEndOffset = endOffset;
-                    }
-                    currentSegment.SegmentEndOffset = segmentEndOffset;
-
-                    yield return currentSegment;
+                // include fractional segment cut from time alignment
+                if ((fileSegment.Alignment == TimeAlignment.TrimStart
+                     || fileSegment.Alignment == TimeAlignment.TrimNeither) && startDelta > TimeSpan.Zero)
+                {
+                    Log.Debug($"Generated fractional segment for time alignment ({endOffset - endDelta} - {endOffset})");
+                    var endAlignDelta = Convert.ToInt64(endDelta.TotalMilliseconds);
+                    yield return
+                        CreateSegment(ref aggregate, endAlignDelta, fileSegment, startOffset, endOffset, overlap);
                 }
             }
+        }
+
+        private static FileSegment CreateSegment(
+            ref long aggregate,
+            long offset,
+            FileSegment fileSegment,
+            TimeSpan startOffset,
+            TimeSpan endOffset,
+            TimeSpan overlap)
+        {
+            // So we aren't actually cutting any files, rather we're preparing to cut files.
+            // Thus the clone the object and set new offsets.
+            var currentSegment = (FileSegment)fileSegment.Clone();
+
+            currentSegment.SegmentStartOffset = startOffset.Add(TimeSpan.FromMilliseconds(aggregate));
+
+            aggregate += offset;
+
+            var segmentEndOffset = startOffset.Add(TimeSpan.FromMilliseconds(aggregate));
+
+            // include overlap
+            segmentEndOffset = segmentEndOffset.Add(overlap);
+            // don't allow overflow past desired end point
+            if (segmentEndOffset > endOffset)
+            {
+                segmentEndOffset = endOffset;
+
+            }
+            currentSegment.SegmentEndOffset = segmentEndOffset;
+
+            return currentSegment;
         }
 
         /// <summary>
@@ -247,7 +297,7 @@ namespace AnalysisPrograms.SourcePreparers
                 {
                     var secondLast = offsetsFromEntireFile.Skip(offsetsFromEntireFile.Count - 2).First();
 
-                    ////var totalDuration = (secondLast.Maximum - secondLast.Minimum) + (last.Maximum - last.Minimum);
+                    ////var totalDuration = (secondLast.Maximum - secondLast.Minimum) + (last.Upper - last.Lower);
                     var newLast = new Range<TimeSpan> { Maximum = endOffset, Minimum = endOffset - segmentMinDuration };
                     var newSecondLast = new Range<TimeSpan> { Maximum = newLast.Minimum, Minimum = secondLast.Minimum };
 

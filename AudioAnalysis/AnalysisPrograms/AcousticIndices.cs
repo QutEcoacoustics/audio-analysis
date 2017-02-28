@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AcousticIndices.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the Acoustic type.
@@ -408,7 +408,7 @@ namespace AnalysisPrograms
             // write the segment spectrogram (typically of one minute duration) to CSV
             // this is required if you want to produced zoomed spectrograms at a resolution greater than 0.2 seconds/pixel 
             bool saveSonogramData = (bool?)analysisSettings.Configuration[AnalysisKeys.SaveSonogramData] ?? false;
-            if (saveSonogramData || analysisSettings.ImageFile != null) 
+            if (saveSonogramData || analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length)) 
             {
                 var sonoConfig = new SonogramConfig(); // default values config
                 sonoConfig.SourceFName = recording.FilePath;

@@ -268,7 +268,7 @@ ConvertToDb <- function (amp, bit.resolution = 16) {
 
 
 
-Sp.Draw <- function (spectro, img.path = NA, scale = 2) {
+Sp.Draw <- function (spectro, img.path = NA, scale = 2, label = FALSE) {
     #  draws a spectrogram given a matrix of amplitudes
     #
     #  Args: 
@@ -284,7 +284,7 @@ Sp.Draw <- function (spectro, img.path = NA, scale = 2) {
         png(img.path, width = ncol(spectro$vals)*scale, height = nrow(spectro$vals)*scale)
     }
     Sp.DrawVals(amp, scale)
-    Sp.Label(spectro)
+    Sp.Label(spectro, label)
     if (!is.null(spectro$rects) && nrow(spectro$rects) > 0) {
       for (i in 1:nrow(spectro$rects)) {
         # add rectangles
@@ -446,15 +446,14 @@ Sp.AmpToRaster <- function (amp) {
     return(rast)
 }
 
-Sp.Label <- function (spectro) {
+Sp.Label <- function (spectro, label = TRUE) {
     # prints a label in white on a semi-transparent bg
     
   #  devsize <- dev.size(units = 'px')
   #  top.offset <- devsize[2] - nrow(spectro$val) * 0.5
   #  left.offset <- devsize[1] - ncol(spectro$val) * 0.5
     
-    
-    
+
 
     font.size <- 12
     bg.col <- 'black'
@@ -468,7 +467,7 @@ Sp.Label <- function (spectro) {
     
     
     
-    if (!is.null(spectro$label)) {    
+    if (!is.null(spectro$label) && label) {    
         px.v <- 1 / nrow(spectro$val)  # equivalent to 1 px in the vertical 
         px.h <- 1 / ncol(spectro$val)  # 1 px in the horizontal    
         grid.rect(x = 0, 

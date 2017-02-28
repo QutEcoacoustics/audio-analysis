@@ -20,9 +20,11 @@ MaxFormantDuration: 0.7
 EventThreshold: 0.2
 
 
-SaveIntermediateWavFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
-SaveSonogramImages: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
 #DoNoiseReduction: true
 #BgNoiseThreshold: 3.0
 ...
