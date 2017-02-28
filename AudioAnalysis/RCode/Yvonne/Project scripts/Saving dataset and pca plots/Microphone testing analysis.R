@@ -1,5 +1,6 @@
-# Microphone test
-
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Dry microphone test---------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # remove all objects in the global environment
 rm(list = ls())
 
@@ -29,11 +30,11 @@ for(j in 1:length(indices)) {
     a$time <- startDate + 60 * 0:(length-1) # makes a sequence in minutes
     ACI_new_dry <- rbind(ACI_new_dry, a)
   }
-  write.csv(ACI_new_dry, paste("microphone test/", indices[j], "_new_dry.csv", sep = ""),
+  write.csv(ACI_new_dry, paste("microphone test/dry/", indices[j], "_new_dry.csv", sep = ""),
             row.names = FALSE)
   
   # Old microphone dry test 
-  folder <- "E:\\Microphone test\\Old_microphone_test"
+  folder <- "E:\\Microphone test\\dry\\Old_microphone_test"
   Files <- list.files(path=folder,recursive = TRUE, full.names = TRUE,
                       pattern = paste("*", indices[j], ".csv", sep = ""))
   short_name <- list.files(path=folder,recursive = TRUE, full.names = FALSE,
@@ -59,7 +60,7 @@ for(j in 1:length(indices)) {
                                "_old_dry.csv", sep = ""), row.names = FALSE)
   
   # SM4 microphone dry test 
-  folder <- "E:\\Microphone test\\SM4_microphone_test"
+  folder <- "E:\\Microphone test\\dry\\SM4_microphone_test"
   Files <- list.files(path=folder,recursive = TRUE, full.names = TRUE,
                       pattern = paste("*", indices[j], ".csv", sep = ""))
   short_name <- list.files(path=folder,recursive = TRUE, full.names = FALSE,
@@ -100,7 +101,7 @@ indices <- c("ACI", "BGN", "ENT", "EVN")
 
 for(i in 1:length(indices)) {
   # Period 1 on 7 August 2016 new
-  ACI_new_dry <- read.csv(paste("microphone test\\", indices[i], 
+  ACI_new_dry <- read.csv(paste("microphone test\\dry\\", indices[i], 
                                 "_new_dry.csv",sep = ""), header = T)
   a <- which(substr(ACI_new_dry$time,1,10)=="2016-08-07" 
              & (substr(ACI_new_dry$time, 12,13)=="16"
@@ -108,7 +109,7 @@ for(i in 1:length(indices)) {
   
   per1_ACI_new_dry <- ACI_new_dry[a,]
   
-  ACI_old_dry <- read.csv(paste("microphone test\\", indices[i], 
+  ACI_old_dry <- read.csv(paste("microphone test\\dry\\", indices[i], 
                                 "_old_dry.csv",sep = ""), header = T)
   # period 1 on 7 August 2016 old
   a <- which(substr(ACI_old_dry$time,1,10)=="2016-08-07" &
@@ -117,7 +118,7 @@ for(i in 1:length(indices)) {
   
   per1_ACI_old_dry <- ACI_old_dry[a,]
   
-  ACI_sm4_dry <- read.csv(paste("microphone test\\", indices[i], 
+  ACI_sm4_dry <- read.csv(paste("microphone test\\dry\\", indices[i], 
                                 "_SM4_dry.csv",sep = ""), header = T)
   # period 1 on 7 August 2016 sm4
   a <- which(substr(ACI_sm4_dry$time,1,10)=="2016-08-07" &
@@ -126,18 +127,18 @@ for(i in 1:length(indices)) {
   
   per1_ACI_sm4_dry <- ACI_sm4_dry[a,]
   
-  write.csv(per1_ACI_old_dry, paste("microphone test\\per1_", indices[i],
+  write.csv(per1_ACI_old_dry, paste("microphone test\\dry\\per1_", indices[i],
                                     "_old_dry.csv", sep = ""), 
             row.names = F)
-  write.csv(per1_ACI_new_dry, paste("microphone test\\per1_", indices[i],
+  write.csv(per1_ACI_new_dry, paste("microphone test\\dry\\per1_", indices[i],
                                     "_new_dry.csv", sep = ""), 
             row.names = F)
-  write.csv(per1_ACI_sm4_dry, paste("microphone test\\per1_", indices[i],
+  write.csv(per1_ACI_sm4_dry, paste("microphone test\\dry\\per1_", indices[i],
                                     "_sm4_dry.csv", sep = ""), 
             row.names = F)
   
   # Period 2 on 7 August 2016 new
-  ACI_new_dry <- read.csv(paste("microphone test\\", indices[i], 
+  ACI_new_dry <- read.csv(paste("microphone test\\dry\\", indices[i], 
                                 "_new_dry.csv",sep = ""), header = T)
   
   a <- which(substr(ACI_new_dry$time,1,10)=="2016-08-07" 
@@ -146,7 +147,7 @@ for(i in 1:length(indices)) {
   per2_ACI_new_dry <- ACI_new_dry[a,]
   
   # Period 2 on 7 August 2016 old
-  ACI_old_dry <- read.csv(paste("microphone test\\", indices[i], 
+  ACI_old_dry <- read.csv(paste("microphone test\\dry\\", indices[i], 
                                 "_old_dry.csv",sep = ""), header = T)
   a <- which(substr(ACI_old_dry$time,1,10)=="2016-08-07" 
              & (substr(ACI_old_dry$time, 12,13)=="22"
@@ -155,7 +156,7 @@ for(i in 1:length(indices)) {
   a <- c(a, (max(a)+1))
   per2_ACI_old_dry <- ACI_old_dry[a,]
   
-  ACI_sm4_dry <- read.csv(paste("microphone test\\", indices[i], 
+  ACI_sm4_dry <- read.csv(paste("microphone test\\dry\\", indices[i], 
                                 "_SM4_dry.csv",sep = ""), header = T)
   
   # period 2 on 7 August 2016 sm4
@@ -165,18 +166,18 @@ for(i in 1:length(indices)) {
   a <- c(a, (max(a)+1))
   per2_ACI_sm4_dry <- ACI_sm4_dry[a,]
   
-  write.csv(per2_ACI_old_dry, paste("microphone test\\per2_", indices[i],
+  write.csv(per2_ACI_old_dry, paste("microphone test\\dry\\per2_", indices[i],
                                     "_old_dry.csv", sep = ""), 
             row.names = F)
-  write.csv(per2_ACI_new_dry, paste("microphone test\\per2_", indices[i],
+  write.csv(per2_ACI_new_dry, paste("microphone test\\dry\\per2_", indices[i],
                                     "_new_dry.csv", sep = ""), 
             row.names = F)
-  write.csv(per2_ACI_sm4_dry, paste("microphone test\\per2_", indices[i],
+  write.csv(per2_ACI_sm4_dry, paste("microphone test\\dry\\per2_", indices[i],
                                     "_sm4_dry.csv", sep = ""), 
             row.names = F)
   
   # Period 3 on 8 August 2016 new
-  ACI_new_dry <- read.csv(paste("microphone test\\", indices[i], 
+  ACI_new_dry <- read.csv(paste("microphone test\\dry\\", indices[i], 
                                 "_new_dry.csv",sep = ""), header = T)
   
   a <- which(substr(ACI_new_dry$time,1,10)=="2016-08-08" 
@@ -185,7 +186,7 @@ for(i in 1:length(indices)) {
   per3_ACI_new_dry <- ACI_new_dry[a,]
   
   # Period 3 on 8 August 2016 old
-  ACI_old_dry <- read.csv(paste("microphone test\\", indices[i], 
+  ACI_old_dry <- read.csv(paste("microphone test\\dry\\", indices[i], 
                                 "_old_dry.csv",sep = ""), header = T)
   
   a <- which(substr(ACI_old_dry$time,1,10)=="2016-08-08" 
@@ -194,7 +195,7 @@ for(i in 1:length(indices)) {
   per3_ACI_old_dry <- ACI_old_dry[a,]
   
   # Period 3 on 8 August 2016 sm4
-  ACI_sm4_dry <- read.csv(paste("microphone test\\", indices[i], 
+  ACI_sm4_dry <- read.csv(paste("microphone test\\dry\\", indices[i], 
                                 "_SM4_dry.csv",sep = ""), header = T)
   
   a <- which(substr(ACI_sm4_dry$time,1,10)=="2016-08-08" 
@@ -202,18 +203,18 @@ for(i in 1:length(indices)) {
                 | substr(ACI_sm4_dry$time, 12,13)=="05"))
   per3_ACI_sm4_dry <- ACI_sm4_dry[a,]
   
-  write.csv(per3_ACI_old_dry, paste("microphone test\\per3_", indices[i],
+  write.csv(per3_ACI_old_dry, paste("microphone test\\dry\\per3_", indices[i],
                                     "_old_dry.csv", sep = ""), 
             row.names = F)
-  write.csv(per3_ACI_new_dry, paste("microphone test\\per3_", indices[i],
+  write.csv(per3_ACI_new_dry, paste("microphone test\\dry\\per3_", indices[i],
                                     "_new_dry.csv", sep = ""), 
             row.names = F)
-  write.csv(per3_ACI_sm4_dry, paste("microphone test\\per3_", indices[i],
+  write.csv(per3_ACI_sm4_dry, paste("microphone test\\dry\\per3_", indices[i],
                                     "_sm4_dry.csv", sep = ""), 
             row.names = F)
   
   # Period 4 on 9 August 2016 new
-  ACI_new_dry <- read.csv(paste("microphone test\\", indices[i], 
+  ACI_new_dry <- read.csv(paste("microphone test\\dry\\", indices[i], 
                                 "_new_dry.csv",sep = ""), header = T)
   
   a <- which(substr(ACI_new_dry$time,1,10)=="2016-08-09" 
@@ -222,7 +223,7 @@ for(i in 1:length(indices)) {
   per4_ACI_new_dry <- ACI_new_dry[a,]
   
   # Period 4 on 9 August 2016 old
-  ACI_old_dry <- read.csv(paste("microphone test\\", indices[i], 
+  ACI_old_dry <- read.csv(paste("microphone test\\dry\\", indices[i], 
                                 "_old_dry.csv",sep = ""), header = T)
   
   a <- which(substr(ACI_old_dry$time,1,10)=="2016-08-09" 
@@ -231,7 +232,7 @@ for(i in 1:length(indices)) {
   per4_ACI_old_dry <- ACI_old_dry[a,]
   
   # Period 4 on 9 August 2016 sm4
-  ACI_sm4_dry <- read.csv(paste("microphone test\\", indices[i], 
+  ACI_sm4_dry <- read.csv(paste("microphone test\\dry\\", indices[i], 
                                 "_SM4_dry.csv",sep = ""), header = T)
   
   a <- which(substr(ACI_sm4_dry$time,1,10)=="2016-08-09" 
@@ -239,13 +240,13 @@ for(i in 1:length(indices)) {
                 | substr(ACI_sm4_dry$time, 12,13)=="11"))
   per4_ACI_sm4_dry <- ACI_sm4_dry[a,]
   
-  write.csv(per4_ACI_old_dry, paste("microphone test\\per4_", indices[i],
+  write.csv(per4_ACI_old_dry, paste("microphone test\\dry\\per4_", indices[i],
                                     "_old_dry.csv", sep = ""), 
             row.names = F)
-  write.csv(per4_ACI_new_dry, paste("microphone test\\per4_", indices[i],
+  write.csv(per4_ACI_new_dry, paste("microphone test\\dry\\per4_", indices[i],
                                     "_new_dry.csv", sep = ""), 
             row.names = F)
-  write.csv(per4_ACI_sm4_dry, paste("microphone test\\per4_", indices[i],
+  write.csv(per4_ACI_sm4_dry, paste("microphone test\\dry\\per4_", indices[i],
                                     "_sm4_dry.csv", sep = ""), 
             row.names = F)
   
@@ -253,7 +254,7 @@ for(i in 1:length(indices)) {
 
 #folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\concatOutput\\GympieNP"
 #library(stringr)
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
              pattern = "per[1-4]{1}.*\\.csv")
 my_files_BGN <- list.files(path=folder,recursive = TRUE, full.names = T,
@@ -277,7 +278,7 @@ for(i in 1:length(my_files)) {
 rm(list = ls())
 
 # Background Noise is treaded differently because it is logarithmic
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files_BGN <- list.files(path=folder,recursive = TRUE, full.names = T,
                        pattern = "per[1-4]{1}_BGN.*\\.csv")
 
@@ -306,7 +307,7 @@ for(i in 1:length(my_files_BGN)) {
 rm(list = ls())
 
 # period 1 EVN
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
                        pattern = "per[1]{1}_EVN.*\\.csv")
 i=1
@@ -335,7 +336,7 @@ colnames(sm4)[1]  <- "mic"
 
 period1_EVN <- rbind(old, new, sm4)
 
-png("microphone test\\period1_EVN.png", width = 800,
+png("microphone test\\dry\\period1_EVN_dry.png", width = 800,
     height = 800)
 par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
     cex.axis=2)
@@ -355,7 +356,7 @@ boxplot(period1_EVN$A_8000Hz~period1_EVN$mic, ylim=ylim,
 dev.off()
 
 # period 1 ACI
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
                        pattern = "per[1]{1}_ACI.*\\.csv")
 
@@ -385,11 +386,11 @@ colnames(sm4)[1]  <- "mic"
 
 period1_ACI <- rbind(old, new, sm4)
 
-png("microphone test\\period1_ACI.png", width = 800,
+png("microphone test\\dry\\period1_ACI_dry.png", width = 800,
     height = 800)
 par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
     cex.axis=2)
-ylim <- c(0.393, 0.622)
+ylim <- c(0.393, 0.68)
 boxplot(period1_ACI$A_0Hz~period1_ACI$mic,ylim=ylim,
         main="P1. ACI 0-2 kHz")
 boxplot(period1_ACI$A_2000Hz~period1_ACI$mic,ylim=ylim,
@@ -405,7 +406,7 @@ boxplot(period1_ACI$A_8000Hz~period1_ACI$mic, ylim=ylim,
 dev.off()
 
 # period 1 ENT
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
                        pattern = "per[1]{1}_ENT.*\\.csv")
 
@@ -435,7 +436,7 @@ colnames(sm4)[1]  <- "mic"
 
 period1_ENT <- rbind(old, new, sm4)
 
-png("microphone test\\period1_ENT.png", width = 800,
+png("microphone test\\dry\\period1_ENT_dry.png", width = 800,
     height = 800)
 par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
     cex.axis=2)
@@ -455,7 +456,7 @@ boxplot(period1_ENT$A_8000Hz~period1_ENT$mic, ylim=ylim,
 dev.off()
 
 # period 1 BGN
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
                        pattern = "per[1]{1}_BGN.*\\.csv")
 
@@ -485,7 +486,7 @@ colnames(sm4)[1]  <- "mic"
 
 period1_BGN <- rbind(old, new, sm4)
 
-png("microphone test\\period1_BGN.png", width = 800,
+png("microphone test\\dry\\period1_BGN_dry.png", width = 800,
     height = 800)
 par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
     cex.axis=2)
@@ -506,7 +507,7 @@ dev.off()
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # period 2 EVN
 #rm(period1_BGN, period1_ENT, period1_ACI, period1_EVN)
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
                        pattern = "per[2]{1}_EVN.*\\.csv")
 i=1
@@ -535,7 +536,7 @@ colnames(sm4)[1]  <- "mic"
 
 period2_EVN <- rbind(old, new, sm4)
 
-png("microphone test\\period2_EVN.png", width = 800,
+png("microphone test\\dry\\period2_EVN_dry.png", width = 800,
     height = 800)
 par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
     cex.axis=2)
@@ -555,7 +556,7 @@ boxplot(period2_EVN$A_8000Hz~period2_EVN$mic, yaxt = "n",
 dev.off()
 
 # period 2 ACI
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
                        pattern = "per[2]{1}_ACI.*\\.csv")
 
@@ -585,11 +586,11 @@ colnames(sm4)[1]  <- "mic"
 
 period2_ACI <- rbind(old, new, sm4)
 
-png("microphone test\\period2_ACI.png", width = 800,
+png("microphone test\\dry\\period2_ACI_dry.png", width = 800,
     height = 800)
 par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
     cex.axis=2)
-ylim <- c(0.393, 0.622)
+ylim <- c(0.393, 0.68)
 boxplot(period2_ACI$A_0Hz~period2_ACI$mic, ylim=ylim, 
         main="P2. ACI 0-2 kHz")
 boxplot(period2_ACI$A_2000Hz~period2_ACI$mic, ylim=ylim, 
@@ -605,7 +606,7 @@ boxplot(period2_ACI$A_8000Hz~period2_ACI$mic, ylim=ylim,
 dev.off()
 
 # period 2 ENT
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
                        pattern = "per[2]{1}_ENT.*\\.csv")
 
@@ -635,7 +636,7 @@ colnames(sm4)[1]  <- "mic"
 
 period2_ENT <- rbind(old, new, sm4)
 
-png("microphone test\\period2_ENT.png", width = 800,
+png("microphone test\\dry\\period2_ENT_dry.png", width = 800,
     height = 800)
 par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
     cex.axis=2)
@@ -655,7 +656,7 @@ boxplot(period2_ENT$A_8000Hz~period2_ENT$mic, ylim=ylim,
 dev.off()
 
 # period 2 BGN
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
                        pattern = "per[2]{1}_BGN.*\\.csv")
 
@@ -685,7 +686,7 @@ colnames(sm4)[1]  <- "mic"
 
 period2_BGN <- rbind(old, new, sm4)
 
-png("microphone test\\period2_BGN.png", width = 800,
+png("microphone test\\dry\\period2_BGN_dry.png", width = 800,
     height = 800)
 par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
     cex.axis=2)
@@ -707,7 +708,7 @@ dev.off()
 #period 3 EVN
 #rm(period2_BGN, period2_ENT, period2_ACI, period2_EVN)
 
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
                        pattern = "per[3]{1}_EVN.*\\.csv")
 i=1
@@ -736,7 +737,7 @@ colnames(sm4)[1]  <- "mic"
 
 period3_EVN <- rbind(old, new, sm4)
 
-png("microphone test\\period3_EVN.png", width = 800,
+png("microphone test\\dry\\period3_EVN_dry.png", width = 800,
     height = 800)
 par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
     cex.axis=2)
@@ -756,7 +757,7 @@ boxplot(period3_EVN$A_8000Hz~period3_EVN$mic,
 dev.off()
 
 # period 3 ACI
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
                        pattern = "per[3]{1}_ACI.*\\.csv")
 
@@ -786,11 +787,11 @@ colnames(sm4)[1]  <- "mic"
 
 period3_ACI <- rbind(old, new, sm4)
 
-png("microphone test\\period3_ACI.png", width = 800,
+png("microphone test\\dry\\period3_ACI_dry.png", width = 800,
     height = 800)
 par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
     cex.axis=2)
-ylim <- c(0.393, 0.622)
+ylim <- c(0.393, 0.68)
 boxplot(period3_ACI$A_0Hz~period3_ACI$mic, ylim=ylim, 
         main="P3. ACI 0-2 kHz")
 boxplot(period3_ACI$A_2000Hz~period3_ACI$mic, ylim=ylim, 
@@ -806,7 +807,7 @@ boxplot(period3_ACI$A_8000Hz~period3_ACI$mic, ylim=ylim,
 dev.off()
 
 # period 3 ENT
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
                        pattern = "per[3]{1}_ENT.*\\.csv")
 
@@ -836,7 +837,7 @@ colnames(sm4)[1]  <- "mic"
 
 period3_ENT <- rbind(old, new, sm4)
 
-png("microphone test\\period3_ENT.png", width = 800,
+png("microphone test\\dry\\period3_ENT_dry.png", width = 800,
     height = 800)
 par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
     cex.axis=2)
@@ -856,7 +857,7 @@ boxplot(period3_ENT$A_8000Hz~period3_ENT$mic, ylim=ylim,
 dev.off()
 
 # period 3 BGN
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
                        pattern = "per[3]{1}_BGN.*\\.csv")
 
@@ -886,7 +887,7 @@ colnames(sm4)[1]  <- "mic"
 
 period3_BGN <- rbind(old, new, sm4)
 
-png("microphone test\\period3_BGN.png", width = 800,
+png("microphone test\\dry\\period3_BGN_dry.png", width = 800,
     height = 800)
 par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
     cex.axis=2)
@@ -909,7 +910,7 @@ dev.off()
 # period 4 EVN
 #rm(period3_BGN, period3_ENT, period3_ACI, period3_EVN)
 
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
                        pattern = "per[4]{1}_EVN.*\\.csv")
 i=1
@@ -938,7 +939,7 @@ colnames(sm4)[1]  <- "mic"
 
 period4_EVN <- rbind(old, new, sm4)
 
-png("microphone test\\period4_EVN.png", width = 800,
+png("microphone test\\dry\\period4_EVN_dry.png", width = 800,
     height = 800)
 par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
     cex.axis=2)
@@ -958,7 +959,7 @@ boxplot(period4_EVN$A_8000Hz~period4_EVN$mic, ylim=ylim,
 dev.off()
 
 # period 4 ACI
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
                        pattern = "per[4]{1}_ACI.*\\.csv")
 
@@ -988,11 +989,11 @@ colnames(sm4)[1]  <- "mic"
 
 period4_ACI <- rbind(old, new, sm4)
 
-png("microphone test\\period4_ACI.png", width = 800,
+png("microphone test\\dry\\period4_ACI_dry.png", width = 800,
     height = 800)
 par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
     cex.axis=2)
-ylim <- c(0.393, 0.622)
+ylim <- c(0.393, 0.68)
 boxplot(period4_ACI$A_0Hz~period4_ACI$mic, ylim=ylim, 
         main="P4. ACI 0-2 kHz")
 boxplot(period4_ACI$A_2000Hz~period4_ACI$mic, ylim=ylim, 
@@ -1008,7 +1009,7 @@ boxplot(period4_ACI$A_8000Hz~period4_ACI$mic, ylim=ylim,
 dev.off()
 
 # period 4 ENT
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
                        pattern = "per[4]{1}_ENT.*\\.csv")
 
@@ -1038,7 +1039,7 @@ colnames(sm4)[1]  <- "mic"
 
 period4_ENT <- rbind(old, new, sm4)
 
-png("microphone test\\period4_ENT.png", width = 800,
+png("microphone test\\dry\\period4_ENT_dry.png", width = 800,
     height = 800)
 par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
     cex.axis=2)
@@ -1058,7 +1059,7 @@ boxplot(period4_ENT$A_8000Hz~period4_ENT$mic, ylim=ylim,
 dev.off()
 
 # period 4 BGN
-folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test"
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\dry"
 my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
                        pattern = "per[4]{1}_BGN.*\\.csv")
 
@@ -1088,7 +1089,7 @@ colnames(sm4)[1]  <- "mic"
 
 period4_BGN <- rbind(old, new, sm4)
 
-png("microphone test\\period4_BGN.png", width = 800,
+png("microphone test\\dry\\period4_BGN_dry.png", width = 800,
     height = 800)
 par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
     cex.axis=2)
@@ -1374,7 +1375,7 @@ cor(new$A_8000Hz,sm4$A_8000Hz) #0.8908817
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Summary Indices ---------------------------
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-folder <- "E:\\Microphone test\\Old_microphone_test"
+folder <- "E:\\Microphone test\\dry\\Old_microphone_test"
 Files <- list.files(path=folder,recursive = TRUE, full.names = TRUE,
                     pattern = "*Towsey.Acoustic.Indices.csv")
 short_name <- list.files(path=folder,recursive = TRUE, full.names = FALSE,
@@ -1427,7 +1428,7 @@ new_dry <- new_dry[,-c(1:3,6,13,15:17,19,22:25)]
 write.csv(new_dry, "microphone test/summary_new_dry.csv", row.names = FALSE)
 
 # sm4
-folder <- "E:\\Microphone test\\SM4_microphone_test"
+folder <- "E:\\Microphone test\\dry\\SM4_microphone_test"
 Files <- list.files(path=folder,recursive = TRUE, full.names = TRUE,
                     pattern = "*Towsey.Acoustic.Indices.csv")
 short_name <- list.files(path=folder,recursive = TRUE, full.names = FALSE,
@@ -1861,7 +1862,7 @@ shapiro.test((period2$Activity[241:360])) # Almost
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-old <- read.csv("microphone test\\summary_old_dry.csv", header = T)
+old <- read.csv("microphone test\\dry\\summary_old_dry.csv", header = T)
 #old <- read.csv("microphone test\\summary_new_dry.csv", header = T)
 #old <- read.csv("microphone test\\summary_sm4_dry.csv", header = T)
 
@@ -2033,7 +2034,7 @@ for(i in 2:256) {
 ###############
 
 dev.off()
-png("microphone test\\per1_EVN_old_dry.png",
+png("microphone test\\dry\\per1_EVN_old_dry.png",
     width = 1200, height = 800)
 par(mfrow=c(1,3), mar=c(3,3,2,0), cex.axis=2, 
     cex.main=2, oma= c(0,0,0,1))
@@ -2047,7 +2048,7 @@ for(i in 259:263) {
   par(new=TRUE)
 }
 par(new=FALSE)
-per1_ACI <- read.csv("microphone test\\per1_EVN_new_dry.csv", header = T)
+per1_ACI <- read.csv("microphone test\\dry\\per1_EVN_new_dry.csv", header = T)
 j <- 0
 for(i in 259:263) {
   j <- j + 1
@@ -2055,7 +2056,7 @@ for(i in 259:263) {
   par(new=TRUE)
 }
 par(new=FALSE)
-per1_EVN <- read.csv("microphone test\\per1_EVN_sm4_dry.csv", header = T)
+per1_EVN <- read.csv("microphone test\\dry\\per1_EVN_sm4_dry.csv", header = T)
 j <- 0
 for(i in 259:263) {
   j <- j +1
@@ -2065,11 +2066,11 @@ for(i in 259:263) {
 dev.off()
 
 dev.off()
-png("microphone test\\per1_EVN_old_dry.png",
+png("microphone test\\dry\\per1_EVN_old_dry.png",
     width = 1200, height = 800)
 par(mfrow=c(3,5), mar=c(3,3,2,0), cex.axis=2, 
     cex.main=2, oma= c(0,0,0,1))
-per1a_EVN <- read.csv("microphone test\\per1_EVN_old_dry.csv", header = T)
+per1a_EVN <- read.csv("microphone test\\dry\\per1_EVN_old_dry.csv", header = T)
 ylim = c(0, 2.8) 
 col = c("red", "orange", "yellow", "green","blue")
 j <- 0
@@ -2079,7 +2080,7 @@ for(i in 259:263) {
   #par(new=TRUE)
 }
 par(new=FALSE)
-per1b_EVN <- read.csv("microphone test\\per1_EVN_new_dry.csv", header = T)
+per1b_EVN <- read.csv("microphone test\\dry\\per1_EVN_new_dry.csv", header = T)
 j <- 0
 for(i in 259:263) {
   j <- j + 1
@@ -2087,7 +2088,7 @@ for(i in 259:263) {
   #par(new=TRUE)
 }
 par(new=FALSE)
-per1c_EVN <- read.csv("microphone test\\per1_EVN_sm4_dry.csv", header = T)
+per1c_EVN <- read.csv("microphone test\\dry\\per1_EVN_sm4_dry.csv", header = T)
 j <- 0
 for(i in 259:263) {
   j <- j + 1
@@ -2100,296 +2101,162 @@ dev.off()
 # Period 1 ACI
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 dev.off()
-png("microphone test\\per1_ACI_dry.png",
-    width = 1200, height = 600)
-#col = c("red", "orange", "yellow", "green", "blue")
-col = rep("black", 5)
-range <- c("0-2000Hz", "2000-4000Hz","4000-6000Hz",
-           "6000-8000Hz","8000-10000Hz")
-par(mfrow=c(3,5), mar=c(0,0,0,0), cex.axis=2, 
-    cex.main=2, oma= c(3, 3, 2.2, 1), cex = 1)
-per1a_ACI <- read.csv("microphone test\\per1_ACI_old_dry.csv", 
-                      header = T)
-ylim = c(0.35, 0.85) 
-line <- seq(ylim[1]-0.05, ylim[2], by = 0.1)
-j <- 0
-for(i in 259:263) {
-  if(i == 259) {
-    j <- j + 1
-    plot(per1a_ACI[,i], type = "l", ylim = ylim, col=col[j],
-         xaxt = "n")
-    #par(new=TRUE)
-    title(paste(range[j]), line = -1.5, outer = F)
-    title(" T1", line = -1.5, adj=0)
-    title(" Period 1 ACI", line = 0.7, adj=0, outer = T)
-    abline(h=line, lwd=0.1, lty =2)
+line_plot_func <- function(per_index, per_index2, ylim, by, adjust) {
+  png(paste("microphone test\\dry\\", per_index2, "_dry.png", sep = ""),
+      width = 1200, height = 600)
+  #col = c("red", "orange", "yellow", "green", "blue")
+  col = rep("black", 5)
+  range <- c("    0-2000Hz", "    2000-4000Hz","    4000-6000Hz",
+             "    6000-8000Hz","    8000-10000Hz")
+  
+  par(mfrow=c(3,5), mar=c(0,0,0,0), cex.axis=2, 
+      cex.main=2, oma= c(3, 3, 2.2, 1), cex = 1)
+  per1a <- read.csv(paste("microphone test\\dry\\",per_index2, "_old_dry.csv",sep = ""), 
+                        header = T)
+  ylim = ylim 
+  line <- seq(ylim[1]-adjust, ylim[2], by = by)
+  j <- 0
+  for(i in 259:263) {
+    if(i == 259) {
+      j <- j + 1
+      plot(per1a[,i], type = "l", ylim = ylim, col=col[j],
+           xaxt = "n")
+      #par(new=TRUE)
+      title(paste(range[j]), line = -1.5, outer = F)
+      title(" Old", line = -1.5, adj=0)
+      title(paste(" Period ", substr(per_index2, 4,4), substr(per_index2,6,8)), 
+            line = 0.7, adj=0, outer = T)
+      abline(h=line, lwd=0.1, lty =2)
+    }
+    if (i > 259) {
+      j <- j + 1
+      plot(per1a[,i], type = "l", ylim = ylim, col=col[j],
+           yaxt = "n", xaxt = "n")
+      #par(new=TRUE)
+      title(paste(range[j]), line = -1.5, outer = F)
+      title(" Old", line = -1.5, adj=0)
+      abline(h=line, lwd=0.1, lty =2)
+    }
   }
-  if (i > 259) {
-    j <- j + 1
-    plot(per1a_ACI[,i], type = "l", ylim = ylim, col=col[j],
-         yaxt = "n", xaxt = "n")
-    #par(new=TRUE)
-    title(paste(range[j]), line = -1.5, outer = F)
-    title(" T1", line = -1.5, adj=0)
-    abline(h=line, lwd=0.1, lty =2)
+  par(new=FALSE)
+  per1b <- read.csv(paste("microphone test\\dry\\",per_index2, "_new_dry.csv",sep = ""), 
+                        header = T)
+  
+  j <- 0
+  for(i in 259:263) {
+    if(i == 259) {
+      j <- j + 1
+      plot(per1b[,i], type = "l", ylim = ylim, 
+           col=col[j], xaxt = "n")
+      #par(new=TRUE)  
+      title(" New", line = -1.5, adj=0)
+      abline(h=line, lwd=0.1, lty =2)
+    }
+    if (i > 259) {
+      j <- j + 1
+      plot(per1b[,i], type = "l", ylim = ylim, col=col[j], 
+           yaxt = "n", xaxt = "n")
+      #par(new=TRUE)  
+      title(" New", line = -1.5, adj=0)
+      abline(h=line, lwd=0.1, lty =2)
+    }
+  }
+  par(new=FALSE)
+  per1c <- read.csv(paste("microphone test\\dry\\",per_index2, "_sm4_dry.csv",sep = ""), 
+                        header = T)
+  j <- 0
+  for(i in 259:263) {
+    if(i == 259) {
+      j <- j + 1
+      plot(per1c[,i], type = "l", ylim = ylim, 
+           col=col[j], xaxt = "n")
+      #par(new=TRUE)  
+      title(" SM4", line = -1.5, adj=0)
+      abline(h=line, lwd=0.1, lty =2)
+      if(i < 263) {
+        axis(side = 1, at = c(0, 40, 80))  
+      }
+      if(i == 263) {
+        axis(side = 1, at = c(0, 40, 80, 120))  
+      }
+    }
+    if (i > 259) {
+      j <- j + 1
+      plot(per1c[,i], type = "l", ylim = ylim, col=col[j],
+           yaxt = "n", xaxt = "n")
+      #par(new=TRUE)
+      title(" SM4", line = -1.5, adj=0)
+      abline(h=line, lwd=0.1, lty =2)
+      if(i < 263) {
+        axis(side = 1, at = c(0, 40, 80))  
+      }
+      if(i == 263) {
+        axis(side = 1, at = c(0, 40, 80, 120))  
+      }
+    }
   }
 }
-par(new=FALSE)
-per1b_ACI <- read.csv("microphone test\\per1_ACI_new_dry.csv", header = T)
-j <- 0
-for(i in 259:263) {
-  if(i == 259) {
-    j <- j + 1
-    plot(per1b_ACI[,i], type = "l", ylim = ylim, 
-         col=col[j], xaxt = "n")
-    #par(new=TRUE)  
-    title(" T2", line = -1.5, adj=0)
-    abline(h=line, lwd=0.1, lty =2)
-  }
-  if (i > 259) {
-    j <- j + 1
-    plot(per1b_ACI[,i], type = "l", ylim = ylim, col=col[j], 
-         yaxt = "n", xaxt = "n")
-    #par(new=TRUE)  
-    title(" T2", line = -1.5, adj=0)
-    abline(h=line, lwd=0.1, lty =2)
-  }
-}
-par(new=FALSE)
-per1c_ACI <- read.csv("microphone test\\per1_ACI_sm4_dry.csv", header = T)
-j <- 0
-for(i in 259:263) {
-  if(i == 259) {
-    j <- j + 1
-    plot(per1c_ACI[,i], type = "l", ylim = ylim, 
-         col=col[j], xaxt = "n")
-    #par(new=TRUE)  
-    title(" T3", line = -1.5, adj=0)
-    abline(h=line, lwd=0.1, lty =2)
-    if(i < 263) {
-      axis(side = 1, at = c(0, 40, 80))  
-    }
-    if(i == 263) {
-      axis(side = 1, at = c(0, 40, 80, 120))  
-    }
-  }
-  if (i > 259) {
-    j <- j + 1
-    plot(per1c_ACI[,i], type = "l", ylim = ylim, col=col[j],
-         yaxt = "n", xaxt = "n")
-    #par(new=TRUE)
-    title(" T3", line = -1.5, adj=0)
-    abline(h=line, lwd=0.1, lty =2)
-    if(i < 263) {
-      axis(side = 1, at = c(0, 40, 80))  
-    }
-    if(i == 263) {
-      axis(side = 1, at = c(0, 40, 80, 120))  
-    }
-  }
-}
+
+ylim_ACI <- c(0.35, 0.85)
+by_ACI <- 0.2
+adjust_ACI <- 0.35
+ylim_EVN <- c(0, 2.9)
+by_EVN <- 2
+adjust_EVN <- 0
+ylim_BGN <- c(-112, -60) 
+by_BGN <- 10
+adjust_BGN <- -2
+ylim_ENT = c(0, 0.75) 
+by_ENT <- 0.4
+adjust_ENT <- 0
+
+line_plot_func(per1_EVN, "per1_EVN", ylim_EVN, by_EVN, adjust_EVN)
+dev.off()
+line_plot_func(per1_ACI, "per1_ACI", ylim_ACI, by_ACI, adjust_ACI)
+dev.off()
+line_plot_func(per1_BGN, "per1_BGN", ylim_BGN, by_BGN, adjust_BGN)
+dev.off()
+line_plot_func(per1_ENT, "per1_ENT", ylim_ENT, by_ENT, adjust_ENT)
+dev.off()
+line_plot_func(per1_EVN, "per2_EVN", ylim_EVN, by_EVN, adjust_EVN)
+dev.off()
+line_plot_func(per1_ACI, "per2_ACI", ylim_ACI, by_ACI, adjust_ACI)
+dev.off()
+line_plot_func(per1_BGN, "per2_BGN", ylim_BGN, by_BGN, adjust_BGN)
+dev.off()
+line_plot_func(per1_ENT, "per2_ENT", ylim_ENT, by_ENT, adjust_ENT)
+dev.off()
+line_plot_func(per1_EVN, "per3_EVN", ylim_EVN, by_EVN, adjust_EVN)
+dev.off()
+line_plot_func(per1_ACI, "per3_ACI", ylim_ACI, by_ACI, adjust_ACI)
+dev.off()
+line_plot_func(per1_BGN, "per3_BGN", ylim_BGN, by_BGN, adjust_BGN)
+dev.off()
+line_plot_func(per1_ENT, "per3_ENT", ylim_ENT, by_ENT, adjust_ENT)
+dev.off()
+line_plot_func(per1_EVN, "per4_EVN", ylim_EVN, by_EVN, adjust_EVN)
+dev.off()
+line_plot_func(per1_ACI, "per4_ACI", ylim_ACI, by_ACI, adjust_ACI)
+dev.off()
+line_plot_func(per1_BGN, "per4_BGN", ylim_BGN, by_BGN, adjust_BGN)
+dev.off()
+line_plot_func(per1_ENT, "per4_ENT", ylim_ENT, by_ENT, adjust_ENT)
 dev.off()
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Period 1 EVN
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#%%%%%%%%%%%%%%
 dev.off()
-png("microphone test\\per1_EVN_dry.png",
+png("microphone test\\dry\\per1_BGN_dry.png",
     width = 1200, height = 600)
-ylim = c(0, 2.9) 
-#col = c("red", "orange", "yellow", "green", "blue")
-col = rep("black", 5)
-range <- c("0-2000Hz", "2000-4000Hz","4000-6000Hz",
-           "6000-8000Hz","8000-10000Hz")
-par(mfrow=c(3,5), mar=c(0,0,0,0), cex.axis=2, 
-    cex.main=2, oma= c(3, 3, 2.2, 1), cex = 1)
-per1a_EVN <- read.csv("microphone test\\per1_EVN_old_dry.csv", 
-                      header = T)
-line <- seq(ylim[1], ylim[2], by = 0.5)
-j <- 0
-for(i in 259:263) {
-  if(i == 259) {
-    j <- j + 1
-    plot(per1a_EVN[,i], type = "l", ylim = ylim, col=col[j],
-         xaxt = "n", yaxt = "n")
-    axis(side = 2, at = line)
-    #par(new=TRUE)
-    title(paste(range[j]), line = -1.5, outer = F)
-    title(" T1", line = -1.5, adj=0)
-    title(" Period 1 EVN", line = 0.7, adj=0, outer = T)
-    abline(h=line, lwd=0.1, lty =2)
-  }
-  if (i > 259) {
-    j <- j + 1
-    plot(per1a_EVN[,i], type = "l", ylim = ylim, col=col[j],
-         yaxt = "n", xaxt = "n")
-    #par(new=TRUE)
-    title(paste(range[j]), line = -1.5, outer = F)
-    title(" T1", line = -1.5, adj=0)
-    abline(h=line, lwd=0.1, lty =2)
-  }
-}
-par(new=FALSE)
-per1b_EVN <- read.csv("microphone test\\per1_EVN_new_dry.csv", header = T)
-j <- 0
-for(i in 259:263) {
-  if(i == 259) {
-    j <- j + 1
-    plot(per1b_EVN[,i], type = "l", ylim = ylim, 
-         col=col[j], xaxt = "n", yaxt = "n")
-    axis(side = 2, at = line)
-    #par(new=TRUE)  
-    title(" T2", line = -1.5, adj=0)
-    abline(h=line, lwd=0.1, lty =2)
-  }
-  if (i > 259) {
-    j <- j + 1
-    plot(per1b_EVN[,i], type = "l", ylim = ylim, col=col[j], 
-         yaxt = "n", xaxt = "n")
-    #par(new=TRUE)  
-    title(" T2", line = -1.5, adj=0)
-    abline(h=line, lwd=0.1, lty =2)
-  }
-}
-par(new=FALSE)
-per1c_EVN <- read.csv("microphone test\\per1_EVN_sm4_dry.csv", header = T)
-j <- 0
-for(i in 259:263) {
-  if(i == 259) {
-    j <- j + 1
-    plot(per1c_EVN[,i], type = "l", ylim = ylim, 
-         col=col[j], xaxt = "n", yaxt = "n")
-    axis(side = 2, at = line)
-    #par(new=TRUE)  
-    title(" T3", line = -1.5, adj=0)
-    abline(h=line, lwd=0.1, lty =2)
-    if(i < 263) {
-      axis(side = 1, at = c(0, 40, 80))  
-    }
-    if(i == 263) {
-      axis(side = 1, at = c(0, 40, 80, 120))  
-    }
-  }
-  if (i > 259) {
-    j <- j + 1
-    plot(per1c_EVN[,i], type = "l", ylim = ylim, col=col[j],
-         yaxt = "n", xaxt = "n")
-    #par(new=TRUE)
-    title(" T3", line = -1.5, adj=0)
-    abline(h=line, lwd=0.1, lty =2)
-    if(i < 263) {
-      axis(side = 1, at = c(0, 40, 80))  
-    }
-    if(i == 263) {
-      axis(side = 1, at = c(0, 40, 80, 120))  
-    }
-  }
-}
-dev.off()
-
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-dev.off()
-png("microphone test\\per1_ENT_dry.png",
-    width = 1200, height = 600)
-ylim = c(0, 0.75) 
-#col = c("red", "orange", "yellow", "green", "blue")
-col = rep("black", 5)
-range <- c("0-2000Hz", "2000-4000Hz","4000-6000Hz",
-           "6000-8000Hz","8000-10000Hz")
-par(mfrow=c(3,5), mar=c(0,0,0,0), cex.axis=2, 
-    cex.main=2, oma= c(3, 3, 2.2, 1), cex = 1)
-per1a_ENT <- read.csv("microphone test\\per1_ENT_old_dry.csv", 
-                      header = T)
-line <- seq(ylim[1], ylim[2], by = 0.5)
-j <- 0
-for(i in 259:263) {
-  if(i == 259) {
-    j <- j + 1
-    plot(per1a_ENT[,i], type = "l", ylim = ylim, col=col[j],
-         xaxt = "n", yaxt = "n")
-    axis(side = 2, at = line)
-    #par(new=TRUE)
-    title(paste(range[j]), line = -1.5, outer = F)
-    title(" T1", line = -1.5, adj=0)
-    title(" Period 1 ENT", line = 0.7, adj=0, outer = T)
-    abline(h=line, lwd=0.1, lty =2)
-  }
-  if (i > 259) {
-    j <- j + 1
-    plot(per1a_ENT[,i], type = "l", ylim = ylim, col=col[j],
-         yaxt = "n", xaxt = "n")
-    #par(new=TRUE)
-    title(paste(range[j]), line = -1.5, outer = F)
-    title(" T1", line = -1.5, adj=0)
-    abline(h=line, lwd=0.1, lty =2)
-  }
-}
-par(new=FALSE)
-per1b_ENT <- read.csv("microphone test\\per1_ENT_new_dry.csv", header = T)
-j <- 0
-for(i in 259:263) {
-  if(i == 259) {
-    j <- j + 1
-    plot(per1b_ENT[,i], type = "l", ylim = ylim, 
-         col=col[j], xaxt = "n", yaxt = "n")
-    axis(side = 2, at = line)
-    #par(new=TRUE)  
-    title(" T2", line = -1.5, adj=0)
-    abline(h=line, lwd=0.1, lty =2)
-  }
-  if (i > 259) {
-    j <- j + 1
-    plot(per1b_ENT[,i], type = "l", ylim = ylim, col=col[j], 
-         yaxt = "n", xaxt = "n")
-    #par(new=TRUE)  
-    title(" T2", line = -1.5, adj=0)
-    abline(h=line, lwd=0.1, lty =2)
-  }
-}
-par(new=FALSE)
-per1c_ENT <- read.csv("microphone test\\per1_ENT_sm4_dry.csv", header = T)
-j <- 0
-for(i in 259:263) {
-  if(i == 259) {
-    j <- j + 1
-    plot(per1c_ENT[,i], type = "l", ylim = ylim, 
-         col=col[j], yaxt = "n", xaxt= "n")
-    axis(side = 2, at = line)
-    #par(new=TRUE)  
-    title(" T3", line = -1.5, adj=0)
-    abline(h=line, lwd=0.1, lty =2)
-    axis(side = 1, at = c(0, 40, 80))
-  }
-  if (i > 259) {
-    j <- j + 1
-    plot(per1c_ENT[,i], type = "l", ylim = ylim, col=col[j],
-         yaxt = "n", xaxt = "n")
-    #par(new=TRUE)
-    title(" T3", line = -1.5, adj=0)
-    abline(h=line, lwd=0.1, lty =2)
-    if(i < 263) {
-      axis(side = 1, at = c(0, 40, 80))  
-    }
-    if(i == 263) {
-      axis(side = 1, at = c(0, 40, 80, 120))  
-    }
-  }
-}
-dev.off()
-
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-dev.off()
-png("microphone test\\per1_BGN_dry.png",
-    width = 1200, height = 600)
-ylim = c(-112, -60) 
+ylim_BGN = c(-112, -60) 
 line <- seq(ylim[1]+2, ylim[2], by = 10)
+
 #col = c("red", "orange", "yellow", "green", "blue")
 col = rep("black", 5)
-range <- c("0-2000Hz", "2000-4000Hz","4000-6000Hz",
-           "6000-8000Hz","8000-10000Hz")
+range <- c("   0-2000Hz", "   2000-4000Hz","   4000-6000Hz",
+           "   6000-8000Hz","   8000-10000Hz")
 par(mfrow=c(3,5), mar=c(0,0,0,0), cex.axis=2, 
     cex.main=2, oma= c(3, 3, 2.2, 1), cex = 1)
-per1a_BGN <- read.csv("microphone test\\per1_BGN_old_dry.csv", 
+per1a_BGN <- read.csv("microphone test\\dry\\per1_BGN_old_dry.csv", 
                       header = T)
 j <- 0
 for(i in 259:263) {
@@ -2400,7 +2267,7 @@ for(i in 259:263) {
     axis(side = 2, at = line)
     #par(new=TRUE)
     title(paste(range[j]), line = -1.5, outer = F)
-    title(" T1", line = -1.5, adj=0)
+    title(" Old", line = -1.5, adj=0)
     title(" Period 1 BGN", line = 0.7, adj=0, outer = T)
     abline(h=line, lwd=0.1, lty =2)
   }
@@ -2410,12 +2277,12 @@ for(i in 259:263) {
          yaxt = "n", xaxt = "n")
     #par(new=TRUE)
     title(paste(range[j]), line = -1.5, outer = F)
-    title(" T1", line = -1.5, adj=0)
+    title(" Old", line = -1.5, adj=0)
     abline(h=line, lwd=0.1, lty =2)
   }
 }
 par(new=FALSE)
-per1b_BGN <- read.csv("microphone test\\per1_BGN_new_dry.csv", header = T)
+per1b_BGN <- read.csv("microphone test\\dry\\per1_BGN_new_dry.csv", header = T)
 j <- 0
 for(i in 259:263) {
   if(i == 259) {
@@ -2424,7 +2291,7 @@ for(i in 259:263) {
          col=col[j], xaxt = "n", yaxt = "n")
     axis(side = 2, at = line)
     #par(new=TRUE)  
-    title(" T2", line = -1.5, adj=0)
+    title(" New", line = -1.5, adj=0)
     abline(h=line, lwd=0.1, lty =2)
   }
   if (i > 259) {
@@ -2432,12 +2299,12 @@ for(i in 259:263) {
     plot(per1b_BGN[,i], type = "l", ylim = ylim, col=col[j], 
          yaxt = "n", xaxt = "n")
     #par(new=TRUE)  
-    title(" T2", line = -1.5, adj=0)
+    title(" New", line = -1.5, adj=0)
     abline(h=line, lwd=0.1, lty =2)
   }
 }
 par(new=FALSE)
-per1c_BGN <- read.csv("microphone test\\per1_BGN_sm4_dry.csv", header = T)
+per1c_BGN <- read.csv("microphone test\\dry\\per1_BGN_sm4_dry.csv", header = T)
 j <- 0
 for(i in 259:263) {
   if(i == 259) {
@@ -2446,7 +2313,7 @@ for(i in 259:263) {
          col=col[j], yaxt = "n", xaxt= "n")
     axis(side = 2, at = line)
     #par(new=TRUE)  
-    title(" T3", line = -1.5, adj=0)
+    title(" SM4", line = -1.5, adj=0)
     abline(h=line, lwd=0.1, lty =2)
     axis(side = 1, at = c(0, 40, 80))
   }
@@ -2455,7 +2322,7 @@ for(i in 259:263) {
     plot(per1c_BGN[,i], type = "l", ylim = ylim, col=col[j],
          yaxt = "n", xaxt = "n")
     #par(new=TRUE)
-    title(" T3", line = -1.5, adj=0)
+    title(" SM4", line = -1.5, adj=0)
     abline(h=line, lwd=0.1, lty =2)
     if(i < 263) {
       axis(side = 1, at = c(0, 40, 80))  
@@ -2466,3 +2333,1236 @@ for(i in 259:263) {
   }
 }
 dev.off()
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+dev.off()
+png("microphone test\\dry\\per1_EVN_dry.png",
+    width = 1200, height = 600)
+ylim = c(0, 3) 
+line <- seq(ylim[1]+2, ylim[2], by = 10)
+#col = c("red", "orange", "yellow", "green", "blue")
+col = rep("black", 5)
+range <- c("   0-2000Hz", "   2000-4000Hz","   4000-6000Hz",
+           "   6000-8000Hz","   8000-10000Hz")
+par(mfrow=c(3,5), mar=c(0,0,0,0), cex.axis=2, 
+    cex.main=2, oma= c(3, 3, 2.2, 1), cex = 1)
+per1a_EVN <- read.csv("microphone test\\dry\\per1_EVN_old_dry.csv", 
+                      header = T)
+j <- 0
+for(i in 259:263) {
+  if(i == 259) {
+    j <- j + 1
+    plot(per1a_EVN[,i], type = "l", ylim = ylim, col=col[j],
+         xaxt = "n", yaxt = "n")
+    axis(side = 2, at = line)
+    #par(new=TRUE)
+    title(paste(range[j]), line = -1.5, outer = F)
+    title(" Old", line = -1.5, adj=0)
+    title(" Period 1 EVN", line = 0.7, adj=0, outer = T)
+    abline(h=line, lwd=0.1, lty =2)
+  }
+  if (i > 259) {
+    j <- j + 1
+    plot(per1a_EVN[,i], type = "l", ylim = ylim, col=col[j],
+         yaxt = "n", xaxt = "n")
+    #par(new=TRUE)
+    title(paste(range[j]), line = -1.5, outer = F)
+    title(" Old", line = -1.5, adj=0)
+    abline(h=line, lwd=0.1, lty =2)
+  }
+}
+par(new=FALSE)
+per1b_EVN <- read.csv("microphone test\\dry\\per1_EVN_new_dry.csv", header = T)
+j <- 0
+for(i in 259:263) {
+  if(i == 259) {
+    j <- j + 1
+    plot(per1b_EVN[,i], type = "l", ylim = ylim, 
+         col=col[j], xaxt = "n", yaxt = "n")
+    axis(side = 2, at = line)
+    #par(new=TRUE)  
+    title(" New", line = -1.5, adj=0)
+    abline(h=line, lwd=0.1, lty =2)
+  }
+  if (i > 259) {
+    j <- j + 1
+    plot(per1b_EVN[,i], type = "l", ylim = ylim, col=col[j], 
+         yaxt = "n", xaxt = "n")
+    #par(new=TRUE)  
+    title(" New", line = -1.5, adj=0)
+    abline(h=line, lwd=0.1, lty =2)
+  }
+}
+par(new=FALSE)
+per1c_EVN <- read.csv("microphone test\\dry\\per1_EVN_sm4_dry.csv", header = T)
+j <- 0
+for(i in 259:263) {
+  if(i == 259) {
+    j <- j + 1
+    plot(per1c_EVN[,i], type = "l", ylim = ylim, 
+         col=col[j], yaxt = "n", xaxt= "n")
+    axis(side = 2, at = line)
+    #par(new=TRUE)  
+    title(" SM4", line = -1.5, adj=0)
+    abline(h=line, lwd=0.1, lty =2)
+    axis(side = 1, at = c(0, 40, 80))
+  }
+  if (i > 259) {
+    j <- j + 1
+    plot(per1c_EVN[,i], type = "l", ylim = ylim, col=col[j],
+         yaxt = "n", xaxt = "n")
+    #par(new=TRUE)
+    title(" SM4", line = -1.5, adj=0)
+    abline(h=line, lwd=0.1, lty =2)
+    if(i < 263) {
+      axis(side = 1, at = c(0, 40, 80))  
+    }
+    if(i == 263) {
+      axis(side = 1, at = c(0, 40, 80, 120))  
+    }
+  }
+}
+dev.off()
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Wet microphone test ---------------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# remove all objects in the global environment
+rm(list = ls())
+
+indices <- c("ACI", "BGN", "ENT", "EVN")
+
+for(j in 1:length(indices)) {
+  # New microphone dry test - one file missing
+  folder <- "E:\\Microphone test\\Wet_new_microphone_test"
+  Files <- list.files(path=folder,recursive = TRUE, full.names = TRUE,
+                      pattern = paste("*", indices[j], ".csv", sep = ""))
+  short_name <- list.files(path=folder,recursive = TRUE, full.names = FALSE,
+                           pattern = paste("*", indices[j], ".csv", sep = ""))
+  
+  ACI_new_wet <- NULL
+  for(i in 1:length(Files)) {
+    datetime <- substr(short_name[i],5,19)
+    datetime <- paste(substr(datetime,1,4),"-",
+                      substr(datetime,5,6),"-",
+                      substr(datetime,7,8)," ",
+                      substr(datetime,10,11), ":",
+                      substr(datetime,12,13), ":",
+                      substr(datetime,14,15), " AEST", sep = "")
+    #time <- as.numeric(time)
+    a <- read.csv(Files[i])
+    length <- nrow(a)
+    startDate = as.POSIXct(datetime)
+    a$time <- startDate + 60 * 0:(length-1) # makes a sequence in minutes
+    ACI_new_wet <- rbind(ACI_new_wet, a)
+  }
+  write.csv(ACI_new_wet, paste("microphone test/wet/", indices[j], "_new_wet.csv", sep = ""),
+            row.names = FALSE)
+  
+  # Old microphone dry test 
+  folder <- "E:\\Microphone test\\Wet_old_microphone_test"
+  Files <- list.files(path=folder,recursive = TRUE, full.names = TRUE,
+                      pattern = paste("*", indices[j], ".csv", sep = ""))
+  short_name <- list.files(path=folder,recursive = TRUE, full.names = FALSE,
+                           pattern = paste("*", indices[j], ".csv", sep = ""))
+  ACI_old_wet <- NULL
+  for(i in 1:length(Files)) {
+    datetime <- substr(short_name[i],5,19)
+    datetime <- paste(substr(datetime,1,4),"-",
+                      substr(datetime,5,6),"-",
+                      substr(datetime,7,8)," ",
+                      substr(datetime,10,11), ":",
+                      substr(datetime,12,13), ":",
+                      substr(datetime,14,15), " AEST", sep = "")
+    #time <- as.numeric(time)
+    a <- read.csv(Files[i])
+    length <- nrow(a)
+    startDate = as.POSIXct(datetime)
+    a$time <- startDate + 60 * 0:(length-1) # makes a sequence in minutes
+    ACI_old_wet <- rbind(ACI_old_wet, a)
+  }
+  
+  write.csv(ACI_old_wet, paste("microphone test/wet/", indices[j], 
+                               "_old_wet.csv", sep = ""), row.names = FALSE)
+  
+  # SM4 microphone dry test
+  folder <- "E:\\Microphone test\\Wet_SM4_microphone_test"
+  Files <- list.files(path=folder,recursive = TRUE, full.names = TRUE,
+                      pattern = paste("*", indices[j], ".csv", sep = ""))
+  short_name <- list.files(path=folder,recursive = TRUE, full.names = FALSE,
+                           pattern = paste("*", indices[j], ".csv", sep = ""))
+  ACI_SM4_wet <- NULL
+  for(i in 1:length(Files)) {
+    datetime <- substr(short_name[i],10,24)
+    datetime <- paste(substr(datetime,1,4),"-",
+                      substr(datetime,5,6),"-",
+                      substr(datetime,7,8)," ",
+                      substr(datetime,10,11), ":",
+                      substr(datetime,12,13), ":",
+                      substr(datetime,14,15), " AEST", sep = "")
+    #time <- as.numeric(time)
+    a <- read.csv(Files[i])
+    length <- nrow(a)
+    startDate = as.POSIXct(datetime)
+    a$time <- startDate + 60 * 0:(length-1) # makes a sequence in minutes
+    ACI_SM4_wet <- rbind(ACI_SM4_wet, a)
+  }
+  write.csv(ACI_SM4_wet, paste("microphone test/wet/", indices[j], 
+                               "_SM4_wet.csv", sep = ""), row.names = FALSE)
+}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# choosing periods within the data
+# Four periods are set up to analyse
+# P1. 4 pm to 6 pm on 5 Sept 2016
+# P2. 10 pm to 12 am on 5 Sept 2016
+# P3. 4 am to 6 am on 6th Sept 2016
+# P4. 10 am to 12 pm on 6th Sept 2016
+# The gap of one day exists because one file failed the analysis
+
+# remove all objects in the global environment
+rm(list = ls())
+
+period_one_date <- "2016-09-05"
+period_two_date <- "2016-09-05"
+period_three_date <- "2016-09-06"
+period_four_date <- "2016-09-06"
+
+indices <- c("ACI", "BGN", "ENT", "EVN")
+
+for(i in 1:length(indices)) {
+  # Period 1 on 7 August 2016 new
+  
+  ACI_new_wet <- read.csv(paste("microphone test\\wet\\", indices[i], 
+                                "_new_wet.csv",sep = ""), header = T)
+  a <- which(substr(ACI_new_wet$time,1,10)== period_one_date
+             & (substr(ACI_new_wet$time, 12,13)=="16"
+                | substr(ACI_new_wet$time, 12,13)=="17"))
+  
+  per1_ACI_new_wet <- ACI_new_wet[a,]
+  
+  ACI_old_wet <- read.csv(paste("microphone test\\wet\\", indices[i], 
+                                "_old_wet.csv",sep = ""), header = T)
+  # period 1 on 7 August 2016 old
+  a <- which(substr(ACI_old_wet$time,1,10)==period_one_date &
+               (substr(ACI_old_wet$time, 12,13)=="16"
+                | substr(ACI_old_wet$time, 12,13)=="17"))
+  
+  per1_ACI_old_wet <- ACI_old_wet[a,]
+  
+  ACI_sm4_wet <- read.csv(paste("microphone test\\wet\\", indices[i], 
+                                "_SM4_wet.csv",sep = ""), header = T)
+  # period 1 on 7 August 2016 sm4
+  a <- which(substr(ACI_sm4_wet$time,1,10)==period_one_date &
+               (substr(ACI_sm4_wet$time, 12,13)=="16"
+                | substr(ACI_sm4_wet$time, 12,13)=="17"))
+  
+  per1_ACI_sm4_wet <- ACI_sm4_wet[a,]
+  
+  write.csv(per1_ACI_old_wet, paste("microphone test\\wet\\per1_", indices[i],
+                                    "_old_wet.csv", sep = ""), 
+            row.names = F)
+  write.csv(per1_ACI_new_wet, paste("microphone test\\wet\\per1_", indices[i],
+                                    "_new_wet.csv", sep = ""), 
+            row.names = F)
+  write.csv(per1_ACI_sm4_wet, paste("microphone test\\wet\\per1_", indices[i],
+                                    "_sm4_wet.csv", sep = ""), 
+            row.names = F)
+  
+  # Period 2 on 7 August 2016 new
+  ACI_new_wet <- read.csv(paste("microphone test\\wet\\", indices[i], 
+                                "_new_wet.csv",sep = ""), header = T)
+  
+  a <- which(substr(ACI_new_wet$time,1,10)==period_two_date 
+             & (substr(ACI_new_wet$time, 12,13)=="22"
+                | substr(ACI_new_wet$time, 12,13)=="23"))
+  per2_ACI_new_wet <- ACI_new_wet[a,]
+  
+  # Period 2 on 7 August 2016 old
+  ACI_old_wet <- read.csv(paste("microphone test\\wet\\", indices[i], 
+                                "_old_wet.csv",sep = ""), header = T)
+  a <- which(substr(ACI_old_wet$time,1,10)==period_two_date 
+             & (substr(ACI_old_wet$time, 12,13)=="22"
+                | substr(ACI_old_wet$time, 12,13)=="23"))
+  a <- a - 1
+  a <- c(a, (max(a)+1))
+  per2_ACI_old_wet <- ACI_old_wet[a,]
+  
+  ACI_sm4_wet <- read.csv(paste("microphone test\\wet\\", indices[i], 
+                                "_SM4_wet.csv",sep = ""), header = T)
+  
+  # period 2 on 7 August 2016 sm4
+  a <- which(substr(ACI_sm4_wet$time,1,10)==period_two_date
+             & (substr(ACI_sm4_wet$time, 12,13)=="22"
+                | substr(ACI_sm4_wet$time, 12,13)=="23"))
+  a <- c(a, (max(a)+1))
+  per2_ACI_sm4_wet <- ACI_sm4_wet[a,]
+  
+  write.csv(per2_ACI_old_wet, paste("microphone test\\wet\\per2_", indices[i],
+                                    "_old_wet.csv", sep = ""), 
+            row.names = F)
+  write.csv(per2_ACI_new_wet, paste("microphone test\\wet\\per2_", indices[i],
+                                    "_new_wet.csv", sep = ""), 
+            row.names = F)
+  write.csv(per2_ACI_sm4_wet, paste("microphone test\\wet\\per2_", indices[i],
+                                    "_sm4_wet.csv", sep = ""), 
+            row.names = F)
+  
+  # Period 3 on 8 August 2016 new
+  ACI_new_wet <- read.csv(paste("microphone test\\wet\\", indices[i], 
+                                "_new_wet.csv",sep = ""), header = T)
+  
+  a <- which(substr(ACI_new_wet$time,1,10)==period_three_date
+             & (substr(ACI_new_wet$time, 12,13)=="04"
+                | substr(ACI_new_wet$time, 12,13)=="05"))
+  per3_ACI_new_wet <- ACI_new_wet[a,]
+  
+  # Period 3 on 8 August 2016 old
+  ACI_old_wet <- read.csv(paste("microphone test\\wet\\", indices[i], 
+                                "_old_wet.csv",sep = ""), header = T)
+  
+  a <- which(substr(ACI_old_wet$time,1,10)==period_three_date
+             & (substr(ACI_old_wet$time, 12,13)=="04"
+                | substr(ACI_old_wet$time, 12,13)=="05"))
+  per3_ACI_old_wet <- ACI_old_wet[a,]
+  
+  # Period 3 on 8 August 2016 sm4
+  ACI_sm4_wet <- read.csv(paste("microphone test\\wet\\", indices[i], 
+                                "_SM4_wet.csv",sep = ""), header = T)
+  
+  a <- which(substr(ACI_sm4_wet$time,1,10)==period_three_date
+             & (substr(ACI_sm4_wet$time, 12,13)=="04"
+                | substr(ACI_sm4_wet$time, 12,13)=="05"))
+  per3_ACI_sm4_wet <- ACI_sm4_wet[a,]
+  
+  write.csv(per3_ACI_old_wet, paste("microphone test\\wet\\per3_", indices[i],
+                                    "_old_wet.csv", sep = ""), 
+            row.names = F)
+  write.csv(per3_ACI_new_wet, paste("microphone test\\wet\\per3_", indices[i],
+                                    "_new_wet.csv", sep = ""), 
+            row.names = F)
+  write.csv(per3_ACI_sm4_wet, paste("microphone test\\wet\\per3_", indices[i],
+                                    "_sm4_wet.csv", sep = ""), 
+            row.names = F)
+  
+  # Period 4 on 9 August 2016 new
+  ACI_new_wet <- read.csv(paste("microphone test\\wet\\", indices[i], 
+                                "_new_wet.csv",sep = ""), header = T)
+  
+  a <- which(substr(ACI_new_wet$time,1,10)==period_four_date
+             & (substr(ACI_new_wet$time, 12,13)=="10"
+                | substr(ACI_new_wet$time, 12,13)=="11"))
+  per4_ACI_new_wet <- ACI_new_wet[a,]
+  
+  # Period 4 on 9 August 2016 old
+  ACI_old_wet <- read.csv(paste("microphone test\\wet\\", indices[i], 
+                                "_old_wet.csv",sep = ""), header = T)
+  
+  a <- which(substr(ACI_old_wet$time,1,10)==period_four_date
+             & (substr(ACI_old_wet$time, 12,13)=="10"
+                | substr(ACI_old_wet$time, 12,13)=="11"))
+  per4_ACI_old_wet <- ACI_old_wet[a,]
+  
+  # Period 4 on 9 August 2016 sm4
+  ACI_sm4_wet <- read.csv(paste("microphone test\\wet\\", indices[i], 
+                                "_SM4_wet.csv",sep = ""), header = T)
+  
+  a <- which(substr(ACI_sm4_wet$time,1,10)==period_four_date
+             & (substr(ACI_sm4_wet$time, 12,13)=="10"
+                | substr(ACI_sm4_wet$time, 12,13)=="11"))
+  per4_ACI_sm4_wet <- ACI_sm4_wet[a,]
+  
+  write.csv(per4_ACI_old_wet, paste("microphone test\\wet\\per4_", indices[i],
+                                    "_old_wet.csv", sep = ""), 
+            row.names = F)
+  write.csv(per4_ACI_new_wet, paste("microphone test\\wet\\per4_", indices[i],
+                                    "_new_wet.csv", sep = ""), 
+            row.names = F)
+  write.csv(per4_ACI_sm4_wet, paste("microphone test\\wet\\per4_", indices[i],
+                                    "_sm4_wet.csv", sep = ""), 
+            row.names = F)
+}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
+                       pattern = "per[1-4]{1}.*\\.csv")
+my_files_BGN <- list.files(path=folder,recursive = TRUE, full.names = T,
+                           pattern = "per[1-4]{1}_BGN.*\\.csv")
+my_files <- setdiff(my_files, my_files_BGN)
+for(i in 1:length(my_files)) {
+  data <- read.csv(my_files[i], header = TRUE) 
+  spect_data <- NULL
+  spect_avg <- data.frame(ID = data[,1], 
+                          A_0Hz = rowMeans(data[,c(2:47)]),
+                          A_2000Hz = rowMeans(data[,c(48:93)]),
+                          A_4000Hz = rowMeans(data[,c(94:140)]),
+                          A_6000Hz = rowMeans(data[,c(141:186)]),
+                          A_8000Hz = rowMeans(data[,c(187:233)]))
+  spect_data <- rbind(spect_data, spect_avg)
+  data <- cbind(data, spect_data[,2:6])
+  write.csv(data, file=paste(my_files[i], sep = ""), row.names = F)
+}
+
+# remove all objects in the global environment
+rm(list = ls())
+
+# Background Noise is treaded differently because it is logarithmic
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files_BGN <- list.files(path=folder,recursive = TRUE, full.names = T,
+                           pattern = "per[1-4]{1}_BGN.*\\.csv")
+
+for(i in 1:length(my_files_BGN)) {
+  BGN_data <- read.csv(my_files_BGN[i], header = T)
+  spectral_averages <- NULL
+  BGN_data2 <- BGN_data[,1:(length(BGN_data)-1)]
+  BGN_data2[,1:(length(BGN_data)-1)] <- 10^(BGN_data[,1:(length(BGN_data)-1)]/10)
+  BGN_data2$Index <- BGN_data[,1]
+  spect_avg <- data.frame(A_0Hz = rowMeans(BGN_data2[,c(2:47)]),
+                          A_2000Hz = rowMeans(BGN_data2[,c(48:93)]),
+                          A_4000Hz = rowMeans(BGN_data2[,c(94:140)]),
+                          A_6000Hz = rowMeans(BGN_data2[,c(141:186)]),
+                          A_8000Hz = rowMeans(BGN_data2[,c(187:233)]))
+  spect_data <- 10*log10(abs(spect_avg[,1:length(spect_avg)]))
+  print(i)
+  BGN_data <- cbind(BGN_data, spect_data)
+  write.csv(BGN_data, file=paste(my_files_BGN[i], sep = ""), row.names = F)
+  rm(BGN_data2)
+}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Spectral Indices Boxplot graphs -----------------------------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# remove all objects in the global environment
+rm(list = ls())
+
+period_one_date <- "2016-09-05"
+period_two_date <- "2016-09-05"
+period_three_date <- "2016-09-06"
+period_four_date <- "2016-09-06"
+
+# period 1 EVN
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
+                       pattern = "per[1]{1}_EVN.*\\.csv")
+i=1
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+new <- data[,((length-4):length)]
+rows <- nrow(data)
+new <- cbind(rep("new",rows), new)
+colnames(new)[1]  <- "mic"
+
+i=2
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+old <- data[,((length-4):length)]
+rows <- nrow(data)
+old <- cbind(rep("old",rows), old)
+colnames(old)[1]  <- "mic"
+
+i=3
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+sm4 <- data[,((length-4):length)]
+rows <- nrow(data)
+sm4 <- cbind(rep("sm4",rows), sm4)
+colnames(sm4)[1]  <- "mic"
+
+period1_EVN <- rbind(old, new, sm4)
+rm(old,new,sm4, length, i, folder, my_files, my_files_BGN, data, rows)
+
+png("microphone test\\wet\\period1_EVN_wet.png", width = 800,
+    height = 800)
+par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
+    cex.axis=2)
+ylim <- c(0.13, 3)
+boxplot(period1_EVN$A_0Hz~period1_EVN$mic,ylim=ylim, 
+        main="P1. EVN 0-2 kHz")
+boxplot(period1_EVN$A_2000Hz~period1_EVN$mic,ylim=ylim, 
+        main="P1. EVN 2-4 kHz", cex.axis=1.8, yaxt = "n")
+boxplot(period1_EVN$A_4000Hz~period1_EVN$mic, ylim=ylim, 
+        main="P1. EVN 4-6 kHz", cex.axis=1.8, yaxt = "n")
+mtext(side = 3, "4pm to 6pm", line = -4.2, cex = 1.4)
+mtext(side = 3, paste(period_one_date), line = -2.2, cex = 1.4)
+boxplot(period1_EVN$A_6000Hz~period1_EVN$mic, ylim=ylim, 
+        main="P1. EVN 6-8 kHz", cex.axis=1.8, yaxt = "n")
+boxplot(period1_EVN$A_8000Hz~period1_EVN$mic, ylim=ylim, 
+        main="P1. EVN 8-10 kHz", yaxt = "n")
+dev.off()
+rm(ylim)
+
+# period 1 ACI
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
+                       pattern = "per[1]{1}_ACI.*\\.csv")
+
+i=1
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+new <- data[,((length-4):length)]
+rows <- nrow(data)
+new <- cbind(rep("new",rows), new)
+colnames(new)[1]  <- "mic"
+
+i=2
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+old <- data[,((length-4):length)]
+rows <- nrow(data)
+old <- cbind(rep("old",rows), old)
+colnames(old)[1]  <- "mic"
+
+i=3
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+sm4 <- data[,((length-4):length)]
+rows <- nrow(data)
+sm4 <- cbind(rep("sm4",rows), sm4)
+colnames(sm4)[1]  <- "mic"
+
+period1_ACI <- rbind(old, new, sm4)
+rm(old,new,sm4, length, i, folder, my_files, data)
+
+png("microphone test\\wet\\period1_ACI_wet.png", width = 800,
+    height = 800)
+par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
+    cex.axis=2)
+ylim <- c(0.393, 0.68)
+boxplot(period1_ACI$A_0Hz~period1_ACI$mic,ylim=ylim,
+        main="P1. ACI 0-2 kHz")
+boxplot(period1_ACI$A_2000Hz~period1_ACI$mic,ylim=ylim,
+        main="P1. ACI 2-4 kHz", yaxt = "n")
+boxplot(period1_ACI$A_4000Hz~period1_ACI$mic, ylim=ylim,
+        main="P1. ACI 4-6 kHz", yaxt = "n")
+mtext(side = 3, "4pm to 6pm", line = -4.2, cex = 1.4)
+mtext(side = 3, paste(period_one_date), line = -2.2, cex = 1.4)
+boxplot(period1_ACI$A_6000Hz~period1_ACI$mic, ylim=ylim, 
+        main="P1. ACI 6-8 kHz", yaxt = "n")
+boxplot(period1_ACI$A_8000Hz~period1_ACI$mic, ylim=ylim, 
+        main="P1. ACI 8-10 kHz", yaxt = "n")
+dev.off()
+
+# period 1 ENT
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
+                       pattern = "per[1]{1}_ENT.*\\.csv")
+
+i=1
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+new <- data[,((length-4):length)]
+rows <- nrow(data)
+new <- cbind(rep("new",rows), new)
+colnames(new)[1]  <- "mic"
+
+i=2
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+old <- data[,((length-4):length)]
+rows <- nrow(data)
+old <- cbind(rep("old",rows), old)
+colnames(old)[1]  <- "mic"
+
+i=3
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+sm4 <- data[,((length-4):length)]
+rows <- nrow(data)
+sm4 <- cbind(rep("sm4",rows), sm4)
+colnames(sm4)[1]  <- "mic"
+
+period1_ENT <- rbind(old, new, sm4)
+rm(old,new,sm4, length, i, folder, my_files, data)
+
+png("microphone test\\wet\\period1_ENT_wet.png", width = 800,
+    height = 800)
+par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
+    cex.axis=2)
+ylim <- c(0.0315, 0.655)
+boxplot(period1_ENT$A_0Hz~period1_ENT$mic, ylim=ylim,
+        main="P1. ENT 0-2 kHz")
+boxplot(period1_ENT$A_2000Hz~period1_ENT$mic, ylim=ylim, 
+        main="P1. ENT 2-4 kHz", yaxt = "n")
+boxplot(period1_ENT$A_4000Hz~period1_ENT$mic, ylim=ylim, 
+        main="P1. ENT 4-6 kHz", yaxt = "n")
+mtext(side = 3, "4pm to 6pm", line = -4.2, cex = 1.4)
+mtext(side = 3, paste(period_one_date), line = -2.2, cex = 1.4)
+boxplot(period1_ENT$A_6000Hz~period1_ENT$mic, ylim=ylim, 
+        main="P1. ENT 6-8 kHz", yaxt = "n")
+boxplot(period1_ENT$A_8000Hz~period1_ENT$mic, ylim=ylim, 
+        main="P1. ENT 8-10 kHz", yaxt = "n")
+dev.off()
+rm(rows, ylim)
+
+# period 1 BGN
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
+                       pattern = "per[1]{1}_BGN.*\\.csv")
+
+i=1
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+new <- data[,((length-4):length)]
+rows <- nrow(data)
+new <- cbind(rep("new",rows), new)
+colnames(new)[1]  <- "mic"
+
+i=2
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+old <- data[,((length-4):length)]
+rows <- nrow(data)
+old <- cbind(rep("old",rows), old)
+colnames(old)[1]  <- "mic"
+
+i=3
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+sm4 <- data[,((length-4):length)]
+rows <- nrow(data)
+sm4 <- cbind(rep("sm4",rows), sm4)
+colnames(sm4)[1]  <- "mic"
+
+period1_BGN <- rbind(old, new, sm4)
+rm(old,new,sm4, length, i, folder, my_files, data)
+
+png("microphone test\\wet\\period1_BGN_wet.png", width = 800,
+    height = 800)
+par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
+    cex.axis=2)
+ylim <- c(-112,-70)
+boxplot(period1_BGN$A_0Hz~period1_BGN$mic, ylim=ylim, 
+        main="P1. BGN 0-2 kHz")
+boxplot(period1_BGN$A_2000Hz~period1_BGN$mic, ylim=ylim, 
+        main="P1. BGN 2-4 kHz", yaxt = "n")
+boxplot(period1_BGN$A_4000Hz~period1_BGN$mic, ylim=ylim,
+        main="P1. BGN 4-6 kHz", yaxt = "n")
+mtext(side = 3, "4pm to 6pm", line = -4.2, cex = 1.4)
+mtext(side = 3, paste(period_one_date), line = -2.2, cex = 1.4)
+boxplot(period1_BGN$A_6000Hz~period1_BGN$mic, ylim=ylim,
+        main="P1. BGN 6-8 kHz", yaxt = "n")
+boxplot(period1_BGN$A_8000Hz~period1_BGN$mic, ylim=ylim, 
+        main="P1. BGN 8-10 kHz", yaxt = "n")
+dev.off()
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# period 2 EVN
+#rm(period1_BGN, period1_ENT, period1_ACI, period1_EVN)
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
+                       pattern = "per[2]{1}_EVN.*\\.csv")
+i=1
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+new <- data[,((length-4):length)]
+rows <- nrow(data)
+new <- cbind(rep("new",rows), new)
+colnames(new)[1]  <- "mic"
+
+i=2
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+old <- data[,((length-4):length)]
+rows <- nrow(data)
+old <- cbind(rep("old",rows), old)
+colnames(old)[1]  <- "mic"
+
+i=3
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+sm4 <- data[,((length-4):length)]
+rows <- nrow(data)
+sm4 <- cbind(rep("sm4",rows), sm4)
+colnames(sm4)[1]  <- "mic"
+
+period2_EVN <- rbind(old, new, sm4)
+rm(old,new,sm4, length, i, folder, my_files, data)
+
+png("microphone test\\wet\\period2_EVN_wet.png", width = 800,
+    height = 800)
+par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
+    cex.axis=2)
+ylim <- c(0.13, 3)
+boxplot(period2_EVN$A_0Hz~period2_EVN$mic, 
+        main="P2. EVN 0-2 kHz", ylim=ylim)
+boxplot(period2_EVN$A_2000Hz~period2_EVN$mic, yaxt = "n",
+        main="P2. EVN 2-4 kHz", ylim=ylim)
+boxplot(period2_EVN$A_4000Hz~period2_EVN$mic, yaxt = "n", 
+        main="P2. EVN 4-6 kHz", ylim=ylim)
+mtext(side = 3, "10pm to 12pm", line = -4.2, cex = 1.4)
+mtext(side = 3, paste(period_two_date), line = -2.2, cex = 1.4)
+boxplot(period2_EVN$A_6000Hz~period2_EVN$mic, yaxt = "n",
+        main="P2. EVN 6-8 kHz", ylim=ylim)
+boxplot(period2_EVN$A_8000Hz~period2_EVN$mic, yaxt = "n",
+        main="P2. EVN 8-10 kHz", ylim=ylim)
+dev.off()
+
+# period 2 ACI
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
+                       pattern = "per[2]{1}_ACI.*\\.csv")
+
+i=1
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+new <- data[,((length-4):length)]
+rows <- nrow(data)
+new <- cbind(rep("new",rows), new)
+colnames(new)[1]  <- "mic"
+
+i=2
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+old <- data[,((length-4):length)]
+rows <- nrow(data)
+old <- cbind(rep("old",rows), old)
+colnames(old)[1]  <- "mic"
+
+i=3
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+sm4 <- data[,((length-4):length)]
+rows <- nrow(data)
+sm4 <- cbind(rep("sm4",rows), sm4)
+colnames(sm4)[1]  <- "mic"
+
+period2_ACI <- rbind(old, new, sm4)
+rm(old,new,sm4, length, i, folder, my_files, data)
+
+png("microphone test\\wet\\period2_ACI_wet.png", width = 800,
+    height = 800)
+par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
+    cex.axis=2)
+ylim <- c(0.393, 0.68)
+boxplot(period2_ACI$A_0Hz~period2_ACI$mic, ylim=ylim, 
+        main="P2. ACI 0-2 kHz")
+boxplot(period2_ACI$A_2000Hz~period2_ACI$mic, ylim=ylim, 
+        main="P2. ACI 2-4 kHz", yaxt = "n")
+boxplot(period2_ACI$A_4000Hz~period2_ACI$mic, ylim=ylim, 
+        main="P2. ACI 4-6 kHz", yaxt = "n")
+mtext(side = 3, "10pm to 12pm", line = -4.2, cex = 1.4)
+mtext(side = 3, paste(period_two_date), line = -2.2, cex = 1.4)
+boxplot(period2_ACI$A_6000Hz~period2_ACI$mic, ylim=ylim, 
+        main="P2. ACI 6-8 kHz", yaxt = "n")
+boxplot(period2_ACI$A_8000Hz~period2_ACI$mic, ylim=ylim, 
+        main="P2. ACI 8-10 kHz", yaxt = "n")
+dev.off()
+
+# period 2 ENT
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
+                       pattern = "per[2]{1}_ENT.*\\.csv")
+
+i=1
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+new <- data[,((length-4):length)]
+rows <- nrow(data)
+new <- cbind(rep("new",rows), new)
+colnames(new)[1]  <- "mic"
+
+i=2
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+old <- data[,((length-4):length)]
+rows <- nrow(data)
+old <- cbind(rep("old",rows), old)
+colnames(old)[1]  <- "mic"
+
+i=3
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+sm4 <- data[,((length-4):length)]
+rows <- nrow(data)
+sm4 <- cbind(rep("sm4",rows), sm4)
+colnames(sm4)[1]  <- "mic"
+
+period2_ENT <- rbind(old, new, sm4)
+rm(old,new,sm4, length, i, folder, my_files, data)
+
+png("microphone test\\wet\\period2_ENT_wet.png", width = 800,
+    height = 800)
+par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
+    cex.axis=2)
+ylim <- c(0.0315, 0.655)
+boxplot(period2_ENT$A_0Hz~period2_ENT$mic, ylim=ylim, 
+        main="P2. ENT 0-2 kHz")
+boxplot(period2_ENT$A_2000Hz~period2_ENT$mic, ylim=ylim, 
+        main="P2. ENT 2-4 kHz", yaxt = "n")
+boxplot(period2_ENT$A_4000Hz~period2_ENT$mic, ylim=ylim, 
+        main="P2. ENT 4-6 kHz", yaxt = "n")
+mtext(side = 3, "10pm to 12pm", line = -4.2, cex = 1.4)
+mtext(side = 3, paste(period_two_date), line = -2.2, cex = 1.4)
+boxplot(period2_ENT$A_6000Hz~period2_ENT$mic, ylim=ylim, 
+        main="P2. ENT 6-8 kHz", yaxt = "n")
+boxplot(period2_ENT$A_8000Hz~period2_ENT$mic, ylim=ylim, 
+        main="P2. ENT 8-10 kHz", yaxt = "n")
+dev.off()
+
+# period 2 BGN
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
+                       pattern = "per[2]{1}_BGN.*\\.csv")
+
+i=1
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+new <- data[,((length-4):length)]
+rows <- nrow(data)
+new <- cbind(rep("new",rows), new)
+colnames(new)[1]  <- "mic"
+
+i=2
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+old <- data[,((length-4):length)]
+rows <- nrow(data)
+old <- cbind(rep("old",rows), old)
+colnames(old)[1]  <- "mic"
+
+i=3
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+sm4 <- data[,((length-4):length)]
+rows <- nrow(data)
+sm4 <- cbind(rep("sm4",rows), sm4)
+colnames(sm4)[1]  <- "mic"
+
+period2_BGN <- rbind(old, new, sm4)
+rm(old,new,sm4, length, i, folder, my_files, data)
+
+png("microphone test\\wet\\period2_BGN_wet.png", width = 800,
+    height = 800)
+par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
+    cex.axis=2)
+ylim <- c(-112,-70)
+boxplot(period2_BGN$A_0Hz~period2_BGN$mic, ylim=ylim, 
+        main="P2. BGN 0-2 kHz")
+boxplot(period2_BGN$A_2000Hz~period2_BGN$mic, ylim=ylim,
+        main="P2. BGN 2-4 kHz", yaxt = "n")
+boxplot(period2_BGN$A_4000Hz~period2_BGN$mic, ylim=ylim, 
+        main="P2. BGN 4-6 kHz", yaxt = "n")
+mtext(side = 3, "10pm to 12pm", line = -4.2, cex = 1.4)
+mtext(side = 3, paste(period_two_date), line = -2.2, cex = 1.4)
+boxplot(period2_BGN$A_6000Hz~period2_BGN$mic, ylim=ylim, 
+        main="P2. BGN 6-8 kHz", yaxt = "n")
+boxplot(period2_BGN$A_8000Hz~period2_BGN$mic, ylim=ylim, 
+        main="P2. BGN 8-10 kHz", yaxt = "n")
+dev.off()
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#period 3 EVN
+#rm(period2_BGN, period2_ENT, period2_ACI, period2_EVN)
+
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
+                       pattern = "per[3]{1}_EVN.*\\.csv")
+i=1
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+new <- data[,((length-4):length)]
+rows <- nrow(data)
+new <- cbind(rep("new",rows), new)
+colnames(new)[1]  <- "mic"
+
+i=2
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+old <- data[,((length-4):length)]
+rows <- nrow(data)
+old <- cbind(rep("old",rows), old)
+colnames(old)[1]  <- "mic"
+
+i=3
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+sm4 <- data[,((length-4):length)]
+rows <- nrow(data)
+sm4 <- cbind(rep("sm4",rows), sm4)
+colnames(sm4)[1]  <- "mic"
+
+period3_EVN <- rbind(old, new, sm4)
+rm(old,new,sm4, length, i, folder, my_files, data)
+png("microphone test\\wet\\period3_EVN_wet.png", width = 800,
+    height = 800)
+par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
+    cex.axis=2)
+ylim <- c(0.13, 3)
+boxplot(period3_EVN$A_0Hz~period3_EVN$mic, 
+        main="P3. EVN 0-2 kHz", ylim=ylim)
+boxplot(period3_EVN$A_2000Hz~period3_EVN$mic, 
+        main="P3. EVN 2-4 kHz", ylim=ylim, yaxt = "n")
+boxplot(period3_EVN$A_4000Hz~period3_EVN$mic, 
+        main="P3. EVN 4-6 kHz", ylim=ylim, yaxt = "n")
+mtext(side = 3, "4am to 6am", line = -4.2, cex = 1.4)
+mtext(side = 3, paste(period_three_date), line = -2.2, cex = 1.4)
+boxplot(period3_EVN$A_6000Hz~period3_EVN$mic, 
+        main="P3. EVN 6-8 kHz", ylim=ylim, yaxt = "n")
+boxplot(period3_EVN$A_8000Hz~period3_EVN$mic, 
+        main="P3. EVN 8-10 kHz", ylim=ylim, yaxt = "n")
+dev.off()
+
+# period 3 ACI
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
+                       pattern = "per[3]{1}_ACI.*\\.csv")
+
+i=1
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+new <- data[,((length-4):length)]
+rows <- nrow(data)
+new <- cbind(rep("new",rows), new)
+colnames(new)[1]  <- "mic"
+
+i=2
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+old <- data[,((length-4):length)]
+rows <- nrow(data)
+old <- cbind(rep("old",rows), old)
+colnames(old)[1]  <- "mic"
+
+i=3
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+sm4 <- data[,((length-4):length)]
+rows <- nrow(data)
+sm4 <- cbind(rep("sm4",rows), sm4)
+colnames(sm4)[1]  <- "mic"
+
+period3_ACI <- rbind(old, new, sm4)
+rm(old,new,sm4, length, i, folder, my_files, data)
+
+png("microphone test\\wet\\period3_ACI_wet.png", width = 800,
+    height = 800)
+par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
+    cex.axis=2)
+ylim <- c(0.393, 0.68)
+boxplot(period3_ACI$A_0Hz~period3_ACI$mic, ylim=ylim, 
+        main="P3. ACI 0-2 kHz")
+boxplot(period3_ACI$A_2000Hz~period3_ACI$mic, ylim=ylim, 
+        main="P3. ACI 2-4 kHz", yaxt = "n")
+boxplot(period3_ACI$A_4000Hz~period3_ACI$mic, ylim=ylim, 
+        main="P3. ACI 4-6 kHz", yaxt = "n")
+mtext(side = 3, "4am to 6am", line = -4.2, cex = 1.4)
+mtext(side = 3, paste(period_three_date), line = -2.2, cex = 1.4)
+boxplot(period3_ACI$A_6000Hz~period3_ACI$mic, ylim=ylim, 
+        main="P3. ACI 6-8 kHz", yaxt = "n")
+boxplot(period3_ACI$A_8000Hz~period3_ACI$mic, ylim=ylim, 
+        main="P3. ACI 8-10 kHz", yaxt = "n")
+dev.off()
+
+# period 3 ENT
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
+                       pattern = "per[3]{1}_ENT.*\\.csv")
+
+i=1
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+new <- data[,((length-4):length)]
+rows <- nrow(data)
+new <- cbind(rep("new",rows), new)
+colnames(new)[1]  <- "mic"
+
+i=2
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+old <- data[,((length-4):length)]
+rows <- nrow(data)
+old <- cbind(rep("old",rows), old)
+colnames(old)[1]  <- "mic"
+
+i=3
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+sm4 <- data[,((length-4):length)]
+rows <- nrow(data)
+sm4 <- cbind(rep("sm4",rows), sm4)
+colnames(sm4)[1]  <- "mic"
+
+period3_ENT <- rbind(old, new, sm4)
+rm(old,new,sm4, length, i, folder, my_files, data)
+
+png("microphone test\\wet\\period3_ENT_wet.png", width = 800,
+    height = 800)
+par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
+    cex.axis=2)
+ylim <- c(0.0315, 0.655)
+boxplot(period3_ENT$A_0Hz~period3_ENT$mic, ylim=ylim, 
+        main="P3. ENT 0-2 kHz")
+boxplot(period3_ENT$A_2000Hz~period3_ENT$mic, ylim=ylim, 
+        main="P3. ENT 2-4 kHz", yaxt = "n")
+boxplot(period3_ENT$A_4000Hz~period3_ENT$mic, ylim=ylim, 
+        main="P3. ENT 4-6 kHz", yaxt = "n")
+mtext(side = 3, "4am to 6am", line = -4.2, cex = 1.4)
+mtext(side = 3, paste(period_three_date), line = -2.2, cex = 1.4)
+boxplot(period3_ENT$A_6000Hz~period3_ENT$mic, ylim=ylim, 
+        main="P3. ENT 6-8 kHz", yaxt = "n")
+boxplot(period3_ENT$A_8000Hz~period3_ENT$mic, ylim=ylim, 
+        main="P3. ENT 8-10 kHz", yaxt = "n")
+dev.off()
+
+# period 3 BGN
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
+                       pattern = "per[3]{1}_BGN.*\\.csv")
+
+i=1
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+new <- data[,((length-4):length)]
+rows <- nrow(data)
+new <- cbind(rep("new",rows), new)
+colnames(new)[1]  <- "mic"
+
+i=2
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+old <- data[,((length-4):length)]
+rows <- nrow(data)
+old <- cbind(rep("old",rows), old)
+colnames(old)[1]  <- "mic"
+
+i=3
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+sm4 <- data[,((length-4):length)]
+rows <- nrow(data)
+sm4 <- cbind(rep("sm4",rows), sm4)
+colnames(sm4)[1]  <- "mic"
+
+period3_BGN <- rbind(old, new, sm4)
+rm(old,new,sm4, length, i, folder, my_files, data)
+
+png("microphone test\\wet\\period3_BGN_wet.png", width = 800,
+    height = 800)
+par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
+    cex.axis=2)
+ylim <- c(-112,-70)
+boxplot(period3_BGN$A_0Hz~period3_BGN$mic, ylim=ylim, 
+        main="P3. BGN 0-2 kHz")
+boxplot(period3_BGN$A_2000Hz~period3_BGN$mic, ylim=ylim, 
+        main="P3. BGN 2-4 kHz", yaxt = "n")
+boxplot(period3_BGN$A_4000Hz~period3_BGN$mic, ylim=ylim, 
+        main="P3. BGN 4-6 kHz", yaxt = "n")
+mtext(side = 3, "4am to 6am", line = -4.2, cex = 1.4)
+mtext(side = 3, paste(period_three_date), line = -2.2, cex = 1.4)
+boxplot(period3_BGN$A_6000Hz~period3_BGN$mic, ylim=ylim,  
+        main="P3. BGN 6-8 kHz", yaxt = "n")
+boxplot(period3_BGN$A_8000Hz~period3_BGN$mic, ylim=ylim,
+        main="P3. BGN 8-10 kHz", yaxt = "n")
+dev.off()
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# period 4 EVN
+#rm(period3_BGN, period3_ENT, period3_ACI, period3_EVN)
+
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
+                       pattern = "per[4]{1}_EVN.*\\.csv")
+i=1
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+new <- data[,((length-4):length)]
+rows <- nrow(data)
+new <- cbind(rep("new",rows), new)
+colnames(new)[1]  <- "mic"
+
+i=2
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+old <- data[,((length-4):length)]
+rows <- nrow(data)
+old <- cbind(rep("old",rows), old)
+colnames(old)[1]  <- "mic"
+
+i=3
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+sm4 <- data[,((length-4):length)]
+rows <- nrow(data)
+sm4 <- cbind(rep("sm4",rows), sm4)
+colnames(sm4)[1]  <- "mic"
+
+period4_EVN <- rbind(old, new, sm4)
+rm(old,new,sm4, length, i, folder, my_files, data)
+
+png("microphone test\\wet\\period4_EVN_wet.png", width = 800,
+    height = 800)
+par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
+    cex.axis=2)
+ylim <- c(0.13, 3)
+boxplot(period4_EVN$A_0Hz~period4_EVN$mic, 
+        main="P4. EVN 0-2 kHz", ylim=ylim)
+boxplot(period4_EVN$A_2000Hz~period4_EVN$mic, ylim=ylim,
+        main="P4. EVN 2-4 kHz", yaxt ="n")
+boxplot(period4_EVN$A_4000Hz~period4_EVN$mic, ylim=ylim,
+        main="P4. EVN 4-6 kHz", yaxt ="n")
+mtext(side = 3, "10am to 12pm", line = -4.2, cex = 1.4)
+mtext(side = 3, paste(period_four_date), line = -2.2, cex = 1.4)
+boxplot(period4_EVN$A_6000Hz~period4_EVN$mic, ylim=ylim,
+        main="P4. EVN 6-8 kHz", yaxt = "n")
+boxplot(period4_EVN$A_8000Hz~period4_EVN$mic, ylim=ylim,
+        main="P4. EVN 8-10 kHz", yaxt = "n")
+dev.off()
+
+# period 4 ACI
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
+                       pattern = "per[4]{1}_ACI.*\\.csv")
+
+i=1
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+new <- data[,((length-4):length)]
+rows <- nrow(data)
+new <- cbind(rep("new",rows), new)
+colnames(new)[1]  <- "mic"
+
+i=2
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+old <- data[,((length-4):length)]
+rows <- nrow(data)
+old <- cbind(rep("old",rows), old)
+colnames(old)[1]  <- "mic"
+
+i=3
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+sm4 <- data[,((length-4):length)]
+rows <- nrow(data)
+sm4 <- cbind(rep("sm4",rows), sm4)
+colnames(sm4)[1]  <- "mic"
+
+period4_ACI <- rbind(old, new, sm4)
+rm(old,new,sm4, length, i, folder, my_files, data)
+
+png("microphone test\\wet\\period4_ACI_wet.png", width = 800,
+    height = 800)
+par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
+    cex.axis=2)
+ylim <- c(0.393, 0.68)
+boxplot(period4_ACI$A_0Hz~period4_ACI$mic, ylim=ylim, 
+        main="P4. ACI 0-2 kHz")
+boxplot(period4_ACI$A_2000Hz~period4_ACI$mic, ylim=ylim, 
+        main="P4. ACI 2-4 kHz", yaxt = "n")
+boxplot(period4_ACI$A_4000Hz~period4_ACI$mic, ylim=ylim,
+        main="P4. ACI 4-6 kHz", yaxt = "n")
+mtext(side = 3, "10am to 12pm", line = -4.2, cex = 1.4)
+mtext(side = 3, paste(period_four_date), line = -2.2, cex = 1.4)
+boxplot(period4_ACI$A_6000Hz~period4_ACI$mic, ylim=ylim,
+        main="P4. ACI 6-8 kHz", yaxt = "n")
+boxplot(period4_ACI$A_8000Hz~period4_ACI$mic, ylim=ylim, 
+        main="P4. ACI 8-10 kHz", yaxt = "n")
+dev.off()
+
+# period 4 ENT
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
+                       pattern = "per[4]{1}_ENT.*\\.csv")
+
+i=1
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+new <- data[,((length-4):length)]
+rows <- nrow(data)
+new <- cbind(rep("new",rows), new)
+colnames(new)[1]  <- "mic"
+
+i=2
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+old <- data[,((length-4):length)]
+rows <- nrow(data)
+old <- cbind(rep("old",rows), old)
+colnames(old)[1]  <- "mic"
+
+i=3
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+sm4 <- data[,((length-4):length)]
+rows <- nrow(data)
+sm4 <- cbind(rep("sm4",rows), sm4)
+colnames(sm4)[1]  <- "mic"
+
+period4_ENT <- rbind(old, new, sm4)
+rm(old,new,sm4, length, i, folder, my_files, data)
+
+png("microphone test\\wet\\period4_ENT_wet.png", width = 800,
+    height = 800)
+par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
+    cex.axis=2)
+ylim <- c(0.0315, 0.655)
+boxplot(period4_ENT$A_0Hz~period4_ENT$mic, ylim=ylim, 
+        main="P4. ENT 0-2 kHz", border=c(1,1,1))
+boxplot(period4_ENT$A_2000Hz~period4_ENT$mic, ylim=ylim, 
+        main="P4. ENT 2-4 kHz", border=c(1,1,1), yaxt = "n")
+boxplot(period4_ENT$A_4000Hz~period4_ENT$mic, ylim=ylim, 
+        main="P4. ENT 4-6 kHz", border=c(1,1,1), yaxt = "n")
+mtext(side = 3, "10am to 12pm", line = -4.2, cex = 1.4)
+mtext(side = 3, paste(period_four_date), line = -2.2, cex = 1.4)
+boxplot(period4_ENT$A_6000Hz~period4_ENT$mic, ylim=ylim, 
+        main="P4. ENT 6-8 kHz", border=c(1,1,1), yaxt = "n")
+boxplot(period4_ENT$A_8000Hz~period4_ENT$mic, ylim=ylim, 
+        main="P4. ENT 8-10 kHz", border=c(1,1,1), yaxt = "n")
+dev.off()
+
+# period 4 BGN
+folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\microphone test\\wet"
+my_files <- list.files(path=folder,recursive = TRUE, full.names = T,
+                       pattern = "per[4]{1}_BGN.*\\.csv")
+
+i=1
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+new <- data[,((length-4):length)]
+rows <- nrow(data)
+new <- cbind(rep("new",rows), new)
+colnames(new)[1]  <- "mic"
+
+i=2
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+old <- data[,((length-4):length)]
+rows <- nrow(data)
+old <- cbind(rep("old",rows), old)
+colnames(old)[1]  <- "mic"
+
+i=3
+data <- read.csv(my_files[i], header = TRUE) 
+length <- length(data)
+sm4 <- data[,((length-4):length)]
+rows <- nrow(data)
+sm4 <- cbind(rep("sm4",rows), sm4)
+colnames(sm4)[1]  <- "mic"
+
+period4_BGN <- rbind(old, new, sm4)
+rm(old,new,sm4, length, i, folder, my_files, data)
+
+png("microphone test\\wet\\period4_BGN_wet.png", width = 800,
+    height = 800)
+par(mfrow=c(1,5), mar=c(2.1,0,2.8,0),oma=c(0,2.8,0,1), cex.main=2,
+    cex.axis=2)
+ylim <- c(-112,-70)
+boxplot(period4_BGN$A_0Hz~period4_BGN$mic, ylim=ylim,
+        main="P4. BGN 0-2 kHz")
+boxplot(period4_BGN$A_2000Hz~period4_BGN$mic, ylim=ylim, 
+        main="P4. BGN 2-4 kHz", yaxt = "n")
+boxplot(period4_BGN$A_4000Hz~period4_BGN$mic, ylim=ylim, 
+        main="P4. BGN 4-6 kHz", yaxt = "n")
+mtext(side = 3, "10am to 12pm", line = -4.2, cex = 1.4)
+mtext(side = 3, paste(period_four_date), line = -2.2, cex = 1.4)
+boxplot(period4_BGN$A_6000Hz~period4_BGN$mic, ylim=ylim, 
+        main="P4. BGN 6-8 kHz", yaxt = "n")
+boxplot(period4_BGN$A_8000Hz~period4_BGN$mic, ylim=ylim,
+        main="P4. BGN 8-10 kHz", yaxt = "n")
+dev.off()
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+averages <- NULL
+for(i in 1:(120-9)) {
+  a <- mean(period4_EVN$A_4000Hz[i+120:i+129])
+  averages <- c(averages, a)
+}

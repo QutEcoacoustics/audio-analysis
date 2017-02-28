@@ -1,8 +1,9 @@
 # Calculation of civil dawn
 ####################################################
-# Note: Do not use this method, go to 
+# Note: DO NOT USE THIS METHOD, go to 
 # http://www.ga.gov.au/geodesy/astro/sunrise.jsp
-# instead
+# instead use sunrise_times.R code
+
 ###################################################
 
 require(maptools)

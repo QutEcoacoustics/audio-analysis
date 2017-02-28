@@ -1,11 +1,15 @@
 # Generate polarHistograms and rose plots
 # Author: Yvonne Phillips
 # Author of polarHistogram function: Christophe Ladroue
+# Downloaded from http://chrisladroue.com/2012/02/polar-histogram-pretty-and-useful/
+# and chrisladroue.com/wp-content/uploads/2012/02/polarHistogram.R.zip
+# the original code has been adapted by Yvonne Phillips
 # Date:  30 October 2016
 
 # Description: Produces two different polarHistograms containing 
 # a display of 1. each cluster class is occuring per day,
 #              2. each cluster occuring throughout the day per month
+# Also produces the plot comparing the occurance of rain and insects
 
 # remove all objects in the global environment
 rm(list = ls())
@@ -95,13 +99,13 @@ for(i in 1:length(site)) {
   }  
 }
 
-View(cluster)
+#View(cluster)
 
 cluster <- data.frame(cluster)
 length <- length(cluster$clust)/2
 gym_clust <- cluster[1:length,]
 woon_clust <- cluster[(length+1):(length*2),]
-View(gym_clust)
+#View(gym_clust)
 
 # rename columns to align to polarHistogram function
 gym_clust$score <- gym_clust$clust
@@ -114,14 +118,24 @@ woon_clust$value <- woon_clust$count
 woon_clust$family <- woon_clust$month
 woon_clust$item <- woon_clust$date
 
-# define cluster classes
-rain <- c(59,18,10,54,2,21,38,60)
-wind <- c(42,47,51,56,52,45,8,40,24,19,46,28,9,25,30,20)
-birds <- c(58,43,57,37,11,3,33,15,14,39,4)
-insects <- c(17,1,27,22,26,29)
-cicada <- c(48,34,44,7,12,32,16)
+# define cluster classes (the are the old list)
+#rain <- c(59,18,10,54,2,21,38,60)
+#wind <- c(42,47,51,56,52,45,8,40,24,19,46,28,9,25,30,20)
+#birds <- c(58,43,57,37,11,3,33,15,14,39,4)
+#insects <- c(17,1,27,22,26,29)
+#cicada <- c(48,34,44,7,12,32,16)
+#planes <- c(49,23)
+#quiet <- c(6,53,36,31,50,35,55,41,13,5)
+
+# define cluster classes 
+rain <- c(2,10,17,18,21,54,59,60) 
+wind <- c(9,19,20,24,25,30,40,42,45,46,47,51,52,56)
+birds <- c(3,11,14,15,28,33,37,39,43,57,58)
+insects <- c(1,4,22,26,27,29)
+cicada <- c(7,8,12,16,32,34,44,48)
 planes <- c(49,23)
-quiet <- c(6,53,36,31,50,35,55,41,13,5)
+quiet <- c(5,6,13,31,35,36,38,41,50,53,55)
+na <- 61
 
 gympie_clusters <- matrix(ncol = 4, nrow = 398*7, "NA") 
 gympie_clusters <- data.frame(gympie_clusters)
@@ -145,49 +159,49 @@ gympie_clusters$value <- as.numeric(gympie_clusters$value)
 for(i in 1:length(gympie_clusters$item)) {
   if((substr(gympie_clusters$dates[i],6,7)=="06") &
      (substr(gympie_clusters$dates[i],1,4)=="2015")) {
-    gympie_clusters$family[i] <- "a  Jun 15"
+    gympie_clusters$family[i] <- "a  Jun 2015"
   }  
   if((substr(gympie_clusters$dates[i],6,7)=="06") &
      (substr(gympie_clusters$dates[i],1,4)=="2016")) {
-    gympie_clusters$family[i] <- "m  Jun 16"
+    gympie_clusters$family[i] <- "m  Jun 2016"
   } 
   if((substr(gympie_clusters$dates[i],6,7)=="07") &
      (substr(gympie_clusters$dates[i],1,4)=="2015")) {
-    gympie_clusters$family[i] <- "b  Jul 15"
+    gympie_clusters$family[i] <- "b  Jul 2015"
   }  
   if((substr(gympie_clusters$dates[i],6,7)=="07") &
      (substr(gympie_clusters$dates[i],1,4)=="2016")) {
-    gympie_clusters$family[i] <- "n  Jul 16"
+    gympie_clusters$family[i] <- "n  Jul 2016"
   }
   if(substr(gympie_clusters$dates[i],6,7)=="08") {
-    gympie_clusters$family[i] <- "c  Aug 15"
+    gympie_clusters$family[i] <- "c  Aug 2015"
   }
   if(substr(gympie_clusters$dates[i],6,7)=="09") {
-    gympie_clusters$family[i] <- "d  Sept 15"
+    gympie_clusters$family[i] <- "d  Sept 2015"
   }
   if(substr(gympie_clusters$dates[i],6,7)=="10") {
-    gympie_clusters$family[i] <- "e  Oct 15"
+    gympie_clusters$family[i] <- "e  Oct 2015"
   }  
   if(substr(gympie_clusters$dates[i],6,7)=="11") {
-    gympie_clusters$family[i] <- "f  Nov 15"
+    gympie_clusters$family[i] <- "f  Nov 2015"
   }
   if(substr(gympie_clusters$dates[i],6,7)=="12") {
-    gympie_clusters$family[i] <- "g  Dec 15"
+    gympie_clusters$family[i] <- "g  Dec 2015"
   }
   if(substr(gympie_clusters$dates[i],6,7)=="01") {
-    gympie_clusters$family[i] <- "h  Jan 16"
+    gympie_clusters$family[i] <- "h  Jan 2016"
   }
   if(substr(gympie_clusters$dates[i],6,7)=="02") {
-    gympie_clusters$family[i] <- "i  Feb 16"
+    gympie_clusters$family[i] <- "i  Feb 2016"
   }  
   if(substr(gympie_clusters$dates[i],6,7)=="03") {
-    gympie_clusters$family[i] <- "j  Mar 16"
+    gympie_clusters$family[i] <- "j  Mar 2016"
   }
   if(substr(gympie_clusters$dates[i],6,7)=="04") {
-    gympie_clusters$family[i] <- "k  Apr 16"
+    gympie_clusters$family[i] <- "k  Apr 2016"
   }
   if(substr(gympie_clusters$dates[i],6,7)=="05") {
-    gympie_clusters$family[i] <- "l  May 16"
+    gympie_clusters$family[i] <- "l  May 2016"
   } 
 }
 
@@ -288,7 +302,7 @@ for(i in 1:length(date.list)) {
   ref <- ref + 7
 }
 
-View(gympie_clusters)
+#View(gympie_clusters)
 
 woondum_clusters <- matrix(ncol = 4, nrow = 398*7, "NA") 
 woondum_clusters <- data.frame(woondum_clusters)
@@ -306,49 +320,49 @@ woondum_clusters$value <- as.numeric(woondum_clusters$value)
 for(i in 1:length(woondum_clusters$item)) {
   if((substr(woondum_clusters$dates[i],6,7)=="06") &
      (substr(woondum_clusters$dates[i],1,4)=="2015")) {
-    woondum_clusters$family[i] <- "a  Jun 15"
+    woondum_clusters$family[i] <- "a  Jun 2015"
   }  
   if((substr(woondum_clusters$dates[i],6,7)=="06") &
      (substr(woondum_clusters$dates[i],1,4)=="2016")) {
-    woondum_clusters$family[i] <- "m  Jun 16"
+    woondum_clusters$family[i] <- "m  Jun 2016"
   } 
   if((substr(woondum_clusters$dates[i],6,7)=="07") &
      (substr(woondum_clusters$dates[i],1,4)=="2015")) {
-    woondum_clusters$family[i] <- "b  Jul 15"
+    woondum_clusters$family[i] <- "b  Jul 2015"
   }  
   if((substr(woondum_clusters$dates[i],6,7)=="07") &
      (substr(woondum_clusters$dates[i],1,4)=="2016")) {
-    woondum_clusters$family[i] <- "n  Jul 16"
+    woondum_clusters$family[i] <- "n  Jul 2016"
   }
   if(substr(woondum_clusters$dates[i],6,7)=="08") {
-    woondum_clusters$family[i] <- "c  Aug 15"
+    woondum_clusters$family[i] <- "c  Aug 2015"
   }
   if(substr(woondum_clusters$dates[i],6,7)=="09") {
-    woondum_clusters$family[i] <- "d  Sept 15"
+    woondum_clusters$family[i] <- "d  Sept 2015"
   }
   if(substr(woondum_clusters$dates[i],6,7)=="10") {
-    woondum_clusters$family[i] <- "e  Oct 15"
+    woondum_clusters$family[i] <- "e  Oct 2015"
   }  
   if(substr(woondum_clusters$dates[i],6,7)=="11") {
-    woondum_clusters$family[i] <- "f  Nov 15"
+    woondum_clusters$family[i] <- "f  Nov 2015"
   }
   if(substr(woondum_clusters$dates[i],6,7)=="12") {
-    woondum_clusters$family[i] <- "g  Dec 15"
+    woondum_clusters$family[i] <- "g  Dec 2015"
   }
   if(substr(woondum_clusters$dates[i],6,7)=="01") {
-    woondum_clusters$family[i] <- "h  Jan 16"
+    woondum_clusters$family[i] <- "h  Jan 2016"
   }
   if(substr(woondum_clusters$dates[i],6,7)=="02") {
-    woondum_clusters$family[i] <- "i  Feb 16"
+    woondum_clusters$family[i] <- "i  Feb 2016"
   }  
   if(substr(woondum_clusters$dates[i],6,7)=="03") {
-    woondum_clusters$family[i] <- "j  Mar 16"
+    woondum_clusters$family[i] <- "j  Mar 2016"
   }
   if(substr(woondum_clusters$dates[i],6,7)=="04") {
-    woondum_clusters$family[i] <- "k  Apr 16"
+    woondum_clusters$family[i] <- "k  Apr 2016"
   }
   if(substr(woondum_clusters$dates[i],6,7)=="05") {
-    woondum_clusters$family[i] <- "l  May 16"
+    woondum_clusters$family[i] <- "l  May 2016"
   } 
 }
 
@@ -443,7 +457,7 @@ for(i in 1:length(date.list)) {
   ref <- ref + 7
 }
 
-View(woondum_clusters)
+#View(woondum_clusters)
 
 ##### PolarHistogram function
 #' builds many histograms and arranges them around a circle to save space.
@@ -497,8 +511,8 @@ View(woondum_clusters)
 # Christophe Ladroue
 library(plyr)
 library(ggplot2)
-source("polarHistogram.R")
-
+#source("polarHistogram.R")
+# polarHistogram function --------------------------------------------
 polarHistogram <-function (df, family = NULL, 
                            columnNames = NULL, 
                            binSize = 1,
@@ -619,7 +633,7 @@ polarHistogram <-function (df, family = NULL,
       angle <- xmin * (-360/totalLength) - alphaStart * 180/pi
     })
     p <- p + geom_text(aes(x = x, label = family, angle = angle),
-                       data = familyLabelsDF, y = 1.22, size = 6.5)
+                       data = familyLabelsDF, y = 1.22, size = 3)
   }
   
   p <- p + theme(panel.background = element_blank(), axis.title.x = element_blank(),
@@ -643,40 +657,231 @@ polarHistogram <-function (df, family = NULL,
                  legend.position=c(1.015,0.5))
 }
 
-source("polarHistogram.R")
+# polarHistogram365 --------------------------------------------
+polarHistogram365 <-function (df, family = NULL, 
+                              columnNames = NULL, 
+                              binSize = 1,
+                              spaceItem = 0.2, 
+                              spaceFamily = 0, 
+                              innerRadius = 0.2, 
+                              outerRadius = 1,
+                              guides = c(20, 40, 60, 80), 
+                              alphaStart = 0, #-0.3, 
+                              circleProportion = 0.98,
+                              direction = "outwards", 
+                              familyLabels = TRUE, 
+                              normalised = FALSE,
+                              units = "cm")
+#df <- gympie_clusters365
+#family = NULL 
+#columnNames = NULL
+#binSize = 1
+#spaceItem = 0.2
+#spaceFamily = 0 
+#innerRadius = 0 
+#outerRadius = 1
+#guides = c(40, 60, 80)
+#alphaStart = 0 
+#circleProportion = 0.98
+#direction = "outwards" 
+#familyLabels = TRUE
+#normalised = FALSE
+#units = "cm"
+{
+  if (!is.null(columnNames)) {
+    namesColumn <- names(columnNames)
+    names(namesColumn) <- columnNames
+    df <- rename(df, namesColumn)
+  }
+  
+  applyLookup <- function(groups, keys, unassigned = "unassigned") {
+    lookup <- rep(names(groups), sapply(groups, length, USE.NAMES = FALSE))
+    names(lookup) <- unlist(groups, use.names = FALSE)
+    p <- lookup[as.character(keys)]
+    p[is.na(p)] <- unassigned
+    p
+  }
+  
+  if (!is.null(family))
+    df$family <- applyLookup(family, df$item)
+  df <- arrange(df, family, item, score)
+  #if(normalised)
+  df <- ddply(df, .(family, item), transform, 
+              value = cumsum(value/(sum(value))))
+  #else {
+  #  maxFamily <- max(plyr::ddply(df,.(family,item), summarise, total = sum(value))$total)
+  #  df <- ddply(df, .(family, item), transform, value = cumsum(value))
+  #  df$value <- df$value/maxFamily
+  #}
+  
+  df <- ddply(df, .(family, item), transform, previous = c(0, head(value, length(value) - 1)))
+  
+  df2 <- ddply(df, .(family, item), summarise, indexItem = 1)
+  df2$indexItem <- cumsum(df2$indexItem)
+  df3 <- ddply(df, .(family), summarise, indexFamily = 1)
+  df3$indexFamily <- cumsum(df3$indexFamily)
+  df <- merge(df, df2, by = c("family", "item"))
+  df <- merge(df, df3, by = "family")
+  df <- arrange(df, family, item, score)
+  
+  affine <- switch(direction,
+                   inwards = function(y) (outerRadius - innerRadius) * y + innerRadius,
+                   outwards = function(y) (outerRadius - innerRadius) * (1 - y) + innerRadius,
+                   stop(paste("Unknown direction")))
+  df <- within(df, {
+    xmin <- (indexItem - 1) * binSize + (indexItem - 1) *
+      spaceItem + (indexFamily - 1) * (spaceFamily - spaceItem)
+    xmax <- xmin + binSize
+    ymin <- affine(1 - previous)
+    ymax <- affine(1 - value)
+  })
+  
+  #if(normalised)
+  guidesDF <- data.frame(xmin = rep(df$xmin, length(guides)),
+                         y = rep(1 - guides/100, 1, each = nrow(df)))
+  #else
+  #  guidesDF <- data.frame(xmin = rep(df$xmin, length(guides)),
+  #                         y = rep(1 - guides/maxFamily, 1, each = nrow(df)))
+  
+  
+  guidesDF <- within(guidesDF, {
+    xend <- xmin + binSize
+    y <- affine(y)
+  })
+  
+  
+  totalLength <- tail(df$xmin + binSize + spaceFamily, 1)/circleProportion - 0
+  
+  p <- ggplot(df) + geom_rect(aes(xmin = xmin, xmax = xmax,
+                                  ymin = ymin, ymax = ymax, fill = score))
+  readableAngle <- function(x) {
+    angle <- x * (-360/totalLength) - alphaStart * 180/pi + 90
+    angle + ifelse(sign(cos(angle * pi/180)) + sign(sin(angle * pi/180)) == -2, 180, 0)
+  }
+  
+  readableJustification <- function(x) {
+    angle <- x * (-360/totalLength) - alphaStart * 180/pi + 90
+    ifelse(sign(cos(angle * pi/180)) + sign(sin(angle * pi/180)) == -2, 1, 0)
+  }
+  
+  dfItemLabels <- ddply(df, .(family, item), summarize, xmin = xmin[1])
+  dfItemLabels <- within(dfItemLabels, {
+    x <- xmin + binSize/2
+    angle <- readableAngle(xmin + binSize/2)
+    hjust <- readableJustification(xmin + binSize/2)
+  })
+  col <- NULL
+  for(i in 1:length(dfItemLabels$item)) {
+    ifelse(dfItemLabels$item[i]=="01"|dfItemLabels$item[i]=="05"|dfItemLabels$item[i]=="10"|dfItemLabels$item[i]=="15"|dfItemLabels$item[i]=="20"|dfItemLabels$item[i]=="25",
+           colour <- "black", colour <- "white")
+    col <- c(col, colour)
+  }
 
-# a little helper that generates random names for families and items.
-randomName<-function(n=1,syllables=3){
-  vowels<-c("a","e","i","o","u","y")
-  consonants<-setdiff(letters,vowels)
-  replicate(n,
-            paste(
-              rbind(sample(consonants,syllables,replace=TRUE),
-                    sample(vowels,syllables,replace=TRUE)),
-              sep='',collapse='')
-  )
+  p <- p + geom_text(aes(x = x, label = item, angle = angle, hjust = hjust), 
+                     y = 1.02, size = 1.9, vjust = 0.5, 
+                     data = dfItemLabels, 
+                     col = col)
+  
+  p <- p + geom_segment(aes(x = xmin, xend = xend, y = y, yend = y),
+                        colour = "white", data = guidesDF)
+  
+  #if(normalised)
+  guideLabels <- data.frame(x = 0, y = affine(1 - guides/100),
+                            label = paste(""))
+  #else
+  #  guideLabels <- data.frame(x = 0, y = affine(1 - guides/maxFamily),
+  #                            label = paste(guides, " ", sep = ""))
+  
+  p <- p + geom_text(aes(x = x, y = y, label = label), data = guideLabels,
+                     angle = -alphaStart * 180/pi, hjust = 1, 
+                     size = 1.9)
+  if (familyLabels) {
+    familyLabelsDF <- aggregate(xmin ~ family, data = df,
+                                FUN = function(s) mean(s + binSize))
+    familyLabelsDF <- within(familyLabelsDF, {
+      x <- xmin
+      angle <- xmin * (-360/totalLength) - alphaStart * 180/pi
+    })
+    p <- p + geom_text(aes(x = x, label = family, angle = angle),
+                       data = familyLabelsDF, y = 1.1, size = 4)
+  }
+  
+  p <- p + theme(panel.background = element_blank(), axis.title.x = element_blank(),
+                 axis.title.y = element_blank(), panel.grid.major = element_blank(),
+                 panel.grid.minor = element_blank(), axis.text.x = element_blank(),
+                 axis.text.y = element_blank(), axis.ticks = element_blank())
+  
+  p <- p + xlim(0, tail(df$xmin + binSize + spaceFamily, 1)/circleProportion)
+  p <- p + ylim(0, outerRadius + 0.2)
+  p <- p + coord_polar(start = alphaStart)
+  #p <- p + scale_fill_brewer(palette = "Set1", type = "qual")
+  p <- p + scale_fill_manual(values = c('birds'="#009E73",
+                                        'cicada'="#E69F00", 
+                                        'insects'= "#F0E442",
+                                        'planes'="#CC79A7", 
+                                        'rain'="#0072B2",
+                                        'wind'="lightblue",
+                                        'quiet'="#999999"))
+  p <- p + theme(legend.text=element_text(size=12))
+  p <- p + theme(legend.justification="right", 
+                 legend.position=c(1.00001,0.4))
 }
 
-set.seed(42)
+# a little helper that generates random names for families and items.
+#randomName<-function(n=1,syllables=3){
+#  vowels<-c("a","e","i","o","u","y")
+#  consonants<-setdiff(letters,vowels)
+#  replicate(n,
+#            paste(
+#              rbind(sample(consonants,syllables,replace=TRUE),
+#                    sample(vowels,syllables,replace=TRUE)),
+#              sep='',collapse='')
+#  )
+#}
 
-nFamily<-20
-nItemPerFamily<-sample(1:6,nFamily,replace=TRUE)
-nValues<-3
+#set.seed(42)
 
-df<-data.frame(
-  family=rep(randomName(nFamily),nItemPerFamily),
-  item=randomName(sum(nItemPerFamily),2))
+#nFamily<-20
+#nItemPerFamily<-sample(1:6,nFamily,replace=TRUE)
+#nValues<-3
 
-df<-cbind(df,as.data.frame(matrix(runif(nrow(df)*nValues),nrow=nrow(df),ncol=nValues)))
+#df<-data.frame(
+#  family=rep(randomName(nFamily),nItemPerFamily),
+#  item=randomName(sum(nItemPerFamily),2))
 
-library(reshape)
-df<-melt(df,c("family","item"), variable_name="score") # from wide to long
-p<-polarHistogram(df, familyLabel=T)
-print(p)
+#df<-cbind(df,as.data.frame(matrix(runif(nrow(df)*nValues),nrow=nrow(df),ncol=nValues)))
 
+#library(reshape)
+#df<-melt(df,c("family","item"), variable_name="score") # from wide to long
+#p<-polarHistogram(df, familyLabel=T)
+#print(p)
+
+gympie_clusters365 <- gympie_clusters[1:2555,]
+gympie_clusters365 <- gympie_clusters
+p1 <- polarHistogram365(gympie_clusters365, 
+                        familyLabels = TRUE,
+                        circleProportion = 0.98,
+                        normalised = FALSE)
+p1 <- p1 + ggtitle("Gympie NP") + theme(title = element_text(vjust = -6)) + theme(title = element_text(size=20)) 
+print(p1)
+ggsave('polarHistograms/Gympie_polarHistogram_365.png', 
+       width = 9, height = 9, dpi = 400, bg = "transparent")
+
+woondum_clusters365 <- woondum_clusters[1:2555,]
+woondum_clusters365 <- woondum_clusters
+p1 <- polarHistogram365(woondum_clusters365, 
+                        familyLabels = TRUE,
+                        circleProportion = 0.98,
+                        normalised = FALSE)
+p1 <- p1 + ggtitle("Woondum NP") + theme(title = element_text(vjust = -6)) + theme(title = element_text(size=20)) 
+print(p1)
+ggsave('polarHistograms/Woondum_polarHistogram_365.png', 
+       width = 9, height = 9, dpi = 400, bg = "transparent")
+
+# This is for plots of a few months at a time
 # These must be in whole multiples of the classes
-gympie_clusters1 <- gympie_clusters[1:420,]
-gympie_clusters2 <- gympie_clusters[421:840,]
+gympie_clusters1 <- gympie_clusters[1:420,] 
+gympie_clusters2 <- gympie_clusters[421:840,] 
 gympie_clusters3 <- gympie_clusters[841:1260,]
 gympie_clusters4 <- gympie_clusters[1261:1680,]
 gympie_clusters5 <- gympie_clusters[1681:2100,]
@@ -685,9 +890,9 @@ gympie_clusters7 <- gympie_clusters[2521:length(gympie_clusters$score),]
 
 p1 <- polarHistogram(gympie_clusters1, 
                      familyLabels = TRUE,
-                     circleProportion = 0.92,
+                     circleProportion = 0.98,
                      normalised = FALSE)
-p1 <- p1 + ggtitle("Gympie NP") + theme(plot.title = element_text(size=22))
+p1 <- p1 + ggtitle("Gympie NP") + theme(plot.title = element_text(size=18))
 print(p1) 
 ggsave('polarHistograms/Gympie_polarHistogram_p1.png', 
        width = 9, height = 9, dpi = 400, bg = "transparent")
@@ -1107,15 +1312,15 @@ quiet_col <- "#999999"
 plane_col <- "#CC79A7"
 na_col <- "white"
 # choose a cluster, clust is used to label the plots
-clust <- "cluster13"
+clust <- "cluster48"
 # Choose a colour
-col <- quiet_col
+col <- cicada_col
 # set the scale, the first for Gympie the second Woondum
 # set to 7 for cluster 43 ; 20 for cluster 13
 # set to 20 for cluster 37
 # set to 12 for cluster 48
 # the number will not be greater than 30
-scale <- c(20, 20) 
+scale <- c(12, 12) 
 
 a <- which(gym_df$score==clust)
 gym_df <- gym_df[a,]
@@ -1944,20 +2149,21 @@ for(i in 1:nrow(sunrise)) {
 sunrise_min <- rep(sunrise_min,2)
 sunset_min <- rep(sunset_min,2)
 
-n <- 1
+n <- 1:length(a)
 j <- 0
 for(i in a[n]) {
   j <- j + 1
   r <- n[j]
   title <- paste(i)
   subtitle <- paste("Cluster", substr(clust,8,10))
-  file_title <- paste("polarHistograms/rose_plot_", i,"_",clust, ".png",sep = "")
+  file_title <- paste("polarHistograms/rose_plot_", i,"_tiff",clust, ".tiff",sep = "")
   z <- polarHistogram(get(i), familyLabels = F, normalised = F, 
                       colour = col, 
                       innerRadius = 0, outerRadius = 1,
                       guides = seq(2,(scale[1]-1),2), 
                       labels = TRUE)
-  z <- z + ggtitle(bquote(atop(.(title), atop(italic(.(subtitle)), ""))))
+  z <- z + ggtitle(bquote(atop(.(title), atop(italic(.(subtitle)), "")))) +
+    theme(plot.title = element_text(hjust = 1.2)) 
   z <- z + theme(plot.title = element_text(size=22))
   z <- z + theme(plot.title = element_text(margin=margin(b = -50, unit = "pt")))
   #z <- z + annotate('text', x = 0, y = 0, label = "Value~is~sigma~R^{2}==0.6 ", parse = TRUE,size=20)
@@ -1974,9 +2180,15 @@ for(i in a[n]) {
   z <- z + theme(plot.background = element_rect(fill = "transparent", colour = NA))
   # invisible is used to stop print opening a print window
   invisible(print(z))
-  ggsave(file_title, width = 9, height = 9, dpi = 400)
+  ggsave(file_title, width = 7.5, height = 7.5, unit = "in", dpi = 300)
   dev.off()
 }
+
+# this code could be used to investigate patterns
+b <- barplot(data$value)
+axis(side=1,at=b[c(seq(1,nrow(data),48))],
+     labels=seq(1,(nrow(data)/48),1))
+
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # finding values of specific peaks in rose plots
 cluster <- "cluster44"
@@ -2035,323 +2247,3 @@ if(site=="WoondumNP") {
 #dateSeq5sec = seq(from=startDate, to=endDate, by="1800 sec")
 
 #times <- substr(dateSeq5sec, 12, 16)
-
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# association plots -------------------------------------------------
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# remove all objects in the global environment
-rm(list = ls())
-
-# read file containing summary of 30 minute segments
-df <- read.csv("polarHistograms/polar_data.csv", header = T)
-
-# convert from 30 minute to 24 hour summaries
-length <- nrow(df)
-gym_df <- df[1:(length/2),]
-woon_df <- df[(1+length/2):length,]
-
-days <- floor(nrow(gym_df)/(48*60))
-clust <- unique(df$score)
-ref <- 1440/30 * length(clust)
-gym_total <- NULL
-for(i in 1:days) {
-  gym_df_day <- gym_df[(1+ref*(i-1)):(i*ref),]
-  for(j in 1:length(clust)) {
-    a <- which(gym_df_day$score==clust[j])
-    gym_df_cl <- gym_df_day[a,]
-    tot <-sum(gym_df_cl$value)
-    gym_total <- c(gym_total, tot)
-  }
-}
-
-woon_total <- NULL
-for(i in 1:days) {
-  woon_df_day <- woon_df[(1+ref*(i-1)):(i*ref),]
-  for(j in 1:length(clust)) {
-    a <- which(woon_df_day$score==clust[j])
-    woon_df_cl <- woon_df_day[a,]
-    tot <-sum(woon_df_cl$value)
-    woon_total <- c(woon_total, tot)
-  }
-}
-
-gym_matrix <- matrix(gym_total, nrow = days, 
-                     ncol = length(clust), byrow = TRUE)
-woon_matrix <- matrix(woon_total, nrow = days, 
-                     ncol = length(clust), byrow = TRUE)
-
-# generate a sequence of dates
-start <-  strptime("20150622", format="%Y%m%d")
-finish <- strptime("20160723", format="%Y%m%d")
-dates <- seq(start, finish, by = "1440 mins")
-any(is.na(dates)) #FALSE
-date.list <- NULL
-for (i in 1:length(dates)) {
-  dat <- substr(as.character(dates[i]),1,10)
-  date.list <- c(date.list, dat)
-}
-# set all dates to "" except the 1st of each month
-a <- which(!substr(date.list, 9, 10)=="01")
-date.list[a] <- ""
-
-# colours for each class
-insect_col <- "#F0E442"
-rain_col <- "#0072B2"
-wind_col <- "#56B4E9"
-bird_col <- "#009E73"
-cicada_col <- "#E69F00"
-quiet_col <- "#999999"
-plane_col <- "#CC79A7"
-na_col <- "white"
-
-library(plotrix)
-n <- 96:1
-x <- cbind(gym_matrix[n,59], 
-           gym_matrix[n,18],
-           gym_matrix[n,10],
-           gym_matrix[n,54]
-)
-y <- cbind( gym_matrix[n, 29],
-  gym_matrix[n, 1],
-  gym_matrix[n, 22],
-  gym_matrix[n, 17], #,
-  gym_matrix[n, 27]
-)
-cor(rowSums(x), rowSums(y))
-#[1] 0.485318 days 1:90; 1,22,17,27 & 59,18,10,54
-#[1] 0.4895683 days 3 to 93; 1,22,17,27 & 59,18,10,54
-#[1] 0.4917921 days 3 to 96; 1,22,17,27 & 59,18,10,54
-#[1] 0.4907895 days 1 to 96; 1,22,17,27 & 59,18,10,54
-#[1] 0.4678658 days 1:90; 29,1,22,17,27 & 59,18,10,54
-
-a <- which(substr(date.list, 9, 10)=="01")
-# repeat date in the next position
-date.list[a+1] <- date.list[a]
-blank_date_list <- rep("", length(date.list))
-b <- max(n)- a + 1
-#library(plotrix)
-#laxlab <- rep("", max(rowSums(x)))
-#raxlab <- rep("", max(rowSums(x)))
-#gap <- 10
-
-#png("plots/Rain_Insect_gympie.png", height = 2000, width = 900)
-#par(xpd=TRUE)
-#pyramid.plot(lx = rowSums(x), rx = rowSums(y), 
-#             labels = blank_date_list[n], 
-#             #laxlab = laxlab, raxlab = laxlab,
-#             gap=gap, unit = "minutes",
-#             top.labels = c("","",""),
-#             lxcol=rain_col, rxcol = insect_col,
-#             labelcex = 0.2, ppmar = c(0, 0.5, 7, 5),
-#             space = 0.3)
-#for(i in 1:length(b)) {
-#  segments(x0=max(rowSums(y)),
-#           y0=b[i],
-#           x1 = -max(rowSums(x)),
-#           y1 = b[i])
-#}
-#abline(h=b)
-#axis(side = 3, at = (seq(0,max(rowSums(x)),50)+gap), 
-#     seq(0, max(rowSums(x)), 50), cex.axis=3.5)
-#axis(side = 3, at = -(seq(0,max(rowSums(x)),50)+gap), 
-#     seq(0, max(rowSums(x)), 50), cex.axis=3.5)
-#for(i in 1:length(a)) {
-#  text(x = max(rowSums(y))-20, y = b[i], 
-#       paste("                   ",
-#             date.list[a[i]],sep = ""), cex = 3, srt=-90) 
-#}
-#title("Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)",line = 3)
-#par(font=2)
-#text(x = (max(rowSums(y))+40), y=mean(n), 
-#  "GympieNP - Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)",
-#      cex = 3.5, srt=-90)
-#par(font=1)
-#text(x = 0,y=length(n)+5.2, 
-#     "Minutes per day", cex = 3.2)
-#dev.off()
-
-# select the days, the order must be reversed
-n <- 96:1
-x <- cbind(woon_matrix[n,59], 
-         woon_matrix[n,18],
-         woon_matrix[n,10],
-         woon_matrix[n,54])
-y <- cbind(woon_matrix[n, 29],
-         woon_matrix[n, 1],
-         woon_matrix[n, 22],
-         woon_matrix[n, 17],
-         woon_matrix[n, 27])
-cor(rowSums(x), rowSums(y))
-#library(plotrix)
-#laxlab <- rep("", max(rowSums(x)))
-#raxlab <- rep("", max(rowSums(x)))
-#gap <- 10
-
-#png("plots/Rain_Insect_woondum.png", height = 2000, width = 900)
-#par(xpd=TRUE)
-#pyramid.plot(lx = rowSums(x), rx = rowSums(y), 
-#             labels = blank_date_list[n], 
-#             #laxlab = laxlab, raxlab = laxlab,
-#             gap=gap, unit = "minutes",
-#             top.labels = c("","",""),
-#             lxcol=rain_col, rxcol = insect_col,
-#             labelcex = 0.2, ppmar = c(0, 0.5, 7, 5),
-#             space = 0.3)
-#for(i in 1:length(b)) {
-#  segments(x0=max(rowSums(y)),
-#           y0=b[i],
-#           x1 = -max(rowSums(x)),
-#           y1 = b[i])
-#}
-#abline(h=b)
-#axis(side = 3, at = (seq(0,max(rowSums(x)),50)+gap), 
-#     seq(0, max(rowSums(x)), 50), cex.axis=3.5)
-#axis(side = 3, at = -(seq(0,max(rowSums(x)),50)+gap), 
-#     seq(0, max(rowSums(x)), 50), cex.axis=3.5)
-#for(i in 1:length(a)) {
-#  text(x = max(rowSums(y))-20, y = b[i], 
-#       paste("                   ",
-#             date.list[a[i]],sep = ""), cex = 3, srt=-90) 
-#}
-#title("Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)",line = 3)
-#par(font=2)
-#text(x = (max(rowSums(y))+60), y=mean(n), 
-#     "WoondumNP - Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)",
-#     cex = 3.5, srt=-90)
-#par(font=1)
-#text(x = 0,y=length(n)+5.2, 
-#     "Minutes per day", cex = 3.2)
-#dev.off()
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-n <- 1:96
-x <- cbind(gym_matrix[n,59], 
-           gym_matrix[n,18],
-           gym_matrix[n,10],
-           gym_matrix[n,54]
-)
-y <- cbind( gym_matrix[n, 29],
-            gym_matrix[n, 1],
-            gym_matrix[n, 22],
-            gym_matrix[n, 17], #,
-            gym_matrix[n, 27]
-)
-cor(rowSums(x), rowSums(y))
-gym_x <- rowSums(x)
-gym_y <- rowSums(y)
-
-max_x <- max(gym_x)
-max_y <- max(gym_y)
-
-# Plot an empty plot with no axes or frame
-png("plots/Rain_Insect_gympie.png", height = 900, width = 2000)
-par(mar=c(1,3,3,0))
-# space between sets not columns
-gap <- 10
-# width and spacing of columns
-width <- 5
-space <- 2
-
-plot(x = c(0,((width+space)*(length(n)-1))), type = "n",
-     y = c(-(max_x+12),(max_y+12)),
-     frame.plot = FALSE, axes = FALSE) 
-ref <- 0
-for(i in 1:length(gym_x)) {
-  rect(ref, -gap, ref+width, -(gym_x[i]+gap), col = rain_col)
-  ref <- ref + (width+space)
-}
-ref <- 0
-for(i in 1:length(gym_x)) {
-  rect(ref, gap, ref+width, gym_y[i]+gap, col = insect_col)
-  ref <- ref + (width+space)
-}
-axis(side = 2, at = (seq(0, max(rowSums(x)),50)+gap), 
-     seq(0, max(rowSums(x)), 50), cex.axis= 3.5, 
-     line = -3.2)
-axis(side = 2, at = -(seq(0,max(rowSums(x)),50)+gap), 
-     seq(0, max(rowSums(x)), 50), cex.axis=3.5, 
-     line = -3.2)
-for(i in 1:length(a)) {
-  text(x = (a[i]*(width+space) + 35), 
-       y = (max(rowSums(y))-20),  
-       paste(date.list[a[i]]),
-       cex = 3.5) 
-}
-abline(v=((a-1)*(width+space)))
-#title("Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)",line = 3)
-par(font=2)
-#text(x = (width+space)*length(n)/2, 
-#     y = (max(rowSums(y)) + 0), cex = 3,
-#     "WoondumNP - Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)" )
-mtext(side = 3, "GympieNP - Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)",
-      outer = F, cex = 3)
-par(font=1)
-mtext(side = 2, "Minutes per day", 
-      cex = 3.2, line = 0.9)
-dev.off()
-
-# Woondum
-n <- 1:96
-x <- cbind(woon_matrix[n,59], 
-           woon_matrix[n,18],
-           woon_matrix[n,10],
-           woon_matrix[n,54]
-)
-y <- cbind( woon_matrix[n, 29],
-            woon_matrix[n, 1],
-            woon_matrix[n, 22],
-            woon_matrix[n, 17], #,
-            woon_matrix[n, 27]
-)
-cor(rowSums(x), rowSums(y))
-woon_x <- rowSums(x)
-woon_y <- rowSums(y)
-
-max_x <- max(woon_x)
-max_y <- max(woon_y)
-png(png("plots/Rain_Insect_woondum.png", height = 900, width = 2000), height = 900, width = 2000)
-par(mar=c(2,3,3,0))
-# space between sets not columns
-gap <- 10
-# width and spacing of columns
-width <- 5
-space <- 2
-
-plot(x = c(0,((width+space)*(length(n)-1))), type = "n",
-     y = c(-(max_x+12),(max_y+12)),
-     frame.plot = FALSE, axes = FALSE) 
-ref <- 0
-for(i in 1:length(woon_x)) {
-  rect(ref, -gap, ref+width, -(woon_x[i]+gap), 
-       col = rain_col)
-  ref <- ref + (width+space)
-}
-ref <- 0
-for(i in 1:length(woon_x)) {
-  rect(ref, gap, ref+width, woon_y[i]+gap, 
-       col = insect_col)
-  ref <- ref + (width+space)
-}
-axis(side = 2, at = (seq(0, max(rowSums(x)),50)+gap), 
-     seq(0, max(rowSums(x)), 50), cex.axis= 3.5, 
-     line = -3.2)
-axis(side = 2, at = -(seq(0,max(rowSums(x)),50)+gap), 
-     seq(0, max(rowSums(x)), 50), cex.axis=3.5, 
-     line = -3.2)
-for(i in 1:length(a)) {
-  text(x = (a[i]*(width+space) + 35), 
-       y = (max(rowSums(y))-20),  
-       paste(date.list[a[i]]),
-       cex = 3) 
-}
-abline(v=((a-1)*(width+space)))
-#title("Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)",line = 3)
-par(font=2)
-#text(x = (width+space)*length(n)/2, 
-#     y = (max(rowSums(y)) + 0), cex = 3,
-#     "WoondumNP - Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)" )
-mtext(side = 3, "WoondumNP - Rain clusters (59, 10, 18, 54) and Insect clusters (1, 22, 17, 27)",
-      outer = F, cex = 3)
-par(font=1)
-mtext(side = 2, "Minutes per day", 
-      cex = 3.2, line = 0.9)
-dev.off()

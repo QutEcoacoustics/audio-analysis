@@ -2,7 +2,7 @@
 # Author: Yvonne Phillips
 # Date:  30 October 2016
 
-# Description:  
+# Description: Sammmon Map
 
 # remove all objects in the global environment
 rm(list = ls())
@@ -184,11 +184,9 @@ clusters1$clusters <- as.numeric(1:length(colours))
 clusters1$points1 <- clusters.sam$points[,1]
 clusters1$points2 <- clusters.sam$points[,2]
 clusters1$size <- clust_sizes[1:60]
-clusters1$colours <- colours
+clusters1$colours <- NULL
 clusters1 <- data.frame(clusters1)
-clusters1$colours <- as.character(clusters1$colours)
 clusters1$clusters <- as.numeric(1:length(clusters1$points1))
-clusters1$border <- clusters1$colours[c(1:60)]
 clusters1$radius <- sqrt(clusters1$size)
 
 # colours for each class
@@ -200,40 +198,77 @@ cicadas <- "#E69F00"
 quiet <- "#999999"
 planes <- "#CC79A7"
 
-# change the border colours of some clusters
-#library(scales)
-#show_col(clusters1$colours[2])
-clusters1$border[2] <- birds #leg_col$hex[7] # green
-clusters1$border[3] <- wind   #leg_col$hex[6] # light blue
-clusters1$border[4] <- insects  #leg_col$hex[1] # yellow
-clusters1$border[7] <- birds   #leg_col$hex[7] # green
-clusters1$border[8] <- birds   #leg_col$hex[7] # green
-clusters1$border[13] <- insects  #leg_col$hex[1] # yellow
-clusters1$border[14] <- planes #leg_col$hex[5] # pink
-clusters1$border[22] <- wind #leg_col$hex[6] # light blue
-clusters1$border[26] <- wind #leg_col$hex[6] # light blue
-clusters1$border[28] <- birds #leg_col$hex[7] # green
-clusters1$border[30] <- birds #leg_col$hex[7] # green
-clusters1$border[31] <- insects #leg_col$hex[1] # yellow
-clusters1$border[32] <- insects #leg_col$hex[1] # yellow
-clusters1$border[34] <- wind #leg_col$hex[6] # light blue
-clusters1$border[36] <-  planes #leg_col$hex[5] # pink
-clusters1$border[39] <-  planes #leg_col$hex[5] # pink
-clusters1$border[40] <-  birds #leg_col$hex[7] # green
-clusters1$border[45] <-  birds #leg_col$hex[7] # green
-clusters1$border[48] <-  birds#leg_col$hex[7] # green
-clusters1$border[49] <-  birds  #leg_col$hex[7] # green
-clusters1$border[50] <-  insects #leg_col$hex[1] # yellow
-clusters1$border[51] <-  birds #leg_col$hex[7] # green
-clusters1$border[52] <-  birds #leg_col$hex[7] # green
-clusters1$border[57] <-  wind #leg_col$hex[6] # light blue
-clusters1$border[60] <-  birds #leg_col$hex[7] # green
-clusters1 <- clusters1[ order(-clusters1$size),]
-leg_col <- leg_col[c(3,7,2,6,5,4,1),]
-
+clusters1$colours <- "abcd"
+clusters1$border <- "abcd"
+#clusters1$colours[1] <- insects
+# set the circle and border colours
+clusters1[1, 6:7]  <-  c(insects, insects)
+clusters1[2, 6:7]  <-  c(rain, birds)
+clusters1[3, 6:7]  <-  c(birds, birds)
+clusters1[4, 6:7]  <-  c(insects, birds)
+clusters1[5, 6:7]  <-  c(quiet, quiet)
+clusters1[6, 6:7]  <-  c(quiet, quiet)
+clusters1[7, 6:7]  <-  c(cicadas, birds)
+clusters1[8, 6:7]  <-  c(cicadas, birds)
+clusters1[9, 6:7]  <-  c(wind, wind)
+clusters1[10, 6:7]  <-  c(rain, rain)
+clusters1[11, 6:7]  <-  c(birds, birds)
+clusters1[12, 6:7]  <-  c(cicadas, cicadas)
+clusters1[13, 6:7]  <-  c(quiet, quiet)
+clusters1[14, 6:7]  <-  c(birds, birds)
+clusters1[15, 6:7]  <-  c(birds, birds)
+clusters1[16, 6:7]  <-  c(cicadas, cicadas)
+clusters1[17, 6:7]  <-  c(rain, insects)
+clusters1[18, 6:7]  <-  c(rain, rain)
+clusters1[19, 6:7]  <-  c(wind, wind)
+clusters1[20, 6:7]  <-  c(wind, wind)
+clusters1[21, 6:7]  <-  c(rain, rain)
+clusters1[22, 6:7]  <-  c(insects, birds)
+clusters1[23, 6:7]  <-  c(planes, planes)
+clusters1[24, 6:7]  <-  c(wind, cicadas)
+clusters1[25, 6:7]  <-  c(wind, wind)
+clusters1[26, 6:7]  <-  c(insects, wind)
+clusters1[27, 6:7]  <-  c(insects, insects)
+clusters1[28, 6:7]  <-  c(birds, insects)
+clusters1[29, 6:7]  <-  c(insects, insects)
+clusters1[30, 6:7]  <-  c(wind, quiet)
+clusters1[31, 6:7]  <-  c(quiet, quiet)
+clusters1[32, 6:7]  <-  c(cicadas, cicadas)
+clusters1[33, 6:7]  <-  c(birds, birds)
+clusters1[34, 6:7]  <-  c(cicadas, cicadas)
+clusters1[35, 6:7]  <-  c(quiet, quiet)
+clusters1[36, 6:7]  <-  c(quiet, planes)
+clusters1[37, 6:7]  <-  c(birds, birds)
+clusters1[38, 6:7]  <-  c(quiet, quiet)
+clusters1[39, 6:7]  <-  c(birds, planes)
+clusters1[40, 6:7]  <-  c(wind, birds)
+clusters1[41, 6:7]  <-  c(quiet, quiet)
+clusters1[42, 6:7]  <-  c(wind, wind)
+clusters1[43, 6:7]  <-  c(birds, birds)
+clusters1[44, 6:7]  <-  c(cicadas, cicadas)
+clusters1[45, 6:7]  <-  c(wind, planes)
+clusters1[46, 6:7]  <-  c(wind, wind)
+clusters1[47, 6:7]  <-  c(wind, wind)
+clusters1[48, 6:7]  <-  c(cicadas, cicadas)
+clusters1[49, 6:7]  <-  c(planes, planes)
+clusters1[50, 6:7]  <-  c(quiet, insects)
+clusters1[51, 6:7]  <-  c(wind, wind)
+clusters1[52, 6:7]  <-  c(wind, wind) 
+clusters1[53, 6:7]  <-  c(quiet, quiet)
+clusters1[54, 6:7]  <-  c(rain, birds)
+clusters1[55, 6:7]  <-  c(quiet, quiet)
+clusters1[56, 6:7]  <-  c(wind, wind)
+clusters1[57, 6:7]  <-  c(birds, wind) 
+clusters1[58, 6:7]  <-  c(birds, birds)
+clusters1[59, 6:7]  <-  c(rain, rain) 
+clusters1[60, 6:7]  <-  c(rain, birds) 
+clusters1 <- clusters1[order(-clusters1$size),]
+leg_col <- as.character(c(rain, birds, cicadas, wind, planes, quiet, insects))
+leg_names <- c("rain", "birds", "cicadas", "planes", "quiet","insects")
 library(plotrix) # needed for draw.cirle function
 max <- 0.0009
-png("plots/sammon-map.png",width = 1600, height = 1000) 
+
+png("plots/sammon-map_final.png",width = 1600, height = 1000) 
 par(mar=c(5,6,3,2))
 plot(clusters1$points1, 
      clusters1$points2, type = "n",
@@ -253,19 +288,22 @@ for(i in 1:nrow(clusters1)) {
               radius = max*clusters1$radius[i],
               col = clusters1$colours[i],
               border = clusters1$border[i],
-              lwd = 3)
+              lwd = 8)
 }
+# plot the x and y axis to form four quadrants
 abline(h = 0, col = "gray50", lwd = 0.4)
 abline(v = 0, col = "gray50", lwd = 0.4)
+# plot the cluster numbers
 text(clusters1$points1, clusters1$points2, 
      labels = as.character(clusters1$clusters), cex = 2.6)
+# plot the plot legend
 a <-legend("topright", title="Classes", 
-       col = leg_col$hex, bty = "n", 
-       cex=2.6, row.names(leg_col), y.intersp = 1.2) 
+       col = leg_col, bty = "n", 
+       cex=2.6, leg_names ,y.intersp = 1.2) 
 for(j in 1:length(a$text$x)) {
   draw.circle(a$text$x[j]-0.06, a$text$y[j]-0.005, 
               radius = 0.035,
-              col = as.character(leg_col$hex[j]),
+              col = leg_col[j],
               border = "white")
 }
 # add family to fonts list use windowsFonts() to check current
@@ -276,7 +314,7 @@ text(x = -1.6, y = -1.05, "III", cex = 2.4, family="A", font = 2)
 text(x = 1.4, y = -1.05, "IV", cex = 2.4, family="A", font = 2)
 dev.off()
 
-
+# plotrix is needed for the draw.circle function
 library(plotrix)
 max <- 0.0009
 png("sammon-prac_xx.png", 

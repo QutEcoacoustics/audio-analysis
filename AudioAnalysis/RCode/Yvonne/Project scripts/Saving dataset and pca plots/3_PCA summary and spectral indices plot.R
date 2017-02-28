@@ -2,31 +2,40 @@
 # Author: Yvonne Phillips
 # Date:  14 July 2016
 # Modified: 15 September 2016
+# Modified: 24 October 2016 Added PCA biplot
 
 # Description:  This code plots pca plots of acoustic data by first 
 #   replacing missing minutes, normalising and calculating principal
-#   components.  The PCA components are mapped to the red, green and
-#   blue channels.  The input data required is data containing 
+#   components. The PCA components are mapped to the red, green and
+#   blue channels. The input data required is data containing 
 #   twenty-four hour (ie. 1440 minutes) data, with NAs where there 
 #   are missing minutes. Civil-dawn, Sunrise, Sunset and Civil-dusk 
 #   are plotted onto the plots as yellow lines.
 
 # IMPORTANT:  
-# 1. Change start on line 178 to reflect first day of recording
+# 1. Set the start date below to the first day of recording
 #    in format (YYYY-MM-DD)
-# 2. Use lines 18 to 49 for Summary Indices and lines 50 to 93 for 
+# 2. Use lines 20 to 55 for Summary Indices and lines 57 to 99 for 
 #    spectral indices
 
-#############################################
-# Load the SUMMARY indices
-#############################################
-# remove all objects from the global environment
+# Use SHIFT, ALT, J to navigate to each of sections or
+# functions
+# 1.  PCA plots
+# 2.  PCA biplots (3 plots) 
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# 1. Plot PCA plot ------------------------------------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# remove all objects in the global environment
 rm(list = ls())
+
+# Set the first day of recording
+start_date <- "2015-06-22"
 
 # load all of the summary indices as "indices_all"
 load(file="data/datasets/summary_indices.RData")
 # remove redundant indices
-remove <- c(1,4,11,13,16,18,19)
+remove <- c(1,4,11,13,17:19)
 indices_all <- indices_all[,-remove]
 rm(remove)
 
@@ -34,7 +43,7 @@ rm(remove)
 site <- c("Gympie NP", "Woondum NP")
 index <- "SELECTED_Final" # or "ALL"
 type <- "Summary"
-paste("The dataset contains the following indices:");colnames(indices_all)
+paste("The dataset contains the following indices:"); colnames(indices_all)
 
 # Generate a list of the missing minutes in summary indices
 #missing_minutes_summary <- which(is.na(indices_all[,1]))
@@ -53,10 +62,8 @@ load(file="data/datasets/missing_minutes_summary_indices.RData")
 #[17] "ThreeGramCount"            [18]  "NDSI"                     
 #[19] "SptDensity" 
 
-#############################################
 # Load the SPECTRAL indices
-#############################################
-# remove all objects from the global environment
+# remove all objects in the global environment
 rm(list = ls())
 
 # load the spectral indices as "indices_all_spect"
@@ -67,7 +74,7 @@ a <- which(colnames(indices_all_spect)=="ID")
 indices_all <- indices_all_spect[,-a]
 
 # remove selected columns (see lists below)
-remove <- c(5,9,12,19,31:36) # This is for the final20
+remove <- c(5,9,12,19,31:36) # This is for the final26
 indices_all <- indices_all[,-remove]
 rm(remove)
 
@@ -81,10 +88,8 @@ site <- c("Gympie NP", "Woondum NP")
 index <- "SELECTED_Final"
 type <- "Spectral"
 
-paste("The dataset contains the following indices:");colnames(indices_all)
+paste("The dataset contains the following indices:"); colnames(indices_all)
 
-# load the required package
-library(raster)
 length(indices_all[,1])
 
 # List of spectral indices columns:
@@ -98,9 +103,9 @@ length(indices_all[,1])
 #[29] "POW_6000Hz" [30] "POW_8000Hz"  [31] "SPT_0Hz"     [32] "SPT_1000Hz"
 #[33] "SPT_2000Hz" [34] "SPT_4000Hz"  [35] "SPT_6000Hz"  [36] "SPT_8000Hz"
 
-##########################################################
-# replace the NA values 
-##########################################################
+
+# replace the NA values with average values
+# WARNING: This is only used for this plot no others
 for(i in 1:ncol(indices_all)) {  # columns
   a <- which(is.na(indices_all[,i]))
   for(j in a) { 
@@ -112,14 +117,12 @@ for(i in 1:ncol(indices_all)) {  # columns
   }
 }
 
-######### Normalise data #################################
+# Normalise data function
 normalise <- function (x, xmin, xmax) {
   y <- (x - xmin)/(xmax - xmin)
 }
 
-###########################################################
 # Create a normalised dataset between 1.5 and 98.5% bounds 
-###########################################################
 indices_norm <- indices_all
 
 # normalise values between 1.5 and 98.5 percentile bounds
@@ -141,7 +144,7 @@ for (j in 1:ncol(indices_norm)) {
   a <- which(indices_norm[,j] < 0)
   indices_norm[a,j] = 0
 }
-##################################
+
 # preform pca analysis
 indices_pca <- prcomp(indices_norm, scale. = F)
 indices_pca$PC1 <- indices_pca$x[,1]
@@ -175,15 +178,15 @@ for (i in 1:3) {
 
 # generate a date sequence and locate the first of the month
 days <- length(coef_min_max[,1])/(2*1440)
-start <- as.POSIXct("2015-06-22")
+start <- as.POSIXct(start_date)
 interval <- 1440
-end <- start + as.difftime(days, units="days") # for start date see above
+end <- start + as.difftime(days, units="days")
 dates <- seq(from=start, by=interval*60, to=end)
 first_of_month <- which(substr(dates, 9, 10)=="01")
 
 civil_dawn <- read.csv("data/Sunrise_Sunset_Solar Noon_protected.csv", header=T)
 a <- which(civil_dawn$Date==paste(substr(start, 9,20), substr(start, 6,7),
-                             substr(start, 1,4), sep = "/"))
+                                  substr(start, 1,4), sep = "/"))
 reference <- a:(a+days-1)
 civil_dawn_times <- civil_dawn$Civil_Sunrise[reference]
 civil_dusk_times <- civil_dawn$Civil_Sunset[reference]
@@ -222,9 +225,7 @@ for(i in 1:length(sunset_times)) {
   sunset <- c(sunset, minute)
 }
 
-##########################################
 # produce pca diel plots for both sites ##
-##########################################
 dev.off()
 for (k in 1:2) {
   ref <- c(0, days*1440)
@@ -235,7 +236,7 @@ for (k in 1:2) {
   end <- start + as.difftime(days, units="days")
   dates <- seq(from=start, by=interval*60, to=end)
   
-  png(filename = paste("plots/",site[k],"_", type,"_", index, ".png", sep = ""),
+  png(filename = paste("plots/PCA_plot_",site[k],"_", type,"_", index, ".png", sep = ""),
       width = 2000, height = 1000, units = "px")
   par(mar=c(2, 2.5, 2, 2.5))
   # Plot an empty plot with no axes or frame
@@ -259,6 +260,9 @@ for (k in 1:2) {
     # set the column starting on the left
     for(k in 1:1440) {
       ref <- ref + 1
+      # draw a square for each minute in each day 
+      # using the polygon function mapping the red, green
+      # and blue channels to the normalised pca-coefficients
       polygon(c(k,k,k+1,k+1), c(j,(j-1),(j-1),j),
               col=rgb(coef_min_max_norm[ref,1],
                       coef_min_max_norm[ref,2],
@@ -333,10 +337,13 @@ for (k in 1:2) {
   dev.off()
 }
 
-############################################
-# An alternative way to plot
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#An alternative way to plot
 # problems with this method includes significant distortion
 ############################################
+# load the required package
+library(raster)
+
 png(filename = "plots/ENT 1000_Gympie_pca_rbg.png", 
     width = 2000, height = 1200, units="px") 
 # a more steamlined image can be achieved with height=1002 and asp = 1
@@ -384,5 +391,522 @@ for(i in 1:length(indices)) {
   text(-160, j, indices[i], cex = 1.2)
   j <- j - 4.2 
 }
+
+dev.off()
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# 2. Plot PCA biplot ------------------------------------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# NOTE:  This code cannot be run until afer clustering 
+# remove all objects in the global environment
+rm(list = ls())
+
+# Set the first day of recording
+start_date <- "2015-06-22"
+site <- c("Gympie NP", "Woondum NP")
+
+k1_value <- 25000
+k2_value <- 60
+column <- k2_value/5
+
+file_name <- paste("C:/Work/Projects/Twelve_month_clustering/Saving_dataset/data/datasets/hclust_results/hclust_clusters",
+                   k1_value, ".RData", sep = "")
+file_name_short <- paste("hclust_clusters_",k1_value, sep = "")
+# remove unneeded values
+load(file_name)
+# load the cluster list 
+cluster.list <- get(file_name_short, envir=globalenv())[,column]
+
+# remove unneeded objects from global environment
+rm(hclust_clusters_25000, file_name, file_name_short, column)
+
+# load normalised summary indices this has had the missing minutes
+# and microphone problem minutes removed
+load(file="data/datasets/normalised_summary_indices.RData")
+colnames(indices_norm_summary)
+length(indices_norm_summary[,1])
+
+indices_norm_summary <- cbind(indices_norm_summary, 
+                              cluster.list)
+
+# List of summary indices columns:
+#[1] "AvgSignalAmplitude"         [2]  "BackgroundNoise"          
+#[3] "Snr"                        [4]   "AvgSnrOfActiveFrames"     
+#[5] "Activity"                   [6]   "EventsPerSecond"          
+#[7] "HighFreqCover"              [8]   "MidFreqCover"             
+#[9] "LowFreqCover"               [10]  "AcousticComplexity"       
+#[11] "TemporalEntropy"           [12]  "EntropyOfAverageSpectrum" 
+#[13] "EntropyOfVarianceSpectrum" [14]  "EntropyOfPeaksSpectrum"   
+#[15] "EntropyOfCoVSpectrum"      [16]  "ClusterCount"             
+#[17] "ThreeGramCount"            [18]  "NDSI"                     
+#[19] "SptDensity" 
+
+indices <- indices_norm_summary
+
+# preform pca analysis
+indices_pca <- prcomp(indices[,1:12], scale. = F)
+indices_pca$PC1 <- indices_pca$x[,1]
+indices_pca$PC2 <- indices_pca$x[,2]
+indices_pca$PC3 <- indices_pca$x[,3]
+indices_pca$PC4 <- indices_pca$x[,4]
+indices_pca$PC5 <- indices_pca$x[,5]
+indices_pca$PC6 <- indices_pca$x[,6]
+indices_pca$PC7 <- indices_pca$x[,7]
+
+pca_coef <- cbind(indices_pca$PC1, indices_pca$PC2,
+                  indices_pca$PC3, indices_pca$PC4,
+                  indices_pca$PC5, indices_pca$PC6,
+                  indices_pca$PC7)
+colnames(pca_coef) <- c("PC1", "PC2", "PC3", "PC4",
+                        "PC5", "PC6","PC7")
+
+coef_min_max <- pca_coef[,1:3]
+
+coef_min_max_norm <- coef_min_max
+#plot(coef_min_max_norm)
+library(stats)
+
+coef_min_max_norm <- cbind(indices_norm_summary, 
+                           coef_min_max_norm)
+rm(indices_norm_summary)
+
+coef_min_max_norm <- as.data.frame(coef_min_max_norm)
+minutes1_30 <- NULL
+for(i in 1:30) {
+  a <- which(coef_min_max_norm$cluster.list==i)
+  minutes1_30 <- c(minutes1_30, a)
+}
+
+coef_min_max_norm <- as.data.frame(coef_min_max_norm)
+minutes31_60 <- NULL
+for(i in 31:60) {
+  a <- which(coef_min_max_norm$cluster.list==i)
+  minutes31_60 <- c(minutes31_60, a)
+}
+
+normIndices1_30 <- coef_min_max_norm[minutes1_30,]
+normIndices31_60 <- coef_min_max_norm[minutes31_60,]
+normIndices1_60 <- coef_min_max_norm
+
+normIndices1_30$cluster.list <- as.character(normIndices1_30$cluster.list)
+normIndices31_60$cluster.list <- as.character(normIndices31_60$cluster.list)
+normIndices1_60$cluster.list <- as.character(normIndices1_60$cluster.list)
+
+colours <- c("red", "chocolate4", "palegreen", "darkblue",
+             "brown1", "darkgoldenrod3", "cadetblue4", 
+             "darkorchid", "orange" ,"darkseagreen", 
+             "deeppink3", "darkslategrey", "firebrick2", 
+             "gold2", "hotpink2", "blue", "maroon", 
+             "mediumorchid4", "mediumslateblue","mistyrose4",
+             "royalblue", "turquoise", "palevioletred2", 
+             "sienna", "slateblue", "yellow", "tan2", 
+             "salmon","violetred1","plum")
+# 60_colours
+# Check for col_func in globalEnv otherwise source function
+if(!exists("col_func", mode="function")) source("scripts/col_func.R")
+
+# colour information for each cluster, this function calls a csv
+# containing R,G and B columns containing numbers between 0 and 255
+col_func(cluster_colours, version = "colourblind")
+colours <- cols[1:(length(cols)-1)]
+list_unique_colours <- unique(cluster_colours[,3:5])
+# change the same colours to unique colours
+
+list_col <- NULL
+unique_colours <- unique(colours)
+for(i in 1:length(unique_colours)) {
+  a <- which(colours==unique_colours[i])
+  if(length(a) > 1) {
+    ref <- 0
+    for(j in 2:(length(a))) {
+      if(cluster_colours[a[j],3] < 230) {
+        cluster_colours[a[j],3] <- cluster_colours[a[j],3] + ref + 2  
+        ref <- ref + 2  
+      }
+      if(cluster_colours[a[j],3] >= 230) {
+        cluster_colours[a[j],3] <- cluster_colours[a[j],3] - ref - 2  
+        ref <- ref + 2  
+      }
+    }  
+  } 
+}
+
+library(R.utils)
+cols <- NULL
+for(i in 1:nrow(cluster_colours)) {
+  R_code <- intToHex(cluster_colours$R[i])
+  # add padding if necessary
+  if(nchar(R_code)==1) {
+    R_code <- paste("0", R_code, sep="")
+  }
+  G_code <- intToHex(cluster_colours$G[i])
+  if(nchar(G_code)==1) {
+    G_code <- paste("0", G_code, sep="")
+  }
+  B_code <- intToHex(cluster_colours$B[i])
+  if(nchar(B_code)==1) {
+    B_code <- paste("0", B_code, sep="")
+  }
+  col_code <- paste("#",
+                    R_code, 
+                    G_code,
+                    B_code,
+                    sep = "")
+  cols <- c(cols, col_code)
+}
+cols <<- cols
+colours <- cols[1:(length(cols)-1)] 
+
+normIndices1_30 <- within(normIndices1_30, levels(cluster.list) <- colours)
+normIndices31_60 <- within(normIndices31_60, levels(cluster.list) <- colours)
+normIndices1_60 <- within(normIndices1_60, levels(cluster.list) <- colours)
+
+#### Plotting PC1 & PC2 Principal Component Plots with base plotting system
+# changes these and the values in the plot function
+PrinComp_X_axis <- "PC2"
+PrinComp_Y_axis <- "PC3"
+first <- as.numeric(substr(PrinComp_X_axis, 3,3))  # change this and values in plot function below!!! to match PC# 
+second <- as.numeric(substr(PrinComp_Y_axis, 3,3))
+xlim <- c(-2,1.3)
+ylim <- c(-1.35,1)
+
+png(paste("data/plots/31_60_colourblind", PrinComp_X_axis, 
+          PrinComp_Y_axis,".png", sep = ""), 
+    width = 2200, height = 1400, units = "px") 
+
+start <- 1
+#finish <- length(normIndices1_60[,1])
+finish <- length(normIndices31_60[,1])
+colours <- rep(colours,2)
+arrowScale <- 2.2 # increase/decrease this to adjust arrow length
+summ <- summary(indices_pca)
+rotate <- unname(summ$rotation)
+#labels1 <- names(normIndices1_60[1:length(summ$center)])
+labels1 <- names(normIndices31_60[1:length(summ$center)])
+labels2 <-c("BGN", "SNR", "ACTV", "EPS", "HFC", "MFC",
+            "LFC", "ACI", "EAS", "EPSP", "ECS", "CLC")
+mainHeader <- paste (site,indices$rec.date[start],indices$rec.date[finish],
+                     PrinComp_X_axis, PrinComp_Y_axis, sep=" ")
+par(mar=c(6,6,4,4))
+plot(normIndices31_60$PC2[start:finish], 
+     normIndices31_60$PC3[start:finish],  # Change these!!!!! 
+     col=colours[as.numeric(as.character(normIndices31_60$cluster.list[start:finish]))], 
+     cex=1, type='p', pch=15, main=mainHeader, 
+     xlab=paste(PrinComp_X_axis," (", 
+                round(summ$importance[first*3-1]*100,2),"%)", 
+                sep=""),
+     ylab=paste(PrinComp_Y_axis," (",  
+                round(summ$importance[second*3-1]*100,2),"%)", 
+                sep=""),
+     cex.lab=2, cex.axis=1.2, cex.main=2,
+     xlim = xlim, ylim = ylim)
+hours <- c("12 to 4 am","4 to 8 am", "8 to 12 noon",
+           "12 noon to 4 pm", "4 to 8 pm", "8 to midnight")
+for (i in 1:length(labels1)) {
+  arrows(0,0, rotate[i,first]*arrowScale, 
+         rotate[i,second]*arrowScale, col=1, lwd=1.6)  
+  text(rotate[i,first]*arrowScale*1.05, 
+       rotate[i,second]*arrowScale*1.05, 
+       paste(labels2[i]), cex=2.6)
+}
+abline (v=0, h=0, lty=2)
+clust <- as.character(1:60)
+#legend('topright', clust[1:30], pch=15, 
+#       col=colours[1:30], bty='n', 
+#       cex=2, title = "Clusters")
+#legend('topright', clust[31:60], pch=15, 
+#       col=colours[31:60], bty='n', 
+#       cex=2)
+#legend(x=xlim[2]-0.18, y= ylim[2],
+#       clust[1:30], pch=15, 
+#       col=colours[1:30], bty='n', 
+#       cex=2)
+legend(x=xlim[2]-0.05, y= ylim[2],
+       clust[31:60], pch=15, 
+       col=colours[31:60], bty='n', 
+       cex=2)
+text(x=xlim[2]-0.01, y= ylim[2]+0.03,
+     "Clusters", cex = 2)
+legend('topleft',labels, col=colours, bty='n', 
+       cex=2, title = "Indices")
+
+dev.off()
+
+
+
+####### 3d plot #################################
+library(rgl) # using rgl package
+start <-  1         #day[5] + offset[4] + 1   
+finish <- floor(length(normIndices31_60$PC1)) #day[7]-1)
+start
+finish
+asp1 <- 2*(max(normIndices31_60$PC1)-min(normIndices31_60$PC1))
+asp2 <- 2*(max(normIndices31_60$PC2)-min(normIndices31_60$PC2))
+asp3 <- 2*(max(normIndices31_60$PC3)-min(normIndices31_60$PC3))
+
+normIndices <- normIndices1_60
+plot3d(normIndices$PC1[start:finish], 
+       normIndices$PC2[start:finish], 
+       normIndices$PC3[start:finish], 
+       aspect = c(asp1, asp2, asp3),
+       xlab = "", ylab = "", zlab = "",
+       col=colours[as.numeric(
+         as.character(
+           normIndices$cluster.list[start:finish]))])#,
+       #alpha.f = 0.1)
+
+#play3d(spin3d(axis = c(0, 0, 1), rpm = 2), duration = 60)
+
+M <- par3d("userMatrix")
+if (!rgl.useNULL())
+  play3d( par3dinterp(time = (0:2)*5, userMatrix = list(M,
+                             rotate3d(M, pi/2, 1, 0, 0),
+                             rotate3d(M, pi/2, 0, 1, 0) ) ), 
+          duration = 30)
+## Not run: 
+movie3d( spin3d(), duration = 50, convert=TRUE )
+
+
+
+
+
+if (!rgl.useNULL())
+  play3d(spin3d(axis = c(1, 0, 0), rpm = 30), duration = 2)
+#col=adjustcolor(normIndices$cluster.list, alpha.f = 0.1))
+spheres3d(normIndices$PC1[start:finish], 
+          normIndices31_60$PC2[start:finish], 
+          normIndices31_60$PC3[start:finish], 
+          aspect = c(asp1, asp2, asp3),
+          col=colours[as.numeric(
+            as.character(
+              normIndices31_60$cluster.list[start:finish]))],
+          radius = 0.005)
+M <- par3d("userMatrix")
+if (!rgl.useNULL())
+  play3d( par3dinterp(time = (0:2)*0.75, userMatrix = list(M,
+                                                           rotate3d(M, pi/2, 1, 0, 0),
+                                                           rotate3d(M, pi/2, 0, 1, 0) ) ), 
+          duration = 3 )
+## Not run: 
+movie3d( spin3d(), duration = 5, convert=TRUE )
+
+       convert=T)
+
+#col=adjustcolor(normIndices$cluster.list, alpha.f = 0.1),
+
+xyzCoords <- data.frame(x1= numeric(10),  y1= integer(10), 
+                        z1 = numeric(10), x2= numeric(10), 
+                        y2= integer(10),  z2 = numeric(10))
+for (i in 1:8) {
+  xyzCoords$x2[i] <- rotate[i,1]
+  xyzCoords$y2[i] <- rotate[i,2]
+  xyzCoords$z2[i] <- rotate[i,3]
+}
+# xyz co-ordinates for segments
+xyzCoords <- data.frame(x1= numeric(10),  y1= integer(10), 
+                        z1 = numeric(10), x2= numeric(10), 
+                        y2= integer(10),  z2 = numeric(10))
+for (i in 1:9) {
+  xyzCoords$x2[i] <- rotate[i,1]*0.8
+  xyzCoords$y2[i] <- rotate[i,2]*0.8
+  xyzCoords$z2[i] <- rotate[i,3]*0.8
+}
+segments3d(x=as.vector(t(xyzCoords[1:10,c(1,4)])),
+           y=as.vector(t(xyzCoords[1:10,c(2,5)])),
+           z=as.vector(t(xyzCoords[1:10,c(3,6)])), 
+           lwd=2, col= "midnightblue")
+
+library(scatterplot3d)
+angle1 <- NULL
+for(i in 0:100) {
+  ang <- cos(i*0.03125*pi)
+  angle1 <- c(angle1, ang)
+}
+angle2 <- NULL
+for(i in 0:100) {
+  ang <- sin(i*0.03125*pi)
+  angle2 <- c(angle2, ang)
+}
+
+order <- c(1:32)
+
+for(i in 1:18) {
+  if(i < 10) {
+    png(paste("data\\plots\\scatterplot3d\\scatterplot3d_5_0",i,".png",sep=""),
+        width = 2200, height = 1400, units = "px")
+  }
+  if(i >= 10) {
+    png(paste("data\\plots\\scatterplot3d\\scatterplot3d_5_",i,".png",sep=""),
+        width = 2200, height = 1400, units = "px")
+  }
+  scatterplot3d(normIndices31_60$PC1[start:finish], 
+                -1*angle2[i]*normIndices31_60$PC2[start:finish], 
+                -1*angle1[i]*normIndices31_60$PC3[start:finish],
+                xlim = c(-2.5,1),
+                ylim = c(-1.5,1),
+                zlim = c(-1.5,1),
+                color = colours[as.numeric(
+                  as.character(normIndices31_60$cluster.list[start:finish]))])
+  dev.off()
+}
+
+
+
+
+
+
+#clust <- as.character(unname(unlist(unique(cluster.list)))) 
+
+######### Normalise data #################################
+# normalize values using minimum and maximum values
+normalise <- function (x, xmin, xmax) {
+  y <- (x - xmin)/(xmax - xmin)
+}
+# Pre-processing of Temporal Entropy
+# to correct the long tail 
+indices[,14] <- sqrt(indices[,14])
+
+normIndices <- indices
+# normalise variable columns
+normIndices[,2]  <- normalise(indices[,2],  0,  2)    # HighAmplitudeIndex (0,2)
+normIndices[,3]  <- normalise(indices[,3],  0,  1)    # ClippingIndex (0,1)
+normIndices[,4]  <- normalise(indices[,4], -44.34849276,-27.1750784)   # AverageSignalAmplitude (-50,-10)
+normIndices[,5]  <- normalise(indices[,5], -45.06046874,-29.52071375)  # BackgroundNoise (-50,-10)
+normIndices[,6]  <- normalise(indices[,6],  4.281792124, 25.57295061)  # Snr (0,50)
+normIndices[,7]  <- normalise(indices[,7],  3.407526438, 7.653004384)  # AvSnrofActive Frames (3,10)
+normIndices[,8]  <- normalise(indices[,8],  0.006581494, 0.453348819)  # Activity (0,1)
+normIndices[,9]  <- normalise(indices[,9],  0, 2.691666667)     # EventsPerSecond (0,2)
+normIndices[,10] <- normalise(indices[,10], 0.015519804, 0.167782223)  # HighFreqCover (0,0.5)
+normIndices[,11] <- normalise(indices[,11], 0.013522414, 0.197555718)  # MidFreqCover (0,0.5)
+normIndices[,12] <- normalise(indices[,12], 0.01984127,  0.259381856)  # LowFreqCover (0,0.5)
+normIndices[,13] <- normalise(indices[,13], 0.410954108, 0.501671845)  # AcousticComplexity (0.4,0.7)
+normIndices[,14] <- normalise(indices[,14], 0.004326753, sqrt(0.155612175))  # TemporalEntropy (0,sqrt(0.3))
+normIndices[,15] <- normalise(indices[,15], 0.02130969, 0.769678735)   # EntropyOfAverageSpectrum (0,0.7)
+normIndices[,16] <- normalise(indices[,16], 0.098730903, 0.82144857)   # EntropyOfVarianceSpectrum (0,1)
+normIndices[,17] <- normalise(indices[,17], 0.119538801, 0.998670805)  # EntropyOfPeaksSpectrum (0,1)
+normIndices[,18] <- normalise(indices[,18], 0.004470594, 0.530948096)   # EntropyOfCoVSpectrum (0,0.7)
+normIndices[,19] <- normalise(indices[,19], 0.043940755, 0.931257154)  # NDSI (-0.8,1)
+normIndices[,20] <- normalise(indices[,20], 1.852187379, 11.79845141)    # SptDensity (0,15)
+
+# adjust values greater than 1 or less than 0
+for (j in 4:20) {
+  for (i in 1:length(normIndices[,j])) {
+    if (normIndices[i,j] > 1) {
+      normIndices[i,j] = 1
+    }
+  }
+  for (i in 1:length(normIndices[,j])) {
+    if (normIndices[i,j] < 0) {
+      normIndices[i,j] = 0
+    }
+  }
+}
+
+normIndices <- normIndices[,c(5,7,9,10,11,12,13,17,18,37,38)]
+normIndices <- cbind(normIndices, cluster.list)
+normIndices$cluster.list <- as.factor(normIndices$cluster.list)
+
+normIndices.pca <- prcomp(normIndices[,1:9], scale. = F)
+normIndices$PC1 <- normIndices.pca$x[,1]
+sum(normIndices$PC1)
+normIndices$PC2 <- normIndices.pca$x[,2]
+normIndices$PC3 <- normIndices.pca$x[,3]
+normIndices$PC4 <- normIndices.pca$x[,4]
+normIndices$PC5 <- normIndices.pca$x[,5]
+normIndices$PC6 <- normIndices.pca$x[,6]
+normIndices$PC7 <- normIndices.pca$x[,7]
+normIndices$PC8 <- normIndices.pca$x[,8]
+normIndices$PC9 <- normIndices.pca$x[,9]
+plot(normIndices.pca)
+biplot(normIndices.pca)
+
+# assign colours to time-periods
+normIndices <- within(normIndices, levels(fourhour.class) <- c("red","orange","yellow","green","blue","violet"))
+normIndices <- within(normIndices, levels(hour.class) <- 
+                        c("#FF0000FF","#FF4000FF","#FF8000FF","#FFBF00FF","#FFFF00FF",
+                          "#BFFF00FF","#80FF00FF","#40FF00FF","#00FF00FF","#00FF40FF",
+                          "#00FF80FF","#00FFBFFF","#00FFFFFF","#00BFFFFF","#0080FFFF",
+                          "#0040FFFF","#0000FFFF","#4000FFFF","#8000FFFF","#BF00FFFF",
+                          "#FF00FFFF","#FF00BFFF","#FF0080FF","#FF0040FF"))
+#library(raster)
+#colourName <- "colourBlock.png"
+#colourBlock <- brick(colourName, package="raster")
+#plotRGB(colourBlock)
+#colourBlock <- as.data.frame(colourBlock)
+#colours <- NULL
+#for(i in 1:40) {
+#  col <- rgb(colourBlock$colourBlock.1[i],
+#             colourBlock$colourBlock.2[i],
+#             colourBlock$colourBlock.3[i],
+#             max = 255)
+#  colours <- c(colours, col)
+#}
+#colours <- colours[1:30]
+colours <- c("red", "chocolate4", "palegreen", "darkblue",
+             "brown1", "darkgoldenrod3", "cadetblue4", 
+             "darkorchid", "orange" ,"darkseagreen", 
+             "deeppink3", "darkslategrey", "firebrick2", 
+             "gold2", "hotpink2", "blue", "maroon", 
+             "mediumorchid4", "mediumslateblue","mistyrose4",
+             "royalblue", "orange", "palevioletred2", 
+             "sienna", "slateblue", "yellow", "tan2", 
+             "salmon","violetred1","plum")
+
+#write.table(colours, file="colours.csv", row.names = F)
+
+normIndices <- within(normIndices, levels(cluster.list) <- colours)
+
+#fooPlot <- function(x, main, ...) {
+#  if(missing(main))
+#    main <- deparse(substitute(x))
+#  plot(x, main = main, ...)
+#}
+
+#  set.seed(42)
+#dat <- data.frame(x = rnorm(1:10), y = rnorm(1:10))
+#fooPlot(dat, col = "red")
+
+#### Plotting PC1 & PC2 Principal Component Plots with base plotting system
+#png('pca_plot PC1_PC2_2_98_5,7,9,10,11,12,13,17,18.png', 
+#    width = 1500, height = 1200, units = "px") 
+PrinComp_X_axis <- "PC1"
+PrinComp_Y_axis <- "PC2"
+first <- 1  # change this and values in plot function below!!! to match PC# 
+second <- 2  # change this!!! to match PC#
+start <- 1
+finish <- 10076
+arrowScale <- 1.2 # increase/decrease this to adjust arrow length
+summ <- summary(normIndices.pca)
+rotate <- unname(summ$rotation)
+labels1 <- names(normIndices[1:length(summ$center)])
+labels2 <- c("BGN","ASF","EPS","HFC","MFC","LFC","ACC",
+             "ENPS","ECVS")
+mainHeader <- paste (site,indices$rec.date[start],indices$rec.date[finish],
+                     PrinComp_X_axis, PrinComp_Y_axis, sep=" ")
+par(mar=c(6,6,4,4))
+plot(normIndices$PC1[start:finish],normIndices$PC2[start:finish],  # Change these!!!!! 
+     col=as.character(normIndices$cluster.list[start:finish]), 
+     cex=1, type='p', pch=15, main=mainHeader, 
+     xlab=paste(PrinComp_X_axis," (", 
+                round(summ$importance[first*3-1]*100,2),"%)", 
+                sep=""),
+     ylab=paste(PrinComp_Y_axis," (",  
+                round(summ$importance[second*3-1]*100,2),"%)", sep=""),
+     cex.lab=2, cex.axis=1.2, cex.main=2)
+hours <- c("12 to 4 am","4 to 8 am", "8 to 12 noon",
+           "12 noon to 4 pm", "4 to 8 pm", "8 to midnight")
+for (i in 1:length(labels)) {
+  arrows(0,0, rotate[i,first]*arrowScale, 
+         rotate[i,second]*arrowScale, col=1, lwd=1.6)  
+  text(rotate[i,first]*arrowScale*1.05, 
+       rotate[i,second]*arrowScale*1.05, 
+       paste(labels2[i]), cex=2.6)
+}
+abline (v=0, h=0, lty=2)
+clust <- as.character(1:30)
+legend('topright', clust, pch=15, col=colours, bty='n', 
+       cex=2, title = "Clusters")
+legend('topleft',labels, col=colours, bty='n', 
+       cex=2, title = "Indices")
 
 dev.off()

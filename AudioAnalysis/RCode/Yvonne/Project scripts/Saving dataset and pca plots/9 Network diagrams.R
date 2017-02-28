@@ -6,7 +6,7 @@
 # Read cluster list -----------------------------
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # remove all objects in the global environment
-rm(list = ls())
+#rm(list = ls())
 
 k1_value <- 25000
 k2_value <- 60
@@ -107,7 +107,7 @@ clusters <- c("01","02","03","04","05",
               as.character(10:60))
 Gym_summary <- cbind(clusters, Gym_summary)
 colnames(Gym_summary) <- c("cluster", Gym_dates)
-write.csv(Gym_summary, "Gym_summary.csv", row.names = FALSE)
+#write.csv(Gym_summary, "Gym_summary.csv", row.names = FALSE)
 
 Woon_summary <- matrix(data = NA, nrow=398, ncol=60)
 for (i in 1:398) {
@@ -121,7 +121,7 @@ for (i in 1:398) {
 Woon_summary <- t(Woon_summary)
 Woon_summary <- cbind(clusters, Woon_summary)
 colnames(Woon_summary) <- c("cluster", Woon_dates)
-write.csv(Woon_summary, "Woon_summary.csv", row.names = FALSE)
+#write.csv(Woon_summary, "Woon_summary.csv", row.names = FALSE)
 
 ###############
 # set up empty empty matrices for authority and hub scores
@@ -129,18 +129,36 @@ auth_score <- matrix(data = NA, nrow=27, ncol=12)
 hub_score <- matrix(data = NA, nrow=27, ncol=12)
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Complete all with the same layout-----------------
+# Complete network diagrams all with the same layout-----------------
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-colours <- read.csv("data\\datasets\\Cluster_features_colourblind_version.csv", header = T)
-colours <- colours[,c(1,8)]
+#remove
+#colours <- read.csv("data\\datasets\\Cluster_features_colourblind_version.csv", header = T)
+#colours <- colours[,c(1,8)]
 
-rain <- c(59,18,10,54,2,21,38,60)
-wind <- c(42,47,51,56,52,45,8,40,24,19,46,28,9,25,30,20)
-birds <- c(43,37,57,3,58,11,33,15,14,39,4)
-insects <- c(29,17,1,27,22,26)
-cicada <- c(48,44,34,7,12,32,16)
-plane <- c(49,23)
-quiet <- c(13,5,6,53,36,31,50,35,55,41)
+# old clusters
+#rain <- c(2,10,18,21,38,54,59,60)
+#wind <- c(8,9,19,20,24,25,28,30,40,42,45,46,47,51,52,56)
+#birds <- c(3,4,11,14,15,33,37,39,43,57,58)
+#insects <- c(1,17,22,26,27,29)
+#cicada <- c(7,12,16,32,34,44,48)
+#quiet <- c(5,6,13,31,35,36,41,50,53,55)
+#plane <- c(23, 49)
+#na <- 61
+
+# This is the final listing
+# 38 removed 17 added 
+rain <- c(2,10,17,18,21,54,59,60) 
+# 8,28 removed
+wind <- c(9,19,20,24,25,30,40,42,45,46,47,51,52,56)
+# 4 removed 28 added
+birds <- c(3,11,14,15,28,33,37,39,43,57,58)
+# 17 removed 4 added
+insects <- c(1,4,22,26,27,29)
+# 8 added
+cicada <- c(7,8,12,16,32,34,44,48)
+plane <- c(23,49)
+#  38 added
+quiet <- c(5,6,13,31,35,36,38,41,50,53,55)
 na <- 61
 
 insect_col <- "#F0E442"
@@ -156,61 +174,113 @@ library(plotrix)
 library(igraph) #graph_from_data_frame function
 library(diagram) # for curvedarrow function
 library(grDevices)
+# make layout for plot
+g <- make_star(41)
+conc_circles <- layout_as_star(g)
+conc_circles <- rbind(conc_circles, conc_circles[seq(2,41,2),])
+conc_circles[42:61,] <- 0.6*conc_circles[seq(2,41,2),]
+# move row 1 to end
+conc_circles <- rbind(conc_circles[2:61,])
+conc_circles <- 5*conc_circles
+# rearrange co-ordinates to bring all of the clusters 
+# in one class together
+# rearrange circles
+# size of each circle
+
+# layout with concentric circles
+num <- c(length(c(wind, plane, rain)), 
+         length(c(birds, quiet)),
+         length(c(insects, cicada)))
+# g is a igraph for the outer concentric circle
+g <- make_star(num[1]+1)
+# star layout has a circle with one point in centre
+conc_circles <- layout_as_star(g)
+# remove the point in the centre
+conc_circles <- conc_circles[2:nrow(conc_circles),]
+# g is a igraph for the middle concentric circle
+h <- make_star(num[2]+1)
+conc_circles2 <- layout_as_star(h)
+conc_circles2 <- conc_circles2[2:nrow(conc_circles2),]
+conc_circles2 <- conc_circles2*0.7          #num[2]/num[1]
+# i is a igraph for the innermost concentric circle
+i <- make_star(num[3]+1)
+conc_circles3 <- layout_as_star(i)
+conc_circles3 <- conc_circles3[2:nrow(conc_circles3),]
+conc_circles3 <- conc_circles3*0.4     #num[3]/num[1]
+conc_circles <- rbind(conc_circles, conc_circles2,
+                      conc_circles3)
+conc_circles <- 5*conc_circles
+
+list <- c(plane, rain, wind, birds, quiet,
+          insects, cicada)
+#list <- c(insects, rain, wind, quiet, cicada, 
+#          plane, birds)
+conc_circles1 <- conc_circles
+for(i in 1:length(list)) {
+  conc_circles1[list[i],] <- conc_circles[i,]   
+}
+conc_circles <- conc_circles1
+
+# for the concentric circle layout -------------------
 #library(grid)
 site <- "GympieNP"
-site <- "WoondumNP"
-for(i in 1:398) {
+#site <- "WoondumNP"
+for(i in 1:5) {    #398) {
   if(site == "GympieNP") {
-    png(paste("network_diagrams\\", Gym_dates[i],"_network.png", sep = ""), 
-        height=900, width=900)
+    png(paste("network_diagrams\\3", Gym_dates[i],"_network.png", sep = ""), 
+        height=1200, width=1200)
     par(mar=c(2,0,0,0))
+    # A is a vector of the Gympie cluster list for one day
+    # B is a vector one minute on from A
     A <- as.numeric(unname(Gym_matrix[2:(length(Gym_matrix[,1])-1), i]))
     B <- as.numeric(unname(Gym_matrix[3:length(Gym_matrix[,1]), i]))
   }
   if(site == "WoondumNP") {
-    png(paste("network_diagrams\\", Woon_dates[i],"_network.png", sep = ""), 
-        height=900, width=900)
+    png(paste("network_diagrams\\3", Woon_dates[i],"_network.png", sep = ""), 
+        height=1200, width=1200)
+    par(mar=c(2,0,0,0))
     par(mar=c(2,0,0,0))
     A <- as.numeric(unname(Woon_matrix[2:(length(Woon_matrix[,1])-1), i]))
     B <- as.numeric(unname(Woon_matrix[3:length(Woon_matrix[,1]), i]))
   }
+  
   if(all(is.na(A)==FALSE)) {
-    g1 <- data.frame(A=A,B=B)  
+    g1 <- data.frame(A=A,B=B)
+    # create an igraph from the edge list g1
     g <- graph_from_data_frame(g1, directed=TRUE, vertices = NULL)
   }
-  
+  # list of the number of times one cluster transitions into 
+  # every other cluster including itself
   datafr1 <- NULL
-  
   for (j in 1:60) {
     for(k in 1:60) {
       a <- which(as.integer(A)==j & as.integer(B)==k) 
       datafr1 <- c(datafr1, length(a))
     }
   }
-  
+  # list of 1 to 60 each 60 times
   datafr2 <- rep(1:60, each=60)
+  # list of 1 to 60 repeated 60 times
   datafr3 <- rep(1:60, 60)
   
+  # remove from list any with less than 10 transitions
   a <- which(datafr1 < 10)
   datafr1 <- datafr1[-a]
   datafr2 <- datafr2[-a]
   datafr3 <- datafr3[-a]
+  # list any transitions from one cluster to the same cluster
+  # and save these as a special dataframe and then remove these
+  # from the original dataframes
   a <- which(datafr2==datafr3)
   datafr1_equals <- datafr1[a]
   datafr2_equals <- datafr2[a]
   datafr1 <- datafr1[-a]
   datafr2 <- datafr2[-a]
   datafr3 <- datafr3[-a]
-  g <- make_star(41)
-  conc_circles <- layout_as_star(g)
-  conc_circles <- rbind(conc_circles, conc_circles[seq(2,41,2),])
-  conc_circles[42:61,] <- 0.5*conc_circles[seq(2,41,2),]
-  # move row 1 to end
-  conc_circles <- rbind(conc_circles[2:61,])
-  conc_circles <- 5*conc_circles
+  
   # start plot
   plot(0, type="n", ann = FALSE, xlim = c(-5.2, 5.2), 
-       ylim = c(-5.2,5.2), axes = FALSE)
+       ylim = c(-5.2, 5.2), axes = FALSE)
   #title
   if(site=="GympieNP") {
     mtext(side = 1, Gym_dates[i], cex = 2.2)  
@@ -220,16 +290,29 @@ for(i in 1:398) {
   }
   text(x = 4, y = -5.2, cex = 1.6,
        substitute(paste(italic("37 & 43 = Morning chorus"))))
+  # draw loops for cycling within one cluster
   conc_circles_equals <- conc_circles[datafr2_equals,]
   if(nrow(conc_circles_equals) > 0) {
-    for(j in 1:nrow(conc_circles_equals)) {
-      col <- "red"
+    for (n in 1:length(datafr2_equals)) {
+      from <- conc_circles[datafr2_equals[n], ]
+      to <- from
+      from[[1]] <- from[[1]] + 0.2
+      from[[2]] <- from[[2]] + 0.15
+      to[[1]] <- to[[1]] - 0.2
+      to[[2]] <- to[[2]] + 0.15
+      lwd = datafr1_equals[n]/14
       col <- "black"
-      draw.circle(x = conc_circles_equals[j,1], 
-                  y = conc_circles_equals[j,2], 
-                  radius = (0.25+datafr1_equals[j]/3000), 
-                  col = col, border = col)
-    }  
+      C <- curvedarrow(from = from, to = to,
+                       curve = 0.6, arr.pos = 0.5, lcol=col, 
+                       segment = c(0.01,0.99), lwd = lwd, 
+                       arr.width=0,
+                       arr.length=0)
+      x <- C[[1]]
+      y <- C[[2]] + 0.08
+      draw.circle(x = x, y = y, radius = 0.18, col = "white",
+                  border = "white")
+      text(x=x, y=y, paste(datafr1_equals[n]), cex = 1.5)
+    }
   }
   for(l in 1:nrow(conc_circles)) {
     if(l %in% insects) {
@@ -262,32 +345,32 @@ for(i in 1:398) {
       from <- datafr2[n]
       to <- datafr3[n]
       lwd = datafr1[n]/14
-      col <- "red"
       col <- "black"
       C <- curvedarrow(from = conc_circles[from, ], to = conc_circles[to, ],
                   curve = 0.25, arr.pos = 0.5, lcol=col, 
-                  segment = c(0.03,0.97), lwd = lwd, arr.width=lwd/8,
+                  segment = c(0.035,0.965), lwd = lwd, arr.width=lwd/8,
                   arr.length=lwd/8)
       x <- C[[1]] + 0.23
       y <- C[[2]]
-      text(x=x, y=y, paste(datafr1[n]))
+      text(x=x, y=y, paste(datafr1[n]), cex = 1.5)
     }
     morning_chorus <- c(37,43)
-    for(p in 1:nrow(conc_circles)) {
+    for(p in list) {
       if(!p %in% morning_chorus) {
         text(as.character(p),
              x = conc_circles[p,1],
              y = conc_circles[p,2],
-             cex = 2)  
+             cex = 2.5)  
       }
       if(p %in% morning_chorus) {
         text(as.character(p),
              x = conc_circles[p,1],
              y = conc_circles[p,2],
-             cex = 3.5)  
+             cex = 3)  
       }
     }
     rm(g, g1)
   }
   dev.off()
 }
+

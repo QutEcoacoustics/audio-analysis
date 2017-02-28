@@ -2,8 +2,7 @@
 # Author: Yvonne Phillips
 # Date:  24 September 2016
 
-# Important!! Use SHIFT, ALT, J to navigate to each of sections or
-# functions
+# Use Shift, Alt J to navigate
 
 # 1.  ID3 separation plots
 # 2.  Composite spectrogram images 
@@ -11,6 +10,7 @@
 # 4.  Yearlong Dot Matrix plots - uses col_func.R 
 #     sourced externally
 # 5.  Clustering diel plots - uses col_func.R
+# 6.  Original one day dot matrix plots
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # 1. Plot ID3 separation values ------------------------------------------------------
@@ -28,7 +28,8 @@ x <- seq(5, 100, 5)
 ylimit <- c(1.1, 2.3)
 xlimit <- c(40,100)
 
-png("ID3_distance_plot.png", height = 600, width = 600)
+#png("ID3_distance_plot.png", height = 600, width = 600)
+
 par(mar=c(3.5, 3.5, 2.8, 1.5), cex=1.5)
 #plot(x,ID3_values[1:20,3], type = "o", 
 #     col=col[1], pch=15, ylim=ylim, las=1)
@@ -188,10 +189,11 @@ cluster_image <- function(clust_num) {
   s[[3]] <- 255
   s <- subset(s,1:3)
   
-  png(filename = paste("data/clusterImages_", k1_value,"_",
-                       k2_value, "/ClusterImage_Cluster",
-                       clust_num,"_", k1_value, "_", k2_value, 
-                       ".png", sep = ""), width = 640, height = 668, 
+#  png(filename = paste("data/clusterImages_", k1_value,"_",
+#                       k2_value, "/ClusterImage_Cluster",
+#                       clust_num,"_", k1_value, "_", k2_value, 
+#                       ".png", sep = ""), width = 640, height = 668, 
+  tiff
       units = "px", antialias = "none")
   # Set the start column from the edge of the image
   length2 <- 10
@@ -630,13 +632,29 @@ cluster_list$descpt <- 0
 list <- unique(cluster_colours$Feature)
 list <- as.character(list[1:(length(list)-1)])
 
-rain <- c(59,18,10,54,2,21,38,60)
-wind <- c(42,47,51,56,52,45,8,40,24,19,46,28,9,25,30,20)
-birds <- c(43,37,57,3,58,11,33,15,14,39,4)
-insects <- c(29,17,1,27,22,26)
-cicada <- c(48,44,34,7,12,32,16)
+# This is the old listing
+#rain <- c(59,18,10,54,2,21,38,60)
+#wind <- c(42,47,51,56,52,45,8,40,24,19,46,28,9,25,30,20)
+#birds <- c(43,37,57,3,58,11,33,15,14,39,4)
+#insects <- c(29,17,1,27,22,26)
+#cicada <- c(48,44,34,7,12,32,16)
+#plane <- c(49,23)
+#quiet <- c(13,5,6,53,36,31,50,35,55,41)
+
+# This is the final listing
+# 38 removed 17 added 
+rain <- c(2,10,17,18,21,54,59,60) 
+# 8,28 removed
+wind <- c(9,19,20,24,25,30,40,42,45,46,47,51,52,56)
+# 4 removed 28 added
+birds <- c(3,11,14,15,28,33,37,39,43,57,58)
+# 17 removed 4 added
+insects <- c(1,4,22,26,27,29)
+# 8 added
+cicada <- c(7,8,12,16,32,34,44,48)
 plane <- c(49,23)
-quiet <- c(13,5,6,53,36,31,50,35,55,41)
+#  38 added
+quiet <- c(5,6,13,31,35,36,38,41,50,53,55)
 na <- 61
 
 # Add a description column
@@ -1530,26 +1548,31 @@ dates <- seq(from=start, by=interval*60, to=end)
 first_of_month <- which(substr(dates, 9, 10)=="01")
 
 # Prepare civil dawn, civil dusk and sunrise and sunset times
-civil_dawn <- read.csv("data/Sunrise_Sunset_Solar Noon_protected.csv", header=T)
-a <- which(civil_dawn$Date==paste(substr(start, 9,20), substr(start, 6,7),
-                                  substr(start, 1,4), sep = "/"))
+#civil_dawn <- read.csv("data/Sunrise_Sunset_Solar Noon_protected.csv", header=T)
+civil_dawn_2015 <- read.csv("data/Geoscience_Australia_Sunrise_times_Gympie_2015.csv")
+civil_dawn_2016 <- read.csv("data/Geoscience_Australia_Sunrise_times_Gympie_2016.csv")
+civil_dawn <- rbind(civil_dawn_2015, civil_dawn_2016)
+
+a <- which(civil_dawn$dates==paste(substr(start, 1,4), substr(start, 6,7),
+                                   substr(start, 9,20),sep = "-"))
 reference <- a:(a+days-1)
-civil_dawn_times <- civil_dawn$Civil_Sunrise[reference]
-civil_dusk_times <- civil_dawn$Civil_Sunset[reference]
+civil_dawn_times <- civil_dawn$CivSunrise[reference]
+civil_dusk_times <- civil_dawn$CivSunset[reference]
 sunrise_times <- civil_dawn$Sunrise[reference]
 sunset_times <- civil_dawn$Sunset[reference]
 
+# find the minute of civil dawn for each day
 civ_dawn <- NULL
 for(i in 1:length(civil_dawn_times)) {
   hour <- as.numeric(substr(civil_dawn_times[i], 1,1))
-  min <- as.numeric(substr(civil_dawn_times[i], 3,4))
+  min <- as.numeric(substr(civil_dawn_times[i], 2,3))
   minute <- hour*60 + min
   civ_dawn <- c(civ_dawn, minute)
 }
 
 civ_dusk <- NULL
 for(i in 1:length(civil_dusk_times)) {
-  hour <- as.numeric(substr(civil_dusk_times[i], 1,1)) + 12
+  hour <- as.numeric(substr(civil_dusk_times[i], 1,2)) 
   min <- as.numeric(substr(civil_dusk_times[i], 3,4))
   minute <- hour*60 + min
   civ_dusk <- c(civ_dusk, minute)
@@ -1558,14 +1581,14 @@ for(i in 1:length(civil_dusk_times)) {
 sunrise <- NULL
 for(i in 1:length(sunrise_times)) {
   hour <- as.numeric(substr(sunrise_times[i], 1,1))
-  min <- as.numeric(substr(sunrise_times[i], 3,4))
+  min <- as.numeric(substr(sunrise_times[i], 2,3))
   minute <- hour*60 + min
   sunrise <- c(sunrise, minute)
 }
 
 sunset <- NULL
 for(i in 1:length(sunset_times)) {
-  hour <- as.numeric(substr(sunset_times[i], 1,1)) + 12
+  hour <- as.numeric(substr(sunset_times[i], 1,2)) 
   min <- as.numeric(substr(sunset_times[i], 3,4))
   minute <- hour*60 + min
   sunset <- c(sunset, minute)
@@ -1583,7 +1606,7 @@ rm(remove)
 
 # IMPORTANT:  These are used to name the plots
 site <- c("Gympie NP", "Woondum NP")
-index <- "SELECTED_Final" # or "ALL"
+index <- "SELECTED_Practice" # or "ALL"
 type <- "Summary"
 indices_names <-colnames(indices_all)
 paste("The dataset contains the following indices:"); colnames(indices_all)
@@ -1667,7 +1690,7 @@ for (k in 1:2) {
   interval <- 1440
   end <- start + as.difftime(days, units="days")
   dates <- seq(from=start, by=interval*60, to=end)
-  png(filename = paste("plots/Cluster_plot_ordinary",site[k],"_", type,"_", index, ".png", sep = ""),
+  png(filename = paste("plots/Cluster_plot_ordinary_finalcolours",site[k],"_", type,"_", index, ".png", sep = ""),
       width = 2000, height = 1000, units = "px")
   par(mar=c(2, 3.4, 2, 3.4), mgp = c(3,0.8,0))
   # Plot an empty plot with no axes or frame
@@ -1754,25 +1777,25 @@ for (k in 1:2) {
   #  j <- j - 8 
   #}
   
-  # draw yellow dotted line to show civil-dawn
+  # draw dotted line to show civil-dawn
   for(i in length(civ_dawn):1) {
-    lines(c(civ_dawn+1), c(length(civ_dawn):1),  
-          lwd=0.4, lty="16", col="yellow")
+    lines(c(civ_dawn), c(length(civ_dawn):1),  
+          lwd=1.0, lty=2, col="yellow")
   }
-  # draw yellow line to show civil-dusk
-  for(i in length(civ_dawn):1) {
-    lines(c(civ_dusk+1), c(length(civ_dusk):1),  
-          lwd=0.4, lty="16", col="yellow")
+  # draw dotted line to show civil-dusk
+  for(i in length(civ_dusk):1) {
+    lines(c(civ_dusk), c(length(civ_dusk):1),  
+          lwd=1.0, lty=2, col="yellow")
   }
-  # draw yellow line to show sunrise
+  # draw dotted line to show sunrise
   for(i in length(sunrise):1) {
-    lines(c(sunrise+1), c(length(sunrise):1),  
-          lwd=0.4, lty="16", col="yellow")
+    lines(c(sunrise), c(length(sunrise):1),  
+          lwd=1.0, lty=2, col="yellow")
   }
-  # draw yellow line to show sunset
+  # draw dotted line to show sunset
   for(i in length(sunset):1) {
-    lines(c(sunset+1), c(length(sunset):1),  
-          lwd=0.4, lty="16", col="yellow")
+    lines(c(sunset), c(length(sunset):1),  
+          lwd=1.0, lty=2, col="yellow")
   }
   dev.off()
 }
@@ -1854,13 +1877,24 @@ cluster_list$descpt <- 0
 list <- unique(cluster_colours$Feature)
 list <- as.character(list[1:(length(list)-1)])
 
-rain <- c(59,18,10,54,2,21,38,60)
-wind <- c(42,47,51,56,52,45,8,40,24,19,46,28,9,25,30,20)
-birds <- c(43,37,57,3,58,11,33,15,14,39,4)
-insects <- c(29,17,1,27,22,26)
-cicada <- c(48,44,34,7,12,32,16)
-plane <- c(49,23)
-quiet <- c(13,5,6,53,36,31,50,35,55,41)
+# old cluster classes 
+#rain <- c(59,18,10,54,2,21,38,60)
+#wind <- c(42,47,51,56,52,45,8,40,24,19,46,28,9,25,30,20)
+#birds <- c(43,37,57,3,58,11,33,15,14,39,4)
+#insects <- c(29,17,1,27,22,26)
+#cicada <- c(48,44,34,7,12,32,16)
+#plane <- c(49,23)
+#quiet <- c(13,5,6,53,36,31,50,35,55,41)
+#na <- 61
+
+# define cluster classes 
+rain <- c(2,10,17,18,21,54,59,60) 
+wind <- c(9,19,20,24,25,30,40,42,45,46,47,51,52,56)
+birds <- c(3,11,14,15,28,33,37,39,43,57,58)
+insects <- c(1,4,22,26,27,29)
+cicada <- c(7,8,12,16,32,34,44,48)
+planes <- c(49,23)
+quiet <- c(5,6,13,31,35,36,38,41,50,53,55)
 na <- 61
 
 # Add a description column
@@ -2017,6 +2051,7 @@ woon_cluster_list <- cluster_list[a,]
 shape <- "polygon"
 dates1 <- unique(dates)
 site <- "WoondumNP"
+site <- "GympieNP"
 if(site=="GympieNP") {
   file <- "gym_cluster_list"  
 }
