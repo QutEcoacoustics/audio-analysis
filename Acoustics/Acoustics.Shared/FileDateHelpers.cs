@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="FileDateHelpers.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the FileDateHelpers type.
@@ -23,6 +23,15 @@ namespace Acoustics.Shared
 
     public class FileDateHelpers
     {
+        private static readonly string[] AcceptedFormatsNoTimeZone = {
+                "yyyyMMdd[-|T|_]HHmmss (if timezone offset hint provided)",
+                "yyyyMMdd[-|T|_]HHmmssZ"
+            };
+
+        private static readonly string[] AcceptedFormatsTimeZone = {
+                "yyyyMMdd[-|T|_]HHmmss[+|-]HH",
+                "yyyyMMdd[-|T|_]HHmmss[+|-]HHmm"
+            };
 
         internal static readonly DateVariants[] PossibleFormats =
             {
@@ -32,7 +41,8 @@ namespace Acoustics.Shared
                 new DateVariants(
                     @"^(.*)(?<date>(\d{4})(\d{2})(\d{2})(?<separator>T|-|_)(\d{2})(\d{2})(\d{2})(?![+-][\d:]{2,5}|Z)).*\.([a-zA-Z0-9]+)$",
                      AppConfigHelper.StandardDateFormatNoTimeZone, 
-                    false),
+                    false,
+                    AcceptedFormatsNoTimeZone),
 
                 // valid: prefix_20140101-235959+10.mp3, a_00000000-000000+00.a, a_99999999-999999+9999.dnsb48364JSFDSD                                    
                 // valid: prefix_20140101_235959+10.mp3, a_00000000_000000+00.a, a_99999999_999999+9999.dnsb48364JSFDSD                                    
@@ -41,7 +51,7 @@ namespace Acoustics.Shared
                 new DateVariants(
                     @"^(.*)(?<date>(\d{4})(\d{2})(\d{2})(?<separator>T|-|_)(\d{2})(\d{2})(\d{2})(?![+-][:]{2,5})(?<offset>([+-](?!\d{0,5}:)(\d{4}|\d{2}))|Z)).*\.([a-zA-Z0-9]+)",
                     AppConfigHelper.StandardDateFormat,
-                    true),
+                    true, AcceptedFormatsTimeZone),
             };
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -205,18 +215,21 @@ namespace Acoustics.Shared
 
         internal class DateVariants
         {
-            public DateVariants(string regex, string parseFormat, bool parseTimeZone)
+            public DateVariants(string regex, string parseFormat, bool parseTimeZone, string[] acceptedFormats)
             {
                 this.Regex = regex;
                 this.ParseFormat = parseFormat;
                 this.ParseTimeZone = parseTimeZone;
+                this.AcceptedFormats = acceptedFormats;
             }
 
-            public string Regex { get; set; }
+            public string Regex { get; }
 
-            public string ParseFormat { get; set; }
+            public string ParseFormat { get; }
 
-            public bool ParseTimeZone{ get; set; }
+            public bool ParseTimeZone{ get; }
+
+            public string[] AcceptedFormats { get; }
 
         }
     }
@@ -229,17 +242,10 @@ namespace Acoustics.Shared
             : base(message)
         {
             this.options = "\n Valid formats include:  \n"
-                           + FileDateHelpers.PossibleFormats.Select(x => x.ParseFormat)
-                                 .Distinct()
+                           + FileDateHelpers.PossibleFormats.SelectMany(x => x.AcceptedFormats)
                                  .Aggregate(string.Empty, (s, x) => s += "\t - " + x + "\n");
         }
 
-        public override string Message
-        {
-            get
-            {
-                return base.Message + this.options;
-            }
-        }
+        public override string Message => base.Message + this.options;
     }
 }

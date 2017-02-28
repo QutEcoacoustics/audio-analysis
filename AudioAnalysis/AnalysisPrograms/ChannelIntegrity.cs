@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ChannelIntegrity.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the ChannelIntegrity type.
@@ -98,7 +98,7 @@ namespace AnalysisPrograms
                 analysisResults.SummaryIndicesFile = analysisSettings.SummaryIndicesFile;
             }
 
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 throw new NotImplementedException();
             }

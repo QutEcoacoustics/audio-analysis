@@ -14,9 +14,11 @@ SONOGRAM_BACKGROUND_Threshold: 4.0
 #DisplayColumns: avAmp-dB,snr-dB,bg-dB,activity,segCount,avSegDur,hfCover,mfCover,lfCover,H[ampl],H[avSpectrum]
 
 #SAVE INTERMEDIARY FILES
-SaveIntermediateWavFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
-SaveSonogramImages: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
 DoNoiseReduction: false
 BgNoiseThreshold: 3.0
 

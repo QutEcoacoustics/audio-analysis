@@ -20,10 +20,13 @@ DisplayColumns: avAmp-dB,bg-dB,snr-dB,activity,segCount,avSegDur,H[temporal],AcC
 DisplayWeightedIndices: true
 
 #SAVE INTERMEDIARY FILES
-SaveIntermediateWavFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
-SaveSonogramImages: false
-DisplayCsvImage: true
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
+# DisplayCsvImage is obsolete - ensure it remains set to: false
+DisplayCsvImage: false
 DoNoiseReduction: true
 BgNoiseThreshold: 3.0
 SonogramBackgroundThreshold: 4.0

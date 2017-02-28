@@ -265,7 +265,7 @@ namespace AnalysisPrograms
             }
 
             //save image of sonograms
-            if ((sonogram != null) && (analysisSettings.ImageFile != null))
+            if ((sonogram != null) && (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Data.Rows.Count)))
             {
                 var fileExists = File.Exists(analysisSettings.ImageFile.FullName);
                 string imagePath = analysisSettings.ImageFile.FullName;

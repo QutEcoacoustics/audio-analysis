@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AnalyseLongRecording.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the AnalyseLongRecording type.
@@ -103,9 +103,9 @@ Output  to  directory: {1}
             // 2. get the analysis config
             dynamic configuration = Yaml.Deserialise(configFile);
 
-            bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
+            SaveBehavior saveIntermediateWavFiles = (SaveBehavior?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? SaveBehavior.Never;
             bool saveIntermediateCsvFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
-            bool saveSonogramsImages = (bool?)configuration[AnalysisKeys.SaveSonogramImages] ?? false;
+            SaveBehavior saveSonogramsImages = (SaveBehavior?)configuration[AnalysisKeys.SaveSonogramImages] ?? SaveBehavior.Never;
             bool doParallelProcessing = (bool?)configuration[AnalysisKeys.ParallelProcessing] ?? false;
             
             bool filenameDate = (bool?)configuration[AnalysisKeys.RequireDateInFilename] ?? false;
@@ -139,7 +139,7 @@ Output  to  directory: {1}
                 Log.Warn("Minimum event threshold has been set to the default: " + scoreThreshold);
             }
 
-            FileSegment.FileDateBeavior defaultBeavior = FileSegment.FileDateBeavior.Try;
+            FileSegment.FileDateBehavior defaultBehavior = FileSegment.FileDateBehavior.Try;
             if (filenameDate)
             {
                 if (!FileDateHelpers.FileNameContainsDateTime(sourceAudio.Name))
@@ -147,7 +147,7 @@ Output  to  directory: {1}
                     throw new InvalidFileDateException("When RequireDateInFilename option is set, the filename of the source audio file must contain a valid AND UNAMBIGUOUS date. Such a date was not able to be parsed.");
                 }
 
-                defaultBeavior = FileSegment.FileDateBeavior.Required;
+                defaultBehavior = FileSegment.FileDateBehavior.Required;
             }
 
 
@@ -155,14 +155,14 @@ Output  to  directory: {1}
             var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonogramsImages, saveIntermediateCsvFiles, arguments.Channels, arguments.MixDownToMono)
             {
                 // create and delete directories
-                DeleteFinished = !saveIntermediateWavFiles,  
+                DeleteFinished = true,  
                 IsParallel = doParallelProcessing,
                 SubFoldersUnique = false
             };
 
             // 4. get the segment of audio to be analysed
             // if tiling output, specify that FileSegment needs to be able to read the date
-            var fileSegment = new FileSegment(sourceAudio, null, null, defaultBeavior); 
+            var fileSegment = new FileSegment(sourceAudio, arguments.AlignToMinute); 
             var bothOffsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
             if (bothOffsetsProvided)
             {

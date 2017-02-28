@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="Audio2InputForConvCNN.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the Audio2InputForConvCNN type.
@@ -557,7 +557,7 @@ namespace AnalysisPrograms
 
             // this analysis produces no results!
             // but we still print images (that is the point)
-            if (analysisSettings.ImageFile != null)
+            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResult.Events.Length))
             {
                 Debug.Assert(analysisSettings.ImageFile.Exists);
             }
