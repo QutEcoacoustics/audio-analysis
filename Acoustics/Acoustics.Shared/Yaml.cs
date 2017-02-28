@@ -44,7 +44,8 @@ namespace Acoustics.Shared
                 {
                     s.Serialize(stream2, deserializedObject);
 
-                    data = new DynamicYaml(stream2.ToString());
+                    var yaml = stream2.ToString();
+                    data = new DynamicYaml(yaml);
                 }
                 return data;
             }
