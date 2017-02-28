@@ -52,18 +52,43 @@ namespace AnalysisPrograms
             // concatenation of recognizer index files.
             if (false)
             {
-                double lowerBound = 1000;
-                int subbandCount = 3;
+                const double lowerBound = 1000;
+                const int subbandCount = 3;
                 OctaveFreqScale.GetFractionalOctaveBands(lowerBound, subbandCount);
             }
 
             if (true)
             {
-                double lowerBound = 15;
-                double upperBound = 11025;
+                const int finalBinCount = 256;
 
-                int subbandCount = 27;
-                OctaveFreqScale.GetFractionalOctaveBands(lowerBound, upperBound, subbandCount);
+                // constants required for full octave scale when sr = 22050
+                //const int sr = 22050;
+                //const int frameSize = 8192;
+                ////const int frameSize = 4096;
+                //int lowerBound = 15;
+                //int upperBound = 11025;
+                //const int octaveDivisions = 27; // fraction steps within one octave. Note: piano = 12 steps per octave.
+
+                // constants required for split linear-octave scale when sr = 22050
+                const int sr = 22050;
+                const int frameSize = 8192;
+                //const int frameSize = 4096;
+                int lowerBound = 62;
+                int upperBound = 11025;
+                const int octaveDivisions = 31;
+
+
+                // constants required for full octave scale when sr = 64000
+                //const int sr = 64000;
+                //const int frameSize = 16384;  // = 2*8192   or 4*4096;
+                //int lowerBound = 15;
+                //int upperBound = 11025;
+                //const int octaveDivisions = 27;
+
+
+                //var octaveBinBounds = OctaveFreqScale.LinearToFullOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
+                var octaveBinBounds = OctaveFreqScale.LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
+
             }
 
             if (false)
