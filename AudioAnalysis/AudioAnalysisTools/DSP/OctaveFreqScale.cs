@@ -21,7 +21,7 @@ namespace AudioAnalysisTools.DSP
             double freqStep = nyquist / (double)binCount;
 
 
-            int topLinearIndex = (int)Math.Round(lowerFreqBound/freqStep);
+            int topLinearIndex = (int)Math.Round(lowerFreqBound/freqStep) + 1;
             // fill in the linear part of the freq scale
             for (int i = 0; i < topLinearIndex; i++)
             {
@@ -36,7 +36,7 @@ namespace AudioAnalysisTools.DSP
 
                 for (int j = 0; j < linearFreqScale.Length; j++)
                 {
-                    if (linearFreqScale[j] > bandBounds[i])
+                    if (linearFreqScale[j] > bandBounds[i - topLinearIndex])
                     {
                         splitLinearOctaveIndexBounds[i, 0] = j;
                         splitLinearOctaveIndexBounds[i, 1] = (int)Math.Round(linearFreqScale[j]);
@@ -44,6 +44,10 @@ namespace AudioAnalysisTools.DSP
                     }
                 }
             }
+
+            // make sure last index has values
+            splitLinearOctaveIndexBounds[finalBinCount-1, 0] = linearFreqScale.Length - 1;
+            splitLinearOctaveIndexBounds[finalBinCount-1, 1] = (int)Math.Round(linearFreqScale[linearFreqScale.Length - 1]);
 
             return splitLinearOctaveIndexBounds;
         }

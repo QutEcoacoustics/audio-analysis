@@ -61,33 +61,37 @@ namespace AnalysisPrograms
             {
                 const int finalBinCount = 256;
 
-                // constants required for full octave scale when sr = 22050
+                //// constants required for full octave scale when sr = 22050
                 //const int sr = 22050;
                 //const int frameSize = 8192;
                 ////const int frameSize = 4096;
                 //int lowerBound = 15;
                 //int upperBound = 11025;
                 //const int octaveDivisions = 27; // fraction steps within one octave. Note: piano = 12 steps per octave.
+                //var octaveBinBounds = OctaveFreqScale.LinearToFullOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
 
-                // constants required for split linear-octave scale when sr = 22050
-                const int sr = 22050;
-                const int frameSize = 8192;
-                //const int frameSize = 4096;
-                int lowerBound = 62;
-                int upperBound = 11025;
-                const int octaveDivisions = 31;
+
+                //// constants required for split linear-octave scale when sr = 22050
+                //// This has not been debugged for other values of constants.
+                //// Works only for the below values.
+                //const int sr = 22050;
+                //const int frameSize = 8192; // reducing this value to 4096 causes rogram to crash!
+                //int lowerBound = 62;
+                //int upperBound = 11025;
+                //const int octaveDivisions = 31;  // fraction steps within one octave.
+                //var octaveBinBounds = OctaveFreqScale.LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
 
 
                 // constants required for full octave scale when sr = 64000
-                //const int sr = 64000;
-                //const int frameSize = 16384;  // = 2*8192   or 4*4096;
-                //int lowerBound = 15;
-                //int upperBound = 11025;
-                //const int octaveDivisions = 27;
+                const int sr = 64000;
+                const int frameSize = 16384;  // = 2*8192   or 4*4096;
+                int lowerBound = 10;
+                int upperBound = 64000;
+                const int octaveDivisions = 23;
+                var octaveBinBounds = OctaveFreqScale.LinearToFullOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
+                //var octaveBinBounds = OctaveFreqScale.LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
 
 
-                //var octaveBinBounds = OctaveFreqScale.LinearToFullOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
-                var octaveBinBounds = OctaveFreqScale.LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
 
             }
 
