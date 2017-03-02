@@ -227,7 +227,11 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// returns a Mel value for the passed Herz value
+        /// Returns a Mel value for the passed Herz value
+        /// NOTE: According to Wikipedia there is no single objective mel(ody) scale conversion.
+        /// Mel scale is based on just-noticeable difference in pitch by the ear with ascend pitch. I.E> THis is psycho-acoustic phenomenon.
+        /// 1000Hz is used as the common reference point i.e. 1000Hz = 1000Mel.  
+        /// In speech processing, typically use a linear conversion below 1000Hz.
         /// </summary>
         /// <param name="f"></param>
         /// <returns></returns>

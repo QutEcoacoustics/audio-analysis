@@ -57,8 +57,76 @@ namespace AnalysisPrograms
                 OctaveFreqScale.GetFractionalOctaveBands(lowerBound, subbandCount);
             }
 
+
+
+
             if (true)
             {
+                // METHOD TO CHECK IF OCTAVE FREQ SCALE IS WORKING
+
+                // first check it out on standard spectrograms.
+                //string recordingPath = @"G:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\NW_NW273_20101013-051200-0514-1515-Brown Cuckoo-dove1.wav";
+                string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TOWERB_20110302_202900_22.LSK.F.wav";
+                //int resampleRate = 22050;
+                var outputPath = @"G:\SensorNetworks\Output\temp\AEDexperiments";
+                var outputDirectory = new DirectoryInfo(outputPath);
+                AudioRecording recording = new AudioRecording(recordingPath);
+                var recordingDuration = recording.WavReader.Time;
+
+
+                const int frameSize = 1024;
+                double windowOverlap = 0.0;
+                //NoiseReductionType noiseReductionType  = NoiseReductionType.None;
+                //NoiseReductionType noiseReductionType = SNR.KeyToNoiseReductionType("FlattenAndTrim");
+                NoiseReductionType noiseReductionType   = NoiseReductionType.Standard;
+                var sonoConfig = new SonogramConfig
+                {
+                    SourceFName = recording.BaseName,
+                    //set default values - ignore those set by user
+                    WindowSize = frameSize,
+                    WindowOverlap = windowOverlap,
+                    NoiseReductionType = noiseReductionType,
+                    NoiseReductionParameter = 0.0
+                };
+
+
+                var sonogram = (BaseSonogram)new SpectrogramStandard(sonoConfig, recording.WavReader);
+
+            }
+
+
+
+            if (false)
+            {
+                const int finalBinCount = 256;
+                //// constants required for split linear-octave scale when sr = 22050
+                //// This has not been debugged for other values of constants.
+                //// Works only for the below values.
+                const int sr = 22050;
+                const int frameSize = 8192;
+                int lowerBound = 62;
+                int upperBound = 11025;
+                const int octaveDivisions = 31;  // fraction steps within one octave.
+                var octaveBinBounds = OctaveFreqScale.LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
+
+                // now prepare a crazy spectrum
+                var linearSpectrum = OctaveFreqScale.GetCrazySpectrumForTestPurposes(sr, frameSize);
+                var octaveSpectrum = OctaveFreqScale.OctaveSpectrum(octaveBinBounds, linearSpectrum);
+
+                // write output
+                int rowCount = octaveSpectrum.Length;
+                for (int i = 0; i < rowCount; i++)
+                {
+                    Console.WriteLine(i + "   " + octaveBinBounds[i, 1] + "Hz   " + octaveSpectrum[i]);
+                }
+            }
+
+            if (false)
+            {
+                // CONSTRUCTION OF Octave Frequency Scale
+                // WARNING!: changing these constants will have undefined effects. The three options below have been debugged to give what is required.
+                //             However other values have not been debugged - so user should check the output to ensure it is what is required.
                 const int finalBinCount = 256;
 
                 //// constants required for full octave scale when sr = 22050
@@ -75,7 +143,7 @@ namespace AnalysisPrograms
                 //// This has not been debugged for other values of constants.
                 //// Works only for the below values.
                 //const int sr = 22050;
-                //const int frameSize = 8192; // reducing this value to 4096 causes rogram to crash!
+                //const int frameSize = 8192;
                 //int lowerBound = 62;
                 //int upperBound = 11025;
                 //const int octaveDivisions = 31;  // fraction steps within one octave.
@@ -83,16 +151,26 @@ namespace AnalysisPrograms
 
 
                 // constants required for full octave scale when sr = 64000
+                //const int sr = 64000;
+                //const int frameSize = 16384;  // = 2*8192   or 4*4096;
+                //int lowerBound = 15;
+                //int upperBound = 32000;
+                //const int octaveDivisions = 24;
+                //var octaveBinBounds = OctaveFreqScale.LinearToFullOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
+
+                //// constants required for split linear-octave scale when sr = 64000
                 const int sr = 64000;
                 const int frameSize = 16384;  // = 2*8192   or 4*4096;
-                int lowerBound = 10;
-                int upperBound = 64000;
-                const int octaveDivisions = 23;
-                var octaveBinBounds = OctaveFreqScale.LinearToFullOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
-                //var octaveBinBounds = OctaveFreqScale.LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
+                int lowerBound = 125;
+                int upperBound = 32000;
+                const int octaveDivisions = 28;
+                var octaveBinBounds = OctaveFreqScale.LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
 
-
-
+                int rowCount = octaveBinBounds.GetLength(0);
+                for (int i = 0; i < rowCount; i++)
+                {
+                    Console.WriteLine(i + "     " + octaveBinBounds[i, 0] + "    " + octaveBinBounds[i, 1] + "Hz");
+                }
             }
 
             if (false)
