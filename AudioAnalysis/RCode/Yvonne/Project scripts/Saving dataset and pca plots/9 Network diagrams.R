@@ -145,19 +145,13 @@ hub_score <- matrix(data = NA, nrow=27, ncol=12)
 #plane <- c(23, 49)
 #na <- 61
 
-# This is the final listing
-# 38 removed 17 added 
+# define cluster classes 
 rain <- c(2,10,17,18,21,54,59,60) 
-# 8,28 removed
 wind <- c(9,19,20,24,25,30,40,42,45,46,47,51,52,56)
-# 4 removed 28 added
 birds <- c(3,11,14,15,28,33,37,39,43,57,58)
-# 17 removed 4 added
 insects <- c(1,4,22,26,27,29)
-# 8 added
 cicada <- c(7,8,12,16,32,34,44,48)
-plane <- c(23,49)
-#  38 added
+planes <- c(49,23)
 quiet <- c(5,6,13,31,35,36,38,41,50,53,55)
 na <- 61
 
@@ -188,7 +182,7 @@ conc_circles <- 5*conc_circles
 # size of each circle
 
 # layout with concentric circles
-num <- c(length(c(wind, plane, rain)), 
+num <- c(length(c(wind, planes, rain)), 
          length(c(birds, quiet)),
          length(c(insects, cicada)))
 # g is a igraph for the outer concentric circle
