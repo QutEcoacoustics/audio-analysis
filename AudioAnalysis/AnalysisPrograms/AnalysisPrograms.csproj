@@ -292,7 +292,7 @@
     <Compile Include="Production\MainEntryUtilities.cs" />
     <Compile Include="Production\Exceptions.cs" />
     <Compile Include="Crow.cs" />
-    <Compile Include="GratingDetection.cs" />
+    <Compile Include="GratingDetection_OBSOLETE.cs" />
     <Compile Include="Human1.cs" />
     <Compile Include="DrawSummaryIndexTracks.cs" />
     <Compile Include="KoalaMale.cs" />
@@ -300,7 +300,7 @@
     <Compile Include="LSKiwi3.cs" />
     <Compile Include="LSKiwiHelper.cs" />
     <Compile Include="LSKiwiROC.cs" />
-    <Compile Include="MultiAnalyser.cs" />
+    <Compile Include="MultiAnalyser_OBSOLETE.cs" />
     <Compile Include="netfx\System\StringFormatWith.cs" />
     <Compile Include="OscillationRecogniser.cs">
       <SubType>Code</SubType>

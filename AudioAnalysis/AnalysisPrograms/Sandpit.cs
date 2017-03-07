@@ -12,6 +12,7 @@ using AudioAnalysisTools.LongDurationSpectrograms;
 using AudioAnalysisTools.DSP;
 using AudioAnalysisTools.WavTools;
 using Acoustics.Shared;
+using System.Drawing.Imaging;
 
 namespace AnalysisPrograms
 {
@@ -64,19 +65,46 @@ namespace AnalysisPrograms
             {
                 // METHOD TO CHECK IF OCTAVE FREQ SCALE IS WORKING
 
-                // first check it out on standard spectrograms.
-                //string recordingPath = @"G:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\NW_NW273_20101013-051200-0514-1515-Brown Cuckoo-dove1.wav";
-                string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TOWERB_20110302_202900_22.LSK.F.wav";
-                //int resampleRate = 22050;
-                var outputPath = @"G:\SensorNetworks\Output\temp\AEDexperiments";
+                // first check it out on standard recording.
+                /*
+                string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-085040.wav";
+                var outputPath = @"C:\SensorNetworks\Output\OctaveFreqScale\octaveScaleSonogram.png";
                 var outputDirectory = new DirectoryInfo(outputPath);
                 AudioRecording recording = new AudioRecording(recordingPath);
-                var recordingDuration = recording.WavReader.Time;
+                //OctaveScaleType ost = OctaveScaleType.Octaves27Sr22050;
+                OctaveScaleType ost = OctaveScaleType.Linear125Octaves30Sr22050;
+                int sr = 22050;
+                const int frameSize = 8192;
+                double windowOverlap = 0.75;
+                */
+
+                /*
+                24 BIT JASCOE RECORDINGS
+                Need to convert Jascoe GBR recordings to 16 bit.
+                ffmpeg -i source_file.wav -sample_fmt s16 out_file.wav
+                e.g.
+                ". C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg\ffmpeg.exe" -i "C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56.wav" -sample_fmt s16 "C:\SensorNetworks\Output\OctaveFreqScale\JascoeMarineGBR116bit.wav"
+
+                ffmpeg binaries are in C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg
+
+                */
 
 
-                const int frameSize = 1024;
-                double windowOverlap = 0.0;
+                // Now check it on Jascoe recording
+                string recordingPath = @"C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit.wav";
+                var outputPath = @"C:\SensorNetworks\Output\OctaveFreqScale\JascoeMarineGBR1.png";
+                AudioRecording recording = new AudioRecording(recordingPath);
+                //OctaveScaleType ost = OctaveScaleType.Octaves27Sr22050;
+                OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Sr64000;
+                int sr = 64000;
+                const int frameSize = 16384;
+                double windowOverlap = 0.5;
+
+                var octaveBinBounds = OctaveFreqScale.GetOctaveScale(ost);
+                int[,] gridLineLocations = OctaveFreqScale.GetGridLineLocations(ost, octaveBinBounds);
+
+                //var recordingDuration = recording.WavReader.Time;
+
                 //NoiseReductionType noiseReductionType  = NoiseReductionType.None;
                 //NoiseReductionType noiseReductionType = SNR.KeyToNoiseReductionType("FlattenAndTrim");
                 NoiseReductionType noiseReductionType   = NoiseReductionType.Standard;
@@ -90,87 +118,45 @@ namespace AnalysisPrograms
                     NoiseReductionParameter = 0.0
                 };
 
+                // produce an amplitude spectrogram
+                var sonogram = (BaseSonogram)new AmplitudeSonogram(sonoConfig, recording.WavReader);
+                // remove the DC column
+                var dataMatrix = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0)-1, sonogram.Data.GetLength(1)-1);
+                //square the values to produce power spectrogram
+                dataMatrix = MatrixTools.SquareValues(dataMatrix);
+                //convert spectrogram to octave scale
+                dataMatrix = OctaveFreqScale.ConvertLinearSpectrogramToOctaveFreqScale(dataMatrix, sr, ost);
+                double min, max;
+                dataMatrix = MatrixTools.DeciBels(dataMatrix, out min, out max);
+                // DO NOISE REDUCTION
+                dataMatrix = SNR.NoiseReduce_Standard(dataMatrix);
+                //double sdCount = 2.0;
+                //double dynamicRange = 40.0;
+                //dataMatrix = SNR.NoiseReduce_FixedRange(dataMatrix, dynamicRange, sdCount);
+                sonogram.Data = dataMatrix;
+                sonogram.Configuration.WindowSize = 512;
+                //sonogram.Configuration.FreqBinCount = 256;
+                
 
-                var sonogram = (BaseSonogram)new SpectrogramStandard(sonoConfig, recording.WavReader);
-
+                Image image = sonogram.GetImageFullyAnnotated("OCTAVE SPECTROGRAM: " + ost.ToString(), gridLineLocations);
+                image.Save(outputPath, ImageFormat.Png);
             }
-
-
+            
 
             if (false)
             {
-                const int finalBinCount = 256;
-                //// constants required for split linear-octave scale when sr = 22050
-                //// This has not been debugged for other values of constants.
-                //// Works only for the below values.
-                const int sr = 22050;
-                const int frameSize = 8192;
-                int lowerBound = 62;
-                int upperBound = 11025;
-                const int octaveDivisions = 31;  // fraction steps within one octave.
-                var octaveBinBounds = OctaveFreqScale.LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
-
-                // now prepare a crazy spectrum
-                var linearSpectrum = OctaveFreqScale.GetCrazySpectrumForTestPurposes(sr, frameSize);
-                var octaveSpectrum = OctaveFreqScale.OctaveSpectrum(octaveBinBounds, linearSpectrum);
-
-                // write output
-                int rowCount = octaveSpectrum.Length;
-                for (int i = 0; i < rowCount; i++)
-                {
-                    Console.WriteLine(i + "   " + octaveBinBounds[i, 1] + "Hz   " + octaveSpectrum[i]);
-                }
-            }
-
-            if (false)
-            {
-                // CONSTRUCTION OF Octave Frequency Scale
-                // WARNING!: changing these constants will have undefined effects. The three options below have been debugged to give what is required.
-                //             However other values have not been debugged - so user should check the output to ensure it is what is required.
-                const int finalBinCount = 256;
+                // All the below octave scale options are designed for a final freq scale having 256 bins
 
                 //// constants required for full octave scale when sr = 22050
-                //const int sr = 22050;
-                //const int frameSize = 8192;
-                ////const int frameSize = 4096;
-                //int lowerBound = 15;
-                //int upperBound = 11025;
-                //const int octaveDivisions = 27; // fraction steps within one octave. Note: piano = 12 steps per octave.
-                //var octaveBinBounds = OctaveFreqScale.LinearToFullOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
-
-
+                //OctaveScaleType ost = OctaveScaleType.Octaves27Sr22050;
                 //// constants required for split linear-octave scale when sr = 22050
-                //// This has not been debugged for other values of constants.
-                //// Works only for the below values.
-                //const int sr = 22050;
-                //const int frameSize = 8192;
-                //int lowerBound = 62;
-                //int upperBound = 11025;
-                //const int octaveDivisions = 31;  // fraction steps within one octave.
-                //var octaveBinBounds = OctaveFreqScale.LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
-
-
-                // constants required for full octave scale when sr = 64000
-                //const int sr = 64000;
-                //const int frameSize = 16384;  // = 2*8192   or 4*4096;
-                //int lowerBound = 15;
-                //int upperBound = 32000;
-                //const int octaveDivisions = 24;
-                //var octaveBinBounds = OctaveFreqScale.LinearToFullOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
-
+                //OctaveScaleType ost = OctaveScaleType.Linear62Octaves31Sr22050;
+                //// constants required for full octave scale when sr = 64000
+                //OctaveScaleType ost = OctaveScaleType.Octaves24Sr64000;
                 //// constants required for split linear-octave scale when sr = 64000
-                const int sr = 64000;
-                const int frameSize = 16384;  // = 2*8192   or 4*4096;
-                int lowerBound = 125;
-                int upperBound = 32000;
-                const int octaveDivisions = 28;
-                var octaveBinBounds = OctaveFreqScale.LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, lowerBound, upperBound, octaveDivisions);
+                OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Sr64000;
 
-                int rowCount = octaveBinBounds.GetLength(0);
-                for (int i = 0; i < rowCount; i++)
-                {
-                    Console.WriteLine(i + "     " + octaveBinBounds[i, 0] + "    " + octaveBinBounds[i, 1] + "Hz");
-                }
+                OctaveFreqScale.TestOctaveScale(ost);
             }
 
             if (false)
@@ -298,8 +284,6 @@ namespace AnalysisPrograms
                 compositeImage.Save(debugPath);
             }
 
-
-
             // experiments with Mitchell-Aide ARBIMON segmentation algorithm
             // Three steps: (1) Flattening spectrogram by subtracting the median bin value from each freq bin.
             //              (2) Recalculate the spectrogram using local range. Trim off the 5 percentiles.
@@ -359,8 +343,6 @@ namespace AnalysisPrograms
                 compositeImage.Save(debugPath);
             }
 
-
-
             if (false)
             {
                 LDSpectrogramClusters.ExtractSOMClusters2();
@@ -372,28 +354,21 @@ namespace AnalysisPrograms
                 LDSpectrogramClusters.ExtractSOMClusters2();
             }
 
-
-
             if (false)  // 
             {
                 CubeHelix.DrawTestImage();
-                LoggedConsole.WriteLine("FINSIHED");
             }
 
             if (false)  // construct 3Dimage of audio
             {
                 //TowseyLibrary.Matrix3D.TestMatrix3dClass();
                 LdSpectrogram3D.Main(null);
-                LoggedConsole.WriteLine("FINSIHED");
             }
 
             if (false)  // call SURF image Feature extraction
             {
                 //SURFFeatures.SURF_TEST();
                 SURFAnalysis.Main(null);
-                LoggedConsole.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(0);
             }
 
 
@@ -402,9 +377,6 @@ namespace AnalysisPrograms
                 //Audio2InputForConvCNN.Main(null);
                 Audio2InputForConvCNN.ProcessMeriemsDataset();
                 //SNR.Calculate_SNR_ofXueyans_data();
-                LoggedConsole.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(0);
             }
 
             // // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
@@ -438,20 +410,13 @@ namespace AnalysisPrograms
             {
                 StructureTensor.Test1StructureTensor();
                 StructureTensor.Test2StructureTensor();
-                Log.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(0);
             }
 
 
             /// used to caluclate eigen values and singular valuse
             if (false)
             {
-
                 SvdAndPca.TestEigenValues();
-                Log.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(0);
             }
 
 
@@ -459,18 +424,12 @@ namespace AnalysisPrograms
             {
                 WaveletTransformContinuous.ExampleOfWavelets_1();
                 //WaveletPacketDecomposition.ExampleOfWavelets_1();
-                Log.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(0);
             }
 
 
             if (false)  // do 2D-FFT of an image.
             {
                 FFT2D.TestFFT2D();
-                Log.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(0);
             }
 
 
