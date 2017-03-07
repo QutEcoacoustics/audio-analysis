@@ -30,7 +30,7 @@ namespace AnalysisPrograms
 
     using AnalysisPrograms.Production;
 
-    public class GratingDetection
+    public class GratingDetection_OBSOLETE
     {
         //KEYS TO PARAMETERS IN CONFIG FILE
         public static string key_ANALYSIS_NAME = "ANALYSIS_NAME";

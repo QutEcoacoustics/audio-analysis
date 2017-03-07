@@ -36,7 +36,7 @@ namespace AnalysisPrograms
     /// As of 20 June 2012 this class includes three analysers: crow, human, machine.
     /// As of 22 June 2012 this class includes five  analysers: crow, human, machine, canetoad, koala-male.
 
-    public class MultiAnalyser : IAnalyser
+    public class MultiAnalyser_OBSOLETE : IAnalyser
     {
         public class Arguments : AnalyserArguments
         {
@@ -212,7 +212,7 @@ namespace AnalysisPrograms
 
             // DO THE ANALYSIS
             // #############################################################################################################################################
-            IAnalyser analyser = new MultiAnalyser();
+            IAnalyser analyser = new MultiAnalyser_OBSOLETE();
             AnalysisResult result = analyser.Analyse(analysisSettings);
             DataTable dt = result.Data;
             // #############################################################################################################################################
