@@ -295,6 +295,36 @@
             return image;
         }
 
+
+        public Image GetImageFullyAnnotated(string title, int[,] gridLineLocations)
+        {
+            Image image = this.GetImage();
+            SpectrogramTools.DrawKHzLines((Bitmap) image, gridLineLocations);
+            //var minuteOffset = TimeSpan.Zero;
+            //var xAxisTicInterval = TimeSpan.FromSeconds(1.0);
+            //var xInterval = TimeSpan.FromSeconds(10);
+            //TimeSpan xAxisPixelDuration = TimeSpan.FromTicks((long)(this.Duration.Ticks / (double)this.FrameCount));
+            //int HertzInterval = 1000;
+            //if (this.Configuration.WindowSize < 512)
+            //    HertzInterval = 2000;
+            //double secondsDuration = xAxisPixelDuration.TotalSeconds * image.Width;
+            //TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
+            //SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, fullDuration, xAxisTicInterval, this.NyquistFrequency, HertzInterval);
+
+            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(this.Duration, image.Width);
+
+            var list = new List<Image>();
+            list.Add(titleBar);
+            list.Add(timeBmp);
+            list.Add(image);
+            list.Add(timeBmp);
+
+            Image compositeImage = ImageTools.CombineImagesVertically(list);
+            return compositeImage;
+        }
+
+
         public Image GetImageFullyAnnotated(Image image, string title)
         {
 
@@ -341,7 +371,7 @@
             //double freqBinWidth = 0.0;
             double freqBinWidth = this.FBinWidth;
             if (add1kHzLines) 
-                SpectrogramTools.Draw1kHzLines((Bitmap)image, doMelScale, maxFrequency, freqBinWidth);
+                SpectrogramTools.Draw1KHzLines((Bitmap)image, doMelScale, maxFrequency, freqBinWidth);
             return image;
         }
 

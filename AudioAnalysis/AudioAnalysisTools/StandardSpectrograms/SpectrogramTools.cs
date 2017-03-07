@@ -819,7 +819,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
 
 
-        public static void Draw1kHzLines(Bitmap bmp, bool doMelScale, int nyquist, double freqBinWidth)
+        public static void Draw1KHzLines(Bitmap bmp, bool doMelScale, int nyquist, double freqBinWidth)
         {
             const int kHz = 1000;
             double kHzBinWidth = kHz / freqBinWidth;
@@ -854,6 +854,28 @@ namespace AudioAnalysisTools.StandardSpectrograms
             }
             //g.Flush();
         }//end AddGridLines()
+
+
+        public static void DrawKHzLines(Bitmap bmp, int[,] gridLineLocations)
+        {
+            int width = bmp.Width;
+            int height = bmp.Height;
+            int bandCount = gridLineLocations.GetLength(0);
+
+            Graphics g = Graphics.FromImage(bmp);
+
+            for (int b = 0; b < bandCount; b++) //over each band
+            {
+                int y = gridLineLocations[b, 0];
+                for (int x = 1; x < width; x++)
+                {
+                    bmp.SetPixel(x - 1, y, Color.White);
+                    bmp.SetPixel(x, y, Color.Black);
+                    x++;
+                }
+                g.DrawString((gridLineLocations[b, 1] + "Hz"), new Font("Thachoma", 8), Brushes.Black, 2, y + 1);
+            }
+        }//end AddHzGridLines()
 
 
         /// <summary>

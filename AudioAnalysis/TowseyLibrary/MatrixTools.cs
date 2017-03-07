@@ -588,7 +588,12 @@ namespace TowseyLibrary
         }
 
 
-
+        /// <summary>
+        /// Squares the values in a matrix.
+        /// Primarily used when converting FFT coefficients in amplitude spectrogram to power values
+        /// </summary>
+        /// <param name="M"></param>
+        /// <returns></returns>
         public static double[,] SquareValues(double[,] M)
         {
             int rows = M.GetLength(0);
