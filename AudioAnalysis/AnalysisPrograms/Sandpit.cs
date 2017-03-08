@@ -13,6 +13,7 @@ using AudioAnalysisTools.DSP;
 using AudioAnalysisTools.WavTools;
 using Acoustics.Shared;
 using System.Drawing.Imaging;
+using AnalysisBase.ResultBases;
 
 namespace AnalysisPrograms
 {
@@ -49,16 +50,6 @@ namespace AnalysisPrograms
             var tStart = DateTime.Now;
             Log.Verbosity = 1;
             Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
-
-            // concatenation of recognizer index files.
-            if (false)
-            {
-                const double lowerBound = 1000;
-                const int subbandCount = 3;
-                OctaveFreqScale.GetFractionalOctaveBands(lowerBound, subbandCount);
-            }
-
-
 
 
             if (true)
