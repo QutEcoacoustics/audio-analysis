@@ -167,6 +167,9 @@ namespace AudioAnalysisTools.Indices
             ts = bgNoiseNeighborhood;
             double BGNoiseNeighbourhood = ts.TotalSeconds;
 
+            // Linear or Octave frequency scale?
+            bool octaveScale = (bool?)config["OctaveFreqScale"] ?? false;
+
             // calculate start and end samples of the subsegment and noise segment
             int sampleStart = (int)(localOffsetInSeconds * sampleRate);
             //calculate the number of samples in the exact subsegment duration
@@ -406,7 +409,14 @@ namespace AudioAnalysisTools.Indices
             // (C) ################################## EXTRACT SPECTRAL INDICES FROM THE DECIBEL SPECTROGRAM ##################################           
                         
             // i: generate the SUBSEGMENT deciBel spectrogram from the SUBSEGMENT amplitude spectrogram
-            deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput1.amplitudeSpectrogram, dspOutput1.WindowPower, sampleRate, epsilon);
+            if (octaveScale)    // TODO TODO TODO TODO
+            {
+                //deciBelSpectrogram = OctaveFreqScale.DecibelSpectra(dspOutput1.amplitudeSpectrogram, dspOutput1.WindowPower, sampleRate, epsilon);
+            }
+            else
+            {
+                deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput1.amplitudeSpectrogram, dspOutput1.WindowPower, sampleRate, epsilon);
+            }
 
             // ii: Calculate background noise spectrum in decibels
             spectralIndices.BGN = spectralDecibelBGN;

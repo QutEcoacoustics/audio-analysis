@@ -8,23 +8,26 @@ namespace AudioAnalysisTools.DSP
 
 
     /// IMPORTANT NOTE: If you are converting Herz to OCTAVE scale, this conversion MUST be done BEFORE noise reduction
-
-    public enum OctaveScaleType
-    {
-        Octaves27Sr22050, Linear62Octaves31Sr22050, Linear125Octaves30Sr22050, Octaves24Sr64000, Linear125Octaves28Sr64000
-    }
-
-    /*
-        All the above octave scale options are designed for a final freq scale having 256 bins
-        Use the above OctaveScaleTypes as follows:
+        /*
+        All the below octave scale options are designed for a final freq scale having 256 bins
+        Use the below OctaveScaleTypes as follows:
         (1)  Constants required for full octave scale when sr = 22050:           OctaveScaleType ost = OctaveScaleType.Octaves27Sr22050;
         (2)  Constants required for split linear-octave scale when sr = 22050:   OctaveScaleType ost = OctaveScaleType.Linear62Octaves31Sr22050;
         (3)  Constants required for full octave scale when sr = 64000:           OctaveScaleType ost = OctaveScaleType.Octaves24Sr64000;
         (4)  Constants required for split linear-octave scale when sr = 64000    OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Sr64000;
     */
+    public enum OctaveScaleType
+    {
+        Octaves27Sr22050,
+        Linear62Octaves31Sr22050,
+        Linear125Octaves30Sr22050,
+        Octaves24Sr64000,
+        Linear125Octaves28Sr64000
+    }
 
 
-    public class OctaveFreqScale
+
+    public static class OctaveFreqScale
     {
 
 
