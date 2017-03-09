@@ -175,8 +175,9 @@ namespace AnalysisPrograms
                 InputDataDirectory = ipDir,
                 OutputDirectory = opDir,
                 // use the default set of index properties in the AnalysisConfig directory.
-                IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
-                SpectrogramConfigPath = fiSpectrogramConfig
+                //IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
+                IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml".ToFileInfo(),
+                SpectrogramConfigPath = fiSpectrogramConfig 
             };
             throw new NoDeveloperMethodException();
     }

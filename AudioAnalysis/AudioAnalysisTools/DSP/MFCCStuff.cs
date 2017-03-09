@@ -48,11 +48,6 @@ namespace AudioAnalysisTools.DSP
 
 
         /// <summary>
-        /// NOTE: the decibels value is a ratio. Here the ratio is implied.
-        /// This method does not account for power of the window if one is used.
-        /// </summary>
-        /// <returns></returns>
-        /// <summary>
         /// Converts spectral amplitudes directly to dB, normalising for window power and sample rate.
         /// NOTE 1: The window contributes power to the signal which must subsequently be removed from the spectral power.
         /// NOTE 2: Spectral power must be normaliesd for sample rate. Effectively calculate freq power per sample.
@@ -129,85 +124,6 @@ namespace AudioAnalysisTools.DSP
             return spectra;
         }
 
-        /// <summary>
-        /// NOTE: the decibels value is a ratio. Here the ratio is implied.
-        /// This method does not account for power of the window if one is used.
-        /// </summary>
-        /// <returns></returns>
-        /// <summary>
-        /// Converts spectral amplitudes directly to dB, normalising for window power and sample rate.
-        /// NOTE 1: The window contributes power to the signal which must subsequently be removed from the spectral power.
-        /// NOTE 2: Spectral power must be normaliesd for sample rate. Effectively calculate freq power per sample.
-        /// NOTE 3: The power in all freq bins except f=0 must be doubled because the power spectrum is an even function about f=0;
-        ///         This is due to the fact that the spectrum actually consists of 512 + 1 values, the centre value being for f=0.
-        /// NOTE 4: The decibels value is a ratio. Here the ratio is implied.
-        ///         dB = 10*log(amplitude ^2) but in this method adjust power to account for power of Hamming window and SR.
-        /// NOTE 5: THIS METHOD ASSUMES THAT THE LAST BIN IS THE NYQUIST FREQ BIN        
-        /// NOTE 6: THIS METHOD ASSUMES THAT THE FIRST BIN is NOT the MEAN or DC FREQ BIN        
-        /// </summary>
-        /// <param name="amplitudeM"> the amplitude spectra </param>
-        /// <param name="windowPower">value for window power normalisation</param>
-        /// <param name="sampleRate">to normalise for the sampling rate</param>
-        /// <param name="epsilon">small value to avoid log of zero.</param>
-        /// <returns></returns>
-        public static double[,] DecibelSpectraOctaveScale(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon)
-        {
-            int frameCount = amplitudeM.GetLength(0);
-            int binCount = amplitudeM.GetLength(1);
-
-            double minPow  = epsilon * epsilon / windowPower / sampleRate;
-            double minPow2 = epsilon * epsilon * 2 / windowPower / sampleRate;
-            //double minDb   = 10 * Math.Log10(epsilon * epsilon / windowPower / sampleRate);
-            //double min2Db  = 10 * Math.Log10(epsilon * epsilon * 2 / windowPower / sampleRate);
-
-            double[,] spectra = new double[frameCount, binCount];
-
-            // first square the values to calculate power.                       
-            // Must multiply by 2 to accomodate two spectral components, ie positive and neg freq.
-            for (int j = 1; j < binCount - 1; j++)
-            {
-                for (int i = 0; i < frameCount; i++)//foreach time step or frame
-                {
-                    if (amplitudeM[i, j] < epsilon)
-                    {
-                        spectra[i, j] = minPow2;
-                    }
-                    else
-                    {
-                        spectra[i, j] = amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower / sampleRate;
-                    }
-                }//end of all frames
-            } //end of all freq bins
-
-            //calculate power of the Nyquist freq bin - last column of matrix
-            for (int i = 0; i < frameCount; i++) //foreach time step or frame
-            {
-                //calculate power of the DC value
-                if (amplitudeM[i, binCount - 1] < epsilon)
-                {
-                    spectra[i, binCount - 1] = minPow;
-                }
-                else
-                {
-                    spectra[i, binCount - 1] = amplitudeM[i, binCount - 1] * amplitudeM[i, binCount - 1] / windowPower / sampleRate;
-                }
-            }
-
-            // YET TO TO DEBUG     TO DEBUG
-            OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Sr64000;
-            // Assume sampleRate = 64000;
-            //const int frameSize = 16384;
-            //double windowOverlap = 0.5;
-
-            spectra = OctaveFreqScale.ConvertLinearSpectrogramToOctaveFreqScale(spectra, sampleRate, ost);
-            double min, max;
-            spectra = MatrixTools.DeciBels(spectra, out min, out max);
-
-            // Now convert power to decibels using 10 * Math.Log10()
-            spectra = MatrixTools.Matrix2LogValues(spectra);
-
-            return spectra;
-        }
 
         public static int[] VocalizationDetection(double[] decibels, double lowerDbThreshold, double upperDbThreshold, int k1_k2delay, int syllableGap, int minPulse, int[] zeroCrossings)
         {

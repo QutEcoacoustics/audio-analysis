@@ -118,7 +118,7 @@ namespace AnalysisPrograms
                 //convert spectrogram to octave scale
                 dataMatrix = OctaveFreqScale.ConvertLinearSpectrogramToOctaveFreqScale(dataMatrix, sr, ost);
                 double min, max;
-                dataMatrix = MatrixTools.DeciBels(dataMatrix, out min, out max);
+                dataMatrix = MatrixTools.Power2DeciBels(dataMatrix, out min, out max);
                 // DO NOISE REDUCTION
                 dataMatrix = SNR.NoiseReduce_Standard(dataMatrix);
                 //double sdCount = 2.0;

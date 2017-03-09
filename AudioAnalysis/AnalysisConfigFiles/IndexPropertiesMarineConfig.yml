@@ -486,8 +486,12 @@ BGN:
   DoDisplay: true
   # min = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20 = -80-20 = -100, 
   # -20 adds more contrast into BGN spectrogram
+  # for linear freq scale
   NormMin: -90.0
   NormMax: -60.0
+  # for octave freq scale
+  NormMin: -174.0
+  NormMax: -170.0
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -500,7 +504,10 @@ CVR:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.3
+  # for linear freq scale
+  #NormMax: 0.3
+  # for octave freq scale
+  NormMax: 0.1
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -525,7 +532,10 @@ ENT:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.9
+  # for linear freq scale
+  # NormMax: 0.9
+  # for octave freq scale
+  NormMax: 0.5
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -537,7 +547,10 @@ EVN:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.8
+  # for linear freq scale
+  # NormMax: 0.8
+  # for octave freq scale
+  NormMax: 0.1
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -561,7 +574,10 @@ POW:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 5.0
+  # for linear freq scale
+  # NormMax: 5.0
+  # for octave freq scale
+  NormMax: 2.0
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -573,7 +589,10 @@ SPT:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.1
+  # for linear freq scale
+  # NormMax: 0.1
+  # for octave freq scale
+  NormMax: 1.0
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices

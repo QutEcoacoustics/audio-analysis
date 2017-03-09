@@ -415,6 +415,15 @@ namespace AnalysisPrograms
                 sonoConfig.WindowSize = (int?)analysisSettings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
                 sonoConfig.WindowStep = (int?)analysisSettings.Configuration[AnalysisKeys.FrameStep] ?? sonoConfig.WindowSize; // default = no overlap
                 sonoConfig.WindowOverlap = (sonoConfig.WindowSize - sonoConfig.WindowStep) / (double)sonoConfig.WindowSize;
+
+                // Linear or Octave frequency scale?
+                bool octaveScale = (bool?)analysisSettings.Configuration["OctaveFreqScale"] ?? false;
+                if (octaveScale)
+                {
+                    sonoConfig.WindowStep = sonoConfig.WindowSize;
+                    sonoConfig.WindowOverlap = (sonoConfig.WindowSize - sonoConfig.WindowStep) / (double)sonoConfig.WindowSize;
+                }
+
                 ////sonoConfig.NoiseReductionType = NoiseReductionType.NONE; // the default
                 ////sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
                 var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);

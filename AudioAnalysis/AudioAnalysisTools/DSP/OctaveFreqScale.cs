@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MathNet.Numerics.NumberTheory;
 using TowseyLibrary;
 
 
@@ -67,7 +68,92 @@ namespace AudioAnalysisTools.DSP
         }
 
 
+        public static double[,] DecibelSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon, OctaveScaleType ost)
+        {
+            double[,] powerSpectra = PowerSpectra(amplitudeM, windowPower, sampleRate, epsilon, ost);
 
+            // Convert the power values to log using: dB = 10*log(power)
+            double min, max;
+            var decibelSpectra = MatrixTools.Power2DeciBels(powerSpectra, out min, out max);
+            return decibelSpectra;
+        }
+
+        public static double[,] AmplitudeSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon, OctaveScaleType ost)
+        {
+            double[,] powerSpectra = PowerSpectra(amplitudeM, windowPower, sampleRate, epsilon, ost);
+
+            // Convert the power values back to amplitude by taking the square root.
+            var amplitudeSpectra = MatrixTools.SquareRootOfValues(powerSpectra);
+            return amplitudeSpectra;
+        }
+
+        /// <summary>
+        /// Converts an amplitude spectrogram to a power spectrogram having an octave frequency scale.
+        /// 
+        /// This method has been copied from a method of same name in the class MFCCStuff.cs and adapted to produce an octave freq scale.
+        /// It transforms the amplitude spectrogram in the following steps:
+        /// (1) It removes the DC row or bin 0 iff there is odd number of spectrogram bins. ASSUMPTION: Bin count should be power of 2 from FFT.
+        /// (1) It converts spectral amplitudes to power, normalising for window power and sample rate.
+        ///     The window contributes power to the signal which must subsequently be removed from the spectral power. Calculate power per sample.
+        ///     See notes in the MFCCStuff.DecibelSpectra for further exp[lanaitons. These normalisations were adapted from MatLab MFCC code. 
+        /// (2) Then reduce the linear scale toan octave scale depending on the sr and required number of bins or filters.
+        /// </summary>
+        /// <param name="amplitudeM"> the amplitude spectra </param>
+        /// <param name="windowPower">value for window power normalisation</param>
+        /// <param name="sampleRate">to normalise for the sampling rate</param>
+        /// <param name="epsilon">small value to avoid log of zero.</param>
+        /// <param name="ost">Octave scale type</param>
+        /// <returns></returns>
+        public static double[,] PowerSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon, OctaveScaleType ost)
+        {
+            int frameCount = amplitudeM.GetLength(0);
+            int binCount = amplitudeM.GetLength(1);
+
+            double minPow = epsilon * epsilon / windowPower / sampleRate;
+            double minPow2 = epsilon * epsilon * 2 / windowPower / sampleRate;
+
+            if (binCount.IsOdd()) // remove the DC freq bin 0.
+            {
+                amplitudeM = MatrixTools.Submatrix(amplitudeM, 0, 1, frameCount - 1, binCount - 1);
+            }
+
+            // init the spectrogram as a matrix of spectra
+            double[,] powerSpectra = new double[frameCount, binCount];
+
+            // first square the values to calculate power.                       
+            // Must multiply by 2 to accomodate two spectral components, ie positive and neg freq.
+            for (int j = 0; j < binCount - 1; j++)
+            {
+                for (int i = 0; i < frameCount; i++)//foreach time step or frame
+                {
+                    if (amplitudeM[i, j] < epsilon)
+                    {
+                        powerSpectra[i, j] = minPow2;
+                    }
+                    else
+                    {
+                        powerSpectra[i, j] = amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower / sampleRate;
+                    }
+                }//end of all frames
+            } //end of all freq bins
+
+            //calculate power of the Nyquist freq bin - last column of matrix
+            for (int i = 0; i < frameCount; i++) //foreach time step or frame
+            {
+                //calculate power of the DC value
+                if (amplitudeM[i, binCount - 1] < epsilon)
+                {
+                    powerSpectra[i, binCount - 1] = minPow;
+                }
+                else
+                {
+                    powerSpectra[i, binCount - 1] = amplitudeM[i, binCount - 1] * amplitudeM[i, binCount - 1] / windowPower / sampleRate;
+                }
+            }
+
+            powerSpectra = OctaveFreqScale.ConvertLinearSpectrogramToOctaveFreqScale(powerSpectra, sampleRate, ost);
+            return powerSpectra;
+        }
 
 
 

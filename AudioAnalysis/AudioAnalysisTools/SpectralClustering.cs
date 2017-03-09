@@ -17,19 +17,11 @@ namespace AudioAnalysisTools
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
-    using System.Text;
 
-    using AnalysisBase;
-
-    using AudioAnalysisTools;
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.StandardSpectrograms;
-    using AudioAnalysisTools.WavTools;
-
-    using log4net;
-
+    using DSP;
+    using StandardSpectrograms;
+    using WavTools;
     using NeuralNets;
-
     using TowseyLibrary;
 
     public static class SpectralClustering
@@ -441,7 +433,7 @@ namespace AudioAnalysisTools
             // get amplitude spectrogram and remove the DC column ie column zero.
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
             var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep);
-            double[,] spectrogramData = results2.amplitudeSpectrogram;
+            double[,] spectrogramData = results2.AmplitudeSpectrogram;
             double windowPower = frameSize * 0.66; //power of a rectangular window =frameSize. Hanning is less
 
             //spectrogramData = MatrixTools.Submatrix(spectrogramData, 0, 1, spectrogramData.GetLength(0) - 1, spectrogramData.GetLength(1) - 1);
