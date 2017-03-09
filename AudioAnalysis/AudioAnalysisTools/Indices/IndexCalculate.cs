@@ -138,6 +138,10 @@ namespace AudioAnalysisTools.Indices
             var config = configuration;
             var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
 
+            // FOLLWOING LINE IS AN ASSUMPTION - USEFUL ONLY FOR JASCO 64000sr MARINE RECORDINGS
+            // If you wish to use other octave scale types then need to put in the config file and recover here.
+            OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Sr64000;
+
             // get frame parameters for the analysis
             int frameSize = (int?)config[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
             int frameStep = frameSize; // this default = zero overlap
@@ -190,14 +194,6 @@ namespace AudioAnalysisTools.Indices
             AudioRecording bgnRecording = GetRecordingSubsegment(recording, sampleStart, sampleEnd, noiseBuffer);
 
 
-            // GET SUB-SEGMENT for RIDGE calculation AND EXTRACT ENVELOPE and SPECTROGRAM FROM SUBSEGMENT
-            int bufferFrameCount = 2; // 2 because need to allow for edge effects when using 5x5 grid to find ridges.
-            int ridgeBuffer = frameSize * bufferFrameCount;
-            AudioRecording ridgeRecording = GetRecordingSubsegment(recording, sampleStart, sampleEnd, ridgeBuffer);
-
-
-
-
 
             // minimum samples needed to calculate data
             // this value was chosen somewhat arbitrarily
@@ -230,18 +226,29 @@ namespace AudioAnalysisTools.Indices
 
             // EXTRACT ENVELOPE and SPECTROGRAM FROM SUBSEGMENT
             var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFFTs(subsegmentRecording, frameSize, frameStep);
+            if (octaveScale)
+            {
+                dspOutput1.AmplitudeSpectrogram = OctaveFreqScale.AmplitudeSpectra(dspOutput1.AmplitudeSpectrogram,
+                                                                                   dspOutput1.WindowPower, sampleRate, epsilon, ost);
+                dspOutput1.NyquistBin = dspOutput1.AmplitudeSpectrogram.GetLength(1) - 1; // ASSUMPTION!!! Nyquist is in top Octave bin - not necessarily true!!
+            }
 
 
-
-
-            // EXTRACT ENVELOPE and SPECTROGRAM FROM BACKGROUND NOISE SUBSEGMENT
+            // ################################## EXTRACT ENVELOPE and SPECTROGRAM FROM BACKGROUND NOISE SUBSEGMENT
             var dspOutput2 = DSP_Frames.ExtractEnvelopeAndFFTs(bgnRecording, frameSize, frameStep);
+            if (octaveScale)
+            {
+                dspOutput2.AmplitudeSpectrogram = OctaveFreqScale.AmplitudeSpectra(dspOutput2.AmplitudeSpectrogram,
+                                                                                   dspOutput2.WindowPower, sampleRate, epsilon, ost);
+                dspOutput2.NyquistBin = dspOutput2.AmplitudeSpectrogram.GetLength(1) - 1; // ASSUMPTION!!! Nyquist is in top Octave bin - not necessarily true!!
+            }
+
             // i. convert signal to dB and subtract background noise. Noise SDs to calculate threshold = ZERO by default
             double signalBGN = NoiseRemovalModal.CalculateBackgroundNoise(dspOutput2.Envelope);
             // ii.: calculate the noise profile from the amplitude sepctrogram
-            double[] spectralAmplitudeBGN = NoiseProfile.CalculateBackgroundNoise(dspOutput2.amplitudeSpectrogram);
+            double[] spectralAmplitudeBGN = NoiseProfile.CalculateBackgroundNoise(dspOutput2.AmplitudeSpectrogram);
             // iii: generate deciBel spectrogram and calculate the dB noise profile
-            double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput2.amplitudeSpectrogram, dspOutput2.WindowPower, sampleRate, epsilon);
+            double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput2.AmplitudeSpectrogram, dspOutput2.WindowPower, sampleRate, epsilon);
             double[] spectralDecibelBGN = NoiseProfile.CalculateBackgroundNoise(deciBelSpectrogram);
 
 
@@ -314,7 +321,7 @@ namespace AudioAnalysisTools.Indices
             //summaryIndices.AvgEventDuration = activity.avEventDuration;
 
             // Note that the spectrogram has had the DC bin removed. i.e. has only 256 columns.
-            double[,] amplitudeSpectrogram = dspOutput1.amplitudeSpectrogram; // get amplitude spectrogram.
+            double[,] amplitudeSpectrogram = dspOutput1.AmplitudeSpectrogram; // get amplitude spectrogram.
             int nyquistBin = dspOutput1.NyquistBin;
 
             // (A2) ################## CALCULATE  NDSI (Normalised difference soundscape Index) FROM THE AMPLITUDE SPECTROGRAM #################
@@ -330,23 +337,36 @@ namespace AudioAnalysisTools.Indices
 
             // calculate bin id of boundary between low & mid frequency bands. This is to avoid low freq bins that likely contain anthropogenic noise.
             int lowerBinBound = (int)Math.Ceiling(lowFreqBound / dspOutput1.FreqBinWidth);
-            // calculate bin id of upper boundary of bird-band. This is to avoid high freq artefacts due to mp3 compression.
+            // calculate bin id of upper boundary of bird-band. Also avoids high freq artefacts due to mp3.
             int upperBinBound = (int)Math.Ceiling(midFreqBound / dspOutput1.FreqBinWidth);
             // calculate number of freq bins in the reduced bird-band.
             //int reducedFreqBinCount = amplitudeSpectrogram.GetLength(1) - lowerBinBound;
             int midBandBinCount = upperBinBound - lowerBinBound + 1;
 
-            // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this will be less than 17640/2.
+            if (octaveScale)
+            {
+                // the above frequency bin bounds do not apply with octave scale
+                // need to recalculate them suitable for JASCO MARINE recordings.
+                // TODO TODO TODO the below bounds are hard coded for a single OCTAVE SCALE
+                lowFreqBound = 100;
+                lowerBinBound = 26;  // i.e. 26 bins above the zero bin
+                midFreqBound = 1000;
+                upperBinBound = 139; // i.e.139 bins above the zero bin OR 39 bins below the top bin of 256
+                midBandBinCount = upperBinBound - lowerBinBound + 1;
+            }
+
+
+            // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this will be less than SR/2.
             // original sample rate can be anything 11.0-44.1 kHz.
             int originalNyquistFreq = sampleRateOfOriginalAudioFile / 2;
-
-
             // i.e. upsampling has been done
             if (dspOutput1.NyquistFreq > originalNyquistFreq)
             {
                 dspOutput1.NyquistFreq = originalNyquistFreq;
                 dspOutput1.NyquistBin  = (int)Math.Floor(originalNyquistFreq / dspOutput1.FreqBinWidth); // note that binwidth does not change
             }
+
+
 
             // ii: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
             spectralIndices.DIF = AcousticComplexityIndex.SumOfAmplitudeDifferences(amplitudeSpectrogram);
@@ -393,30 +413,11 @@ namespace AudioAnalysisTools.Indices
             double entropyOfPeaksSpectrum = AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, upperBinBound);
             summaryIndices.EntropyOfPeaksSpectrum = 1 - entropyOfPeaksSpectrum;
 
-            // vii: calculate RAIN and CICADA indices.  //################ NO LONGER USED - NO WARNING REQUIRED
-            //if (!warned)
-            //{
-            //    Logger.Warn("Rain and cicada index calculation is disabled");
-            //    warned = true;
-            //}
 
-            ////Dictionary<string, double> dict = RainIndices.GetIndices(signalEnvelope, subsegmentTimeSpan, frameStepTimeSpan, amplitudeSpectrogram, LowFreqBound, MidFreqBound, freqBinWidth);
-
-            ////summaryIndices.RainIndex = dict[InitialiseIndexProperties.keyRAIN];
-            ////summaryIndices.CicadaIndex = dict[InitialiseIndexProperties.keyCICADA];
-
-
+            // ######################################################################################################################################################
             // (C) ################################## EXTRACT SPECTRAL INDICES FROM THE DECIBEL SPECTROGRAM ##################################           
-                        
-            // i: generate the SUBSEGMENT deciBel spectrogram from the SUBSEGMENT amplitude spectrogram
-            if (octaveScale)    // TODO TODO TODO TODO
-            {
-                //deciBelSpectrogram = OctaveFreqScale.DecibelSpectra(dspOutput1.amplitudeSpectrogram, dspOutput1.WindowPower, sampleRate, epsilon);
-            }
-            else
-            {
-                deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput1.amplitudeSpectrogram, dspOutput1.WindowPower, sampleRate, epsilon);
-            }
+
+                deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput1.AmplitudeSpectrogram, dspOutput1.WindowPower, sampleRate, epsilon);
 
             // ii: Calculate background noise spectrum in decibels
             spectralIndices.BGN = spectralDecibelBGN;
@@ -429,6 +430,7 @@ namespace AudioAnalysisTools.Indices
             spectralIndices.POW = SpectrogramTools.CalculateAvgSpectrumFromSpectrogram(deciBelSpectrogram);
 
 
+            // ######################################################################################################################################################
             // iv: CALCULATE SPECTRAL COVER. NOTE: spectrogram is a noise reduced decibel spectrogram
             double dBThreshold = ActivityAndCover.DefaultActivityThresholdDb; // dB THRESHOLD for calculating spectral coverage
             var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameStepTimeSpan, lowFreqBound, midFreqBound, freqBinWidth);
@@ -440,16 +442,11 @@ namespace AudioAnalysisTools.Indices
             summaryIndices.LowFreqCover  = spActivity.lowFreqBandCover;
 
 
-            // vii: CALCULATE SPECTRAL PEAK TRACKS. NOTE: spectrogram is a noise reduced decibel spectrogram
-            // FreqBinWidth can be accessed, if required, through dspOutput1.FreqBinWidth,
-            var dspOutput3 = DSP_Frames.ExtractEnvelopeAndFFTs(ridgeRecording, frameSize, frameStep);
-            // Generate the ridge SUBSEGMENT deciBel spectrogram from the SUBSEGMENT amplitude spectrogram
-            double[,] ridgeSpectrogram = MFCCStuff.DecibelSpectra(dspOutput3.amplitudeSpectrogram, dspOutput3.WindowPower, sampleRate, epsilon);
-            ridgeSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(ridgeSpectrogram, spectralDecibelBGN);
-            ridgeSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(ridgeSpectrogram, nhDecibelThreshold);
 
-            // thresholds in decibels
-            var sptInfo = new SpectralPeakTracks(ridgeSpectrogram, frameStepTimeSpan);
+            // ######################################################################################################################################################
+            // vii: CALCULATE SPECTRAL PEAK TRACKS. NOTE: spectrogram is a noise reduced decibel spectrogram
+            // FreqBinWidth can be accessed, if required, through dspOutput1.FreqBinWidth
+            var sptInfo = CalculateSpectralPeakTracks(recording, sampleStart, sampleEnd, frameSize, octaveScale);
             spectralIndices.SPT = sptInfo.SptSpectrum;
             spectralIndices.RHZ = sptInfo.RhzSpectrum;
             spectralIndices.RVT = sptInfo.RvtSpectrum;
@@ -465,7 +462,8 @@ namespace AudioAnalysisTools.Indices
             //summaryIndices.AvgSptDuration = sptInfo.AvTrackDuration;
             //summaryIndices.SptPerSecond = sptInfo.TotalTrackCount / subsegmentSecondsDuration;
 
-            // #V#####################################################################################################################################################
+
+            // ######################################################################################################################################################
             // iv:  set up other info to return
             BaseSonogram sonogram = null;
             double[,] hits = sptInfo.Peaks;
@@ -518,7 +516,7 @@ namespace AudioAnalysisTools.Indices
                 summaryIndices.ClusterCount = 0;
                 //summaryIndices.AvgClusterDuration = TimeSpan.Zero;
                 summaryIndices.ThreeGramCount = 0;
-                //spectralIndices.CLS = new double[freqBinCount];
+                spectralIndices.CLS = new double[amplitudeSpectrogram.GetLength(1)];
                 return result;
             }
 
@@ -556,6 +554,7 @@ namespace AudioAnalysisTools.Indices
                 summaryIndices.ClusterCount = 0;
                 //summaryIndices.AvgClusterDuration = TimeSpan.Zero;
                 summaryIndices.ThreeGramCount = 0;
+                spectralIndices.CLS = new double[amplitudeSpectrogram.GetLength(1)];
             }
             else
             {
@@ -644,60 +643,56 @@ namespace AudioAnalysisTools.Indices
             return subsegmentRecording;
         }
 
-        public static double[] GetArrayOfWeightedAcousticIndices(DataTable dt, double[] weightArray)
+
+
+        /// <summary>
+        /// CALCULATEs SPECTRAL PEAK TRACKS. 
+        /// NOTE: We require a noise reduced decibel spectrogram
+        /// FreqBinWidth can be accessed, if required, through dspOutput1.FreqBinWidth,
+        /// </summary>
+        /// <param name="recording"></param>
+        /// <param name="sampleStart"></param>
+        /// <param name="sampleEnd"></param>
+        /// <param name="frameSize"></param>
+        /// <param name="octaveScale"></param>
+        /// <returns></returns>
+        public static SpectralPeakTracks CalculateSpectralPeakTracks(AudioRecording recording, int sampleStart, int sampleEnd, 
+                                                                     int frameSize, bool octaveScale)
         {
-            if (weightArray.Length > dt.Columns.Count)
+            double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
+            int sampleRate = recording.WavReader.SampleRate;
+            int bufferFrameCount = 2; // 2 because must allow for edge effects when using 5x5 grid to find ridges.
+            int ridgeBuffer = frameSize * bufferFrameCount;
+            AudioRecording ridgeRecording = GetRecordingSubsegment(recording, sampleStart, sampleEnd, ridgeBuffer);
+            int frameStep = frameSize;
+            var dspOutput = DSP_Frames.ExtractEnvelopeAndFFTs(ridgeRecording, frameSize, frameStep);
+
+            // Generate the ridge SUBSEGMENT deciBel spectrogram from the SUBSEGMENT amplitude spectrogram
+            // i: generate the SUBSEGMENT deciBel spectrogram from the SUBSEGMENT amplitude spectrogram
+            double[,] decibelSpectrogram = null;
+            if (octaveScale)
             {
-                // weights do not match data table
-                return null;
+                OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Sr64000;
+                decibelSpectrogram = OctaveFreqScale.DecibelSpectra(dspOutput.AmplitudeSpectrogram, dspOutput.WindowPower, sampleRate, epsilon, ost);
+            }
+            else
+            {
+                decibelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput.AmplitudeSpectrogram, dspOutput.WindowPower, sampleRate, epsilon);
             }
 
-            List<double[]> columns = new List<double[]>();
-            List<double> weights = new List<double>();
-            for (int i = 0; i < weightArray.Length; i++)
-            {
-                if (weightArray[i] != 0.0)
-                {
-                    weights.Add(weightArray[i]);
-                    string colName = dt.Columns[i].ColumnName;
-                    double[] array = DataTableTools.Column2ArrayOfDouble(dt, colName);
-                    columns.Add(DataTools.NormaliseArea(array)); // normalize the arrays prior to obtaining weighted index.
-                }
-            }
+            // calculate the noise profile
+            var spectralDecibelBgn = NoiseProfile.CalculateBackgroundNoise(decibelSpectrogram);
+            decibelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(decibelSpectrogram, spectralDecibelBgn);
+            double nhDecibelThreshold = 2.0; // SPECTRAL dB THRESHOLD for smoothing background
+            decibelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(decibelSpectrogram, nhDecibelThreshold);
 
-            int arrayLength = columns[0].Length; // assume all columns are of same length 
-            double[] weightedIndices = new double[arrayLength];
-            for (int i = 0; i < arrayLength; i++)
-            {
-                double combo = 0.0;
-                for (int c = 0; c < columns.Count; c++)
-                {
-                    combo += weights[c] * columns[c][i];
-                }
-                weightedIndices[i] = combo * combo; // square the index for display purposes only. Does not change ranking.
-            }
+            // thresholds in decibels
+            double frameStepDuration = frameStep / (double)sampleRate; // fraction of a second
+            TimeSpan frameStepTimeSpan = TimeSpan.FromTicks((long)(frameStepDuration * TimeSpan.TicksPerSecond));
 
-            //Add in weighted bias for chorus and backgorund noise
-            //IMPORTANT: this only works if DataTable is ordered correctly before this point.
-            //for (int i = 0; i < wtIndices.Length; i++)
-            //{
-            //if((i>=290) && (i<=470)) wtIndices[i] *= 1.1;  //morning chorus bias
-            //background noise bias
-            //if (bg_dB[i - 1] > -35.0) wtIndices[i] *= 0.8;
-            //else
-            //if (bg_dB[i - 1] > -30.0) wtIndices[i] *= 0.6;
-            //}
-
-            weightedIndices = DataTools.normalise(weightedIndices); //normalise final array in [0,1]
-            return weightedIndices;
+            var sptInfo = new SpectralPeakTracks(decibelSpectrogram, frameStepTimeSpan);
+            return sptInfo;
         }
 
-        //public static double[] CalculateComboWeights()
-        //{
-        //    Dictionary<string, IndexProperties> indexProperties = InitialiseIndexProperties.InitialisePropertiesOfIndices();
-        //    //var items = AcousticIndicesStore.InitOutputTableColumns();
-        //    //return items.Item4; // COMBO_WEIGHTS;
-        //    return InitialiseIndexProperties.GetArrayOfComboWeights(indexProperties);
-        //}
     }
 }
