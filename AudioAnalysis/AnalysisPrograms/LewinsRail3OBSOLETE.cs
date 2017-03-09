@@ -28,6 +28,7 @@ namespace AnalysisPrograms
 
     using AnalysisPrograms.Production;
 
+    [Obsolete]
     public class LewinsRail3OBSOLETE : IAnalyser
     {
         public class Arguments : AnalyserArguments

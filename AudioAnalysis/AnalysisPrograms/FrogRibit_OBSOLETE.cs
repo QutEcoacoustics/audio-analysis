@@ -15,6 +15,7 @@ namespace AnalysisPrograms
 {
     using AnalysisPrograms.Production;
 
+    [Obsolete]
     public class FrogRibit_OBSOLETE
     {
         public class Arguments : SourceConfigOutputDirArguments

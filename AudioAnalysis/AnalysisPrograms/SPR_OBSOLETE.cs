@@ -17,6 +17,7 @@ namespace AnalysisPrograms
     /// <summary>
     /// Implements a simple form of Syntactic Pattern Recognition to find defined bird calls in spectra.
     /// </summary>
+    [Obsolete]
     public class SPR_OBSOLETE  //Syntactic Pattern Recognition
     {
         //Keys to recognise identifiers in PARAMETERS - INI file. 

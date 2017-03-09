@@ -29,6 +29,7 @@ namespace AnalysisPrograms
 
     using AnalysisPrograms.Production;
 
+    [Obsolete]
     public class Frogs_OBSOLETE : IAnalyser
     {
 
