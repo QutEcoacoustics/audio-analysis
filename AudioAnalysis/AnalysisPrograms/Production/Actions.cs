@@ -267,11 +267,11 @@ namespace AnalysisPrograms.Production
         }
 
         [ArgDescription("Calls Rain.Dev():  Used to recognise one minute segments of rain. Revise code if intend to use.")]
-        public Rain.Arguments RainArgs { get; set; }
-        public static Action<Rain.Arguments> Rain()
+        public Rain_OBSOLETE.Arguments RainArgs { get; set; }
+        public static Action<Rain_OBSOLETE.Arguments> Rain()
         {
             // IAnalyser - detects rain
-            return AnalysisPrograms.Rain.Dev;
+            return AnalysisPrograms.Rain_OBSOLETE.Dev;
         }
 
         [ArgDescription("Calls LewinsRail3.Dev():  Dates back to 2012. Revise code if intend to use.")]
@@ -399,12 +399,12 @@ namespace AnalysisPrograms.Production
         }
 
         [ArgDescription("DEPRACATED:  All frog recognizers should now enter through EventRecognizer.Execute() or Multirecognizer.Execute().")]
-        public CanetoadOld.Arguments CanetoadArgs { get; set; }
-        public static Action<CanetoadOld.Arguments> Canetoad()
+        public CanetoadOld_OBSOLETE.Arguments CanetoadArgs { get; set; }
+        public static Action<CanetoadOld_OBSOLETE.Arguments> Canetoad()
         {
             // IAnalyser - detects canetoad calls as acoustic events
             // Execute() signed off: Michael Towsey 27th July 2012
-            return AnalysisPrograms.CanetoadOld.Dev;
+            return AnalysisPrograms.CanetoadOld_OBSOLETE.Dev;
         }
 
         [ArgDescription("No further practical use. Used in 2014 to prepare short recordings of bird calls for analysis by Convolution Neural Networks.")]
