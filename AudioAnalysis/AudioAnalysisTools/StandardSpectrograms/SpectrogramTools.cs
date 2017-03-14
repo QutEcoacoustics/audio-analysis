@@ -771,51 +771,124 @@ namespace AudioAnalysisTools.StandardSpectrograms
         // ### BELOW METHODS DRAW GRID LINES ON SPECTROGRAMS #####################################################################################
         // #######################################################################################################################################
 
+        /// <summary>
+        /// Calla this method if the frequency scale is linear.
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <param name="startOffset"></param>
+        /// <param name="fullDuration"></param>
+        /// <param name="xAxisTicInterval"></param>
+        /// <param name="nyquist"></param>
+        /// <param name="freqScale"></param>
+        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan startOffset, TimeSpan fullDuration, TimeSpan xAxisTicInterval, int nyquist, string freqScale)
+        {
+            int herzInterval = 1000; // the default
+            if (nyquist < 1500) herzInterval = 100;
 
+            DrawFrequencyLinesOnImage(bmp, nyquist, herzInterval, "Linear");
+            //DrawTimeLinesOnImage(bmp, startOffset, fullDuration, xAxisTicInterval);
+        } // DrawGridLInesOnImage()
+
+        /// <summary>
+        /// Calla this method if the frequency scale is linear.
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <param name="startOffset"></param>
+        /// <param name="fullDuration"></param>
+        /// <param name="xAxisTicInterval"></param>
+        /// <param name="nyquist"></param>
+        /// <param name="herzInterval"></param>
         public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan startOffset, TimeSpan fullDuration, TimeSpan xAxisTicInterval, int nyquist, int herzInterval)
         {
+            DrawFrequencyLinesOnImage(bmp, nyquist, herzInterval, "Linear");
+            //DrawTimeLinesOnImage(bmp, startOffset, fullDuration, xAxisTicInterval);
+        } // DrawGridLInesOnImage()
+
+        public static void DrawFrequencyLinesOnImage(Bitmap bmp, int nyquist, int herzInterval, string freqScale)
+        {
+            if (freqScale.Equals("Linear"))
+            {
+                DrawLinearFrequencyLinesOnImage(bmp, nyquist, herzInterval);
+                return;
+            }
+
+            // get the defaul Octave scale
+            OctaveScaleType ost = OctaveScaleType.Linear125Octaves30Nyquist11025;
+            var octaveBinBounds = OctaveFreqScale.GetOctaveScale(ost);
+            int[,] gridLineLocations = OctaveFreqScale.GetGridLineLocations(ost, octaveBinBounds);
+
+            if (freqScale.Equals(OctaveScaleType.Linear125Octaves28Nyquist32000.ToString()))
+            {
+                //int sr = 64000;
+                //const int frameSize = 16384;
+                //double windowOverlap = 0.5;
+                octaveBinBounds = OctaveFreqScale.GetOctaveScale(ost);
+                gridLineLocations = OctaveFreqScale.GetGridLineLocations(ost, octaveBinBounds);
+            }
+
             int rows = bmp.Height;
             int cols = bmp.Width;
 
-            //Graphics g = Graphics.FromImage(bmp);
-
-            // for rows draw in Y-axis line
-            // number of horizontal grid lines
-            int kHzInterval = herzInterval / 1000;
-            double Y_interval = bmp.Height / (double)(nyquist / (double)herzInterval);
-            int gridCount = (int)(rows / Y_interval);
-            for (int i = 1; i <= gridCount; i++)
+            // Draw in horizontal grid lines
+            for (int i = 1; i <= gridLineLocations.Length; i++)
             {
-                int row = (int)(i * Y_interval);
-                int rowFromBottom = rows - row;
-                for (int column = 0; column < cols - 3; column++) 
+                //int rowFromBottom = rows - gridLineLocations[0, i];
+                int rowFromBottom = gridLineLocations[0, i];
+                for (int column = 0; column < cols - 3; column++)
                 {
                     bmp.SetPixel(column, rowFromBottom, Color.Black);
                     column += 3;
                     bmp.SetPixel(column, rowFromBottom, Color.White);
                     column += 2;
                 }
-                int band = (int)(rowFromBottom / Y_interval);
+                //int band = (int)(rowFromBottom / yInterval);
                 //g.DrawString(((band * kHzInterval) + " kHz"), new Font("Thachoma", 8), Brushes.Gray, 2, row - 5);
             }
+        } // DrawFrequencyLinesOnImage()
 
-            // for columns, draw in X-axis lines
-            //double xAxisPixelDurationInMilliseconds = fullDuration.TotalMilliseconds / (double)cols;
-            //int xInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds));
-            //for (int column = 1; column < cols; column++)
-            //{
+        public static void DrawLinearFrequencyLinesOnImage(Bitmap bmp, int nyquist, int herzInterval)
+        {
+            int rows = bmp.Height;
+            int cols = bmp.Width;
 
-            //    if (column % xInterval == 0)
-            //    {
-            //        for (int row = 0; row < rows - 1; row++)
-            //        {
-            //            bmp.SetPixel(column, row, Color.Black);
-            //            bmp.SetPixel(column, row + 1, Color.White);
-            //            row += 2;
-            //        }
-            //    }
-            //}
-        } // DrawGridLInesOnImage()
+            // Draw in horizontal grid lines
+            double yInterval = bmp.Height / (double)(nyquist / (double)herzInterval);
+            int gridCount = (int)(rows / yInterval);
+            for (int i = 1; i <= gridCount; i++)
+            {
+                int row = (int)(i * yInterval);
+                int rowFromBottom = rows - row;
+                for (int column = 0; column < cols - 3; column++)
+                {
+                    bmp.SetPixel(column, rowFromBottom, Color.Black);
+                    column += 3;
+                    bmp.SetPixel(column, rowFromBottom, Color.White);
+                    column += 2;
+                }
+                //int band = (int)(rowFromBottom / yInterval);
+                //g.DrawString(((band * kHzInterval) + " kHz"), new Font("Thachoma", 8), Brushes.Gray, 2, row - 5);
+            }
+        } // DrawFrequencyLinesOnImage()
+
+        public static void DrawTimeLinesOnImage(Bitmap bmp, TimeSpan startOffset, TimeSpan fullDuration, TimeSpan xAxisTicInterval)
+        {
+            int rows = bmp.Height;
+            int cols = bmp.Width;       
+            double xAxisPixelDurationInMilliseconds = fullDuration.TotalMilliseconds / (double)cols;
+            int xInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds));
+            for (int column = 1; column < cols; column++)
+            {
+                if (column % xInterval == 0)
+                {
+                    for (int row = 0; row < rows - 1; row++)
+                    {
+                        bmp.SetPixel(column, row, Color.Black);
+                        bmp.SetPixel(column, row + 1, Color.White);
+                        row += 2;
+                    }
+                }
+            }
+        } // DrawTimeLinesOnImage()
 
 
 

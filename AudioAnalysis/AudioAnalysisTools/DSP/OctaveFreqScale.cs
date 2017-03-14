@@ -13,17 +13,17 @@ namespace AudioAnalysisTools.DSP
         All the below octave scale options are designed for a final freq scale having 256 bins
         Use the below OctaveScaleTypes as follows:
         (1)  Constants required for full octave scale when sr = 22050:           OctaveScaleType ost = OctaveScaleType.Octaves27Sr22050;
-        (2)  Constants required for split linear-octave scale when sr = 22050:   OctaveScaleType ost = OctaveScaleType.Linear62Octaves31Sr22050;
-        (3)  Constants required for full octave scale when sr = 64000:           OctaveScaleType ost = OctaveScaleType.Octaves24Sr64000;
-        (4)  Constants required for split linear-octave scale when sr = 64000    OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Sr64000;
+        (2)  Constants required for split linear-octave scale when sr = 22050:   OctaveScaleType ost = OctaveScaleType.Linear62Octaves31Nyquist11025;
+        (3)  Constants required for full octave scale when sr = 64000:           OctaveScaleType ost = OctaveScaleType.Octaves24Nyquist32000;
+        (4)  Constants required for split linear-octave scale when sr = 64000    OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Nyquist32000;
     */
     public enum OctaveScaleType
     {
         Octaves27Sr22050,
-        Linear62Octaves31Sr22050,
-        Linear125Octaves30Sr22050,
-        Octaves24Sr64000,
-        Linear125Octaves28Sr64000
+        Linear62Octaves31Nyquist11025,
+        Linear125Octaves30Nyquist11025,
+        Octaves24Nyquist32000,
+        Linear125Octaves28Nyquist32000
     }
 
 
@@ -182,7 +182,7 @@ namespace AudioAnalysisTools.DSP
                         octaveBinBounds = LinearToFullOctaveScale(sr, frameSize, finalBinCount, lowerHzBound, upperHzBound, octaveDivisions);
                     }
                     break;
-                case OctaveScaleType.Linear62Octaves31Sr22050:
+                case OctaveScaleType.Linear62Octaves31Nyquist11025:
                     {
                         //// constants required for split linear-octave scale when sr = 22050
                         sr = 22050;
@@ -193,7 +193,7 @@ namespace AudioAnalysisTools.DSP
                         octaveBinBounds = LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, lowerHzBound, upperHzBound, octaveDivisions);
                     }
                     break; 
-                case OctaveScaleType.Linear125Octaves30Sr22050:
+                case OctaveScaleType.Linear125Octaves30Nyquist11025:
                     {
                         //// constants required for split linear-octave scale when sr = 22050
                         sr = 22050;
@@ -204,7 +204,7 @@ namespace AudioAnalysisTools.DSP
                         octaveBinBounds = LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, lowerHzBound, upperHzBound, octaveDivisions);
                     }
                     break; 
-                case OctaveScaleType.Octaves24Sr64000:
+                case OctaveScaleType.Octaves24Nyquist32000:
                     {
                         //// constants required for full octave scale when sr = 64000
                         sr = 64000;
@@ -215,7 +215,7 @@ namespace AudioAnalysisTools.DSP
                         octaveBinBounds = LinearToFullOctaveScale(sr, frameSize, finalBinCount, lowerHzBound, upperHzBound, octaveDivisions);
                     }
                     break;
-                case OctaveScaleType.Linear125Octaves28Sr64000:
+                case OctaveScaleType.Linear125Octaves28Nyquist32000:
                     {
                         //// constants required for split linear-octave scale when sr = 64000
                         sr = 64000;
@@ -244,24 +244,39 @@ namespace AudioAnalysisTools.DSP
                 case OctaveScaleType.Octaves27Sr22050:
                     {
                         gridLineLocations = new int[8,2];
+                        gridLineLocations[0, 0] = imageHeight - 34;  //  125 Hz
+                        gridLineLocations[1, 0] = imageHeight - 62;  //  250
+                        gridLineLocations[2, 0] = imageHeight - 89;  //  500
+                        gridLineLocations[3, 0] = imageHeight - 117; // 1000
+                        gridLineLocations[4, 0] = imageHeight - 145; // 2000
+                        gridLineLocations[5, 0] = imageHeight - 173; // 4000
+                        gridLineLocations[6, 0] = imageHeight - 201; // 8000
+                        // entre the Hz value
+                        gridLineLocations[0, 1] = 125;  //  125 Hz
+                        gridLineLocations[1, 1] = 250;  //  250
+                        gridLineLocations[2, 1] = 500;  //  500
+                        gridLineLocations[3, 1] = 1000; // 1000
+                        gridLineLocations[4, 1] = 2000; // 2000
+                        gridLineLocations[5, 1] = 4000; // 4000
+                        gridLineLocations[6, 1] = 8000; // 8000
                     }
                     break;
-                case OctaveScaleType.Linear62Octaves31Sr22050:
+                case OctaveScaleType.Linear62Octaves31Nyquist11025:
                     {
                         gridLineLocations = new int[8, 2];
                     }
                     break;
-                case OctaveScaleType.Linear125Octaves30Sr22050:
+                case OctaveScaleType.Linear125Octaves30Nyquist11025:
                     {
                         gridLineLocations = new int[8, 2];
                     }
                     break;
-                case OctaveScaleType.Octaves24Sr64000:
+                case OctaveScaleType.Octaves24Nyquist32000:
                     {
                         gridLineLocations = new int[8, 2];
                     }
                     break;
-                case OctaveScaleType.Linear125Octaves28Sr64000:
+                case OctaveScaleType.Linear125Octaves28Nyquist32000:
                     {
                         gridLineLocations = new int[8, 2];
                         gridLineLocations[0,0] = imageHeight - 34;  //  125 Hz
@@ -550,7 +565,7 @@ namespace AudioAnalysisTools.DSP
             int sr = 22050;
             int frameSize = 8192; // default for sr = 22050
 
-            if ((ost == OctaveScaleType.Octaves24Sr64000)||(ost == OctaveScaleType.Linear125Octaves28Sr64000))
+            if ((ost == OctaveScaleType.Octaves24Nyquist32000)||(ost == OctaveScaleType.Linear125Octaves28Nyquist32000))
             {
                 sr = 64000;
                 frameSize = 16384; // default for sr = 64000

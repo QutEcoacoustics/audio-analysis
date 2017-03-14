@@ -119,6 +119,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// default value - after resampling
         public int SampleRate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the ColorMap within current recording.
+        /// </summary>
+        public string FreqScale { get; set; }
+
         public int YInterval // mark 1 kHz intervals
         {
             get
@@ -204,7 +209,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             StartOffset = indexGenerationData.MinuteOffset;
             // set the X and Y axis scales for the spectrograms 
             IndexCalculationDuration = indexGenerationData.IndexCalculationDuration;
-            XTicInterval = config.XAxisTicInterval; 
+            XTicInterval = config.XAxisTicInterval;
+            FreqScale = config.FreqScale;
             ColorMap = colourMap;
         }
 
@@ -1006,7 +1012,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             //draw the composite bitmap
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, TimeSpan.Zero, fullDuration, cs.XTicInterval, nyquist, herzInterval);
+            //SpectrogramTools.DrawTimeLinesOnImage((Bitmap)bmp1, TimeSpan.Zero, fullDuration, cs.XTicInterval);
+            SpectrogramTools.DrawFrequencyLinesOnImage((Bitmap)bmp1, nyquist, herzInterval, cs.FreqScale);
             var imageList = new List<Image> {titleBar, timeBmp1, bmp1, timeBmp2};
             if (suntrack != null) imageList.Add(suntrack);
             Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
@@ -1294,6 +1301,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             LdSpectrogramConfig config = ldSpectrogramConfig;
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
+            string freqScale = config.FreqScale ?? "Linear";   // sets the freq scale
             string colorMap1 = config.ColorMap1 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
             string colorMap2 = config.ColorMap2 ?? SpectrogramConstants.RGBMap_BGN_POW_EVN;   // assigns indices to RGB
 
