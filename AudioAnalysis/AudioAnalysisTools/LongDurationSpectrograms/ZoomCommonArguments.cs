@@ -65,7 +65,7 @@
         /// <summary>
         /// Read in required files.
         /// We expect a valid indices output directory (the input directory in this action)
-        /// to contain a IndexDistributions.json and a IndexGenerationData.json file
+        /// to contain a SpectralIndexStatistics.json and a IndexGenerationData.json file
         /// </summary>
         /// <param name="indicesDirectory"></param>
         /// <param name="indexGenerationDataFile"></param>

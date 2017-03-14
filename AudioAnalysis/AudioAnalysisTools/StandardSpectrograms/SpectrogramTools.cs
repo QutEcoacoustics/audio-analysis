@@ -812,11 +812,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 return;
             }
 
-            // get the defaul Octave scale
+            // set the default Octave scale
             OctaveScaleType ost = OctaveScaleType.Linear125Octaves30Nyquist11025;
             var octaveBinBounds = OctaveFreqScale.GetOctaveScale(ost);
             int[,] gridLineLocations = OctaveFreqScale.GetGridLineLocations(ost, octaveBinBounds);
 
+            // check if it is some other Octave scale
             if (freqScale.Equals(OctaveScaleType.Linear125Octaves28Nyquist32000.ToString()))
             {
                 //int sr = 64000;
