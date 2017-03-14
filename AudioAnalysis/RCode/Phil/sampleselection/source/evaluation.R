@@ -5,12 +5,18 @@
 
 source('evaluation.plots.R')
 
-Batch1 <- function () {
-    # specific set of rankings to compare
-    batch <- c(13,14,15,16,17,18,19)
-    # subset.rankings <- c(6,10) # clustering decay = 1, with and without temp.disp
-    subset.rankings <- c(4,8) # event count only, with and without temp.disp
-    return(EvaluateSamples(versions = batch, subset.rankings = subset.rankings))
+Batch1 <- function (batch.versions = c(13,14,15,16,17,18,19), subset.rankings = c(4,8)) {
+    # does the evaluation of all of the given versions using all of the given rankings
+    # 
+    # Args:
+    #     batch.versions (numeric): the datatrack versions of ranking to evaluate
+    #     subset.rankings (numeric): the ranking numbers to use from those saved in the ranking
+    #                                (each ranking data object can have multiple rankings based on several algorithms, which are numberd)
+    #
+    # Details:
+    #     subset.rankings <- c(6,10) is "clustering decay = 1, with and without temp.disp"
+    #     subset.rankings = c(4,8) is "event count only, with and without temp.disp"
+    return(EvaluateSamples(versions = batch.versions, subset.rankings = subset.rankings))
 }
 
 Batch1 <- function () {
@@ -43,7 +49,7 @@ EvaluateSamples <- function (use.last.accessed = FALSE, versions = NULL, subset.
     if (is.numeric(versions)) {  
         results <- list()
         for (v in versions) {     
-            ranks <- ReadOutput('ranked.samples', use.last.accessed = use.last.accessed, version = v)
+            ranks <- datatrack::ReadDataobject('ranked.samples', use.last.accessed = use.last.accessed, version = v)
             ranks <- ChooseNumClusters(ranks)
             ranks <- ChooseRankingsToComapre(ranks, subset.rankings)
             heading <- GetHeading(ranks)
@@ -51,7 +57,7 @@ EvaluateSamples <- function (use.last.accessed = FALSE, versions = NULL, subset.
         }
         return(results)
     } else {
-        ranks <- ReadOutput('ranked.samples', use.last.accessed = use.last.accessed)
+        ranks <- datatrack::ReadDataobject('ranked.samples', use.last.accessed = use.last.accessed)
         
         # user must choose the a single number-of-clusters to plot
         ranks <- ChooseNumClusters(ranks)
@@ -110,7 +116,7 @@ EvaluateSamplesEventCountOnly <- function (use.last.accessed = FALSE, versions =
     if (is.numeric(versions)) {        
         results <- list()
         for (v in versions) {
-            ranks <- ReadOutput('ranked.samples.ec', use.last.accessed = use.last.accessed, version = v)
+            ranks <- ReadDataobject('ranked.samples.ec', use.last.accessed = use.last.accessed, version = v)
             heading <- GetHeading(ranks)
             # plots results and returns SACs
             results[[as.character(v)]] <- EvaluateSamples2d(ranks, heading = heading) 
@@ -121,7 +127,7 @@ EvaluateSamplesEventCountOnly <- function (use.last.accessed = FALSE, versions =
         
         
     } else {
-        ranks <- ReadOutput('ranked.samples.ec', use.last.accessed = use.last.accessed)
+        ranks <- ReadDataobject('ranked.samples.ec', use.last.accessed = use.last.accessed)
         heading <- GetHeading(ranks)
         EvaluateSamples2d(ranks, heading = heading) 
         
@@ -158,7 +164,7 @@ EvaluateSamples2d <- function (ranks, add.dawn = 0, heading = '') {
     # these min ids have been ranked
     # used to read these separately, but we should just used the dependency target.min.ids used
     # for ranking, right?
-    # ranked.min.ids <- ReadOutput('target.min.ids', purpose = "evaluating ranked samples")
+    # ranked.min.ids <- ReadDataobject('target.min.ids', purpose = "evaluating ranked samples")
     # mins.for.comparison <- ranked.min.ids$data
 
     # double check to make sure that everything is using the same minutes
@@ -264,8 +270,8 @@ GetSpeciesInEachSample <- function (min.ids = NULL) {
     #   min.ids: data.frame; the minutes that we want to look in
     
     params = list(study = GetStudyDescription())
-    # TODO: remove "use last accessed" after building a check for matching params and dependencies into ReadOutput
-    species.in.each.sample <- ReadOutput('species.in.each.min', params = params, false.if.missing = TRUE, use.last.accessed = FALSE)
+    # TODO: remove "use last accessed" after building a check for matching params and dependencies into ReadDataobject
+    species.in.each.sample <- datatrack::ReadDataobject('species.in.each.min', params = params, false.if.missing = TRUE, use.last.accessed = FALSE)
     if (!is.list(species.in.each.sample)) {
         speciesmins <- GetTags(target.only = FALSE, study.only = TRUE);  # get tags from whole study
         speciesmins <- AddMinuteIdCol(speciesmins)
@@ -310,7 +316,7 @@ EvaluateSamples3d <- function (ranks) {
 
 
 
-    min.ids <- ReadOutput('target.min.ids', level = 0)
+    min.ids <- datatrack::ReadDataobject('target.min.ids', level = 0)
     speciesmins <- GetTags();  # get tags within outer target 
     species.in.each.sample <- ListSpeciesInEachMinute(speciesmins, min.ids)
     
@@ -367,7 +373,7 @@ GetOptimalSamples <- function (mins = NA, species.in.each.min = NA, use.saved = 
     
     dependencies <- list(target.min.ids = target.min.ids.version)
     if (use.saved) {
-        optimal <- ReadOutput('optimal.samples', dependencies = dependencies, false.if.missing = TRUE)
+        optimal <- datatrack::ReadDataobject('optimal.samples', dependencies = dependencies, false.if.missing = TRUE)
     } else {
         optimal <- NULL
     }
@@ -626,10 +632,10 @@ WriteRichnessResults <- function (min.ids, found.species.progression, output.fn,
 ClustersInOptimal <- function () {
     # given a clustering result, gets the optimal progression based on labelled data
     # and finds what clusters are in each of these optimal minutes
-    clustered.events <- ReadOutput('clustered.events')
+    clustered.events <- datatrack::ReadDataobject('clustered.events')
     
     # should automatically get the relevant target.min.ids based on the ancestor of clustered events
-    mins <- ReadOutput('target.min.ids')
+    mins <- datatrack::ReadDataobject('target.min.ids')
     
     optimal <- GetOptimalSamples(mins = mins$data, use.saved = TRUE, target.min.ids.version = mins$version)
     
