@@ -213,6 +213,14 @@ namespace AnalysisPrograms.Recognizers
         private static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, Image> Analysis(AudioRecording recording, 
                                                                                   SonogramConfig sonoConfig, LewinsRailConfig lrConfig, bool returnDebugImage)
         {
+            if (recording == null)
+            {
+                LoggedConsole.WriteLine("AudioRecording == null. Analysis not possible.");
+                return null;
+            }
+
+            int sr = recording.SampleRate;
+
             int upperBandMinHz = lrConfig.UpperBandMinHz;
             int upperBandMaxHz = lrConfig.UpperBandMaxHz;
             int lowerBandMinHz = lrConfig.LowerBandMinHz;
@@ -223,16 +231,12 @@ namespace AnalysisPrograms.Recognizers
             double maxDuration = lrConfig.MaxDuration;  // seconds
             double minPeriod = lrConfig.MinPeriod;  // seconds
             double maxPeriod = lrConfig.MaxPeriod;  // seconds
+            int windowSize = lrConfig.WindowSize;
 
-            if (recording == null)
-            {
-                LoggedConsole.WriteLine("AudioRecording == null. Analysis not possible.");
-                return null;
-            }
+            //double freqBinWidth = sr / (double)windowSize;
+            double freqBinWidth = sr / (double)sonoConfig.WindowSize;
 
             //i: MAKE SONOGRAM
-            int sr = recording.SampleRate;
-            double freqBinWidth = sr / (double)sonoConfig.WindowSize;
             double framesPerSecond = freqBinWidth;
 
 
@@ -381,6 +385,7 @@ namespace AnalysisPrograms.Recognizers
         public string AnalysisName { get; set; }
         public string SpeciesName { get; set; }
         public string AbbreviatedSpeciesName { get; set; }
+        public int WindowSize { get; set; }
         public int UpperBandMinHz { get; set; }
         public int UpperBandMaxHz { get; set; }
         public int LowerBandMinHz { get; set; }

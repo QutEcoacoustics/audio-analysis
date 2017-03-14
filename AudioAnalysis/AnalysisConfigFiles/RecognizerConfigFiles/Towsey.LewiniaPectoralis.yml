@@ -12,12 +12,13 @@ Profiles:
         LowerFreqBandBottom: 2600
         MinPeriod: 0.18
         MaxPeriod: 0.25
-        MinDuration: 3
+        MinDuration: 2
         MaxDuration: 15
         #use this threshold if averaging over a period - averaging seems to work better
-        IntensityThreshold: 0.01
+        #IntensityThreshold: 0.01
         #use this threshold if obtaining max value over a period
-        #IntensityThreshold: 0.1
+        IntensityThreshold: 0.1
+        EventThreshold: 0.1
 
 #######################################
 #DoNoiseReduction: true
@@ -25,6 +26,7 @@ Profiles:
 
 # Resample rate must be 2 X the desired Nyquist
 ResampleRate: 22050
+#WindowSize: 512
 
 ## Specifically for AnalyzeLongRecording
 #SegmentDuration: minutes,   SegmentOverlap=seconds        
