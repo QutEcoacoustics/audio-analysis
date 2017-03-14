@@ -102,7 +102,7 @@ namespace AnalysisPrograms
             // INPUT and OUTPUT DIRECTORIES
 
             //2010 Oct 13th
-            string ipdir = @"C:\SensorNetworks\Output\SERF\SERF indices 2016 September\SE\Towsey.Acoustic";
+            string ipdir = @"C:\SensorNetworks\Output\SERF\2014May06-100720 - Indices, OCT 2010, SERF\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
             string opdir = @"C:\SensorNetworks\Output\SERF\SERF indices 2016 September\SE\OctaveFreqScale";
 
             //2010 Oct 13th
@@ -178,8 +178,8 @@ namespace AnalysisPrograms
                 InputDataDirectory = ipDir,
                 OutputDirectory = opDir,
                 // use the default set of index properties in the AnalysisConfig directory.
-                //IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
-                IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml".ToFileInfo(),
+                IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
+                //IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml".ToFileInfo(),
                 SpectrogramConfigPath = fiSpectrogramConfig 
             };
             throw new NoDeveloperMethodException();
