@@ -140,7 +140,7 @@ namespace AudioAnalysisTools.Indices
 
             // FOLLWOING LINE IS AN ASSUMPTION - USEFUL ONLY FOR JASCO 64000sr MARINE RECORDINGS
             // If you wish to use other octave scale types then need to put in the config file and recover here.
-            OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Sr64000;
+            OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Nyquist32000;
 
             // get frame parameters for the analysis
             int frameSize = (int?)config[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
@@ -672,7 +672,7 @@ namespace AudioAnalysisTools.Indices
             double[,] decibelSpectrogram = null;
             if (octaveScale)
             {
-                OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Sr64000;
+                OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Nyquist32000;
                 decibelSpectrogram = OctaveFreqScale.DecibelSpectra(dspOutput.AmplitudeSpectrogram, dspOutput.WindowPower, sampleRate, epsilon, ost);
             }
             else

@@ -63,7 +63,7 @@ namespace AnalysisPrograms
                 var outputDirectory = new DirectoryInfo(outputPath);
                 AudioRecording recording = new AudioRecording(recordingPath);
                 //OctaveScaleType ost = OctaveScaleType.Octaves27Sr22050;
-                OctaveScaleType ost = OctaveScaleType.Linear125Octaves30Sr22050;
+                OctaveScaleType ost = OctaveScaleType.Linear125Octaves30Nyquist11025;
                 int sr = 22050;
                 const int frameSize = 8192;
                 double windowOverlap = 0.75;
@@ -86,7 +86,7 @@ namespace AnalysisPrograms
                 var outputPath = @"C:\SensorNetworks\Output\OctaveFreqScale\JascoeMarineGBR1.png";
                 AudioRecording recording = new AudioRecording(recordingPath);
                 //OctaveScaleType ost = OctaveScaleType.Octaves27Sr22050;
-                OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Sr64000;
+                OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Nyquist32000;
                 int sr = 64000;
                 const int frameSize = 16384;
                 double windowOverlap = 0.5;
@@ -141,11 +141,11 @@ namespace AnalysisPrograms
                 //// constants required for full octave scale when sr = 22050
                 //OctaveScaleType ost = OctaveScaleType.Octaves27Sr22050;
                 //// constants required for split linear-octave scale when sr = 22050
-                //OctaveScaleType ost = OctaveScaleType.Linear62Octaves31Sr22050;
+                //OctaveScaleType ost = OctaveScaleType.Linear62Octaves31Nyquist11025;
                 //// constants required for full octave scale when sr = 64000
-                //OctaveScaleType ost = OctaveScaleType.Octaves24Sr64000;
+                //OctaveScaleType ost = OctaveScaleType.Octaves24Nyquist32000;
                 //// constants required for split linear-octave scale when sr = 64000
-                OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Sr64000;
+                OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Nyquist32000;
 
                 OctaveFreqScale.TestOctaveScale(ost);
             }
