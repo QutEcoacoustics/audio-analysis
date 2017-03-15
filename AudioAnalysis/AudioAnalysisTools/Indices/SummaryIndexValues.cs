@@ -74,6 +74,8 @@ namespace AudioAnalysisTools.Indices
     /// </summary>
     public class SummaryIndexValues : SummaryIndexBase
     {
+        public double ZeroSignal { get; set; }
+
         public double HighAmplitudeIndex { get; set; }
 
         public double ClippingIndex { get; set; }
@@ -136,6 +138,7 @@ namespace AudioAnalysisTools.Indices
 
         private static Dictionary<string, Func<SummaryIndexValues, object>> CachedSelectors { get; set; }
 
+        // all summary indices initialised to zero except background and av Sig AMplitude both = -100 dB.
         public SummaryIndexValues()
         {
             // serialization entry

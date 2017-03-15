@@ -22,8 +22,6 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-using System.Web.UI;
-using Acoustics.Shared.Csv;
 
 namespace AnalysisPrograms
 {
@@ -32,6 +30,7 @@ namespace AnalysisPrograms
     using System.Linq;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.Csv;
 
     using AnalysisPrograms.Production;
 
@@ -86,6 +85,12 @@ namespace AnalysisPrograms
             [ArgDescription("Draw false-colour spectrograms after concatenating index files")]
             internal bool DrawImages { get; set; } = true;
 
+            [ArgDescription("The mapping of indices to colour channel in false-colour spectrogram 1")]
+            internal string ColorMap1 { get; set; }
+
+            [ArgDescription("The mapping of indices to colour channel in false-colour spectrogram 2")]
+            internal string ColorMap2 { get; set; }
+
             [ArgDescription("User specified file containing a list of indices and their properties.")]
             [Production.ArgExistingFile(Extension = ".yml")]
             public FileInfo IndexPropertiesConfig { get; set; }
@@ -124,43 +129,80 @@ namespace AnalysisPrograms
             // set the default values here
             var indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
             var timeSpanOffsetHint = TimeSpan.FromHours(10); // default = Brisbane time
-            bool drawImages = true;
-            bool doTest = true;
+            var drawImages = true;
+            var doTest = false;
 
             DateTimeOffset? dtoStart = null;
             DateTimeOffset? dtoEnd = null;
+
+            // files containing output from event recognizers.
+            // Used only to get Event Recognizer files - set eventDirs=null if not used
             DirectoryInfo[] eventDirs = null;
+            string eventFilePattern = ""; 
 
             // The drive: local = C; work = G; home = E
-            string drive = "C";
+            string drive = "C"; // the default
+
+            // DEFAULT COLOUR MAPS
+            string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
+            string colorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT;
+
 
             /*
-                        // ########################## TESTING OF CONCATENATION 
-                        // Test data derived from ZuZZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016. THis teste set up October 2016.
-                        // The drive: work = G; home = E
-                        // top level directory
-                        DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\Indonesia_2\\"),
-                                                   };
-                        string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
-                        string testPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\ExpectedOutput\\";
-                        indexPropertiesConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\Concat_TEST_IndexPropertiesConfig.yml");
-                        var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\TEST_SpectrogramFalseColourConfig.yml");
-                        timeSpanOffsetHint = TimeSpan.FromHours(8);
-                        FileInfo sunriseDatafile = null;
-                        doTest = true;
-                        // ########################## TEST 1 CONCATENATION 
-                        //string opFileStem = "Concat_Test1"; // this should be a unique site identifier
-                        //string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test1_Output\\";
-                        //bool concatenateEverythingYouCanLayYourHandsOn = true;
-                        // ########################## TEST 2 CONCATENATION 
-                        string opFileStem = "Concat_Test2";
-                        string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test2_Output\\";
-                        bool concatenateEverythingYouCanLayYourHandsOn = false; // 24 hour blocks only
-                        dtoStart = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
-                        dtoEnd = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
-                        // ########################## END of TEST ARGUMENTS
+                // ########################## TESTING OF CONCATENATION 
+                // Test data derived from ZuZZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016. THis teste set up October 2016.
+                // The drive: work = G; home = E
+                // top level directory
+                DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\Indonesia_2\\"),
+                                            };
+                string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
+                string testPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\ExpectedOutput\\";
+                indexPropertiesConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\Concat_TEST_IndexPropertiesConfig.yml");
+                var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\TEST_SpectrogramFalseColourConfig.yml");
+                timeSpanOffsetHint = TimeSpan.FromHours(8);
+                FileInfo sunriseDatafile = null;
+                doTest = true;
+                // ########################## TEST 1 CONCATENATION 
+                //string opFileStem = "Concat_Test1"; // this should be a unique site identifier
+                //string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test1_Output\\";
+                //bool concatenateEverythingYouCanLayYourHandsOn = true;
+                // ########################## TEST 2 CONCATENATION 
+                string opFileStem = "Concat_Test2";
+                string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test2_Output\\";
+                bool concatenateEverythingYouCanLayYourHandsOn = false; // 24 hour blocks only
+                dtoStart = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
+                dtoEnd = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
+                // ########################## END of TEST ARGUMENTS
             */
 
+
+            // ########################## CONCATENATION of LIZ Znidersic Recordings, Lewin's rail, Tasmania. 
+            // The drive: work = G; home = E
+            drive = "G";
+            // top level directory
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\AvailaeFolders\\LizZnidersic\\Data Priory property D.Chapple August 2016"),
+                                       };
+            string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
+            string opFileStem = "LizZnidersic_PrioryTasmania";
+            //string opPath = $"{drive}:\\AvailaeFolders\\LizZnidersic\\Results_PrioryProperty"; //TEST_missingData
+            string opPath = $"{drive}:\\AvailaeFolders\\LizZnidersic\\TEST_missingData"; //
+            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\SpectrogramFalseColourConfig.yml");
+            timeSpanOffsetHint = TimeSpan.FromHours(8);
+            FileInfo sunriseDatafile = null;
+            bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
+            dtoStart = new DateTimeOffset(2016, 08, 21, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2016, 08, 22, 02, 23, 29, TimeSpan.Zero); 
+            // colour maps for this job
+            colorMap1 = "ACI-ENT-RHZ";
+            colorMap2 = "BGN-POW-SPT";
+
+            // If not testing need to set the below. Cannot be nulls.
+            doTest = false;
+            string testPath = opPath; 
+            // ########################## END of TEST ARGUMENTS
+
+
+            /*
             // ################################ CONCATENATE GROOTE DATA 
             // This data derived from Groote recordings I brought back from JCU, July 2016.
             // top level directory
@@ -183,8 +225,7 @@ namespace AnalysisPrograms
             eventDirs = new DirectoryInfo[1];
             eventDirs[0] = new DirectoryInfo(@"G:\SensorNetworks\OutputDataSets\GrooteCaneToad_Job120\\SD Card A");
             string eventFilePattern = "*_Towsey.RhinellaMarina.Events.csv";
-
-
+            */
 
             //// ########################## MARINE RECORDINGS          
             //// top level directory
@@ -326,6 +367,9 @@ namespace AnalysisPrograms
             // ########################## END of GRIFFITH - SIMON/TOBY FRESH-WATER RECORDINGS
 
 
+
+
+
             if (!indexPropertiesConfig.Exists) LoggedConsole.WriteErrorLine("# indexPropertiesConfig FILE DOES NOT EXIST.");
 
             // DISCUSS THE FOLLOWING WITH ANTHONY
@@ -349,6 +393,8 @@ namespace AnalysisPrograms
                 EndDate = dtoEnd,
                 IndexPropertiesConfig = indexPropertiesConfig,
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
+                ColorMap1 = colorMap1,
+                ColorMap2 = colorMap2,
                 ConcatenateEverythingYouCanLayYourHandsOn = concatenateEverythingYouCanLayYourHandsOn,
                 TimeSpanOffsetHint = timeSpanOffsetHint,
                 SunRiseDataFile = sunriseDatafile,
@@ -529,10 +575,8 @@ namespace AnalysisPrograms
                     {
                         XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
                         YAxisTicInterval = 1000,
-                        //ColorMap1 = "ACI-TEN-CVR",
-                        //ColorMap2 = "BGN-AVG-VAR",
-                        ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                        ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
+                        ColorMap1 = arguments.ColorMap1,
+                        ColorMap2 = arguments.ColorMap2,
                     };
                 }
 
@@ -766,7 +810,7 @@ namespace AnalysisPrograms
                     }
                 }
 
-                WriteSpectralIndexFiles(subDirectories[0], opFileStem1, analysisType, dictionaryOfSpectralIndices2);
+                WriteSpectralIndexFiles(resultsDir, opFileStem1, analysisType, dictionaryOfSpectralIndices2);
 
             } // over days
 
