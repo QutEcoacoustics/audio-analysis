@@ -153,6 +153,7 @@ namespace AudioAnalysisTools.Indices
         public static Dictionary<string, double[]> GetDictionaryOfSummaryIndices(List<SummaryIndexValues> summaryIndices)
         {
             var dictionary = new Dictionary<string, double[]>();
+            dictionary.Add("ZeroSignal", summaryIndices.Select(x => x.ZeroSignal).ToArray());
             dictionary.Add("ClippingIndex", summaryIndices.Select(x => x.ClippingIndex).ToArray());
             //dictionary.Add("AvgSignalAmplitude", summaryIndices.Select(x => x.AcousticComplexity).ToArray());
             dictionary.Add("BackgroundNoise", summaryIndices.Select(x => x.BackgroundNoise).ToArray());

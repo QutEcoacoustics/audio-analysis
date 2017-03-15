@@ -19,7 +19,8 @@ namespace AudioAnalysisTools.Indices
 
         public string ErrorDescription { get; set; }
 
-        public static string ErrorTypeZeroSum = "Indices Sum to Zero";
+        public static string ErrorMissingData = "Missing Data";
+        public static string ErrorZeroSignal = "Flat Zero Signal";
 
         public int StartPosition { get; set; }
 
@@ -29,9 +30,17 @@ namespace AudioAnalysisTools.Indices
         {
             int width = EndPosition - StartPosition + 1;
             var bmp = new Bitmap(width, height);
-            int fontVerticalPosition = (height / 2) - 7;
+            int fontVerticalPosition = (height/2) - 7;
             Graphics g = Graphics.FromImage(bmp);
-            g.Clear(Color.Red);
+
+            if (this.ErrorDescription.Equals(ErrorMissingData) )
+            {
+                g.Clear(Color.Red);
+            }
+            else // ErrorZeroSignal
+            {
+                g.Clear(Color.Gray);
+            }
             g.DrawLine(Pens.Black, 0, 0, width, height);
             g.DrawLine(Pens.Black, 0, height, width, 0);
 
@@ -40,11 +49,12 @@ namespace AudioAnalysisTools.Indices
 
             if (textInVerticalOrientation)
             {
-                System.Drawing.StringFormat drawFormat = new System.Drawing.StringFormat(StringFormatFlags.DirectionVertical);
+                System.Drawing.StringFormat drawFormat =
+                    new System.Drawing.StringFormat(StringFormatFlags.DirectionVertical);
                 g.DrawString("ERROR: " + this.ErrorDescription, font, Brushes.Black, 3, 10, drawFormat);
             }
             else
-            g.DrawString("ERROR: " + this.ErrorDescription, font, Brushes.Black, 3, fontVerticalPosition);
+                g.DrawString("ERROR: " + this.ErrorDescription, font, Brushes.Black, 3, fontVerticalPosition);
 
             return bmp;
         }
@@ -55,21 +65,50 @@ namespace AudioAnalysisTools.Indices
         //  STATIC METHODS BELOW 
         // #####################################################################################################################
 
-        public static List<ErroneousIndexSegments> DataIntegrityCheck(Dictionary<string, double[]> summaryIndices, DirectoryInfo outputDirectory, string fileStem)
+        public static List<ErroneousIndexSegments> DataIntegrityCheck(Dictionary<string, double[]> summaryIndices,
+            DirectoryInfo outputDirectory, string fileStem)
         {
             bool allOK = true;
             int errorStart = 0;
             int errorEnd = 0;
+            // init list of errors
             var errors = new List<ErroneousIndexSegments>();
 
+            // (1) FIRST check for zero signal values - these will be indicated in the Zero Signal Index.
+            double[] zeroSignalArray = summaryIndices["ZeroSignal"];
+            var error = new ErroneousIndexSegments();
+            for (int i = 0; i < zeroSignalArray.Length; i++)
+            {
+                if (zeroSignalArray[i] != 0.0)
+                {
+                    if (allOK)
+                    {
+                        allOK = false;
+                        error = new ErroneousIndexSegments();
+                        error.StartPosition = i;
+                        error.ErrorDescription = ErroneousIndexSegments.ErrorZeroSignal;
+                    }
+                }
+                else
+                if ((!allOK) && (zeroSignalArray[i] == 0.0))
+                {
+                    // come to end of a bad patch
+                    allOK = true;
+                    error.EndPosition = i - 1;
+                    errors.Add(error);
+                }
+            } // end of loop
+    
 
+            // (2) NOW check for zero index values
+            allOK = true;
             double sum = summaryIndices["AcousticComplexity"][0] + summaryIndices["TemporalEntropy"][0] + summaryIndices["Snr"][0];
             if (sum == 0.0)
             {
                 allOK = false;
                 errorStart = 0;
                 errors.Add(new ErroneousIndexSegments());
-                errors[errors.Count - 1].ErrorDescription = ErroneousIndexSegments.ErrorTypeZeroSum;
+                errors[errors.Count - 1].ErrorDescription = ErroneousIndexSegments.ErrorMissingData;
                 errors[errors.Count - 1].StartPosition = errorStart;
             }
 
@@ -83,7 +122,7 @@ namespace AudioAnalysisTools.Indices
                     {
                         errorStart = i;
                         errors.Add(new ErroneousIndexSegments());
-                        errors[errors.Count - 1].ErrorDescription = ErroneousIndexSegments.ErrorTypeZeroSum;
+                        errors[errors.Count - 1].ErrorDescription = ErroneousIndexSegments.ErrorMissingData;
                         errors[errors.Count - 1].StartPosition = errorStart;
                     }
                     allOK = false;

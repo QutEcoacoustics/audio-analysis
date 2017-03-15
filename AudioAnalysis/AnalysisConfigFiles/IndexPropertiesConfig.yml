@@ -577,7 +577,7 @@ BGN:
   # min = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20 = -80-20 = -100, 
   # Usual value is -30. However -20 adds more contrast into BGN spectrogram
   NormMin: -100.0
-  NormMax: -20.0
+  NormMax: -30.0
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -663,7 +663,7 @@ POW:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 6.0
+  NormMax: 5.5
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -675,7 +675,7 @@ SPT:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.05
-  NormMax: 0.7
+  NormMax: 0.75
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices

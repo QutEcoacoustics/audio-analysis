@@ -146,58 +146,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         // ####################################  SUMMARY  INDEX METHODS BELOW HERE  ##################################
 
 
-/*
-        public static FileInfo[] GetSummaryIndexFilesForOneDay(DirectoryInfo[] directories, DateTimeOffset dto)
-        {
-            string pattern = "*__Towsey.Acoustic.Indices.csv";
-           // LDSpectrogramStitching.IndexType, LDSpectrogramStitching.CsvFileExt
 
-            string dateString = $"{dto.Year}{dto.Month:D2}{dto.Day:D2}";
-            //string opFileStem = String.Format("{0}_{1}", site, dateString);
-
-            // 2. PATTERN SEARCH FOR CORRECT SUMMARY CSV FILES AND READ INTO DICTIONARY
-            // Assumes that the required files are subdirectories of given site. 
-            string fileStemPattern = dateString + pattern;
-            FileInfo[] files = IndexMatrices.GetFilesInDirectories(directories, fileStemPattern);
-            return files;
-        }
-*/
-/*
-        public static FileInfo[] GetSummaryIndexFilesForOneDay(SortedDictionary<DateTimeOffset, FileInfo> dict, DateTimeOffset dto)
-        {
-            string pattern = "Towsey.Acoustic.Indices.csv";
-            // LDSpectrogramStitching.IndexType, LDSpectrogramStitching.CsvFileExt
-            var keys = dict.Keys;
-            var matchFiles = new List<FileInfo>();
-            foreach (var key in keys)
-            {
-                if ((dto.Year == key.Year) && (dto.DayOfYear == key.DayOfYear))
-                {
-                    FileInfo file = dict[key];
-                    if(file.Name.EndsWith(pattern))
-                    {
-                        matchFiles.Add(file);
-                    }
-                }
-            }
-            return matchFiles.ToArray();
-        }
-*/
-/*
-        public static SortedDictionary<DateTimeOffset, FileInfo> GetFilesForOneDay(SortedDictionary<DateTimeOffset, FileInfo> dict, DateTimeOffset dto)
-        {
-            var keys = dict.Keys;
-            var matchFiles = new SortedDictionary<DateTimeOffset, FileInfo>();
-            foreach (var key in keys)
-            {
-                if ((dto.Year == key.Year) && (dto.DayOfYear == key.DayOfYear))
-                {
-                    matchFiles.Add(key, dict[key]);
-                }
-            }
-            return matchFiles;
-        }
-*/
         public static FileInfo[] GetFileArrayForOneDay(SortedDictionary<DateTimeOffset, FileInfo> dict, DateTimeOffset dto)
         {
             var keys = dict.Keys;
@@ -228,42 +177,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return array;
         }
 
-
-/*
-        public static Dictionary<string, double[]> ConcatenateSummaryIndexFiles_DEPRACATED(FileInfo[] summaryIndexFiles, 
-                                                                            DirectoryInfo opDir, 
-                                                                            FileInfo indicesCsvfile, 
-                                                                            IndexGenerationData indexGenerationData)
-        {
-            var indexResolution = indexGenerationData.IndexCalculationDuration;
-
-            var summaryIndices = IndexMatrices.ConcatenateSummaryIndexFilesWithTimeCheck(summaryIndexFiles, indexResolution);
-
-            // write out the list of file names to JSON ifle
-            var fileNames = summaryIndices.Select(x => x.FileName).ToArray();
-            FileInfo path = new FileInfo(indicesCsvfile + "_FileNames.json");
-            Json.Serialise(path, fileNames);
-
-            //now put summary indices into a dictionary. WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
-            var dictionaryOfsummaryIndices = IndexMatrices.GetDictionaryOfSummaryIndices(summaryIndices);
-            if (dictionaryOfsummaryIndices.Count == 0)
-            {
-                LoggedConsole.WriteErrorLine("WARNING from method LDSpectrogramStitching.ConcatenateSummaryIndexFiles() !!!");
-                LoggedConsole.WriteErrorLine("        An empty dictionary of SUMMARY indices was returned !!! ");
-                return null;
-            }
-
-
-            //serialiseFunc(indicesFile, results);
-            //Csv.WriteMatrixToCsv(indicesCsvfile, summaryIndices);
-            CsvTools.WriteDictionaryOfDoubles2CSV(dictionaryOfsummaryIndices, indicesCsvfile);
-
-            // now add in derived indices i.e. NCDI etc
-            //dictionaryOfsummaryIndices = IndexMatrices.AddDerivedIndices(dictionaryOfsummaryIndices);
-
-            return dictionaryOfsummaryIndices;
-        }
-*/
 
         public static void DrawSummaryIndexFiles(Dictionary<string, double[]> dictionaryOfCsvColumns,
                                                 IndexGenerationData indexGenerationData,
@@ -381,7 +294,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var indicesFile = FilenameHelpers.AnalysisResultPath(opDir, opFileStem, indexType, csvFileExt);
             var indicesCsvfile = new FileInfo(indicesFile);
             Csv.WriteToCsv(indicesCsvfile, summaryIndices);
-            //now put summary indices into a dictionary. WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
+            //now put summary indices into a dictionary. ##### WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
             var dictionaryOfSummaryIndices = IndexMatrices.GetDictionaryOfSummaryIndices(summaryIndices);
             // return the dictionary - it will be used later to produce an index tracks image.
             return dictionaryOfSummaryIndices;

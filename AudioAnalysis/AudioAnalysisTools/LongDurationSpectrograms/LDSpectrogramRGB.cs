@@ -573,12 +573,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // now add in image patches for possible erroneous index segments 
             if ((this.ErroneousSegments != null) && (this.ErroneousSegments.Count > 0))
             {
-                var verticalText = false;
                 Graphics g = Graphics.FromImage(bmp);
-                foreach (ErroneousIndexSegments errorsegment in ErroneousSegments)
+                foreach (ErroneousIndexSegments errorSegment in ErroneousSegments)
                 {
-                    Bitmap errorPatch = errorsegment.DrawErrorPatch(bmp.Height, verticalText);
-                    g.DrawImage(errorPatch, errorsegment.StartPosition, 1);
+                    Bitmap errorPatch = errorSegment.DrawErrorPatch(bmp.Height, true);
+                    g.DrawImage(errorPatch, errorSegment.StartPosition, 1);
                 }
             }
 

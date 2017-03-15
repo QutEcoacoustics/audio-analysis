@@ -270,18 +270,18 @@ namespace AudioAnalysisTools.Indices
             result.SummaryIndexValues.ClippingIndex = dspOutput1.ClipCount / subsegmentSecondsDuration;
 
             // Following deals with case where the signal waveform is continuous flat with values < 0.001. Has happened!! 
-            // Although signal appears zero, this condition is required
+            // Although signal appears zero, this condition is required.
             if (avgSignalEnvelope < 0.001)
             {
                 Logger.Debug("Segment skipped because avSignalEnvelope is < 0.001!");
-
+                result.SummaryIndexValues.ZeroSignal = 1; 
                 return result;
             }
 
             // i: FRAME ENERGIES - convert signal to decibels and subtract background noise.
             double[] dBSignal = SNR.Signal2Decibels(dspOutput1.Envelope);
             double[] dBArray  = SNR.SubtractAndTruncate2Zero(dBSignal, signalBGN);
-
+           
             // 10 times log of amplitude squared     
             summaryIndices.AvgSignalAmplitude = 20 * Math.Log10(avgSignalEnvelope);
 
