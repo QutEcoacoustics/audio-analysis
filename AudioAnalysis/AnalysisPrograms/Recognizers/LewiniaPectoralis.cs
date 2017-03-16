@@ -4,6 +4,7 @@
 // </copyright>
 // <summary>
 //   AKA: The Lewin's Rail
+// To call this recognizer, the first command line argument must be "EventRecognizer".
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -17,7 +18,7 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
-    using AnalysisPrograms.Recognizers.Base;
+    using Recognizers.Base;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -85,8 +86,14 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="imageWidth"></param>
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, 
-                                            Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
+                                                    Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
+            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            // this default framesize seems to work for Lewin's Rail
+            const int frameSize = 512;
+            // DO NOT SET windowOverlap. Calculate it below.
+
             if (imageWidth == null) throw new ArgumentNullException(nameof(imageWidth));
 
             // check the sample rate. Must be 22050
@@ -96,11 +103,7 @@ namespace AnalysisPrograms.Recognizers
             }
             TimeSpan recordingDuration = recording.WavReader.Time;
 
-            // this default framesize seems to work for Lewin's Rail
-            const int frameSize = 512;
-            //const int FrameSize = 1024;
-
-            // check for the profiles
+            // check for the profiles in the config file
             bool hasProfiles = ConfigFile.HasProfiles(configuration);
             if (!hasProfiles)
             {
@@ -174,7 +177,7 @@ namespace AnalysisPrograms.Recognizers
                 }
 
                 // do a recognizer TEST.
-                if (true)
+                if (false)
                 {
                     var testDir = new DirectoryInfo(outputDirectory.Parent.Parent.FullName);
                     TestTools.RecognizerScoresTest(recording.BaseName, testDir, recognizerConfig.AnalysisName, scoreArray);

@@ -103,9 +103,10 @@ namespace AnalysisPrograms.Recognizers.Base
             //string recordingPath = @"G:\SensorNetworks\SoftwareTests\UnitTest_Towsey.LewiniaPectoralis\Data\BAC2_20071008-085040.wav";
             //string configPath = @"G:\SensorNetworks\SoftwareTests\UnitTest_Towsey.LewiniaPectoralis\Data\Towsey.LewiniaPectoralis.yml";
             //string outputPath = @"G:\SensorNetworks\SoftwareTests\UnitTest_Towsey.LewiniaPectoralis";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
+            string recordingPath = @"G:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
             string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LewiniaPectoralis.yml";
-            string outputPath = @"C:\SensorNetworks\Output\LewinsRail";
+            string outputPath = @"C:\SensorNetworks\Output\LewinsRail\Results2017";
 
             // Limnodynastes convex
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";

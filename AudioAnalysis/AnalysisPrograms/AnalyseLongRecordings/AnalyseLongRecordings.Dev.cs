@@ -143,9 +143,9 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\Canetoad\CaneToads_rural1_20.mp3";
             //string recordingPath = @"F:\SensorNetworks\WavFiles\CaneToad\CaneToad Release Call 270213-8.wav";
             //string recordingPath = @"F:\SensorNetworks\WavFiles\CaneToad\UndetectedCalls-2014\KiyomiUndetected210214-1.mp3";
-            string recordingPath = @"Y:\Groote\2016 March\Emerald River\CardA\Data\EMERALD_20150703_103506.wav";
-            string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.RhinellaMarina.yml";
-            string outputPath    = @"C:\SensorNetworks\Output\Frogs\Canetoad\Rural1";
+            //string recordingPath = @"Y:\Groote\2016 March\Emerald River\CardA\Data\EMERALD_20150703_103506.wav";
+            //string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.RhinellaMarina.yml";
+            //string outputPath    = @"C:\SensorNetworks\Output\Frogs\Canetoad\Rural1";
 
 
             // OTHER FROGS
@@ -173,9 +173,13 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\WESTKNOLL_20140905-001853+1000.wav";
             //string outputPath = @"C:\SensorNetworks\Output\KoalaMale\StBeesIndices2016";
 
+            //LEWIN'S RAIL
             // BAC recordings
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-085040.wav";
             //string outputPath    = @"C:\SensorNetworks\Output\BAC\";
+            string recordingPath = @"G:\SensorNetworks\WavFiles\LewinsRail\FromLizZnidersic\Data Priory property D.Chapple August 2016\SM304290_0+1_20160824_102329.wav";
+            string outputPath    = @"C:\SensorNetworks\Output\LewinsRail\Results2017";
+            string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LewiniaPectoralis.yml";
 
             //BIRD50 recordings from Herve Glotin
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Glotin-Bird50\AmazonBird50_testing_input\ID1268.wav";
