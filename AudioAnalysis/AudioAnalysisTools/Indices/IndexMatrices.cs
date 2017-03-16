@@ -18,7 +18,6 @@ namespace AudioAnalysisTools.Indices
     using Acoustics.Shared.Csv;
 
     using log4net;
-
     using TowseyLibrary;
 
     public static class IndexMatrices
@@ -26,23 +25,7 @@ namespace AudioAnalysisTools.Indices
         public static bool Verbose;
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-/*
-        public static void test()
-        {
-            var matrix = Csv.ReadMatrixFromCsv<double>(new FileInfo(""));
-        }
-*/
-/*
-        public static Dictionary<string, double[]> ConvertCsvData2DictionaryOfColumns(string[] headers, double[,] M)
-        {
-            Dictionary<string, double[]> dictionaryOfCsvDataColumns = new Dictionary<string, double[]>();
-            for(int i = 0; i < headers.Length; i++)
-            {
-                dictionaryOfCsvDataColumns.Add(headers[i], MatrixTools.GetColumn(M, i));
-            }
-            return dictionaryOfCsvDataColumns;
-        }
-*/
+
 
         /// <summary>
         /// 
@@ -174,32 +157,6 @@ namespace AudioAnalysisTools.Indices
         }
 
 /*
-        public static Dictionary<string, double[]> RepairDictionaryOfArrays(Dictionary<string, double[]> dictionary, int rowCount, int requiredCount)
-        {
-            int differenceCount = Math.Abs(rowCount - requiredCount);
-            if (rowCount > requiredCount)
-            {
-                if (IndexMatrices.Verbose)
-                {
-                    LoggedConsole.WriteLine("  About to remove end {0} rows", differenceCount);
-                }
-                int countToRemove = rowCount - requiredCount;
-                dictionary = RemoveValuesFromArraysInDictionary(dictionary, countToRemove);
-            };
-
-            if (rowCount < requiredCount)
-            {
-                if (IndexMatrices.Verbose)
-                {
-                    LoggedConsole.WriteLine("  About to append {0} rows", differenceCount);
-                }
-                int countToAdd = requiredCount - rowCount;
-                dictionary = PadDictionaryArraysWithNulls(dictionary, countToAdd);
-            };
-            return dictionary;
-        }
-*/
-
         static T[,] CreateRectangularArray<T>(IList<T[]> arrays)
         {
             // TODO: Validation and special-casing for arrays.Count == 0
@@ -243,7 +200,7 @@ namespace AudioAnalysisTools.Indices
             return ret;
         }
 
-
+*/
         public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(DirectoryInfo[] dirs, 
                                                                                         string analysisType, 
                                                                                         string[] keys,
@@ -277,7 +234,7 @@ namespace AudioAnalysisTools.Indices
                 TimeSpan et = now2 - now1;
                 if (verbose)
                 {
-                    LoggedConsole.WriteLine(string.Format("Time to read <{0}> spectral index files = {1:f2} seconds", key, et.TotalSeconds));
+                    LoggedConsole.WriteLine(string.Format("\t\tTime to read <{0}> spectral index files = {1:f2} seconds", key, et.TotalSeconds));
                 }
             }
             return spectrogramMatrices;
@@ -467,150 +424,6 @@ namespace AudioAnalysisTools.Indices
             return returnList;
         }
 
-/*
-        public static double[,] ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(FileInfo[] paths, TimeSpan indexCalcDuration)
-        {
-            TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
-            var list = new List<double[,]>();
-            int[] matrixRowCounts = new int[paths.Length];
-            DateTimeOffset[] startDto = new DateTimeOffset[paths.Length];
-
-            // cycle through the files
-            for (int i = 0; i < paths.Length; i++)
-            {
-                FileInfo file = paths[i];
-                if (file.Exists)
-                {
-                    int freqBinCount;
-                    double[,] matrix = IndexMatrices.ReadSpectrogram(file, out freqBinCount);
-                    list.Add(matrix);
-                    matrixRowCounts[i] = matrix.GetLength(0);
-                    DateTimeOffset dto;
-                    if (!FileDateHelpers.FileNameContainsDateTime(file.Name, out dto, offsetHint))
-                    {
-                        LoggedConsole.WriteLine("SERIOUS WARNING from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(" + file.Name + ") ");
-                        LoggedConsole.WriteLine("  File name <{0}> does not contain a valid DateTime = {0}", file.Name);
-                        LoggedConsole.WriteLine("  You should not call this method. Instead try method GetSpectralIndexFilesAndConcatenate()");
-                        LoggedConsole.WriteLine("                 which does not require valid DateTime to be in file name.");
-                    }
-                    startDto[i] = dto;
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("SERIOUS WARNING: from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(" + file.Extension + ") ");
-                    string str = $"   MISSING CSV FILE: {file.FullName}";
-                    LoggedConsole.WriteLine(str);
-                }
-            }
-
-
-            int cummulativeRowCount = 0;
-            // cycle through the time stamps and row counts files
-            for (int i = 0; i < paths.Length-1; i++)
-            {
-                // now calculate elapsed time from the file name TimeStamps
-                TimeSpan partialElapsedTime = startDto[i+1] - startDto[i];
-                int partialTimeSpanMinutes = (int)Math.Round(partialElapsedTime.TotalMinutes);
-                //int partialTimeSpanMinutes = (int)Math.Ceiling(partialElapsedTime.TotalMinutes);
-
-                if (matrixRowCounts[i] != partialTimeSpanMinutes)
-                {
-                    string str = String.Format("  Matrix {0}/{1}: Row Count={2} does not tally with Elapsed Minutes in File Name = {3} minutes", 
-                                                    (i+1), paths.Length, matrixRowCounts[i], partialTimeSpanMinutes);
-                    LoggedConsole.WriteLine(str);
-                    LoggedConsole.WriteLine("  About to append/remove rows to get correct partial length = {0}", partialTimeSpanMinutes);
-
-                    // repair previous matrix
-                    list[i] = RepairMatrixRowCount(list[i], partialTimeSpanMinutes);
-                    //FileTools.WriteMatrix2File(matrix, @"C:\Users\towsey\temp\delete.csv");
-                    cummulativeRowCount += list[i].GetLength(0);
-                }
-                else
-                {
-                    cummulativeRowCount += matrixRowCounts[i];
-                }                
-            } // end for loop
-            cummulativeRowCount += list[list.Count-1].GetLength(0);
-
-            var M = MatrixTools.ConcatenateMatrixRows(list);
-            int matrixRowCount = M.GetLength(0);
-
-            // ########### NOW DO FINAL CHECK ON ROW-COUNT OF CONCATENATED FILES
-            // IMPORTANT: IT IS ASSUMED THAT A FULL 24 HOURS OF DATA HAS BEEN CONCATENATED
-
-            int numberOfMinutesInDay = 1440;
-            int expectedRowCount = (int)Math.Round(numberOfMinutesInDay / indexCalcDuration.TotalMinutes);
-
-            if (cummulativeRowCount > expectedRowCount)
-            {
-                M = RepairMatrixRowCount(M, numberOfMinutesInDay);
-                if (Verbose)
-                {
-                    LoggedConsole.WriteLine("WARNING: ROW COUNT EXCEEDS 1440 MINUTES from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck() ");
-                    string str = String.Format("   Final Cummulative Row Count = {0}   Removing excess rows!", cummulativeRowCount);
-                    LoggedConsole.WriteLine(str);
-                }
-
-            }
-            //FileTools.WriteMatrix2File(M, @"C:\Users\towsey\temp\delete2.csv");
-
-            return M;
-        }
-*/
-/*
-        public static double[,] RepairMatrixRowCount(double[,] M, int requiredRowCount)
-        {
-            int currentRowCount = M.GetLength(0);
-
-            if (currentRowCount < requiredRowCount)
-            {
-                int rowDeficiency = requiredRowCount - currentRowCount;
-                double[,] M1 = MatrixTools.AddBlankRows(M, rowDeficiency);
-                return M1;
-            }
-
-            if (currentRowCount > requiredRowCount)
-            {
-                int surplusRows = currentRowCount - requiredRowCount;
-                double[,] M2 = MatrixTools.RemoveLastNRows(M, surplusRows);
-                return M2;
-            }
-            return M; // must have correct row count
-        }
-*/
-/*
-        public static Dictionary<string, double[]> PadDictionaryArraysWithNulls(Dictionary<string, double[]> dict, int countToAdd)
-        {
-            double[] nullArray = new double[countToAdd];
-            for (int i = 0; i < countToAdd; i++)
-                nullArray[i] = double.NaN;
-
-            string[] keys = dict.Keys.ToArray();
-            foreach(string key in keys)
-            {
-                double[] array = dict[key];
-                double[] result = array.Concat(nullArray).ToArray();
-                dict[key] = result;
-            }
-
-            return dict; 
-        }
-*/
-/*
-        public static Dictionary<string, double[]> RemoveValuesFromArraysInDictionary(Dictionary<string, double[]> dict, int countToRemove)
-        {
-            string[] keys = dict.Keys.ToArray();
-            foreach (string key in keys)
-            {
-                double[] array = dict[key];
-                int newArrayLength = array.Length - countToRemove;
-                double[] result = DataTools.Subarray(array, 0, newArrayLength);
-                dict[key] = result;
-            }
-
-            return dict;
-        }
-*/
 
         public static Dictionary<string, double[,]> AddDerivedIndices(Dictionary<string, double[,]> spectrogramMatrices)
         {
@@ -676,17 +489,6 @@ namespace AudioAnalysisTools.Indices
         }
 
 
-
-        //public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
-        //{
-        //    Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvPath.FullName);
-
-        //    double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath.FullName);
-        //    // matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 1);
-        //    return matrix;
-        //}
-
-
         /// <summary>
         /// This method reads spectrogram csv files where the first row contains column names 
         /// and the first column contains row/time names.
@@ -708,66 +510,6 @@ namespace AudioAnalysisTools.Indices
             return matrix;
         }
 
-/*
-        public static Dictionary<string, double[,]> ReadCSVFiles(FileInfo[] paths, string[] keys)
-        {
-            string warning = null;
-
-            Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
-            for (int i = 0; i < keys.Length; i++)
-            {
-                DateTime now1 = DateTime.Now;
-
-                // get the path containing keys[i]
-                FileInfo file = null;
-                for (int p = 0; p < paths.Length; p++)
-                {
-                    if (paths[p].Name.Contains(keys[i]))
-                    {
-                        file = paths[p];
-                        break;
-                    }
-                }
-
-                if (file.Exists)
-                {
-                    int freqBinCount;
-                    double[,] matrix = IndexMatrices.ReadSpectrogram(file, out freqBinCount);
-                    matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-                    spectrogramMatrices.Add(keys[i], matrix);
-                }
-                else
-                {
-                    if (warning == null)
-                    {
-                        warning = "\nWARNING: from method IndexMatrices.ReadCSVFiles()";
-                    }
-
-                    warning += "\n      {0} File does not exist: {1}".Format2(keys[i], file.FullName);
-                }
-
-                if (IndexMatrices.Verbose)
-                { 
-                    DateTime now2 = DateTime.Now;
-                    TimeSpan et = now2 - now1;
-                    LoggedConsole.WriteLine("Time to read spectral index file <" + keys[i] + "> = " + et.TotalSeconds + " seconds");
-                }
-            }
-
-            if (warning != null)
-            {
-                LoggedConsole.WriteLine(warning);
-            }
-
-            if (spectrogramMatrices.Count == 0)
-            {
-                LoggedConsole.WriteLine("WARNING: from method IndexMatrices.ReadCSVFiles()");
-                LoggedConsole.WriteLine("         NO FILES were read from the passed paths");
-            }
-
-            return spectrogramMatrices;
-        }
-        */
 
 
         /// <summary>

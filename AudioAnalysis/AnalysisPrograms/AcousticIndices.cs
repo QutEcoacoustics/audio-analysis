@@ -553,7 +553,7 @@ namespace AnalysisPrograms
                         basename: basename, 
                         analysisType: this.Identifier,
                         indexSpectrograms: dictionaryOfSpectra,
-                        indexDistributions: indexDistributions,
+                        indexStatistics: indexDistributions,
                         imageChrome: (!tileOutput).ToImageChrome());
 
                 if (tileOutput)

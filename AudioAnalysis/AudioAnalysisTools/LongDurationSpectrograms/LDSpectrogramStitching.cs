@@ -226,14 +226,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// This method merges all files of spectral indices in the passed directories.
         /// The total length of the concatenated files can exceed 24 hours - limited by memory! 
         /// </summary>
-        public static Dictionary<string, double[,]> ConcatenateAllSpectralIndexFiles(DirectoryInfo[] directories, 
-                                                         DirectoryInfo opDir, 
-                                                         FileInfo indexPropertiesConfig,
-                                                         IndexGenerationData indexGenerationData,
-                                                         string opFileStem)
+        public static Dictionary<string, double[,]> ConcatenateAllSpectralIndexFiles(DirectoryInfo[] directories, string[] keys,
+                                                         IndexGenerationData indexGenerationData)
         {
-            string[] keys = {"ACI", "ENT", "EVN", "BGN", "POW", "CLS", "SPT", "RHZ", "CVR"};
-
             string analysisType = "Towsey.Acoustic";
             var dictionaryOfSpectralIndices = IndexMatrices.GetSpectralIndexFilesAndConcatenate(directories, analysisType, keys, indexGenerationData, true);
 
@@ -247,10 +242,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // now add in derived indices i.e. POW, NCDI etc
             // dictionaryOfSpectralIndices = IndexMatrices.AddDerivedIndices(dictionaryOfSpectralIndices);
-
-            // Calculate the index distribution statistics and write to a json file. Also save as png image
-            var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectralIndices, opDir, opFileStem);
-
             return dictionaryOfSpectralIndices;
         }
 
