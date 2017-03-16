@@ -1267,7 +1267,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="indexSpectrograms"> Optional spectra to pass in. If specified the spectra will not be loaded from disk!
         /// </param>
         /// <param name="summaryIndices"></param>
-        /// <param name="indexDistributions"></param>
+        /// <param name="indexStatistics">Info about the distributions of the spectral statistics</param>
         /// <param name="siteDescription">Optionally specify details about the site where the audio was recorded.</param>
         /// <param name="sunriseDataFile"></param>
         /// <param name="segmentErrors"></param>
@@ -1283,7 +1283,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string analysisType,
             Dictionary<string, double[,]> indexSpectrograms = null,
             SummaryIndexBase[] summaryIndices = null,
-            Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = null,
+            Dictionary<string, IndexDistributions.SpectralStats> indexStatistics = null,
             SiteDescription siteDescription = null,
             FileInfo sunriseDataFile = null,
             List<ErroneousIndexSegments> segmentErrors = null,
@@ -1363,20 +1363,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             // Get index distribution statistics. Either read from input variable or json file. 
-            // Index Distribution Stats are required if drawing "difference" spectrograms etc.     
-            if (indexDistributions == null)
+            // Index Distribution Stats are only required if drawing "difference" spectrograms etc.     
+            if (indexStatistics == null)
             {
-                indexDistributions = IndexDistributions.ReadSpectralIndexDistributionStatistics(inputDirectory, fileStem);
-                Log.Warn("A .json file of Index Distribution Statistics was not found in dir: <" + outputDirectory.FullName + ">");
-                Log.Warn("        This is not required in most cases. Only required if doing \"difference\" spectrograms.");
+                indexStatistics = IndexDistributions.ReadSpectralIndexDistributionStatistics(inputDirectory, fileStem);
+                Log.Warn("\tA .json file of Index Distribution Statistics was not found in dir: <" + outputDirectory.FullName + ">");
+                Log.Warn("\t\tThis is not required in most cases. Only required if doing \"difference\" spectrograms.");
 
                 //cs1.IndexStats = IndexDistributions.WriteIndexDistributionStatistics(cs1.spectrogramMatrices, ipDir, fileStem);
-                //if (indexDistributions == null)
-                //{
-                //    //throw new InvalidOperationException("Cannot proceed without index distribution data");
-                //}
+                //throw new InvalidOperationException("Cannot proceed without index distribution data");
             }
-            cs1.IndexStats = indexDistributions;
+            cs1.IndexStats = indexStatistics;
 
             // draw gray scale spectrogram for each index.
             string[] keys = colorMap1.Split('-');

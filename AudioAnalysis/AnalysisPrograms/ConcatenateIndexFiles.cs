@@ -180,18 +180,22 @@ namespace AnalysisPrograms
             // The drive: work = G; home = E
             drive = "G";
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\AvailaeFolders\\LizZnidersic\\Data Priory property D.Chapple August 2016"),
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\AvailaeFolders\\LizZnidersic\\Data Tasman Island Unit 2 Mez"),
                                        };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
-            string opFileStem = "LizZnidersic_PrioryTasmania";
-            //string opPath = $"{drive}:\\AvailaeFolders\\LizZnidersic\\Results_PrioryProperty"; //TEST_missingData
-            string opPath = $"{drive}:\\AvailaeFolders\\LizZnidersic\\TEST_missingData"; //
+            string opFileStem = "LizZnidersic_TasmanIsU2Mez";
+            string opPath = $"{drive}:\\AvailaeFolders\\LizZnidersic\\Test_IndexDistributions"; 
+            //string opPath = $"{drive}:\\AvailaeFolders\\LizZnidersic\\TEST_missingData"; //was used to put results for testing missing data
             var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\SpectrogramFalseColourConfig.yml");
             timeSpanOffsetHint = TimeSpan.FromHours(8);
             FileInfo sunriseDatafile = null;
             bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
-            dtoStart = new DateTimeOffset(2016, 08, 21, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2016, 08, 22, 02, 23, 29, TimeSpan.Zero); 
+            dtoStart = new DateTimeOffset(2015, 11, 09, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd   = new DateTimeOffset(2015, 11, 19, 0, 0, 0, TimeSpan.Zero);
+            //dtoStart = new DateTimeOffset(2017, 01, 17, 0, 0, 0, TimeSpan.Zero);
+            //dtoEnd   = new DateTimeOffset(2017, 01, 24, 02, 23, 29, TimeSpan.Zero); 
+            //dtoStart = new DateTimeOffset(2016, 08, 21, 0, 0, 0, TimeSpan.Zero);
+            //dtoEnd = new DateTimeOffset(2016, 08, 22, 02, 23, 29, TimeSpan.Zero); 
             // colour maps for this job
             colorMap1 = "ACI-ENT-RHZ";
             colorMap2 = "BGN-POW-SPT";
@@ -412,7 +416,10 @@ namespace AnalysisPrograms
 
         public static void Execute(Arguments arguments)
         {
+            // Concatenation is designed only for the output from a "Towsey.Acoustic" analysis.
             string analysisType = "Towsey.Acoustic";
+            // Only the following spectral indices will be concatenated. 
+            string[] keys = { "ACI", "BGN", "CLS", "CVR", "ENT", "EVN", "POW", "RHZ", "SPT" };
 
             // deal with verbosity
             bool verbose = false; // default
@@ -429,7 +436,6 @@ namespace AnalysisPrograms
                 arguments.InputDataDirectories =
                     (arguments.InputDataDirectories ?? new DirectoryInfo[0]).Concat(new[] {arguments.InputDataDirectory}).ToArray();
             }
-
 
             //Log.Warn("DrawImages option hard coded to be on in this version");
             //arguments.DrawImages = true;
@@ -619,9 +625,12 @@ namespace AnalysisPrograms
                     var imagePath = FilenameHelpers.AnalysisResultPath(resultsDir, opFileStem, "SummaryIndices", "png");
                     tracksImage.Save(imagePath);
                 }
-                
+
+
                 // ###### THEN CONCATENATE THE SPECTRAL INDICES, DRAW IMAGES AND SAVE IN RESULTS DIRECTORY
-                var dictionaryOfSpectralIndices1 = LDSpectrogramStitching.ConcatenateAllSpectralIndexFiles(subDirectories, resultsDir, indexPropertiesConfig, indexGenerationData, opFileStem);
+                var dictionaryOfSpectralIndices1 = LDSpectrogramStitching.ConcatenateAllSpectralIndexFiles(subDirectories, keys, indexGenerationData);
+                // Calculate the index distribution statistics and write to a json file. Also save as png image
+                var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectralIndices1, resultsDir, opFileStem);
 
                 // The currently available sepctral indices are  "ACI", "ENT", "EVN", "BGN", "POW", "CLS", "SPT", "RHZ", "CVR"
                 // RHZ, SPT and CVR correlated with POW and do not add much. Currently use SPT.  Do not use CLS. Not particularly useful.
@@ -640,7 +649,7 @@ namespace AnalysisPrograms
                             analysisType,
                             dictionaryOfSpectralIndices1,
                             /*summaryIndices = */null,
-                            /*indexDistributions*/ null,
+                            indexDistributions,
                             siteDescription,
                             arguments.SunRiseDataFile,
                             indexErrors,
@@ -735,6 +744,7 @@ namespace AnalysisPrograms
                                                                  verbose);
                 }
 
+                LoggedConsole.WriteLine($"     Completed Summary Indices");
                 // ##############################################################################################################
 
                 // NOW CONCATENATE SPECTRAL INDEX FILES
@@ -749,13 +759,18 @@ namespace AnalysisPrograms
                     break;
                 }
 
-                var dictionaryOfSpectralIndices2 = LDSpectrogramStitching.ConcatenateAllSpectralIndexFiles(dirArray, resultsDir, indexPropertiesConfig, indexGenerationData, opFileStem1);
+                var dictionaryOfSpectralIndices2 = LDSpectrogramStitching.ConcatenateAllSpectralIndexFiles(dirArray, keys, indexGenerationData);
                 if (dictionaryOfSpectralIndices2.Count == 0)
                 {
                     LoggedConsole.WriteErrorLine("WARNING from method ConcatenateIndexFiles.Execute():");
                     LoggedConsole.WriteErrorLine("        An empty dictionary of SPECTRAL indices was returned !!! ");
                     return;
                 }
+
+                // Calculate the index distribution statistics and write to a json file. Also save as png image
+                var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectralIndices2, resultsDir, opFileStem1);
+
+
 
                 // DRAW SPECTRAL INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
                 if (arguments.DrawImages)
@@ -770,7 +785,7 @@ namespace AnalysisPrograms
                         analysisType,
                         dictionaryOfSpectralIndices2,
                         /*summaryIndices = */null,
-                        /*indexDistributions*/ null,
+                        indexDistributions,
                         siteDescription,
                         arguments.SunRiseDataFile,
                         indexErrors,
@@ -811,6 +826,7 @@ namespace AnalysisPrograms
                 }
 
                 WriteSpectralIndexFiles(resultsDir, opFileStem1, analysisType, dictionaryOfSpectralIndices2);
+                LoggedConsole.WriteLine($"     Completed Spectral Indices");
 
             } // over days
 
@@ -840,7 +856,7 @@ namespace AnalysisPrograms
         public static List<FileInfo> WriteSpectralIndexFiles(DirectoryInfo destination, string fileNameBase, string identifier, Dictionary<string, double[,]> results)
         {
 
-            Log.Info("Writing spectral indices");
+            Log.Info("\t\tWriting spectral indices");
             
             var spectralIndexFiles = new List<FileInfo>(results.Count);
 

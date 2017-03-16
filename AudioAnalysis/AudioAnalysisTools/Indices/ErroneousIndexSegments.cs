@@ -35,11 +35,11 @@ namespace AudioAnalysisTools.Indices
 
             if (this.ErrorDescription.Equals(ErrorMissingData) )
             {
-                g.Clear(Color.Red);
+                g.Clear(Color.LightGray);
             }
             else // ErrorZeroSignal
             {
-                g.Clear(Color.Gray);
+                g.Clear(Color.Red);
             }
             g.DrawLine(Pens.Black, 0, 0, width, height);
             g.DrawLine(Pens.Black, 0, height, width, 0);

@@ -227,7 +227,7 @@ namespace AnalysisPrograms
                 basename: originalBaseName,
                 analysisType: Acoustic.TowseyAcoustic,
                 indexSpectrograms: null,
-                indexDistributions: indexDistributionsData,
+                indexStatistics: indexDistributionsData,
                 imageChrome: false.ToImageChrome());
         } // Execute()
 
