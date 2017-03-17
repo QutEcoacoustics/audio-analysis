@@ -31,7 +31,8 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.Indices;
     using Acoustics.Shared.ConfigFile;
     using System.Drawing;
-    using Acoustics.Shared;
+
+    using static Acoustics.Shared.FilenameHelpers;
 
     /// <summary>
     /// AKA: Lewin's Rail
@@ -161,8 +162,16 @@ namespace AnalysisPrograms.Recognizers
 
                 //#############################################################################################################################################
 
-                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.BaseName), SpeciesName, "png", "DebugSpectrogram"));
-                debugImage.Save(debugPath.FullName);
+                if (debugImage == null)
+                {
+                    Log.Debug("DebugImage is null, not writing file");
+                }
+                else
+                {
+                    var imageName = AnalysisResultName(recording.BaseName, this.SpeciesName, "png", "DebugSpectrogram");
+                    var debugPath = outputDirectory.Combine(imageName);
+                    debugImage.Save(debugPath.FullName);
+                }
 
                 foreach (var ae in predictedEvents)
                 {
