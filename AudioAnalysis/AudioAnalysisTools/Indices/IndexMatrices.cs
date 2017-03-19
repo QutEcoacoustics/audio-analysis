@@ -353,17 +353,6 @@ namespace AudioAnalysisTools.Indices
             return matrices;
         }
 
-/*
-        /// <summary>
-        /// WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
-        /// </summary>
-        /// <returns></returns>
-        public static Dictionary<string, double[,]> GetMatrixOfSpectralIndices(List<AnalysisBase.ResultBases.SpectralIndexBase> spectralIndices)
-        {
-            var d = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
-            return d;
-        }
-*/
 
 
         public static FileInfo[] GetFilesInDirectory(string path, string pattern)

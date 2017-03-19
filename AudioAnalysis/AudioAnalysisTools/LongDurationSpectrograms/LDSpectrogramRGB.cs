@@ -1362,16 +1362,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 throw new InvalidOperationException("Cannot find spectrogram matrix files");
             }
 
-            // Get index distribution statistics. Either read from input variable or json file. 
-            // Index Distribution Stats are only required if drawing "difference" spectrograms etc.     
+            // If index distribution statistics has not been passed, then read from json file. 
             if (indexStatistics == null)
             {
                 indexStatistics = IndexDistributions.ReadSpectralIndexDistributionStatistics(inputDirectory, fileStem);
-                Log.Warn("\tA .json file of Index Distribution Statistics was not found in dir: <" + outputDirectory.FullName + ">");
-                Log.Warn("\t\tThis is not required in most cases. Only required if doing \"difference\" spectrograms.");
 
-                //cs1.IndexStats = IndexDistributions.WriteIndexDistributionStatistics(cs1.spectrogramMatrices, ipDir, fileStem);
-                //throw new InvalidOperationException("Cannot proceed without index distribution data");
+                if (indexStatistics == null)
+                {
+                    // Index Distribution Stats are only required if drawing "difference" spectrograms etc.     
+                    Log.Warn("\tA .json file of Index Distribution Statistics was not found in dir: <" + outputDirectory.FullName + ">");
+                    Log.Warn("\t\tThis is only required if drawing \"difference\" spectrograms.");
+                }
             }
             cs1.IndexStats = indexStatistics;
 
