@@ -138,9 +138,9 @@ namespace AudioAnalysisTools.Indices
             var config = configuration;
             var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
 
-            // FOLLWOING LINE IS AN ASSUMPTION - USEFUL ONLY FOR JASCO 64000sr MARINE RECORDINGS
+            // FOLLOWING LINE IS AN ASSUMPTION - USEFUL ONLY FOR JASCO 64000sr MARINE RECORDINGS
             // If you wish to use other octave scale types then need to put in the config file and recover here.
-            OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Nyquist32000;
+            var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves28Nyquist32000);
 
             // get frame parameters for the analysis
             int frameSize = (int?)config[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
@@ -229,7 +229,7 @@ namespace AudioAnalysisTools.Indices
             if (octaveScale)
             {
                 dspOutput1.AmplitudeSpectrogram = OctaveFreqScale.AmplitudeSpectra(dspOutput1.AmplitudeSpectrogram,
-                                                                                   dspOutput1.WindowPower, sampleRate, epsilon, ost);
+                                                                                   dspOutput1.WindowPower, sampleRate, epsilon, freqScale);
                 dspOutput1.NyquistBin = dspOutput1.AmplitudeSpectrogram.GetLength(1) - 1; // ASSUMPTION!!! Nyquist is in top Octave bin - not necessarily true!!
             }
 
@@ -239,7 +239,7 @@ namespace AudioAnalysisTools.Indices
             if (octaveScale)
             {
                 dspOutput2.AmplitudeSpectrogram = OctaveFreqScale.AmplitudeSpectra(dspOutput2.AmplitudeSpectrogram,
-                                                                                   dspOutput2.WindowPower, sampleRate, epsilon, ost);
+                                                                                   dspOutput2.WindowPower, sampleRate, epsilon, freqScale);
                 dspOutput2.NyquistBin = dspOutput2.AmplitudeSpectrogram.GetLength(1) - 1; // ASSUMPTION!!! Nyquist is in top Octave bin - not necessarily true!!
             }
 
@@ -672,8 +672,8 @@ namespace AudioAnalysisTools.Indices
             double[,] decibelSpectrogram = null;
             if (octaveScale)
             {
-                OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Nyquist32000;
-                decibelSpectrogram = OctaveFreqScale.DecibelSpectra(dspOutput.AmplitudeSpectrogram, dspOutput.WindowPower, sampleRate, epsilon, ost);
+                var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves28Nyquist32000);
+                decibelSpectrogram = OctaveFreqScale.DecibelSpectra(dspOutput.AmplitudeSpectrogram, dspOutput.WindowPower, sampleRate, epsilon, freqScale);
             }
             else
             {
