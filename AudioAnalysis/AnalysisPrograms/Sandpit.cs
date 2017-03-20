@@ -14,6 +14,7 @@ using AudioAnalysisTools.WavTools;
 using Acoustics.Shared;
 using System.Drawing.Imaging;
 using AnalysisBase.ResultBases;
+using FreqScaleType = AudioAnalysisTools.DSP.FreqScaleType;
 
 namespace AnalysisPrograms
 {
@@ -57,17 +58,18 @@ namespace AnalysisPrograms
                 // METHOD TO CHECK IF OCTAVE FREQ SCALE IS WORKING
 
                 // first check it out on standard recording.
-                /*
-                string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-085040.wav";
-                var outputPath = @"C:\SensorNetworks\Output\OctaveFreqScale\octaveScaleSonogram.png";
+                
+                string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
+                var outputPath       = @"C:\SensorNetworks\Output\OctaveFreqScale\octaveScaleSonogram.png";
                 var outputDirectory = new DirectoryInfo(outputPath);
                 AudioRecording recording = new AudioRecording(recordingPath);
-                //OctaveScaleType ost = OctaveScaleType.Octaves27Sr22050;
-                OctaveScaleType ost = OctaveScaleType.Linear125Octaves30Nyquist11025;
+                //FreqScaleType fst = FreqScaleType.Octaves27Nyquist11025;
+                FreqScaleType fst = FreqScaleType.Linear125Octaves30Nyquist11025;
                 int sr = 22050;
                 const int frameSize = 8192;
                 double windowOverlap = 0.75;
-                */
+                int frameStep = (int) Math.Round(frameSize*(1 - windowOverlap));
+
 
                 /*
                 24 BIT JASCOE RECORDINGS
@@ -80,22 +82,22 @@ namespace AnalysisPrograms
 
                 */
 
-
+                /*
                 // Now check it on Jascoe recording
                 string recordingPath = @"C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit.wav";
                 var outputPath = @"C:\SensorNetworks\Output\OctaveFreqScale\JascoeMarineGBR1.png";
                 AudioRecording recording = new AudioRecording(recordingPath);
-                //OctaveScaleType ost = OctaveScaleType.Octaves27Sr22050;
-                OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Nyquist32000;
+                //FreqScaleType fst = FreqScaleType.Octaves27Sr22050;
+                FreqScaleType fst = FreqScaleType.Linear125Octaves28Nyquist32000;
                 int sr = 64000;
                 const int frameSize = 16384;
                 double windowOverlap = 0.5;
+*/
 
-                var octaveBinBounds = OctaveFreqScale.GetOctaveScale(ost);
-                int[,] gridLineLocations = OctaveFreqScale.GetGridLineLocations(ost, octaveBinBounds);
+                //var freqScale = new FrequencyScale(sr, frameSize, frameStep);
+                var freqScale = new FrequencyScale(fst);
 
                 //var recordingDuration = recording.WavReader.Time;
-
                 //NoiseReductionType noiseReductionType  = NoiseReductionType.None;
                 //NoiseReductionType noiseReductionType = SNR.KeyToNoiseReductionType("FlattenAndTrim");
                 NoiseReductionType noiseReductionType   = NoiseReductionType.Standard;
@@ -111,14 +113,9 @@ namespace AnalysisPrograms
 
                 // produce an amplitude spectrogram
                 var sonogram = (BaseSonogram)new AmplitudeSonogram(sonoConfig, recording.WavReader);
-                // remove the DC column
-                var dataMatrix = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0)-1, sonogram.Data.GetLength(1)-1);
-                //square the values to produce power spectrogram
-                dataMatrix = MatrixTools.SquareValues(dataMatrix);
                 //convert spectrogram to octave scale
-                dataMatrix = OctaveFreqScale.ConvertLinearSpectrogramToOctaveFreqScale(dataMatrix, sr, ost);
-                double min, max;
-                dataMatrix = MatrixTools.Power2DeciBels(dataMatrix, out min, out max);
+                double[,] dataMatrix = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
+
                 // DO NOISE REDUCTION
                 dataMatrix = SNR.NoiseReduce_Standard(dataMatrix);
                 //double sdCount = 2.0;
@@ -129,7 +126,7 @@ namespace AnalysisPrograms
                 //sonogram.Configuration.FreqBinCount = 256;
                 
 
-                Image image = sonogram.GetImageFullyAnnotated("OCTAVE SPECTROGRAM: " + ost.ToString(), gridLineLocations);
+                Image image = sonogram.GetImageFullyAnnotated("OCTAVE SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
                 image.Save(outputPath, ImageFormat.Png);
             }
             
@@ -139,13 +136,13 @@ namespace AnalysisPrograms
                 // All the below octave scale options are designed for a final freq scale having 256 bins
 
                 //// constants required for full octave scale when sr = 22050
-                //OctaveScaleType ost = OctaveScaleType.Octaves27Sr22050;
+                //FreqScaleType ost = FreqScaleType.Octaves27Sr22050;
                 //// constants required for split linear-octave scale when sr = 22050
-                //OctaveScaleType ost = OctaveScaleType.Linear62Octaves31Nyquist11025;
+                //FreqScaleType ost = FreqScaleType.Linear62Octaves31Nyquist11025;
                 //// constants required for full octave scale when sr = 64000
-                //OctaveScaleType ost = OctaveScaleType.Octaves24Nyquist32000;
+                //FreqScaleType ost = FreqScaleType.Octaves24Nyquist32000;
                 //// constants required for split linear-octave scale when sr = 64000
-                OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Nyquist32000;
+                FreqScaleType ost = FreqScaleType.Linear125Octaves28Nyquist32000;
 
                 OctaveFreqScale.TestOctaveScale(ost);
             }

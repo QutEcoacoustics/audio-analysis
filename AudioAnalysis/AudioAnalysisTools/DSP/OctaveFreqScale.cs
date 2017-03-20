@@ -8,42 +8,36 @@ namespace AudioAnalysisTools.DSP
 {
 
 
-    /// IMPORTANT NOTE: If you are converting Herz to OCTAVE scale, this conversion MUST be done BEFORE noise reduction
-        /*
-        All the below octave scale options are designed for a final freq scale having 256 bins
-        Use the below OctaveScaleTypes as follows:
-        (1)  Constants required for full octave scale when sr = 22050:           OctaveScaleType ost = OctaveScaleType.Octaves27Sr22050;
-        (2)  Constants required for split linear-octave scale when sr = 22050:   OctaveScaleType ost = OctaveScaleType.Linear62Octaves31Nyquist11025;
-        (3)  Constants required for full octave scale when sr = 64000:           OctaveScaleType ost = OctaveScaleType.Octaves24Nyquist32000;
-        (4)  Constants required for split linear-octave scale when sr = 64000    OctaveScaleType ost = OctaveScaleType.Linear125Octaves28Nyquist32000;
-    */
-    public enum OctaveScaleType
-    {
-        Octaves27Sr22050,
-        Linear62Octaves31Nyquist11025,
-        Linear125Octaves30Nyquist11025,
-        Octaves24Nyquist32000,
-        Linear125Octaves28Nyquist32000
-    }
-
-
-
     public static class OctaveFreqScale
     {
+        /// IMPORTANT NOTE: If you are converting Herz scale from LINEAR to OCTAVE, this conversion MUST be done BEFORE noise reduction
 
+
+        public static double[,] ConvertAmplitudeSpectrogramToDecibelOctaveScale(double[,] inputSpgram, FrequencyScale freqScale)
+        {
+            var dataMatrix = MatrixTools.Submatrix(inputSpgram, 0, 1, inputSpgram.GetLength(0) - 1, inputSpgram.GetLength(1) - 1);
+            //square the values to produce power spectrogram
+            dataMatrix = MatrixTools.SquareValues(dataMatrix);
+            //convert spectrogram to octave scale
+            dataMatrix = OctaveFreqScale.ConvertLinearSpectrogramToOctaveFreqScale(dataMatrix, freqScale);
+            double min, max;
+            dataMatrix = MatrixTools.Power2DeciBels(dataMatrix, out min, out max);
+            return dataMatrix;
+        }
 
         /// <summary>
         /// Converts a spectrogram having linear freq scale to one having an Octave freq scale.
-        /// Note that the sample rate (sr) and the frame size both need to be apporpriate to the choice of OctaveScaleType. This IS NOT YET AUTOMATED.
+        /// Note that the sample rate (sr) and the frame size both need to be apporpriate to the choice of FreqScaleType.
         /// </summary>
         /// <param name="inputSpgram"></param>
-        /// <param name="sr">sample rate of the signal from which spectrogram derived.</param>
-        /// <param name="ost">The Octave Scale type. i.e. split linear/octave or full octave.</param>
+        /// <param name="freqScale"></param>
         /// <returns></returns>
-        public static double[,] ConvertLinearSpectrogramToOctaveFreqScale(double[,] inputSpgram, int sr, OctaveScaleType ost)
+        public static double[,] ConvertLinearSpectrogramToOctaveFreqScale(double[,] inputSpgram, FrequencyScale freqScale)
         {
+            if (freqScale == null) throw new ArgumentNullException(nameof(freqScale));
+
             // get the octave bin bounds for this octave scale type
-            var octaveBinBounds = GetOctaveScale(ost);
+            var octaveBinBounds = freqScale.GetOctaveScale(freqScale.ScaleType);
 
             int newBinCount = octaveBinBounds.GetLength(0);
             // set up the new octave spectrogram
@@ -68,9 +62,9 @@ namespace AudioAnalysisTools.DSP
         }
 
 
-        public static double[,] DecibelSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon, OctaveScaleType ost)
+        public static double[,] DecibelSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon, FrequencyScale freqScale)
         {
-            double[,] powerSpectra = PowerSpectra(amplitudeM, windowPower, sampleRate, epsilon, ost);
+            double[,] powerSpectra = PowerSpectra(amplitudeM, windowPower, sampleRate, epsilon, freqScale);
 
             // Convert the power values to log using: dB = 10*log(power)
             double min, max;
@@ -78,9 +72,9 @@ namespace AudioAnalysisTools.DSP
             return decibelSpectra;
         }
 
-        public static double[,] AmplitudeSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon, OctaveScaleType ost)
+        public static double[,] AmplitudeSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon, FrequencyScale freqScale)
         {
-            double[,] powerSpectra = PowerSpectra(amplitudeM, windowPower, sampleRate, epsilon, ost);
+            double[,] powerSpectra = PowerSpectra(amplitudeM, windowPower, sampleRate, epsilon, freqScale);
 
             // Convert the power values back to amplitude by taking the square root.
             var amplitudeSpectra = MatrixTools.SquareRootOfValues(powerSpectra);
@@ -102,9 +96,9 @@ namespace AudioAnalysisTools.DSP
         /// <param name="windowPower">value for window power normalisation</param>
         /// <param name="sampleRate">to normalise for the sampling rate</param>
         /// <param name="epsilon">small value to avoid log of zero.</param>
-        /// <param name="ost">Octave scale type</param>
+        /// <param name="freqScale"></param>
         /// <returns></returns>
-        public static double[,] PowerSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon, OctaveScaleType ost)
+        public static double[,] PowerSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon, FrequencyScale freqScale)
         {
             int frameCount = amplitudeM.GetLength(0);
             int binCount = amplitudeM.GetLength(1);
@@ -151,89 +145,14 @@ namespace AudioAnalysisTools.DSP
                 }
             }
 
-            powerSpectra = OctaveFreqScale.ConvertLinearSpectrogramToOctaveFreqScale(powerSpectra, sampleRate, ost);
+            powerSpectra = OctaveFreqScale.ConvertLinearSpectrogramToOctaveFreqScale(powerSpectra, freqScale);
             return powerSpectra;
         }
 
 
 
 
-        public static int[,] GetOctaveScale(OctaveScaleType ost)
-        {
-            // CONSTRUCTION OF Octave Frequency Scales
-            // WARNING!: changing these constants will have undefined effects. The three options below have been debugged to give what is required.
-            //             However other values have not been debugged - so user should check the output to ensure it is what is required.
-            int finalBinCount = 256;
-            int sr, frameSize, lowerHzBound, upperHzBound, octaveDivisions;
-            // NOTE: octaveDivisions = the number of fractional Hz steps within one octave. Piano octave contains 12 steps per octave.
-
-            int[,] octaveBinBounds = null;
-
-            switch (ost)
-            {
-                case OctaveScaleType.Octaves27Sr22050:
-                    {
-                        //// constants required for full octave scale when sr = 22050
-                        sr = 22050;
-                        frameSize = 8192;
-                        lowerHzBound = 15;
-                        upperHzBound = 11025;
-                        octaveDivisions = 27; // fraction steps within one octave. Note: piano = 12 steps per octave.
-                        octaveBinBounds = LinearToFullOctaveScale(sr, frameSize, finalBinCount, lowerHzBound, upperHzBound, octaveDivisions);
-                    }
-                    break;
-                case OctaveScaleType.Linear62Octaves31Nyquist11025:
-                    {
-                        //// constants required for split linear-octave scale when sr = 22050
-                        sr = 22050;
-                        frameSize = 8192;
-                        lowerHzBound = 62;
-                        upperHzBound = 11025;
-                        octaveDivisions = 31; // fraction steps within one octave. Note: piano = 12 steps per octave.
-                        octaveBinBounds = LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, lowerHzBound, upperHzBound, octaveDivisions);
-                    }
-                    break; 
-                case OctaveScaleType.Linear125Octaves30Nyquist11025:
-                    {
-                        //// constants required for split linear-octave scale when sr = 22050
-                        sr = 22050;
-                        frameSize = 8192;
-                        lowerHzBound = 125;
-                        upperHzBound = 11025;
-                        octaveDivisions = 32; // fraction steps within one octave. Note: piano = 12 steps per octave.
-                        octaveBinBounds = LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, lowerHzBound, upperHzBound, octaveDivisions);
-                    }
-                    break; 
-                case OctaveScaleType.Octaves24Nyquist32000:
-                    {
-                        //// constants required for full octave scale when sr = 64000
-                        sr = 64000;
-                        frameSize = 16384;  // = 2*8192   or 4*4096;;
-                        lowerHzBound = 15;
-                        upperHzBound = 32000;
-                        octaveDivisions = 24; // fraction steps within one octave. Note: piano = 12 steps per octave.
-                        octaveBinBounds = LinearToFullOctaveScale(sr, frameSize, finalBinCount, lowerHzBound, upperHzBound, octaveDivisions);
-                    }
-                    break;
-                case OctaveScaleType.Linear125Octaves28Nyquist32000:
-                    {
-                        //// constants required for split linear-octave scale when sr = 64000
-                        sr = 64000;
-                        frameSize = 16384;  // = 2*8192   or 4*4096;;
-                        lowerHzBound = 125;
-                        upperHzBound = 32000;
-                        octaveDivisions = 28; // fraction steps within one octave. Note: piano = 12 steps per octave.
-                        octaveBinBounds = LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, lowerHzBound, upperHzBound, octaveDivisions);
-                    }
-                    break;
-                default:
-                    LoggedConsole.WriteLine("Linear Hz Scale used. Not Octave.");
-                    break;
-            }
-            return octaveBinBounds;
-        }
-
-        public static int[,] GetGridLineLocations(OctaveScaleType ost, int[,] octaveBinBounds)
+        public static int[,] GetGridLineLocations(FreqScaleType ost, int[,] octaveBinBounds)
         {
             // assume image height is 256
             int imageHeight = 256;
@@ -241,42 +160,22 @@ namespace AudioAnalysisTools.DSP
 
             switch (ost)
             {
-                case OctaveScaleType.Octaves27Sr22050:
-                    {
-                        gridLineLocations = new int[8,2];
-                        gridLineLocations[0, 0] = imageHeight - 34;  //  125 Hz
-                        gridLineLocations[1, 0] = imageHeight - 62;  //  250
-                        gridLineLocations[2, 0] = imageHeight - 89;  //  500
-                        gridLineLocations[3, 0] = imageHeight - 117; // 1000
-                        gridLineLocations[4, 0] = imageHeight - 145; // 2000
-                        gridLineLocations[5, 0] = imageHeight - 173; // 4000
-                        gridLineLocations[6, 0] = imageHeight - 201; // 8000
-                        // entre the Hz value
-                        gridLineLocations[0, 1] = 125;  //  125 Hz
-                        gridLineLocations[1, 1] = 250;  //  250
-                        gridLineLocations[2, 1] = 500;  //  500
-                        gridLineLocations[3, 1] = 1000; // 1000
-                        gridLineLocations[4, 1] = 2000; // 2000
-                        gridLineLocations[5, 1] = 4000; // 4000
-                        gridLineLocations[6, 1] = 8000; // 8000
-                    }
-                    break;
-                case OctaveScaleType.Linear62Octaves31Nyquist11025:
+                case FreqScaleType.Linear62Octaves31Nyquist11025:
                     {
                         gridLineLocations = new int[8, 2];
                     }
                     break;
-                case OctaveScaleType.Linear125Octaves30Nyquist11025:
+                case FreqScaleType.Linear125Octaves30Nyquist11025:
                     {
                         gridLineLocations = new int[8, 2];
                     }
                     break;
-                case OctaveScaleType.Octaves24Nyquist32000:
+                case FreqScaleType.Octaves24Nyquist32000:
                     {
                         gridLineLocations = new int[8, 2];
                     }
                     break;
-                case OctaveScaleType.Linear125Octaves28Nyquist32000:
+                case FreqScaleType.Linear125Octaves28Nyquist32000:
                     {
                         gridLineLocations = new int[8, 2];
                         gridLineLocations[0,0] = imageHeight - 34;  //  125 Hz
@@ -557,15 +456,16 @@ namespace AudioAnalysisTools.DSP
 
 
 
-        public static void TestOctaveScale(OctaveScaleType ost)
+        public static void TestOctaveScale(FreqScaleType fst)
         {
-            var octaveBinBounds = GetOctaveScale(ost);
+            var freqScale = new FrequencyScale(fst);
+            var octaveBinBounds = freqScale.GetOctaveScale(fst);
 
             // now test the octave scale using a test spectrum
             int sr = 22050;
             int frameSize = 8192; // default for sr = 22050
 
-            if ((ost == OctaveScaleType.Octaves24Nyquist32000)||(ost == OctaveScaleType.Linear125Octaves28Nyquist32000))
+            if ((fst == FreqScaleType.Octaves24Nyquist32000)||(fst == FreqScaleType.Linear125Octaves28Nyquist32000))
             {
                 sr = 64000;
                 frameSize = 16384; // default for sr = 64000

@@ -299,7 +299,8 @@
         public Image GetImageFullyAnnotated(string title, int[,] gridLineLocations)
         {
             Image image = this.GetImage();
-            SpectrogramTools.DrawKHzLines((Bitmap) image, gridLineLocations);
+            FrequencyScale.DrawKHzLines((Bitmap) image, gridLineLocations);
+
             //var minuteOffset = TimeSpan.Zero;
             //var xAxisTicInterval = TimeSpan.FromSeconds(1.0);
             //var xInterval = TimeSpan.FromSeconds(10);
@@ -371,7 +372,7 @@
             //double freqBinWidth = 0.0;
             double freqBinWidth = this.FBinWidth;
             if (add1kHzLines) 
-                SpectrogramTools.Draw1KHzLines((Bitmap)image, doMelScale, maxFrequency, freqBinWidth);
+                FrequencyScale.Draw1KHzLines((Bitmap)image, doMelScale, maxFrequency, freqBinWidth);
             return image;
         }
 
@@ -463,7 +464,7 @@
 
             //set up the 1000kHz scale
             int herzInterval = 1000;
-            int[] vScale = SpectrogramTools.CreateLinearYaxis(herzInterval, this.NyquistFrequency, imageHeight); //calculate location of 1000Hz grid lines
+            int[] vScale = FrequencyScale.CreateLinearYaxis(herzInterval, this.NyquistFrequency, imageHeight); //calculate location of 1000Hz grid lines
             Bitmap bmp = new Bitmap(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
             for (int w = 0; w < imageWidth; w++)
             {

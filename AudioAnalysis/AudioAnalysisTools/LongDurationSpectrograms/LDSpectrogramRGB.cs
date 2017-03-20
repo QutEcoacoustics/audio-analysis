@@ -32,6 +32,8 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
+using AudioAnalysisTools.DSP;
+
 namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
@@ -1013,7 +1015,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             //draw the composite bitmap
             //SpectrogramTools.DrawTimeLinesOnImage((Bitmap)bmp1, TimeSpan.Zero, fullDuration, cs.XTicInterval);
-            SpectrogramTools.DrawFrequencyLinesOnImage((Bitmap)bmp1, nyquist, herzInterval, cs.FreqScale);
+            int frameSize = bmp1.Height;
+            var freqScale = new FrequencyScale(nyquist * 2, frameSize, herzInterval);
+
+            FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)bmp1, freqScale);
             var imageList = new List<Image> {titleBar, timeBmp1, bmp1, timeBmp2};
             if (suntrack != null) imageList.Add(suntrack);
             Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
