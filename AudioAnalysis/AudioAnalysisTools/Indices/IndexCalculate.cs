@@ -11,19 +11,17 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
-    using System.Data;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
     using System.Reflection;
 
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.StandardSpectrograms;
-    using AudioAnalysisTools.WavTools;
-
+    using DSP;
+    using StandardSpectrograms;
+    using WavTools;
     using log4net;
-
     using TowseyLibrary;
+
 
     /// <summary>
     /// Core class that calculates indices.
@@ -140,7 +138,7 @@ namespace AudioAnalysisTools.Indices
 
             // FOLLOWING LINE IS AN ASSUMPTION - USEFUL ONLY FOR JASCO 64000sr MARINE RECORDINGS
             // If you wish to use other octave scale types then need to put in the config file and recover here.
-            var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves28Nyquist32000);
+            var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
 
             // get frame parameters for the analysis
             int frameSize = (int?)config[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
@@ -244,12 +242,12 @@ namespace AudioAnalysisTools.Indices
             }
 
             // i. convert signal to dB and subtract background noise. Noise SDs to calculate threshold = ZERO by default
-            double signalBGN = NoiseRemovalModal.CalculateBackgroundNoise(dspOutput2.Envelope);
+            double signalBgn = NoiseRemovalModal.CalculateBackgroundNoise(dspOutput2.Envelope);
             // ii.: calculate the noise profile from the amplitude sepctrogram
-            double[] spectralAmplitudeBGN = NoiseProfile.CalculateBackgroundNoise(dspOutput2.AmplitudeSpectrogram);
+            double[] spectralAmplitudeBgn = NoiseProfile.CalculateBackgroundNoise(dspOutput2.AmplitudeSpectrogram);
             // iii: generate deciBel spectrogram and calculate the dB noise profile
             double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput2.AmplitudeSpectrogram, dspOutput2.WindowPower, sampleRate, epsilon);
-            double[] spectralDecibelBGN = NoiseProfile.CalculateBackgroundNoise(deciBelSpectrogram);
+            double[] spectralDecibelBgn = NoiseProfile.CalculateBackgroundNoise(deciBelSpectrogram);
 
 
 
@@ -290,13 +288,13 @@ namespace AudioAnalysisTools.Indices
 
             // i: FRAME ENERGIES - convert signal to decibels and subtract background noise.
             double[] dBSignal = SNR.Signal2Decibels(dspOutput1.Envelope);
-            double[] dBArray  = SNR.SubtractAndTruncate2Zero(dBSignal, signalBGN);
+            double[] dBArray  = SNR.SubtractAndTruncate2Zero(dBSignal, signalBgn);
 
             // 10 times log of amplitude squared     
             summaryIndices.AvgSignalAmplitude = 20 * Math.Log10(avgSignalEnvelope);
 
             // bg noise in dB
-            summaryIndices.BackgroundNoise = signalBGN;
+            summaryIndices.BackgroundNoise = signalBgn;
 
             // SNR
             summaryIndices.Snr = dBArray.Max(); 
@@ -327,7 +325,7 @@ namespace AudioAnalysisTools.Indices
             // (A2) ################## CALCULATE  NDSI (Normalised difference soundscape Index) FROM THE AMPLITUDE SPECTROGRAM #################
             var tuple3 = SpectrogramTools.CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram(amplitudeSpectrogram);
             // get item 1 which the Power Spectral Density.
-            summaryIndices.NDSI = SpectrogramTools.CalculateNDSI(tuple3.Item1, sampleRate, 1000, 2000, 8000);
+            summaryIndices.NDSI = SpectrogramTools.CalculateNdsi(tuple3.Item1, sampleRate, 1000, 2000, 8000);
 
 
             // (B) ################################## EXTRACT SPECTRAL INDICES FROM THE AMPLITUDE SPECTROGRAM ################################## 
@@ -389,7 +387,7 @@ namespace AudioAnalysisTools.Indices
 
 
             // iv: remove background noise from the amplitude spectrogram
-            amplitudeSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(amplitudeSpectrogram, spectralAmplitudeBGN);
+            amplitudeSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(amplitudeSpectrogram, spectralAmplitudeBgn);
             double nhAmplThreshold = 0.015; // AMPLITUDE THRESHOLD for smoothing background
             // Assuming a background noise ranges around -40dB, this value corresponds to approximately 6dB above backgorund.
             amplitudeSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(amplitudeSpectrogram, nhAmplThreshold);
@@ -420,11 +418,11 @@ namespace AudioAnalysisTools.Indices
                 deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput1.AmplitudeSpectrogram, dspOutput1.WindowPower, sampleRate, epsilon);
 
             // ii: Calculate background noise spectrum in decibels
-            spectralIndices.BGN = spectralDecibelBGN;
+            spectralIndices.BGN = spectralDecibelBgn;
             //DataTools.writeBarGraph(spectralDecibelBGN);
 
             // iii: CALCULATE noise reduced AVERAGE DECIBEL POWER SPECTRUM 
-            deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, spectralDecibelBGN);
+            deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, spectralDecibelBgn);
             double nhDecibelThreshold = 2.0; // SPECTRAL dB THRESHOLD for smoothing background
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, nhDecibelThreshold);
             spectralIndices.POW = SpectrogramTools.CalculateAvgSpectrumFromSpectrogram(deciBelSpectrogram);
@@ -672,7 +670,7 @@ namespace AudioAnalysisTools.Indices
             double[,] decibelSpectrogram = null;
             if (octaveScale)
             {
-                var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves28Nyquist32000);
+                var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
                 decibelSpectrogram = OctaveFreqScale.DecibelSpectra(dspOutput.AmplitudeSpectrogram, dspOutput.WindowPower, sampleRate, epsilon, freqScale);
             }
             else

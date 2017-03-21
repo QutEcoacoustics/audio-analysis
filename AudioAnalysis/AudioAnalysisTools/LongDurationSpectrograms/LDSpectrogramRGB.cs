@@ -6,11 +6,11 @@
 //   This class generates false-colour spectrograms of long duration audio recordings.
 //   Important properties are:
 //   1) the colour map which maps three acoutic indices to RGB.
-//   2) The scale of the x and y axes which are dtermined by the sample rate, frame size etc.
+//   2) The scale of the x and y axes which are determined by the sample rate, frame size etc.
 //   In order to create false colour spectrograms, copy the method
 //   public static void DrawFalseColourSpectrograms(LDSpectrogramConfig configuration)
 //   All the arguments can be passed through a config file.
-//   Create the config file throu an instance of the class LDSpectrogramConfig
+//   Create the config file through an instance of the class LDSpectrogramConfig
 //   and then call config.WritConfigToYAML(FileInfo path).
 //   Then pass that path to the above static method.
 //
@@ -124,7 +124,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// Gets or sets the ColorMap within current recording.
         /// </summary>
-        public string FreqScale { get; set; }
+        public FrequencyScale FreqScale { get; set; }
 
         public int YInterval // mark 1 kHz intervals
         {
@@ -212,7 +212,18 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // set the X and Y axis scales for the spectrograms 
             IndexCalculationDuration = indexGenerationData.IndexCalculationDuration;
             XTicInterval = config.XAxisTicInterval;
-            FreqScale = config.FreqScale;
+            if (config.FreqScale.Equals("Linear"))
+            {
+                int nyquist = indexGenerationData.SampleRateResampled / 2;
+                int frameSize = indexGenerationData.FrameLength;
+                int herzInterval = 1000;
+                FreqScale = new FrequencyScale(nyquist, frameSize, herzInterval);
+            }
+            else // assume octave scale
+            {
+                var fst = DSP.FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
+                FreqScale = new FrequencyScale(fst);
+            }
             ColorMap = colourMap;
         }
 
@@ -255,7 +266,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
-        public bool ReadCSVFiles(DirectoryInfo ipdir, string fileName)
+        public bool ReadCsvFiles(DirectoryInfo ipdir, string fileName)
         {            
             return this.ReadCSVFiles(ipdir, fileName, this.SpectrogramKeys);
         }
@@ -309,7 +320,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
-        public bool ReadStandardDeviationSpectrogramCSVs(DirectoryInfo ipdir, string fileName)
+        public bool ReadStandardDeviationSpectrogramCsvs(DirectoryInfo ipdir, string fileName)
         {
             int freqBinCount;
             this.spgr_StdDevMatrices = IndexMatrices.ReadSpectrogramCSVFiles(ipdir, fileName, this.ColorMap, out freqBinCount);
@@ -493,6 +504,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     continue;
                 }
 
+                // the directory for the following path must exist
                 var path = FilenameHelpers.AnalysisResultPath(opdir, opFileName, key, "png");
                 var bmp = DrawGreyscaleSpectrogramOfIndex(key);
                 bmp?.Save(path);
@@ -515,11 +527,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Image bmp = ImageTools.DrawReversedMatrixWithoutNormalisation(matrix);
             TimeSpan xAxisPixelDuration = this.IndexCalculationDuration;
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp.Width);
-            int nyquist = this.SampleRate / 2; 
-            int herzInterval = 1000;
             //double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp.Width;
             //TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.StartOffset, fullDuration, xAxisPixelDuration, nyquist, herzInterval);
+            //int nyquist = this.SampleRate / 2; 
+            //int herzInterval = 1000;
+            //int frameSize = bmp.Height;
+            //var freqScale = new FrequencyScale(nyquist, frameSize, herzInterval);
+
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.StartOffset, fullDuration, xAxisPixelDuration, this.FreqScale);
             const int trackHeight = 20;
             //TimeSpan timeScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
             var timeBmp = Image_Track.DrawTimeTrack(fullDuration, this.RecordingStartDate, bmp.Width, trackHeight);
@@ -602,7 +617,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             if (nyquist < 2000) herzInterval = 200;
             double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp.Width;
             var fullDuration = TimeSpan.FromSeconds(secondsDuration);
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.StartOffset, fullDuration, this.XTicInterval, nyquist, herzInterval);
+
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.StartOffset, fullDuration, this.XTicInterval, this.FreqScale);
             return bmp;
         }
 
@@ -1016,7 +1032,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //draw the composite bitmap
             //SpectrogramTools.DrawTimeLinesOnImage((Bitmap)bmp1, TimeSpan.Zero, fullDuration, cs.XTicInterval);
             int frameSize = bmp1.Height;
-            var freqScale = new FrequencyScale(nyquist * 2, frameSize, herzInterval);
+            var freqScale = new FrequencyScale(nyquist, frameSize, herzInterval);
 
             FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)bmp1, freqScale);
             var imageList = new List<Image> {titleBar, timeBmp1, bmp1, timeBmp2};

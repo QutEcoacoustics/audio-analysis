@@ -18,12 +18,10 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using System.Runtime.Serialization;
 
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
-    using Acoustics.Shared.Extensions;
 
     using AnalysisBase;
     using AnalysisBase.ResultBases;
@@ -168,8 +166,7 @@ namespace AnalysisPrograms
                 string recordingPath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
                 string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg";
                 string outputDir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic";
-                string csvPath =
-                    @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic\DM420036_min407_Towsey.Acoustic.Indices.csv";
+                string csvPath = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic\DM420036_min407_Towsey.Acoustic.Indices.csv";
 
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\Crows111216-001Mono5-7min.mp3";
                 //string configPath = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic\temp.cfg";
@@ -183,7 +180,7 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine(date);
                 LoggedConsole.WriteLine("# Output folder:  " + outputDir);
                 LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
-                var diOutputDir = new DirectoryInfo(outputDir);
+                //var diOutputDir = new DirectoryInfo(outputDir);
 
                 int startMinute = 0;
                 int durationSeconds = 0; //set zero to get entire recording
@@ -191,8 +188,8 @@ namespace AnalysisPrograms
                 var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
                 var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
                 var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
-                var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-                var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, "Towsey." + AnalysisName);
+                //var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
+                //var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, "Towsey." + AnalysisName);
                 var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, "Towsey." + AnalysisName);
 
                 if (true)
