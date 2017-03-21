@@ -57,18 +57,21 @@ namespace AnalysisPrograms
             {
                 // METHOD TO CHECK IF OCTAVE FREQ SCALE IS WORKING
 
+                /*
                 // first check it out on standard recording.
-                
-                string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
+                var recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
                 var outputPath       = @"C:\SensorNetworks\Output\OctaveFreqScale\octaveScaleSonogram.png";
-                var outputDirectory = new DirectoryInfo(outputPath);
-                AudioRecording recording = new AudioRecording(recordingPath);
-                //FreqScaleType fst = FreqScaleType.Octaves27Nyquist11025;
-                FreqScaleType fst = FreqScaleType.Linear125Octaves30Nyquist11025;
-                int sr = 22050;
-                const int frameSize = 8192;
-                double windowOverlap = 0.75;
-                int frameStep = (int) Math.Round(frameSize*(1 - windowOverlap));
+                var recording = new AudioRecording(recordingPath);
+                // default linear scale
+                //var fst = FreqScaleType.Linear; 
+                var fst = FreqScaleType.Linear125Octaves6Tones30Nyquist11025;
+                var freqScale = new FrequencyScale(fst);
+
+                // specfied linear scale
+                //int nyquist = 11025;
+                //int frameSize = 1024;
+                //var freqScale = new FrequencyScale(nyquist, frameSize, 1000);
+                */
 
 
                 /*
@@ -79,54 +82,53 @@ namespace AnalysisPrograms
                 ". C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg\ffmpeg.exe" -i "C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56.wav" -sample_fmt s16 "C:\SensorNetworks\Output\OctaveFreqScale\JascoeMarineGBR116bit.wav"
 
                 ffmpeg binaries are in C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg
-
                 */
-
-                /*
+                
                 // Now check it on Jascoe recording
-                string recordingPath = @"C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit.wav";
+                var recordingPath = @"C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit.wav";
                 var outputPath = @"C:\SensorNetworks\Output\OctaveFreqScale\JascoeMarineGBR1.png";
-                AudioRecording recording = new AudioRecording(recordingPath);
-                //FreqScaleType fst = FreqScaleType.Octaves27Sr22050;
-                FreqScaleType fst = FreqScaleType.Linear125Octaves28Nyquist32000;
-                int sr = 64000;
-                const int frameSize = 16384;
-                double windowOverlap = 0.5;
-*/
-
-                //var freqScale = new FrequencyScale(sr, frameSize, frameStep);
+                var recording = new AudioRecording(recordingPath);
+                FreqScaleType fst = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
                 var freqScale = new FrequencyScale(fst);
 
-                //var recordingDuration = recording.WavReader.Time;
-                //NoiseReductionType noiseReductionType  = NoiseReductionType.None;
-                //NoiseReductionType noiseReductionType = SNR.KeyToNoiseReductionType("FlattenAndTrim");
-                NoiseReductionType noiseReductionType   = NoiseReductionType.Standard;
+
                 var sonoConfig = new SonogramConfig
                 {
                     SourceFName = recording.BaseName,
-                    //set default values - ignore those set by user
-                    WindowSize = frameSize,
-                    WindowOverlap = windowOverlap,
-                    NoiseReductionType = noiseReductionType,
+                    NoiseReductionType = NoiseReductionType.None,
+                    //NoiseReductionType = NoiseReductionType.Standard,
+                    //NoiseReductionType = SNR.KeyToNoiseReductionType("FlattenAndTrim"),
                     NoiseReductionParameter = 0.0
                 };
 
                 // produce an amplitude spectrogram
-                var sonogram = (BaseSonogram)new AmplitudeSonogram(sonoConfig, recording.WavReader);
-                //convert spectrogram to octave scale
-                double[,] dataMatrix = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
+                BaseSonogram sonogram;
+                if (fst == FreqScaleType.Linear)
+                {
+                    sonoConfig.WindowSize = freqScale.FinalBinCount * 2;
+                    sonoConfig.WindowOverlap = 0.2;
+                    sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+                }
+                else
+                {
+                    sonoConfig.WindowSize = freqScale.WindowSize;
+                    sonoConfig.WindowOverlap = 0.5;
+                    sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+                    //convert spectrogram to octave scale
+                    sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
+                }
 
                 // DO NOISE REDUCTION
+                double[,] dataMatrix = sonogram.Data;
                 dataMatrix = SNR.NoiseReduce_Standard(dataMatrix);
                 //double sdCount = 2.0;
                 //double dynamicRange = 40.0;
                 //dataMatrix = SNR.NoiseReduce_FixedRange(dataMatrix, dynamicRange, sdCount);
                 sonogram.Data = dataMatrix;
                 sonogram.Configuration.WindowSize = 512;
-                //sonogram.Configuration.FreqBinCount = 256;
-                
+                //sonogram.Configuration.FreqBinCount = 256;               
 
-                Image image = sonogram.GetImageFullyAnnotated("OCTAVE SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+                Image image = sonogram.GetImageFullyAnnotated("SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
                 image.Save(outputPath, ImageFormat.Png);
             }
             
@@ -138,11 +140,11 @@ namespace AnalysisPrograms
                 //// constants required for full octave scale when sr = 22050
                 //FreqScaleType ost = FreqScaleType.Octaves27Sr22050;
                 //// constants required for split linear-octave scale when sr = 22050
-                //FreqScaleType ost = FreqScaleType.Linear62Octaves31Nyquist11025;
+                //FreqScaleType ost = FreqScaleType.Linear62Octaves7Tones31Nyquist11025;
                 //// constants required for full octave scale when sr = 64000
                 //FreqScaleType ost = FreqScaleType.Octaves24Nyquist32000;
                 //// constants required for split linear-octave scale when sr = 64000
-                FreqScaleType ost = FreqScaleType.Linear125Octaves28Nyquist32000;
+                FreqScaleType ost = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
 
                 OctaveFreqScale.TestOctaveScale(ost);
             }
