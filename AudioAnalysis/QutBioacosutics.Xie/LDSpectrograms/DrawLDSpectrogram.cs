@@ -161,7 +161,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = backgroundFilterCoeff;
             cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
-            cs1.ReadCSVFiles(configuration.InputDirectoryInfo, fileStem); // reads all known files spectral indices
+            cs1.ReadCsvFiles(configuration.InputDirectoryInfo, fileStem); // reads all known files spectral indices
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
                 LoggedConsole.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");

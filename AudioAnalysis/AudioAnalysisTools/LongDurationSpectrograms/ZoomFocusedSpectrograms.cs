@@ -663,7 +663,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp1.Width);
 
-            AudioAnalysisTools.StandardSpectrograms.SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, fullDuration, xAxisTicInterval, nyquist, herzInterval);
+            // init frequency scale
+            int frameSize = bmp1.Height;
+            var freqScale = new DSP.FrequencyScale(nyquist, frameSize, herzInterval);
+            AudioAnalysisTools.StandardSpectrograms.SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, fullDuration, xAxisTicInterval, freqScale);
             int trackHeight = 20;
 
             // put start offset into a datetime object.

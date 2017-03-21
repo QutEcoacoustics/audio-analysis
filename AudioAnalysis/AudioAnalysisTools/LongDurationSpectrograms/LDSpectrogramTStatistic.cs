@@ -115,7 +115,7 @@ namespace AudioAnalysisTools
             bool allOK = true;
             int N = 30;
 
-            allOK = cs1.ReadStandardDeviationSpectrogramCSVs(ipdir, ipSdFileName1.Name);
+            allOK = cs1.ReadStandardDeviationSpectrogramCsvs(ipdir, ipSdFileName1.Name);
             if (!allOK)
             {
                 Console.WriteLine("Cannot do t-test comparison because error reading standard deviation file: {0}", ipSdFileName1.Name);
@@ -123,7 +123,7 @@ namespace AudioAnalysisTools
             }
             cs1.SampleCount = N;
 
-            allOK = cs2.ReadStandardDeviationSpectrogramCSVs(ipdir, ipSdFileName2.Name);
+            allOK = cs2.ReadStandardDeviationSpectrogramCsvs(ipdir, ipSdFileName2.Name);
             if (!allOK)
             {
                 Console.WriteLine("Cannot do t-test comparison because error reading standard deviation file: {0}", ipSdFileName2.Name);
