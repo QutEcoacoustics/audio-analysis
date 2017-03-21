@@ -299,7 +299,7 @@
         public Image GetImageFullyAnnotated(string title, int[,] gridLineLocations)
         {
             Image image = this.GetImage();
-            FrequencyScale.DrawKHzLines((Bitmap) image, gridLineLocations);
+            FrequencyScale.DrawFrequencyLinesOnImage((Bitmap) image, gridLineLocations);
 
             //var minuteOffset = TimeSpan.Zero;
             //var xAxisTicInterval = TimeSpan.FromSeconds(1.0);
@@ -333,12 +333,15 @@
             var xAxisTicInterval = TimeSpan.FromSeconds(1.0);
             var xInterval = TimeSpan.FromSeconds(10);
             TimeSpan xAxisPixelDuration = TimeSpan.FromTicks((long)(this.Duration.Ticks / (double)this.FrameCount));
-            int HertzInterval = 1000;
-            if (this.Configuration.WindowSize < 512) 
-                HertzInterval = 2000;
+            int herzInterval = 1000;
+            if (this.Configuration.WindowSize < 512) herzInterval = 2000;
             double secondsDuration = xAxisPixelDuration.TotalSeconds * image.Width;
             TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, fullDuration, xAxisTicInterval, this.NyquistFrequency, HertzInterval);
+
+            // init frequency scale
+            int frameSize = image.Height;
+            var freqScale = new DSP.FrequencyScale(this.NyquistFrequency, frameSize, herzInterval);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, fullDuration, xAxisTicInterval, freqScale);
 
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             Bitmap timeBmp = Image_Track.DrawTimeTrack(this.Duration, image.Width);
@@ -905,7 +908,11 @@
         {
             double secondsDuration = xAxisPixelDuration.TotalSeconds * image.Width;
             TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, fullDuration, xAxisTicInterval, nyquist, herzInterval);
+
+            // init frequency scale
+            int frameSize = image.Height;
+            var freqScale = new DSP.FrequencyScale(nyquist, frameSize, herzInterval);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, fullDuration, xAxisTicInterval, freqScale);
 
             int imageWidth = image.Width;
             int trackHeight = 20;
