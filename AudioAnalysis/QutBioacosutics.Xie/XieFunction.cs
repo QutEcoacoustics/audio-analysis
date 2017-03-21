@@ -213,7 +213,7 @@ namespace QutBioacosutics.Xie
             var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = backgroundFilterCoeff;
-            cs1.ReadCSVFiles(ipDir, fileStem); // reads all known files spectral indices
+            cs1.ReadCsvFiles(ipDir, fileStem); // reads all known files spectral indices
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
                 Console.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
