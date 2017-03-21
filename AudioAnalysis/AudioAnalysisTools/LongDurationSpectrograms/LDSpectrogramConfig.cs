@@ -19,7 +19,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         Linear62Octaves31Nyquist11025,
         Linear125Octaves30Nyquist11025,
         Octaves24Nyquist32000,
-        Linear125Octaves28Nyquist32000
+        Linear125Octaves28Nyquist32000,
+        Linear125Octaves7Tones28Nyquist32000
     }
 
 

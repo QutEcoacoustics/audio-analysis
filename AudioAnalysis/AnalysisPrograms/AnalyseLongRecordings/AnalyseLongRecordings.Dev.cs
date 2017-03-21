@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace AnalysisPrograms.AnalyseLongRecordings
 {
@@ -10,6 +7,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
         public static Arguments Dev()
         {
             // TO GET TO HERE audio2csv MUST BE ONLY COMMAND LINE ARGUMENT
+
+            // To draw the false-colour spectrograms you need to call activity "colourspectrogram"
 
             // DEV CONFIG OPTIONS
             //C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\App.config
@@ -97,6 +96,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string recordingPath = @"C:\SensorNetworks\WavFiles\MarineRecordings\20130318_171500.wav";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticMarine.yml";
             //string outputPath = @"C:\SensorNetworks\Output\MarineSonograms\Test1";
+
             // Great Barrier Reef (GBR) recordings from Jasco 
             string recordingPath = @"C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit.wav";
             string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticMarine.yml";

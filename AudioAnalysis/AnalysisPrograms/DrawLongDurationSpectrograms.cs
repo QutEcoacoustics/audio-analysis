@@ -96,14 +96,14 @@ namespace AnalysisPrograms
 
             // INPUT and OUTPUT DIRECTORIES
             //2017 March 8th
-            //string ipdir = @"C:\SensorNetworks\Output\MarineJasco\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\MarineJasco\Towsey.Acoustic\Images";
+            string ipdir = @"C:\SensorNetworks\Output\MarineJasco\Towsey.Acoustic";
+            string opdir = @"C:\SensorNetworks\Output\MarineJasco\Towsey.Acoustic\Images";
 
             // INPUT and OUTPUT DIRECTORIES
 
             //2010 Oct 13th
-            string ipdir = @"C:\SensorNetworks\Output\SERF\2014May06-100720 - Indices, OCT 2010, SERF\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
-            string opdir = @"C:\SensorNetworks\Output\SERF\SERF indices 2016 September\SE\OctaveFreqScale";
+            //string ipdir = @"C:\SensorNetworks\Output\SERF\2014May06-100720 - Indices, OCT 2010, SERF\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\SERF\SERF indices 2016 September\SE\OctaveFreqScale";
 
             //2010 Oct 13th
             //string ipFileName = "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
@@ -296,7 +296,7 @@ namespace AnalysisPrograms
             }
 
             // note: the spectra are oriented as per visual orientation, i.e. xAxis = time frames
-            int frameCount = spectra[keys[0]].GetLength(1);
+            //int frameCount = spectra[keys[0]].GetLength(1);
 
             var minuteOffset = TimeSpan.Zero;
             var xScale = dataScale;
@@ -325,8 +325,7 @@ namespace AnalysisPrograms
 
             foreach (string key in keys)
             {
-                Image image = cs1.DrawGreyscaleSpectrogramOfIndex(key);
-                pixelWidth = image.Width;
+                var image = cs1.DrawGreyscaleSpectrogramOfIndex(key);
 
                 int width = 70;
                 int height = image.Height;
@@ -338,7 +337,7 @@ namespace AnalysisPrograms
                 g1.DrawLine(new Pen(Color.Black), 0, 1, width, 1);//draw upper boundary
 
                 Image[] imagearray = { label, image };
-                Image labelledImage = ImageTools.CombineImagesInLine(imagearray);
+                var labelledImage = ImageTools.CombineImagesInLine(imagearray);
                 list.Add(labelledImage);
             } //foreach key
 
