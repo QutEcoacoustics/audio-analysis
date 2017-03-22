@@ -3,14 +3,14 @@
 # It should NOT contain index related configuration data
 # It should NOT contain dynamic data (like file names or analysis types)
 
-ColorMap1: "ACI-ENT-CVR"
+ColorMap1: "ACI-ENT-EVN"
 ColorMap2: "BGN-POW-EVN"
 # minutes x-axis scale
 XAxisTicInterval: 60
 
 # Hertz y-axis scale: eventual options are: Linear, Mel, Linear62Octaves31Nyquist11025, Linear125Octaves30Nyquist11025, Octaves24Nyquist32000, Linear125Octaves28Nyquist32000
 # Only "Linear", "Linear125Octaves7Tones28Nyquist32000" work at present 
-FreqScale: "Linear125Octaves7Tones28Nyquist32000"
-#FreqScale: "Linear"
+#FreqScale: "Linear125Octaves7Tones28Nyquist32000"
+FreqScale: "Linear"
 YAxisTicInterval: 1000
 ...
