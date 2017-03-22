@@ -1384,15 +1384,30 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // create and save first false-colour spectrogram image 
             Image image1NoChrome = CreateSpectrogramFromSpectralIndices(cs1, colorMap1);
-            Image image1 = SpectrogramFraming(cs1, image1NoChrome);
-            var outputPath = FilenameHelpers.AnalysisResultPath(outputDirectory, cs1.FileName, colorMap1, "png");
-            image1.Save(outputPath);
+            Image image1 = null;
+            if (image1NoChrome == null)
+            {
+                LoggedConsole.WriteErrorLine("ERROR: Null spectrogram image");
+            } else
+            {
+                image1 = SpectrogramFraming(cs1, image1NoChrome);
+                var outputPath1 = FilenameHelpers.AnalysisResultPath(outputDirectory, cs1.FileName, colorMap1, "png");
+                image1.Save(outputPath1);
+            }
 
             // create and save second false-colour spectrogram image 
             Image image2NoChrome = CreateSpectrogramFromSpectralIndices(cs1, colorMap2);
-            Image image2 = SpectrogramFraming(cs1, image2NoChrome);
-            outputPath = FilenameHelpers.AnalysisResultPath(outputDirectory, cs1.FileName, colorMap2, "png");
-            image2.Save(outputPath);
+            Image image2 = null;
+            if (image2NoChrome == null)
+            {
+                LoggedConsole.WriteErrorLine("ERROR: Null spectrogram image");
+            }
+            else
+            {
+                image2 = SpectrogramFraming(cs1, image2NoChrome);
+                var outputPath2 = FilenameHelpers.AnalysisResultPath(outputDirectory, cs1.FileName, colorMap2, "png");
+                image2.Save(outputPath2);
+            }
 
 
             // read high amplitude and clipping info into an image
