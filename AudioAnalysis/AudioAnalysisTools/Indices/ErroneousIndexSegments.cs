@@ -3,10 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-using YamlDotNet.Serialization;
 
 
 namespace AudioAnalysisTools.Indices
@@ -20,7 +16,7 @@ namespace AudioAnalysisTools.Indices
         public string ErrorDescription { get; set; }
 
         public static string ErrorMissingData = "Missing Data";
-        public static string ErrorZeroSignal = "Flat Zero Signal";
+        public static string ErrorZeroSignal  = "Flat Zero Signal";
 
         public int StartPosition { get; set; }
 
@@ -31,7 +27,7 @@ namespace AudioAnalysisTools.Indices
             int width = EndPosition - StartPosition + 1;
             var bmp = new Bitmap(width, height);
             int fontVerticalPosition = (height/2) - 7;
-            Graphics g = Graphics.FromImage(bmp);
+            var g = Graphics.FromImage(bmp);
 
             if (this.ErrorDescription.Equals(ErrorMissingData) )
             {
@@ -41,20 +37,24 @@ namespace AudioAnalysisTools.Indices
             {
                 g.Clear(Color.Red);
             }
-            g.DrawLine(Pens.Black, 0, 0, width, height);
-            g.DrawLine(Pens.Black, 0, height, width, 0);
+            // Draw cross in black over the error patch.
+            if (width > 10)
+            {
+                g.DrawLine(Pens.Black, 0, 0, width, height);
+                g.DrawLine(Pens.Black, 0, height, width, 0);
+            }
 
+            // Write description of the error cause.
             var font = new Font("Arial", 9.0f, FontStyle.Bold);
-            //g.FillRectangle(Brushes.Black, dataLength + 1, 0, endWidth, height);
-
             if (textInVerticalOrientation)
             {
-                System.Drawing.StringFormat drawFormat =
-                    new System.Drawing.StringFormat(StringFormatFlags.DirectionVertical);
-                g.DrawString("ERROR: " + this.ErrorDescription, font, Brushes.Black, 3, 10, drawFormat);
+                var drawFormat = new StringFormat(StringFormatFlags.DirectionVertical);
+                g.DrawString("ERROR: " + this.ErrorDescription, font, Brushes.Black, 2, 10, drawFormat);
             }
             else
-                g.DrawString("ERROR: " + this.ErrorDescription, font, Brushes.Black, 3, fontVerticalPosition);
+            {
+                g.DrawString("ERROR: " + this.ErrorDescription, font, Brushes.Black, 2, fontVerticalPosition);
+            }
 
             return bmp;
         }
@@ -79,7 +79,7 @@ namespace AudioAnalysisTools.Indices
             var error = new ErroneousIndexSegments();
             for (int i = 0; i < zeroSignalArray.Length; i++)
             {
-                if (zeroSignalArray[i] != 0.0)
+                if (Math.Abs(zeroSignalArray[i]) > 0.00001)
                 {
                     if (allOK)
                     {
@@ -90,7 +90,7 @@ namespace AudioAnalysisTools.Indices
                     }
                 }
                 else
-                if ((!allOK) && (zeroSignalArray[i] == 0.0))
+                if ((!allOK) && (Math.Abs(zeroSignalArray[i]) < 0.00001))
                 {
                     // come to end of a bad patch
                     allOK = true;
@@ -108,7 +108,7 @@ namespace AudioAnalysisTools.Indices
                 allOK = false;
                 errorStart = 0;
                 errors.Add(new ErroneousIndexSegments());
-                errors[errors.Count - 1].ErrorDescription = ErroneousIndexSegments.ErrorMissingData;
+                errors[errors.Count - 1].ErrorDescription = ErrorMissingData;
                 errors[errors.Count - 1].StartPosition = errorStart;
             }
 
@@ -116,19 +116,19 @@ namespace AudioAnalysisTools.Indices
             for (int i = 1; i < arrayLength; i++)
             {
                 sum = summaryIndices["AcousticComplexity"][i] + summaryIndices["TemporalEntropy"][i] + summaryIndices["Snr"][i];
-                if (sum == 0.0)
+                if (Math.Abs(sum) < 0.00001)
                 {
                     if (allOK)
                     {
                         errorStart = i;
                         errors.Add(new ErroneousIndexSegments());
-                        errors[errors.Count - 1].ErrorDescription = ErroneousIndexSegments.ErrorMissingData;
+                        errors[errors.Count - 1].ErrorDescription = ErrorMissingData;
                         errors[errors.Count - 1].StartPosition = errorStart;
                     }
                     allOK = false;
                 }
                 else
-                if ((!allOK) && (sum != 0.0))
+                if ((!allOK) && (Math.Abs(sum) > 0.00001))
                 {
                     allOK = true;
                     errorEnd = i - 1;
