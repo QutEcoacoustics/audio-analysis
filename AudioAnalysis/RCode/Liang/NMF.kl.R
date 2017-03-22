@@ -1,12 +1,14 @@
 library(NMF)
 
 source("C:/Work/GitHub/audio-analysis/AudioAnalysis/RCode/Liang/false-colour/spectrogram.R")
+source("C:/Work/GitHub/audio-analysis/AudioAnalysis/RCode/Liang/false-colour/read.audio.file.R")
 
-filepath<-"C:\\Work\\myfile\\30s Recording\\bickerton_island_1013_255205_20131211_193531_30_0.wav"
+filepath<-"C:\\Users\\n8781699\\Dropbox\\Sound snippets for Liang Analysis\\Groote_Bickerton\\bickerton_island_1013_255205_20131211_200000_30_0.wav"
 
 #read signals
-sig<-spectrogram(filepath)
-amp<-sig$amp
+signal.info <- read.audio.file(filepath)
+signal <- signal.info[[1]]
+amp<-spectrogram(signal, 16)
 amp<-t(amp)
 
 #remove low frequency (<1000Hz) and high frequency (>8480Hz) noise
@@ -17,7 +19,8 @@ amp<-t(amp)
 # amp<-temp.amp[[2]]
 
 #randomise the matrix
-row.no<-sample(nrow(amp))
+set.seed(10)
+#row.no<-sample(nrow(amp))
 col.no<-sample(ncol(amp))
 # random.amp<-amp[row.no, ]
 random.amp<-amp[ , col.no]
