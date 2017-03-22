@@ -176,22 +176,24 @@ namespace AnalysisPrograms
             */
 
 
-            // ########################## CONCATENATION of LIZ Znidersic Recordings, Lewin's rail, Tasmania. 
+
+
+            // ########################## CONCATENATION of Kerry Mengersens Data, Puma, South America
             // The drive: work = G; home = E
             drive = "G";
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\AvailaeFolders\\LizZnidersic\\Data Tasman Island Unit 2 Mez"),
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\Mengersen\\NightsA\\Data"),
                                        };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
-            string opFileStem = "LizZnidersic_TasmanIsU2Mez";
-            string opPath = $"{drive}:\\AvailaeFolders\\LizZnidersic\\Test_IndexDistributions"; 
-            //string opPath = $"{drive}:\\AvailaeFolders\\LizZnidersic\\TEST_missingData"; //was used to put results for testing missing data
+            string opFileStem = "MengersenNightA";
+            //string opFileStem = "MengersenNightB";
+            string opPath = $"{drive}:\\SensorNetworks\\Output\\Mengersen\\NightAConcatenated";
             var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\SpectrogramFalseColourConfig.yml");
-            timeSpanOffsetHint = TimeSpan.FromHours(8);
+            timeSpanOffsetHint = TimeSpan.FromHours(-5);
             FileInfo sunriseDatafile = null;
             bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
-            dtoStart = new DateTimeOffset(2015, 11, 09, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd   = new DateTimeOffset(2015, 11, 19, 0, 0, 0, TimeSpan.Zero);
+            dtoStart = new DateTimeOffset(2016, 08, 20, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2016, 08, 20, 0, 0, 0, TimeSpan.Zero);
             //dtoStart = new DateTimeOffset(2017, 01, 17, 0, 0, 0, TimeSpan.Zero);
             //dtoEnd   = new DateTimeOffset(2017, 01, 24, 02, 23, 29, TimeSpan.Zero); 
             //dtoStart = new DateTimeOffset(2016, 08, 21, 0, 0, 0, TimeSpan.Zero);
@@ -202,9 +204,42 @@ namespace AnalysisPrograms
 
             // If not testing need to set the below. Cannot be nulls.
             doTest = false;
-            string testPath = opPath; 
-            // ########################## END of TEST ARGUMENTS
+            string testPath = opPath;
+            // ########################## END of Kerry Mengersens Data, Puma, South America
 
+
+
+
+            /*
+                        // ########################## CONCATENATION of LIZ Znidersic Recordings, Lewin's rail, Tasmania. 
+                        // The drive: work = G; home = E
+                        drive = "G";
+                        // top level directory
+                        DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\AvailaeFolders\\LizZnidersic\\Data Tasman Island Unit 2 Mez"),
+                                                   };
+                        string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
+                        string opFileStem = "LizZnidersic_TasmanIsU2Mez";
+                        string opPath = $"{drive}:\\SensorNetworks\\AvailaeFolders\\LizZnidersic\\Test_IndexDistributions"; 
+                        //string opPath = $"{drive}:\\AvailaeFolders\\LizZnidersic\\TEST_missingData"; //was used to put results for testing missing data
+                        var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\SpectrogramFalseColourConfig.yml");
+                        timeSpanOffsetHint = TimeSpan.FromHours(8);
+                        FileInfo sunriseDatafile = null;
+                        bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
+                        dtoStart = new DateTimeOffset(2015, 11, 09, 0, 0, 0, TimeSpan.Zero);
+                        dtoEnd   = new DateTimeOffset(2015, 11, 19, 0, 0, 0, TimeSpan.Zero);
+                        //dtoStart = new DateTimeOffset(2017, 01, 17, 0, 0, 0, TimeSpan.Zero);
+                        //dtoEnd   = new DateTimeOffset(2017, 01, 24, 02, 23, 29, TimeSpan.Zero); 
+                        //dtoStart = new DateTimeOffset(2016, 08, 21, 0, 0, 0, TimeSpan.Zero);
+                        //dtoEnd = new DateTimeOffset(2016, 08, 22, 02, 23, 29, TimeSpan.Zero); 
+                        // colour maps for this job
+                        colorMap1 = "ACI-ENT-RHZ";
+                        colorMap2 = "BGN-POW-SPT";
+
+                        // If not testing need to set the below. Cannot be nulls.
+                        doTest = false;
+                        string testPath = opPath; 
+                        // ########################## END of LIZ Znidersic ARGUMENTS
+            */
 
             /*
             // ################################ CONCATENATE GROOTE DATA 
