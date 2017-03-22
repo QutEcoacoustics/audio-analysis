@@ -398,7 +398,6 @@ namespace AnalysisPrograms
             var dataScale = args.TemporalScale;
             string colourMode = "NEGATIVE";
             string colourMap = args.ColourMap1 ?? "BGN-POW-EVN";
-            bool withChrome = true;
             var cs1 = new LDSpectrogramRGB(minuteOffset, dataScale, sampleRate, frameWidth, colourMap);
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = backgroundFilter;
@@ -406,7 +405,7 @@ namespace AnalysisPrograms
             cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
             cs1.SpectrogramMatrices = spectra;
 
-            Image image1 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap, withChrome);
+            Image image1 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap);
             TimeSpan fullDuration = TimeSpan.FromSeconds(image1.Width * dataScale.TotalSeconds);
 
             string title = fileStem;
@@ -415,7 +414,7 @@ namespace AnalysisPrograms
             Bitmap timeScale = Image_Track.DrawTimeRelativeTrack(fullDuration, image1.Width, trackHeight);
 
             colourMap = args.ColourMap2 ?? "PHN-RVT-SPT";
-            Image image2 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap, withChrome);
+            Image image2 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap);
             var list = new List<Image>();
             list.Add(titleImage);
             list.Add(image1);
