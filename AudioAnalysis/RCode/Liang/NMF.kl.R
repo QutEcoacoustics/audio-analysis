@@ -9,7 +9,6 @@ filepath<-"C:\\Users\\n8781699\\Dropbox\\Sound snippets for Liang Analysis\\Groo
 signal.info <- read.audio.file(filepath)
 signal <- signal.info[[1]]
 amp<-spectrogram(signal, 16)
-amp<-t(amp)
 
 #remove low frequency (<1000Hz) and high frequency (>8480Hz) noise
 # amp<-amp[,31:246]

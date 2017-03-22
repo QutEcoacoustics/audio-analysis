@@ -23,6 +23,7 @@ spectrogram <- function(signal, bit, TFRAME=512){
   
   # subset the valid frequency based on Nyquist theory
   amp <- sig[c(1:(TFRAME / 2)), ]
+  amp <- t(amp)
 
   return(amp)
   
