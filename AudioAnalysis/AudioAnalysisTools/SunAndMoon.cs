@@ -114,7 +114,7 @@ namespace AudioAnalysisTools
         public static Bitmap AddSunTrackToImage(int width, DateTimeOffset? dateTimeOffset, FileInfo sunriseDatafile)
         {
             // AT: I DON'T UNDERSTAND THIS CODE! I CAN'T FIX IT
-            LoggedConsole.WriteErrorLine("Sun track generation disabled - broken in merge");
+            LoggedConsole.WriteErrorLine("\t\tERROR: Sun track generation disabled - broken in long ago merge");
             return null;
             //            if (!sunriseDatafile.Exists)
             //                return null;

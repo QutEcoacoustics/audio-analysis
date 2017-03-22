@@ -708,7 +708,7 @@ namespace AudioAnalysisTools.Indices
         }
 
 /*
-        public static Dictionary<string, double[,]> ReadCSVFiles(FileInfo[] paths, string[] keys)
+        public static Dictionary<string, double[,]> ReadCsvFiles(FileInfo[] paths, string[] keys)
         {
             string warning = null;
 
@@ -739,7 +739,7 @@ namespace AudioAnalysisTools.Indices
                 {
                     if (warning == null)
                     {
-                        warning = "\nWARNING: from method IndexMatrices.ReadCSVFiles()";
+                        warning = "\nWARNING: from method IndexMatrices.ReadCsvFiles()";
                     }
 
                     warning += "\n      {0} File does not exist: {1}".Format2(keys[i], file.FullName);
@@ -760,7 +760,7 @@ namespace AudioAnalysisTools.Indices
 
             if (spectrogramMatrices.Count == 0)
             {
-                LoggedConsole.WriteLine("WARNING: from method IndexMatrices.ReadCSVFiles()");
+                LoggedConsole.WriteLine("WARNING: from method IndexMatrices.ReadCsvFiles()");
                 LoggedConsole.WriteLine("         NO FILES were read from the passed paths");
             }
 
@@ -805,7 +805,7 @@ namespace AudioAnalysisTools.Indices
 
             if (spectrogramMatrices.Count == 0)
             {
-                LoggedConsole.WriteLine("WARNING: from method IndexMatrices.ReadCSVFiles()");
+                LoggedConsole.WriteLine("WARNING: from method IndexMatrices.ReadCsvFiles()");
                 LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
             }
 
@@ -829,7 +829,7 @@ namespace AudioAnalysisTools.Indices
             else
             {
                 Log.Warn(
-                    "\nWARNING: from method IndexMatrices.ReadCSVFiles()"
+                    "\nWARNING: from method IndexMatrices.ReadCsvFiles()"
                     + $"\n      {indexKey} File does not exist: {file.FullName}");
                 return null;
             }

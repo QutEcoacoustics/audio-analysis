@@ -10,7 +10,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Collections.Generic;
     using System.IO;
     using Acoustics.Shared;
-    using YamlDotNet.Serialization;
 
     public enum FreqScaleType
     {
