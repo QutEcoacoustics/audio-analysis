@@ -1,6 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using AudioAnalysisTools.LongDurationSpectrograms;
+using MathNet.Numerics.Distributions;
 
 namespace AudioAnalysisTools.DSP
 {
@@ -265,6 +267,15 @@ namespace AudioAnalysisTools.DSP
 
         public static void DrawFrequencyLinesOnImage(Bitmap bmp, int[,] gridLineLocations)
         {
+            // attempt to determine background colour of spectrogram i.e. dark false-colour or light.
+            Color bgnColour = bmp.GetPixel(2, 2);
+            float brightness = bgnColour.GetBrightness();
+            var txtColour = Brushes.White;
+            if (brightness > 0.5)
+            {
+                txtColour = Brushes.Black;
+            }
+
             int width = bmp.Width;
             int height = bmp.Height;
             int bandCount = gridLineLocations.GetLength(0);
@@ -274,6 +285,11 @@ namespace AudioAnalysisTools.DSP
             for (int b = 0; b < bandCount; b++) //over each band
             {
                 int y = height - gridLineLocations[b, 0];
+                if (y < 0)
+                {
+                    LoggedConsole.WriteErrorLine("   WarningException: Negative image index for gridline!");
+                    continue;
+                }
                 for (int x = 1; x < width - 3; x++)
                 {
                     bmp.SetPixel(x, y, Color.White);
@@ -281,7 +297,7 @@ namespace AudioAnalysisTools.DSP
                     bmp.SetPixel(x, y, Color.Black);
                     x += 2;
                 }
-                g.DrawString((gridLineLocations[b, 1] + ""), new Font("Thachoma", 7), Brushes.Black, 1, y);
+                g.DrawString((gridLineLocations[b, 1] + ""), new Font("Thachoma", 8), txtColour, 1, y);
             }
         }//end AddHzGridLines()
 
