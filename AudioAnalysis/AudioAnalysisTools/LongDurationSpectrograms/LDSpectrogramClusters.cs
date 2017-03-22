@@ -135,7 +135,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         //    cs1.ColorMode = colorMap;
         //    cs1.BackgroundFilter = backgroundFilterCoeff;
         //    var dirInfo = new DirectoryInfo(topLevelDirectory);
-        //    cs1.ReadCSVFiles(dirInfo, fileStem); // reads all known indices files
+        //    cs1.ReadCsvFiles(dirInfo, fileStem); // reads all known indices files
         //    if (cs1.GetCountOfSpectrogramMatrices() == 0)
         //    {
         //        Console.WriteLine("There are no spectrogram matrices in the dictionary.");

@@ -81,7 +81,7 @@ namespace AudioAnalysisTools
             cs1.ColorMode = colorMap;
             cs1.BackgroundFilter = backgroundFilterCoeff;
             string[] keys = colorMap.Split('-');
-            cs1.ReadCSVFiles(ipdir, ipFileName1.Name, keys);
+            cs1.ReadCsvFiles(ipdir, ipFileName1.Name, keys);
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
                 LoggedConsole.WriteLine("There are no spectrogram matrices in cs1.dictionary.");
@@ -92,7 +92,7 @@ namespace AudioAnalysisTools
             cs2.FileName = ipFileName2.Name;
             cs2.ColorMode = colorMap;
             cs2.BackgroundFilter = backgroundFilterCoeff;
-            cs2.ReadCSVFiles(ipdir, ipFileName2.Name, keys);
+            cs2.ReadCsvFiles(ipdir, ipFileName2.Name, keys);
             if (cs2.GetCountOfSpectrogramMatrices() == 0)
             {
                 LoggedConsole.WriteLine("There are no spectrogram matrices in cs2.dictionary.");

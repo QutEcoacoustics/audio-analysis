@@ -774,8 +774,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan startOffset, TimeSpan fullDuration, TimeSpan xAxisTicInterval, FrequencyScale freqScale)
         {
             FrequencyScale.DrawFrequencyLinesOnImage(bmp, freqScale);
+            // we have stopped drawing temporal gridlines on these spectrograms. Create unnecessary clutter.
             //DrawTimeLinesOnImage(bmp, startOffset, fullDuration, xAxisTicInterval);
-        } // DrawGridLInesOnImage()
+        } 
 
 
 
@@ -797,7 +798,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     }
                 }
             }
-        } // DrawTimeLinesOnImage()
+        } 
 
 
 
