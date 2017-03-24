@@ -1,4 +1,4 @@
-# Introduction
+# Package information
 The matching pursuit package is implemented in MATLAB. To use the package, download MPTK-binary-0.6.1-x86_64-Windows.exe from [InriaForge](https://gforge.inria.fr/frs/?group_id=36).
 The version used here is 0.6.1 2013-04-26 under Windows operation system
 
