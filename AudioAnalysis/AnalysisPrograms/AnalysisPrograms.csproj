@@ -234,6 +234,7 @@
     <Compile Include="Audio2Sonogram.cs" />
     <Compile Include="AudioCutter.cs" />
     <Compile Include="AudioFileCheck.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="LitoriaFallax_OBSOLETE.cs" />
     <Compile Include="LimnodynastesConvex_OBSOLETE.cs" />
     <Compile Include="CanetoadOld.cs" />

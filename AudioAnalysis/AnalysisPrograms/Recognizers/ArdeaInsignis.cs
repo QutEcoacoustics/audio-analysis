@@ -3,7 +3,7 @@
 //   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
-//   AKA: The bloody canetoad
+//   AKA: The White Herron from Bhutan. 
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -14,21 +14,17 @@ namespace AnalysisPrograms.Recognizers
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
-    using AnalysisPrograms.Recognizers.Base;
-
+    using Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
     using log4net;
-
     using TowseyLibrary;
-    using Acoustics.Shared.Csv;
 
     /// <summary>
     /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs 
@@ -36,14 +32,13 @@ namespace AnalysisPrograms.Recognizers
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// </summary>
-    class ArdeaInsignis : RecognizerBase
+    public class ArdeaInsignis : RecognizerBase
     {
         public override string Author => "Towsey";
 
         public override string SpeciesName => "ArdeaInsignis";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
 
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
@@ -60,23 +55,11 @@ namespace AnalysisPrograms.Recognizers
             base.SummariseResults(settings, inputFileSegment, events, indices, spectralIndices, results);
         }
 
-        /// <summary>
-        /// Do your analysis. This method is called once per segment (typically one-minute segments).
-        /// </summary>
-        /// <param name="recording"></param>
-        /// <param name="configuration"></param>
-        /// <param name="segmentStartOffset"></param>
-        /// <param name="getSpectralIndexes"></param>
-        /// <param name="outputDirectory"></param>
-        /// <param name="imageWidth"></param>
-        /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-
             // common properties
             string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-
 
             int minHz = (int)configuration[AnalysisKeys.MinHz];
             int maxHz = (int)configuration[AnalysisKeys.MaxHz];
@@ -91,36 +74,36 @@ namespace AnalysisPrograms.Recognizers
             double noiseReductionParameter = (double?)configuration["SeverityOfNoiseRemoval"] ?? 2.0;
             double decibelThreshold = (double)configuration["DecibelThreshold"];
 
-
-            double minPeriod = (double)configuration["MinPeriod"]; //: 0.18
+            //double minPeriod = (double)configuration["MinPeriod"]; //: 0.18
             //double maxPeriod = (double)configuration["MaxPeriod"]; //
 
-            int maxOscilRate = (int)Math.Ceiling(1 /minPeriod);
+            //int maxOscilRate = (int)Math.Ceiling(1 /minPeriod);
             //int minOscilRate = (int)Math.Floor(1 /maxPeriod);
 
             // min duration of event in seconds 
             double minDuration = (double)configuration[AnalysisKeys.MinDuration];
 
-            // max duration of event in seconds                 
-            double maxDuration = (double)configuration[AnalysisKeys.MaxDuration];
+            // max duration of event in second
+            var maxDuration = (double)configuration[AnalysisKeys.MaxDuration];
 
             // min score for an acceptable event
-            double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
+            var eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
 
             // this default framesize and overlap is best for the White Hrron of Bhutan.
             const int frameSize = 2048;
             double windowOverlap = 0.0;
-            
+
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
             {
                 SourceFName = recording.BaseName,
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
+
                 // the default window is HAMMING
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
                 NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = noiseReductionParameter
+                NoiseReductionParameter = noiseReductionParameter,
             };
 
             TimeSpan recordingDuration = recording.Duration();
@@ -140,7 +123,6 @@ namespace AnalysisPrograms.Recognizers
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
-            
             //var templates = GetTemplatesForAlgorithm1(14);
 
             double[] amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxBin);
@@ -154,7 +136,6 @@ namespace AnalysisPrograms.Recognizers
             const int templateOffset = 14;
             const int minimumGap = 4;
             const int maximumGap = 100;
-
 
             // first find the amplitude peaks
             for (int j = 1; j < amplitudeArray.Length - 1; j++)
@@ -178,28 +159,27 @@ namespace AnalysisPrograms.Recognizers
                 // calculate distance to next peak
                 int distanceToNextPeak = CalculateDistanceToNextPeak(peakArray, i);
 
-
-                if (distanceToNextPeak < minimumGap)
+                // skip gaps that are too small or too large
+                if ((distanceToNextPeak < minimumGap) || (distanceToNextPeak > maximumGap))
                 {
                     continue;
                 }
 
-                // skip large gaps
-                if (distanceToNextPeak > maximumGap)
-                {
-                    continue;
-                }
-
-                // check for end of call using end template
+                // The herron call ends with a rising whip
+                // Check end of call using end template
                 if (distanceToNextPeak > maxTemplateLength)
                 {
                     int start = i - templateOffset;
-                    if (start < 0) start = 0;
+                    if (start < 0)
+                    {
+                        start = 0;
+                    }
+
                     var endLocality = DataTools.Subarray(amplitudeArray, start, endTemplate.Length); 
                     double endScore = DataTools.CosineSimilarity(endLocality, endTemplate);
-                    for (int to = -templateOffset; to < (endTemplate.Length- templateOffset); to++)
+                    for (int to = -templateOffset; to < (endTemplate.Length - templateOffset); to++)
                     {
-                        if (endScore > amplitudeScores[i + to])
+                        if (((i + to) >= 0) && (endScore > amplitudeScores[i + to]))
                         {
                             amplitudeScores[i + to] = endScore;
                             //hits[i, minBin] = 10;
@@ -210,7 +190,8 @@ namespace AnalysisPrograms.Recognizers
                     {
                         amplitudeScores[i + k] = 0.0;
                     }
-                    continue;                  
+
+                    continue;
                 }
 
                 // Get the start template which depends on distance to next peak.
@@ -233,7 +214,7 @@ namespace AnalysisPrograms.Recognizers
 
             var smoothedScores = DataTools.filterMovingAverageOdd(amplitudeScores, 3);
 
-            //iii: CONVERT decibel sum-diff SCORES TO ACOUSTIC EVENTS
+            // iii: CONVERT decibel sum-diff SCORES TO ACOUSTIC EVENTS
             var predictedEvents = AcousticEvent.ConvertScoreArray2Events(smoothedScores, minHz, maxHz, sonogram.FramesPerSecond,
                                                                           freqBinWidth, eventThreshold, minDuration, maxDuration);
 
@@ -263,7 +244,7 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram,
                 Hits = hits,
                 Plots = plot.AsList(),
-                Events = prunedEvents
+                Events = prunedEvents,
             };
 
         }
@@ -312,7 +293,6 @@ namespace AnalysisPrograms.Recognizers
             return templates;
         }
 
-
         public static double[] GetTemplateForAlgorithm2(int gapBetweenPeaks, int templateEndPadding)
         {
             int templateLength = gapBetweenPeaks + templateEndPadding;
@@ -353,17 +333,16 @@ namespace AnalysisPrograms.Recognizers
                     return distanceToNextPeak;
                 }
             }
-                return distanceToNextPeak;
+
+            return distanceToNextPeak;
         }
-
-
 
         /// <summary>
         /// This test checks a score array (array of doubles) against a standard or benchmark previously stored.
         /// If the benchmark file does not exist then the passed score array is written to become the benchmark.
         /// </summary>
-        /// <param name="scoreArray"></param>
-        /// <param name="wavFile"></param>
+        /// <param name="scoreArray">scoreArray</param>
+        /// <param name="wavFile">wavFile</param>
         public static void RecognizerTest(double[] scoreArray, FileInfo wavFile)
         {
             Log.Info("# TESTING: Starting benchmark test for the Bhutan Herron recognizer:");
@@ -371,15 +350,16 @@ namespace AnalysisPrograms.Recognizers
             var dir = wavFile.DirectoryName;
             var fileName = wavFile.Name;
             fileName = fileName.Substring(0, fileName.Length - 4);
-            var scoreFilePath  = Path.Combine(dir + subDir, fileName + ".TestScores.csv");
-            var scoreFile  = new FileInfo(scoreFilePath);
+            var scoreFilePath = Path.Combine(dir + subDir, fileName + ".TestScores.csv");
+            var scoreFile = new FileInfo(scoreFilePath);
             if (! scoreFile.Exists)
             {
                 Log.Warn("   Score Test file does not exist.    Writing output as future score-test file");
                 FileTools.WriteArray2File(scoreArray, scoreFilePath);
             }
-            else // else if the scores file exists then do a compare.
+            else
             {
+                // else if the scores file exists then do a compare.
                 bool ok = true;
                 var scoreLines = FileTools.ReadTextFile(scoreFilePath);
                 for (int i = 0; i < scoreLines.Count; i++)
@@ -391,6 +371,7 @@ namespace AnalysisPrograms.Recognizers
                         ok = false;
                     }
                 }
+
                 if (ok)
                 {
                     Log.Info("   SUCCESS! Passed the SCORE ARRAY TEST.");
@@ -400,6 +381,7 @@ namespace AnalysisPrograms.Recognizers
                     Log.Warn("   FAILED THE SCORE ARRAY TEST");
                 }
             }
+
             Log.Info("Completed benchmark test for the Bhutan Herron recognizer.");
         }
 
