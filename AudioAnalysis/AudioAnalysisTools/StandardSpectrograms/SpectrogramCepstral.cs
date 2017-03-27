@@ -1,24 +1,27 @@
-﻿namespace AudioAnalysisTools.StandardSpectrograms
-{
+﻿// <copyright file="SpectrogramCepstral.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
 
+namespace AudioAnalysisTools.StandardSpectrograms
+{
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Text;
     using Acoustics.Tools.Wav;
-    using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.WavTools;
+    using DSP;
     using TowseyLibrary;
 
     public class SpectrogramCepstral : BaseSonogram
     {
         public SpectrogramCepstral(string configFile, WavReader wav)
             : this(SonogramConfig.Load(configFile), wav)
-        { }
+        {
+        }
+
         public SpectrogramCepstral(SonogramConfig config, WavReader wav)
             : base(config, wav)
-        { }
+        {
+        }
 
         public SpectrogramCepstral(AmplitudeSonogram sg)
             : base(sg.Configuration)
@@ -37,7 +40,8 @@
             this.Make(this.Data); //converts amplitude matrix to cepstral sonogram
         }
 
-        public SpectrogramCepstral(AmplitudeSonogram sg, int minHz, int maxHz): this(sg)
+        public SpectrogramCepstral(AmplitudeSonogram sg, int minHz, int maxHz)
+            : this(sg)
         {
             this.DecibelsPerFrame = sg.DecibelsPerFrame;
             this.DecibelsNormalised = sg.DecibelsNormalised;
@@ -49,9 +53,8 @@
             this.SampleRate = sg.SampleRate;
             this.SigState = sg.SigState;
             this.SnrFullband = sg.SnrFullband;
-
-            this.subBand_MinHz = minHz;
-            this.subBand_MaxHz = maxHz;
+            this.SubBandMinHz = minHz;
+            this.SubBandMaxHz = maxHz;
 
             //double[] noise_subband = BaseSonogram.ExtractModalNoiseSubband(this.SnrFullband.ModalNoiseProfile, minHz, maxHz, sg.doMelScale,
             //                                                   sonogram.Configuration.FreqBinCount, sonogram.FBinWidth);
@@ -68,21 +71,12 @@
             this.SnrFullband.ModalNoiseProfile = tuple.Item2; //store the full bandwidth modal noise profile
         }
 
-
-
         //##################################################################################################################################
-
 
         /// <summary>
         /// NOTE!!!! The decibel array has been normalised in 0 - 1.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="decibels"></param>
-        /// <param name="ccCount"></param>
-        /// <param name="includeDelta"></param>
-        /// <param name="includeDoubleDelta"></param>
-        /// <returns></returns>
-        protected static System.Tuple<double[,], double[]> MakeCepstrogram(SonogramConfig config, double[,] matrix, double[] decibels, int sampleRate)
+        protected static Tuple<double[,], double[]> MakeCepstrogram(SonogramConfig config, double[,] matrix, double[] decibels, int sampleRate)
         {
             double[,] m = matrix;
             int nyquist = sampleRate / 2;
@@ -96,18 +90,30 @@
             int bandCount = config.mfccConfig.FilterbankCount;
             bool doMelScale = config.mfccConfig.DoMelScale;
             int ccCount = config.mfccConfig.CcCount;
-            int FFTbins = config.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
+            int fftBinCount = config.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
             int minHz = config.MinFreqBand ?? 0;
             int maxHz = config.MaxFreqBand ?? nyquist;
 
             Log.WriteIfVerbose("ApplyFilterBank(): Dim prior to filter bank  =" + matrix.GetLength(1));
+
             //error check that filterBankCount < FFTbins
-            if (bandCount > FFTbins)
-                throw new Exception("## FATAL ERROR in BaseSonogram.MakeCepstrogram():- Can't calculate cepstral coeff. FilterbankCount > FFTbins. (" + bandCount + " > " + FFTbins + ")\n\n");
+            if (bandCount > fftBinCount)
+            {
+                throw new Exception(
+                    "## FATAL ERROR in BaseSonogram.MakeCepstrogram():- Can't calculate cepstral coeff. FilterbankCount > FFTbins. (" +
+                    bandCount + " > " + fftBinCount + ")\n\n");
+            }
 
             //this is the filter count for full bandwidth 0-Nyquist. This number is trimmed proportionately to fit the required bandwidth.
-            if (doMelScale) m = MFCCStuff.MelFilterBank(m, bandCount, nyquist, minHz, maxHz); // using the Greg integral
-            else m = MFCCStuff.LinearFilterBank(m, bandCount, nyquist, minHz, maxHz);
+            if (doMelScale)
+            {
+                m = MFCCStuff.MelFilterBank(m, bandCount, nyquist, minHz, maxHz); // using the Greg integral
+            }
+            else
+            {
+                m = MFCCStuff.LinearFilterBank(m, bandCount, nyquist, minHz, maxHz);
+            }
+
             Log.WriteIfVerbose("\tDim after filter bank=" + m.GetLength(1) + " (Max filter bank=" + bandCount + ")");
 
             //(ii) CONVERT AMPLITUDES TO DECIBELS
@@ -119,8 +125,10 @@
 
             //(iv) calculate cepstral coefficients
             m = MFCCStuff.Cepstra(m, ccCount);
+
             //(v) normalise
             m = DataTools.normalise(m);
+
             //(vi) Calculate the full range of MFCC coefficients ie including decibel and deltas, etc
             m = MFCCStuff.AcousticVectors(m, decibels, includeDelta, includeDoubleDelta);
             var tuple2 = System.Tuple.Create(m, tuple1.Item2);
@@ -130,15 +138,7 @@
         /// <summary>
         /// The data passed to this method must be the Spectral sonogram.
         /// </summary>
-        /// <param name="data">the Spectral sonogram</param>
-        /// <param name="minHz"></param>
-        /// <param name="maxHz"></param>
-        /// <param name="freqBinCount"></param>
-        /// <param name="freqBinWidth"></param>
-        /// <param name="doMelScale"></param>
-        /// <param name="ccCount"></param>
-        /// <returns></returns>
-        public static System.Tuple<double[,], double[]> GetCepstrogram(double[,] data, int minHz, int maxHz,
+        public static Tuple<double[,], double[]> GetCepstrogram(double[,] data, int minHz, int maxHz,
                                                         int freqBinCount, double freqBinWidth, bool doMelScale, int ccCount)
         {
             ImageTools.DrawMatrix(data, @"C:\SensorNetworks\Output\MFCC_LewinsRail\tempImage1.jpg", false);
@@ -153,16 +153,14 @@
             m = MFCCStuff.Cepstra(m, ccCount);
             m = DataTools.normalise(m);
             ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\MFCC_LewinsRail\tempImage3.jpg", false);
-            double[] modalNoise = null;
-            return System.Tuple.Create(m, modalNoise);
+            return Tuple.Create(m, (double[]) null);
         }
 
-
-
-        public static System.Tuple<SpectrogramStandard, SpectrogramCepstral, double[], double[]> GetAllSonograms(string path, SonogramConfig sonoConfig, int minHz, int maxHz)
+        public static Tuple<SpectrogramStandard, SpectrogramCepstral, double[], double[]> GetAllSonograms(string path, SonogramConfig sonoConfig, int minHz, int maxHz)
         {
             Log.WriteLine("# Extract spectrogram and cepstrogram from from file: " + Path.GetFileName(path));
-            AudioRecording recording = new AudioRecording(path);
+            var recording = new AudioRecording(path);
+
             // if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // THIS METHOD CALL IS OBSOLETE
             var tuple = GetAllSonograms(recording, sonoConfig, minHz, maxHz);
             return tuple;
@@ -172,14 +170,8 @@
         /// Returns a Spectrogram and Cepstrogram from the passed recording. These are NOT noise reduced.
         /// however, tuple also returns the modal noise and subband modal noise.
         /// </summary>
-        /// <param name="recording"></param>
-        /// <param name="sonoConfig"></param>
-        /// <param name="minHz"></param>
-        /// <param name="maxHz"></param>
-        /// <returns></returns>
-        public static System.Tuple<SpectrogramStandard, SpectrogramCepstral, double[], double[]> GetAllSonograms(AudioRecording recording, SonogramConfig sonoConfig, int minHz, int maxHz)
+        public static Tuple<SpectrogramStandard, SpectrogramCepstral, double[], double[]> GetAllSonograms(AudioRecording recording, SonogramConfig sonoConfig, int minHz, int maxHz)
         {
-            //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // THIS METHOD CALL IS OBSOLETE
             int sr = recording.SampleRate;
             bool doMelScale = sonoConfig.DoMelScale;
             int ccCount = sonoConfig.mfccConfig.CcCount;
@@ -187,54 +179,54 @@
             bool includeDoubleDelta = sonoConfig.mfccConfig.IncludeDoubleDelta;
             sonoConfig.SourceFName = recording.BaseName;
 
-            AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
-            SpectrogramStandard sonogram = new SpectrogramStandard(basegram);  //spectrogram has dim[N,257]
+            var basegram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+            var sonogram = new SpectrogramStandard(basegram);  //spectrogram has dim[N,257]
 
             Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
-            Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
-                                           sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
-                                          (sonogram.FrameStep * 1000), sonogram.FramesPerSecond, sonoConfig.WindowOverlap * 100);
+            Log.WriteLine(
+                $"Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
+                sonogram.Configuration.WindowSize, sonogram.FrameCount, sonogram.FrameDuration * 1000,
+                sonogram.FrameStep * 1000, sonogram.FramesPerSecond, sonoConfig.WindowOverlap * 100);
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteLine("Freqs : {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
             Log.WriteLine("MFCCs : doMelScale=" + doMelScale + ";  ccCount=" + ccCount + ";  includeDelta=" + includeDelta + ";  includeDoubleDelta=" + includeDoubleDelta);
 
             //CALCULATE MODAL NOISE PROFILE - USER MAY REQUIRE IT FOR NOISE REDUCTION
             double[] modalNoise = sonogram.SnrFullband.ModalNoiseProfile;
+
             //extract subband modal noise profile
-            double[] noise_subband = SpectrogramTools.ExtractModalNoiseSubband(modalNoise, minHz, maxHz, doMelScale,
+            double[] noiseSubband = SpectrogramTools.ExtractModalNoiseSubband(modalNoise, minHz, maxHz, doMelScale,
                                                                            sonogram.NyquistFrequency, sonogram.FBinWidth);
-            //CALCULATE CEPSTROGRAM
+
+            // CALCULATE CEPSTROGRAM
             Log.WriteLine("# Extracting Cepstrogram");
-            SpectrogramCepstral cepstrogram = new SpectrogramCepstral(basegram, minHz, maxHz);  //cepstrogram has dim[N,13]
-            var tuple = System.Tuple.Create(sonogram, cepstrogram, modalNoise, noise_subband);
+            var cepstrogram = new SpectrogramCepstral(basegram, minHz, maxHz);  //cepstrogram has dim[N,13]
+            var tuple = Tuple.Create(sonogram, cepstrogram, modalNoise, noiseSubband);
             return tuple;
         }
-
-
-
     } // end class CepstralSonogram
 
-
     //##################################################################################################################################
     //##################################################################################################################################
-
 
     public class TriAvSonogram : SpectrogramCepstral
     {
         public TriAvSonogram(string configFile, WavReader wav)
             : base(SonogramConfig.Load(configFile), wav)
-        { }
+        {
+        }
 
         public TriAvSonogram(SonogramConfig config, WavReader wav)
             : base(config, wav)
-        { }
+        {
+        }
 
         public override void Make(double[,] amplitudeM)
         {
-            Data = MakeAcousticVectors(this.Configuration, amplitudeM, this.DecibelsNormalised, this.SampleRate);
+            this.Data = MakeAcousticVectors(this.Configuration, amplitudeM, this.DecibelsNormalised, this.SampleRate);
         }
 
-        static double[,] MakeAcousticVectors(SonogramConfig config, double[,] matrix, double[] decibels, int sampleRate)
+        public static double[,] MakeAcousticVectors(SonogramConfig config, double[,] matrix, double[] decibels, int sampleRate)
         {
             int ccCount = config.mfccConfig.CcCount;
             bool includeDelta = config.mfccConfig.IncludeDelta;
@@ -245,7 +237,6 @@
             var tuple = SpectrogramCepstral.MakeCepstrogram(config, matrix, decibels, sampleRate);
             double[,] m = tuple.Item1;
             //this.SnrFullband.ModalNoiseProfile = tuple.Item2; //store the full bandwidth modal noise profile
-
 
             //initialise feature vector for template - will contain three acoustic vectors - for T-dT, T and T+dT
             int frameCount = m.GetLength(0);
@@ -259,15 +250,12 @@
                 double[] rowT = DataTools.GetRow(m, i);
                 double[] rowTp2 = DataTools.GetRow(m, i + deltaT);
 
-                for (int j = 0; j < cepstralL; j++) acousticM[i, j] = rowTm2[j];
-                for (int j = 0; j < cepstralL; j++) acousticM[i, cepstralL + j] = rowT[j];
-                for (int j = 0; j < cepstralL; j++) acousticM[i, cepstralL + cepstralL + j] = rowTp2[j];
+                for (int j = 0; j < cepstralL; j++) { acousticM[i, j] = rowTm2[j]; }
+                for (int j = 0; j < cepstralL; j++) { acousticM[i, cepstralL + j] = rowT[j]; }
+                for (int j = 0; j < cepstralL; j++) { acousticM[i, cepstralL + cepstralL + j] = rowTp2[j]; }
             }
 
             return acousticM;
         }
     } //end class AcousticVectorsSonogram : CepstralSonogram
-
-
-
 }

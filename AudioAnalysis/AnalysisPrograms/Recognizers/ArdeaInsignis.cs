@@ -1,9 +1,9 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="ArdeaInsignis.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="ArdeaInsignis.cs" company="QutEcoacoustics">
+//  All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
-//   AKA: The White Herron from Bhutan. 
+//   AKA: The White Herron from Bhutan.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -17,13 +17,13 @@ namespace AnalysisPrograms.Recognizers
     using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using log4net;
+    using Recognizers.Base;
     using TowseyLibrary;
 
     /// <summary>
@@ -109,7 +109,7 @@ namespace AnalysisPrograms.Recognizers
                 NoiseReductionParameter = noiseReductionParameter,
             };
 
-            TimeSpan recordingDuration = recording.Duration();
+            var recordingDuration = recording.Duration();
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
             int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
@@ -127,15 +127,13 @@ namespace AnalysisPrograms.Recognizers
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
 
-            //var templates = GetTemplatesForAlgorithm1(14);
-
-            double[] amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxBin);
+            // var templates = GetTemplatesForAlgorithm1(14);
+            var amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, rowCount - 1, maxBin);
             bool[] peakArray = new bool[rowCount];
-            double[] amplitudeScores = new double[rowCount];
-            double[,] hits = new double[rowCount, colCount];
+            var amplitudeScores = new double[rowCount];
+            var hits = new double[rowCount, colCount];
 
             const int maxTemplateLength = 20;
-            //gapBetweenPeaks + templateEndPadding
             const int templateEndPadding = 7;
             const int templateOffset = 14;
             const int minimumGap = 4;
@@ -144,12 +142,15 @@ namespace AnalysisPrograms.Recognizers
             // first find the amplitude peaks
             for (int j = 1; j < amplitudeArray.Length - 1; j++)
             {
-                if (amplitudeArray[j] < decibelThreshold) continue;
+                if (amplitudeArray[j] < decibelThreshold)
+                {
+                    continue;
+                }
+
                 if ((amplitudeArray[j] > amplitudeArray[j - 1]) && (amplitudeArray[j] > amplitudeArray[j + 1]))
                 {
                     peakArray[j] = true;
                 }
-
             }
 
             // get template for end of Herron call
@@ -158,13 +159,16 @@ namespace AnalysisPrograms.Recognizers
             // now search for peaks that are the correct distance apart.
             for (int i = 2; i < amplitudeArray.Length - maxTemplateLength - templateEndPadding; i++)
             {
-                if (!peakArray[i]) continue;
+                if (!peakArray[i])
+                {
+                    continue;
+                }
 
                 // calculate distance to next peak
                 int distanceToNextPeak = CalculateDistanceToNextPeak(peakArray, i);
 
                 // skip gaps that are too small or too large
-                if ((distanceToNextPeak < minimumGap) || (distanceToNextPeak > maximumGap))
+                if (distanceToNextPeak < minimumGap || distanceToNextPeak > maximumGap)
                 {
                     continue;
                 }
@@ -183,10 +187,10 @@ namespace AnalysisPrograms.Recognizers
                     double endScore = DataTools.CosineSimilarity(endLocality, endTemplate);
                     for (int to = -templateOffset; to < (endTemplate.Length - templateOffset); to++)
                     {
-                        if (((i + to) >= 0) && (endScore > amplitudeScores[i + to]))
+                        if ((i + to >= 0) && (endScore > amplitudeScores[i + to]))
                         {
                             amplitudeScores[i + to] = endScore;
-                            //hits[i, minBin] = 10;
+                            // hits[i, minBin] = 10;
                         }
                     }
 
@@ -212,9 +216,7 @@ namespace AnalysisPrograms.Recognizers
                         hits[i, minBin] = 10;
                     }
                 }
-
             } // loop over peak array
-
 
             var smoothedScores = DataTools.filterMovingAverageOdd(amplitudeScores, 3);
 
@@ -236,7 +238,7 @@ namespace AnalysisPrograms.Recognizers
                 ae.SegmentDuration = recordingDuration;
                 ae.Name = abbreviatedSpeciesName;
                 prunedEvents.Add(ae);
-            };
+            }
 
             // do a recognizer test.
             //CompareArrayWithBenchmark(scores, new FileInfo(recording.FilePath));
@@ -250,18 +252,18 @@ namespace AnalysisPrograms.Recognizers
                 Plots = plot.AsList(),
                 Events = prunedEvents,
             };
-
         }
 
-
         /// <summary>
-        /// Constructs a simple template for the White Herron oscillation call.
+        /// Constructs a list of simple template for the White Herron oscillation call.
+        /// each template is a vector of real values representing acoustic intensity.
         /// </summary>
         /// <param name="callBinWidth">Typical value = 13</param>
-        /// <returns></returns>
+        /// <returns>list of templates</returns>
         public static List<double[]> GetTemplatesForAlgorithm1(int callBinWidth)
         {
             var templates = new List<double[]>();
+
             // template 1
             double[] t1 = new double[callBinWidth];
             t1[2] = 1.0;
@@ -287,7 +289,7 @@ namespace AnalysisPrograms.Recognizers
             templates.Add(t3);
 
             // template 4
-            double[] t4 = new double[callBinWidth];
+            var t4 = new double[callBinWidth];
             t1[2] = 1.0;
             t1[3] = 1.0;
             t2[11] = 1.0;
@@ -329,7 +331,7 @@ namespace AnalysisPrograms.Recognizers
         private static int CalculateDistanceToNextPeak(bool[] peakArray, int currentLocation)
         {
             int distanceToNextPeak = 0;
-            for (int i = currentLocation+1; i < peakArray.Length; i++)
+            for (int i = 1 + currentLocation; i < peakArray.Length; i++)
             {
                 distanceToNextPeak++;
                 if (peakArray[i])
@@ -356,7 +358,7 @@ namespace AnalysisPrograms.Recognizers
             fileName = fileName.Substring(0, fileName.Length - 4);
             var scoreFilePath = Path.Combine(dir + subDir, fileName + ".TestScores.csv");
             var scoreFile = new FileInfo(scoreFilePath);
-            if (! scoreFile.Exists)
+            if (!scoreFile.Exists)
             {
                 Log.Warn("   Score Test file does not exist.    Writing output as future score-test file");
                 FileTools.WriteArray2File(scoreArray, scoreFilePath);
@@ -389,20 +391,18 @@ namespace AnalysisPrograms.Recognizers
             Log.Info("Completed benchmark test for the Bhutan Herron recognizer.");
         }
 
-
-
         /// <summary>
         /// This test checks an array of acoustic events (array of EventBase) against a standard or benchmark previously stored.
         /// If the benchmark file does not exist then the array of EventBase is written to a text file.
         /// If a benchmark does exist the current array is first written to file and then both
         /// current (test) file and the benchmark file are read as text files and compared.
         /// </summary>
-        /// <param name="events"></param>
-        /// <param name="wavFile"></param>
+        /// <param name="events">a list of acoustic events</param>
+        /// <param name="wavFile">path of wav file</param>
         public static void RecognizerTest(IEnumerable<EventBase> events, FileInfo wavFile)
         {
             Log.Info("# TESTING: Starting benchmark test for the ArdeaInsignis recognizer:");
-            string subDir = "/TestData";
+            var subDir = "/TestData";
             var dir = wavFile.DirectoryName;
             var fileName = wavFile.Name;
             fileName = fileName.Substring(0, fileName.Length - 4);
@@ -422,10 +422,10 @@ namespace AnalysisPrograms.Recognizers
                     Csv.WriteToCsv<EventBase>(eventsFile, events);
                 }
             }
-            else // else if the events file exists then do a compare.
+            else
             {
-
-                bool AOK = true;
+                // else if the events file exists then do a compare.
+                bool aok = true;
                 var newEventsFilePath = Path.Combine(dir + subDir, fileName + ".NewEvents.txt");
                 var newEventsFile = new FileInfo(newEventsFilePath);
                 Csv.WriteToCsv(newEventsFile, events);
@@ -436,10 +436,11 @@ namespace AnalysisPrograms.Recognizers
                     if (!testEventLines[i].Equals(newEventLines[i]))
                     {
                         Log.Warn($"Line {i}: {testEventLines[i]} NOT= benchmark <{newEventLines[i]}>");
-                        AOK = false;
+                        aok = false;
                     }
                 }
-                if (AOK)
+
+                if (aok)
                 {
                     Log.Info("   SUCCESS! Passed the EVENTS ARRAY TEST.");
                 }
@@ -448,10 +449,8 @@ namespace AnalysisPrograms.Recognizers
                     Log.Warn("   FAILED THE EVENTS ARRAY TEST");
                 }
             }
+
             Log.Info("Completed benchmark test for the ArdeaInsignis recognizer.");
         }
-
-
-
     }
 }
