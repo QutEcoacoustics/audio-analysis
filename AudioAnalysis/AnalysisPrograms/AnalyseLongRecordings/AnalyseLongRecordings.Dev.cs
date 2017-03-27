@@ -1,9 +1,10 @@
-﻿namespace AnalysisPrograms.AnalyseLongRecordings
+﻿// <copyright file="AnalyseLongRecordings.Dev.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AnalysisPrograms.AnalyseLongRecordings
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
 
     public partial class AnalyseLongRecording
     {
@@ -103,7 +104,6 @@
             //       Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
             //       Output = @"C:\SensorNetworks\Output\SERF\AfterRefactoring".ToDirectoryInfo()
 
-
             // GROUND PARROT
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST.wav";
 
@@ -115,14 +115,12 @@
 
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.KoalaMale.cfg";
 
-
             // TUI TERRACE RECORDINGS
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_Farmstay_ECLIPSE3_20121114-060001+1000.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_TUITCE_20091215_220004.wav";
             //string outputPath    = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013";
             //string outputPath    = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014";
             //string outputPath = @"C:\SensorNetworks\Output\Test\TestKiwi";
-
 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav";
             //string recordingPath = @"Y:\Eclipise 2012\Eclipse\Site 4 - Farmstay\ECLIPSE3_20121115_040001.wav";
@@ -146,7 +144,6 @@
             //string recordingPath = @"Y:\Groote\2016 March\Emerald River\CardA\Data\EMERALD_20150703_103506.wav";
             //string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.RhinellaMarina.yml";
             //string outputPath    = @"C:\SensorNetworks\Output\Frogs\Canetoad\Rural1";
-
 
             // OTHER FROGS
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LimnodynastesSpecies\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
@@ -215,7 +212,6 @@
             // DEV CONFIG OPTIONS
             //C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\App.config
 
-
             var arguments = new Arguments
                                 {
                                     Source = recordingPath.ToFileInfo(),
@@ -229,6 +225,7 @@
             {
                 Log.Warn(" >>>>>>>>>>>> WARNING! The Source Recording file cannot be found! This will cause an exception.");
             }
+
             if (!arguments.Config.Exists)
             {
                 Log.Warn(" >>>>>>>>>>>> WARNING! The Configuration file cannot be found! This will cause an exception.");
