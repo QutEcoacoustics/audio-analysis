@@ -1,16 +1,16 @@
-﻿using AudioBase;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-
-namespace AudioBrowser
+﻿namespace AudioBrowser
 {
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Data;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using System.Windows.Forms;
+    using AudioBase;
+
     public partial class AudioNavigatorFileSelectForm : Form
     {
         public FileInfo AudioFile

@@ -1,28 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.WavTools;
-using AudioAnalysisTools.DSP;
-using System.IO;
-using MathNet.Numerics;
-using QutBioacosutics.Xie.FrogIndices;
-using QutBioacosutics.Xie.LDSpectrograms;
-
-
-
-namespace QutBioacosutics.Xie
+﻿namespace QutBioacosutics.Xie
 {
-    using AudioAnalysisTools;
-    using log4net;
-    using TowseyLibrary;
+    using System;
+    using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
-    using QutBioacosutics.Xie.Configuration;
-    using LDSpectrograms;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.LongDurationSpectrograms;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using LDSpectrograms;
+    using log4net;
+    using MathNet.Numerics;
+    using QutBioacosutics.Xie.Configuration;
+    using QutBioacosutics.Xie.FrogIndices;
+    using QutBioacosutics.Xie.LDSpectrograms;
+    using TowseyLibrary;
 
     public static class Main
     {
@@ -33,12 +30,12 @@ namespace QutBioacosutics.Xie
 
             Log.Info("Enter into Jie's personal workspace");
 
-            // Frog species:Mixophyes fasciolatus, Litoria caerulea, Litoria fallax, Litoria gracilenta, Litoria nasuta, 
+            // Frog species:Mixophyes fasciolatus, Litoria caerulea, Litoria fallax, Litoria gracilenta, Litoria nasuta,
             // Litoria verreauxii, Litoria rothii, Litoria latopalmata, Cane_Toad.
             // Calculate the oscillation rate for 9 frog species.
             // Parameters for different frog species: 1. Frequency Band, 2. Dct duration, 3.Minimum OscFreq, 4. Maximum OscFreq, 5. Min amplitude, 6. Min duration, 7. Max duration.
             // Step.1: divide the frequency band into several bands for 9 frog species properly
-            // Step.2: for each frequency band, If there is only one frog species,just find the maximum to make tracks. 
+            // Step.2: for each frequency band, If there is only one frog species,just find the maximum to make tracks.
             // otherwise find the local maximum to make tracks
             // Step.3: According to tracks, calculate oscillation rate in different frequency bands.
 
@@ -81,14 +78,14 @@ namespace QutBioacosutics.Xie
             string saveImagePath = configuration.SaveImagePath;
 
             // SpectrogramConfiguration for oscillation
-            
+
             int windowSize = configuration.WindowSize;
 
             //****************************************************************//
             // Path of loaded recording
 
             //string path = configuration.LoadedFilePath;
-                      
+
             var fileEntries = Directory.GetFiles("C:\\Jie\\data\\Segment_JCU_03");
             var fileCount = fileEntries.Count();
             //var fileCount = 5;
@@ -152,7 +149,7 @@ namespace QutBioacosutics.Xie
                 //var trackCanetaod = CalculateIndexForCanetoad.GetFrogTracks(canetoadConfig, spectrogramLong, peakHitsCanetoad);
                 //var oscillationCanetaodRotate = CalculateIndexForCanetoad.GetOscillationRate(canetoadConfig, spectrogramShort);
                 //var oscillationCanetoad = MatrixTools.MatrixRotate90Anticlockwise(oscillationCanetaodRotate);
-                
+
 
                 //***********************Gracillenta*************************//
 
@@ -183,7 +180,7 @@ namespace QutBioacosutics.Xie
                     for (int c = 0; c < cols; c++)
                     {
                         spectrogramMatrix[r, c] = 0;
-                            
+
                     }
                 }
                 //for (int r = 0; r < rows; r++)
@@ -312,14 +309,14 @@ namespace QutBioacosutics.Xie
                 // Latopalmata
 
             }
-            // Write 7 frog species with 3 features to csv files  
+            // Write 7 frog species with 3 features to csv files
             // Canetoad
 
 
             //FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Clockwise(canetoadTrack), @"C:\Jie\output\indexCanetoad\canetoadTrack.csv");
             //FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Clockwise(canetoadEnergy), @"C:\Jie\output\indexCanetoad\canetoadEnergy.csv");
             //FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Clockwise(canetoadOscillation), @"C:\Jie\output\indexCanetoad\canetoadOscillation.csv");
-            
+
             // Gracillenta
             //FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Clockwise(gracillentaTrack), @"C:\Jie\output\indexGracillenta\gracillentaTrack.csv");
             //FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Clockwise(gracillentaEnergy), @"C:\Jie\output\indexGracillenta\gracillentaEnergy.csv");

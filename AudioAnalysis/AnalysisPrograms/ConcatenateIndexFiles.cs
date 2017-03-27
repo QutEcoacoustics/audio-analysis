@@ -7,7 +7,7 @@
 //
 // Action code for this activity = "concatenateIndexFiles"
 // Activity Codes for other tasks to do with spectrograms and audio files:
-// 
+//
 // audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
 // audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
 // indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
@@ -18,7 +18,7 @@
 // audiofilecheck - Writes information about audio files to a csv file.
 // snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
 // audiocutter - Cuts audio into segments of desired length and format
-// createfoursonograms 
+// createfoursonograms
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -50,7 +50,7 @@ namespace AnalysisPrograms
 
     /// <summary>
     /// First argument on command line to call this action is "concatenateIndexFiles"
-    /// 
+    ///
     /// NOTE: This code was last tested on 2016 October 10. Both tests passed.
     /// </summary>
     public static class ConcatenateIndexFiles
@@ -111,7 +111,7 @@ namespace AnalysisPrograms
 
             [ArgDescription("Used only to get Event Recognizer files.")]
             public string EventFilePattern { get; set; }
-            
+
             [ArgDescription("Default = false. For use by software manager only.")]
             internal bool DoTest { get; set; }
             [ArgDescription("Directory containing benchmark TEST files. For use by software manager only.")]
@@ -138,7 +138,7 @@ namespace AnalysisPrograms
             // files containing output from event recognizers.
             // Used only to get Event Recognizer files - set eventDirs=null if not used
             DirectoryInfo[] eventDirs = null;
-            string eventFilePattern = ""; 
+            string eventFilePattern = "";
 
             // The drive: local = C; work = G; home = E
             string drive = "C"; // the default
@@ -149,7 +149,7 @@ namespace AnalysisPrograms
 
 
             /*
-                // ########################## TESTING OF CONCATENATION 
+                // ########################## TESTING OF CONCATENATION
                 // Test data derived from ZuZZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016. THis teste set up October 2016.
                 // The drive: work = G; home = E
                 // top level directory
@@ -162,11 +162,11 @@ namespace AnalysisPrograms
                 timeSpanOffsetHint = TimeSpan.FromHours(8);
                 FileInfo sunriseDatafile = null;
                 doTest = true;
-                // ########################## TEST 1 CONCATENATION 
+                // ########################## TEST 1 CONCATENATION
                 //string opFileStem = "Concat_Test1"; // this should be a unique site identifier
                 //string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test1_Output\\";
                 //bool concatenateEverythingYouCanLayYourHandsOn = true;
-                // ########################## TEST 2 CONCATENATION 
+                // ########################## TEST 2 CONCATENATION
                 string opFileStem = "Concat_Test2";
                 string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test2_Output\\";
                 bool concatenateEverythingYouCanLayYourHandsOn = false; // 24 hour blocks only
@@ -195,9 +195,9 @@ namespace AnalysisPrograms
             dtoStart = new DateTimeOffset(2016, 08, 20, 0, 0, 0, TimeSpan.Zero);
             dtoEnd = new DateTimeOffset(2016, 08, 20, 0, 0, 0, TimeSpan.Zero);
             //dtoStart = new DateTimeOffset(2017, 01, 17, 0, 0, 0, TimeSpan.Zero);
-            //dtoEnd   = new DateTimeOffset(2017, 01, 24, 02, 23, 29, TimeSpan.Zero); 
+            //dtoEnd   = new DateTimeOffset(2017, 01, 24, 02, 23, 29, TimeSpan.Zero);
             //dtoStart = new DateTimeOffset(2016, 08, 21, 0, 0, 0, TimeSpan.Zero);
-            //dtoEnd = new DateTimeOffset(2016, 08, 22, 02, 23, 29, TimeSpan.Zero); 
+            //dtoEnd = new DateTimeOffset(2016, 08, 22, 02, 23, 29, TimeSpan.Zero);
             // colour maps for this job
             colorMap1 = "ACI-ENT-RHZ";
             colorMap2 = "BGN-POW-SPT";
@@ -211,7 +211,7 @@ namespace AnalysisPrograms
 
 
             /*
-                        // ########################## CONCATENATION of LIZ Znidersic Recordings, Lewin's rail, Tasmania. 
+                        // ########################## CONCATENATION of LIZ Znidersic Recordings, Lewin's rail, Tasmania.
                         // The drive: work = G; home = E
                         drive = "G";
                         // top level directory
@@ -219,7 +219,7 @@ namespace AnalysisPrograms
                                                    };
                         string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
                         string opFileStem = "LizZnidersic_TasmanIsU2Mez";
-                        string opPath = $"{drive}:\\SensorNetworks\\AvailaeFolders\\LizZnidersic\\Test_IndexDistributions"; 
+                        string opPath = $"{drive}:\\SensorNetworks\\AvailaeFolders\\LizZnidersic\\Test_IndexDistributions";
                         //string opPath = $"{drive}:\\AvailaeFolders\\LizZnidersic\\TEST_missingData"; //was used to put results for testing missing data
                         var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\SpectrogramFalseColourConfig.yml");
                         timeSpanOffsetHint = TimeSpan.FromHours(8);
@@ -228,21 +228,21 @@ namespace AnalysisPrograms
                         dtoStart = new DateTimeOffset(2015, 11, 09, 0, 0, 0, TimeSpan.Zero);
                         dtoEnd   = new DateTimeOffset(2015, 11, 19, 0, 0, 0, TimeSpan.Zero);
                         //dtoStart = new DateTimeOffset(2017, 01, 17, 0, 0, 0, TimeSpan.Zero);
-                        //dtoEnd   = new DateTimeOffset(2017, 01, 24, 02, 23, 29, TimeSpan.Zero); 
+                        //dtoEnd   = new DateTimeOffset(2017, 01, 24, 02, 23, 29, TimeSpan.Zero);
                         //dtoStart = new DateTimeOffset(2016, 08, 21, 0, 0, 0, TimeSpan.Zero);
-                        //dtoEnd = new DateTimeOffset(2016, 08, 22, 02, 23, 29, TimeSpan.Zero); 
+                        //dtoEnd = new DateTimeOffset(2016, 08, 22, 02, 23, 29, TimeSpan.Zero);
                         // colour maps for this job
                         colorMap1 = "ACI-ENT-RHZ";
                         colorMap2 = "BGN-POW-SPT";
 
                         // If not testing need to set the below. Cannot be nulls.
                         doTest = false;
-                        string testPath = opPath; 
+                        string testPath = opPath;
                         // ########################## END of LIZ Znidersic ARGUMENTS
             */
 
             /*
-            // ################################ CONCATENATE GROOTE DATA 
+            // ################################ CONCATENATE GROOTE DATA
             // This data derived from Groote recordings I brought back from JCU, July 2016.
             // top level directory
             //DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\Frogs\\Canetoad\\2016Oct28-174219 - Michael, Towsey.Indices, #120\\SD Card A"),
@@ -266,7 +266,7 @@ namespace AnalysisPrograms
             string eventFilePattern = "*_Towsey.RhinellaMarina.Events.csv";
             */
 
-            //// ########################## MARINE RECORDINGS          
+            //// ########################## MARINE RECORDINGS
             //// top level directory
             ////DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Dec14-094058 - Michael, Towsey.Indices, ICD=30.0, #70\towsey\MarineRecordings\Cornell\2013March-April"),
             ////                           };
@@ -283,7 +283,7 @@ namespace AnalysisPrograms
             //indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml");
 
 
-            // ########################## YVONNE'S RECORDINGS          
+            // ########################## YVONNE'S RECORDINGS
             // top level directory
             //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48"),
             //                             new DirectoryInfo(@"Y:\Results\2015Aug20-154235 - Yvonne, Indices, ICD=60.0, #50")
@@ -313,7 +313,7 @@ namespace AnalysisPrograms
             // string sunriseDatafile = @"C:\SensorNetworks\OutputDataSets\SunRiseSet\SunriseSet2013Brisbane.csv";
 
             /*
-            // ########################## LENN'S RECORDINGS          
+            // ########################## LENN'S RECORDINGS
             // top level directory
             DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Oct19-173501 - Lenn, Indices, ICD=60.0, #61\Berndt\Lenn\Week 1\Card1302_Box1302"),
                                        };
@@ -392,7 +392,7 @@ namespace AnalysisPrograms
             //FileInfo indexPropertiesConfig = new FileInfo(@"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\IndexPropertiesOLDConfig.yml");
 
 
-            // ########################## GRIFFITH - SIMON/TOBY FRESH-WATER RECORDINGS          
+            // ########################## GRIFFITH - SIMON/TOBY FRESH-WATER RECORDINGS
             // top level directory
             //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"F:\AvailaeFolders\Griffith\Toby\20160201_FWrecordings\Site1"),
             //                           };
@@ -453,7 +453,7 @@ namespace AnalysisPrograms
         {
             // Concatenation is designed only for the output from a "Towsey.Acoustic" analysis.
             string analysisType = "Towsey.Acoustic";
-            // Only the following spectral indices will be concatenated. 
+            // Only the following spectral indices will be concatenated.
             string[] keys = { "ACI", "BGN", "CLS", "CVR", "ENT", "EVN", "POW", "RHZ", "SPT" };
 
             // deal with verbosity
@@ -505,7 +505,7 @@ namespace AnalysisPrograms
 
 
             // 1. PATTERN SEARCH FOR CORRECT SUBDIRECTORIES
-            // Assumes that the required subdirectories have the given FILTER/SiteName somewhere in their path. 
+            // Assumes that the required subdirectories have the given FILTER/SiteName somewhere in their path.
             var subDirectories = LDSpectrogramStitching.GetSubDirectoriesForSiteData(arguments.InputDataDirectories, arguments.DirectoryFilter);
             if (subDirectories.Length == 0)
             {
@@ -529,7 +529,7 @@ namespace AnalysisPrograms
                 return;
             }
 
-            // Sort the files by date and return as a dictionary: sortedDictionaryOfDatesAndFiles<DateTimeOffset, FileInfo> 
+            // Sort the files by date and return as a dictionary: sortedDictionaryOfDatesAndFiles<DateTimeOffset, FileInfo>
             var sortedDictionaryOfDatesAndFiles = FileDateHelpers.FilterFilesForDates(csvFiles, arguments.TimeSpanOffsetHint);
 
 
@@ -583,7 +583,7 @@ namespace AnalysisPrograms
             {
                 SiteName = arguments.FileStemName,
                 Latitude = latitude,
-                Longitude = longitude
+                Longitude = longitude,
             };
 
             // the following are required if drawing the index images
@@ -604,7 +604,7 @@ namespace AnalysisPrograms
                 {
                     ldSpectrogramConfig = LdSpectrogramConfig.ReadYamlToConfig(arguments.FalseColourSpectrogramConfig);
 
-                    // TODO TODO TODO TODO    
+                    // TODO TODO TODO TODO
                     // this next line is necessary because TimeSpan is not read correctly from yaml.
                     ldSpectrogramConfig.XAxisTicInterval = TimeSpan.FromMinutes(60);
                     ldSpectrogramConfig.ColourGain = 1.0;
@@ -642,7 +642,7 @@ namespace AnalysisPrograms
                 // REALITY CHECK - check for continuous zero indices or anything else that might indicate defective signal or incomplete analysis of recordings
                 List<ErroneousIndexSegments> indexErrors = ErroneousIndexSegments.DataIntegrityCheck(dictionaryOfSummaryIndices, resultsDir, arguments.FileStemName);
 
-                
+
                 if (arguments.DrawImages)
                 {
 
@@ -745,7 +745,7 @@ namespace AnalysisPrograms
                 if (!resultsDir.Exists) resultsDir.Create();
 
                 var opFileStem1 = $"{arguments.FileStemName}_{dateString}";
-                
+
                 // Recalculate <thisDay> to include the start time - not just the date. This is for time scale on false-colour spectrograms.
                 DateTimeOffset dt;
                 if (FileDateHelpers.FileNameContainsDateTime(indexFiles[0].Name, out dt, arguments.TimeSpanOffsetHint))
@@ -769,10 +769,10 @@ namespace AnalysisPrograms
                 if (arguments.DrawImages)
                 {
                     indexGenerationData.RecordingStartDate = thisday;
-                    LDSpectrogramStitching.DrawSummaryIndexFiles(summaryDict, 
-                                                                 indexGenerationData, 
-                                                                 indexPropertiesConfig, 
-                                                                 resultsDir, 
+                    LDSpectrogramStitching.DrawSummaryIndexFiles(summaryDict,
+                                                                 indexGenerationData,
+                                                                 indexPropertiesConfig,
+                                                                 resultsDir,
                                                                  siteDescription,
                                                                  arguments.SunRiseDataFile,
                                                                  indexErrors,
@@ -841,7 +841,7 @@ namespace AnalysisPrograms
                             lines.RemoveAt(0); // ignore header
                             output.AddRange(lines);
                             //lineCount += lines.Count;
-                            //Console.WriteLine($"  # events = {lines.Count}"); 
+                            //Console.WriteLine($"  # events = {lines.Count}");
                         }
                         var indexArray = ConcatenateIndexFiles.ConvertEventsToSummaryIndices(output);
 
@@ -892,7 +892,7 @@ namespace AnalysisPrograms
         {
 
             Log.Info("\t\tWriting spectral indices");
-            
+
             var spectralIndexFiles = new List<FileInfo>(results.Count);
 
             foreach (var kvp in results)
@@ -909,7 +909,7 @@ namespace AnalysisPrograms
 
 
         /// <summary>
-        /// This method is designed only to read in Spectrogram ribbons for Georgia marine recordings. 
+        /// This method is designed only to read in Spectrogram ribbons for Georgia marine recordings.
         /// Used to prepare images for Aaron Rice.
         /// </summary>
         /// <param name="dataDirs"></param>
@@ -918,7 +918,7 @@ namespace AnalysisPrograms
         /// <param name="opFileStem"></param>
         /// <param name="title"></param>
         /// <param name="tidalInfo"></param>
-        public static void ConcatenateRibbonImages(DirectoryInfo[] dataDirs, string pattern, DirectoryInfo outputDirectory, 
+        public static void ConcatenateRibbonImages(DirectoryInfo[] dataDirs, string pattern, DirectoryInfo outputDirectory,
                                                    string opFileStem, string title, SunAndMoon.SunMoonTides[] tidalInfo = null)
         {
             //get the ribon files
@@ -956,7 +956,7 @@ namespace AnalysisPrograms
             //create composite image
             var compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
 
-            // create left side day scale    
+            // create left side day scale
             var stringFont = new Font("Arial", 16);
             imageList = new List<Image>();
             for(int i = 0; i < imageCount; i++)
@@ -1075,7 +1075,7 @@ namespace AnalysisPrograms
         public static double[] ConvertEventsToSummaryIndices(List<string> events)
         {
             // Assume that each line in events = one event
-            // assume one minute resolution for events index 
+            // assume one minute resolution for events index
             TimeSpan? offsetHint = new TimeSpan(9, 0, 0);
             //int unitTime = 60; // one minute resolution
 

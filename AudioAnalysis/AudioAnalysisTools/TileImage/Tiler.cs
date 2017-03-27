@@ -3,20 +3,19 @@
 //   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
+
 namespace AudioAnalysisTools.TileImage
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.Diagnostics.Contracts;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
+    using Acoustics.Shared.Contracts;
     using log4net;
-
     using TowseyLibrary;
 
     public class Tiler
@@ -38,34 +37,34 @@ namespace AudioAnalysisTools.TileImage
         #region Constructors and Destructors
 
         public Tiler(
-            DirectoryInfo outputDirectory, 
-            TilingProfile profile, 
-            SortedSet<double> scales, 
-            double unitScale, 
+            DirectoryInfo outputDirectory,
+            TilingProfile profile,
+            SortedSet<double> scales,
+            double unitScale,
             int unitLength)
             : this(outputDirectory, profile, scales, unitScale, unitLength, scales, unitScale, unitLength)
         {
         }
 
         public Tiler(
-            DirectoryInfo outputDirectory, 
-            TilingProfile profile, 
-            SortedSet<double> xScales, 
-            double xUnitScale, 
-            int unitWidth, 
-            SortedSet<double> yScales, 
-            double yUnitScale, 
+            DirectoryInfo outputDirectory,
+            TilingProfile profile,
+            SortedSet<double> xScales,
+            double xUnitScale,
+            int unitWidth,
+            SortedSet<double> yScales,
+            double yUnitScale,
             int unitHeight)
         {
             this.outputDirectory = outputDirectory;
             this.profile = profile;
 
             this.calculatedLayers = this.CalculateLayers(
-                xScales, 
-                xUnitScale, 
-                unitWidth, 
-                yScales, 
-                yUnitScale, 
+                xScales,
+                xUnitScale,
+                unitWidth,
+                yScales,
+                yUnitScale,
                 unitHeight);
 
             this.WriteImages = true;
@@ -164,28 +163,28 @@ namespace AudioAnalysisTools.TileImage
 
             Layer layer = this.CalculatedLayers.First(x => Math.Abs(x.XScale - current.Scale) < Epsilon);
 
-            int width = current.Image.Width, 
-                height = current.Image.Height, 
-                xOffset = current.OffsetX, 
+            int width = current.Image.Width,
+                height = current.Image.Height,
+                xOffset = current.OffsetX,
                 yOffset = current.OffsetY;
 
             // determine padding needed
             int paddingX, paddingY;
             int startTileEdgeX, startTileEdgeY;
             int superTileOffsetInLayerX = this.AlignSuperTileInLayer(
-                layer.Width, 
-                layer.XTiles, 
-                this.profile.TileWidth, 
-                current.OffsetX, 
-                current.Image.Width, 
+                layer.Width,
+                layer.XTiles,
+                this.profile.TileWidth,
+                current.OffsetX,
+                current.Image.Width,
                 out paddingX,
                 out startTileEdgeX);
             int superTileOffsetInLayerY = this.AlignSuperTileInLayer(
-                layer.Height, 
-                layer.YTiles, 
-                this.profile.TileHeight, 
-                current.OffsetY, 
-                current.Image.Height, 
+                layer.Height,
+                layer.YTiles,
+                this.profile.TileHeight,
+                current.OffsetY,
+                current.Image.Height,
                 out paddingY,
                 out startTileEdgeY);
 
@@ -244,7 +243,7 @@ namespace AudioAnalysisTools.TileImage
                                                  X = superTileLeft,
                                                  Y = superTileTop,
                                                  Width = this.profile.TileWidth,
-                                                 Height = this.profile.TileHeight
+                                                 Height = this.profile.TileHeight,
                                              };
                         ImageComponent[] fragments = GetImageParts(superTileRectangle, subsection);
 
@@ -369,7 +368,7 @@ namespace AudioAnalysisTools.TileImage
                 IEnumerable<ISuperTile[]> windowed = scaleGroup.OrderBy(st => st.OffsetX).WindowedOrDefault(3);
                 foreach (var superTiles in windowed)
                 {
-                    
+
                     this.Tile(superTiles[0], superTiles[1], superTiles[2]);
                 }
             }
@@ -412,12 +411,12 @@ namespace AudioAnalysisTools.TileImage
             if (requestedRectangle.Left < baseRectangle.Left)
             {
                 List<ImageComponent> rects = SplitAlongY(
-                    requestedRectangle.Left, 
-                    requestedRectangle.Top, 
-                    baseRectangle.X - requestedRectangle.Left, 
-                    requestedRectangle.Height, 
-                    innerSegment.Top, 
-                    innerSegment.Bottom, 
+                    requestedRectangle.Left,
+                    requestedRectangle.Top,
+                    baseRectangle.X - requestedRectangle.Left,
+                    requestedRectangle.Height,
+                    innerSegment.Top,
+                    innerSegment.Bottom,
                     TileBias.Negative);
                 parts.AddRange(rects);
             }
@@ -426,12 +425,12 @@ namespace AudioAnalysisTools.TileImage
             if (requestedRectangle.Right > baseRectangle.Left && requestedRectangle.Left < baseRectangle.Right)
             {
                 List<ImageComponent> rects = SplitAlongY(
-                    innerSegment.Left, 
-                    requestedRectangle.Top, 
-                    innerSegment.Width, 
-                    requestedRectangle.Height, 
-                    innerSegment.Top, 
-                    innerSegment.Bottom, 
+                    innerSegment.Left,
+                    requestedRectangle.Top,
+                    innerSegment.Width,
+                    requestedRectangle.Height,
+                    innerSegment.Top,
+                    innerSegment.Bottom,
                     TileBias.Neutral);
                 parts.AddRange(rects);
             }
@@ -440,12 +439,12 @@ namespace AudioAnalysisTools.TileImage
             if (requestedRectangle.Right >= baseRectangle.Right)
             {
                 List<ImageComponent> rects = SplitAlongY(
-                    baseRectangle.Right, 
-                    requestedRectangle.Top, 
-                    requestedRectangle.Right - baseRectangle.Right, 
-                    requestedRectangle.Height, 
-                    innerSegment.Top, 
-                    innerSegment.Bottom, 
+                    baseRectangle.Right,
+                    requestedRectangle.Top,
+                    requestedRectangle.Right - baseRectangle.Right,
+                    requestedRectangle.Height,
+                    innerSegment.Top,
+                    innerSegment.Bottom,
                     TileBias.Positive);
                 parts.AddRange(rects);
             }
@@ -482,12 +481,12 @@ namespace AudioAnalysisTools.TileImage
         }
 
         private static void CalculateScaleStats(
-            double unitScale, 
-            int unitLength, 
-            int tileLength, 
-            double scale, 
-            out double normalizedScale, 
-            out int layerLength, 
+            double unitScale,
+            int unitLength,
+            int tileLength,
+            double scale,
+            out double normalizedScale,
+            out int layerLength,
             out int tiles)
         {
             normalizedScale = unitScale / scale;
@@ -525,12 +524,12 @@ namespace AudioAnalysisTools.TileImage
         }
 
         private static List<ImageComponent> SplitAlongY(
-            int x, 
-            int y, 
-            int width, 
-            int height, 
-            int ySplit1, 
-            int ySplit2, 
+            int x,
+            int y,
+            int width,
+            int height,
+            int ySplit1,
+            int ySplit2,
             TileBias xBias)
         {
             Contract.Requires(height != 0);
@@ -597,11 +596,11 @@ namespace AudioAnalysisTools.TileImage
         /// The <see cref="int"/>.
         /// </returns>
         private int AlignSuperTileInLayer(
-            int layerLength, 
-            int layerTileCount, 
-            int layerTileLength, 
-            int superTileOffset, 
-            int superTileWidth, 
+            int layerLength,
+            int layerTileCount,
+            int layerTileLength,
+            int superTileOffset,
+            int superTileWidth,
             out int padding,
             out int startTileEdge)
         {
@@ -618,23 +617,23 @@ namespace AudioAnalysisTools.TileImage
 
             // does this offset lay on the edge of a tile?
             var tilesBeforeOffset = (double)superTileOffsetInLayer / layerTileLength;
-            
+
             // ideally the number of tiles before the offset is a whole number
             var wholeTilesBeforeOffset = (int)Math.Floor(tilesBeforeOffset);
 
             // if it isn't though, use the edge of the nearest whole tile processing the super tile offset as a start point
             startTileEdge = wholeTilesBeforeOffset * layerTileLength;
-            
+
             // with limited information it is really hard to do more/verify
             return superTileOffsetInLayer;
         }
 
         private SortedSet<Layer> CalculateLayers(
-            SortedSet<double> xScales, 
-            double xUnitScale, 
-            int unitWidth, 
-            SortedSet<double> yScales, 
-            double yUnitScale, 
+            SortedSet<double> xScales,
+            double xUnitScale,
+            int unitWidth,
+            SortedSet<double> yScales,
+            double yUnitScale,
             int unitHeight)
         {
             var results = new SortedSet<Layer>();
@@ -654,33 +653,33 @@ namespace AudioAnalysisTools.TileImage
                 double xNormalizedScale, yNormalizedScale;
 
                 CalculateScaleStats(
-                    xUnitScale, 
-                    unitWidth, 
-                    this.profile.TileWidth, 
-                    xScale, 
-                    out xNormalizedScale, 
-                    out xLayerLength, 
+                    xUnitScale,
+                    unitWidth,
+                    this.profile.TileWidth,
+                    xScale,
+                    out xNormalizedScale,
+                    out xLayerLength,
                     out xTiles);
                 CalculateScaleStats(
-                    yUnitScale, 
-                    unitHeight, 
-                    this.profile.TileHeight, 
-                    yScale, 
-                    out yNormalizedScale, 
-                    out yLayerLength, 
+                    yUnitScale,
+                    unitHeight,
+                    this.profile.TileHeight,
+                    yScale,
+                    out yNormalizedScale,
+                    out yLayerLength,
                     out yTiles);
 
                 results.Add(
                     new Layer(scaleIndex)
                         {
-                            XNormalizedScale = xNormalizedScale, 
-                            YNormalizedScale = yNormalizedScale, 
-                            XScale = xScale, 
-                            YScale = yScale, 
-                            Width = xLayerLength, 
-                            Height = yLayerLength, 
-                            XTiles = xTiles, 
-                            YTiles = yTiles
+                            XNormalizedScale = xNormalizedScale,
+                            YNormalizedScale = yNormalizedScale,
+                            XScale = xScale,
+                            YScale = yScale,
+                            Width = xLayerLength,
+                            Height = yLayerLength,
+                            XTiles = xTiles,
+                            YTiles = yTiles,
                         });
 
                 scaleIndex++;

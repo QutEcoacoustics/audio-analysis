@@ -142,7 +142,7 @@ namespace AnalysisPrograms.Production
         public Acoustic.Arguments AcousticIndicesArgs { get; set; }
         public static Action<Acoustic.Arguments> AcousticIndices()
         {
-            // extracts acoustic indices from one minute 
+            // extracts acoustic indices from one minute
             // Execute() signed off: Michael Towsey 27th July 2012
             return Acoustic.Dev;
         }
@@ -181,7 +181,7 @@ namespace AnalysisPrograms.Production
         {
             return DrawZoomingSpectrograms.Execute;
         }
-        
+
         [ArgDescription("Calls DifferenceSpectrogram.Execute():  Produces a false-colour spectrogram that show only the differences between two spectrograms.")]
         public DifferenceSpectrogram.Arguments DifferenceSpectrogramArgs { get; set; }
         public static Action<DifferenceSpectrogram.Arguments> DifferenceSpectrogram()
@@ -220,7 +220,7 @@ namespace AnalysisPrograms.Production
         public LSKiwiROC.Arguments KiwiRocArgs { get; set; }
         public static Action<LSKiwiROC.Arguments> KiwiRoc()
         {
-            // SEPARATE PROCESSING TASK FOR KIWI OUTPUT 
+            // SEPARATE PROCESSING TASK FOR KIWI OUTPUT
             // little spotted kiwi calls from Andrew @ Victoria university.
             // Signed off: Michael Towsey 27th July 2012
             return AnalysisPrograms.LSKiwiROC.Main;

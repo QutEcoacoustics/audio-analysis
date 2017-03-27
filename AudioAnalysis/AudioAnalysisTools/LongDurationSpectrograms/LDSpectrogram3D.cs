@@ -4,9 +4,9 @@
 // </copyright>
 // <summary>
 //   This class generates three dimensional false-colour spectrograms of long duration audio recordings.
-//   The three dimensions are: 1) Y-axis = frequency bin; X-axis = time of day (either 1435 minutes or 24 hours); Z-axis = consecutive days through year. 
+//   The three dimensions are: 1) Y-axis = frequency bin; X-axis = time of day (either 1435 minutes or 24 hours); Z-axis = consecutive days through year.
 //   It does not calculate the indices but reads them from pre-calculated values in csv files.
-// 
+//
 //   Important properties are:
 //   All the arguments can be passed through a config file.
 //   Create the config file throu an instance of the class LDSpectrogramConfig
@@ -35,8 +35,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     /// This class generates false-colour spectrograms of long duration audio recordings.
     /// Important properties are:
     /// 1) the colour map which maps three acoutic indices to RGB.
-    /// 2) The scale of the x and y axes which are dtermined by the sample rate, frame size etc. 
-    /// In order to create false colour spectrograms, copy the method 
+    /// 2) The scale of the x and y axes which are dtermined by the sample rate, frame size etc.
+    /// In order to create false colour spectrograms, copy the method
     ///         public static void DrawFalseColourSpectrograms(LDSpectrogramConfig configuration)
     /// All the arguments can be passed through a config file.
     /// Create the config file throu an instance of the class LDSpectrogramConfig
@@ -72,7 +72,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return dev;
         }
 
-        // use the following paths for the command line for the <audio2sonogram> task. 
+        // use the following paths for the command line for the <audio2sonogram> task.
         public class Arguments
         {
             public FileInfo IndexPropertiesConfig { get; set; }
@@ -213,7 +213,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 }
 
 
-                // 4. Read the yaml file describing the Index Properties 
+                // 4. Read the yaml file describing the Index Properties
                 Dictionary<string, IndexProperties> dictIp = IndexProperties.GetIndexProperties(indexPropertiesConfig);
                 dictIp = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(dictIp);
 
@@ -372,7 +372,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
 
             SunAndMoon.AddSunRiseSetLinesToImage((Bitmap)bmp1, sunriseSetData, 0 , 365, 1);// assume full year and 1px/day
-            
+
             var g = Graphics.FromImage(bmp1);
             var pen = new Pen(Color.White);
             var stringFont = new Font("Arial", 12);
@@ -555,20 +555,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string[] nameParts = file.Name.Split('.');
             string[] stemParts = nameParts[0].Split('_');
 
-            DateTime date = new DateTime(year, 1, 1).AddDays(dayOfYear - 1); 
-            
+            DateTime date = new DateTime(year, 1, 1).AddDays(dayOfYear - 1);
+
             //string stem = stemParts[0] + "_" + date.Year + date.Month + date.Day + "." + nameParts[1] + "." + nameParts[2] + nameParts[3];
             string stem =
                 $"{stemParts[0]}_{date.Year:d4}{date.Month:d2}{date.Day:d2}.{nameParts[1]}.{nameParts[2]}.{nameParts[3]}";
 
 
             string path = Path.Combine(dataTableDir.FullName, stem);
-            if(! File.Exists(path)) 
+            if(! File.Exists(path))
                 return new List<string>();
 
             List<string> list = FileTools.ReadSelectedLinesOfCsvFile(path, key, dayOfYear);
-            if (list == null) 
-                return new List<string>(); 
+            if (list == null)
+                return new List<string>();
             return list;
         }
 
@@ -582,7 +582,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             FileInfo[] fileList = dataTableDir.GetFiles();
             foreach (FileInfo file in fileList)
             {
-                Console.Write("."); // so impatient user knows something is happening!   
+                Console.Write("."); // so impatient user knows something is happening!
 
                 List<string> list = FileTools.ReadSelectedLinesOfCsvFile(file.FullName, key, value);
                 if (list == null) continue;
@@ -605,7 +605,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 [AnalysisKeys.AddTimeScale] = (string) configuration[AnalysisKeys.AddTimeScale] ?? "true",
                 [AnalysisKeys.AddAxes] = (string) configuration[AnalysisKeys.AddAxes] ?? "true",
                 [AnalysisKeys.AddSegmentationTrack] =
-                (string) configuration[AnalysisKeys.AddSegmentationTrack] ?? "true"
+                (string) configuration[AnalysisKeys.AddSegmentationTrack] ?? "true",
             };
             ////bool makeSoxSonogram = (bool?)configuration[AnalysisKeys.MakeSoxSonogram] ?? false;
             return configDict;
@@ -694,15 +694,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         //    int totalMinutes = 1440;
 
 
-        //    // location to write the yaml config file for producing long duration spectrograms 
+        //    // location to write the yaml config file for producing long duration spectrograms
         //    FileInfo fiSpectrogramConfig = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
         //    // Initialise the default Yaml Config file
         //    var config = new LdSpectrogramConfig("null", inputDirInfo, opDir); // default values have been set
-        //    int totalFreqBins = config.FrameLength / 2; 
+        //    int totalFreqBins = config.FrameLength / 2;
         //    // write the yaml file to config
         //    config.WriteConfigToYaml(fiSpectrogramConfig);
 
-        //    // read the yaml Config file describing the Index Properties 
+        //    // read the yaml Config file describing the Index Properties
         //    FileInfo indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo();
         //    Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfig);
         //    dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
@@ -729,7 +729,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         //        int thisDayOfYear   = thisDate.DayOfYear;
         //        int thisStartMinute = thisDate.Minute;
-        //        int dayIndex = thisDayOfYear - startDayOfyear;  
+        //        int dayIndex = thisDayOfYear - startDayOfyear;
 
 
         //        // get target file name without extention
@@ -775,7 +775,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         //        // get the ACI matrix oriented as per image
         //        double[,] ACImatrix = cs1.GetNormalisedSpectrogramMatrix("ACI");
- 
+
         //        //int thisEndMinute = thisStartMinute + ACImatrix.GetLength(0);
         //        //for (int Y = thisStartMinute; Y <= thisEndMinute; Y++)
         //        for (int Y = 0; Y < ACImatrix.GetLength(0); Y++) // freq bins

@@ -1,25 +1,23 @@
-﻿using AudioAnalysisTools.Indices;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-namespace AudioAnalysisTools.LongDurationSpectrograms
+﻿namespace AudioAnalysisTools.LongDurationSpectrograms
 {
-
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.Indices;
+    using TowseyLibrary;
 
     /// <summary>
     /// This class contains two methods:  (1) StitchPartialSpectrograms()   and    (2) ConcatenateSpectralIndexFiles()
-    /// 
+    ///
     /// (1) StitchPartialSpectrograms()
     /// This method stitches together images and/or indices derived from a sequence of short recordings with gaps between them.
     /// It was written to deal with a set of recordings with protocol of Gianna Pavan (10 minutes every 30 minutes).
-    /// 
+    ///
     /// The following Powershell command was constructed by Anthony to do the analysis and join the sequence of images so derived:
-    /// Y:\Italy_GianniPavan\Sassofratino1day | % {& "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\bin\Release\AnalysisPrograms.exe" audio2csv -so ($_.FullName) -o "Y:\Italy_GianniPavan\output" -c "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.Parallel.yml" }   
+    /// Y:\Italy_GianniPavan\Sassofratino1day | % {& "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\bin\Release\AnalysisPrograms.exe" audio2csv -so ($_.FullName) -o "Y:\Italy_GianniPavan\output" -c "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.Parallel.yml" }
     /// where:
     ///         Y:\Italy_GianniPavan\Sassofratino1day   is the directory containing recordings
     ///         | = a pipe
@@ -29,24 +27,24 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     ///         -so ($_.FullName)  = the input file
     ///         -o "Y:\Italy_GianniPavan\output" = the output directory
     ///         -c "PATH\Towsey.Acoustic.Parallel.yml" is the config file
-    /// 
+    ///
     /// The following PowerShell command was used by Anthony to stitch together a sequence of spectrogam images without any gap between them.
     /// It requires ImageMagick software to be installed: i.e. C:\Program Files\ImageMagick-6.8.9-Q16\montage.exe
     /// Y:\Italy_GianniPavan\output\Towsey.Acoustic> & "C:\Program Files\ImageMagick-6.8.9-Q16\montage.exe" -mode concatenate -tile x1 *2MAP* "..\..\merge.png"
-    /// 
-    /// 
+    ///
+    ///
     /// (2) ConcatenateSpectralIndexFiles()
-    /// This method was written to deal with a new recording protocol in which 24 hours of recording are made in 4 blocks of 6 hours each. 
-    /// It merges all files of acoustic indices derived from a sequence of consecutive 6 hour recording, into one file. It then creates the images. 
+    /// This method was written to deal with a new recording protocol in which 24 hours of recording are made in 4 blocks of 6 hours each.
+    /// It merges all files of acoustic indices derived from a sequence of consecutive 6 hour recording, into one file. It then creates the images.
     /// </summary>
     public static class LDSpectrogramClusters
     {
 
 
         ///// <summary>
-        ///// This method merges all files of acoustic indices derived from a sequence of consecutive 6 hour recording, 
-        ///// that have a total duration of 24 hours. This was necesarry to deal with Jason's new regime of doing 24 hour recordings 
-        ///// in blocks of 6 hours. 
+        ///// This method merges all files of acoustic indices derived from a sequence of consecutive 6 hour recording,
+        ///// that have a total duration of 24 hours. This was necesarry to deal with Jason's new regime of doing 24 hour recordings
+        ///// in blocks of 6 hours.
         ///// </summary>
         //public static void ConcatenateSpectralIndexFiles1()
         //{
@@ -191,7 +189,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string fileStem = @"SERF-SE_20101013";
             string inputImagePath = @"C:\SensorNetworks\Output\Mangalam_BDVA2015\SERF-SE_20101013.ACI-ENT-EVN.png";
             string clusterFile = opDir + "SE 13 Oct - Cluster-node list.csv";
-            
+
             string opFileName = fileStem + ".SOMClusters.png";
 
             int clusterCount = 27;  // from fuzzy c-clustering
@@ -285,10 +283,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         nodeArray[nodeID].Add(column);
                     }
                 }
-                           
+
                 // cycle through the nodes and get the column images.
                 // the purpose is to draw the column images in order of node number
-                for (int n = 0; n < nodeCount; n++) 
+                for (int n = 0; n < nodeCount; n++)
                 {
                     int imageCount = nodeArray[n].Count;
                     if (nodeArray[n].Count == 0) continue;
@@ -367,7 +365,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // assignment of cluster numbers to cluster LABEL
             string[] clusterLabel = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a" };
-            
+
             // read the data file containing cluster sequence
             List<string> lines = FileTools.ReadTextFile(clusterFile);
             string[] words = null;

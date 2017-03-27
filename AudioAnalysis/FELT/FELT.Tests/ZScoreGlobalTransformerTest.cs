@@ -1,18 +1,15 @@
-﻿using FELT.Classifiers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using MQUTeR.FSharp.Shared;
-
-namespace FELT.Tests
+﻿namespace FELT.Tests
 {
+    using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
-
+    using FELT.Classifiers;
     using FELT.Transformers;
-
     using Microsoft.FSharp.Collections;
     using Microsoft.FSharp.Core;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using MQUTeR.FSharp.Shared;
 
     /// <summary>
     /// This is a test class for EuclideanClassifierTest and is intended
@@ -44,7 +41,7 @@ namespace FELT.Tests
 
         #region Additional test attributes
 
-        // 
+        //
         //You can use the following additional attributes as you write your tests:
         //
         //Use ClassInitialize to run code before running the first test in the class
@@ -107,7 +104,7 @@ namespace FELT.Tests
 
 
 
-            // _____________________________ trainingData, testData   
+            // _____________________________ trainingData, testData
             var actual = classifier.Classify(groupedData, transformedDataActual.Item2);
 
             FSharpFunc<int, Tuple<double, int>[]> func = ((ClassifierResult.Function)actual).Item;
@@ -263,7 +260,7 @@ namespace FELT.Tests
                         {
                             new Tuple<string, DataType>("health", DataType.Number),
                             new Tuple<string, DataType>("age", DataType.Number),
-                            new Tuple<string, DataType>("skill", DataType.Number)
+                            new Tuple<string, DataType>("skill", DataType.Number),
                         });
 
             var hdrs = headers;
@@ -336,7 +333,7 @@ namespace FELT.Tests
 
 
 
-            // test data 
+            // test data
             var hdrs8 = hdrs;
 
             //      a,s,e
@@ -368,7 +365,7 @@ namespace FELT.Tests
             var zScoreNums = new[,]
                 {
                     { 1.546747916, -1.129672415, 0.208537751 }, { -0.797724035, 1.025645188, -1.367526918 },
-                    { -1.871170975, -0.677713405, 1.027225979 }
+                    { -1.871170975, -0.677713405, 1.027225979 },
                 };
 
 
@@ -395,13 +392,13 @@ namespace FELT.Tests
                     new[]
                         {
                             new Tuple<double, int>(1.112524862, 2), new Tuple<double, int>(2.547243493, 0),
-                            new Tuple<double, int>(2.738356775, 1)
+                            new Tuple<double, int>(2.738356775, 1),
                         },
                     new[]
                         {
                             new Tuple<double, int>(0.54952081, 1), new Tuple<double, int>(3.340575813, 0),
-                            new Tuple<double, int>(3.418419932, 2)
-                        }
+                            new Tuple<double, int>(3.418419932, 2),
+                        },
                 };
 
             #endregion

@@ -44,7 +44,7 @@ namespace AnalysisPrograms
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        // use the following paths for the command line for the <audio2sonogram> task. 
+        // use the following paths for the command line for the <audio2sonogram> task.
         // audio2InputForConvCNN "Path to CSV file"   @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml"  "Output directory" true
         [CustomDetailedDescription]
         [CustomDescription]
@@ -84,7 +84,7 @@ namespace AnalysisPrograms
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
 
                 Output = (@"C:\SensorNetworks\Output\XueyanDataset\" + datestamp).ToDirectoryInfo(),
-                Source = null
+                Source = null,
             };
 
             throw new NoDeveloperMethodException();
@@ -174,7 +174,7 @@ namespace AnalysisPrograms
             //  fileName,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path
             string line = String.Format("{0},{1},{2},{3:f2},{4:f2},{5:f2},{6:f1},{7:f3},{8:f3},{9:f3},{10}",
                                         record.wavFile_name, record.low_frequency_hertz, record.high_frequency_hertz,
-                                        record.event_start_seconds.TotalSeconds, record.event_end_seconds.TotalSeconds, 
+                                        record.event_start_seconds.TotalSeconds, record.event_end_seconds.TotalSeconds,
                                         result.SnrStatistics.ExtractDuration.TotalSeconds,
                                         result.SnrStatistics.Threshold, result.SnrStatistics.Snr,
                                         result.SnrStatistics.FractionOfFramesExceedingThreshold, result.SnrStatistics.FractionOfFramesExceedingOneThirdSNR,
@@ -239,7 +239,7 @@ namespace AnalysisPrograms
             // This line creates a temporary version of the source file downsampled as per entry in the config file
             MasterAudioUtility.SegmentToWav(sourceRecording, tempAudioSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
 
-            // 2: Generate sonogram image files 
+            // 2: Generate sonogram image files
             AudioToSonogramResult result = new AudioToSonogramResult();
             result = SURFAnalysis.GenerateSpectrogramImages(tempAudioSegment, configDict, opDir);
 
@@ -394,7 +394,7 @@ namespace AnalysisPrograms
             // 1) draw amplitude spectrogram
             AudioRecording recordingSegment = new AudioRecording(sourceRecording.FullName);
             SonogramConfig sonoConfig = new SonogramConfig(configDict); // default values config
-                
+
             // disable noise removal for first two spectrograms
             sonoConfig.NoiseReductionType = NoiseReductionType.None;
 
@@ -512,7 +512,7 @@ namespace AnalysisPrograms
                 SegmentMaxDuration = TimeSpan.FromMinutes(1),
                 SegmentMinDuration = TimeSpan.FromSeconds(20),
                 SegmentMediaType = MediaTypes.MediaTypeWav,
-                SegmentOverlapDuration = TimeSpan.Zero
+                SegmentOverlapDuration = TimeSpan.Zero,
             };
         }
 

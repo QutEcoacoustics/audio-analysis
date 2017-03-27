@@ -20,12 +20,16 @@ namespace AnalysisBase
     /// </summary>
     public abstract class AbstractStrongAnalyser : IAnalyser2
     {
+        /// <inheritdoc/>
         public abstract string DisplayName { get; }
 
+        /// <inheritdoc/>
         public abstract string Identifier { get; }
 
+        /// <inheritdoc/>
         public virtual string Description => "YOU SHOULD IMPLEMENT THIS!";
 
+        /// <inheritdoc/>
         public virtual AnalysisSettings DefaultSettings
         {
             get
@@ -34,19 +38,25 @@ namespace AnalysisBase
             }
         }
 
+        /// <inheritdoc/>
         public virtual void BeforeAnalyze(AnalysisSettings analysisSettings)
         {
             return; // noop
         }
 
+        /// <inheritdoc/>
         public abstract AnalysisResult2 Analyze(AnalysisSettings analysisSettings);
 
+        /// <inheritdoc/>
         public abstract void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results);
 
+        /// <inheritdoc/>
         public abstract void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results);
 
+        /// <inheritdoc/>
         public abstract List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results);
 
+        /// <inheritdoc />
         public virtual SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold, bool absolute = false)
         {
 
@@ -77,7 +87,7 @@ namespace AnalysisBase
                 // note: absolute determines what value is used
                 // EventStartSeconds (relative to segment)
                 // StartOffset (relative to recording)
-                double eventStart = absolute ? anEvent.StartOffset.TotalSeconds : anEvent.EventStartSeconds; 
+                double eventStart = absolute ? anEvent.StartOffset.TotalSeconds : anEvent.EventStartSeconds;
                 double eventScore = anEvent.Score;
                 var timeUnit = (int)(eventStart / unitTime.TotalSeconds);
 
@@ -102,7 +112,7 @@ namespace AnalysisBase
                                        StartOffset = unitTime.Multiply(i),
                                        EventsTotal = eventsPerUnitTime[i],
                                        EventsTotalThresholded = bigEvsPerUnitTime[i],
-                                       SegmentDuration = absolute ? unitTime : duration
+                                       SegmentDuration = absolute ? unitTime : duration,
                                    };
 
                 indices[i] = newIndex;
@@ -112,6 +122,7 @@ namespace AnalysisBase
 
         }
 
+        /// <inheritdoc/>
         public abstract void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, SummaryIndexBase[] indices, SpectralIndexBase[] spectralIndices, AnalysisResult2[] results);
     }
 }

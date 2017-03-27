@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace AnalysisBase
+﻿namespace AnalysisBase
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     public class AudioRecordingTooShortException : Exception
     {
         #region Constructors and Destructors

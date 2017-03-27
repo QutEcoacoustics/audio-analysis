@@ -1,12 +1,11 @@
-﻿using Acoustics.Shared;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-
-
-namespace AudioAnalysisTools.Indices
+﻿namespace AudioAnalysisTools.Indices
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
+    using Acoustics.Shared;
+
     public class ErroneousIndexSegments
     {
         public const string ErroneousIndexSegmentsFilenameFragment = "WARNING-IndexErrors";
@@ -62,7 +61,7 @@ namespace AudioAnalysisTools.Indices
 
 
         // #####################################################################################################################
-        //  STATIC METHODS BELOW 
+        //  STATIC METHODS BELOW
         // #####################################################################################################################
 
         public static List<ErroneousIndexSegments> DataIntegrityCheck(Dictionary<string, double[]> summaryIndices,
@@ -98,7 +97,7 @@ namespace AudioAnalysisTools.Indices
                     errors.Add(error);
                 }
             } // end of loop
-    
+
 
             // (2) NOW check for zero index values
             allOK = true;
@@ -137,7 +136,7 @@ namespace AudioAnalysisTools.Indices
 
             } // end of loop
 
-            // do final clean up 
+            // do final clean up
             if (!allOK)
             {
                 errors[errors.Count - 1].EndPosition = arrayLength - 1;

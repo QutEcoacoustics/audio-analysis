@@ -60,7 +60,7 @@ namespace Acoustics.Test
         // [ClassCleanup()]
         // public static void MyClassCleanup() { }
         //
-        // Use TestInitialize to run code before running each test 
+        // Use TestInitialize to run code before running each test
         // [TestInitialize()]
         // public void MyTestInitialize() { }
         //
@@ -82,7 +82,7 @@ namespace Acoustics.Test
 
             for (int n = 0; n < 10; n++)
             {
-                testArray.Fill(4.123456);                
+                testArray.Fill(4.123456);
             }
 
             stopwatch.Stop();

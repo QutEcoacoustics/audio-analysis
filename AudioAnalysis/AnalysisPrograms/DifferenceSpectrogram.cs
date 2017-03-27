@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-
-using Acoustics.Shared;
-using AudioAnalysisTools;
-using PowerArgs;
-using TowseyLibrary;
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
-    using AnalysisPrograms.Production;
 
+
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
+    using AnalysisPrograms.Production;
+    using AudioAnalysisTools;
     using AudioAnalysisTools.LongDurationSpectrograms;
+    using PowerArgs;
+    using TowseyLibrary;
 
     public static class DifferenceSpectrogram
     {
@@ -101,10 +99,10 @@ namespace AnalysisPrograms
             string configPath = Path.Combine(opdir, "differenceSpectrogramConfig.yml");
             var cfgFile = new FileInfo(configPath);
             Yaml.SerialiseDynamic(cfgFile, new
-            { 
+            {
                 //paths to required directories and files
                 InputDirectory = ipdir,
-                IndexFile1 = ipFileName1, 
+                IndexFile1 = ipFileName1,
                 StdDevFile1 = ipSdFileName1,
 
                 IndexFile2 = ipFileName2,

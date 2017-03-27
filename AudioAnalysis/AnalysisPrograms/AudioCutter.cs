@@ -1,11 +1,5 @@
-﻿using AnalysisPrograms.SourcePreparers;
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
-    using Acoustics.Shared;
-    using AnalysisBase;
-    using AnalysisPrograms.Production;
-    using PowerArgs;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -13,6 +7,11 @@ namespace AnalysisPrograms
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using Acoustics.Shared;
+    using AnalysisBase;
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.SourcePreparers;
+    using PowerArgs;
 
     public class AudioCutter
     {
@@ -151,13 +150,13 @@ namespace AnalysisPrograms
                 SegmentMinDuration = TimeSpan.FromSeconds(arguments.SegmentDurationMinimum),
                 SegmentOverlapDuration = TimeSpan.FromSeconds(arguments.SegmentOverlap),
                 SegmentTargetSampleRate = arguments.SampleRate,
-                AnalysisInstanceTempDirectory = arguments.TemporaryFilesDir == null ? new DirectoryInfo(Path.GetTempPath()) : arguments.TemporaryFilesDir
+                AnalysisInstanceTempDirectory = arguments.TemporaryFilesDir == null ? new DirectoryInfo(Path.GetTempPath()) : arguments.TemporaryFilesDir,
             };
 
             // create segments from file
             var fileSegment = new FileSegment(arguments.InputFile)
             {
-                SegmentStartOffset = TimeSpan.FromSeconds(arguments.StartOffset)
+                SegmentStartOffset = TimeSpan.FromSeconds(arguments.StartOffset),
             };
 
             if (arguments.EndOffset.HasValue)
@@ -167,9 +166,9 @@ namespace AnalysisPrograms
 
             var fileSegments = sourcePreparer.CalculateSegments(new FileSegment[] { fileSegment }, settings).ToList();
 
-            LoggedConsole.WriteLine("Started segmenting at {0} {1}: {2}.", 
-                DateTime.Now, 
-                arguments.RunParallel ? "in parallel" : "sequentially", 
+            LoggedConsole.WriteLine("Started segmenting at {0} {1}: {2}.",
+                DateTime.Now,
+                arguments.RunParallel ? "in parallel" : "sequentially",
                 arguments.InputFile);
 
             if (arguments.RunParallel)
@@ -217,8 +216,8 @@ namespace AnalysisPrograms
                     fileSegment.SegmentStartOffset.Value,
                     fileSegment.SegmentEndOffset.Value,
                     settings.SegmentTargetSampleRate,
-                    settings.AnalysisInstanceTempDirectory, 
-                    null, 
+                    settings.AnalysisInstanceTempDirectory,
+                    null,
                     mixDownToMono);
             LoggedConsole.WriteLine("Created segment {0} of {1}: {2}", itemNumber, itemCount, preparedFile.TargetFile.Name);
         }

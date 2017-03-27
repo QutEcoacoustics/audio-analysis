@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-namespace AudioAnalysisTools.LongDurationSpectrograms
+﻿namespace AudioAnalysisTools.LongDurationSpectrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Linq;
+    using System.Text;
+    using TowseyLibrary;
+
     public class LDSpectrogramDiscreteColour
     {
         /// <summary>

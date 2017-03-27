@@ -95,7 +95,7 @@ namespace Acoustics.Shared
             get
             {
                 return this.Current[j];
-                
+
                 throw new Exception();
             }
         }

@@ -86,7 +86,7 @@
 
             this.CanProcess(output, new[] { MediaTypes.MediaTypePng, MediaTypes.MediaTypeJpeg }, null);
 
-            // to get a proper image from sox, need to remove DC value, plus 1px from top and left. 
+            // to get a proper image from sox, need to remove DC value, plus 1px from top and left.
             var wavFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.ExtWav);
             var originalSoxFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.ExtPng);
 

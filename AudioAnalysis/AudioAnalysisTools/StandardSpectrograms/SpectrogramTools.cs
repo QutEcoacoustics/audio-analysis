@@ -29,7 +29,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
     {
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="fiAudio"></param>
         /// <param name="fiConfig"></param>
@@ -97,7 +97,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="fiAudio"></param>
         /// <param name="fiConfig"></param>
@@ -185,9 +185,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return m;
         }
 
-        
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="fiAudio"></param>
         /// <param name="fiConfig"></param>
@@ -207,11 +207,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //    freqReductionFactor = ConfigDictionary.GetInt(Keys.FREQ_REDUCTION_FACTOR, configDict);
             //if (!((timeReductionFactor == 1) && (freqReductionFactor == 1)))
             //{
-            //    sonogram.Data = ReduceDimensionalityOfSpectrogram(sonogram.Data, timeReductionFactor, freqReductionFactor);               
+            //    sonogram.Data = ReduceDimensionalityOfSpectrogram(sonogram.Data, timeReductionFactor, freqReductionFactor);
             //    return sonogram.GetImage(doHighlightSubband, add1kHzLines);
             //}
 
-            
+
             // (iii) NOISE REDUCTION
             //bool doNoiseReduction = false;
             //if (configDict.ContainsKey(AnalysisKeys.NoiseDoReduction))
@@ -242,13 +242,13 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //add segmentation track
             if (configDict.ContainsKey(AnalysisKeys.AddSegmentationTrack))
                 addSegmentationTrack = ConfigDictionary.GetBoolean(AnalysisKeys.AddSegmentationTrack, configDict);
-            if (addSegmentationTrack) 
+            if (addSegmentationTrack)
                 mti.AddTrack(Image_Track.GetSegmentationTrack(sonogram)); //add segmentation track
             return mti;
             //mti.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram)); //add segmentation track
         }//Sonogram2MultiTrackImage()
 
-        public static Image Sonogram2Image(BaseSonogram sonogram, Dictionary<string, string> configDict, 
+        public static Image Sonogram2Image(BaseSonogram sonogram, Dictionary<string, string> configDict,
                                            double[,] hits, List<Plot> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
             Image_MultiTrack multiTrackImage = Sonogram2MultiTrackImage(sonogram, configDict);
@@ -259,10 +259,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     multiTrackImage.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
             }
 
-            if (hits != null) 
+            if (hits != null)
                 multiTrackImage.OverlayRainbowTransparency(hits);
 
-            if (predictedEvents.Count > 0) 
+            if (predictedEvents.Count > 0)
                 multiTrackImage.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
 
             return multiTrackImage.GetImage();
@@ -378,7 +378,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             // get red scale pallette
             var rsp = new CubeHelix("redscale");
-            // get the colour cube helix 
+            // get the colour cube helix
             var cch = CubeHelix.GetCubeHelix();
             //var csp = new CubeHelix("cyanscale");
 
@@ -387,7 +387,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     for (int x = 0; x < width; x++) //for pixels in the line
                     {
                         colour = rsp.GetColorFromPallette(dbSpectrogramNorm[x, y]);
-                        
+
                         if (nrSpectrogramNorm[x, y] > 0.15)
                         {
                             // get colour for noise reduced portion
@@ -418,8 +418,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 int R = (int)Math.Round(value * value * value * count);
                 //int G = i;
                 int B = i;
-                int G = (int)Math.Round(Math.Sqrt(value) * count); 
-                //int B = (int)Math.Round(value * value * count); 
+                int G = (int)Math.Round(Math.Sqrt(value) * count);
+                //int B = (int)Math.Round(value * value * count);
                 palette[i] = Color.FromArgb(255, R, G, B);
             }
             return palette;
@@ -580,7 +580,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 var freqBin = new double[frameCount];          // set up an array to take all values in a freq bin i.e. column of matrix
                 for (int r = 0; r < frameCount; r++)
                 {
-                    freqBin[r] = spectrogram[r, j];  
+                    freqBin[r] = spectrogram[r, j];
                 }
                 double av, sd;
                 NormalDist.AverageAndSD(freqBin, out av, out sd);
@@ -589,12 +589,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 //covSpectrum[j] = sd * sd / av; //store the coefficient of variation of the bin
             }
             return avgSpectrum;
-        } 
+        }
         public static double[] CalculateSumSpectrumFromSpectrogram(double[,] spectrogram)
         {
             int frameCount = spectrogram.GetLength(0);
             int freqBinCount = spectrogram.GetLength(1);
-            
+
             // for average  of the spectral bins
             double[] sumSpectrum = new double[freqBinCount];
 
@@ -614,19 +614,19 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
 
         /// <summary>
-        /// Returns AVERAGE POWER SPECTRUM (PSD) and VARIANCE OF POWER SPECTRUM. 
+        /// Returns AVERAGE POWER SPECTRUM (PSD) and VARIANCE OF POWER SPECTRUM.
         /// Have been passed the amplitude spectrum but square amplitude values to get power or energy.
-        /// 
+        ///
         /// This method assumes that the passed amplitude spectrogram has been prepared according to method of P.D. Welch.
-        /// It is the standard method used now to calculate a PSD. 
+        /// It is the standard method used now to calculate a PSD.
         /// Welch's method splits time series into overlapping segments and windows them.
-        /// It is the windowing that makes Welche's method different. Normally overlap windows because windows decay at edges and therefore loss of info. 
-        /// Can now do FFT. Does not need to be FFT, but if so then window must be power of 2. 
-        /// Square the FFT coefficients >>>> energy. Then take average in each frquncy bin. Averaging reduces the variance. 
-        /// Welch's method is an improvement on the standard periodogram spectrum estimating method and on Bartlett's method, 
+        /// It is the windowing that makes Welche's method different. Normally overlap windows because windows decay at edges and therefore loss of info.
+        /// Can now do FFT. Does not need to be FFT, but if so then window must be power of 2.
+        /// Square the FFT coefficients >>>> energy. Then take average in each frquncy bin. Averaging reduces the variance.
+        /// Welch's method is an improvement on the standard periodogram spectrum estimating method and on Bartlett's method,
         /// in that it reduces noise in the estimated power spectra in exchange for reducing the frequency resolution.
         /// The end result is an array of power measurements vs. frequency "bin".
-        /// 
+        ///
         /// As well as calculating the av power spectrum, this method also returns a variance spectrum and a spectrum of the Coeff of Variation = var/mean.
         /// </summary>
         /// <param name="amplitudeSpectrogram">this is an amplitude spectrum. Must square values to get power</param>
@@ -656,7 +656,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
 
         /// <summary>
-        /// This method assumes P.D. Welch's method has been used to calculate a PSD. 
+        /// This method assumes P.D. Welch's method has been used to calculate a PSD.
         /// See method above: CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram()
         /// </summary>
         /// <param name="PSD"></param>
@@ -708,7 +708,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 double[] spectrum = DataTools.GetRow(spectrogram, r);
 
                 int j = DataTools.GetMaxIndex(spectrum); //locate maximum peak
-                //if (spectrogram[r, j] > peakThreshold) 
+                //if (spectrogram[r, j] > peakThreshold)
                 //{
                 histogram[j]++; //
                 peakBins[r] = j;  //store bin of peak
@@ -788,7 +788,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 int row = (int)(i * Y_interval);
                 int rowFromBottom = rows - row;
-                for (int column = 0; column < cols - 3; column++) 
+                for (int column = 0; column < cols - 3; column++)
                 {
                     bmp.SetPixel(column, rowFromBottom, Color.Black);
                     column += 3;
@@ -857,7 +857,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
 
         /// <summary>
-        /// currently, this method is only called when drawing a reduced sonogram. 
+        /// currently, this method is only called when drawing a reduced sonogram.
         /// </summary>
         /// <param name="herzInterval"></param>
         /// <param name="nyquistFreq"></param>

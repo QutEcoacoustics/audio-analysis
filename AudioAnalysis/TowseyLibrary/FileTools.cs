@@ -1,17 +1,13 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-using System.IO;
-using ICSharpCode.SharpZipLib.Zip;
-
-
 namespace TowseyLibrary
 {
-    using System.Diagnostics.Contracts;
-
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
     using Acoustics.Shared.Extensions;
+    using ICSharpCode.SharpZipLib.Zip;
 
     public static class FileTools
     {
@@ -61,7 +57,7 @@ namespace TowseyLibrary
                 string fName = testDir + "testWriteOfMatrix2File.txt";
                 double[,] matrix = { {0.1,0.2,0.3,0.4,0.5,0.6},
                     {0.5,0.6,0.7,0.8,0.9,1.0},
-                    {0.9,1.0,1.1,1.2,1.3,1.4}
+                    {0.9,1.0,1.1,1.2,1.3,1.4},
                 };
                 WriteMatrix2File(matrix, fName);
                 LoggedConsole.WriteLine("Wrote following matrix to file " + fName);
@@ -142,11 +138,11 @@ namespace TowseyLibrary
 
 
         public static string AppendToFileName(string ipPath, string appendix)
-        {   
+        {
             string dir   = Path.GetDirectoryName(ipPath);
             string fn    = Path.GetFileNameWithoutExtension(ipPath);
             string fext  = Path.GetExtension(ipPath);
-            string opPath = dir + @"\" + fn + appendix + fext; 
+            string opPath = dir + @"\" + fn + appendix + fext;
             return opPath;
         }
 
@@ -343,7 +339,7 @@ namespace TowseyLibrary
             var newList = new List<string>();
             int count = oldList.Count;
 
-            if (count == 0) 
+            if (count == 0)
             {
                 for (int i = 0; i < array.Length; i++)
                 {
@@ -383,7 +379,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// reads a text file of doubles formatted in rows and columns 
+        /// reads a text file of doubles formatted in rows and columns
         /// </summary>
         /// <param name="fName"></param>
         /// <returns></returns>
@@ -662,7 +658,7 @@ namespace TowseyLibrary
                     }
 
                     // Finish/Close arent needed strictly as the using statement does this automatically
-                    // Finish is important to ensure trailing information for a Zip file is appended. 
+                    // Finish is important to ensure trailing information for a Zip file is appended.
                     // Without this the created file would be invalid.
                     s.Finish();
 

@@ -7,31 +7,25 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-using System.Linq;
-
 namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
-
+    using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
     using AnalysisPrograms.Recognizers.Base;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
     using log4net;
-
     using TowseyLibrary;
-    using Acoustics.Shared.Csv;
 
     /// <summary>
     /// This is a Blue Catfish recognizer (Ictalurus furcatus)
@@ -124,7 +118,7 @@ namespace AnalysisPrograms.Recognizers
 
                 //DSP_IIRFilter filter2 = new DSP_IIRFilter("Chebyshev_Highpass_400");
                 //int order2 = filter2.order;
-                //filter2.ApplyIIRFilter(samples, out highPassFilteredSignal); 
+                //filter2.ApplyIIRFilter(samples, out highPassFilteredSignal);
 
                 // Amplify 40dB and clip to +/-1.0;
                 double factor = 100; // equiv to 20dB
@@ -208,7 +202,7 @@ namespace AnalysisPrograms.Recognizers
                     // calculate an amplitude threshold that is above 95th percentile of amplitudes in the subsample
                     //int[] histogramOfAmplitudes;
                     //double minAmplitude;
-                    //double maxAmplitude;  
+                    //double maxAmplitude;
                     //double binWidth;
                     //int window = 70;
                     //int percentile = 90;
@@ -246,7 +240,7 @@ namespace AnalysisPrograms.Recognizers
             int blockCount = signalLength / blockLength;
             int[] indexOfMax = new int[blockCount];
             double[] maxInBlock = new double[blockCount];
-            
+
             for (int i = 0; i < blockCount; i++)
             {
                 double max = -2.0;
@@ -336,8 +330,8 @@ namespace AnalysisPrograms.Recognizers
                     image4.Save(path4.FullName);
 
                     // have an event, store the data in the AcousticEvent class
-                    double duration = 0.2; 
-                    int minFreq = 50; 
+                    double duration = 0.2;
+                    int minFreq = 50;
                     int maxFreq = 1000;
                     var anEvent = new AcousticEvent(startTime.TotalSeconds, duration, minFreq, maxFreq);
                     anEvent.Name = "grunt";
@@ -354,7 +348,7 @@ namespace AnalysisPrograms.Recognizers
             var config = new SonogramConfig
             {
                 NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = (double?)configuration[AnalysisKeys.NoiseBgThreshold] ?? 0.0
+                NoiseReductionParameter = (double?)configuration[AnalysisKeys.NoiseBgThreshold] ?? 0.0,
             };
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
 
@@ -375,7 +369,7 @@ namespace AnalysisPrograms.Recognizers
                 Hits = null,
                 //ScoreTrack = null,
                 Plots = plot.AsList(),
-                Sonogram = sonogram
+                Sonogram = sonogram,
             };
         }
 
@@ -421,7 +415,7 @@ namespace AnalysisPrograms.Recognizers
                 -0.000289969,-0.000565902,-0.00079103, -0.000883849,-0.000898074,-0.000932191,-0.000985956,-0.00097387,-0.00093,-0.00088,
                 -0.00088,    -0.00087,   -0.000883903, -0.000831651,-0.000759236,-0.000668421,-0.00052348,-0.000361632,-0.00028245,-0.000292255,
                 -0.00025,    -8.71854E-05, 0.00011,     0.00014,     0.00010031,  0.00013,    0.00016,     0.000240405, 0.000332283,0.000357989,
-                 0.000312231, 0.000222307, 0.000138079, 9.49253E-05, 6.74344E-05, -7.81347E-07, -0.000103014, -0.00014973
+                 0.000312231, 0.000222307, 0.000138079, 9.49253E-05, 6.74344E-05, -7.81347E-07, -0.000103014, -0.00014973,
             };
             int templateLength = waveTemplate.Length;
 
@@ -437,7 +431,7 @@ namespace AnalysisPrograms.Recognizers
                     continue;
                 }
                 double[] subsampleWav = DataTools.Subarray(signal, i, templateLength);
-                double min, max; 
+                double min, max;
                 DataTools.MinMax(subsampleWav, out min, out max);
                 if ((max - min) < amplitudeThreshold) continue;
 
@@ -506,7 +500,7 @@ namespace AnalysisPrograms.Recognizers
             */
 
             // TEST TWO (A)
-            // these are used for scoring 
+            // these are used for scoring
             //double[] truePositives1 = { 0.0000, 0.0000, 0.0000, 0.0000, 0.0001, 0.0006, 0.0014, 0.0015, 0.0010, 0.0002, 0.0001, 0.0001, 0.0000, 0.0000, 0.0000, 0.0000, 0.0003, 0.0005, 0.0006, 0.0005, 0.0003, 0.0002, 0.0001, 0.0002, 0.0007, 0.0016, 0.0026, 0.0035, 0.0037, 0.0040, 0.0046, 0.0040, 0.0031, 0.0022, 0.0048, 0.0133, 0.0149, 0.0396, 0.1013, 0.1647, 0.2013, 0.2236, 0.2295, 0.1836, 0.1083, 0.0807, 0.0776, 0.0964, 0.1116, 0.0987, 0.1065, 0.1575, 0.3312, 0.4829, 0.5679, 0.5523, 0.4412, 0.2895, 0.2022, 0.2622, 0.2670, 0.2355, 0.1969, 0.2220, 0.6600, 0.9023, 1.0000, 0.8099, 0.8451, 0.8210, 0.5511, 0.1756, 0.0319, 0.0769, 0.0738, 0.2235, 0.3901, 0.4565, 0.4851, 0.3703, 0.3643, 0.2497, 0.2705, 0.3456, 0.3096, 0.1809, 0.0710, 0.0828, 0.0857, 0.0953, 0.1308, 0.1387, 0.0590 };
             //double[] truePositives2 = { 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0001, 0.0001, 0.0001, 0.0001, 0.0000, 0.0000, 0.0001, 0.0001, 0.0003, 0.0004, 0.0004, 0.0002, 0.0001, 0.0001, 0.0003, 0.0003, 0.0006, 0.0007, 0.0020, 0.0127, 0.0256, 0.0426, 0.0512, 0.0560, 0.0414, 0.0237, 0.0133, 0.0107, 0.0091, 0.0077, 0.0085, 0.0165, 0.0144, 0.0308, 0.0416, 0.0454, 0.0341, 0.0191, 0.0128, 0.0058, 0.0026, 0.0081, 0.0139, 0.0313, 0.0404, 0.0493, 0.0610, 0.1951, 0.4083, 0.5616, 0.5711, 0.5096, 0.4020, 0.2917, 0.1579, 0.1421, 0.1461, 0.1406, 0.2098, 0.1676, 0.2758, 0.2875, 0.6513, 0.9374, 1.0000, 0.7576, 0.4130, 0.2622, 0.1495, 0.0973, 0.0623, 0.0425, 0.0205, 0.0034, 0.0065, 0.0054, 0.0089, 0.0138, 0.0208, 0.0204, 0.0168, 0.0136, 0.0149, 0.0155, 0.0106, 0.0086, 0.0099, 0.0187 };
             //double[] truePositivesA = NormalDist.Convert2ZScores(truePositivesA);
@@ -565,7 +559,7 @@ namespace AnalysisPrograms.Recognizers
             peaksScore /= 4;
 
             // TEST FOUR: peak position ratios
-            // 
+            //
             //int[] peakLocationCentres = { 3, 10, 37, 44, 54, 67 };
             int[] peakLocationCentres = { 2, 5, 19, 22, 27, 33 };
 

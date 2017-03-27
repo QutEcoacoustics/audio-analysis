@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     public static class Clipping
     {
 
@@ -39,11 +39,11 @@ namespace AudioAnalysisTools
                     double delta = Math.Abs(sample - previousSample);
                     double gap = maximumAmplitude - sample;
 
-                    // check if sample reached clipping ceiling (max - threshold) 
+                    // check if sample reached clipping ceiling (max - threshold)
                     if (gap < epsilonThreshold)
                     {
                         maxAmplitudeCount++;
-                        if ((gap < epsilonThreshold) && (delta < epsilonThreshold)) { clipCount++; } // a clip has occurred                       
+                        if ((gap < epsilonThreshold) && (delta < epsilonThreshold)) { clipCount++; } // a clip has occurred
                     }
                     previousSample = sample;
                 }
@@ -61,7 +61,7 @@ namespace AudioAnalysisTools
             {
                 double sample = Math.Abs(signal[index]);
                 double delta = Math.Abs(sample - previousSample);
-                // check if sample reached clipping ceiling (max - threshold) 
+                // check if sample reached clipping ceiling (max - threshold)
                 //if (((maximumAmplitude - sample) < epsilon))
                 if (((maximumAmplitude - sample) < epsilon) && (delta < epsilon))
                 {

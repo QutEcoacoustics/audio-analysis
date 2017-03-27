@@ -86,6 +86,7 @@ namespace AnalysisBase.ResultBases
             return this.StartOffset.CompareTo(other.StartOffset);
         }
 
+        /// <inheritdoc/>
         public virtual int CompareTo(object obj)
         {
             return this.CompareTo((ResultBase)obj);

@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using ICSharpCode.SharpZipLib.Zip;
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Text;
+    using ICSharpCode.SharpZipLib.Zip;
+
     public class ZipUnzip
     {
 
@@ -80,7 +80,7 @@ namespace TowseyLibrary
                     }
 
                     // Finish/Close arent needed strictly as the using statement does this automatically
-                    // Finish is important to ensure trailing information for a Zip file is appended. 
+                    // Finish is important to ensure trailing information for a Zip file is appended.
                     // Without this the created file would be invalid.
                     s.Finish();
 

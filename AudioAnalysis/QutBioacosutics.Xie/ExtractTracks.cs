@@ -1,21 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MathNet.Numerics;
-
-namespace QutBioacosutics.Xie
+﻿namespace QutBioacosutics.Xie
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
     using AudioAnalysisTools.StandardSpectrograms;
+    using MathNet.Numerics;
     using MathNet.Numerics.LinearAlgebra.Single;
     using TowseyLibrary;
 
     class ExtractTracks
     {
-        public static System.Tuple<double[], double[,], double[], double[,]> GetTracks(SpectrogramStandard sonogram, double[,] matrix, int minHz, int maxHz, double binToreance, int frameThreshold, 
-                                                                            int duraionThreshold, double trackThreshold, int maximumDuration, int minimumDuration, double maximumDiffBin, 
+        public static System.Tuple<double[], double[,], double[], double[,]> GetTracks(SpectrogramStandard sonogram, double[,] matrix, int minHz, int maxHz, double binToreance, int frameThreshold,
+                                                                            int duraionThreshold, double trackThreshold, int maximumDuration, int minimumDuration, double maximumDiffBin,
                                                                             bool doSlope)
-                                                                    
+
         {
             // matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
             var row = matrix.GetLength(0);
@@ -27,10 +26,10 @@ namespace QutBioacosutics.Xie
             double binToreanceStable = binToreance;
             // Save local peaks to an array of list
             var pointList = new List<Peak>[column];
-            
+
             for (int j = 0; j < column; j++)
             {
-                var Points = new List<Peak>();            
+                var Points = new List<Peak>();
                 for (int i = 0; i < row; i++)
                 {
                     var point = new Peak();
@@ -40,13 +39,13 @@ namespace QutBioacosutics.Xie
                         point.X = j;
                         point.Amplitude = matrix[i, j];
                         Points.Add(point);
-                    }                                      
+                    }
                 }
                 pointList[j] = Points;
             }
 
             // Use neareast distance to form tracks of the first two columns
-                        
+
             var shortTrackList = new List<Track>();
             var longTrackList = new List<Track>();
             var closedTrackList = new List<Track>();
@@ -71,7 +70,7 @@ namespace QutBioacosutics.Xie
                         indexJ.Add(j);
                         binToreance = Math.Abs(pointList[0][i].Y - pointList[1][j].Y);
                     }
-                }                
+                }
             }
 
             for (int i = 0; i < indexI.Count; i++)
@@ -85,7 +84,7 @@ namespace QutBioacosutics.Xie
                 longTrackYList.Add(longTrackY);
             }
 
-            for (int i = 0; i < indexI.Count; i++) 
+            for (int i = 0; i < indexI.Count; i++)
             {
                 var longTrack = new Track();
                 longTrack.StartFrame = 0;
@@ -94,7 +93,7 @@ namespace QutBioacosutics.Xie
                 longTrack.HighBin = Math.Max(pointList[0][indexI[i]].Y, pointList[1][indexJ[i]].Y);
                 longTrackList.Add(longTrack);
             }
- 
+
             // Remove peaks which have already been used to produce long tracks
             for (int i = 0; i < indexI.Count; i++)
             {
@@ -103,7 +102,7 @@ namespace QutBioacosutics.Xie
 
             for (int i = 0; i < pointList[0].Count; i++)
             {
-                if (pointList[0][i] == null) 
+                if (pointList[0][i] == null)
                 {
                     pointList[0].RemoveAt(i);
                     i--;
@@ -116,15 +115,15 @@ namespace QutBioacosutics.Xie
             }
 
             for (int i = 0; i < pointList[1].Count; i++)
-            { 
+            {
                 if(pointList[1][i] == null)
                 {
                     pointList[1].RemoveAt(i);
                     i--;
-                }          
+                }
             }
-                
-            // Save individual peaks into shortTracks 
+
+            // Save individual peaks into shortTracks
             for (int i = 0; i < pointList[0].Count; i++)
             {
                 var shortTrack = new Track();
@@ -144,7 +143,7 @@ namespace QutBioacosutics.Xie
                 shortTrack.HighBin = pointList[1][i].Y;
                 shortTrackList.Add(shortTrack);
             }
-            
+
             // Use linear regression to extend long tracks and use neareast distance to extend short tracks
             int c = 2;
             while (c < column)
@@ -165,13 +164,13 @@ namespace QutBioacosutics.Xie
                             longTrackYList.RemoveAt(i);
                             i--;
                         }
-                        else 
+                        else
                         {
                             longTrackList.RemoveAt(i);
                             longTrackXList.RemoveAt(i);
                             longTrackYList.RemoveAt(i);
                             i--;
- 
+
                         }
                     }
                 }
@@ -182,7 +181,7 @@ namespace QutBioacosutics.Xie
                     {
                         shortTrackList.RemoveAt(i);
                         i--;
-                    }               
+                    }
                 }
 
 
@@ -243,7 +242,7 @@ namespace QutBioacosutics.Xie
                             i--;
                         }
                     }
-                        
+
                     // Add points of current frame to short tracks
                     var numberE = new List<int>();
                     var numberF = new List<int>();
@@ -310,7 +309,7 @@ namespace QutBioacosutics.Xie
                             i--;
                         }
                     }
-    
+
                     //..........................................//
 
                     for (int i = 0; i < pointList[c].Count; i++)
@@ -425,7 +424,7 @@ namespace QutBioacosutics.Xie
                         break;
                     }
                 }
-         
+
             }
 
             // Remove tracks with few points
@@ -439,19 +438,19 @@ namespace QutBioacosutics.Xie
                     i--;
                 }
             }
-                    
+
             // Remove one track with two peaks or two tracks with one peak
             for (int i = 0; i < closedTrackXList.Count; i++)
             {
                 for (int j = 0; j < (closedTrackXList[i].Count - 1); j++)
                 {
                     if ((closedTrackXList[i][j + 1] - closedTrackXList[i][j]) == 0)
-                    {                        
+                    {
                         closedTrackXList[i].RemoveAt(j+1);
                         closedTrackYList[i].RemoveAt(j+1);
                         j--;
-                    } 
-                }            
+                    }
+                }
             }
 
 
@@ -510,7 +509,7 @@ namespace QutBioacosutics.Xie
             }
 
 
-            // Fill the gap among tracks             
+            // Fill the gap among tracks
             var finalTrackXList = new List<List<int>>();
             var finalTrackXListD = new List<List<double>>();
             var finalTrackYList = new List<List<double>>();
@@ -590,7 +589,7 @@ namespace QutBioacosutics.Xie
                             tempTrackYList = closedTrackYList[i];
                             tempTrackYList.Insert(index, position);
                             closedTrackYList[i] = tempTrackYList;
-                            
+
                             tempaddTrackXList.Add(diffTrackXListI[i][j]);
                             tempaddTrackYList.Add(position);
                         }
@@ -607,18 +606,18 @@ namespace QutBioacosutics.Xie
             }
 
             // Convert closedTrackList to trackMatrix
-            // To do: convert double to int 
+            // To do: convert double to int
 
             // Calculate the entropy based on frequency band
             var tempMatrix = new double[row, column];
             for (int i = 0; i < closedTrackList.Count; i++)
             {
                 for (int col = closedTrackList[i].StartFrame; col < closedTrackList[i].EndFrame; col++)
-                {                    
+                {
                     for (int r = closedTrackList[i].LowBin; r < (closedTrackList[i].HighBin + 1); r++)
                     {
-                         tempMatrix[r,col] = matrix[r,col];          
-                    }                    
+                         tempMatrix[r,col] = matrix[r,col];
+                    }
                 }
             }
 
@@ -653,9 +652,9 @@ namespace QutBioacosutics.Xie
 
             // Track hits
             var trackHits = new double[row, column];
-            var xArray = finalTrackXList.ToArray(); 
+            var xArray = finalTrackXList.ToArray();
             var yArray = finalTrackYList.ToArray();
-            
+
             for (int i = 0; i < closedTrackList.Count; i++)
             {
                 var xIndex = xArray[i];
@@ -675,10 +674,10 @@ namespace QutBioacosutics.Xie
                     if (result[i,j] == 1)
                     {
                         arrayResult[i]++;
-                    }                                  
+                    }
                 }
 
-            }    
+            }
             return Tuple.Create(arrayResult, result, entropy, trackHits);
         }
 

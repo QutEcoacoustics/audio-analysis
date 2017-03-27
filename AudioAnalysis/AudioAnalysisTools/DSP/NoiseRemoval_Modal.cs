@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-using System.Drawing;
-
-
-namespace AudioAnalysisTools.DSP
+﻿namespace AudioAnalysisTools.DSP
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Linq;
+    using System.Text;
+    using TowseyLibrary;
+
     public static class NoiseRemovalModal
     {
 
 
-        public static Image ModalNoiseRemovalAndGetSonograms(double[,] deciBelSpectrogram, double parameter,  
-                                                             TimeSpan wavDuration, TimeSpan xAxisInterval, TimeSpan stepDuration, 
+        public static Image ModalNoiseRemovalAndGetSonograms(double[,] deciBelSpectrogram, double parameter,
+                                                             TimeSpan wavDuration, TimeSpan xAxisInterval, TimeSpan stepDuration,
                                                              int nyquist, int hzInterval)
         {
             double sdCount = -0.5; // number of SDs above the mean for noise removal
@@ -84,7 +82,7 @@ namespace AudioAnalysisTools.DSP
             //int indexOfUpperBound = (int)(binCount * SNR.FRACTIONAL_BOUND_FOR_MODE); // mode cannot be higher than this
             double histogramBinWidth = noiseThreshold_DB / binCount;
 
-            //ignore first N and last N frames when calculating background noise level because 
+            //ignore first N and last N frames when calculating background noise level because
             // sometimes these frames have atypically low signal values
             int buffer = 20; //ignore first N and last N frames when calculating background noise level
             //HOWEVER do not ignore them for short recordings!

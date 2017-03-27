@@ -1,19 +1,17 @@
-﻿using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using System;
-using System.Drawing;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Dong.Felt.Representations;
-using Dong.Felt.Configuration;
-
-namespace Dong.Felt.Representations
+﻿namespace Dong.Felt.Representations
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
-
+    using System.Text;
     using Acoustics.Shared.Extensions;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using Dong.Felt.Configuration;
+    using Dong.Felt.Representations;
     using TowseyLibrary;
 
     public class EventBasedRepresentation : AcousticEvent
@@ -81,12 +79,12 @@ namespace Dong.Felt.Representations
             this.Width = (int)(this.Duration / timeScale) + 1;
             this.Height = (int)(this.FreqRange / freqScale) + 1;
             this.Centroid = new Point(this.Left + this.Width / 2, this.Bottom + this.Height / 2);
-            this.Area = this.Width * this.Height;           
+            this.Area = this.Width * this.Height;
         }
 
         /// <summary>
         /// Take in ridges and form events.
-        /// This method aims to detect events from seperated (4 directional) ridges. 
+        /// This method aims to detect events from seperated (4 directional) ridges.
         /// </summary>
         /// <param name="sonogram"></param>
         /// <param name="ridges"></param>
@@ -97,7 +95,7 @@ namespace Dong.Felt.Representations
         //    List<PointOfInterest> ridges, int rows, int cols, CompressSpectrogramConfig compressConfig)
         //{
         //    var result = new List<EventBasedRepresentation>();
-        //    // Gaussian blur on ridges 
+        //    // Gaussian blur on ridges
         //    var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, rows, cols);
         //    var verticalWindowLength = 5;
         //    var horizontalWindowLength = 3;
@@ -173,7 +171,7 @@ namespace Dong.Felt.Representations
             {
                 var ep = new EventBasedRepresentation(timeScale, freqScale,
                     e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
-                
+
                 if (ep.Area >= 30)
                 {
                     ep.InsideRidgeOrientation = 0;
@@ -184,14 +182,14 @@ namespace Dong.Felt.Representations
                     ep.TemporalEntropy = entropyPair.Item2;
                     ep.PointsOfInterest = entropyPair.Item3;
                     vResult.Add(ep);
-                }              
+                }
             }
             var hResult = new List<EventBasedRepresentation>();
             foreach (var e in hAcousticEventList)
             {
                 var ep = new EventBasedRepresentation(timeScale, freqScale,
                     e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
-               
+
                 if (ep.Area >= 30)
                 {
                     ep.InsideRidgeOrientation = 1;
@@ -202,13 +200,13 @@ namespace Dong.Felt.Representations
                     ep.TemporalEntropy = entropyPair.Item2;
                     ep.PointsOfInterest = entropyPair.Item3;
                     hResult.Add(ep);
-                }               
+                }
             }
             var pResult = new List<EventBasedRepresentation>();
             foreach (var e in pAcousticEventList)
             {
                 var ep = new EventBasedRepresentation(timeScale, freqScale,
-                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);               
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
                 if (ep.Area >= 10)
                 {
                     ep.InsideRidgeOrientation = 2;
@@ -219,13 +217,13 @@ namespace Dong.Felt.Representations
                     ep.TemporalEntropy = entropyPair.Item2;
                     ep.PointsOfInterest = entropyPair.Item3;
                     pResult.Add(ep);
-                }                  
+                }
             }
             var nResult = new List<EventBasedRepresentation>();
             foreach (var e in nAcousticEventList)
             {
                 var ep = new EventBasedRepresentation(timeScale, freqScale,
-                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);               
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
                 if (ep.Area >= 10)
                 {
                     ep.InsideRidgeOrientation = 3;
@@ -237,7 +235,7 @@ namespace Dong.Felt.Representations
                     ep.TemporalEntropy = entropyPair.Item2;
                     ep.PointsOfInterest = entropyPair.Item3;
                     nResult.Add(ep);
-                }                 
+                }
             }
             result.Add(vResult);
             result.Add(hResult);
@@ -311,7 +309,7 @@ namespace Dong.Felt.Representations
                 {
                     ep.InsideRidgeOrientation = 3;
                     ep.TimeScale = timeScale;
-                    ep.FreqScale = freqScale;                   
+                    ep.FreqScale = freqScale;
                     ep.PointsOfInterest = GetSubPoiMatrix(ep, poiMatrix, rows, cols);
                     nResult.Add(ep);
                 }
@@ -336,10 +334,10 @@ namespace Dong.Felt.Representations
             return subMatrix;
         }
 
-        public static Tuple<double, double, PointOfInterest[,]> GetEntropy(EventBasedRepresentation ev, 
-            PointOfInterest[,] poiMatrix, int rowsCount, 
-            int colsCount)        
-        {            
+        public static Tuple<double, double, PointOfInterest[,]> GetEntropy(EventBasedRepresentation ev,
+            PointOfInterest[,] poiMatrix, int rowsCount,
+            int colsCount)
+        {
             var startRow = rowsCount - (ev.Bottom + ev.Height);
             var endRow = rowsCount - ev.Bottom;
             var startCol = ev.Left;
@@ -356,12 +354,12 @@ namespace Dong.Felt.Representations
                     {
 
                         if (poiMatrix[rowIndex, colIndex].OrientationCategory == ridgeOrientation)
-                        {                            
-                            ///Count based 
+                        {
+                            ///Count based
                             columnEnergy[colIndex-startCol] += 1.0;   // Count of POI
                             ///Magnitude Based
                             //var magnitude = pointsOfInterest[colIndex, rowIndex].RidgeMagnitude;
-                            // columnEnergy[rowIndex] += magnitude;                           
+                            // columnEnergy[rowIndex] += magnitude;
                         }
                     }
                 }
@@ -372,7 +370,7 @@ namespace Dong.Felt.Representations
                 for (int colIndex = startCol; colIndex < endCol; colIndex++)
                 {
                     if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 0)
-                    {                        
+                    {
                         if (poiMatrix[rowIndex, colIndex].OrientationCategory == ridgeOrientation)
                         {
                             rowEnergy[rowIndex-startRow] += 1.0;
@@ -382,13 +380,13 @@ namespace Dong.Felt.Representations
             }
             var FrequencyEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(columnEnergy));
             var FrameEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(rowEnergy));
-            
+
             var formatedFrequencyEntropy = (double)decimal.Round((decimal)FrequencyEnergyEntropy, 3);
             var formatedFrameEntropy = (double)decimal.Round((decimal)FrameEnergyEntropy, 3);
             var result = Tuple.Create(formatedFrequencyEntropy, formatedFrameEntropy, subMatrix);
             return result;
         }
-       
+
         public static int RidgeMajorDirectionToOrientation(int ridgeMajorDirection)
         {
             var result = 0;
@@ -407,7 +405,7 @@ namespace Dong.Felt.Representations
             return result;
         }
 
-        // users might provide the rectangle boundary information of query, so this method aims to detect query 
+        // users might provide the rectangle boundary information of query, so this method aims to detect query
         public static List<EventBasedRepresentation> ReadQueryAsAcousticEventList(List<EventBasedRepresentation> events,
             Query query)
         {
@@ -515,7 +513,7 @@ namespace Dong.Felt.Representations
         /// </summary>
         /// <param name="queryRepresentations"></param>
         /// <param name="candidateEventList"></param>
-        /// <param name="centroidFreqOffset"> 
+        /// <param name="centroidFreqOffset">
         /// </param>
         /// <returns></returns>
         public static List<RegionRepresentation> ExtractFixedAcousticEventList(SpectrogramStandard spectrogram,

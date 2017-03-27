@@ -1,25 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-using AnalysisBase;
-using AudioAnalysisTools;
-
-using TowseyLibrary;
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
 
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
     using Acoustics.Shared.Extensions;
+    using AnalysisBase;
     using AnalysisPrograms.Production;
-
+    using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
-
     using PowerArgs;
+    using TowseyLibrary;
 
     public class DrawSummaryIndexTracks
     {
@@ -51,7 +46,7 @@ namespace AnalysisPrograms
         /// <returns></returns>
         private static Arguments Dev()
         {
-            //use the following for the command line for the <indicesCsv2Image> task. 
+            //use the following for the command line for the <indicesCsv2Image> task.
             //indicesCsv2Image  "C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.MultiAnalyser\DM420036_Towsey.MultiAnalyser.Indices.csv"            "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg"  C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.MultiAnalyser\DM420036_Towsey.MultiAnalyser.IndicesNEW.png
             //indicesCsv2Image  "C:\SensorNetworks\Output\Frogs\ShiloDebugOct2012\IndicesCsv2Image\DM420044_20111020_000000_Towsey.Acoustic.Indices.csv" ""       C:\SensorNetworks\Output\Frogs\ShiloDebugOct2012\IndicesCsv2Image\DM420044_20111020_000000_Towsey.Acoustic.Indices.png
             //indicesCsv2Image  "C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TOWER_20100208_204500_Towsey.Acoustic.Indices.csv"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"   "C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TOWER_20100208_204500_Towsey.Acoustic.Indices.png
@@ -75,7 +70,7 @@ namespace AnalysisPrograms
                 //2010 Oct 14th
                 //InputCsv = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\b562c8cd-86ba-479e-b499-423f5d68a847_101014-0000.mp3\Towsey.Acoustic\b562c8cd-86ba-479e-b499-423f5d68a847_101014-0000_Towsey.Acoustic.Indices.csv".ToFileInfo(),
                 //Output   = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct14_SummaryIndices.png".ToFileInfo()
-                
+
                 //2010 Oct 15th
                 //InputCsv = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\d9eb5507-3a52-4069-a6b3-d8ce0a084f17_101015-0000.mp3\Towsey.Acoustic\d9eb5507-3a52-4069-a6b3-d8ce0a084f17_101015-0000_Towsey.Acoustic.Indices.csv".ToFileInfo(),
                 //Output   = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct15_SummaryIndices.png".ToFileInfo()
@@ -86,7 +81,7 @@ namespace AnalysisPrograms
 
                 //2010 Oct 17th
                 InputCsv = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\0f2720f2-0caa-460a-8410-df24b9318814_101017-0000.mp3\Towsey.Acoustic\0f2720f2-0caa-460a-8410-df24b9318814_101017-0000_Towsey.Acoustic.Indices.csv".ToFileInfo(),
-                Output   = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct17_SummaryIndices.png".ToFileInfo()
+                Output   = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct17_SummaryIndices.png".ToFileInfo(),
             };
 
             throw new NoDeveloperMethodException();

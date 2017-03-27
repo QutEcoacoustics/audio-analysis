@@ -19,7 +19,7 @@
     public class StructureTensorAnalysis
     {
 
-        // It has a kernel which is 3 * 3, and all values is equal to 1. 
+        // It has a kernel which is 3 * 3, and all values is equal to 1.
         public static GaussianBlur filter = new GaussianBlur(1.0, 4);
 
         // feature class - 12-bit value for each pointOfInterest
@@ -147,7 +147,7 @@
                     scores.Add(1.0);
                     var acousticEventlist = new List<AcousticEvent>();
                     var poiList = new List<PointOfInterest>();
-                    double eventThreshold = 0.5; // dummy variable - not used                               
+                    double eventThreshold = 0.5; // dummy variable - not used
                     //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     poiList = StructureTensorAnalysis.ExtractPOIFromStructureTensor(spectrogram, neighbourhoodSize, threshold);
                     var spectrogramData = DrawSpectrogram.ShowPOIOnSpectrogram(spectrogram, poiList, spectrogram.Data.GetLength(0),
@@ -170,7 +170,7 @@
 
 
         /// <summary>
-        /// Calculate the feature vector for poiList, 14 * 14 values, here it refers to structure tensor list. 
+        /// Calculate the feature vector for poiList, 14 * 14 values, here it refers to structure tensor list.
         /// </summary>
         /// <param name="spectrogram"></param>
         /// <param name="stList"></param>
@@ -184,25 +184,25 @@
             var outputList = new List<PointOfInterest>();
             foreach (var st in stList)
             {
-                // point.X corresponds to time, point.Y refers to frequency bin. 
+                // point.X corresponds to time, point.Y refers to frequency bin.
                 var rowIndex = st.Point.X;
                 var colIndex = st.Point.Y;
                 var subM = StatisticalAnalysis.SubEvenLengthmatrix(matrix, rowIndex, colIndex, nhLength); // extract NxN submatrix
                 var dftMatrix = _2DFourierTransform.DiscreteFourierTransform(subM);
                 var featureVectorMatrix = _2DFourierTransform.CropDFTMatrix(dftMatrix, 1);
-                st.fftMatrix = featureVectorMatrix;                          
+                st.fftMatrix = featureVectorMatrix;
             }
             return stList;
         }
 
-        // Step 1: calculate the structure tensor for each pixel in the spectrogram. It is calculated based on one neighbouring pixel. 
+        // Step 1: calculate the structure tensor for each pixel in the spectrogram. It is calculated based on one neighbouring pixel.
         public static List<double[,]> StructureTensorOnePixel(double[,] spectroData)
         {
             var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectroData);
             int rowsCount = matrix.GetLength(0);
             int colsCount = matrix.GetLength(1);
             var result = new List<double[,]>();
-            // ignore the pixels in the boundary  
+            // ignore the pixels in the boundary
             for (int i = 0; i < rowsCount; i++)
             {
                 for (int j = 0; j < colsCount; j++)
@@ -297,7 +297,7 @@
         /// A list of structureTensors.
         /// </param>
         /// <returns>
-        /// return the eignvalue of each structure for a point. 
+        /// return the eignvalue of each structure for a point.
         /// </returns>
         /// <summary>
         /// With eigenvalue decomposition, get the eigenvalues of the list of structure tensors.
@@ -306,7 +306,7 @@
         /// A list of structureTensors.
         /// </param>
         /// <returns>
-        /// return the eignvalue of each structure for a point. 
+        /// return the eignvalue of each structure for a point.
         /// </returns>
         public static List<double[]> EignvalueDecomposition(List<double[,]> structureTensors)
         {
@@ -335,7 +335,7 @@
                     fraction = difference / ev[1];
                 }
                 result.Add(fraction);
-                
+
             }
             return result;
         }
@@ -348,11 +348,11 @@
         /// A list of eigenValues for each point.
         /// </param>
         /// <returns>
-        /// return the list of attentions. 
+        /// return the list of attentions.
         /// </returns>
         public static List<double> CalculateAttention(List<double[]> eigenValue, int rowsCount, int colsCount)
         {
-            var result = new List<double>();           
+            var result = new List<double>();
             foreach (var ev in eigenValue)
             {
                 // by default, the eigenvalue is in a ascend order, so just check whether they are equal
@@ -376,7 +376,7 @@
             var result = new List<PointOfInterest>();
             // segment spectrogram for calculating threshold for each segment
             const int numberOfColumn = 100;
-            // the count of segments means how many local threshold we will get. 
+            // the count of segments means how many local threshold we will get.
             var countOfSegments = maximumColIndex / numberOfColumn;
             var modSegments = maximumColIndex % numberOfColumn;
             if (modSegments != 0)
@@ -405,14 +405,14 @@
                                 //else
                                 //{
                                 //    point.X = r;
-                                //    point.Y = c + (countOfSegments - 1) * numberOfColumn;                                  
+                                //    point.Y = c + (countOfSegments - 1) * numberOfColumn;
                                 //}
                                 double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
                                 var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
                                 double herzScale = spectrogram.FBinWidth; //43 hz
                                 TimeSpan time = TimeSpan.FromSeconds(c + i * numberOfColumn * secondsScale);
                                 double herz = (r - 1) * herzScale;
-                                // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                                // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi.
                                 var poi = new PointOfInterest(time, herz);
                                 poi.Point = point;
                                 poi.OrientationCategory = 0;
@@ -423,7 +423,7 @@
                             }
                         }
                     }
-                }                                   
+                }
             }
             return result;
         }
@@ -436,7 +436,7 @@
             var result = new List<PointOfInterest>();
             // segment spectrogram for calculating threshold for each segment
             const int numberOfColumn = 100;
-            // the count of segments means how many local threshold we will get. 
+            // the count of segments means how many local threshold we will get.
             var countOfSegments = maximumColIndex / numberOfColumn + 1;
             var modSegments = maximumColIndex % numberOfColumn;
             var spectroSegment = SpectrogramDivision(attentionList, maximumRowIndex, maximumColIndex, numberOfColumn);
@@ -458,7 +458,7 @@
                                 double herzScale = spectrogram.FBinWidth; //43 hz
                                 TimeSpan time = TimeSpan.FromSeconds(c + i * numberOfColumn * secondsScale);
                                 double herz = (r - 1) * herzScale;
-                                // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                                // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi.
                                 var poi = new PointOfInterest(time, herz);
                                 poi.Point = point;
                                 poi.OrientationCategory = 0;
@@ -493,7 +493,7 @@
 
         public static List<PointOfInterest> ExtractfftFeaturesFromPOI(SpectrogramStandard spectrogram,
              StructureTensorConfiguration stConfiguation)
-        {          
+        {
             var stList = ExtractPOIFromStructureTensor(spectrogram, stConfiguation.AvgStNhLength, stConfiguation.Threshold);
             var poiList = StructureTensorFV(spectrogram, stList, stConfiguation);
             return poiList;
@@ -519,21 +519,21 @@
                     }
                 }
             }
-            return count; 
+            return count;
         }
 
-        // Step 5.5 set up a local threshold. it is based on l calculated in fuction of GetMaximumLength, it will be used to determine whether a given pixel is p. 
+        // Step 5.5 set up a local threshold. it is based on l calculated in fuction of GetMaximumLength, it will be used to determine whether a given pixel is p.
         /// <summary>
         /// Get the threshold for keeping points of interest
         /// </summary>
         /// <param name="attention">
-        /// A list of attentions 
+        /// A list of attentions
         /// </param>
         /// <param name="overlap">
-        /// the overlap is probably used to divide the spectrogram into small segments. 
+        /// the overlap is probably used to divide the spectrogram into small segments.
         /// </param>
         /// <returns>
-        /// return a threshold  
+        /// return a threshold
         /// </returns>
         public static double SetThreshold(double[,] attentionMatrix, double threshold, int numberOfColumn)
         {
@@ -543,10 +543,10 @@
             return l * maxAttention / numberOfColumn;
         }
 
-        // Step 5.1 divide the spectrogram into segments that have 1000 columns 
-        public static List<double[,]> SpectrogramDivision(List<double> attentionList, int rowsCount, int colsCount, 
+        // Step 5.1 divide the spectrogram into segments that have 1000 columns
+        public static List<double[,]> SpectrogramDivision(List<double> attentionList, int rowsCount, int colsCount,
             int cols)
-        {           
+        {
             var attentionMatrix = StatisticalAnalysis.DoubleListToArray(attentionList, rowsCount, colsCount);
             var segmentCount = colsCount / cols;
             var modValue = colsCount % cols;
@@ -557,22 +557,22 @@
             var resultList = new List<double[,]>();
             for (var c = 0; c < colsCount - cols; c += cols)
             {
-                var subMatrix = MatrixTools.Submatrix(attentionMatrix, 0, c, rowsCount - 1, c + cols);                
-                resultList.Add(subMatrix);                             
+                var subMatrix = MatrixTools.Submatrix(attentionMatrix, 0, c, rowsCount - 1, c + cols);
+                resultList.Add(subMatrix);
             }
 
             var addSubMatrix = MatrixTools.Submatrix(attentionMatrix, 0, (segmentCount - 1) * cols, rowsCount - 1, colsCount);
             resultList.Add(addSubMatrix);
-            
+
             return resultList;
         }
 
-        // Step 5.2 calculate the maximum of attention 
+        // Step 5.2 calculate the maximum of attention
         /// <summary>
         /// Find out the maximum  of a list of attention
         /// </summary>
         /// <param name="attention">
-        /// A list of attentions 
+        /// A list of attentions
         /// </param>
         /// <returns>
         /// return the maximum attention
@@ -599,7 +599,7 @@
         /// Find out the maximum of a list of attention
         /// </summary>
         /// <param name="attention">
-        /// A list of attentions 
+        /// A list of attentions
         /// </param>
         /// <returns>
         /// return the maximum attention
@@ -619,10 +619,10 @@
             }
             return maxAttention;
         }
-        // Step 5.3: bardeli: get the l(a scaling parameter) 
+        // Step 5.3: bardeli: get the l(a scaling parameter)
         public static int GetMaximumLength(List<double> listOfAttention, double maxOfAttention, double threshold, int numberOfBins)
-        {            
-            var sumOfLargePart = 0;          
+        {
+            var sumOfLargePart = 0;
             var attentionCount = listOfAttention.Count;
             var l = 0;
 
@@ -630,7 +630,7 @@
             {
                 for (l = 1; l < numberOfBins; l++)
                 {
-                    sumOfLargePart += CalculateHistogram(listOfAttention, maxOfAttention, numberOfBins)[numberOfBins - l];                   
+                    sumOfLargePart += CalculateHistogram(listOfAttention, maxOfAttention, numberOfBins)[numberOfBins - l];
                     if (sumOfLargePart >= threshold * attentionCount)
                     {
                         break;
@@ -641,7 +641,7 @@
             {
                 for (l = 1; l < listOfAttention.Count; l++)
                 {
-                    sumOfLargePart = sumOfLargePart + CalculateHistogram(listOfAttention, maxOfAttention, attentionCount)[attentionCount - l];                                    
+                    sumOfLargePart = sumOfLargePart + CalculateHistogram(listOfAttention, maxOfAttention, attentionCount)[attentionCount - l];
                     if (sumOfLargePart >= threshold * attentionCount)
                     {
                         break;
@@ -655,7 +655,7 @@
         // Step 5.4
         // according to Bardeli, Calculate the Histogram
         public static int[] CalculateHistogram(List<double> listOfAttention, double maxOfAttention, int numberOfBins)
-        {          
+        {
             var histogram = new int[numberOfBins];
 
             foreach (var la in listOfAttention)
@@ -667,16 +667,16 @@
                     attentionValue = la * numberOfBins / maxOfAttention;
                 }
                 var lowerIndex = (int)attentionValue;
-                // need to think about its effiency 
+                // need to think about its effiency
                 if (lowerIndex < numberOfBins)
                 {
                     histogram[lowerIndex]++;
                 }
             }
-           
+
             return histogram;
         }
-        
+
         /// <summary>
         /// The get the partial difference in a neighbourhood by using Gaussiandifferences.
         /// </summary>
@@ -703,13 +703,13 @@
             var partialDifferenceX = new double[MaximumXIndex, MaximumYIndex];
             var partialDifferenceY = new double[MaximumXIndex, MaximumYIndex];
 
-            // Because the convolution class can only process the kernel with int[,] , here still use loops to do the convolution  
+            // Because the convolution class can only process the kernel with int[,] , here still use loops to do the convolution
             for (int row = 0; row < MaximumXIndex - 1; row++)
             {
                 for (int col = 0; col < MaximumYIndex - 1; col++)
                 {
 
-                    // check whether the current point can be in the center of gaussian blur 
+                    // check whether the current point can be in the center of gaussian blur
                     for (int i = -centerOffset; i <= centerOffset; i++)
                     {
                         for (int j = -centerOffset; j <= centerOffset; j++)
@@ -759,7 +759,7 @@
                     var sumDiagonal = 0.0;
                     var sumBottomRight = 0.0;
 
-                    // check whether the current point is in the center of gaussian blur 
+                    // check whether the current point is in the center of gaussian blur
                     for (int i = -centerOffset; i <= centerOffset; i++)
                     {
                         for (int j = -centerOffset; j <= centerOffset; j++)
@@ -785,7 +785,7 @@
                     structureTensor[1, 1] = sumBottomRight;
 
                     result.Add(Tuple.Create(new PointOfInterest(new Point(row, col)), structureTensor));
-                    // col = col + 3;                    
+                    // col = col + 3;
                 }
             }
 
@@ -799,7 +799,7 @@
         /// a particular gaussianBlur.
         /// </param>
         /// <returns>
-        /// A tuple of DifferenceX and DifferenceY of Gaussian. 
+        /// A tuple of DifferenceX and DifferenceY of Gaussian.
         /// </returns>
         public static Tuple<double[,], double[,]> DifferenceOfGaussian(double[,] gaussianBlur)
         {
@@ -870,7 +870,7 @@
         {
             const int numberOfBins = 1000;
             var sumOfLargePart = 0;
-            var sumOfLowerPart = 0;           
+            var sumOfLowerPart = 0;
             var l = 0;
 
             if (listOfAttention.Count >= numberOfBins)
@@ -900,7 +900,7 @@
 
             return l;
         }
-       
+
         /// <summary>
         /// Calculate the magnitude of partialDifference.
         /// </summary>
@@ -968,8 +968,8 @@
         /// the structureTensor
         /// </param>
         /// <param name="windowSize">
-        /// calculate the mean structure tensor in the neighbourhood, it will give the size of neighbourhood 
-        /// </param> 
+        /// calculate the mean structure tensor in the neighbourhood, it will give the size of neighbourhood
+        /// </param>
         /// <returns>
         /// return the structure tensor for each point
         /// </returns>
@@ -1018,15 +1018,15 @@
         }
 
         /// <summary>
-        /// Calculate the difference between the current pixel and its neighborhood pixel. Partically,EG, in the spectrogram, in the x direction, it will get the difference between 
-        /// current pixel and the pixel on the right; in the y direction, it will get the current pixel and the pixel on the above(but the case in the bitmap, it should be pixel on the bottom). 
+        /// Calculate the difference between the current pixel and its neighborhood pixel. Partically,EG, in the spectrogram, in the x direction, it will get the difference between
+        /// current pixel and the pixel on the right; in the y direction, it will get the current pixel and the pixel on the above(but the case in the bitmap, it should be pixel on the bottom).
         /// </summary>
         /// <param name="m">
         /// the original spectrogram / image data
         /// </param>
         /// <returns>
         /// A tuple of partialDifferenceX and partialDifferenceY
-        /// </returns>  
+        /// </returns>
         public static Tuple<double[,], double[,]> BasicPartialDifference(double[,] m)
         {
             int MaximumXIndex = m.GetLength(0);
@@ -1088,7 +1088,7 @@
             return result;
         }
 
-        // Another way to calculate the eigenvalue according to algorithm based on coherence 
+        // Another way to calculate the eigenvalue according to algorithm based on coherence
         // Calculate the coherence between two eigenValues, its value  is atually 1 or 0.
         public static List<Tuple<PointOfInterest, double>> Coherence(List<Tuple<PointOfInterest, double[]>> eigenValue)
         {
@@ -1127,7 +1127,7 @@
 
             return result;
         }
-        
+
 
         // according to Bardeli, Calculate the Histogram
         public static int[] CalculateHistogram1(List<Tuple<PointOfInterest, double>> listOfAttention, double maxOfAttention)
@@ -1140,7 +1140,7 @@
                 // be careful about / operatoration
                 var attentionValue = la.Item2 * numberOfBins / maxOfAttention;
                 var temp = (int)attentionValue;
-                // need to think about its effiency 
+                // need to think about its effiency
                 if (temp < numberOfBins)
                 {
                     histogram[temp]++;
@@ -1148,16 +1148,16 @@
             }
 
             return histogram;
-        }      
+        }
 
         /// <summary>
-        ///  get a list of structure Tensor hit 
+        ///  get a list of structure Tensor hit
         /// </summary>
         /// <param name="matrix">
         /// the original spectrogram/image data
         /// </param>
         /// <returns>
-        /// return a list of points of interest 
+        /// return a list of points of interest
         /// </returns>
         public static List<PointOfInterest> HitStructureTensor(double[,] matrix)
         {

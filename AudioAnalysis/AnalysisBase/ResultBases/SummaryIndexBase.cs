@@ -10,7 +10,7 @@
 namespace AnalysisBase.ResultBases
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class SummaryIndexBase : ResultBase
     {

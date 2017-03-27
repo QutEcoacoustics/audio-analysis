@@ -1,30 +1,28 @@
-﻿using AudioAnalysisTools.Indices;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using TowseyLibrary;
-using AnalysisBase.ResultBases;
-using Acoustics.Shared;
-using Acoustics.Shared.Csv;
-
-namespace AudioAnalysisTools.LongDurationSpectrograms
+﻿namespace AudioAnalysisTools.LongDurationSpectrograms
 {
-
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using Acoustics.Shared;
+    using Acoustics.Shared.Csv;
+    using AnalysisBase.ResultBases;
+    using AudioAnalysisTools.Indices;
+    using TowseyLibrary;
 
     /// <summary>
     /// This class used to contain only two methods:  (1) StitchPartialSpectrograms()   and    (2) ConcatenateSpectralIndexFiles()
     /// Now it contains several versions to concatenate Index files. This is because there are now several use cases.
-    /// 
-    /// 
-    /// Here are the original two methods: 
+    ///
+    ///
+    /// Here are the original two methods:
     /// (1) StitchPartialSpectrograms()
     /// This method stitches together images and/or indices derived from a sequence of short recordings with gaps between them.
     /// It was written to deal with a set of recordings with protocol of Gianna Pavan (10 minutes every 30 minutes).
-    /// 
+    ///
     /// The following Powershell command was constructed by Anthony to do the analysis and join the sequence of images so derived:
-    /// Y:\Italy_GianniPavan\Sassofratino1day | % {& "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\bin\Release\AnalysisPrograms.exe" audio2csv -so ($_.FullName) -o "Y:\Italy_GianniPavan\output" -c "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.Parallel.yml" }   
+    /// Y:\Italy_GianniPavan\Sassofratino1day | % {& "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\bin\Release\AnalysisPrograms.exe" audio2csv -so ($_.FullName) -o "Y:\Italy_GianniPavan\output" -c "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.Parallel.yml" }
     /// where:
     ///         Y:\Italy_GianniPavan\Sassofratino1day   is the directory containing recordings
     ///         | = a pipe
@@ -34,15 +32,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     ///         -so ($_.FullName)  = the input file
     ///         -o "Y:\Italy_GianniPavan\output" = the output directory
     ///         -c "PATH\Towsey.Acoustic.Parallel.yml" is the config file
-    /// 
+    ///
     /// The following PowerShell command was used by Anthony to stitch together a sequence of spectrogam images without any gap between them.
     /// It requires ImageMagick software to be installed: i.e. C:\Program Files\ImageMagick-6.8.9-Q16\montage.exe
     /// Y:\Italy_GianniPavan\output\Towsey.Acoustic> & "C:\Program Files\ImageMagick-6.8.9-Q16\montage.exe" -mode concatenate -tile x1 *2MAP* "..\..\merge.png"
-    /// 
-    /// 
+    ///
+    ///
     /// (2) ConcatenateSpectralIndexFiles()
-    /// This method was written to deal with a new recording protocol in which 24 hours of recording are made in 4 blocks of 6 hours each. 
-    /// It merges all files of acoustic indices derived from a sequence of consecutive 6 hour recording, into one file. It then creates the images. 
+    /// This method was written to deal with a new recording protocol in which 24 hours of recording are made in 4 blocks of 6 hours each.
+    /// It merges all files of acoustic indices derived from a sequence of consecutive 6 hour recording, into one file. It then creates the images.
     /// </summary>
     public static class LDSpectrogramStitching
     {
@@ -61,7 +59,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string searchPattern = "*" + site + "*";
 
             // PATTERN SEARCH FOR CORRECT SUBDIRECTORIES
-            // Assumes that the required files are subdirectories of given site. 
+            // Assumes that the required files are subdirectories of given site.
             List<string> dirList = new List<string>();
             foreach (DirectoryInfo dir in topLevelDataDirectories)
             {
@@ -94,7 +92,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// MOST RECENT METHOD TO CONCATENATE Spectral INDEX.CSV FILES - Early September 2015.
         /// It is designed to deal with Yvonne's case where want to concatenate files distributed over arbitrary directories.
-        /// It only merges files for the passed fixed date. i.e only 24 hours 
+        /// It only merges files for the passed fixed date. i.e only 24 hours
         /// </summary>
         public static void DrawSpectralIndexFiles(Dictionary<string, double[,]> dictionary,
                                                   LdSpectrogramConfig sgConfig,
@@ -216,7 +214,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
         // ##############################################################################################################
-        // ######################### METHODS FOR STITCHING TNC - EDDIE GAME's DATA 
+        // ######################### METHODS FOR STITCHING TNC - EDDIE GAME's DATA
         // ######################### CONCATENATE EVERYTHING
 
 
@@ -224,7 +222,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// RECENT METHOD TO CONCATENATE Spectral INDEX.CSV FILES - August 2015. Revised Septermber 2016
         /// Was written to deal with  EDDIE GAME PNG data where the files to be concatenated are all in one top level directory.
         /// This method merges all files of spectral indices in the passed directories.
-        /// The total length of the concatenated files can exceed 24 hours - limited by memory! 
+        /// The total length of the concatenated files can exceed 24 hours - limited by memory!
         /// </summary>
         public static Dictionary<string, double[,]> ConcatenateAllSpectralIndexFiles(DirectoryInfo[] directories, string[] keys,
                                                          IndexGenerationData indexGenerationData)
@@ -249,7 +247,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// MOST RECENT METHOD TO CONCATENATE SUMMARY INDEX.CSV FILES - August 2015. Revised september 2016
         /// WRITTEN FOR THE NATURE CONSERVANCY DATA
-        /// This method merges ALL the passed files of acoustic indices 
+        /// This method merges ALL the passed files of acoustic indices
         /// It is assumed you are concatenating a sequence of consecutive short recordings.
         /// </summary>
         public static Dictionary<string, double[]> ConcatenateAllSummaryIndexFiles(FileInfo[] summaryIndexFiles,
@@ -298,7 +296,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// There can be issues with this method because images are not at same dpi.
         /// https://msdn.microsoft.com/en-us/library/system.drawing.bitmap.setresolution(v=vs.110).aspx
         /// I.e. resolution = 96dpi rather than 120 dpi
-        /// 
+        ///
         /// If having resolution problems i.e. the bitmap does not draw at the correct size into the larger Graphics canvas,
         ///  then may need to comment out the line: ((Bitmap)image).SetResolution(96, 96);
         /// </summary>
@@ -324,7 +322,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 Image image = ImageTools.ReadImage2Bitmap(file.FullName);
                 float verticalresolution = ((Bitmap)image).VerticalResolution;
                 //float horizontalresolution = ((Bitmap)image).HorizontalResolution;
-                ((Bitmap)image).SetResolution(standardresolution, (float)(verticalresolution / verticalScaleReduction)); 
+                ((Bitmap)image).SetResolution(standardresolution, (float)(verticalresolution / verticalScaleReduction));
                 imageList.Add(image);
                 imageList.Add(spacer);
             }
@@ -343,10 +341,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// This method stitches together spectrogram images derived from consecutive shorter recordings over a 24 hour period.
         /// Currently set for the recording protocol of Gianna Pavan (10 minutes every 30 minutes).
-        /// 
+        ///
         /// Call this method from Sandpit or where ever!
-        /// 
-        /// IMPORTANT NOTE: This method does NOT check to see if the images are in temporal order. 
+        ///
+        /// IMPORTANT NOTE: This method does NOT check to see if the images are in temporal order.
         ///                 A SORT line should be inserted somewhere
         /// </summary>
         public static void StitchPartialSpectrograms()
@@ -375,7 +373,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             TimeSpan xAxisTicInterval = TimeSpan.FromMinutes(pixelColumnsPerHour); // assume 60 pixels per hour
 
-            // loop through all files in the required directory 
+            // loop through all files in the required directory
             foreach (string path in fileEntries)
             {
                 // filter files.

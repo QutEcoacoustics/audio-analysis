@@ -2,11 +2,11 @@
 {
     using System;
     using System.Configuration;
-    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
     using System.Security.Cryptography;
     using System.Text;
+    using Acoustics.Shared.Contracts;
 
     public static class TempFileHelper
     {
@@ -40,7 +40,7 @@
         }
 
         /// <summary>
-        /// Gets a temporary file location. 
+        /// Gets a temporary file location.
         /// File will be 8.3 (eg. abcdefgh.ijk).
         /// File will not exist.
         /// </summary>
@@ -50,7 +50,7 @@
         }
 
         /// <summary>
-        /// Gets a temporary file location. 
+        /// Gets a temporary file location.
         /// File will be 8.3 (eg. abcdefgh.ijk).
         /// File will not exist.
         /// </summary>
@@ -62,7 +62,7 @@
         }
 
         /// <summary>
-        /// Gets a temporary file location. 
+        /// Gets a temporary file location.
         /// File will be 8.3 (eg. abcdefgh.[given ext]).
         /// File will not exist.
         /// </summary>
@@ -74,7 +74,7 @@
         }
 
         /// <summary>
-        /// Gets a temporary file location. 
+        /// Gets a temporary file location.
         /// File will be 8.3 (eg. abcdefgh.[given ext]).
         /// File will not exist.
         /// </summary>
@@ -127,7 +127,7 @@
         /// We suspect the original implementation of GetRandomFileName of
         /// returning colliding filenames because *we* trimmed the extension off the file.
         /// <para>
-        /// This is a modification of the original method that can be found here: 
+        /// This is a modification of the original method that can be found here:
         /// http://referencesource.microsoft.com/#mscorlib/system/io/path.cs,efb113f637a6bb47
         /// </para>
         /// </summary>
@@ -154,7 +154,7 @@
             {
                 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
                 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-                '0', '1', '2', '3', '4', '5'
+                '0', '1', '2', '3', '4', '5',
             };
 
         /// <summary>
@@ -165,7 +165,7 @@
         private static string ToBase32StringSuitableForDirName(byte[] buff)
         {
             // This routine is optimised to be used with buffs of length 20
-            Contract.Assert((buff.Length % 5) == 0, "Unexpected hash length");
+            Contract.Requires((buff.Length % 5) == 0, "Unexpected hash length");
 
             StringBuilder sb = new StringBuilder(buff.Length * 8 / 5);
             byte b0, b1, b2, b3, b4;
@@ -174,7 +174,7 @@
             l = buff.Length;
             i = 0;
 
-            // Create l chars using the last 5 bits of each byte.  
+            // Create l chars using the last 5 bits of each byte.
             // Consume 3 MSB bits 5 bytes at a time.
             do
             {
@@ -199,7 +199,7 @@
                 // Consume 3 MSB bits of b2, 1 MSB bit of b3, b4
                 b2 >>= 5;
 
-                Contract.Assert((b2 & 0xF8) == 0, "Unexpected set bits");
+                Contract.Requires((b2 & 0xF8) == 0, "Unexpected set bits");
 
                 if ((b3 & 0x80) != 0)
                 {

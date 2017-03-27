@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Linq;
+    using System.Text;
+
     /// <summary>
     /// Represents a single array of data with Xand Y scales and other info useful for pltting a graph.
     /// Was first used to represent a track of scores at the bottom of a sonogram image.
@@ -78,7 +78,7 @@ namespace TowseyLibrary
         }
 
 
-        public static void FindStartsAndEndsOfScoreEvents(double[] scores, double scoreThreshold, int minDuration, int maxDuration, 
+        public static void FindStartsAndEndsOfScoreEvents(double[] scores, double scoreThreshold, int minDuration, int maxDuration,
                                                           out double[] prunedScores, out List<Point> startEnds)
         {
             prunedScores = new double[scores.Length];

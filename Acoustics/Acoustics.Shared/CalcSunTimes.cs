@@ -9,7 +9,7 @@
 //
 //  NOTICE: this code is provided "as-is", without any warrenty, obligations or liability for it.
 //          You may use this code freely for any use.
-// 
+//
 //  Zacky Pickholz (zacky.pickholz@gmail.com)
 // </copyright>
 // <summary>
@@ -182,7 +182,7 @@ namespace Acoustics.Shared
                 double ra1 = mSunPositionInSkyArr[0];
                 double dec1 = mSunPositionInSkyArr[1];
 
-                // make continuous 
+                // make continuous
                 if (ra1 < ra0)
                     ra1 += 2 * Math.PI;
 
@@ -288,7 +288,7 @@ namespace Acoustics.Shared
             return jd;
         }
 
-        // sun's position using fundamental arguments 
+        // sun's position using fundamental arguments
         // (Van Flandern & Pulkkinen, 1979)
         private void CalculateSunPosition(double jd, double ct)
         {
@@ -321,7 +321,7 @@ namespace Acoustics.Shared
             s = w / Math.Sqrt(u - v * v);
             mSunPositionInSkyArr[0] = lo + Math.Atan(s / Math.Sqrt(1 - s * s));
 
-            // ...and declination 
+            // ...and declination
             s = v / Math.Sqrt(u);
             mSunPositionInSkyArr[1] = Math.Atan(s / Math.Sqrt(1 - s * s));
         }

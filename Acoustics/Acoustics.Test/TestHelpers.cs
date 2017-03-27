@@ -34,7 +34,7 @@
                             SampleRate = 44100,
                             ChannelCount = 2,
                             BitsPerSecond = 128000,
-                            MediaType = MediaTypes.MediaTypeAsf
+                            MediaType = MediaTypes.MediaTypeAsf,
                         }
                 },
                 {
@@ -79,7 +79,7 @@
                             ChannelCount = 1,
                             BitsPerSecond = 352000,
                             MediaType = MediaTypes.MediaTypeWav,
-                            BitsPerSample = 16
+                            BitsPerSample = 16,
                         }
                 },
                 {
@@ -91,7 +91,7 @@
                             ChannelCount = 1,
                             BitsPerSecond = 352000,
                             MediaType = MediaTypes.MediaTypeWav,
-                            BitsPerSample = 16
+                            BitsPerSample = 16,
                         }
                 },
                 {
@@ -103,7 +103,7 @@
                             ChannelCount = 2,
                             BitsPerSecond = 1410000,
                             MediaType = MediaTypes.MediaTypeWav,
-                            BitsPerSample = 16
+                            BitsPerSample = 16,
                         }
                 },
                 {
@@ -138,7 +138,7 @@
                             ChannelCount = 1,
                             BitsPerSecond = 171000,
                             MediaType = MediaTypes.MediaTypeWavpack,
-                            BitsPerSample = 16
+                            BitsPerSample = 16,
                         }
                 },
                 {
@@ -150,7 +150,7 @@
                             ChannelCount = 1,
                             BitsPerSecond = 158000,
                             MediaType = MediaTypes.MediaTypeWavpack,
-                            BitsPerSample = 16
+                            BitsPerSample = 16,
                         }
                 },
                 {
@@ -162,7 +162,7 @@
                             ChannelCount = 4,
                             BitsPerSecond = 2822400,
                             MediaType = MediaTypes.MediaTypeWav,
-                            BitsPerSample = 16
+                            BitsPerSample = 16,
                         }
                 },
                 {
@@ -174,7 +174,7 @@
                             ChannelCount = 4,
                             BitsPerSecond = 693000,
                             MediaType = MediaTypes.MediaTypeFlacAudio,
-                            BitsPerSample = 16
+                            BitsPerSample = 16,
                         }
                 },
                 {
@@ -186,7 +186,7 @@
                             ChannelCount = 4,
                             BitsPerSecond = 125000,
                             MediaType = MediaTypes.MediaTypeMp3,
-                            BitsPerSample = 16
+                            BitsPerSample = 16,
                         }
                 },
                 {
@@ -198,7 +198,7 @@
                             ChannelCount = 4,
                             BitsPerSecond = 693000,
                             MediaType = MediaTypes.MediaTypeOggAudio,
-                            BitsPerSample = 16
+                            BitsPerSample = 16,
                         }
                 },
                 {
@@ -210,7 +210,7 @@
                             ChannelCount = 4,
                             BitsPerSecond = 1275000,
                             MediaType = MediaTypes.MediaTypeWavpack,
-                            BitsPerSample = 16
+                            BitsPerSample = 16,
                         }
                 },
                 {
@@ -222,7 +222,7 @@
                             ChannelCount = 2,
                             BitsPerSecond = 705000,
                             MediaType = MediaTypes.MediaTypeWav,
-                            BitsPerSample = 16
+                            BitsPerSample = 16,
                         }
                 },
                 {
@@ -234,7 +234,7 @@
                             ChannelCount = 2,
                             BitsPerSecond = 64000,
                             MediaType = MediaTypes.MediaTypeMp3,
-                            BitsPerSample = 16
+                            BitsPerSample = 16,
                         }
                 },
                 {
@@ -246,9 +246,9 @@
                             ChannelCount = 1,
                             BitsPerSecond = 128000,
                             MediaType = MediaTypes.MediaTypeMp3,
-                            BitsPerSample = 16
+                            BitsPerSample = 16,
                         }
-                }
+                },
             };
 
         /// <summary>
@@ -262,7 +262,7 @@
         public delegate object ThrowsDelegateWithReturn();
 
         /// <summary>
-        /// Tests that an exception is thrown, and that it is of 
+        /// Tests that an exception is thrown, and that it is of
         /// the correct type, with the correct error message.
         /// If anything does not match what is supplied, the test fails.
         /// </summary>
@@ -296,7 +296,7 @@
         }
 
         /// <summary>
-        /// Tests that an exception is thrown, and that it is of 
+        /// Tests that an exception is thrown, and that it is of
         /// the correct type, with the correct error message.
         /// If anything does not match what is supplied, the test fails.
         /// </summary>
@@ -590,7 +590,7 @@
         {
             var ffmpegExe = GetExe(AppConfigHelper.FfmpegExe);
             var ffprobeExe = GetExe(AppConfigHelper.FfprobeExe);
-           
+
             var ffmpeg = new FfmpegAudioUtility(ffmpegExe, ffprobeExe);
 
             return ffmpeg;
@@ -608,7 +608,7 @@
         public static IAudioUtility GetAudioUtilityMp3Splt()
         {
             var mp3SpltExe = GetExe(AppConfigHelper.Mp3SpltExe);
-            
+
             var mp3Splt = new Mp3SpltAudioUtility(mp3SpltExe);
 
             return mp3Splt;

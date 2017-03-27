@@ -36,8 +36,8 @@ namespace AnalysisPrograms.Recognizers
     /// AKA: The bloody canetoad
     /// This is a frog recognizer based on the "ribit" or "washboard" template
     /// It detects ribit type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
-    /// 
-    /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs 
+    ///
+    /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs
     /// e.g. Litoria rothii and Litoria olongburesnsis.
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
@@ -89,7 +89,7 @@ namespace AnalysisPrograms.Recognizers
 
             // BETTER TO CALCULATE THIS. IGNORE USER!
             // double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);
-            // duration of DCT in seconds 
+            // duration of DCT in seconds
             double dctDuration = (double)configuration[AnalysisKeys.DctDuration];
 
             // minimum acceptable value of a DCT coefficient
@@ -101,10 +101,10 @@ namespace AnalysisPrograms.Recognizers
             // ignore oscillations above this threshold freq
             int maxOscilFreq = (int)configuration[AnalysisKeys.MaxOscilFreq];
 
-            // min duration of event in seconds 
+            // min duration of event in seconds
             double minDuration = (double)configuration[AnalysisKeys.MinDuration];
 
-            // max duration of event in seconds                 
+            // max duration of event in seconds
             double maxDuration = (double)configuration[AnalysisKeys.MaxDuration];
 
             // min score for an acceptable event
@@ -119,7 +119,7 @@ namespace AnalysisPrograms.Recognizers
             //windowOverlap = 0.75; // previous default
 
 
-            // DEBUG: Following line used to search for where indeterminism creeps into the spectrogram values which vary from run to run. 
+            // DEBUG: Following line used to search for where indeterminism creeps into the spectrogram values which vary from run to run.
             //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.BaseName+"_RecordingSamples.csv"), recording.WavReader.GetChannel(0));
 
 
@@ -134,7 +134,7 @@ namespace AnalysisPrograms.Recognizers
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
                 //WindowFunction = WindowFunctions.NONE.ToString(),
                 // if do not use noise reduction can get a more sensitive recogniser.
-                NoiseReductionType = NoiseReductionType.None
+                NoiseReductionType = NoiseReductionType.None,
             };
 
             // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
@@ -155,7 +155,7 @@ namespace AnalysisPrograms.Recognizers
             //int rowCount = sonogram.Data.GetLength(0);
             //int colCount = sonogram.Data.GetLength(1);
 
-            // DEBUG: Following lines used to search for where indeterminism creeps into the spectrogram values which vary from run to run. 
+            // DEBUG: Following lines used to search for where indeterminism creeps into the spectrogram values which vary from run to run.
             //double[] array = DataTools.Matrix2Array(sonogram.Data);
             //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.BaseName+".csv"), array);
 
@@ -223,7 +223,7 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram,
                 Hits = hits,
                 Plots = plot.AsList(),
-                Events = prunedEvents
+                Events = prunedEvents,
                 //Events = events
             };
 

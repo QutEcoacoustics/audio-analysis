@@ -132,14 +132,14 @@ EventThreshold: 0.2
         private static readonly YamlTestDataClass TestObject = new YamlTestDataClass
             {
                 TestFile = "C:\\Temp\\test.tmp",
-                SomeProperty = "Hello world"
+                SomeProperty = "Hello world",
             };
 
         private readonly YamlTestWrapperClass wrapperTestCase = new YamlTestWrapperClass
             {
                 InfoA = new YamlTestDataClass { SomeProperty = "Hello world", TestFile = "C:\\Temp\\test.tmp" },
                 InfoB = new YamlTestDataClass { SomeProperty = "A different Hello", TestFile = "C:\\Temp\\test.tmp" },
-                InfoC = new YamlTestDataClass { SomeProperty = "Hello world", TestFile = "C:\\Temp\\a_different_test.tmp" }
+                InfoC = new YamlTestDataClass { SomeProperty = "Hello world", TestFile = "C:\\Temp\\a_different_test.tmp" },
             };
 
         private FileInfo testDocument;

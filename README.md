@@ -56,13 +56,11 @@ Not all BLOBs are stored in git-lfs. So far only the audio files in
 
 ### .Net Solutions
 
-- Visual Studio 2015
+- Visual Studio 2017
 - Resharper Ulitmate (Academic License)
   - Install these plugins (_ReSharper_ menu > _Extension Manager_)
     - ReSpeller Free
-    - StyleCop by JetBrains
 - [msysgit](https://git-for-windows.github.io/)
-- [Code Contracts](https://visualstudiogallery.msdn.microsoft.com/1ec7db13-3363-46c9-851f-1ce455f66970)
 
 ### R
 	

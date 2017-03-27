@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data;
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Linq;
+    using System.Text;
+
     public static class DataTableTools
     {
 
@@ -28,11 +28,11 @@ namespace TowseyLibrary
         //table.Rows.Add(21, "Combivent", "Janet", DateTime.Now);
         //table.Rows.Add(100, "Dilantin", "Melanie", DateTime.Now);
 
-        //Another way to add rows to DataTable 
+        //Another way to add rows to DataTable
         //DataRow row = dt.NewRow();
         //row["ID"] = 1;
         //row["Name"] = "Jack";
-        //dt.Rows.Add(row); 
+        //dt.Rows.Add(row);
 
 
         public static DataTable CreateTable(string[] headers, Type[] types)
@@ -64,7 +64,7 @@ namespace TowseyLibrary
                 {
                     row[c] = data[c][r];
                 }
-                table.Rows.Add(row); 
+                table.Rows.Add(row);
             }
             return table;
         }
@@ -194,10 +194,10 @@ namespace TowseyLibrary
 
         /*          #######################################################################################
                     SORTING A TABLE
-                     // Sorting data based on ID 
-                    dt.DefaultView.Sort = "ID ASC"; 
+                     // Sorting data based on ID
+                    dt.DefaultView.Sort = "ID ASC";
 
-                    GridView1.DataSource = dt; 
+                    GridView1.DataSource = dt;
                     GridView1.DataBind();
                     #######################################################################################
                     SORTING A TABLE USING DEFAULTVIEW
@@ -212,7 +212,7 @@ namespace TowseyLibrary
 
                     In fact do not sort the table only a view.
                     To sort the table use select.
-                    If you want to sort by a primary key, just use DataTable.Select() with no parameters. 
+                    If you want to sort by a primary key, just use DataTable.Select() with no parameters.
                     No need for a DataView.
 
                     // sorting the datatable based on salary column in descending order
@@ -225,31 +225,31 @@ namespace TowseyLibrary
                             LoggedConsole.WriteLine("{0}, {1}", row[0], row[1]);
                         }
 
-                    The syntax to the Select method is somewhat tricky. 
-                    It is SQL-style syntax but because it is inside a string literal, you sometimes need to escape quotation marks. 
-                    Some values, like characters, may need to be quoted. The AND and OR operators can be used as in SQL. 
+                    The syntax to the Select method is somewhat tricky.
+                    It is SQL-style syntax but because it is inside a string literal, you sometimes need to escape quotation marks.
+                    Some values, like characters, may need to be quoted. The AND and OR operators can be used as in SQL.
                     There is an example of Select with DateTime filters on MSDN.
 
-                   // Use the Select method to find all rows matching the filter.    
+                   // Use the Select method to find all rows matching the filter.
                     private void GetRowsByFilter()
                     {
                         // Presuming the DataTable has a column named Date.
                         string expression = "Date > #1/1/00#";
                         DataRow[] foundRows = dt.Select(expression);
                     }
-         
+
 
            #######################################################################################
            SORTING A TABLE
 
-              //convert DataTable to DataView  
-              DataView dv = dt.DefaultView;  
-              //apply the sort on CustomerSurname column  
-              dv.Sort = "CustomerSurname";  
+              //convert DataTable to DataView
+              DataView dv = dt.DefaultView;
+              //apply the sort on CustomerSurname column
+              dv.Sort = "CustomerSurname";
 
-              //THIS IS THE IMPORTANT STEP!!!!!!!!!!!!!! 
-              //save our newly ordered results back into our datatable  
-              dt = dv.ToTable();  
+              //THIS IS THE IMPORTANT STEP!!!!!!!!!!!!!!
+              //save our newly ordered results back into our datatable
+              dt = dv.ToTable();
 
         */
 
@@ -400,7 +400,7 @@ namespace TowseyLibrary
         {
             if (dt == null) return null;
             List<double[]> columns = DataTableTools.ListOfColumnValues(dt);
-            List<double[]> newColumns = new List<double[]>(); 
+            List<double[]> newColumns = new List<double[]>();
             for (int i = 0; i < columns.Count; i++)
             {
                 double[] processedColumn = DataTools.normalise(columns[i]); //normalise all values in [0,1]

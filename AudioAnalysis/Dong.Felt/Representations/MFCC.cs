@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Dong.Felt.Representations
+﻿namespace Dong.Felt.Representations
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     public class MFCC
     {
         /// <summary>
@@ -19,7 +19,7 @@ namespace Dong.Felt.Representations
 
         public string audioFile { get; set; }
 
-        public List<double> MFCCoefficients { get; set; }       
+        public List<double> MFCCoefficients { get; set; }
         public MFCC()
         {
             MFCCoefficients = new List<double>();

@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Drawing;
-using TowseyLibrary;
-using AudioAnalysisTools.DSP;
-
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
-
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.DSP;
+    using TowseyLibrary;
 
     public static class SpectrogramConstantsJie
     {

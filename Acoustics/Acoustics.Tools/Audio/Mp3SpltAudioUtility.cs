@@ -50,7 +50,7 @@
             this.TemporaryFilesDirectory = temporaryFilesDirectory;
         }
 
-        
+
 
         #region Implementation of IAudioUtility
 
@@ -117,8 +117,8 @@
         {
             var sb = new StringBuilder(" -q "); // quiet
 
-            // -q Quiet mode. Stays quiet :) i.e. do not prompt the user for anything and print less messages. 
-            // When you use quiet option, mp3splt will try to end program without asking anything to the user (useful for scripts). 
+            // -q Quiet mode. Stays quiet :) i.e. do not prompt the user for anything and print less messages.
+            // When you use quiet option, mp3splt will try to end program without asking anything to the user (useful for scripts).
             // In Wrap mode it will also skip CRC check, use if you are in such a hurry.
 
             // output dir
@@ -333,7 +333,7 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
                 {
                     File = f,
                     Start = range.Minimum,
-                    End = range.Maximum
+                    End = range.Maximum,
                 };
             });
 
@@ -538,7 +538,7 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
             var range = new Range<long>
             {
                 Minimum = startMin + startSec + startH,
-                Maximum = endMin + endSec + endH
+                Maximum = endMin + endSec + endH,
             };
 
             return range;

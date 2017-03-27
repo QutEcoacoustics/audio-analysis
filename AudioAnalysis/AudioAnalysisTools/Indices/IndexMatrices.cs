@@ -28,7 +28,7 @@ namespace AudioAnalysisTools.Indices
 
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="files">All the passed files will be concatenated. Filtering needs to be done somewhere else.</param>
         /// <param name="indexCalcDuration">used to match rows of indices to elapsed time in file names</param>
@@ -201,8 +201,8 @@ namespace AudioAnalysisTools.Indices
         }
 
 */
-        public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(DirectoryInfo[] dirs, 
-                                                                                        string analysisType, 
+        public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(DirectoryInfo[] dirs,
+                                                                                        string analysisType,
                                                                                         string[] keys,
                                                                                         IndexGenerationData indexGenerationData,
                                                                                         bool verbose = false)
@@ -243,7 +243,7 @@ namespace AudioAnalysisTools.Indices
 
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="files">All the passed files will be concatenated. Filtering needs to be done somewhere else.</param>
         /// <param name="indexCalcDuration">used to match rows of indices to elapsed time in file names</param>
@@ -379,7 +379,7 @@ namespace AudioAnalysisTools.Indices
 
         /// <summary>
         /// Returns a sorted list of file paths, sorted on file name.
-        /// IMPORTANT: Sorts on alphanumerics, NOT on date or time encoded in the file name. 
+        /// IMPORTANT: Sorts on alphanumerics, NOT on date or time encoded in the file name.
         /// </summary>
         /// <param name="directories"></param>
         /// <param name="pattern"></param>
@@ -396,7 +396,7 @@ namespace AudioAnalysisTools.Indices
                     LoggedConsole.WriteFatalLine("DIRECTORY DOES NOT EXIST", directoryNotFoundException);
                     throw directoryNotFoundException;
                 }
-                
+
                 //FileInfo[] files = dir.GetFiles(pattern, SearchOption.TopDirectoryOnly);
                 var files = dir.GetFiles(pattern, SearchOption.AllDirectories);
                 fileList.AddRange(files);
@@ -479,7 +479,7 @@ namespace AudioAnalysisTools.Indices
 
 
         /// <summary>
-        /// This method reads spectrogram csv files where the first row contains column names 
+        /// This method reads spectrogram csv files where the first row contains column names
         /// and the first column contains row/time names.
         /// </summary>
         /// <param name="csvPath"></param>
@@ -491,7 +491,7 @@ namespace AudioAnalysisTools.Indices
             //double[,] matrix = Csv.ReadMatrixFromCsv<double>(csvPath, dimensionality);
             // MICHAEL: the new Csv class can read this in, and optionally transpose as it reads
             double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath.FullName);
-            binCount = matrix.GetLength(1) - 1; // -1 because first bin is the index numbers 
+            binCount = matrix.GetLength(1) - 1; // -1 because first bin is the index numbers
             // calculate the window/frame that was used to generate the spectra. This value is only used to place grid lines on the final images
 
             // remove left most column - consists of index numbers
@@ -528,7 +528,7 @@ namespace AudioAnalysisTools.Indices
                 .AsParallel()
                 .Select(key => ReadInSingleCsvFile(ipdir, fileName, key))
                 .Where(x => x != null);
-            
+
             // actual work done here
             // ReSharper disable PossibleInvalidOperationException
             var spectrogramMatrices = readData.ToDictionary(kvp => kvp.Value.Key, kvp => kvp.Value.Value);

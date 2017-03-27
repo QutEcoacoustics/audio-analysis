@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-
-namespace NeuralNets
+﻿namespace NeuralNets
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using TowseyLibrary;
+
     public sealed class FuzzyART
     {
 
@@ -87,14 +86,14 @@ namespace NeuralNets
     //                                    out double[] F2classProb, out int errorCode)
     //{
         //double initialValue = 0.0; //constant
-        
+
         //int F1size, F2size;
-        //double dummy;    
+        //double dummy;
         //errorCode = 0;
 
         //ArrayList lines = FileTools.
 
-            
+
         //F1size = Math.Round(dummy);
         //read   (F, dummy);
         //F2size = Math.Round(dummy);
@@ -349,7 +348,7 @@ namespace NeuralNets
     {
         double[] OP = new double[this.F1Size];
         for (int i = 0; i < this.IPSize; i++)
-        {    
+        {
             OP[i] = IP[i];
             OP[this.F1Size-1-i] = 1 - OP[i];
         }
@@ -396,7 +395,7 @@ namespace NeuralNets
                 OP[F2uNo] = magAndVector / (this.alpha + magWtsVector);
             }
         }  //end for all the F2 nodes}
-           
+
         return OP;
     } //end of method PropagateToF2()
 
@@ -432,7 +431,7 @@ namespace NeuralNets
 
     /// <summary>
     /// original Pascal header was: Procedure ChangeWtsFuzzyART(var index:word);
-    /// 
+    ///
     /// </summary>
     /// <param name="index"></param>
     public int ChangeWts(double[] IP, double[] OP)
@@ -446,7 +445,7 @@ namespace NeuralNets
         if (noCommittedNodes == 0)
         {
             ChangeWtsOfFirstUncommittedNode(IP);
-            return index; 
+            return index;
         }
 
         double[] wtsJ = new double[this.F1Size];
@@ -454,7 +453,7 @@ namespace NeuralNets
         int numberOfTestedNodes = 0;
         while (!matchFound)  //repeat //{until a good match found}
         {
-            index = IndexOfMaxF2Unit(OP);  //get index of the winning F2 node i.e. the unit with maxOP. 
+            index = IndexOfMaxF2Unit(OP);  //get index of the winning F2 node i.e. the unit with maxOP.
             //get wts of this F2 node
             for (int F1uNo = 0; F1uNo < this.F1Size; F1uNo++) wtsJ[F1uNo] = this.wts[index, F1uNo];
 
@@ -466,7 +465,7 @@ namespace NeuralNets
             if (match < this.rho)  // ie vigilance indicates a BAD match}
             {
                 // 2:  none of the committed nodes offer a good match - therefore draft an uncommitted node
-                if (numberOfTestedNodes == noCommittedNodes) 
+                if (numberOfTestedNodes == noCommittedNodes)
                 {
                     index = ChangeWtsOfFirstUncommittedNode(IP);    //{all nodes committed and no good match}
                     return index;
@@ -495,7 +494,7 @@ namespace NeuralNets
     {
         int index = IndexOfFirstUncommittedNode();
         if(index == -1) return index; //all nodes committed
-        
+
         for (int j = 0; j < this.F1Size; j++) wts[index, j] = IP[j];
         uncommittedJ[index] = false;
         return index;
@@ -595,8 +594,8 @@ namespace NeuralNets
             else vect3[i] = vect2[i];
         }
         return vect3;
-    } 
-  
+    }
+
     public static double FuzzyMagnitudeOf(int n, double[] vector)
     {
         double X = 0.0;
@@ -626,7 +625,7 @@ namespace NeuralNets
         fuzzyART.SetParameterValues(alpha, beta, rho, theta);
         fuzzyART.WriteParameters();
         fuzzyART.InitialiseArrays();
-        
+
         //fuzzyART.RepeatTrainNet(trainingData, maxIterations, 1, seed, 3);
         //noOfCommittedF2Nodes = fuzzyART.CountCommittedF2Nodes();
 
@@ -635,7 +634,7 @@ namespace NeuralNets
         noOfCommittedF2Nodes = output.Item2;
 
         LoggedConsole.WriteLine("Training iterations=" + iterNum + ".   Categories=" + noOfCommittedF2Nodes);
-        
+
         return fuzzyART.inputCategory;  //keepScore;
 
     } //END of ClusterShapesWithFuzzyART.

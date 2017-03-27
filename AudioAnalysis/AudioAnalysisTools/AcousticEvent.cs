@@ -11,20 +11,16 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.Contracts;
     using System.Drawing;
     using System.IO;
     using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
-
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
-
     using AnalysisBase.ResultBases;
-
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
-
     using CsvHelper.Configuration;
     using TowseyLibrary;
 
@@ -43,7 +39,7 @@ namespace AudioAnalysisTools
                     "Score_MaxInEvent", "Score_TimeOfMaxInEvent",
                     "Score2Name", "Score2", "Periodicity", "DominantFreq",
                     "Tag", "Intensity", "Quality", "HitColour", "Points",
-                    "Duration"
+                    "Duration",
                 };
 
             public AcousticEventClassMap()
@@ -103,7 +99,7 @@ namespace AudioAnalysisTools
         /// units = Hertz
         /// Proxied to EventBase.MinHz
         /// </summary>
-        public double MinFreq 
+        public double MinFreq
         {
             get
             {
@@ -112,7 +108,7 @@ namespace AudioAnalysisTools
             set
             {
                 this.MinHz = value;
-            } 
+            }
         }
 
         /// <summary>units = Hertz</summary>
@@ -130,7 +126,7 @@ namespace AudioAnalysisTools
         public Oblong Oblong { get; set; }
 
         /// <summary> required for conversions to & from MEL scale AND for drawing event on spectrum</summary>
-        public int FreqBinCount { get; set; } 
+        public int FreqBinCount { get; set; }
         public double FreqBinWidth { get; private set; }    //required for freq-binID conversions
         /// <summary> Frame duration in seconds</summary>
         public double FrameDuration { get; private set; }
@@ -171,9 +167,9 @@ namespace AudioAnalysisTools
         public double Periodicity  { get; set; } // for events which have an oscillating acoustic energy - used for frog calls
         public double DominantFreq { get; set; } // the dominant freq in the event - used for frog calls
 
-        // double I1MeandB; //mean intensity of pixels in the event prior to noise subtraction 
+        // double I1MeandB; //mean intensity of pixels in the event prior to noise subtraction
         // double I1Var;    //,
-        // double I2MeandB; // mean intensity of pixels in the event after Wiener filter, prior to noise subtraction 
+        // double I2MeandB; // mean intensity of pixels in the event after Wiener filter, prior to noise subtraction
         // double I2Var;    //,
         double I3Mean;      // mean intensity of pixels in the event AFTER noise reduciton - USED FOR CLUSTERING
         double I3Var;       // variance of intensity of pixels in the event.
@@ -186,9 +182,9 @@ namespace AudioAnalysisTools
         /// <summary>Use this if want to filter or tag some members of a list for some purpose.</summary>
         public bool Tag { get; set; }
         /// <summary>Assigned value when reading in a list of user identified events. Indicates a user assigned assessment of event intensity</summary>
-        public int Intensity { get; set; } 
+        public int Intensity { get; set; }
         /// <summary>Assigned value when reading in a list of user identified events. Indicates a user assigned assessment of event quality</summary>
-        public int Quality { get; set; }  
+        public int Quality { get; set; }
 
         /// <summary>
         /// <para>Populate this with any information that should be stored for verification or
@@ -246,7 +242,7 @@ namespace AudioAnalysisTools
             this.TimeStart = startTime;
             this.Duration = end - startTime;
             this.TimeEnd = end;
-            
+
             this.MinFreq = (int)Math.Round(o.ColumnLeft * this.FreqBinWidth);
             this.MaxFreq = (int)Math.Round(o.ColumnRight * this.FreqBinWidth);
             this.HitElements = o.HitElements;
@@ -514,7 +510,7 @@ namespace AudioAnalysisTools
         }
 
         //#################################################################################################################
-        //METHODS TO CONVERT BETWEEN FREQ BIN AND HERZ OR MELS 
+        //METHODS TO CONVERT BETWEEN FREQ BIN AND HERZ OR MELS
 
         /// <summary>
         /// converts frequency bounds of an event to left and right columns of object in sonogram matrix
@@ -551,7 +547,7 @@ namespace AudioAnalysisTools
         }
 
         //#################################################################################################################
-        //METHODS TO CONVERT BETWEEN TIME BIN AND SECONDS 
+        //METHODS TO CONVERT BETWEEN TIME BIN AND SECONDS
 
         public static void Time2RowIDs(double startTime, double duration, double frameOffset, out int topRow, out int bottomRow)
         {
@@ -659,7 +655,7 @@ namespace AudioAnalysisTools
         {
             if (!doSegmentation)//by-pass segmentation and make entire recording just one event.
             {
-                double oneSD = 0.0; 
+                double oneSD = 0.0;
                 double dBThreshold = 0.0;
                 double[] intensity = null;
                 List<AcousticEvent> segmentEvents = new List<AcousticEvent>();
@@ -670,19 +666,19 @@ namespace AudioAnalysisTools
             }
 
             var tuple = GetSegmentationEvents(sonogram, minHz, maxHz, smoothWindow, thresholdSD, minDuration, maxDuration);
-            return tuple; 
+            return tuple;
         }
 
-        public static System.Tuple<List<AcousticEvent>, double, double, double, double[]> GetSegmentationEvents(SpectrogramStandard sonogram, 
+        public static System.Tuple<List<AcousticEvent>, double, double, double, double[]> GetSegmentationEvents(SpectrogramStandard sonogram,
                                     int minHz, int maxHz, double smoothWindow, double thresholdSD, double minDuration, double maxDuration)
         {
             int nyquist = sonogram.SampleRate / 2;
             var tuple = SNR.SubbandIntensity_NoiseReduced(sonogram.Data, minHz, maxHz, nyquist, smoothWindow, sonogram.FramesPerSecond);
             double[] intensity = tuple.Item1; //noise reduced intensity array
             double Q = tuple.Item2;      //baseline dB in the original scale
-            double oneSD = tuple.Item3;  //1 SD in dB around the baseline 
+            double oneSD = tuple.Item3;  //1 SD in dB around the baseline
             double dBThreshold = thresholdSD * oneSD;
-            var segmentEvents = AcousticEvent.ConvertIntensityArray2Events(intensity, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,           
+            var segmentEvents = AcousticEvent.ConvertIntensityArray2Events(intensity, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
                                                            dBThreshold, minDuration, maxDuration);
             foreach (AcousticEvent ev in segmentEvents)
             {
@@ -717,9 +713,9 @@ namespace AudioAnalysisTools
         /// Reads a text file containing a list of acoustic events (one per line) and returns list of events.
         /// The file must contain a header.
         /// The format is tab separated words as follows:
-        /// words[0]=file name; words[1]=recording date; words[2]=time; words[3]=start; words[4]=end; 
-        /// words[5]=tag; words[6]=quality; words[7]=intensity 
-        /// 
+        /// words[0]=file name; words[1]=recording date; words[2]=time; words[3]=start; words[4]=end;
+        /// words[5]=tag; words[6]=quality; words[7]=intensity
+        ///
         /// NOTE: if match argument = null, method will return all events.
         /// </summary>
         /// <param name="path">path of file containing the acoustic events</param>
@@ -802,14 +798,14 @@ namespace AudioAnalysisTools
                     events[e].Duration = events[e].TimeEnd - events[e].TimeStart;
                     events[e].Oblong.RowBottom = events[e + 1].Oblong.RowBottom;
                     events.RemoveRange(e + 1, 1);
-                } 
+                }
             }
         }
 
 
         /// <summary>
         /// Given two lists of AcousticEvents, one being labelled events and the other being predicted events,
-        /// this method calculates the accuracy of the predictions in terms of tp, fp, fn etc. The events may come from any number of 
+        /// this method calculates the accuracy of the predictions in terms of tp, fp, fn etc. The events may come from any number of
         /// recordings or files
         /// </summary>
         /// <param name="results"></param>
@@ -882,7 +878,7 @@ namespace AudioAnalysisTools
             {
                 count++;
                 string hitFile = "";
-                //check if this FN event is in a file that score tp of fp hit. 
+                //check if this FN event is in a file that score tp of fp hit.
                 if (resultsSourceFiles.Contains(ae.FileName))
                     hitFile = "**";
                 if (ae.Tag == false)
@@ -924,7 +920,7 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// Given two lists of AcousticEvents, one being labelled events and the other being predicted events,
-        /// this method calculates the accuracy of the predictions in terms of tp, fp, fn etc. 
+        /// this method calculates the accuracy of the predictions in terms of tp, fp, fn etc.
         /// This method is similar to the one above except that it is assumed that all the events, both labelled and predicted
         /// come from the same recording.
         /// </summary>
@@ -1010,7 +1006,7 @@ namespace AudioAnalysisTools
 //  THE THIRD METHOD PRODUCES A SCORE ARRAY GIVEN A LIST OF EVENTS.
 
         /// <summary>
-        /// Converts an array of sub-band intensity values to a list of AcousticEvents. 
+        /// Converts an array of sub-band intensity values to a list of AcousticEvents.
         /// This method does not constrain the maximum lewngth of detected events by setting maxDuration threshold to maximum value.
         /// </summary>
         /// <param name="values">the array of acoustic intensity values</param>
@@ -1026,10 +1022,10 @@ namespace AudioAnalysisTools
         //                                                       double framesPerSec, double freqBinWidth,
         //                                                       double threshold, double minDuration, string fileName)
         //{
-        //    double maxDuration = Double.MaxValue; 
+        //    double maxDuration = Double.MaxValue;
         //    return ConvertIntensityArray2Events(values, minHz, maxHz, framesPerSec, freqBinWidth, threshold, minDuration, maxDuration, fileName);
         //}
-        
+
 
 
         public static List<AcousticEvent> ConvertIntensityArray2Events(double[] values, int minHz, int maxHz,
@@ -1096,7 +1092,7 @@ namespace AudioAnalysisTools
         {
             int count = scores.Length;
             var events = new List<AcousticEvent>();
-            double maxPossibleScore = 5 * scoreThreshold; // used to calcualte a normalised score bewteen 0 - 1.0 
+            double maxPossibleScore = 5 * scoreThreshold; // used to calcualte a normalised score bewteen 0 - 1.0
             bool isHit = false;
             double frameOffset = 1 / framesPerSec; // frame offset in fractions of second
             double startTime = 0.0;
@@ -1165,7 +1161,7 @@ namespace AudioAnalysisTools
         {
             double[] scores = new double[arraySize];
             if ((events == null) || (events.Count == 0)) return scores;
- 
+
             double windowOffset = events[0].FrameOffset;
             double frameRate = 1 / windowOffset; //frames per second
 
@@ -1249,7 +1245,7 @@ namespace AudioAnalysisTools
                     var newCluster = new List<AcousticEvent> {events[e]};
                     clusters.Add(newCluster);
                 }
-            } 
+            }
             return clusters;
         }
 
@@ -1259,7 +1255,7 @@ namespace AudioAnalysisTools
             // take first event as the centroid
             var centroid = cluster[0];
 
-            // now compare the time duration of the event with the cluster 
+            // now compare the time duration of the event with the cluster
             double distance = centroid.Duration - ae.Duration;
             if (Math.Abs(distance) > 0.75) return 1.0;
 

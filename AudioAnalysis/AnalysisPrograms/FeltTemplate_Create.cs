@@ -1,37 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using TowseyLibrary;
-using System.Drawing;
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
     using Acoustics.Shared.Extensions;
-
     using AnalysisPrograms.Production;
-
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
     using PowerArgs;
+    using TowseyLibrary;
 
     /// <summary>
     /// This program extracts a template from a recording.
     /// COMMAND LINE ARGUMENTS:
     /// string recordingPath = args[0];   //the recording from which template is to be extracted
     /// string iniPath       = args[1];   //the initialisation file containing parameters for the extraction
-    /// string targetName    = args[2];   //prefix of name of the created output files 
-    /// 
+    /// string targetName    = args[2];   //prefix of name of the created output files
+    ///
     /// The program produces four (4) output files:
     ///     string targetPath         = outputDir + targetName + "_target.txt";        //Intensity values (dB) of the marqueed portion of spectrum BEFORE noise reduction
     ///     string targetNoNoisePath  = outputDir + targetName + "_targetNoNoise.txt"; //Intensity values (dB) of the marqueed portion of spectrum AFTER  noise reduction
     ///     string noisePath          = outputDir + targetName + "_noise.txt";         //Intensity of noise (dB) in each frequency bin included in template
     ///     string targetImagePath    = outputDir + targetName + "_target.png";        //Image of noise reduced spectrum
-    ///     
+    ///
     /// The user can then edit the image file to produce a number of templates.
     /// </summary>
     public class FeltTemplate_Create
@@ -79,7 +75,7 @@ namespace AnalysisPrograms
         // LEWINS RAIL
         // createtemplate_felt "C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav"                                  C:\SensorNetworks\Output\FELT_LewinsRail1\FELT_LewinsRail_PARAMS.txt  FELT_LewinsRail1
 
-        // Keys to recognise identifiers in PARAMETERS - INI file. 
+        // Keys to recognise identifiers in PARAMETERS - INI file.
         public static string key_CALL_NAME          = "CALL_NAME";
         public static string key_DO_SEGMENTATION    = "DO_SEGMENTATION";
         public static string key_EVENT_START        = "EVENT_START";
@@ -117,10 +113,10 @@ namespace AnalysisPrograms
             string date  = "# DATE AND TIME: " + DateTime.Now;
             Log.WriteLine(Title);
             Log.WriteLine(date);
-       
+
             FileInfo recordingPath = arguments.Source;
             FileInfo iniPath       = arguments.Config; // path of the ini or params file
-            string targetName    = arguments.Target; // prefix of name of created files 
+            string targetName    = arguments.Target; // prefix of name of created files
 
             DirectoryInfo outputDir     = iniPath.Directory;
             FileInfo targetPath         = outputDir.CombineFile(targetName + "_target.txt");
@@ -144,7 +140,7 @@ namespace AnalysisPrograms
 
             double frameOverlap      = FeltTemplates_Use.FeltFrameOverlap;   // Double.Parse(dict[key_FRAME_OVERLAP]);
             double eventStart        = Double.Parse(dict[key_EVENT_START]);
-            double eventEnd          = Double.Parse(dict[key_EVENT_END]);            
+            double eventEnd          = Double.Parse(dict[key_EVENT_END]);
             int minHz                = Int32.Parse(dict[key_MIN_HZ]);
             int maxHz                = Int32.Parse(dict[key_MAX_HZ]);
             double dBThreshold       = Double.Parse(dict[key_DECIBEL_THRESHOLD]);   //threshold to set MIN DECIBEL BOUND
@@ -167,12 +163,12 @@ namespace AnalysisPrograms
             FileTools.WriteMatrix2File(templateMinusNoise, targetNoNoisePath.FullName); // write template values to file AFTER to noise removal.
             FileTools.WriteArray2File(noiseSubband, noisePath.FullName);
 
-            // v: SAVE image of extracted event in the original sonogram 
-            
+            // v: SAVE image of extracted event in the original sonogram
+
             DrawSonogram(sonogram, sonogramImagePath.FullName, extractedEvent);
 
-            // vi: SAVE extracted event as noise reduced image 
-            // alter matrix dynamic range so user can determine correct dynamic range from image 
+            // vi: SAVE extracted event as noise reduced image
+            // alter matrix dynamic range so user can determine correct dynamic range from image
             // matrix = SNR.SetDynamicRange(matrix, 0.0, dynamicRange);       // set event's dynamic range
             var results1    = BaseSonogram.Data2ImageData(templateMinusNoise);
             var targetImage = results1.Item1;
@@ -199,7 +195,7 @@ namespace AnalysisPrograms
             sonoConfig.SourceFName = recording.BaseName;
             //sonoConfig.WindowSize = windowSize;
             sonoConfig.WindowOverlap = frameOverlap;
-            
+
 
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
@@ -208,14 +204,14 @@ namespace AnalysisPrograms
                                       (sonogram.FrameStep * 1000), sonogram.FramesPerSecond, frameOverlap);
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
-            
+
             //calculate the modal noise profile
             double SD_COUNT = 0.0; // number of noise standard deviations used to calculate noise threshold
             NoiseProfile profile = NoiseProfile.CalculateModalNoiseProfile(sonogram.Data, SD_COUNT); //calculate modal noise profile
             double[] modalNoise = DataTools.filterMovingAverage(profile.NoiseMode, 7);    //smooth the noise profile
             //extract modal noise values of the required event
             double[] noiseSubband = SpectrogramTools.ExtractModalNoiseSubband(modalNoise, minHz, maxHz, false, sonogram.NyquistFrequency, sonogram.FBinWidth);
-            
+
             //extract data values of the required event
             double[,] target = SpectrogramTools.ExtractEvent(sonogram.Data, eventStart, eventEnd, sonogram.FrameStep,
                                                          minHz, maxHz, false, sonogram.NyquistFrequency, sonogram.FBinWidth);
@@ -249,7 +245,7 @@ namespace AnalysisPrograms
                 image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                 var aes = new List<AcousticEvent>();
                 aes.Add(ae);
-                image.AddEvents(aes, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond); 
+                image.AddEvents(aes, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
                 image.Save(path);
             }
         } //end DrawSonogram
@@ -263,7 +259,7 @@ namespace AnalysisPrograms
             list.Add("\nCALL_NAME="+ dict[key_CALL_NAME]);
 
             list.Add("\n#NOTE: FRAME_OVERLAP IS FIXED AT " + FeltTemplates_Use.FeltFrameOverlap + " FOR ALL FELT TEMPLATES.");
-            list.Add("#THIS IS TO SPEED THE COMPUTATION. OTHERWISE HAVE TO COMPUTE NEW SPECTROGRAM FOR EVERY TEMPLATE.\n"); 
+            list.Add("#THIS IS TO SPEED THE COMPUTATION. OTHERWISE HAVE TO COMPUTE NEW SPECTROGRAM FOR EVERY TEMPLATE.\n");
             //list.Add("#FRAME_OVERLAP=" + Double.Parse(dict[key_FRAME_OVERLAP]));
 
             list.Add("\n################## SEGMENTATION PARAMS");

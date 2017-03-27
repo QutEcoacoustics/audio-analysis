@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-namespace AudioAnalysisTools.DSP
+﻿namespace AudioAnalysisTools.DSP
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using TowseyLibrary;
+
     /// <summary>
     /// digital signal processing FILTERS methods
     /// </summary>
@@ -73,7 +73,7 @@ namespace AudioAnalysisTools.DSP
                 double[] subarray = DataTools.Subarray(signal, i - sideNh, nh);
                 newSig[i] = signal[i] - subarray.Min();
             }
-        
+
             return newSig;
         }
 
@@ -138,20 +138,20 @@ namespace AudioAnalysisTools.DSP
             double t = 1/sf; //inverse of sampling frequency (in seconds)
 
             double samplesPerTHalf = tHalf*sf;
-            double stepDecay = 0.5 / samplesPerTHalf; 
+            double stepDecay = 0.5 / samplesPerTHalf;
             double samplesPerPeriod = period*sf;
             double stepRadians = 2 * pi / samplesPerPeriod;
-            int filterLength = (int)(filterDuration * sf); 
+            int filterLength = (int)(filterDuration * sf);
             double[] newSig = Filter_DecayingSinusoid(signal, stepDecay, stepRadians, filterLength);
             return newSig;
         }
 
 
         public static double[] Filter_DecayingSinusoid(double[] signal, double stepDecay, double stepRadians, int filterLength)
-        {   
+        {
             double B = stepDecay; // beta = decay per signal sample
             double W = stepRadians; // OMEGA = radians per signal sample
-            
+
             double[] coeff = new double[filterLength];
             int signalLength = signal.Length;
             double[] newSig = new double[signalLength];
@@ -178,7 +178,7 @@ namespace AudioAnalysisTools.DSP
             }
             // transfer filtered values
             for(int i=filterLength; i<signalLength; i++)
-            {   
+            {
                 double sum = 0.0;
                 for(int j=0; j<filterLength; j++) sum += (coeff[filterLength-j-1] * signal[i-j]);
                 newSig[i] = sum;
@@ -189,10 +189,10 @@ namespace AudioAnalysisTools.DSP
 
 
         /// <summary>
-        /// A "finite impulse response" (FIR) filter uses only the input signals, 
-        /// while an "infinite impulse response" filter (IIR) uses 
+        /// A "finite impulse response" (FIR) filter uses only the input signals,
+        /// while an "infinite impulse response" filter (IIR) uses
         /// both the input signal and previous samples of the output signal.
-        /// 
+        ///
         /// FIR filters are always stable, while IIR filters may be unstable.
         /// This filter is linear, causal and time-invariant.
         /// </summary>
@@ -278,7 +278,7 @@ namespace AudioAnalysisTools.DSP
             //COPY THIS TEST TEMPLATE
             bool doit1 = false;
             if (doit1) //test Method(parameters)
-            {   
+            {
                 System.LoggedConsole.WriteLine("\nTest of METHOD)");
             }//end test Method(string fName)
 
@@ -293,7 +293,7 @@ namespace AudioAnalysisTools.DSP
                 double period = 0.2; //seconds
                 double filterDuration = 1.0; //seconds
                 int signalLength= 100;
-                
+
                 //set up the impulse signal
                 double[] signal = new double[signalLength];
                 signal[10] = 1.0;

@@ -57,7 +57,7 @@
             for (int i = 1; i < listA.Count; i++) //skip first line
             {
                 if (String.Compare(listA[i], listB[i]) != 0) // if (listA[i] != listB[i])
-                {    
+                {
                     if (throwException) throw new Exception("Line " + i + " of files a and b not same: " + listA[i] + " != " + listB[i]);
                     else LoggedConsole.WriteLine("#### WARNING: Line " + i + " of files a and b not same: " + listA[i] + " != " + listB[i]);
                 }

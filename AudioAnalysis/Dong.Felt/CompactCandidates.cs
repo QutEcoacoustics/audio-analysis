@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Dong.Felt
+﻿namespace Dong.Felt
 {
-    
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
         public class CompactCandidates
-    {             
+    {
         /// <summary>
         /// It indicates the start time of a candidate.
         /// </summary>
@@ -19,7 +18,7 @@ namespace Dong.Felt
         public double EndTime { get; set; }
 
         /// <summary>
-        /// It indidates the audio file where the candidate come from. 
+        /// It indidates the audio file where the candidate come from.
         /// </summary>
         public string SourceFilePath { get; set; }
 
@@ -31,9 +30,9 @@ namespace Dong.Felt
         /// <param name="startTime"></param>
         /// <param name="maxFreq"></param>
         public CompactCandidates(double startTime, double duration, string sourceFile)
-        {          
+        {
             this.StartTime = startTime;
-            this.EndTime = startTime + duration;          
+            this.EndTime = startTime + duration;
             this.SourceFilePath = sourceFile;
         }
 

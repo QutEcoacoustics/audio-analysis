@@ -3,7 +3,7 @@
 //   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
-//   
+//
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -53,7 +53,7 @@ namespace System
 
             const string Suffix = " ago";
             const string Prefix = "in ";
-            
+
             var strings = TimeSpanToString(timeSpan).ToList();
             var valueString = string.Join(" ", strings);
 
@@ -261,7 +261,7 @@ namespace System
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="time"></param>
         /// <param name="roundingInterval"></param>

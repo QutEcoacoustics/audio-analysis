@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-
-using AudioAnalysisTools;
-using TowseyLibrary;
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
+
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools;
+    using TowseyLibrary;
+
     public static class LSKiwiHelper
     {
 
@@ -46,7 +46,7 @@ namespace AnalysisPrograms
         //                                   "WEIGHT_"+LSKiwiHelper.key_DELTA_SCORE+    "=0.10"
         //    };
 
-        //public static string[] DefaultRulesLSKiwi3 = { 
+        //public static string[] DefaultRulesLSKiwi3 = {
         //                                   "EXCLUDE_IF_RULE="+LSKiwiHelper.key_BANDWIDTH_SCORE+"_LT_0.3",
         //                                   "EXCLUDE_IF_RULE="+LSKiwiHelper.key_INTENSITY_SCORE+"_LT_0.1",
         //                                   "EXCLUDE_IF_RULE="+LSKiwiHelper.key_DELTA_SCORE+"_LT_0.1",
@@ -69,7 +69,7 @@ namespace AnalysisPrograms
 
         public static Dictionary<string, double> GetFeatureWeights(string configPath)
         {
-            
+
             List<string> lines = FileTools.ReadTextFile(configPath);
             var weights = new Dictionary<string, double>();
             foreach (string rule in lines)

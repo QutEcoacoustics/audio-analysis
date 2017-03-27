@@ -42,11 +42,11 @@ namespace AnalysisPrograms.Recognizers
     /// <summary>
     /// This is a frog recognizer based on the "ribit" or "washboard" template
     /// It detects ribit type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
-    /// 
-    /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs 
+    ///
+    /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
-    /// 
+    ///
     /// </summary>
     class LitoriaRothii : RecognizerBase
     {
@@ -99,18 +99,18 @@ namespace AnalysisPrograms.Recognizers
             // ignore oscillations above this threshold freq
             int maxOscilFreq = (int)configuration[AnalysisKeys.MaxOscilFreq];
 
-            // duration of DCT in seconds 
+            // duration of DCT in seconds
             //double dctDuration = (double)configuration[AnalysisKeys.DctDuration];
 
             // minimum acceptable value of a DCT coefficient
-            double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];  
+            double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
 
-            // min duration of event in seconds 
+            // min duration of event in seconds
             double minDuration = (double)configuration[AnalysisKeys.MinDuration];
 
-            // max duration of event in seconds                 
+            // max duration of event in seconds
             double maxDuration = (double)configuration[AnalysisKeys.MaxDuration];
-                        
+
             // min score for an acceptable event
             double decibelThreshold = (double)configuration[AnalysisKeys.DecibelThreshold];
 
@@ -132,7 +132,7 @@ namespace AnalysisPrograms.Recognizers
                 WindowOverlap = windowOverlap,
                 //NoiseReductionType = NoiseReductionType.NONE,
                 NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = noiseReductionParameter
+                NoiseReductionParameter = noiseReductionParameter,
             };
 
             var recordingDuration = recording.Duration();
@@ -146,7 +146,7 @@ namespace AnalysisPrograms.Recognizers
             double minPeriod = 1 / (double)maxOscilFreq;
             double maxPeriod = 1 / (double)minOscilFreq;
             double dctDuration = 5 * maxPeriod;
-            // duration of DCT in frames 
+            // duration of DCT in frames
             int dctLength = (int)Math.Round(framesPerSecond * dctDuration);
             // set up the cosine coefficients
             double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength);
@@ -207,7 +207,7 @@ namespace AnalysisPrograms.Recognizers
             var plot = new Plot(this.DisplayName, dctScores, eventThreshold);
             var plots = new List<Plot> { plot };
 
-            // DEBUG IMAGE this recognizer only. MUST set false for deployment. 
+            // DEBUG IMAGE this recognizer only. MUST set false for deployment.
             bool displayDebugImage = MainEntry.InDEBUG;
             if (displayDebugImage)
             {
@@ -233,7 +233,7 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram,
                 Hits = null,
                 Plots = plots,
-                Events = acousticEvents
+                Events = acousticEvents,
             };
 
         }

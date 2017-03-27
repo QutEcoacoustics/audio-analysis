@@ -1,20 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace TowseyLibrary
 {
-
-
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
 
  /**
  * @author towsey
  *
- * generates numbers according to a gaussian distribution 
+ * generates numbers according to a gaussian distribution
  */
 
-    
-    
+
+
     public class RandomVariable
     {
         private double mean = 0.0;

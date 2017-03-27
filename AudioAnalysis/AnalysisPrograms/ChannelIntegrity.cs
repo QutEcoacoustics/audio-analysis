@@ -7,8 +7,6 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-using AnalysisPrograms.Production;
-
 namespace AnalysisPrograms
 {
     using System;
@@ -16,12 +14,10 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Linq;
     using System.Text;
-
     using Acoustics.Shared.Csv;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
+    using AnalysisPrograms.Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.WavTools;
 
@@ -44,7 +40,7 @@ namespace AnalysisPrograms
 
             var result = new ChannelIntegrityIndices()
                 {
-                    StartOffset = analysisSettings.SegmentStartOffset.Value
+                    StartOffset = analysisSettings.SegmentStartOffset.Value,
                 };
 
             // do some sanity checks
@@ -134,7 +130,7 @@ namespace AnalysisPrograms
             SpectralIndexBase[] spectralIndices,
             AnalysisResult2[] results)
         {
-            
+
         }
     }
 }

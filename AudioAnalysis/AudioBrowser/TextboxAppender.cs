@@ -50,12 +50,12 @@
     ///    <bold value="true" />
     ///    <pointSize value="12" />
     ///    <fontFamilyName value="Lucida Console" />
-    ///  </mapping>  
+    ///  </mapping>
     /// </code>
     /// <para>
-    /// The Level is the standard log4net logging level. TextColorName and BackColorName should match 
-    /// a value of the System.Drawing.KnownColor enumeration. Bold and/or Italic may be specified, using 
-    /// <code>true</code> or <code>false</code>. FontFamilyName should match a font available on the client, 
+    /// The Level is the standard log4net logging level. TextColorName and BackColorName should match
+    /// a value of the System.Drawing.KnownColor enumeration. Bold and/or Italic may be specified, using
+    /// <code>true</code> or <code>false</code>. FontFamilyName should match a font available on the client,
     /// but if it's not found, the control's font will be used.
     /// </para>
     /// <para>
@@ -97,11 +97,11 @@
         /// </summary>
         /// <remarks>
         /// <para>
-        /// This property is a reference to the RichTextBox control 
+        /// This property is a reference to the RichTextBox control
         /// that will display logging events.
-        /// </para> 
+        /// </para>
         /// <para>If RichTextBox is null, no logging events will be displayed.</para>
-        /// <para>RichTextBox will be set to null when the control's containing 
+        /// <para>RichTextBox will be set to null when the control's containing
         /// Form is closed.</para>
         /// </remarks>
         public RichTextBox RichTextBox
@@ -188,7 +188,7 @@
         /// <param name="loggingEvent">The event to log.</param>
         /// <remarks>
         /// <para>
-        /// Writes the event to the RichTextBox control, if set. 
+        /// Writes the event to the RichTextBox control, if set.
         /// </para>
         /// <para>
         /// The format of the output will depend on the appender's layout.
@@ -218,8 +218,8 @@
         /// Delegate used to invoke UpdateControl
         /// </summary>
         /// <param name="loggingEvent">The event to log</param>
-        /// <remarks>This delegate is used when UpdateControl must be 
-        /// called from a thread other than the thread that created the 
+        /// <remarks>This delegate is used when UpdateControl must be
+        /// called from a thread other than the thread that created the
         /// RichTextBox control.</remarks>
         private delegate void UpdateControlDelegate(LoggingEvent loggingEvent);
 

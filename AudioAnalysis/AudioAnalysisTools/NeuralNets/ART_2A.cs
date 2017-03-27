@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-
-namespace NeuralNets
+﻿namespace NeuralNets
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using TowseyLibrary;
 
     public sealed class ART_2A
     {
@@ -81,7 +79,7 @@ namespace NeuralNets
     //                                    out double[] F2classProb, out int errorCode)
     //{
         //double initialValue = 0.0; //constant
-        
+
         //for (int uNo=0; uNo<F2Size; uNo++) UnCommittedJ[uNo] = true;
 
         //for (int uNo=0; uNo<F2Size; uNo++)    //{read in wts and set uncommitted booleans}
@@ -144,12 +142,12 @@ namespace NeuralNets
             iterNum++;
             //if (ART.DEBUG) LoggedConsole.WriteLine(" rep=" + (repNum + 1) + " iter=" + iterNum);
             SkippedBecauseFull[repNum] = 0;
-            
+
             //F2ScoreMatrix = new int[F2size, noClasses]; //keeps record of all F2 node classification results
             inputCategory = new int[dataSetSize]; //stores the winning F2 node for each input signal
             F2Wins = new int[dataSetSize]; //stores the number of times each F2 node wins
 
-            //initialise convergence criteria. 
+            //initialise convergence criteria.
             // For ARTMAP want train set learned but for other ART versions want stable F2node allocations
             trainSetLearned = true;
             int changedCategory = 0;
@@ -164,7 +162,7 @@ namespace NeuralNets
 
                 // {*********** DISPLAY ITER, Epoch, Ch AND OTHER MESSAGE ************}
                 //if (ART.DEBUG) LoggedConsole.WriteLine(" rep=" + (repNum+1) + " iter=" + (iterNum+1) + " sigNum=" + sigNum + " sigID=" + sigID);
-                
+
 
                 //{*************** GET INPUT, PRE-PROCESS and TRANSFER TO F0 of ART net ********}
                 double[] rawIP = GetOneIPVector(sigID, dataArray);
@@ -173,7 +171,7 @@ namespace NeuralNets
 
                 //{*********** NOW PASS ONE INPUT SIGNAL THROUGH THE NETWORK ***********}
                 double[] OP = PropagateIPToF2(IP);
-                
+
                 // change wts depending on prediction
                 int index = ChangeWts(IP, OP);
                 if (index == -1)//{index = -1 if F2 full}
@@ -211,7 +209,7 @@ namespace NeuralNets
             //Console.ReadLine();
 
             if (trainSetLearned)
-            {   
+            {
                 LoggedConsole.WriteLine("Training set learned after "+iterNum+" iterations");
                 break;
             }
@@ -223,7 +221,7 @@ namespace NeuralNets
     public void TestNet(double[,] dataArray, int simuNum, int repNum, int code)
     {
         //for testing need only one pass thru the test set}
-        //int maxIter = 1; 
+        //int maxIter = 1;
         //int dataSetSize = dataArray.GetLength(0);
         //int target, sigID; //         : word;
         //char choice, key;
@@ -284,7 +282,7 @@ namespace NeuralNets
                 //        GetOneTstSignal(sigNum, dataArray, target, sigID, code);
                 //        tstSetTargets[sigNum] = target;
                 //        tstResult[target].tot++;
-                
+
 
                 // {*********** DISPLAY ITER, Epoch, Ch AND OTHER MESSAGE ************}
                 //if (DisplayOn)
@@ -309,14 +307,14 @@ namespace NeuralNets
                 //NormaliseVector(F1Size, IPneta);
                 //ContrastEnhance(F1Size, IPneta, ARTParams[Theta]);
                 //NormaliseVector(F1Size, IPneta);   //{renormalise enhanced sig}
-                //PropagateToF2(F1Size, F2Size, IPneta, index, prediction); 
+                //PropagateToF2(F1Size, F2Size, IPneta, index, prediction);
                 //Index returns unit with maxOP. Prediction returns zero or index.
 
                 //decisionMatrix[sigNum, repNum] = F2classLabel[prediction];
-                
+
 
                 //F2ScoreMatrix[index, noClasses + 1]++;   //{total count going to F2node}
-                //if (DisplayOn) 
+                //if (DisplayOn)
                 //{   if (index == 0) // {) only display the input signal}
                 //    {   DisplayF2Weights(F2SizeOfNeta+2, F1sizeOfNeta, F2SizeOfNeta, F2ScoreMatrix[index, noClasses+1], IPneta)
                 //    }
@@ -379,7 +377,7 @@ namespace NeuralNets
                 OPj = uncommittedOP;
             }
             else  //OP of   committed unit j}
-            {                                   
+            {
                 OPj = 0.0;
                 for (int F1uNo = 0; F1uNo < this.F1Size; F1uNo++) OPj += (IP[F1uNo] * Zj[F2uNo, F1uNo]);
             }
@@ -421,12 +419,12 @@ namespace NeuralNets
 
     /// <summary>
     /// original Pascal header was: Procedure ChangeWtsART2a(var index:word);  {is my version of ART2_AMatchAndUpdateWts;}
-    /// 
+    ///
     /// </summary>
     /// <param name="index"></param>
     public int ChangeWts(double[] IP, double[] OP)
     {
-        int index = IndexOfMaxF2Unit(OP);  //get index of the winning F2 node i.e. the unit with maxOP. 
+        int index = IndexOfMaxF2Unit(OP);  //get index of the winning F2 node i.e. the unit with maxOP.
 
         //there are three possibilities
         // 1:  max node committed BUT poor match so RESET to another node
@@ -499,7 +497,7 @@ namespace NeuralNets
     public double[] ContrastEnhance(double[] data)
     {
         double[] op = new double[data.Length];
-        for (int i = 0; i < data.Length; i++) if (data[i] < this.theta) op[i] = 0.0; 
+        for (int i = 0; i < data.Length; i++) if (data[i] < this.theta) op[i] = 0.0;
                                               else                      op[i] = data[i];
         return op;
     }

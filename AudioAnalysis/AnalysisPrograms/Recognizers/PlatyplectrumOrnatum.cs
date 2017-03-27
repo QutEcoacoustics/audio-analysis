@@ -32,24 +32,24 @@ namespace AnalysisPrograms.Recognizers
     /// <summary>
     /// This is a frog recognizer based on the "honk" or "quack" template
     /// It detects honk type calls by extracting three features: dominant frequency, honk duration and match to honk spectrum profile.
-    /// 
-    /// This type recognizer was first developed for LimnodynastesConvex and can be duplicated with modification for other frogs 
+    ///
+    /// This type recognizer was first developed for LimnodynastesConvex and can be duplicated with modification for other frogs
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
-    /// 
-    /// There are two different recognizer algorithms in this class, in methods Algorithm1() and Algorithm2(). 
+    ///
+    /// There are two different recognizer algorithms in this class, in methods Algorithm1() and Algorithm2().
     /// They differ in the sequence of their filtering steps.
-    /// 
-    /// Algorithm1:  
+    ///
+    /// Algorithm1:
     /// 1: Loop through spgm and find dominant freq bin and its amplitude in each frame
     /// 2: Find the starts-ends of call events based on the amplitude array
-    /// 3: Give a score to each event (found at 2) which is its cosine similarity to a simple template (in this case a vector template) 
-    /// 
-    /// Algorithm2: 
+    /// 3: Give a score to each event (found at 2) which is its cosine similarity to a simple template (in this case a vector template)
+    ///
+    /// Algorithm2:
     /// 1: Loop through spgm and find dominant freq bin and its amplitude in each frame
     /// 2: If frame passes amplitude test, then calculate a similarity cosine score for that frame. Simlarity score is wrt a template matrix.
-    /// 3: If similarity score exceeds threshold, then assign event score based on the amplitude. 
-    /// 
+    /// 3: If similarity score exceeds threshold, then assign event score based on the amplitude.
+    ///
     /// </summary>
     class PlatyplectrumOrnatum : RecognizerBase
     {
@@ -127,7 +127,7 @@ namespace AnalysisPrograms.Recognizers
                 WindowSize = 256,
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = noiseReductionParameter,
-                WindowOverlap = 0.0
+                WindowOverlap = 0.0,
             };
 
             // now construct the standard decibel spectrogram WITH noise removal
@@ -154,7 +154,7 @@ namespace AnalysisPrograms.Recognizers
             // ## THREE THRESHOLDS ---- only one of these is given to user.
             // minimum dB to register a dominant freq peak. After noise removal
             double peakThresholdDb = 3.0;
-            // The threshold dB amplitude in the dominant freq bin required to yield an event 
+            // The threshold dB amplitude in the dominant freq bin required to yield an event
             double eventDecibelThreshold = (double?)configuration["EventDecibelThreshold"] ?? 6.0;
             // minimum score for an acceptable event - that is when processing the score array.
             double eventSimilarityThreshold = (double?)configuration["EventSimilarityThreshold"] ?? 0.2;
@@ -173,7 +173,7 @@ namespace AnalysisPrograms.Recognizers
             var templates = GetTemplatesForAlgorithm1(callBinWidth);
 
             int dominantFrequency = (int)configuration["DominantFrequency"];
-            // NOTE: could give user control over other call features 
+            // NOTE: could give user control over other call features
             //  Such as frequency gap between peaks. But not in this first iteration of the recognizer.
             //int peakGapInHerz = (int)configuration["PeakGap"];
             //int minHz = (int)configuration[AnalysisKeys.MinHz];
@@ -272,7 +272,7 @@ namespace AnalysisPrograms.Recognizers
                     DominantFreq = avDominantFreq,
                     Score = eventScore,
                     // remove name because it hides spectral content in display of the event.
-                    Name = ""
+                    Name = "",
                 };
                 newEvent.SetTimeAndFreqScales(framesPerSec, herzPerBin);
 
@@ -284,7 +284,7 @@ namespace AnalysisPrograms.Recognizers
             var plot = new Plot(this.DisplayName, prunedScores, eventSimilarityThreshold);
             var plots = new List<Plot> { plot };
 
-            //DEBUG IMAGE this recognizer only. MUST set false for deployment. 
+            //DEBUG IMAGE this recognizer only. MUST set false for deployment.
             bool displayDebugImage = MainEntry.InDEBUG;
             if (displayDebugImage)
             {
@@ -295,7 +295,7 @@ namespace AnalysisPrograms.Recognizers
                 var debugPlot = new Plot(this.DisplayName, normalisedScores, normalisedThreshold);
                 var debugPlots = new List<Plot> { debugPlot, plot };
                 var debugImage = DisplayDebugImage(sonogram, potentialEvents, debugPlots, hits);
-                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.BaseName), 
+                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.BaseName),
                                                         this.Identifier, "png", "DebugSpectrogram"));
                 debugImage.Save(debugPath.FullName);
             }
@@ -317,10 +317,10 @@ namespace AnalysisPrograms.Recognizers
 
 
         /// <summary>
-        /// Algorithm2: 
+        /// Algorithm2:
         /// 1: Loop through spgm and find dominant freq bin and its amplitude in each frame
         /// 2: If frame passes amplitude test, then calculate a similarity cosine score for that frame. Simlarity score is wrt a template matrix.
-        /// 3: If similarity score exceeds threshold, then assign event score based on the amplitude. 
+        /// 3: If similarity score exceeds threshold, then assign event score based on the amplitude.
         /// </summary>
         /// <param name="recording"></param>
         /// <param name="configuration"></param>
@@ -362,7 +362,7 @@ namespace AnalysisPrograms.Recognizers
             // ## THREE THRESHOLDS ---- only one of these is given to user.
             // minimum dB to register a dominant freq peak. After noise removal
             double peakThresholdDb = 3.0;
-            // The threshold dB amplitude in the dominant freq bin required to yield an event 
+            // The threshold dB amplitude in the dominant freq bin required to yield an event
             double eventDecibelThreshold = (double?)configuration["EventDecibelThreshold"] ?? 6.0;
             // minimum score for an acceptable event - that is when processing the score array.
             double eventSimilarityThreshold = (double?)configuration["EventSimilarityThreshold"] ?? 0.2;
@@ -417,7 +417,7 @@ namespace AnalysisPrograms.Recognizers
                 // peak should exceed thresold amplitude
                 if (spectrum[maxId] < peakThresholdDb) continue;
 
-                //now calculate similarity with template 
+                //now calculate similarity with template
                 var locality = MatrixTools.Submatrix(spg, s-1, bottomBin, s + callFrameDuration - 2, topBin); // s-1 because first row of template is zeros.
                 int localMaxBin = maxId - bottomBin;
                 double callAmplitude = (locality[1, localMaxBin] + locality[2, localMaxBin] + locality[3, localMaxBin]) / 3.0;
@@ -490,7 +490,7 @@ namespace AnalysisPrograms.Recognizers
             var plot = new Plot(this.DisplayName, normalisedScores, normalisedThreshold);
             var plots = new List<Plot> { plot };
 
-            //DEBUG IMAGE this recognizer only. MUST set false for deployment. 
+            //DEBUG IMAGE this recognizer only. MUST set false for deployment.
             bool displayDebugImage = MainEntry.InDEBUG;
             if (displayDebugImage)
             {

@@ -36,7 +36,7 @@
         }
 
         /// <summary>
-        /// Override the abstract “Encoding” property. 
+        /// Override the abstract “Encoding” property.
         /// </summary>
         public override Encoding Encoding
         {

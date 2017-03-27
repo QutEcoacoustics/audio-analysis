@@ -1,23 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-using TowseyLibrary;
-using System.Drawing;
-using System.IO;
-using System.Drawing.Imaging;
-using Dong.Felt.Configuration;
-using Dong.Felt.SpectrogramDrawing;
-
-namespace Dong.Felt.Preprocessing
+﻿namespace Dong.Felt.Preprocessing
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using Dong.Felt.Configuration;
+    using Dong.Felt.SpectrogramDrawing;
+    using TowseyLibrary;
+
     public class AudioPreprosessing
     {
-        public static void BatchSpectrogramGenerationFromAudio(DirectoryInfo audioFileDirectory, 
+        public static void BatchSpectrogramGenerationFromAudio(DirectoryInfo audioFileDirectory,
             SonogramConfig config, List<double> scores,
             List<AcousticEvent> acousticEvent, double eventThreshold)
         {
@@ -29,16 +29,16 @@ namespace Dong.Felt.Preprocessing
 
             // because the result is obtained like this order, 0, 1, 2, 10, 3, 4, 5, 6, ...9
             var audioFiles = Directory.GetFiles(audioFileDirectory.FullName, @"*.wav", SearchOption.TopDirectoryOnly);
-            var audioFilesCount = audioFiles.Count();          
+            var audioFilesCount = audioFiles.Count();
             for (int j = 0; j < audioFilesCount; j++)
-            {      
+            {
                 var spectrogram = AudioToSpectrogram(config, audioFiles[j]);
                 Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEvent, eventThreshold, null);
                 var spectrogramFileName = audioFiles[j] + ".png";
-                image.Save(spectrogramFileName, ImageFormat.Png); 
+                image.Save(spectrogramFileName, ImageFormat.Png);
             }
         }
-      
+
         /// <summary>
         /// Generate a spectrogram from an audio file.
         /// </summary>
@@ -46,8 +46,8 @@ namespace Dong.Felt.Preprocessing
         /// <param name="audioFilePath"></param>
         /// <returns></returns>
         public static SpectrogramStandard AudioToSpectrogram(SonogramConfig config, string audioFilePath)
-        {          
-            var recording = new AudioRecording(audioFilePath);            
+        {
+            var recording = new AudioRecording(audioFilePath);
             var spectrogram = new SpectrogramStandard(config, recording.WavReader);
             return spectrogram;
         }
@@ -64,11 +64,11 @@ namespace Dong.Felt.Preprocessing
             sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhood, contrastLevel);
             //sonogram.Data = FilterWithLocalColumnVariance(
             //var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Bin LCN (Local Contrast Normalisation)");
-            return sonogram; 
+            return sonogram;
         }
 
         /// <summary>
-        /// Does column-wise LCN (Local Contrast Normalisation. 
+        /// Does column-wise LCN (Local Contrast Normalisation.
         /// The denominator = (contrastLevel + Math.Sqrt(localVariance[y])
         /// A low contrastLevel = 0.5 give more grey image.
         /// A high contrastLevel = 1.0 give mostly white high contrast image.
@@ -97,9 +97,9 @@ namespace Dong.Felt.Preprocessing
             } //end for all cols
             return outM;
         }
-       
+
         /// <summary>
-        /// Reduce the pink noise. 
+        /// Reduce the pink noise.
         /// the result could be a binary spectrogram or original spectrogram.
         /// </summary>
         /// <param name="spectralSonogram">
@@ -197,7 +197,7 @@ namespace Dong.Felt.Preprocessing
             scores.Add(1.0);
             var acousticEventlist = new List<AcousticEvent>();
             var poiList = new List<PointOfInterest>();
-            double eventThreshold = 0.5; // dummy variable - not used                               
+            double eventThreshold = 0.5; // dummy variable - not used
             Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
             var FileName = new FileInfo(inputFilePath);
             string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-compressed spectrogram.png");
@@ -222,7 +222,7 @@ namespace Dong.Felt.Preprocessing
         }
 
         /// <summary>
-        /// This method aims to compress spectrogram data by extracting particular pixels, like choose maximum every 3 pixel.  
+        /// This method aims to compress spectrogram data by extracting particular pixels, like choose maximum every 3 pixel.
         /// </summary>
         /// <param name="spectrogramData"></param>
         /// <param name="compressStep">compress step, could be 1/2, 1/4, 1/8....
@@ -274,7 +274,7 @@ namespace Dong.Felt.Preprocessing
         }
 
         /// <summary>
-        /// This method aims to compress spectrogram data by extracting particular pixels, like choose average over N pixels.  
+        /// This method aims to compress spectrogram data by extracting particular pixels, like choose average over N pixels.
         /// </summary>
         /// <param name="spectrogramData"></param>
         /// <param name="compressStep">compress step, could be 1/2, 1/4, 1/8....
@@ -319,7 +319,7 @@ namespace Dong.Felt.Preprocessing
         }
 
         /// <summary>
-        /// This method aims to compress spectrogram data by extracting particular pixels, like choose maximum every 3 pixel.  
+        /// This method aims to compress spectrogram data by extracting particular pixels, like choose maximum every 3 pixel.
         /// </summary>
         /// <param name="spectrogramData"></param>
         /// <param name="compressStep">compress step, could be 1/2, 1/4, 1/8....
@@ -364,7 +364,7 @@ namespace Dong.Felt.Preprocessing
         }
 
         /// <summary>
-        /// This method aims to compress spectrogram data by extracting particular pixels, like choose average over N pixels.  
+        /// This method aims to compress spectrogram data by extracting particular pixels, like choose average over N pixels.
         /// </summary>
         /// <param name="spectrogramData"></param>
         /// <param name="compressStep">compress step, could be 1/2, 1/4, 1/8....

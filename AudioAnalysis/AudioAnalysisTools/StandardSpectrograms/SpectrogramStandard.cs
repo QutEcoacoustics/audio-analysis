@@ -1,20 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Acoustics.Tools.Wav;
-using AudioAnalysisTools.DSP;
-using TowseyLibrary;
-
-
-namespace AudioAnalysisTools.StandardSpectrograms
+﻿namespace AudioAnalysisTools.StandardSpectrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Tools.Wav;
+    using AudioAnalysisTools.DSP;
+    using TowseyLibrary;
+
     public class SpectrogramStandard : BaseSonogram
     {
         //There are three CONSTRUCTORS
         //Use the third constructor when you want to init a new Spectrogram by extracting portion of an existing sonogram.
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="configFile"></param>
         /// <param name="wav"></param>
@@ -156,7 +155,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         //public System.Tuple<double[,], double[]> GetCepstrogram(int minHz, int maxHz, bool doMelScale, int ccCount)
         //{
         //    var tuple = CepstralSonogram.GetCepstrogram(this.Data, minHz, maxHz, this.Configuration.FreqBinCount, this.FBinWidth, doMelScale, ccCount);
-        //    return tuple; 
+        //    return tuple;
         //}
 
         //##################################################################################################################################

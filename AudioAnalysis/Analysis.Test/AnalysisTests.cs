@@ -1,20 +1,22 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
+﻿// <copyright file="AnalysisTests.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 using AnalysisPrograms.SourcePreparers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Ecosounds.Test.AnalysisPrograms
 {
+    using System;
+    using System.Collections.Generic;
     using System.IO;
-
-    //using AudioAnalysis.TowseyLibrary;
-
-    using global::AnalysisPrograms;
+    using System.Linq;
+    using System.Text;
     using Acoustics.Shared;
     using AnalysisBase;
     using AudioBase;
+    //using AudioAnalysis.TowseyLibrary;
+    using global::AnalysisPrograms;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
     public class AnalysisTests
@@ -99,6 +101,6 @@ namespace Ecosounds.Test.AnalysisPrograms
 
         }
 
-        
+
     }
 }

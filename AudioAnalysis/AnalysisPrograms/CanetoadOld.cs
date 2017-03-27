@@ -4,51 +4,43 @@
 //  The ACTION code for this analysis is: "Canetoad"
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
+
 namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
     using System.Data;
-    using System.Diagnostics.Contracts;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
     using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
     using Acoustics.Tools;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
     using AnalysisPrograms.Production;
     using AnalysisPrograms.Recognizers;
     using AnalysisPrograms.Recognizers.Base;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
     using log4net;
-
     using TowseyLibrary;
-
     using ProcessRunner = TowseyLibrary.ProcessRunner;
-
-
 
     /// <summary>
     ///     NOTE: In order to detect canetoad oscillations, which can reach 15 per second, one requires a frame rate of at least
     ///     30 frames per second and preferably a frame rate = 60 so that this period sits near middle of the array of DCT coefficients.
-    ///     The frame rate is affected by three parameters: 1) SAMPLING RATE; 2) FRAME LENGTH; 3) FRAME OVERLAP. 
-    ///     1) User may wish to resample and so lower the SR. 
+    ///     The frame rate is affected by three parameters: 1) SAMPLING RATE; 2) FRAME LENGTH; 3) FRAME OVERLAP.
+    ///     1) User may wish to resample and so lower the SR.
     ///     2) FRAME LENGTH should = 512 or 1024 depending on oscillation rate. Higher oscillation rate requires shorter frame length.
-    ///     3) The best way to adjust frame rate is to adjust frame overlap. I decided to do this by automatically calculating 
+    ///     3) The best way to adjust frame rate is to adjust frame overlap. I decided to do this by automatically calculating
     ///        the frame overlap to suit the maximum oscillation to be detected. This is written in the method OscillationDetector.CalculateRequiredFrameOverlap();
-    ///        
+    ///
     ///     Avoid a long DCT length because the DCT is expensive to calculate. 0.5s - 1.0s is adequate for
     ///     canetoad - depends on the expected osc rate.
     /// </summary>
@@ -78,11 +70,11 @@ namespace AnalysisPrograms
             {
                 return new AnalysisSettings
                            {
-                               SegmentMaxDuration = TimeSpan.FromMinutes(1), 
-                               SegmentMinDuration = TimeSpan.FromSeconds(15), 
-                               SegmentMediaType = MediaTypes.MediaTypeWav, 
+                               SegmentMaxDuration = TimeSpan.FromMinutes(1),
+                               SegmentMinDuration = TimeSpan.FromSeconds(15),
+                               SegmentMediaType = MediaTypes.MediaTypeWav,
                                SegmentOverlapDuration = TimeSpan.Zero,
-                               SegmentTargetSampleRate = RESAMPLE_RATE
+                               SegmentTargetSampleRate = RESAMPLE_RATE,
                            };
             }
         }
@@ -148,14 +140,14 @@ namespace AnalysisPrograms
                 string segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, StartMinute);
                 string sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, StartMinute);
                 string eventsFname = string.Format(
-                    "{0}_{1}min.{2}.Events.csv", 
-                    segmentFileStem, 
-                    StartMinute, 
+                    "{0}_{1}min.{2}.Events.csv",
+                    segmentFileStem,
+                    StartMinute,
                     "Towsey." + AnalysisName);
                 string indicesFname = string.Format(
-                    "{0}_{1}min.{2}.Indices.csv", 
-                    segmentFileStem, 
-                    StartMinute, 
+                    "{0}_{1}min.{2}.Indices.csv",
+                    segmentFileStem,
+                    StartMinute,
                     "Towsey." + AnalysisName);
 
                 if (true)
@@ -192,8 +184,8 @@ namespace AnalysisPrograms
                 if (!csvEvents.Exists)
                 {
                     TowseyLibrary.Log.WriteLine(
-                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.", 
-                        arguments.Start.Value, 
+                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.",
+                        arguments.Start.Value,
                         arguments.Source.FullName);
                 }
                 else
@@ -207,8 +199,8 @@ namespace AnalysisPrograms
                 if (!csvIndicies.Exists)
                 {
                     TowseyLibrary.Log.WriteLine(
-                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.", 
-                        arguments.Start.Value, 
+                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
+                        arguments.Start.Value,
                         arguments.Source.FullName);
                 }
                 else
@@ -259,7 +251,7 @@ namespace AnalysisPrograms
                     {
                         TargetSampleRate = RESAMPLE_RATE,
                         OffsetStart = start,
-                        OffsetEnd = start.Add(duration)
+                        OffsetEnd = start.Add(duration),
                     };
             }
 
@@ -304,7 +296,7 @@ namespace AnalysisPrograms
             Log.Debug("Canetoad sample rate:" + recording.SampleRate);
 
             RecognizerResults results = Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero, analysisSettings.AnalysisInstanceOutputDirectory);
-            
+
             var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
 
             BaseSonogram sonogram = results.Sonogram;
@@ -342,11 +334,11 @@ namespace AnalysisPrograms
         }
 
         public override void SummariseResults(
-            AnalysisSettings settings, 
-            FileSegment inputFileSegment, 
-            EventBase[] events, 
-            SummaryIndexBase[] indices, 
-            SpectralIndexBase[] spectralIndices, 
+            AnalysisSettings settings,
+            FileSegment inputFileSegment,
+            EventBase[] events,
+            SummaryIndexBase[] indices,
+            SpectralIndexBase[] spectralIndices,
             AnalysisResult2[] results)
         {
             // noop
@@ -377,7 +369,7 @@ namespace AnalysisPrograms
         #region Methods
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="segmentOfSourceFile"></param>
         /// <param name="configuration"></param>
@@ -416,10 +408,10 @@ namespace AnalysisPrograms
         }
 
         private static Image DrawSonogram(
-            BaseSonogram sonogram, 
-            double[,] hits, 
-            Plot scores, 
-            List<AcousticEvent> predictedEvents, 
+            BaseSonogram sonogram,
+            double[,] hits,
+            Plot scores,
+            List<AcousticEvent> predictedEvents,
             double eventThreshold)
         {
             const bool DoHighlightSubband = false;
@@ -445,9 +437,9 @@ namespace AnalysisPrograms
             if ((predictedEvents != null) && (predictedEvents.Count > 0))
             {
                 image.AddEvents(
-                    predictedEvents, 
-                    sonogram.NyquistFrequency, 
-                    sonogram.Configuration.FreqBinCount, 
+                    predictedEvents,
+                    sonogram.NyquistFrequency,
+                    sonogram.Configuration.FreqBinCount,
                     sonogram.FramesPerSecond);
             }
 

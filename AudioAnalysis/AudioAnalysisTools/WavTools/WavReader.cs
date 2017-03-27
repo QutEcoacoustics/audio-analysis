@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
-namespace AudioAnalysisTools.WavTools
+﻿namespace AudioAnalysisTools.WavTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Text;
+
     [Obsolete]
     public sealed class TowseyWavReader
     {
         public const string wavFExt = ".wav";
-        
+
         //declare variables, getters and setters
 		public int Channels { get; private set; }
 		public int SampleRate { get; private set; }
@@ -109,20 +109,20 @@ namespace AudioAnalysisTools.WavTools
             // See also
             //ms-help://MS.VSCC.v90/MS.MSDNQTR.v90.en/multimed/htm/_win32_waveformatex_str.htm
             // here are the first few format IDs
-            //#define  WAVE_FORMAT_UNKNOWN    0x0000 
+            //#define  WAVE_FORMAT_UNKNOWN    0x0000
             //#define  WAVE_FORMAT_PCM        0x0001
-            //#define  WAVE_FORMAT_ADPCM      0x0002 
+            //#define  WAVE_FORMAT_ADPCM      0x0002
             //#define  WAVE_FORMAT_IEEE_FLOAT 0x0003
-            //#define  WAVE_FORMAT_VSELP      0x0004 
-            //#define  WAVE_FORMAT_IBM_CVSD   0x0005 
-            //#define  WAVE_FORMAT_ALAW       0x0006 
-            //#define  WAVE_FORMAT_MULAW      0x0007 
-            //#define  WAVE_FORMAT_DTS        0x0008 
+            //#define  WAVE_FORMAT_VSELP      0x0004
+            //#define  WAVE_FORMAT_IBM_CVSD   0x0005
+            //#define  WAVE_FORMAT_ALAW       0x0006
+            //#define  WAVE_FORMAT_MULAW      0x0007
+            //#define  WAVE_FORMAT_DTS        0x0008
 
             if (data[20] != 0x01 || data[21] != 0x00)
                 throw new InvalidOperationException("Cannot parse WAV header: WRONG AUDIO FORMAT:- \n\tAudioFormat (data[20-21])=" + data[20] + "," + data[21] + ". Should be 1,0.");
 
-            // Number of Channels 
+            // Number of Channels
             this.Channels = BitConverter.ToUInt16(data, 22);
 
             // Sample Rate
@@ -239,7 +239,7 @@ namespace AudioAnalysisTools.WavTools
             int newL = L / interval; // the new length
             double[] newSamples = new double[newL];
             L = newL * interval; //want L to be exact mulitple of interval
-            for (int i = 0; i < newL; i++) 
+            for (int i = 0; i < newL; i++)
             {
                 newSamples[i] = Samples[i*interval];
             }
@@ -247,5 +247,5 @@ namespace AudioAnalysisTools.WavTools
             SampleRate /= interval;
             SampleCount = newL;
         }
-    }// end of class WavReader 
+    }// end of class WavReader
 }

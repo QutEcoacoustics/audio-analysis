@@ -6,17 +6,16 @@
 //   Defines the ConfigFile type.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
 namespace Acoustics.Shared.ConfigFile
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
+    using Contracts;
     using Fasterflect;
-
     using YamlDotNet.Dynamic;
     using YamlDotNet.RepresentationModel;
 
@@ -162,10 +161,6 @@ namespace Acoustics.Shared.ConfigFile
 
         public static bool TryResolveConfigFile(string file, DirectoryInfo[] searchPaths, out FileInfo configFile)
         {
-            Contract.Ensures(
-                Contract.Result<bool>() == false
-                || (Contract.Result<bool>() == true && Contract.ValueAtReturn(out configFile).Exists));
-
             configFile = null;
             if (string.IsNullOrWhiteSpace(file))
             {

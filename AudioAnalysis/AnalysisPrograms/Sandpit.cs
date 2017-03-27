@@ -1,26 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using System.Drawing;
-using System.Globalization;
-using TowseyLibrary;
-using AudioAnalysisTools;
-using AudioAnalysisTools.Indices;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.LongDurationSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-using Acoustics.Shared;
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Globalization;
+    using System.IO;
+    using System.Linq;
+    using Acoustics.Shared;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.LongDurationSpectrograms;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using TowseyLibrary;
 
     /// <summary>
     /// Activity Code for this class:= sandpit
     ///
     /// Activity Codes for other tasks to do with spectrograms and audio files:
-    /// 
+    ///
     /// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
     /// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
     /// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
@@ -31,7 +30,7 @@ namespace AnalysisPrograms
     /// audiofilecheck - Writes information about audio files to a csv file.
     /// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
     /// audiocutter - Cuts audio into segments of desired length and format
-    /// createfoursonograms 
+    /// createfoursonograms
     /// </summary>
     public class Sandpit
     {
@@ -70,7 +69,7 @@ namespace AnalysisPrograms
                 //OtsuThresholder.Execute(null);
                 //string recordingPath = @"G:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\NW_NW273_20101013-051200-0514-1515-Brown Cuckoo-dove1.wav";
-                string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TOWERB_20110302_202900_22.LSK.F.wav"; 
+                string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TOWERB_20110302_202900_22.LSK.F.wav";
                 //int resampleRate = 22050;
                 var outputPath = @"G:\SensorNetworks\Output\temp\AEDexperiments";
                 var outputDirectory = new DirectoryInfo(outputPath);
@@ -90,7 +89,7 @@ namespace AnalysisPrograms
                     WindowSize = frameSize,
                     WindowOverlap = windowOverlap,
                     NoiseReductionType = noiseReductionType,
-                    NoiseReductionParameter = 0.0
+                    NoiseReductionParameter = 0.0,
                 };
 
 
@@ -180,7 +179,7 @@ namespace AnalysisPrograms
             // experiments with Mitchell-Aide ARBIMON segmentation algorithm
             // Three steps: (1) Flattening spectrogram by subtracting the median bin value from each freq bin.
             //              (2) Recalculate the spectrogram using local range. Trim off the 5 percentiles.
-            //              (3) Set a global threshold.  
+            //              (3) Set a global threshold.
             if (false)
             {
                 var outputPath = @"G:\SensorNetworks\Output\temp\AEDexperiments";
@@ -199,7 +198,7 @@ namespace AnalysisPrograms
                     WindowSize = frameSize,
                     WindowOverlap = windowOverlap,
                     NoiseReductionType = noiseReductionType,
-                    NoiseReductionParameter = 0.0
+                    NoiseReductionParameter = 0.0,
                 };
 
                 var aedConfiguration = new Aed.AedConfiguration
@@ -251,7 +250,7 @@ namespace AnalysisPrograms
 
 
 
-            if (false)  // 
+            if (false)  //
             {
                 CubeHelix.DrawTestImage();
                 LoggedConsole.WriteLine("FINSIHED");
@@ -285,7 +284,7 @@ namespace AnalysisPrograms
             }
 
             // // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
-            if (false)  
+            if (false)
             {
                 ChannelIntegrity.Execute(null);
             }
@@ -438,7 +437,7 @@ namespace AnalysisPrograms
 
                 FileInfo[] indexFiles = { new FileInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP\20150622\GympieNP_20150622__"+keys[0]+".csv"),
                                           new FileInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP\20150622\GympieNP_20150622__"+keys[1]+".csv"),
-                                          new FileInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP\20150622\GympieNP_20150622__"+keys[2]+".csv")
+                                          new FileInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP\20150622\GympieNP_20150622__"+keys[2]+".csv"),
                 };
                 FileInfo opImage = new FileInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP\20150622\GympieNP_20150622_TernaryPlot.png");
 
@@ -464,13 +463,13 @@ namespace AnalysisPrograms
 
 
 
-            // testing directory search and file search 
+            // testing directory search and file search
             if (false)
             {
                 string[] topLevelDirs =
                 {
                     @"C:\temp\DirA",
-                    @"C:\temp\DirB"
+                    @"C:\temp\DirB",
                 };
 
                 string sitePattern = "Subdir2";
@@ -523,7 +522,7 @@ namespace AnalysisPrograms
             if (false)
             {
                 DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March\CornellMarine"),
-                                             new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April\CornellMarine")
+                                             new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April\CornellMarine"),
                                            };
 
                 DirectoryInfo outputDirectory = new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms");
@@ -547,7 +546,7 @@ namespace AnalysisPrograms
 
 
             // Concatenate three images for Dan Stowell.
-            if (false)  // 
+            if (false)  //
             {
                 var imageDirectory = new DirectoryInfo(@"H:\Documents\SensorNetworks\MyPapers\2016_QMUL_SchoolMagazine");
                 string fileName1 = @"TNC_Musiamunat_20150702_BAR10__ACI-ENT-EVNCropped.png";
@@ -571,7 +570,7 @@ namespace AnalysisPrograms
             }
 
             // Concatenate two images but add labels for EcoCongress.
-            if (false)  // 
+            if (false)  //
             {
                 //var imageDirectory = new DirectoryInfo(@"H:\Documents\SensorNetworks\MyPapers\2016_QMUL_SchoolMagazine");
                 //string fileName1 = @"TNC_Musiamunat_20150702_BAR10__ACI-ENT-EVNCropped.png";
@@ -636,7 +635,7 @@ namespace AnalysisPrograms
 
 
             // Concatenate twelve images for Simon and Toby
-            if (false)  // 
+            if (false)  //
             {
                 var imageDirectory = new DirectoryInfo(@"F:\AvailaeFolders\Griffith\Toby\20160201_FWrecordings\Site1Images");
                 var imageFiles = imageDirectory.GetFiles();
@@ -658,7 +657,7 @@ namespace AnalysisPrograms
 
 
             // Concatenate images for Karl-Heinz Frommolt
-            if (false)  // 
+            if (false)  //
             {
                 FrommoltProject.ConcatenateDays();
             }
@@ -668,7 +667,7 @@ namespace AnalysisPrograms
 
             //HERVE GLOTIN: This is used to analyse the BIRD50 data set.
             // Combined audio2csv + zooming spectrogram task.
-            // 
+            //
             if (false)
             {
                 HerveGlotinCollaboration.HiRes1();
@@ -680,24 +679,24 @@ namespace AnalysisPrograms
 
             //HERVE GLOTIN: This is used to analyse the BIRD50 data set.
             // To produce HIres spectrogram images
-            // 
+            //
             if (false)
             {
                 HerveGlotinCollaboration.HiRes2();
 
-            }  // END 
+            }  // END
 
 
             //HERVE GLOTIN: This is used to analyse the BIRD50 data set.
             // In order to analyse the short recordings in BIRD50 dataset, need following change to code:
             // need to modify    AudioAnalysis.AnalysisPrograms.AcousticIndices.cs #line648
-            // need to change    SegmentMinDuration = TimeSpan.FromSeconds(20),  
+            // need to change    SegmentMinDuration = TimeSpan.FromSeconds(20),
             // to                SegmentMinDuration = TimeSpan.FromSeconds(1),
             if (false)
             {
                 HerveGlotinCollaboration.HiRes3();
 
-            }  // END 
+            }  // END
 
 
             //HERVE GLOTIN: To produce HIres spectrogram images
@@ -707,7 +706,7 @@ namespace AnalysisPrograms
             {
                 HerveGlotinCollaboration.HiRes4();
 
-            }  // END 
+            }  // END
 
 
 
@@ -719,30 +718,30 @@ namespace AnalysisPrograms
                 BirdClefExperiment1.Execute(null);
             } // Herve Glotin's BIRD50 Dataset
 
-            
+
             //FROG DATA SET
             // To produce observe feature spectra
             // This is used to analyse frog recordings of Lin Schwarzkopf.
             if (false)
             {
                 HighResolutionAcousticIndices.Execute(null);
-            } 
+            }
 
             //OTSU TRHESHOLDING FROM JIE XIE
             // Used to threshold spectrograms to binary.
-            //  Jie uses the algorithm in his last 2016 papers. 
-            // 
+            //  Jie uses the algorithm in his last 2016 papers.
+            //
             if (false)
             {
                 OtsuThresholder.Execute(null);
-            } 
+            }
 
             if (false)
             {
                 HerveGlotinCollaboration.AnalyseBOMBYXRecordingsForSpermWhaleClicks();
 
-            } 
-            
+            }
+
 
 
             // To CALCULATE MUTUAL INFORMATION BETWEEN SPECIES DISTRIBUTION AND FREQUENCY INFO
@@ -771,7 +770,7 @@ namespace AnalysisPrograms
                 int[] speciesCounts = new int[speciesNumber];
                 for (int i = 0; i < speciesNumber; i++)
                 {
-                    string[] words = lines[i].Split(','); 
+                    string[] words = lines[i].Split(',');
                     speciesCounts[i] = Int32.Parse(words[1]);
                 }
                 double Hspecies = DataTools.Entropy_normalised(speciesCounts);
@@ -959,7 +958,7 @@ namespace AnalysisPrograms
                 //reducedBinCount = 100 + (156 / 2); // exotic style
 
 
-                // Length of the Input feature vector 
+                // Length of the Input feature vector
                 int featureVectorLength = reducedBinCount * valueCategoryCount;
 
                 // data structure to contain probability info
@@ -1022,9 +1021,9 @@ namespace AnalysisPrograms
                             //    probSgivenF[c, speciesID - 1] ++;
                             //    decibelDistribution[dBvalue]++;
                             //}
-                            
 
-                            // use next six lines when variable can have >=3 discrete values 
+
+                            // use next six lines when variable can have >=3 discrete values
                             int valueCategory = 0;
                             for (int bound = 1; bound < bounds.Length; bound++)
                             {
@@ -1048,7 +1047,7 @@ namespace AnalysisPrograms
 
                 //for (int i = 0; i < decibelDistribution.Length; i++)
                 //{
-                //    Console.WriteLine(String.Format("dB{0}  {1}", i, decibelDistribution[i])); 
+                //    Console.WriteLine(String.Format("dB{0}  {1}", i, decibelDistribution[i]));
                 //}
                 double sum = decibelDistribution.Sum();
                 Console.WriteLine(String.Format("Dist sum = {0}", sum));
@@ -1065,7 +1064,7 @@ namespace AnalysisPrograms
                         break;
                     }
                 }
-                Console.WriteLine(String.Format("Median occurs at {0} ", medianIndex)); 
+                Console.WriteLine(String.Format("Median occurs at {0} ", medianIndex));
 
                 //for (int i = 0; i < reducedBinCount; i++)
                 //{

@@ -62,7 +62,7 @@ namespace Dong.Felt
 
         public static List<RidgeNeighbourhoodFeatureVector> Grey_Shrikethrush4()
         {
-            var result = new List<RidgeNeighbourhoodFeatureVector>(); 
+            var result = new List<RidgeNeighbourhoodFeatureVector>();
             var slopeScore = new int[] { 15, 15, 0, 15, 0, 33, 13, 12, 18, 18, 0, 15, 0, 6, 0, 0 };
             var slopeItem1 = new int[] { 3, 3, 0, 3, 0, 3, 1, 1, 3, 3, 0, 3, 0, 3, 0, 0 };
             var slopeItem2 = new int[] { 5, 5, 0, 5, 0, 11, 13, 12, 6, 6, 0, 5, 0, 2, 0, 0 };
@@ -202,7 +202,7 @@ namespace Dong.Felt
                     HorizontalVector = horizontalVector,
                     VerticalVector = verticalVector,
                     PositiveDiagonalVector = positiveDiagonalVector,
-                    NegativeDiagonalVector = negativeDiagonalVector
+                    NegativeDiagonalVector = negativeDiagonalVector,
                 });
             }
             return result;
@@ -226,25 +226,25 @@ namespace Dong.Felt
                                    new Point(0, 0 - 23),
                                    new Point(0 + frameOffset, 0 - 23),
                                    new Point(0 - frameOffset, 0  - 23),
-                                   new Point(0 + 2 * frameOffset, 0 - 23),                                  
-                                   new Point(0 - 2 * frameOffset, 0 - 23),                                                                  
+                                   new Point(0 + 2 * frameOffset, 0 - 23),
+                                   new Point(0 - 2 * frameOffset, 0 - 23),
 
                                    new Point(0, 0),
                                    new Point(0 + frameOffset, 0),
                                    new Point(0 - frameOffset, 0),
-                                   new Point(0 + 2 * frameOffset, 0),                                   
-                                   new Point(0 - 2 * frameOffset, 0),                                
+                                   new Point(0 + 2 * frameOffset, 0),
+                                   new Point(0 - 2 * frameOffset, 0),
 
                                    new Point(0, 0  + 11),
                                    new Point(0 + frameOffset, 0 + 11),
                                    new Point(0 - frameOffset, 0 + 12),
-                                   new Point(0 + 2 * frameOffset, 0 + 11),                                   
+                                   new Point(0 + 2 * frameOffset, 0 + 11),
                                    new Point(0 - 2 * frameOffset, 0 + 11),
 
                                    new Point(0, 0  + 20),
                                    new Point(0 + frameOffset, 0 + 20),
                                    new Point(0 - frameOffset, 0 + 20),
-                                   new Point(0 + 2 * frameOffset, 0 + 20),                                   
+                                   new Point(0 + 2 * frameOffset, 0 + 20),
                                    new Point(0 - 2 * frameOffset, 0 + 20),
                                };
 
@@ -357,6 +357,6 @@ namespace Dong.Felt
             result.VerticalBitVector = verticalBitByte;
             result.HorizontalBitVector = horizontaBitlByte;
             return result;
-        }       
+        }
     }
 }

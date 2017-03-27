@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace AnalysisPrograms.Production
+﻿namespace AnalysisPrograms.Production
 {
+    using System;
+    using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
-
+    using System.Text;
     using PowerArgs;
 
     internal class CustomUsageHook : UsageHook
@@ -53,7 +51,7 @@ namespace AnalysisPrograms.Production
 
             if (propertyInfoOrClassType is PropertyInfo)
             {
-                method = ((PropertyInfo)propertyInfoOrClassType).PropertyType.GetMethod("Description", BindingFlags.Public | BindingFlags.Static);   
+                method = ((PropertyInfo)propertyInfoOrClassType).PropertyType.GetMethod("Description", BindingFlags.Public | BindingFlags.Static);
             }
 
             if (propertyInfoOrClassType is Type)

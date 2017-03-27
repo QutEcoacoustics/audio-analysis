@@ -37,11 +37,11 @@ namespace AnalysisPrograms.Recognizers
     /// <summary>
     /// This is a frog recognizer based on the "honk" or "quack" template
     /// It detects honk type calls by extracting three features: dominant frequency, honk duration and match to honk spectrum profile.
-    /// 
-    /// This type recognizer was first developed for LimnodynastesConvex and can be duplicated with modification for other frogs 
+    ///
+    /// This type recognizer was first developed for LimnodynastesConvex and can be duplicated with modification for other frogs
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
-    /// 
+    ///
     /// </summary>
     class CriniaTinnula : RecognizerBase
     {
@@ -92,7 +92,7 @@ namespace AnalysisPrograms.Recognizers
             {
                 WindowSize = 256,
                 NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = noiseReductionParameter
+                NoiseReductionParameter = noiseReductionParameter,
             };
             config.WindowOverlap = 0.0;
 
@@ -119,7 +119,7 @@ namespace AnalysisPrograms.Recognizers
             // ## THREE THRESHOLDS ---- only one of these is given to user.
             // minimum dB to register a dominant freq peak. After noise removal
             double peakThresholdDb = 3.0;
-            // The threshold dB amplitude in the dominant freq bin required to yield an event 
+            // The threshold dB amplitude in the dominant freq bin required to yield an event
             double eventThresholdDb = 6;
             // minimum score for an acceptable event - that is when processing the score array.
             double similarityThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? 0.2;
@@ -132,7 +132,7 @@ namespace AnalysisPrograms.Recognizers
 
             // Calculate Max Amplitude
             int binMin = (int) Math.Round(minHz / sonogram.FBinWidth);
-            int binMax = (int) Math.Round(maxHz / sonogram.FBinWidth); 
+            int binMax = (int) Math.Round(maxHz / sonogram.FBinWidth);
 
             int[] dominantBins = new int[rowCount]; // predefinition of events max frequency
             double[] scores = new double[rowCount]; // predefinition of score array
@@ -165,7 +165,7 @@ namespace AnalysisPrograms.Recognizers
             } // loop through all spectra
 
             // Find average amplitude
-         
+
             double[] amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, binMin, (rowCount - 1),
                 binMax);
 
@@ -219,7 +219,7 @@ namespace AnalysisPrograms.Recognizers
                 }
 
                 if (eventScore < similarityThreshold) continue;
-               
+
 
                 int topBinForEvent = avDominantBin + 2;
                 int bottomBinForEvent = topBinForEvent - callBinWidth;
@@ -239,10 +239,10 @@ namespace AnalysisPrograms.Recognizers
             // display the original score array
             scores = DataTools.normalise(scores);
             var debugPlot = new Plot(this.DisplayName, scores, similarityThreshold);
-    
 
 
-            // DEBUG IMAGE this recognizer only. MUST set false for deployment. 
+
+            // DEBUG IMAGE this recognizer only. MUST set false for deployment.
             bool displayDebugImage = MainEntry.InDEBUG;
             if (displayDebugImage)
             {
@@ -259,7 +259,7 @@ namespace AnalysisPrograms.Recognizers
                 DataTools.Normalise(scores, eventThresholdDb, out normalisedScores, out normalisedThreshold);
                 var ampltdPlot = new Plot("amplitude", normalisedScores, normalisedThreshold);
 
-                
+
                 DataTools.Normalise(lowPassFilteredSignal, decibelThreshold, out normalisedScores, out normalisedThreshold);
                 var lowPassPlot = new Plot("Low Pass", normalisedScores, normalisedThreshold);
                 */
@@ -285,7 +285,7 @@ namespace AnalysisPrograms.Recognizers
                 Events = potentialEvents,
                 Hits = hits,
                 Plots = plots,
-                Sonogram = sonogram
+                Sonogram = sonogram,
             };
         }
 
@@ -316,10 +316,10 @@ namespace AnalysisPrograms.Recognizers
             t1[11] = 0.3;
             t1[12] = 0;
             t1[13] = 0;
- 
+
             templates.Add(t1);
 
-  
+
 
             //templates.Add(new[] {0.0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0});
 

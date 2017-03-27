@@ -1,16 +1,16 @@
-﻿using AForge;
-using AForge.Imaging;
-using AForge.Imaging.Filters;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using AForge;
+    using AForge.Imaging;
+    using AForge.Imaging.Filters;
+
     public static class HoughTransform
     {
         /// <summary>
@@ -227,7 +227,7 @@ namespace TowseyLibrary
                 for (int c = 0; c < xDirectionTileCount; c++)
                 {
                     int x = c * tileWidth;
-                    int y = r * tileHeight; 
+                    int y = r * tileHeight;
 
                     Rectangle cropArea = new Rectangle(x, y, tileWidth, tileHeight);
                     Bitmap tile = sourceImage.Clone(cropArea, sourceImage.PixelFormat);

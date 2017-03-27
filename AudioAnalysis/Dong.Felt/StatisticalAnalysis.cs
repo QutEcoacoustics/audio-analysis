@@ -47,7 +47,7 @@
         }
 
         /// <summary>
-        /// The get centroid point. It returns the centroid point among a bunch of points. 
+        /// The get centroid point. It returns the centroid point among a bunch of points.
         /// </summary>
         /// <param name="points">
         /// The points.
@@ -82,7 +82,7 @@
             }
             return centeroid;
         }
-       
+
         public static int FrequencyToFrequencyBin(double frequency, double frequencyBinWidth)
         {
             return (int)(frequency / frequencyBinWidth);
@@ -117,13 +117,13 @@
         public static double EventOverlapInPixel(int ae1Left, int ae1Bottom, int ae1Right, int ae1Top,
                                               int ae2Left, int ae2Bottom, int ae2Right, int ae2Top)
         {
-            var overlap = 0.0;         
+            var overlap = 0.0;
             var xOverlap = Math.Max(0, Math.Min(ae1Right, ae2Right) - Math.Max(ae1Left, ae2Left));
             var yOverlap = Math.Max(0, Math.Min(ae1Top, ae2Top) - Math.Max(ae1Bottom, ae2Bottom));
             if (xOverlap >= 0 && yOverlap >= 0)
             {
                 overlap = xOverlap * yOverlap;
-            }           
+            }
             return overlap;
         }
 
@@ -131,14 +131,14 @@
         {
             var result = 0.0;
 
-            var qPoiMatrix = StatisticalAnalysis.GetRelativePoint(q.PointsOfInterest, c.Left, c.Bottom);          
+            var qPoiMatrix = StatisticalAnalysis.GetRelativePoint(q.PointsOfInterest, c.Left, c.Bottom);
             var cPoiMatrix = StatisticalAnalysis.GetRelativePoint(c.PointsOfInterest, c.Left, c.Bottom);
 
             var andCount = 0;
             var orCount = 0;
 
             var qPoiCount = 0;
-            var cPoiCount = 0; 
+            var cPoiCount = 0;
 
             foreach (var qP in qPoiMatrix)
             {
@@ -156,7 +156,7 @@
                             continue;
                         }
                     }
-                }             
+                }
             }
 
             foreach (var cp in cPoiMatrix)
@@ -166,13 +166,13 @@
                     cPoiCount++;
                 }
             }
-            
+
             orCount = qPoiCount + cPoiCount - andCount;
-            
+
             if (orCount > 0)
             {
                 result = (double)andCount / orCount;
-            }           
+            }
             return result;
         }
 
@@ -183,7 +183,7 @@
 
             var result = new PointOfInterest[rows, cols];
             var originalColStart = 0;
-            var originalRowStart = 0; 
+            var originalRowStart = 0;
             if (rows > 0 && cols > 0)
             {
                 originalColStart = poiMatrix[0, 0].Point.X;
@@ -217,7 +217,7 @@
                     else
                     {
                         result[r, c].Point = new Point(pointX, pointY);
-                        
+
                     }
                 }
             }
@@ -241,7 +241,7 @@
                         result[i-startIndex] = array[i, index];
                     }
                 }
-            }        
+            }
             return result;
         }
 
@@ -258,7 +258,7 @@
             }
             return result;
         }
-        
+
         /// <summary>
         /// Returns the submatrix of passed matrix.
         /// Row, column indices start at 0
@@ -287,7 +287,7 @@
             {
                 for (int j = c1 - topColOffset; j < c1 + bottomColOffset; j++)
                 {
-                    // Four center point 
+                    // Four center point
                     // Top left center point
                     if (checkBoundary(i, j, matrixRowCount, matrixColCount, 0, 0))
                     {
@@ -317,7 +317,7 @@
         }
 
         /// <summary>
-        /// Count nh which has ridges in it. 
+        /// Count nh which has ridges in it.
         /// </summary>
         /// <param name="acousticEvent"></param>
         /// <returns></returns>
@@ -360,7 +360,7 @@
             }
             return result;
         }
-        
+
         public static RegionRepresentation[,] RegionRepreListToMatrix(List<RegionRepresentation> region)
         {
             var rowsCount = region[0].NhCountInRow;
@@ -418,7 +418,7 @@
             {
                 // Typically, magnitude should be greater than 0 and less than 20.
                 // otherwise, it is assigned to a default value, 100
-                // should copy or new a RidgeDescriptionNeighbourhoodRepresentation object, otherwise the next steps will change the original, so I couldn't get 
+                // should copy or new a RidgeDescriptionNeighbourhoodRepresentation object, otherwise the next steps will change the original, so I couldn't get
                 // the original value after this function
                 if (nh.magnitude != 100)
                 {
@@ -444,7 +444,7 @@
 
                     nh.magnitude = (nh.magnitude - averageMagnitude) / standDevMagnitude;
                     //nh.magnitude = (nh.magnitude - minimagnitude) / (maxmagnitude - minimagnitude);
-                    //nh.orientation = (nh.orientation - miniOrientation) / (maxOrientation - miniOrientation);   
+                    //nh.orientation = (nh.orientation - miniOrientation) / (maxOrientation - miniOrientation);
                     nh.orientation = (nh.orientation - averageOrientation) / standDevOrientation;
                 }
                 result.Add(nh);
@@ -453,7 +453,7 @@
         }
 
         /// <summary>
-        /// This method will involve 4 values in a feature vector for a nh. They are magnitude, orientation, dominantOrientation, 
+        /// This method will involve 4 values in a feature vector for a nh. They are magnitude, orientation, dominantOrientation,
         /// dominantPOICount.
         /// </summary>
         /// <param name="nhList"></param>
@@ -512,7 +512,7 @@
 
         /// <summary>
         /// This method will invlove six values as a feature vector for a neighbourhood. They are hMagnitude, hOrientation, vMagnitude,
-        /// vOrientation, hRmeasure, vRmeasure. 
+        /// vOrientation, hRmeasure, vRmeasure.
         /// </summary>
         /// <param name="nhList"></param>
         /// <returns></returns>
@@ -621,7 +621,7 @@
         {
             var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
             foreach (var nh in nhList)
-            {               
+            {
                 if (nh.magnitude != 0.0)
                 {
                     var HOrientationPOIHist = nh.HOrientationPOIHistogram;
@@ -731,11 +731,11 @@
                     {
                         nh.ColumnEnergyEntropy = 3.0;
                     }
-                        
+
                 }
                 result.Add(nh);
             }
-            
+
             return result;
         }
 
@@ -760,11 +760,11 @@
                     nh.Orientation0POIMagnitude = (nh.Orientation0POIMagnitude) / maxmagnitude ;
                     nh.Orientation1POIMagnitude = (nh.Orientation1POIMagnitude) / maxmagnitude ;
                     nh.Orientation2POIMagnitude = (nh.Orientation2POIMagnitude) / maxmagnitude ;
-                    nh.Orientation3POIMagnitude = (nh.Orientation3POIMagnitude) / maxmagnitude ; 
+                    nh.Orientation3POIMagnitude = (nh.Orientation3POIMagnitude) / maxmagnitude ;
                     nh.Orientation4POIMagnitude = (nh.Orientation4POIMagnitude) / maxmagnitude ;
                     nh.Orientation5POIMagnitude = (nh.Orientation5POIMagnitude) / maxmagnitude ;
                     nh.Orientation6POIMagnitude = (nh.Orientation6POIMagnitude) / maxmagnitude ;
-                    nh.Orientation7POIMagnitude = (nh.Orientation7POIMagnitude) / maxmagnitude ; 
+                    nh.Orientation7POIMagnitude = (nh.Orientation7POIMagnitude) / maxmagnitude ;
                 }
                 result.Add(nh);
             }
@@ -796,7 +796,7 @@
                 result.Add(nh);
             }
             return result;
-        }      
+        }
 
         public static bool CheckFullMatrix(PointOfInterest[,] poiMatrix)
         {
@@ -822,7 +822,7 @@
                 return false;
             }
         }
-        
+
         /// <summary>
         /// This function is different from the one with the same name, the difference is that this one calculate intensity values from spectrogram.Data.
         /// </summary>
@@ -834,7 +834,7 @@
             int rows, int cols)
         {
             PointOfInterest[,] m = new PointOfInterest[rows, cols];
-            //var fftMatrix = list[0].fftMatrix; 
+            //var fftMatrix = list[0].fftMatrix;
             //var matrixRowCount = fftMatrix.GetLength(0);
             //var matrixColCount = fftMatrix.GetLength(1);
             //var defaultFFTMatrix = new double[matrixRowCount, matrixColCount];
@@ -848,15 +848,15 @@
                     tempPoi.RidgeMagnitude = 0.0;
                     // tempPoi.fftMatrix = defaultFFTMatrix;
                     tempPoi.OrientationCategory = 10;
-                    tempPoi.Intensity = spectrogramMatrix[rowIndex, colIndex]; 
+                    tempPoi.Intensity = spectrogramMatrix[rowIndex, colIndex];
                     m[rowIndex, colIndex] = tempPoi;
                 }
             }
             foreach (PointOfInterest poi in list)
             {
-                // There is a trick. The coordinate of poi is derived by graphic device. The coordinate of poi starts from top left and its X coordinate is equal to the column 
-                // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom 
-                // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we 
+                // There is a trick. The coordinate of poi is derived by graphic device. The coordinate of poi starts from top left and its X coordinate is equal to the column
+                // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom
+                // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we
                 // have to use the graphical coorinates. And especially, rows = 257, the index of the matrix is supposed to 256.
                 m[poi.Point.Y, poi.Point.X] = poi;
             }
@@ -873,7 +873,7 @@
         public static PointOfInterest[,] TransposePOIsToMatrix(List<PointOfInterest> list,
             int rows, int cols)
         {
-            PointOfInterest[,] m = new PointOfInterest[rows, cols];          
+            PointOfInterest[,] m = new PointOfInterest[rows, cols];
             for (int colIndex = 0; colIndex < cols; colIndex++)
             {
                 for (int rowIndex = 0; rowIndex < rows; rowIndex++)
@@ -887,9 +887,9 @@
             }
             foreach (PointOfInterest poi in list)
             {
-                // There is a trick. The coordinate of poi is derived by graphic device. The coordinate of poi starts from top left and its X coordinate is equal to the column 
-                // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom 
-                // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we 
+                // There is a trick. The coordinate of poi is derived by graphic device. The coordinate of poi starts from top left and its X coordinate is equal to the column
+                // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom
+                // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we
                 // have to use the graphical coorinates. And especially, rows = 257, the index of the matrix is supposed to 256.
                 m[poi.Point.Y, poi.Point.X] = poi;
             }
@@ -904,19 +904,19 @@
                 for (var c = 0; c < cols; c++)
                 {
                     var point = new Point(0, 0);
-                    m[r, c] = point; 
+                    m[r, c] = point;
                 }
             }
-            
+
             foreach (var p in pointList)
             {
                 m[p.X-rowBottom, p.Y-colLeft] = p;
             }
             return m;
         }
-        
-        /// <summary>       
-        /// This version is for structure tensor matrix 
+
+        /// <summary>
+        /// This version is for structure tensor matrix
         /// This function tries to transfer a poiList into a matrix. The dimension of matrix is same with (cols * rows).
         public static PointOfInterest[,] TransposeStPOIsToMatrix(List<PointOfInterest> list, int rows, int cols)
         {
@@ -979,7 +979,7 @@
             for (int r = 0; r < rowsMax; r++)
             {
                 for (int c = 0; c < colsMax; c++)
-                {                 
+                {
                     result.Add(matrix[r, c]);
                 }
             }
@@ -987,7 +987,7 @@
         }
 
         /// <summary>
-        /// this method can be used for transforming a double 2 Dimension array to a double 1D array  
+        /// this method can be used for transforming a double 2 Dimension array to a double 1D array
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
@@ -1011,7 +1011,7 @@
         }
 
         /// <summary>
-        /// Substract matrix from the origional matrix by providing the top-left and bottom right index of the sub-matrix. 
+        /// Substract matrix from the origional matrix by providing the top-left and bottom right index of the sub-matrix.
         /// </summary>
         /// <param name="matrix"></param>
         /// <param name="row1"></param>
@@ -1034,7 +1034,7 @@
                     subMatrix[row, col] = new PointOfInterest(new Point(pointX, pointY));
                     if (matrix[row1 + row, col1 + col] != null)
                     {
-                        subMatrix[row, col] = matrix[row1 + row, col1 + col];                        
+                        subMatrix[row, col] = matrix[row1 + row, col1 + col];
                     }
                     else
                     {
@@ -1044,7 +1044,7 @@
                 }
             }
             return subMatrix;
-        }      
+        }
 
         public static double averageMatrix(double[,] matrix)
         {
@@ -1107,15 +1107,15 @@
         /// <summary>
         /// check whether the index of  Matrix is out of boundary.
         /// </summary>
-        /// <param name="indexX"> x index needs to be checked.</param> 
+        /// <param name="indexX"> x index needs to be checked.</param>
         /// <param name="indexY"> y index needs to be checked.</param>
         /// <param name="maxiXIndex"> it is the upper limit for x index.</param>
         /// <param name="maxYIndex"> it is the upper limit for y index.</param>
         /// <param name="miniXIndex"> it is the bottom limit for x index, by default it's 0.</param>
         /// <param name="miniYIndex"> it is the bottom limit for y index, by default it's 0.</param>
         /// <returns>
-        /// if it is not out of index range, it will return true, otherwise it will return false. 
-        /// </returns> 
+        /// if it is not out of index range, it will return true, otherwise it will return false.
+        /// </returns>
         public static bool checkBoundary(int indexX, int indexY, int maxiXIndex, int maxYIndex, int miniXIndex = 0, int miniYIndex = 0)
         {
             if (indexX >= miniXIndex && indexX < maxiXIndex && indexY >= miniYIndex && indexY < maxYIndex)
@@ -1230,7 +1230,7 @@
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="fv"></param>
         /// <returns></returns>
@@ -1248,7 +1248,7 @@
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="fv"></param>
         /// <returns></returns>
@@ -1283,7 +1283,7 @@
             }
             return result;
         }
-       
+
         /// <summary>
         /// Transfer millisends to frame index.
         /// </summary>
@@ -1294,10 +1294,10 @@
             // int maxFrequencyBand = 256;
             //double frequencyScale = 43.0;
             double framePerSecond = 86.0;  // ms
-            int timeTransfromUnit = 1000; // from ms to s 
+            int timeTransfromUnit = 1000; // from ms to s
             return (int)(milliSeconds / timeTransfromUnit * framePerSecond);
         }
-              
+
         public static bool NullPoiMatrix(PointOfInterest[,] poiMatrix)
         {
             var rowsCount = poiMatrix.GetLength(0);
@@ -1318,7 +1318,7 @@
             {
                 return true;
             }
-            else                
+            else
             {
                 return false;
             }
@@ -1364,7 +1364,7 @@
         }
 
         /// <summary>
-        /// This method depends on  dominant poi count and dominant magnitude sum, max magnitude in the nh. 
+        /// This method depends on  dominant poi count and dominant magnitude sum, max magnitude in the nh.
         /// </summary>
         /// <param name="nh"></param>
         /// <param name="nhlength"></param>
@@ -1425,7 +1425,7 @@
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="scoreVectorList"></param>
         /// <returns></returns>
@@ -1450,7 +1450,7 @@
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="radians"></param>
         /// <returns></returns>
@@ -1469,7 +1469,7 @@
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="radians"></param>
         /// <returns></returns>
@@ -1480,7 +1480,7 @@
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="distanceValue"></param>
         /// <returns></returns>
@@ -1547,7 +1547,7 @@
         }
 
         /// <summary>
-        /// Autiomatic gray coding is an cyclic way to represent a closed sequence. And the radians is a cyclic case.  
+        /// Autiomatic gray coding is an cyclic way to represent a closed sequence. And the radians is a cyclic case.
         /// </summary>
         /// <param name="radians"></param>
         /// <returns></returns>

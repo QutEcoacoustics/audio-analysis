@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-//using MathNet.Numerics;
-using MathNet.Numerics.Transformations;
-
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using MathNet.Numerics;
+    using MathNet.Numerics.Transformations;
 
     public enum WindowFunctions { NONE, HAMMING, HANNING };
 
@@ -39,7 +38,7 @@ namespace TowseyLibrary
 
 
         /// <summary>
-        /// wrapper for FFT. 
+        /// wrapper for FFT.
         /// Window Power equals sum of squared window values. Default window is Hamming.
         /// </summary>
         /// <param name="windowSize"></param>
@@ -49,7 +48,7 @@ namespace TowseyLibrary
             if (!IsPowerOf2(windowSize)) throw new ArgumentException("WindowSize must be a power of 2.");
 
             this.WindowSize = windowSize;
-            this.CoeffCount = (windowSize / 2) + 1; //f[0]=DC;  f[256]=Nyquist  
+            this.CoeffCount = (windowSize / 2) + 1; //f[0]=DC;  f[256]=Nyquist
 
             //calculate the window weights and power
             this.WindowPower = windowSize; //the default power of a rectangular window.
@@ -79,7 +78,7 @@ namespace TowseyLibrary
             rft = new RealFourierTransformation(TransformationConvention.Matlab);
 
             this.WindowSize = windowSize;
-            this.CoeffCount = (windowSize / 2) + 1; //f[0]=DC;  f[256]=Nyquist  
+            this.CoeffCount = (windowSize / 2) + 1; //f[0]=DC;  f[256]=Nyquist
 
             //calculate the window weights and power
             this.WindowPower = windowSize; //the default power of a rectangular window.
@@ -109,7 +108,7 @@ namespace TowseyLibrary
         /// <returns></returns>
         public double[] Invoke(double[] data)
         {
-            double[] cdata = new double[2 * this.WindowSize];//to contain the complex coefficients 
+            double[] cdata = new double[2 * this.WindowSize];//to contain the complex coefficients
 
             //apply the window
             if (this.WindowWeights != null)
@@ -222,7 +221,7 @@ namespace TowseyLibrary
         /// <summary>
         /// This .NET FFT library was downloaded from  http://www.mathdotnet.com/Iridium.aspx
         /// The documentation and various examples of code are available at http://www.mathdotnet.com/doc/IridiumFFT.ashx
-        /// 
+        ///
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
@@ -253,7 +252,7 @@ namespace TowseyLibrary
 
 
         /// <summary>
-        /// The Hamming window reduces the immediate adjacent sidelobes (conmpared to the Hanning) but at the expense of increased 
+        /// The Hamming window reduces the immediate adjacent sidelobes (conmpared to the Hanning) but at the expense of increased
         /// distal side-lobes. See <https://en.wikipedia.org/wiki/Window_function>
         /// </summary>
         public static readonly WindowFunc Hamming = delegate(int n, int N)

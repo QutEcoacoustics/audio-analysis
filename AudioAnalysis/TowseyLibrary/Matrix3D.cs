@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     public class Matrix3D
     {
         string[] dimNames = new string[3];
@@ -213,14 +213,14 @@ namespace TowseyLibrary
 
         public static void TestMatrix3dClass()
         {
-            string Xname = "XX"; 
+            string Xname = "XX";
             int Xdim = 4;
             string Yname = "YY";
             int Ydim = 3;
             string Zname = "ZZ";
             int Zdim = 3;
             Matrix3D M = new Matrix3D(Xname, Xdim, Yname, Ydim, Zname, Zdim);
-        
+
             // set values
             for (int X = 0; X < Xdim; X++)
             {

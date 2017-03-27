@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace QutBioacosutics.Xie
+﻿namespace QutBioacosutics.Xie
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     class FrogIndex
     {
         public double Track { get; set; }

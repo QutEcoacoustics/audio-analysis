@@ -29,7 +29,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LdSpectrogramConfig"/> class. 
+        /// Initializes a new instance of the <see cref="LdSpectrogramConfig"/> class.
         /// CONSTRUCTOR
         /// </summary>
         /// <param name="fileName">
@@ -47,7 +47,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LdSpectrogramConfig"/> class. 
+        /// Initializes a new instance of the <see cref="LdSpectrogramConfig"/> class.
         /// CONSTRUCTOR
         /// </summary>
         public LdSpectrogramConfigOfJie()
@@ -61,7 +61,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.FrameWidth = SpectrogramConstants.FRAME_LENGTH;
             this.ColourMap1 = SpectrogramConstants.RGBMap_BGN_AVG_EVN;
             this.ColourMap2 = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
-            this.BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;        
+            this.BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
         }
 
         #endregion
@@ -81,7 +81,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public string AnalysisType { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public double BackgroundFilterCoeff { get; set; }
 
@@ -97,7 +97,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public string ColourMap2 { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public string FileName { get; set; }
 
@@ -137,7 +137,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public TimeSpan MinuteOffset { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         [YamlIgnore]
         public DirectoryInfo OutputDirectoryInfo { get; set; }
@@ -156,7 +156,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public int SampleRate { get; set; }
 
@@ -165,14 +165,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         private string comment6 = "IndexCalculationDuration (TimeSpan in seconds) is used to calculate summary and spectral indices";
         public  string COMMENT6 { get { return this.comment6; } set { this.comment6 = value; } }
         /// <summary>
-        /// The default is one minute spectra i.e. 60 per hour.  However, as of January 2015, this is not fixed. 
+        /// The default is one minute spectra i.e. 60 per hour.  However, as of January 2015, this is not fixed.
         /// User must enter the time span over which indices are calculated.
         /// This TimeSpan is used to calculate a tic interval that is appropriate to the time scale of the spectrogram.
         /// </summary>
         public TimeSpan IndexCalculationDuration { get; set; }
 
         /// <summary>
-        /// The default is the entire segment i.e. typically of one minute duration.  However, as of January 2015, this is not fixed. 
+        /// The default is the entire segment i.e. typically of one minute duration.  However, as of January 2015, this is not fixed.
         /// User must enter the time span over which indices are calculated.
         /// If IndexCalculationDuration is set to a brief duration such as 0.2 seconds, then
         /// the backgroundnoise will be calculated from N seconds before the current subsegment to N seconds after => N secs + subseg duration + N secs

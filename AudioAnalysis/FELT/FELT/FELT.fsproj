@@ -231,22 +231,6 @@
   </PropertyGroup>
   <Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.Targets" />
   <Target Name="BeforeBuild">
-    <!-- Turning this on because that lazy arsehole can't be bother doing basic diagnostics	-->
-    <PropertyGroup>
-      <File>$([System.IO.File]::ReadAllText("AssemblyInfo.fs"))</File>
-      <Expr>AssemblyVersion\x28\x22(\d+\.\d+\.\d+\.\d+)\x22</Expr>
-      <reg>
-			$([System.Text.RegularExpressions.Regex]::Match($(File), $(Expr) ).Groups[1].Value)
-			</reg>
-      <maj>$(reg.Split(".")[0])</maj>
-      <min>$(reg.Split(".")[1])</min>
-      <bld>$(reg.Split(".")[2])</bld>
-      <rev>$(reg.Split(".")[3].Trim())</rev>
-      <year>$([System.DateTime]::Now.ToString("yy"))</year>
-      <month>$([System.DateTime]::Now.ToString("MM"))</month>
-    </PropertyGroup>
-    <Message Text="Found assembly version: $(maj).$(min).$(bld).$(rev). Replacing with: $(year).$(month).$(bld).$(rev)!" Importance="High" />
-    <FileUpdate Files="AssemblyInfo.fs" Regex="&quot;(\d+)\.(\d+)\.(\d+)\.(\d+)&quot;" ReplacementText="&quot;$(year).$(month).$(bld).$(rev)&quot;" />
   </Target>
   <Target Name="AfterBuild">
   </Target>

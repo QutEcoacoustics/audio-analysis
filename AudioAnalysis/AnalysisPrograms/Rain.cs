@@ -1,36 +1,29 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
-
-using Acoustics.Shared;
-using Acoustics.Tools;
-using Acoustics.Tools.Audio;
-using AnalysisBase;
-
-using TowseyLibrary;
-using AudioAnalysisTools;
-using AudioAnalysisTools.Indices;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
-    using System.Diagnostics.Contracts;
 
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Extensions;
-
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
+    using AnalysisBase;
     using AnalysisBase.ResultBases;
-
     using AnalysisPrograms.Production;
-
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using TowseyLibrary;
 
     public class Rain : IAnalyser
     {
@@ -153,7 +146,7 @@ namespace AnalysisPrograms
                                 Indices = indicesFname,
                                 Sgram = sonogramFname,
                                 Start = tsStart.TotalSeconds,
-                                Duration = tsDuration.TotalSeconds
+                                Duration = tsDuration.TotalSeconds,
                             };
             }
 
@@ -191,7 +184,7 @@ namespace AnalysisPrograms
         public static void Execute(Arguments arguments)
         {
             Contract.Requires(arguments != null);
-            
+
             AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
             TimeSpan offsetStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
             TimeSpan duration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
@@ -219,7 +212,7 @@ namespace AnalysisPrograms
 
             //DO THE ANALYSIS
             // #############################################################################################################################################
-            IAnalyser analyser = new Rain();  
+            IAnalyser analyser = new Rain();
             AnalysisResult result = analyser.Analyse(analysisSettings);
             DataTable dt = result.Data;
             //#############################################################################################################################################
@@ -265,7 +258,7 @@ namespace AnalysisPrograms
 
             if (results == null)
             {
-                return analysisResults; //nothing to process 
+                return analysisResults; //nothing to process
             }
 
             //analysisResults.Data = results.Item1;
@@ -426,7 +419,7 @@ namespace AnalysisPrograms
         static Image DrawSonogram(BaseSonogram sonogram, List<Plot> scores)
         {
             Dictionary<string, string> configDict = new Dictionary<string,string>();
-            List<AcousticEvent> predictedEvents = null; 
+            List<AcousticEvent> predictedEvents = null;
             double eventThreshold = 0.0;
             Image image = SpectrogramTools.Sonogram2Image(sonogram, configDict, null, scores, predictedEvents, eventThreshold);
             return image;
@@ -737,7 +730,7 @@ namespace AnalysisPrograms
                     SegmentMinDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
+                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
                 };
             }
         }

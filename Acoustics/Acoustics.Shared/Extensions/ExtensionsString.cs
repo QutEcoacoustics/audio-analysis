@@ -70,7 +70,7 @@ namespace System
             var lines = text.Split(new[] { Environment.NewLine, "\n" }, StringSplitOptions.RemoveEmptyEntries);
 
             var result = new StringBuilder();
-            
+
             foreach (string paragraph in lines)
             {
                 if (paragraph.Length <= wrapThreshold)
@@ -78,7 +78,7 @@ namespace System
                     result.AppendLine(leftPad + paragraph);
                     continue;
                 }
-                
+
                 var currentLine = paragraph;
 
                 while (currentLine.Length > wrapThreshold)

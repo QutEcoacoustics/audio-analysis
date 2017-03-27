@@ -43,51 +43,51 @@ namespace AnalysisPrograms.Production
             ErrorLevels = new Dictionary<Type, ExceptionStyle>
                               {
                                   {
-                                      typeof(UnknownActionArgException), 
+                                      typeof(UnknownActionArgException),
                                       new ExceptionStyle { ErrorCode = 1 }
-                                  }, 
+                                  },
                                   {
-                                      typeof(ArgException), 
+                                      typeof(ArgException),
                                       new ExceptionStyle { ErrorCode = 2 }
-                                  }, 
+                                  },
                                   {
-                                      typeof(MissingArgException), 
+                                      typeof(MissingArgException),
                                       new ExceptionStyle { ErrorCode = 3 }
-                                  }, 
+                                  },
                                   {
-                                      typeof(InvalidArgDefinitionException), 
+                                      typeof(InvalidArgDefinitionException),
                                       new ExceptionStyle { ErrorCode = 4 }
-                                  }, 
+                                  },
                                   {
-                                      typeof(DuplicateArgException), 
+                                      typeof(DuplicateArgException),
                                       new ExceptionStyle { ErrorCode = 5 }
-                                  }, 
+                                  },
                                   {
-                                      typeof(UnexpectedArgException), 
+                                      typeof(UnexpectedArgException),
                                       new ExceptionStyle { ErrorCode = 6 }
-                                  }, 
+                                  },
                                   {
-                                      typeof(FormatException), 
+                                      typeof(FormatException),
                                       new ExceptionStyle { ErrorCode = 7 }
-                                  }, 
+                                  },
                                   {
-                                      typeof(ValidationArgException), 
+                                      typeof(ValidationArgException),
                                       new ExceptionStyle { ErrorCode = 50 }
-                                  }, 
+                                  },
                                   {
-                                      typeof(DirectoryNotFoundException), 
+                                      typeof(DirectoryNotFoundException),
                                       new ExceptionStyle { ErrorCode = 51 }
-                                  }, 
+                                  },
                                   {
-                                      typeof(FileNotFoundException), 
+                                      typeof(FileNotFoundException),
                                       new ExceptionStyle { ErrorCode = 52 }
-                                  }, 
+                                  },
                                   {
-                                      typeof(InvalidDurationException), 
+                                      typeof(InvalidDurationException),
                                       new ExceptionStyle { ErrorCode = 100 }
-                                  }, 
+                                  },
                                   {
-                                      typeof(InvalidStartOrEndException), 
+                                      typeof(InvalidStartOrEndException),
                                       new ExceptionStyle { ErrorCode = 101 }
                                   },
                                   {
@@ -107,25 +107,25 @@ namespace AnalysisPrograms.Production
                                       new ExceptionStyle() {ErrorCode = 105, PrintUsage = false }
                                   },
                                   {
-                                      typeof(AnalysisOptionDevilException), 
+                                      typeof(AnalysisOptionDevilException),
                                       new ExceptionStyle
                                           {
-                                              ErrorCode = 66, 
-                                              Handle = false
+                                              ErrorCode = 66,
+                                              Handle = false,
                                           }
-                                  }, 
+                                  },
                                   {
-                                      typeof(NoDeveloperMethodException), 
+                                      typeof(NoDeveloperMethodException),
                                       new ExceptionStyle { ErrorCode = 199 }
-                                  }, 
+                                  },
                                   {
-                                      typeof(Exception), 
+                                      typeof(Exception),
                                       new ExceptionStyle
                                           {
                                               ErrorCode =
-                                                  UnhandledExceptionErrorCode
+                                                  UnhandledExceptionErrorCode,
                                           }
-                                  }
+                                  },
                               };
         }
 

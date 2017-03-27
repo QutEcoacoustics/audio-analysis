@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-namespace QutBioacosutics.Xie
+﻿namespace QutBioacosutics.Xie
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using TowseyLibrary;
+
     class RemoveSparseHits
     {
         /// <summary>
@@ -30,7 +30,7 @@ namespace QutBioacosutics.Xie
                         cnt++;
                 }
 
-                if (cnt < Count) 
+                if (cnt < Count)
                 {
                     for (int r = 0; r < row; r++)
                     {

@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using TowseyLibrary;
-
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
     using AudioAnalysisTools.LongDurationSpectrograms;
+    using TowseyLibrary;
 
     public static class LDSpectrogramDifference
     {
@@ -49,14 +47,14 @@ namespace AudioAnalysisTools
             string map = configuration.ColorMap;
             colorMap = map != null ? map : SpectrogramConstants.RGBMap_ACI_ENT_CVR;           // assigns indices to RGB
 
-            backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF; 
+            backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
             colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
             minuteOffset = (TimeSpan?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
             xScale =   (TimeSpan?)configuration.X_Scale ?? SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default is one minute spectra i.e. 60 per hour
-            sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE; 
-            frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_LENGTH; 
+            sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE;
+            frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_LENGTH;
 
             DrawDifferenceSpectrogram(new DirectoryInfo(ipdir), new FileInfo(ipFileName1), new FileInfo(ipFileName2), new DirectoryInfo(opdir));
         }
@@ -64,10 +62,10 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// This method compares the acoustic indices derived from two different long duration recordings of the same length. 
+        /// This method compares the acoustic indices derived from two different long duration recordings of the same length.
         /// It takes as input six csv files of acoustic indices in spectrogram columns, three csv files for each of the original recordings to be compared.
         /// The method produces one spectrogram image files:
-        /// 1) A false-colour difference spectrogram, where the difference is shown as a plus/minus departure from grey.   
+        /// 1) A false-colour difference spectrogram, where the difference is shown as a plus/minus departure from grey.
         /// </summary>
         /// <param name="ipdir"></param>
         /// <param name="ipFileName1"></param>
@@ -109,7 +107,7 @@ namespace AudioAnalysisTools
             //Draw positive difference spectrograms in one image.
             Image[] images = LDSpectrogramDifference.DrawPositiveDifferenceSpectrograms(cs1, cs2, colourGain);
 
-            int nyquist = cs1.SampleRate / 2; 
+            int nyquist = cs1.SampleRate / 2;
             int herzInterval = 1000;
             string title = String.Format("DIFFERENCE SPECTROGRAM where {0} > {1}.      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMode);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, images[0].Width);

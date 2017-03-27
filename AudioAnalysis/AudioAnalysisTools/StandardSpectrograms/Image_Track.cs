@@ -37,27 +37,27 @@
 
 
         #region static var - colors for tracks
-        public static Color[] TrackColors = {Color.White, Color.Red, Color.Orange, Color.Cyan, Color.OrangeRed, Color.Pink, Color.Salmon, Color.Tomato, Color.DarkRed, Color.Purple, 
+        public static Color[] TrackColors = {Color.White, Color.Red, Color.Orange, Color.Cyan, Color.OrangeRed, Color.Pink, Color.Salmon, Color.Tomato, Color.DarkRed, Color.Purple,
                                           /*Color.AliceBlue,*/ /*Color.Aqua, Color.Aquamarine, Color.Azure, Color.Bisque,*/
-                             Color.Blue, Color.BlueViolet, /*Color.Brown, Color.BurlyWood,*/ Color.CadetBlue, /*Color.Chartreuse,*/ 
-                             Color.Chocolate, /*Color.Coral,*/ /*Color.CornflowerBlue,*/ /*Color.Cornsilk,*/ Color.Crimson, Color.DarkBlue, 
-                             Color.DarkCyan, Color.DarkGoldenrod, Color.DarkGray, Color.DarkGreen, Color.DarkKhaki, Color.DarkMagenta, 
-                             Color.DarkOliveGreen, Color.DarkOrange, Color.DarkOrchid, Color.DarkSalmon, Color.DarkSeaGreen, 
-                             Color.DarkSlateBlue, Color.DarkSlateGray, Color.DarkTurquoise, Color.DarkViolet, Color.DeepPink, Color.DeepSkyBlue, 
-                             Color.DimGray, Color.DodgerBlue, Color.Firebrick, Color.ForestGreen, Color.Fuchsia, 
-                             Color.Gainsboro, Color.Gold, Color.Goldenrod, /*Color.Gray,*/ Color.Green, /*Color.GreenYellow,*/ 
-                             Color.Honeydew, Color.HotPink, Color.IndianRed, Color.Indigo, /*Color.Khaki,*/ Color.Lavender, 
-                             /*Color.LavenderBlush,*/ Color.LawnGreen, /*Color.LemonChiffon,*/ Color.Lime, 
-                             Color.LimeGreen, /*Color.Linen,*/ Color.Magenta, Color.Maroon, Color.MediumAquamarine, Color.MediumBlue, 
-                             /*Color.MediumOrchid,*/ Color.MediumPurple, /*Color.MediumSeaGreen,*/ Color.MediumSlateBlue, Color.MediumSpringGreen, 
-                             Color.MediumTurquoise, Color.MediumVioletRed, Color.MidnightBlue, /*Color.MistyRose,*/ /*Color.Moccasin,*/ 
-                             Color.Navy, /*Color.OldLace,*/ Color.Olive, /*Color.OliveDrab,*/ 
+                             Color.Blue, Color.BlueViolet, /*Color.Brown, Color.BurlyWood,*/ Color.CadetBlue, /*Color.Chartreuse,*/
+                             Color.Chocolate, /*Color.Coral,*/ /*Color.CornflowerBlue,*/ /*Color.Cornsilk,*/ Color.Crimson, Color.DarkBlue,
+                             Color.DarkCyan, Color.DarkGoldenrod, Color.DarkGray, Color.DarkGreen, Color.DarkKhaki, Color.DarkMagenta,
+                             Color.DarkOliveGreen, Color.DarkOrange, Color.DarkOrchid, Color.DarkSalmon, Color.DarkSeaGreen,
+                             Color.DarkSlateBlue, Color.DarkSlateGray, Color.DarkTurquoise, Color.DarkViolet, Color.DeepPink, Color.DeepSkyBlue,
+                             Color.DimGray, Color.DodgerBlue, Color.Firebrick, Color.ForestGreen, Color.Fuchsia,
+                             Color.Gainsboro, Color.Gold, Color.Goldenrod, /*Color.Gray,*/ Color.Green, /*Color.GreenYellow,*/
+                             Color.Honeydew, Color.HotPink, Color.IndianRed, Color.Indigo, /*Color.Khaki,*/ Color.Lavender,
+                             /*Color.LavenderBlush,*/ Color.LawnGreen, /*Color.LemonChiffon,*/ Color.Lime,
+                             Color.LimeGreen, /*Color.Linen,*/ Color.Magenta, Color.Maroon, Color.MediumAquamarine, Color.MediumBlue,
+                             /*Color.MediumOrchid,*/ Color.MediumPurple, /*Color.MediumSeaGreen,*/ Color.MediumSlateBlue, Color.MediumSpringGreen,
+                             Color.MediumTurquoise, Color.MediumVioletRed, Color.MidnightBlue, /*Color.MistyRose,*/ /*Color.Moccasin,*/
+                             Color.Navy, /*Color.OldLace,*/ Color.Olive, /*Color.OliveDrab,*/
                              /*Color.Orchid, Color.PaleVioletRed, Color.PapayaWhip, */
-                             /*Color.PeachPuff,*/ /*Color.Peru,*/ Color.Plum, /*Color.PowderBlue,*/ Color.RosyBrown, 
-                             Color.RoyalBlue, Color.SaddleBrown, /*Color.SandyBrown,*/ Color.SeaGreen, /*Color.Sienna,*/ 
-                             /*Color.Silver,*/ Color.SkyBlue, Color.SlateBlue, /*Color.SlateGray,*/ Color.SpringGreen, Color.SteelBlue, 
-                             /*Color.Tan,*/ Color.Teal, Color.Thistle, Color.Turquoise, Color.Violet, /*Color.Wheat,*/ 
-                             /*Color.Yellow,*/ Color.YellowGreen,  Color.Black};
+                             /*Color.PeachPuff,*/ /*Color.Peru,*/ Color.Plum, /*Color.PowderBlue,*/ Color.RosyBrown,
+                             Color.RoyalBlue, Color.SaddleBrown, /*Color.SandyBrown,*/ Color.SeaGreen, /*Color.Sienna,*/
+                             /*Color.Silver,*/ Color.SkyBlue, Color.SlateBlue, /*Color.SlateGray,*/ Color.SpringGreen, Color.SteelBlue,
+                             /*Color.Tan,*/ Color.Teal, Color.Thistle, Color.Turquoise, Color.Violet, /*Color.Wheat,*/
+                             /*Color.Yellow,*/ Color.YellowGreen,  Color.Black,};
         #endregion
 
 
@@ -219,7 +219,7 @@
                     break;
 
             }
-            // none, energy, syllables, scoreArray, scoreMatrix, zeroCrossings, hits 
+            // none, energy, syllables, scoreArray, scoreMatrix, zeroCrossings, hits
             //if ((title != null) && (title.Length != 0)) DrawTrackTitle(bmp, title);  //add a score track
 
         }
@@ -342,9 +342,9 @@
 
             //int length = (bmpWidth <= doubleData.Length) ? bmpWidth : doubleData.Length;
             //for (int w = 0; w < length; w++)
-           
+
             for (int w = 0; w < bmp.Width; w+=13)
-            {               
+            {
                 var location = w;
                 double fraction = 0.0;
                 if (w / 13 < dataLength)
@@ -412,7 +412,7 @@
         }
 
         /// <summary>
-        /// assumes that max signal value = 1.0 and min sig value = -1.0 i.e. wav file values 
+        /// assumes that max signal value = 1.0 and min sig value = -1.0 i.e. wav file values
         /// </summary>
         /// <param name="bmp"></param>
         /// <returns></returns>
@@ -503,7 +503,7 @@
 
 
         /// <summary>
-        /// assumes that max signal value = 1.0 and min sig value = -1.0 i.e. wav file values 
+        /// assumes that max signal value = 1.0 and min sig value = -1.0 i.e. wav file values
         /// </summary>
         /// <param name="bmp"></param>
         /// <returns></returns>
@@ -523,7 +523,7 @@
                 for (int z = minID; z <= maxID; z++) bmp.SetPixel(w, height - z - 1, colour);
 
                 // set zero line in case it was missed
-                bmp.SetPixel(w, halfHeight, colour); 
+                bmp.SetPixel(w, halfHeight, colour);
 
                 // if clipped values
                 if (envelope[0, w] < -0.99)
@@ -611,7 +611,7 @@
             return track;
         }
 
-            
+
         public static Bitmap DrawSegmentationTrack(double[] data, int[] stateData, double segmentationThreshold_k1, double segmentationThreshold_k2, int imageWidth)
         {
             if (data == null) return null;
@@ -643,7 +643,7 @@
 
             return segmentBmp;
         }
-       
+
         /// <summary>
         /// ASSUME that passed decibel array has been normalised
         /// </summary>
@@ -677,7 +677,7 @@
         }
 
         public static Image_Track GetWavEnvelopeTrack(double[,] envelope, int imageWidth)
-        {            
+        {
             var track = new Image_Track(TrackType.waveEnvelope, envelope);
             return track;
         }
@@ -729,7 +729,7 @@
         }
 
         /// <summary>
-        /// used to draw richness indices 
+        /// used to draw richness indices
         /// </summary>
         /// <param name="scores"></param>
         /// <param name="scoreMin"></param>
@@ -759,7 +759,7 @@
         }
 
         /// <summary>
-        /// used to draw score track or any array of values 
+        /// used to draw score track or any array of values
         /// </summary>
         /// <param name="scores"></param>
         /// <param name="scoreMin"></param>
@@ -795,7 +795,7 @@
         }
 
         /// <summary>
-        /// used to draw score track of an array of values 
+        /// used to draw score track of an array of values
         /// The values in array MUST lie in [0,1].
         /// </summary>
         /// <param name="scores"></param>
@@ -830,7 +830,7 @@
         }
 
         /// <summary>
-        /// used to draw coloured score track or any array of values 
+        /// used to draw coloured score track or any array of values
         /// </summary>
         /// <param name="scores"></param>
         /// <param name="scoreMin"></param>
@@ -898,12 +898,12 @@
             return bmp;
         }
 
-        
+
         /// <summary>
         /// IMPORTANT: THIS TIME SCALE METHOD WAS REWORKED ON 23 June 2015 and on 3 August 2015.
         /// IT POSSIBLY CONTAINS BUGS THAT WILL NEED TO BE FIXED FOR ZOOMING SPECTROGRAMS
         /// It is possible that rounding the tic marks to 'nice' numbers is not a good idea.
-        /// 
+        ///
         /// Returns a bitmap of a time scale.
         /// Interval between tic marks is calculated automatically.
         /// This method is used for long duration spectrograms.
@@ -916,13 +916,13 @@
         /// <returns></returns>
         public static Bitmap DrawTimeTrack(TimeSpan fullDuration, DateTimeOffset? dateTime, int trackWidth, int trackHeight)
         {
-            // if null date time then just send back relative 
+            // if null date time then just send back relative
             if (dateTime == null)
             {
                 return DrawTimeRelativeTrack(fullDuration, trackWidth, trackHeight);
             }
 
-            DateTime startDate = ((DateTimeOffset)dateTime).DateTime.Date; 
+            DateTime startDate = ((DateTimeOffset)dateTime).DateTime.Date;
 
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
@@ -1099,7 +1099,7 @@
                     {
                         time = String.Format("{0:d2}{1:d2}", elapsedTimeSpan.Hours, elapsedTimeSpan.Minutes);
                     }
-                    else 
+                    else
                     {
                         time = String.Format("{0:f0}", elapsedTimeSpan.TotalHours);
                     }
@@ -1156,7 +1156,7 @@
                 //    offset = 0;
                 //    hour = 0;
                 //}
-                g.DrawLine(whitePen, 0, Y, trackWidth, Y);  
+                g.DrawLine(whitePen, 0, Y, trackWidth, Y);
                 g.DrawString(months[i], stringFont, Brushes.White, new PointF(1, Y+6)); //draw time
             } // end over all pixels
             g.DrawLine(whitePen, 0, daysInYear + offset, trackWidth, daysInYear + offset);
@@ -1183,7 +1183,7 @@
             //Pen grayPen = new Pen(Color.Gray);
             Font stringFont = new Font("Arial", 9);
 
-            for (int i = 0; i < 12; i++) 
+            for (int i = 0; i < 12; i++)
             {
                 int X = (int)Math.Round(i * interval);
                 g.DrawLine(whitePen, X, 0, X, trackHeight);
@@ -1276,7 +1276,7 @@
                     }
                     else
                     {
-                        if (hScale[x] == 2) // major tic 
+                        if (hScale[x] == 2) // major tic
                             g.DrawLine(blackPen, x, 0, x, height-1);
                     }
                 } //end of adding time grid

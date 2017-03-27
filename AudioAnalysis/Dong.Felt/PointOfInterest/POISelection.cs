@@ -1,4 +1,4 @@
-﻿/// This class works on analysing ridges 
+﻿/// This class works on analysing ridges
 
 namespace Dong.Felt
 {
@@ -94,7 +94,7 @@ namespace Dong.Felt
         }
 
         public static PointOfInterest[,] RidgeDetectionPlusGaussianBlur(SpectrogramStandard spectrogram, SonogramConfig config,
-            RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig, 
+            RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig,
             GaussianBlur gaussianBlurConfig, string audioFilePath,
             string featurePropSet)
         {
@@ -107,11 +107,11 @@ namespace Dong.Felt
                 featurePropSet,
                 compressConfig,
                 filterRidges);
-            var rows = spectrogram.Data.GetLength(1);  // Have to minus the graphical device context(DC) line. 
+            var rows = spectrogram.Data.GetLength(1);  // Have to minus the graphical device context(DC) line.
             var cols = spectrogram.Data.GetLength(0);
             var M = StatisticalAnalysis.TransposePOIsToMatrix(addCompressedRidges, rows, cols);
             var filteredRidges = ImageAnalysisTools.RemoveIsolatedPoi(M, 3, 2);
-            var joinedRidges = ClusterAnalysis.GaussianBlurOnPOI(M, rows, cols, gaussianBlurConfig.Size, 
+            var joinedRidges = ClusterAnalysis.GaussianBlurOnPOI(M, rows, cols, gaussianBlurConfig.Size,
                 gaussianBlurConfig.Sigma);
             return joinedRidges;
         }
@@ -129,7 +129,7 @@ namespace Dong.Felt
                 featurePropSet,
                 compressConfig,
                 filterRidges);
-            var rows = spectrogram.Data.GetLength(1);  // Have to minus the graphical device context(DC) line. 
+            var rows = spectrogram.Data.GetLength(1);  // Have to minus the graphical device context(DC) line.
             var cols = spectrogram.Data.GetLength(0);
             var M = StatisticalAnalysis.TransposePOIsToMatrix(addCompressedRidges, rows, cols);
             var filterIsolatedRidges = ImageAnalysisTools.RemoveIsolatedPoi(M, 3, 2);
@@ -201,7 +201,7 @@ namespace Dong.Felt
             var result = new List<PointOfInterest>();
             if (compressConfig.TimeCompressRate != 1.0)
             {
-                result = AddResizeRidgesInTime(ridges, 
+                result = AddResizeRidgesInTime(ridges,
                                                spectrogram,
                                                compressedRidges,
                                                compressConfig.TimeCompressRate,
@@ -210,7 +210,7 @@ namespace Dong.Felt
 
             if (compressConfig.FreqCompressRate != 1.0)
             {
-                result = AddResizeRidgesInFreq(ridges, 
+                result = AddResizeRidgesInFreq(ridges,
                                                spectrogram,
                                                compressedRidges,
                                                compressConfig.FreqCompressRate,
@@ -218,7 +218,7 @@ namespace Dong.Felt
             }
             return result;
         }
-        
+
         // This function is used for adding more ridges after ridge detection on compressedSpectrogram
         public static List<PointOfInterest> AddResizeRidgesInTime(List<PointOfInterest> ridges,
                                                       SpectrogramStandard spectrogram,
@@ -284,7 +284,7 @@ namespace Dong.Felt
             else
             {
                 return ridges;
-            }          
+            }
         }
 
         // This version is trying to add ridges to specified locations
@@ -478,7 +478,7 @@ namespace Dong.Felt
                         }
                     }
                 }
-                
+
                 var ridges1 = StatisticalAnalysis.TransposeMatrixToPOIlist(ridgeMatrix);
                 foreach (var r in ridges1)
                 {
@@ -494,7 +494,7 @@ namespace Dong.Felt
                 return ridges;
             }
         }
-        // This function still needs to be considered. 
+        // This function still needs to be considered.
         public static List<PointOfInterest> ShowupPoiInsideBox(List<PointOfInterest> filterPoiList, List<PointOfInterest> finalPoiList, int rowsCount, int colsCount)
         {
             var Matrix = PointOfInterest.TransferPOIsToMatrix(filterPoiList, rowsCount, colsCount);
@@ -582,12 +582,12 @@ namespace Dong.Felt
                         Point point = new Point(c, r);
                         TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
                         double herz = (freqBinCount - r - 1) * herzScale;
-                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi.
                         var poi = new PointOfInterest(time, herz);
                         poi.Point = point;
                         // RidgeOrientation are 0, pi/4, pi/2, 3pi/4.
                         poi.RidgeOrientation = direction;
-                        // OrientationCategory only has four values, they are 0, 1, 2, 3. 
+                        // OrientationCategory only has four values, they are 0, 1, 2, 3.
                         poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
                         poi.RidgeMagnitude = magnitude;
                         poi.Intensity = matrix[r, c];
@@ -637,14 +637,14 @@ namespace Dong.Felt
                         Point point = new Point(c, r);
                         TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
                         double herz = (freqBinCount - r) * herzScale;
-                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi.
                         var poi = new PointOfInterest(time, herz);
                         poi.TimeLocation = time;
                         poi.Herz = herz;
                         poi.Point = point;
                         // RidgeOrientation are 0, pi/4, pi/2, 3pi/4.
                         poi.RidgeOrientation = direction;
-                        // OrientationCategory only has four values, they are 0, 1, 2, 3. 
+                        // OrientationCategory only has four values, they are 0, 1, 2, 3.
                         poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
                         poi.RidgeMagnitude = magnitude;
                         poi.Intensity = matrix[r, c];
@@ -653,21 +653,21 @@ namespace Dong.Felt
                         poiList.Add(poi);
                     }
                 }
-            }  /// filter out some redundant ridges   
+            }  /// filter out some redundant ridges
         }
 
-        static public List<PointOfInterest> RemoveFalseRidges(List<PointOfInterest> poiList, double[,] spectrogramData, 
+        static public List<PointOfInterest> RemoveFalseRidges(List<PointOfInterest> poiList, double[,] spectrogramData,
             int offset, double threshold)
         {
             var result = new List<PointOfInterest>();
-            var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);          
+            var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, spectrogramData, rows, cols);
             var halfWidth = offset / 2;
             for (var r = offset; r < rows - offset; r++)
             {
-                for (var c = offset; c < cols - offset; c++) 
+                for (var c = offset; c < cols - offset; c++)
                 {
                     var magnitude = 0.0;
                         if (poiMatrix[r, c].OrientationCategory == 0)
@@ -727,7 +727,7 @@ namespace Dong.Felt
             }
             int cols = ridgeIndiMatrix.GetLength(1);
             var spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-            // TO FILTER OUT LOW AND HIGH frequency band, spicify the col index 
+            // TO FILTER OUT LOW AND HIGH frequency band, spicify the col index
             // r = rows - 8500 / herzScale; r max = rows - 500 / herzScale
             // r = 47 to filter out unnecessary ridges, but in ridge based features, it is not important.
             for (int r = 47; r < rows; r++)
@@ -739,10 +739,10 @@ namespace Dong.Felt
                         Point point = new Point(c, r);
                         TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
                         double herz = (freqBinCount - r - 1) * herzScale;
-                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi.
                         var poi = new PointOfInterest(time, herz);
                         poi.Point = point;
-                        // OrientationCategory only has 4/8 values, they are 0, 1, 2, 3,4,5,6,7. 
+                        // OrientationCategory only has 4/8 values, they are 0, 1, 2, 3,4,5,6,7.
                         poi.OrientationCategory = ridgeIndiMatrix[r, c] - 1;
                         poi.RidgeMagnitude = RidgeMagnitudematrix[r, c];
                         poi.Intensity = spectrogramMatrix[r, c];
@@ -776,7 +776,7 @@ namespace Dong.Felt
             double freqBinCount = 128; //256
             int rows = ridgeIndiMatrix.GetLength(0);
             int cols = ridgeIndiMatrix.GetLength(1);
-                        
+
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
@@ -786,12 +786,12 @@ namespace Dong.Felt
                         Point point = new Point(c, r);
                         TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
                         double herz = (freqBinCount - r - 1) * herzScale;
-                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi.
                         var poi = new PointOfInterest(time, herz);
                         poi.Point = point;
-                        // OrientationCategory only has 4/8 values, they are 0, 1, 2, 3,4,5,6,7. 
+                        // OrientationCategory only has 4/8 values, they are 0, 1, 2, 3,4,5,6,7.
                         poi.OrientationCategory = ridgeIndiMatrix[r, c] - 1;
-                        poi.RidgeMagnitude = RidgeMagnitudematrix[r, c];                       
+                        poi.RidgeMagnitude = RidgeMagnitudematrix[r, c];
                         poi.TimeScale = timeScale;
                         poi.HerzScale = herzScale;
                         poiList.Add(poi);
@@ -802,7 +802,7 @@ namespace Dong.Felt
             return prunedPoiList;
         }
 
-        // This version is suitable for HOG features. 
+        // This version is suitable for HOG features.
         public void ConvertRidgeIndiToPOIList2(byte[,] ridgeIndiMatrix, double[,] RidgeMagnitudematrix, SpectrogramStandard spectrogram)
         {
             double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
@@ -821,10 +821,10 @@ namespace Dong.Felt
                         Point point = new Point(c, r);
                         TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
                         double herz = (freqBinCount - r - 1) * herzScale;
-                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi.
                         var poi = new PointOfInterest(time, herz);
                         poi.Point = point;
-                        // OrientationCategory only has 4/8 values, they are 0, 1, 2, 3,4,5,6,7. 
+                        // OrientationCategory only has 4/8 values, they are 0, 1, 2, 3,4,5,6,7.
                         poi.OrientationCategory = ridgeIndiMatrix[r, c] - 1;
                         poi.RidgeMagnitude = RidgeMagnitudematrix[r, c];
                         poi.Intensity = spectrogramMatrix[r, c];
@@ -841,7 +841,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// This version of ridge detection involves original ridge detection and removing ridges in shadow. 
+        /// This version of ridge detection involves original ridge detection and removing ridges in shadow.
         /// </summary>
         /// <param name="matrix"></param>
         /// <param name="newMatrix"></param>
@@ -857,9 +857,9 @@ namespace Dong.Felt
             int halfLength = ridgeLength / 2;
             var hits = new byte[rows, cols];
             newMatrix = new double[rows, cols];
-            /// Increase the enlarged neighbourhood size for further checking. 
+            /// Increase the enlarged neighbourhood size for further checking.
             var offset = 3;
-            // var offset = 1; 
+            // var offset = 1;
             for (int r = halfLength + offset; r < rows - halfLength - offset; r++)
             {
                 for (int c = halfLength + offset; c < cols - halfLength - offset; c++)
@@ -890,7 +890,7 @@ namespace Dong.Felt
                         double av, sd;
                         NormalDist.AverageAndSD(subM2, out av, out sd);
                         double localThreshold = sd * 0.9;
-                        if (subM2[halfLength + offset, halfLength + offset] - av < localThreshold) continue;                       
+                        if (subM2[halfLength + offset, halfLength + offset] - av < localThreshold) continue;
                         var orientation = (int)Math.Round((direction * 8) / Math.PI);
                         hits[r, c] = (byte)(orientation + 1);
                         newMatrix[r, c] = magnitude;
@@ -940,10 +940,10 @@ namespace Dong.Felt
                         }
                     }
                 }
-            }  /// filter out some redundant ridges          
+            }  /// filter out some redundant ridges
             return hits;
         }
-      
+
         /// <summary>
         /// This version adds intensityThreshold
         /// </summary>
@@ -973,7 +973,7 @@ namespace Dong.Felt
                     double magnitude;
                     double direction;
                     bool isRidge = false;
-                    // magnitude is dB, direction is double value which is times of pi/4, from the start of 0. 
+                    // magnitude is dB, direction is double value which is times of pi/4, from the start of 0.
                     ImageAnalysisTools.Sobel5X5RidgeDetection4Direction(subM, out isRidge, out magnitude, out direction);
                     if (magnitude > magnitudeThreshold && isRidge == true && (subM[halfLength, halfLength] > intensityThreshold))
                     {
@@ -1029,7 +1029,7 @@ namespace Dong.Felt
 
                     }
                 }
-            }  /// filter out some redundant ridges          
+            }  /// filter out some redundant ridges
             return hits;
         }
 
@@ -1052,7 +1052,7 @@ namespace Dong.Felt
                     double magnitude;
                     double direction;
                     bool isRidge = false;
-                    // magnitude is dB, direction is double value which is times of pi/4, from the start of 0. 
+                    // magnitude is dB, direction is double value which is times of pi/4, from the start of 0.
                     ImageAnalysisTools.Sobel5X5RidgeDetection8Direction(subM, out isRidge, out magnitude, out direction);
                     if (magnitude > magnitudeThreshold && isRidge == true)
                     {
@@ -1105,7 +1105,7 @@ namespace Dong.Felt
                         }
                     }
                 }
-            }  /// filter out some redundant ridges          
+            }  /// filter out some redundant ridges
             return hits;
         }
 
@@ -1128,7 +1128,7 @@ namespace Dong.Felt
                     double magnitude;
                     double direction;
                     bool isRidge = false;
-                    // magnitude is dB, direction is double value which is times of pi/4, from the start of 0. 
+                    // magnitude is dB, direction is double value which is times of pi/4, from the start of 0.
                     ImageAnalysisTools.GradientCalculation(subM, out isRidge, out magnitude, out direction);
                     if (magnitude > magnitudeThreshold && isRidge == true)
                     {
@@ -1190,7 +1190,7 @@ namespace Dong.Felt
                     double magnitude;
                     double direction;
                     bool isRidge = false;
-                    // magnitude is dB, direction is double value which is times of pi/4, from the start of 0. 
+                    // magnitude is dB, direction is double value which is times of pi/4, from the start of 0.
                     ImageAnalysisTools.GradientCalculation(subM, out isRidge, out magnitude, out direction);
                     if (magnitude > magnitudeThreshold && isRidge == true)
                     {
@@ -1216,7 +1216,7 @@ namespace Dong.Felt
             }
             return hits;
         }
-        
+
         public static List<double> intensityThresholdForSpectrogram(double[,] matrix)
         {
             int rows = matrix.GetLength(0);
@@ -1247,7 +1247,7 @@ namespace Dong.Felt
 
         public void ImprovedRidgeDetection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
         {
-            // This step tries to convert spectrogram data into image matrix. The spectrogram data has the dimension of totalFrameCount * totalFreCount and the matrix is totalFreCount * totalFrameCount. 
+            // This step tries to convert spectrogram data into image matrix. The spectrogram data has the dimension of totalFrameCount * totalFreCount and the matrix is totalFreCount * totalFrameCount.
             // Notice that the matrix is a normal matrix. RowIndex and ColumnIndex all follow the matrix definition. The data is first stored in rows
             //(corresponding to the frame in spectrogram from small to large) and then in columns (corresponding to the frequencyBin from high to low).
             double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
@@ -1275,12 +1275,12 @@ namespace Dong.Felt
                         Point point = new Point(c, r);
                         TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
                         double herz = (freqBinCount - r - 1) * herzScale;
-                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi.
                         var poi = new PointOfInterest(time, herz);
                         poi.Point = point;
                         // RidgeOrientation are 0, pi/4, pi/2, 3pi/4.
                         poi.RidgeOrientation = direction;
-                        // OrientationCategory only has four values, they are 0, 1, 2, 3. 
+                        // OrientationCategory only has four values, they are 0, 1, 2, 3.
                         poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
                         poi.RidgeMagnitude = magnitude;
                         poi.Intensity = matrix[r, c];
@@ -1297,27 +1297,27 @@ namespace Dong.Felt
                     }
                 }
             }
-            /// filter out some redundant ridges               
+            /// filter out some redundant ridges
             var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
-            var prunedPoiList1 = ImageAnalysisTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);           
+            var prunedPoiList1 = ImageAnalysisTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
             poiList = prunedPoiList1;
         }
 
         /// <summary>
-        /// To select ridges on the spectrogram data, matrix. 
+        /// To select ridges on the spectrogram data, matrix.
         /// </summary>
         /// <param name="matrix"></param>
         /// <param name="ridgeLength"> By default, it's 5. Because our ridge detection is 5*5 neighbourhood.
         /// </param>
         /// <param name="magnitudeThreshold"> The range usually goest to 5 ~ 7. If the value is low, it will give you more ridges.
-        /// otherwise, less ridges will return. 
+        /// otherwise, less ridges will return.
         /// </param>
         /// <param name="secondsScale"> This depends on the FFT parameters you've done. For my case, it's 0.0116 s. It means every
         /// pixel represents such second.
         /// </param>
-        /// <param name="timeScale"> As above, it's 11.6 ms for each frame. 
+        /// <param name="timeScale"> As above, it's 11.6 ms for each frame.
         /// </param>
-        /// <param name="herzScale"> As above, it's 43 Hz for each frequency bin. 
+        /// <param name="herzScale"> As above, it's 43 Hz for each frequency bin.
         /// </param>
         /// <param name="freqBinCount"> As above, it's 256 frequency bins.
         /// </param>
@@ -1341,12 +1341,12 @@ namespace Dong.Felt
                         Point point = new Point(c, r);
                         TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
                         double herz = (freqBinCount - r - 1) * herzScale;
-                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi.
                         var poi = new PointOfInterest(time, herz);
                         poi.Point = point;
                         // RidgeOrientation are 0, pi/4, pi/2, 3pi/4.
                         poi.RidgeOrientation = direction;
-                        // OrientationCategory only has four values, they are 0, 1, 2, 3. 
+                        // OrientationCategory only has four values, they are 0, 1, 2, 3.
                         poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
                         poi.RidgeMagnitude = magnitude;
                         poi.Intensity = matrix[r, c];
@@ -1366,7 +1366,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// Fill the gap between seperated points. 
+        /// Fill the gap between seperated points.
         /// </summary>
         /// <param name="poi"></param>
         /// <param name="rowsMax"></param>
@@ -1386,7 +1386,7 @@ namespace Dong.Felt
             {
                 if (poiList[poiListLength - 1].TimeLocation == poi.TimeLocation && poiList[poiListLength - 1].Herz == poi.Herz)
                 {
-                    // Finish the copy work. 
+                    // Finish the copy work.
                     if (poi.RidgeMagnitude > poiList[poiListLength - 1].RidgeMagnitude)
                     {
                         CallPoiCopy(poi, out neighbourPoi1, out neighbourPoi2, colsMax, rowsMax, matrix, secondsScale, freqBinCount);
@@ -1464,7 +1464,7 @@ namespace Dong.Felt
             var poiHorizontalGroup = new List<PointOfInterest>();
             var poiPDGroup = new List<PointOfInterest>();
             var poiNDGroup = new List<PointOfInterest>();
-            var result = new List<List<PointOfInterest>>();           
+            var result = new List<List<PointOfInterest>>();
             foreach (var p in poiList)
             {
                 // OrientationType = 4
@@ -1495,7 +1495,7 @@ namespace Dong.Felt
             return result;
         }
 
-        // Copy a pointOfInterst to another pointOfInterest. 
+        // Copy a pointOfInterst to another pointOfInterest.
         public PointOfInterest PoiCopy(PointOfInterest point, int xCordinate, int yCordinate, double[,] matrix, double secondsScale, double freqBinCount)
         {
             var newPoint = new Point(xCordinate, yCordinate);
@@ -1512,7 +1512,7 @@ namespace Dong.Felt
             return copyPoi;
         }
 
-        // using the gradient to calculate the real values for each poi's magnitude and direction.  
+        // using the gradient to calculate the real values for each poi's magnitude and direction.
         public static List<PointOfInterest> CalulateRidgeRealValues(List<PointOfInterest> poiList, int rowsMax, int colsMax)
         {
             var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsMax, colsMax);
@@ -1578,7 +1578,7 @@ namespace Dong.Felt
             RowsCount = rowsCount;
             ColsCount = colsCount;
         }
-       
+
         public double[,] SpectrogramIntensityToArray(SpectrogramStandard spectrogram)
         {
             var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
@@ -1594,7 +1594,7 @@ namespace Dong.Felt
             copyTSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(copyTSpectrogram.Data, compressConfig.TimeCompressRate);
             copyFSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(copyFSpectrogram.Data, compressConfig.FreqCompressRate);
 
-            var rows = spectrogram.Data.GetLength(1); 
+            var rows = spectrogram.Data.GetLength(1);
             var cols = spectrogram.Data.GetLength(0);
             var ridgesFromUnCompressedSpec = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
             var timeCompressedRidges = new List<PointOfInterest>();
@@ -1614,10 +1614,10 @@ namespace Dong.Felt
             return improvedRidges;
         }
 
-        // This version aims to add compressed ridges to filtered ridges. 
+        // This version aims to add compressed ridges to filtered ridges.
         public static List<PointOfInterest> AddCompressedRidges(SonogramConfig config, string audioFilePath,
             RidgeDetectionConfiguration ridgeConfig, string featurePropSet,
-            CompressSpectrogramConfig compressConfig, List<PointOfInterest> originalPoiList 
+            CompressSpectrogramConfig compressConfig, List<PointOfInterest> originalPoiList
                                                      )
         {
             var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFilePath);
@@ -1625,15 +1625,15 @@ namespace Dong.Felt
             copyTSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(copyTSpectrogram.Data, compressConfig.TimeCompressRate);
             var copyFSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFilePath);
             copyFSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(copyFSpectrogram.Data, compressConfig.FreqCompressRate);
-           
+
             var rows = spectrogram.Data.GetLength(1);
-            var cols = spectrogram.Data.GetLength(0);            
+            var cols = spectrogram.Data.GetLength(0);
             var verticalTimeCompressedRidges = new List<PointOfInterest>();
             var timeCompressedRidges = new List<PointOfInterest>();
             if (compressConfig.TimeCompressRate != 1.0)
             {
                 timeCompressedRidges = POISelection.RidgePoiSelection(copyTSpectrogram, ridgeConfig, featurePropSet);
-            }            
+            }
             foreach (var r in timeCompressedRidges)
             {
                 if (r.OrientationCategory == 4)
@@ -1641,13 +1641,13 @@ namespace Dong.Felt
                     verticalTimeCompressedRidges.Add(r);
                 }
             }
-            
+
             var horiFreqCompressedRidges = new List<PointOfInterest>();
             var freqCompressedRidges = new List<PointOfInterest>();
             if (compressConfig.FreqCompressRate != 1.0)
             {
                 freqCompressedRidges = POISelection.RidgePoiSelection(copyFSpectrogram, ridgeConfig, featurePropSet);
-            }          
+            }
             foreach (var f in freqCompressedRidges)
             {
                 if (f.OrientationCategory == 0)

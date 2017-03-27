@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="LoggedConsole.cs" company="MQUTeR">
-//   - 
+//   -
 // </copyright>
 // <summary>
 //   This class is designed to be an abstraction to the system console.
@@ -108,7 +108,7 @@ namespace System
 
         /// <summary>
         /// Log a message object with the <see cref="F:LogExtensions.SuccessLevel"/> level -
-        /// equivalent to <see cref="F:log4net.Core.Level.Notice"/> 
+        /// equivalent to <see cref="F:log4net.Core.Level.Notice"/>
         /// </summary>
         /// <param name="log">
         /// The log.
@@ -123,7 +123,7 @@ namespace System
 
         /// <summary>
         /// Log a message object with the <see cref="F:LogExtensions.SuccessLevel"/> level -
-        /// equivalent to <see cref="F:log4net.Core.Level.Notice"/> 
+        /// equivalent to <see cref="F:log4net.Core.Level.Notice"/>
         /// </summary>
         /// <param name="log">
         /// The log.
@@ -178,7 +178,7 @@ namespace System
         /// <para>
         /// See the <see cref="M:Verbose(object)"/> form for more detailed information.
         /// </para>
-        /// </remarks>    
+        /// </remarks>
         public static void Verbose(this ILog log, object message, Exception exception)
         {
             log.Logger.Log(null, log4net.Core.Level.Verbose, message, exception);
@@ -227,7 +227,7 @@ namespace System
         /// See the <see cref="M:Trace(object)"/> form for more detailed information.
         /// </para>
         /// </remarks>
-        /// <seealso cref="M:Trace(object)"/><seealso cref="P:log4net.ILog.IsTraceEnabled"/>   
+        /// <seealso cref="M:Trace(object)"/><seealso cref="P:log4net.ILog.IsTraceEnabled"/>
         public static void Trace(this ILog log, object message, Exception exception)
         {
             log.Logger.Log(null, log4net.Core.Level.Trace, message, exception);

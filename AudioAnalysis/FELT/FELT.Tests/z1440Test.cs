@@ -1,13 +1,12 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MQUTeR.FSharp.Shared;
-
-namespace FELT.Tests
+﻿namespace FELT.Tests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
     using Microsoft.FSharp.Numerics;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using MQUTeR.FSharp.Shared;
 
     [TestClass]
     public class Z1440Test
@@ -23,7 +22,7 @@ namespace FELT.Tests
             var newsZs = tests.Select(IntegerZ1440.NewZ1440).Select(x => x.ToInt32()).ToArray();
 
             CollectionAssert.AreEqual(expected, createdZs);
-            
+
             // basically the tuple constructor will not validate the tuple
             CollectionAssert.AreNotEqual(expected, newsZs);
             CollectionAssert.AreEqual(tests, newsZs);
@@ -39,13 +38,13 @@ namespace FELT.Tests
 
             Assert.AreEqual(89, (int)z1);
             Assert.AreEqual(100, (int)z2);
-            
+
             // test ops
             var z5 = z1 + NumericLiteralZ.FromInt32(1000);
             var z6 = z1 + z2;
             var z7 = z1 - z2;
             var z8 = z2 - z1;
-            
+
             var z3 = z1 * z2;
             var z4 = z1 / z2;
             var z9 = NumericLiteralZ.FromInt32(1000) / NumericLiteralZ.FromInt32(50);
@@ -90,7 +89,7 @@ namespace FELT.Tests
             ////// test standard deviation
             ////var stda = Maths.Array.stdDeviation<IntegerZ1440, IntegerZ1440, IntegerZ1440, IntegerZ1440, float>(az);
             ////var stdb = Maths.Array.stdDeviation<IntegerZ1440, IntegerZ1440, IntegerZ1440, IntegerZ1440, float>(bz);
-                             
+
             ////Assert.AreEqual(13.7186005117140, stda, MathTest.minDeltaForDoubleTests);
             ////Assert.AreEqual(31.6227766016838, stdb, MathTest.minDeltaForDoubleTests);
         }

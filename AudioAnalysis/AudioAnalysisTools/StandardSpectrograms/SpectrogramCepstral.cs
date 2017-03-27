@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-using AudioAnalysisTools.WavTools;
-using AudioAnalysisTools.DSP;
-using TowseyLibrary;
-using Acoustics.Tools.Wav;
-
-
-
-namespace AudioAnalysisTools.StandardSpectrograms
+﻿namespace AudioAnalysisTools.StandardSpectrograms
 {
+
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Tools.Wav;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.WavTools;
+    using TowseyLibrary;
+
     public class SpectrogramCepstral : BaseSonogram
     {
         public SpectrogramCepstral(string configFile, WavReader wav)
@@ -56,7 +54,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.subBand_MaxHz = maxHz;
 
             //double[] noise_subband = BaseSonogram.ExtractModalNoiseSubband(this.SnrFullband.ModalNoiseProfile, minHz, maxHz, sg.doMelScale,
-            //                                                   sonogram.Configuration.FreqBinCount, sonogram.FBinWidth); 
+            //                                                   sonogram.Configuration.FreqBinCount, sonogram.FBinWidth);
             this.Data = SpectrogramTools.ExtractFreqSubband(sg.Data, minHz, maxHz,
                              this.Configuration.DoMelScale, sg.Configuration.FreqBinCount, sg.FBinWidth);
             CalculateSubbandSNR(this.Data);
@@ -107,7 +105,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             if (bandCount > FFTbins)
                 throw new Exception("## FATAL ERROR in BaseSonogram.MakeCepstrogram():- Can't calculate cepstral coeff. FilterbankCount > FFTbins. (" + bandCount + " > " + FFTbins + ")\n\n");
 
-            //this is the filter count for full bandwidth 0-Nyquist. This number is trimmed proportionately to fit the required bandwidth. 
+            //this is the filter count for full bandwidth 0-Nyquist. This number is trimmed proportionately to fit the required bandwidth.
             if (doMelScale) m = MFCCStuff.MelFilterBank(m, bandCount, nyquist, minHz, maxHz); // using the Greg integral
             else m = MFCCStuff.LinearFilterBank(m, bandCount, nyquist, minHz, maxHz);
             Log.WriteIfVerbose("\tDim after filter bank=" + m.GetLength(1) + " (Max filter bank=" + bandCount + ")");
@@ -119,7 +117,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             var tuple1 = SNR.NoiseReduce(m, config.NoiseReductionType, config.NoiseReductionParameter);
             m = tuple1.Item1;
 
-            //(iv) calculate cepstral coefficients 
+            //(iv) calculate cepstral coefficients
             m = MFCCStuff.Cepstra(m, ccCount);
             //(v) normalise
             m = DataTools.normalise(m);
@@ -251,7 +249,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             //initialise feature vector for template - will contain three acoustic vectors - for T-dT, T and T+dT
             int frameCount = m.GetLength(0);
-            int cepstralL = m.GetLength(1);  // length of cepstral vector 
+            int cepstralL = m.GetLength(1);  // length of cepstral vector
             int featurevL = 3 * cepstralL;   // to accomodate cepstra for T-2, T and T+2
 
             double[,] acousticM = new double[frameCount, featurevL]; //init the matrix of acoustic vectors
