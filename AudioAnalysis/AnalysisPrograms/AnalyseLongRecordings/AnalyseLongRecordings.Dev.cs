@@ -48,8 +48,10 @@
             //string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.ArdeaInsignis.yml";
             //string outputPath    = @"C:\SensorNetworks\Output\TsheringDema";
             //Y:\Results\2016Dec06-094005 - Tshering, Towsey.Indices, ICD=10.0, #133\Tshering\WBH_Walaytar\201505 - second deployment\Site2_Waklaytar\24Hours WBH_28032016
-            //This file contains lots of heron calls.     WBH12HOURS-N_20160403_000000.wav
-
+            // This file contains lots of heron calls.     WBH12HOURS-N_20160403_000000.wav
+            string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\SecondDeployment\WBH12HOURS-N_20160426_000010.wav";
+            string outputPath = @"C:\SensorNetworks\Output\TsheringDema";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.ArdeaInsignis.yml";
 
             //MARINE
             //string recordingPath = @"C:\SensorNetworks\WavFiles\MarineRecordings\20130318_171500.wav";
@@ -57,10 +59,8 @@
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticMarine.yml";
             //string outputPath = @"C:\SensorNetworks\Output\MarineSonograms\Test1";
 
-
             //RAIN
-            // audio2csv "C:\SensorNetworks\WavFiles\Rain\DM420036_min599.wav"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg" "C:\SensorNetworks\Output\Rain"
-
+            //audio2csv "C:\SensorNetworks\WavFiles\Rain\DM420036_min599.wav"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg" "C:\SensorNetworks\Output\Rain"
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Human.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Crow.cfg";
@@ -173,6 +173,7 @@
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\WESTKNOLL_20140905-001853+1000.wav";
             //string outputPath = @"C:\SensorNetworks\Output\KoalaMale\StBeesIndices2016";
 
+            /*
             //LEWIN'S RAIL
             // BAC recordings
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-085040.wav";
@@ -180,7 +181,9 @@
             string recordingPath = @"G:\SensorNetworks\WavFiles\LewinsRail\FromLizZnidersic\Data Priory property D.Chapple August 2016\SM304290_0+1_20160824_102329.wav";
             string outputPath    = @"C:\SensorNetworks\Output\LewinsRail\Results2017";
             string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LewiniaPectoralis.yml";
+            */
 
+            /*
             //BIRD50 recordings from Herve Glotin
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Glotin-Bird50\AmazonBird50_testing_input\ID1268.wav";
             //string outputPath = @"C:\SensorNetworks\Output\BIRD50\";
@@ -188,7 +191,7 @@
             // EASTERN BRISTLE BIRD
             //string recordingPath = @"F:\SensorNetworks\WavFiles\EasternBristlebird\CURRUMBIN_20150529-142503+1000.wav";
             //string outputPath    = @"C:\SensorNetworks\Output\BristleBird";
-
+            */
 
             // CONFIG FILES ######################################################################################################
             // Use these configs for Summary and Spectral Indices
