@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace QutBioacosutics.Xie.Configuration
+﻿namespace QutBioacosutics.Xie.Configuration
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     public class GracillentaConfiguration
     {
         public double AmplitudeThresholdGracillenta { get; set; }
@@ -56,7 +56,7 @@ namespace QutBioacosutics.Xie.Configuration
             //Dct_DurationGracillenta = dct_DurationGracillenta,
             //Dct_ThresholdGracillenta = dct_ThresholdGracillenta,
 
-            DoSlopeGracillenta = configuration.DoSlopeGracillenta;        
+            DoSlopeGracillenta = configuration.DoSlopeGracillenta;
         }
 
     } //Class

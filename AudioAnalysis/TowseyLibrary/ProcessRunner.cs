@@ -60,8 +60,8 @@
         /// </param>
         public void SendStandardInput(string input)
         {
-            // To use StandardInput, you must set ProcessStartInfo.UseShellExecute to false, 
-            // and you must set ProcessStartInfo.RedirectStandardInput to true. Otherwise, 
+            // To use StandardInput, you must set ProcessStartInfo.UseShellExecute to false,
+            // and you must set ProcessStartInfo.RedirectStandardInput to true. Otherwise,
             // writing to the StandardInput stream throws an exception.
             this.process.StandardInput.WriteLine(input);
         }
@@ -80,8 +80,8 @@
         public FileInfo ExecutableFile { get; private set; }
 
         /// <summary>
-        /// Run the process with the 
-        /// given <paramref name="arguments"/> 
+        /// Run the process with the
+        /// given <paramref name="arguments"/>
         /// in the given <paramref name="workingDirectory"/>.
         /// </summary>
         /// <param name="arguments">

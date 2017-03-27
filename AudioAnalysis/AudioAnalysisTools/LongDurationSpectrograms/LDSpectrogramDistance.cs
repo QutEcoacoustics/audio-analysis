@@ -22,7 +22,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         private static double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
 
         // CHANGE default RGB mapping here.
-        private static string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR; 
+        private static string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
 
         // default value - from which spectrogram was derived
         private static int frameWidth = SpectrogramConstants.FRAME_LENGTH;
@@ -31,7 +31,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         private static TimeSpan minuteOffset = SpectrogramConstants.MINUTE_OFFSET;
 
         // default value - after resampling
-        private static int sampleRate = SpectrogramConstants.SAMPLE_RATE; 
+        private static int sampleRate = SpectrogramConstants.SAMPLE_RATE;
 
         // assume one minute spectra and hourly time lines
         private static TimeSpan xScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
@@ -100,9 +100,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="outputDirectory">
         /// </param>
         public static void DrawDistanceSpectrogram(
-            DirectoryInfo inputDirectory, 
-            FileInfo inputFileName1, 
-            FileInfo inputFileName2, 
+            DirectoryInfo inputDirectory,
+            FileInfo inputFileName1,
+            FileInfo inputFileName2,
             DirectoryInfo outputDirectory)
         {
             // PARAMETERS
@@ -124,19 +124,19 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 return;
             }
 
-            int nyquist = cs1.SampleRate / 2; 
+            int nyquist = cs1.SampleRate / 2;
             int herzInterval = 1000;
 
             string title =
                 string.Format(
-                    "FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", 
-                    inputFileName1, 
+                    "FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})",
+                    inputFileName1,
                     cs1.ColorMode);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width);
             spg1Image = LDSpectrogramRGB.FrameLDSpectrogram(
-                spg1Image, 
-                titleBar, 
-                cs1, 
+                spg1Image,
+                titleBar,
+                cs1,
                 nyquist, herzInterval);
 
             string outputFileName2 = inputFileName2.Name;
@@ -156,24 +156,24 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             title = string.Format(
-                "FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", 
-                inputFileName2, 
+                "FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})",
+                inputFileName2,
                 cs2.ColorMode);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg2Image.Width);
             spg2Image = LDSpectrogramRGB.FrameLDSpectrogram(
-                spg2Image, 
-                titleBar, 
-                cs1, 
+                spg2Image,
+                titleBar,
+                cs1,
                 nyquist, herzInterval);
 
             string outputFileName4 = inputFileName1 + ".EuclidianDistance.png";
             Image deltaSp = DrawDistanceSpectrogram(cs1, cs2);
             Color[] colorArray = LDSpectrogramRGB.ColourChart2Array(GetDifferenceColourChart());
             titleBar = DrawTitleBarOfEuclidianDistanceSpectrogram(
-                inputFileName1.Name, 
-                inputFileName2.Name, 
-                colorArray, 
-                deltaSp.Width, 
+                inputFileName1.Name,
+                inputFileName2.Name,
+                colorArray,
+                deltaSp.Width,
                 SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
             deltaSp = LDSpectrogramRGB.FrameLDSpectrogram(deltaSp, titleBar, cs2, nyquist, herzInterval);
             deltaSp.Save(Path.Combine(outputDirectory.FullName, outputFileName4));
@@ -236,41 +236,41 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var v1 = new double[3];
             double[] mode1 =
                 {
-                    cs1.IndexStats[keys[0]].Mode, cs1.IndexStats[keys[1]].Mode, 
-                    cs1.IndexStats[keys[2]].Mode
+                    cs1.IndexStats[keys[0]].Mode, cs1.IndexStats[keys[1]].Mode,
+                    cs1.IndexStats[keys[2]].Mode,
                 };
             double[] stDv1 =
                 {
-                    cs1.IndexStats[keys[0]].StandardDeviation, cs1.IndexStats[keys[1]].StandardDeviation, 
-                    cs1.IndexStats[keys[2]].StandardDeviation
+                    cs1.IndexStats[keys[0]].StandardDeviation, cs1.IndexStats[keys[1]].StandardDeviation,
+                    cs1.IndexStats[keys[2]].StandardDeviation,
                 };
             LoggedConsole.WriteLine(
-                "1: avACI={0:f3}+/-{1:f3};   avTEN={2:f3}+/-{3:f3};   avCVR={4:f3}+/-{5:f3}", 
-                mode1[0], 
-                stDv1[0], 
-                mode1[1], 
-                stDv1[1], 
-                mode1[2], 
+                "1: avACI={0:f3}+/-{1:f3};   avTEN={2:f3}+/-{3:f3};   avCVR={4:f3}+/-{5:f3}",
+                mode1[0],
+                stDv1[0],
+                mode1[1],
+                stDv1[1],
+                mode1[2],
                 stDv1[2]);
 
             var v2 = new double[3];
             double[] mode2 =
                 {
-                    cs2.IndexStats[keys[0]].Mode, cs2.IndexStats[keys[1]].Mode, 
-                    cs2.IndexStats[keys[2]].Mode
+                    cs2.IndexStats[keys[0]].Mode, cs2.IndexStats[keys[1]].Mode,
+                    cs2.IndexStats[keys[2]].Mode,
                 };
             double[] stDv2 =
                 {
-                    cs2.IndexStats[keys[0]].StandardDeviation, cs2.IndexStats[keys[1]].StandardDeviation, 
-                    cs2.IndexStats[keys[2]].StandardDeviation
+                    cs2.IndexStats[keys[0]].StandardDeviation, cs2.IndexStats[keys[1]].StandardDeviation,
+                    cs2.IndexStats[keys[2]].StandardDeviation,
                 };
             LoggedConsole.WriteLine(
-                "2: avACI={0:f3}+/-{1:f3};   avTEN={2:f3}+/-{3:f3};   avCVR={4:f3}+/-{5:f3}", 
-                mode2[0], 
-                stDv2[0], 
-                mode2[1], 
-                stDv2[1], 
-                mode2[2], 
+                "2: avACI={0:f3}+/-{1:f3};   avTEN={2:f3}+/-{3:f3};   avCVR={4:f3}+/-{5:f3}",
+                mode2[0],
+                stDv2[0],
+                mode2[1],
+                stDv2[1],
+                mode2[2],
                 stDv2[2]);
 
             // assume all matricies are normalised and of the same dimensions
@@ -421,10 +421,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
  // DrawDistanceSpectrogram()
 
         public static Image DrawTitleBarOfEuclidianDistanceSpectrogram(
-            string name1, 
-            string name2, 
-            Color[] colorArray, 
-            int width, 
+            string name1,
+            string name2,
+            Color[] colorArray,
+            int width,
             int height)
         {
             Image colourChart = ImageTools.DrawColourChart(width, height, colorArray);

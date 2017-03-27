@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-//using MathNet.Numerics;
-using MathNet.Numerics.Transformations;
-using TowseyLibrary;
-using AudioAnalysisTools.WavTools;
-
-
-namespace AudioAnalysisTools.DSP
+﻿namespace AudioAnalysisTools.DSP
 {
+
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.WavTools;
+    //using MathNet.Numerics;using MathNet.Numerics.Transformations;
+    using TowseyLibrary;
+
     /// <summary>
     /// digital signal processing methods
     /// </summary>
@@ -27,7 +26,7 @@ namespace AudioAnalysisTools.DSP
             public double[,] amplitudeSpectrogram { get; set; }
             public double WindowPower { get; set; }
             public double[] Average { get; set; }
-            public int NyquistFreq { get; set; } 
+            public int NyquistFreq { get; set; }
             public double FreqBinWidth { get; set; }
             public int NyquistBin { get; set; }
             public int MaxAmplitudeCount { get; set; }
@@ -98,7 +97,7 @@ namespace AudioAnalysisTools.DSP
             return frames;
         }
 
-        
+
         /// <summary>
         /// Breaks a long audio signal into frames with given step
         /// IMPORTANT: THIS METHOD PRODUCES A LARGE MEMORY-HUNGRY MATRIX.  BEST TO USE THE FrameStartEnds() METHOD.
@@ -205,14 +204,14 @@ namespace AudioAnalysisTools.DSP
                 frameDC /= frameSize;
                 average[i] = total / frameSize;
                 envelope[i] = maxValue;
-                frameEnergy[i] = energy / frameSize; 
+                frameEnergy[i] = energy / frameSize;
 
                 // remove DC value from signal values
                 double[] signalMinusAv = new double[frameSize];
                 for (int j = 0; j < frameSize; j++)
                     signalMinusAv[j] = signal[start + j] - frameDC;
 
-                // generate the spectra of FFT AMPLITUDES - NOTE: f[0]=DC;  f[64]=Nyquist  
+                // generate the spectra of FFT AMPLITUDES - NOTE: f[0]=DC;  f[64]=Nyquist
                 f1 = fft.InvokeDotNetFFT(signalMinusAv);                 // returns fft amplitude spectrum
                 ////f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
                 ////f1 = fft.Invoke(DataTools.GetRow(frames, i));          //returns fft amplitude spectrum
@@ -220,7 +219,7 @@ namespace AudioAnalysisTools.DSP
                 f1 = DataTools.filterMovingAverage(f1, 3); //smooth spectrum to reduce variance
                 for (int j = 0; j < fft.CoeffCount; j++)   //foreach freq bin
                     spectrogram[i, j] = f1[j];             //transfer amplitude
-                
+
             } // end frames
 
             // check the envelope for clipping. Accept a clip if two consecutive frames have max value = 1,0
@@ -247,7 +246,7 @@ namespace AudioAnalysisTools.DSP
                 WindowPower = fft.WindowPower,
                 NyquistFreq = nyquistFreq,
                 FreqBinWidth = binWidth,
-                NyquistBin = nyquistBin
+                NyquistBin = nyquistBin,
             };
         }
 
@@ -351,7 +350,7 @@ namespace AudioAnalysisTools.DSP
                 for (int j = 0; j < N; j++)  //foreach sample in frame
                 {
                     if (min > frames[i, j]) min = frames[i, j];
-                    else 
+                    else
                     if (max < frames[i, j]) max = frames[i, j];
                 }
                 minAmp[i] = min;
@@ -424,7 +423,7 @@ namespace AudioAnalysisTools.DSP
             //COPY THIS TEST TEMPLATE
             bool doit1 = false;
             if (doit1) //test Method(parameters)
-            {   
+            {
                 System.LoggedConsole.WriteLine("\nTest of METHOD)");
             }//end test Method(string fName)
 
@@ -439,7 +438,7 @@ namespace AudioAnalysisTools.DSP
             //    double period = 0.2; //seconds
             //    double filterDuration = 1.0; //seconds
             //    int signalLength= 100;
-                
+
             //    //set up the impulse signal
             //    double[] signal = new double[signalLength];
             //    signal[10] = 1.0;

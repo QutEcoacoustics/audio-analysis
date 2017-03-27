@@ -13,10 +13,10 @@ namespace System
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
     using System.Text;
+    using Acoustics.Shared.Contracts;
 
     public static class FileInfoExtensions
     {
@@ -63,7 +63,7 @@ namespace System
             }
 
             return new FileInfo(str);
-        }        
+        }
 
         public static DirectoryInfo ToDirectoryInfo(this string str)
         {

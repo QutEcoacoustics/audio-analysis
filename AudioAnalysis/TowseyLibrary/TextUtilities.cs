@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
-//import java.text.BreakIterator;
+﻿//import java.text.BreakIterator;
 //import java.util.HashMap;
 //import java.util.Iterator;
 //import java.util.Locale;
@@ -15,7 +10,11 @@ using System.Text;
 
 namespace TowseyLibrary
 {
-
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Text;
 
 /**
  * <p>Title: Miscellaneous Text Processing Utilities</p>
@@ -79,7 +78,7 @@ namespace TowseyLibrary
 
 
         /// <summary>
-        /// returns a dictionary of counts of character N-grams in a string. 
+        /// returns a dictionary of counts of character N-grams in a string.
         /// </summary>
         /// <param name="str"></param>
         /// <param name="ngramValue"></param>

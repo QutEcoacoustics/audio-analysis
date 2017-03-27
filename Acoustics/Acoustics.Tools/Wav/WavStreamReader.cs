@@ -31,7 +31,7 @@
         private Stream storedStream;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WavStreamReader"/> class. 
+        /// Initializes a new instance of the <see cref="WavStreamReader"/> class.
         /// Create a wave audio stream from an existing stream.
         /// </summary>
         /// <param name="stream">
@@ -51,7 +51,7 @@
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WavStreamReader"/> class. 
+        /// Initializes a new instance of the <see cref="WavStreamReader"/> class.
         /// Create a wave audio stream from a byte array.
         /// </summary>
         /// <param name="bytes">
@@ -71,7 +71,7 @@
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WavStreamReader"/> class. 
+        /// Initializes a new instance of the <see cref="WavStreamReader"/> class.
         /// Create a wave audio stream from a file.
         /// </summary>
         /// <param name="file">
@@ -105,7 +105,7 @@
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WavStreamReader"/> class. 
+        /// Initializes a new instance of the <see cref="WavStreamReader"/> class.
         /// Create a wave audio stream from a file.
         /// </summary>
         /// <param name="filePath">
@@ -201,7 +201,7 @@
         }
 
         /// <summary>
-        /// Get samples from the wav stream. Start from <paramref name="firstSampleIndex"/> (zero indexed), 
+        /// Get samples from the wav stream. Start from <paramref name="firstSampleIndex"/> (zero indexed),
         /// and read <paramref name="numberOfSamplesToRead"/>.
         /// </summary>
         /// <param name="firstSampleIndex">
@@ -242,7 +242,7 @@
         }
 
         /// <summary>
-        /// Get samples from the wav stream. Start from <paramref name="firstSampleIndex"/> (zero indexed), 
+        /// Get samples from the wav stream. Start from <paramref name="firstSampleIndex"/> (zero indexed),
         /// and read <paramref name="numberOfSamplesToRead"/>.
         /// </summary>
         /// <param name="wavStream">
@@ -401,15 +401,15 @@
              * chunk size: size of format data (16 bytes for compression code 1).
              */
 
-            // the size of the standard wave format data (16 bytes) 
-            // plus the size of any extra format bytes needed for 
-            // the specific Wave format, if it does not contain 
+            // the size of the standard wave format data (16 bytes)
+            // plus the size of any extra format bytes needed for
+            // the specific Wave format, if it does not contain
             // uncompressed PCM data.
             const int ChunkDataSizeFormat = 16;
             int chunkDataSizeFormatRead = chunkSize;
 
-            // The first word of format data specifies 
-            // the type of compression used on the Wave 
+            // The first word of format data specifies
+            // the type of compression used on the Wave
             // data included in the Wave chunk found in this "RIFF" chunk.
             // 1 for PCM/uncompressed
             const short CompressionCode = 1;
@@ -420,28 +420,28 @@
                 throw new InvalidDataException(string.Format(ErrorMsg, CompressionCode, wavInfo.CompressionCode, "compression code"));
             }
 
-            // how many separate audio signals that are 
-            // encoded in the wave data chunk. A value of 
+            // how many separate audio signals that are
+            // encoded in the wave data chunk. A value of
             // 1 means a mono signal, a value of 2 means a stereo signal.
             wavInfo.Channels = reader.ReadInt16();
 
-            // The number of sample slices per second. 
+            // The number of sample slices per second.
             // This value is unaffected by the number of channels.
             wavInfo.SampleRate = reader.ReadInt32();
 
             // Average Bytes Per Second
-            // This value indicates how many bytes of wave 
-            // data must be streamed to a D/A converter per 
-            // second in order to play the wave file. This 
+            // This value indicates how many bytes of wave
+            // data must be streamed to a D/A converter per
+            // second in order to play the wave file. This
             // information is useful when determining if
-            // data can be streamed from the source fast 
-            // enough to keep up with playback. This value 
+            // data can be streamed from the source fast
+            // enough to keep up with playback. This value
             // can be easily calculated with the formula:
             // AvgBytesPerSec = SampleRate * BlockAlign
             wavInfo.BytesPerSecond = reader.ReadInt32();
 
             // Block Align / bytes per sample. (frame)
-            // The number of bytes per sample slice. This value 
+            // The number of bytes per sample slice. This value
             // is not affected by the number of channels and can be
             // calculated with the formula:
             // BlockAlign = SignificantBitsPerSample / 8 * NumChannels
@@ -450,8 +450,8 @@
             wavInfo.BytesPerSample = reader.ReadInt16();
 
             // Significant Bits Per Sample
-            // This value specifies the number of bits used to define each sample. 
-            // This value is usually 8, 16, 24 or 32. If the number of bits is not 
+            // This value specifies the number of bits used to define each sample.
+            // This value is usually 8, 16, 24 or 32. If the number of bits is not
             // byte aligned (a multiple of 8) then the number of bytes used per sample
             // is rounded up to the nearest byte size and the unused bytes are set to 0 and ignored.
             wavInfo.BitsPerSample = reader.ReadInt16();

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
-
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
 
     /// <summary>
     /// consists of a set of static methods to do elementary statistics
@@ -88,7 +86,7 @@ namespace TowseyLibrary
          * t(df) = (m1-m2)/SE
          * where SE^2 = s^2(m+n)/(mn)
          * where s^2 = estimated variance = ((ColumnLeft-1)v1 + (ColumnRight-1)v2)/(ColumnLeft+ColumnRight-2)
-         * where v1 = sd1^2 and v2 =  sd2^2 
+         * where v1 = sd1^2 and v2 =  sd2^2
          * To calculate ASSUME df = ColumnLeft+ColumnRight-2 = infinity
          * @param m1
          * @param sd1
@@ -228,18 +226,18 @@ namespace TowseyLibrary
         public static void main(String[] args)
         {
 
-            /*    
-                int   countC1  = 4000000; 
-                    double meanC1  = -8.7; 
-                    double sdC1    =  4.6; 
-                    int    countC2 = 4000; 
-                    double meanC2  =  8.0; 
+            /*
+                int   countC1  = 4000000;
+                    double meanC1  = -8.7;
+                    double sdC1    =  4.6;
+                    int    countC2 = 4000;
+                    double meanC2  =  8.0;
                     double sdC2    =  2.7;
                 double bb[] = bayesBoundary(countC1, meanC1, sdC1, countC2, meanC2, sdC2);
                 LoggedConsole.WriteLine("boundary 1="+bb[0]+"  boundary 2="+bb[1]);
             */
 
-            /*	
+            /*
                 double[] roots = NormalDist.quadraticRoots(6, -13, 6);
                     LoggedConsole.WriteLine("root1="+roots[0]+"  root2="+roots[1]);
             */
@@ -263,31 +261,31 @@ namespace TowseyLibrary
                 String f1  = dir+"middleGenesPostVirgilTStats.txt";
                 String f2  = dir+"allGenesPostVirgilTStats.txt";
                 String op  = dir+"earlyGenesPostVirgilTStatsOutput.txt";
-                int count1 = 28; 
+                int count1 = 28;
                 int count2 = 798;
                 Vector v1 = FileUtilities.ReadFile2Vector(f1);
                 Vector v2 = FileUtilities.ReadFile2Vector(f2);
                 BufferedWriter bw = FileUtilities.getBufferedWriter(op);
                 for(int i=0;i<1000;i++)
-                { String line1av = (String)v1.get(i); 
+                { String line1av = (String)v1.get(i);
                   String line2av = (String)v2.get(i);
                   if(line1av.startsWith("#")) continue;
                   if(line2av.startsWith("#")) continue;
                   i++;
-                  String line1sd = (String)v1.get(i); 
+                  String line1sd = (String)v1.get(i);
                   String line2sd = (String)v2.get(i);
 
                   //get the values
-                  String[] av1array = line1av.split(" +"); 
+                  String[] av1array = line1av.split(" +");
                   String[] av2array = line2av.split(" +");
-                  String[] sd1array = line1sd.split(" +"); 
+                  String[] sd1array = line1sd.split(" +");
                   String[] sd2array = line2sd.split(" +");
-      
+
                   String title = av1array[0];
                   LoggedConsole.WriteLine(line1av);
                   LoggedConsole.WriteLine(line2av);
                   for(int n=1;n<av1array.mapLength;n++)
-                  { 
+                  {
                     double m1  = Double.parseDouble(av1array[n]);
                     double sd1 = Double.parseDouble(sd1array[n]);
                     double m2  = Double.parseDouble(av2array[n]);
@@ -297,20 +295,20 @@ namespace TowseyLibrary
                       bw.write(title+" "+m1+" "+m2+" "+tStatistic(m1,sd1,count1,m2,sd2,count2));
                     } catch(Exception e)
                     {
-                      LoggedConsole.WriteLine(e); 
+                      LoggedConsole.WriteLine(e);
                     }
                   }
-            
+
                   if((i+1)>=v1.size()) break;
                 }
             */
 
-            /*    
-                int   countC1  = 4000000; 
-                    double meanC1  = -8.7; 
-                    double sdC1    =  4.6; 
-                    int    countC2 = 4000; 
-                    double meanC2  =  8.0; 
+            /*
+                int   countC1  = 4000000;
+                    double meanC1  = -8.7;
+                    double sdC1    =  4.6;
+                    int    countC2 = 4000;
+                    double meanC2  =  8.0;
                     double sdC2    =  2.7;
                 double bb[] = bayesBoundary(countC1, meanC1, sdC1, countC2, meanC2, sdC2);
                 LoggedConsole.WriteLine("boundary 1="+bb[0]+"  boundary 2="+bb[1]);

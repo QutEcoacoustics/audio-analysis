@@ -23,7 +23,7 @@
         /// <summary>in seconds</summary>
         public double Duration;
         /// <summary>in seconds</summary>
-        public double TimeStart { get; set; } //within current recording     
+        public double TimeStart { get; set; } //within current recording
         /// <summary>in seconds</summary>
         public double TimeEnd { get; set; }   //within current recording
         /// <summary>units = Hertz</summary>
@@ -37,7 +37,7 @@
         public Oblong oblong { get; set; }
 
         /// <summary> required for conversions to & from MEL scale AND for drawing event on spectrum</summary>
-        public int FreqBinCount { get; set; } 
+        public int FreqBinCount { get; set; }
         public double FreqBinWidth { get; private set; }    //required for freq-binID conversions
         /// <summary> Frame duration in seconds</summary>
         public double FrameDuration { get; private set; }
@@ -72,9 +72,9 @@
         public double Periodicity  { get; set; } // for events which have an oscillating acoustic energy - used for frog calls
         public double DominantFreq { get; set; } // the dominant freq in the event - used for frog calls
 
-        // double I1MeandB; //mean intensity of pixels in the event prior to noise subtraction 
+        // double I1MeandB; //mean intensity of pixels in the event prior to noise subtraction
         // double I1Var;    //,
-        // double I2MeandB; // mean intensity of pixels in the event after Wiener filter, prior to noise subtraction 
+        // double I2MeandB; // mean intensity of pixels in the event after Wiener filter, prior to noise subtraction
         // double I2Var;    //,
         double I3Mean;      // mean intensity of pixels in the event AFTER noise reduciton - USED FOR CLUSTERING
         double I3Var;       // variance of intensity of pixels in the event.
@@ -88,9 +88,9 @@
         /// <summary>Use this if want to filter or tag some members of a list for some purpose.</summary>
         public bool Tag { get; set; }
         /// <summary>Assigned value when reading in a list of user identified events. Indicates a user assigned assessment of event intensity</summary>
-        public int Intensity { get; set; } 
+        public int Intensity { get; set; }
         /// <summary>Assigned value when reading in a list of user identified events. Indicates a user assigned assessment of event quality</summary>
-        public int Quality { get; set; }  
+        public int Quality { get; set; }
 
         /// <summary>
         /// <para>Populate this with any information that should be stored for verification or
@@ -145,7 +145,7 @@
         {
             var x = (int)((acousticEvent.MaxFreq - acousticEvent.MinFreq) / (2 * 43));
             var y = (int)((acousticEvent.TimeStart - acousticEvent.TimeEnd) * 86);
-            this.Centroid = new Point(x, y); 
+            this.Centroid = new Point(x, y);
         }
 
         // Merge events
@@ -387,7 +387,7 @@
         }
 
         //#################################################################################################################
-        //METHODS TO CONVERT BETWEEN FREQ BIN AND HERZ OR MELS 
+        //METHODS TO CONVERT BETWEEN FREQ BIN AND HERZ OR MELS
 
         /// <summary>
         /// converts frequency bounds of an event to left and right columns of object in sonogram matrix
@@ -444,7 +444,7 @@
 
 
         //#################################################################################################################
-        //METHODS TO CONVERT BETWEEN TIME BIN AND SECONDS 
+        //METHODS TO CONVERT BETWEEN TIME BIN AND SECONDS
         public static void RowIDs2Time(int topRow, int bottomRow, double frameOffset, out double startTime, out double duration)
         {
             startTime = topRow * frameOffset;
@@ -558,7 +558,7 @@
         {
             if (!doSegmentation)//by-pass segmentation and make entire recording just one event.
             {
-                double oneSD = 0.0; 
+                double oneSD = 0.0;
                 double dBThreshold = 0.0;
                 double[] intensity = null;
                 List<AcousticEvents> segmentEvents = new List<AcousticEvents>();
@@ -569,19 +569,19 @@
             }
 
             var tuple = GetSegmentationEvents(sonogram, minHz, maxHz, smoothWindow, thresholdSD, minDuration, maxDuration);
-            return tuple; 
+            return tuple;
         }
 
-        public static System.Tuple<List<AcousticEvents>, double, double, double, double[]> GetSegmentationEvents(SpectrogramStandard sonogram, 
+        public static System.Tuple<List<AcousticEvents>, double, double, double, double[]> GetSegmentationEvents(SpectrogramStandard sonogram,
                                     int minHz, int maxHz, double smoothWindow, double thresholdSD, double minDuration, double maxDuration)
         {
             int nyquist = sonogram.SampleRate / 2;
             var tuple = SNR.SubbandIntensity_NoiseReduced(sonogram.Data, minHz, maxHz, nyquist, smoothWindow, sonogram.FramesPerSecond);
             double[] intensity = tuple.Item1; //noise reduced intensity array
             double Q = tuple.Item2;      //baseline dB in the original scale
-            double oneSD = tuple.Item3;  //1 SD in dB around the baseline 
+            double oneSD = tuple.Item3;  //1 SD in dB around the baseline
             double dBThreshold = thresholdSD * oneSD;
-            var segmentEvents = AcousticEvents.ConvertIntensityArray2Events(intensity, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,           
+            var segmentEvents = AcousticEvents.ConvertIntensityArray2Events(intensity, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
                                                            dBThreshold, minDuration, maxDuration);
             foreach (AcousticEvents ev in segmentEvents)
             {
@@ -616,9 +616,9 @@
         /// Reads a text file containing a list of acoustic events (one per line) and returns list of events.
         /// The file must contain a header.
         /// The format is tab separated words as follows:
-        /// words[0]=file name; words[1]=recording date; words[2]=time; words[3]=start; words[4]=end; 
-        /// words[5]=tag; words[6]=quality; words[7]=intensity 
-        /// 
+        /// words[0]=file name; words[1]=recording date; words[2]=time; words[3]=start; words[4]=end;
+        /// words[5]=tag; words[6]=quality; words[7]=intensity
+        ///
         /// NOTE: if match argument = null, method will return all events.
         /// </summary>
         /// <param name="path">path of file containing the acoustic events</param>
@@ -701,14 +701,14 @@
                     events[e].Duration = events[e].TimeEnd - events[e].TimeStart;
                     events[e].oblong.RowBottom = events[e + 1].oblong.RowBottom;
                     events.RemoveRange(e + 1, 1);
-                } 
+                }
             }
         }
 
 
         /// <summary>
         /// Given two lists of AcousticEvents, one being labelled events and the other being predicted events,
-        /// this method calculates the accuracy of the predictions in terms of tp, fp, fn etc. The events may come from any number of 
+        /// this method calculates the accuracy of the predictions in terms of tp, fp, fn etc. The events may come from any number of
         /// recordings or files
         /// </summary>
         /// <param name="results"></param>
@@ -781,7 +781,7 @@
             {
                 count++;
                 string hitFile = "";
-                //check if this FN event is in a file that score tp of fp hit. 
+                //check if this FN event is in a file that score tp of fp hit.
                 if (resultsSourceFiles.Contains(ae.SourceFileName))
                     hitFile = "**";
                 if (ae.Tag == false)
@@ -823,7 +823,7 @@
 
         /// <summary>
         /// Given two lists of AcousticEvents, one being labelled events and the other being predicted events,
-        /// this method calculates the accuracy of the predictions in terms of tp, fp, fn etc. 
+        /// this method calculates the accuracy of the predictions in terms of tp, fp, fn etc.
         /// This method is similar to the one above except that it is assumed that all the events, both labelled and predicted
         /// come from the same recording.
         /// </summary>
@@ -909,7 +909,7 @@
 //  THE THIRD METHOD PRODUCES A SCORE ARRAY GIVEN A LIST OF EVENTS.
 
         /// <summary>
-        /// Converts an array of sub-band intensity values to a list of AcousticEvents. 
+        /// Converts an array of sub-band intensity values to a list of AcousticEvents.
         /// This method does not constrain the maximum lewngth of detected events by setting maxDuration threshold to maximum value.
         /// </summary>
         /// <param name="values">the array of acoustic intensity values</param>
@@ -925,10 +925,10 @@
         //                                                       double framesPerSec, double freqBinWidth,
         //                                                       double threshold, double minDuration, string fileName)
         //{
-        //    double maxDuration = Double.MaxValue; 
+        //    double maxDuration = Double.MaxValue;
         //    return ConvertIntensityArray2Events(values, minHz, maxHz, framesPerSec, freqBinWidth, threshold, minDuration, maxDuration, fileName);
         //}
-        
+
 
 
         public static List<AcousticEvents> ConvertIntensityArray2Events(double[] values, int minHz, int maxHz,
@@ -972,10 +972,10 @@
         }//end method ConvertScores2Events()
 
         //##############################################################################################################################################
-        
+
         //Xueyan's method
         /// <summary>
-        /// Filter out detected events that are two close, when the difference in time is less than the duration of the event, the event after one will be eliminated. 
+        /// Filter out detected events that are two close, when the difference in time is less than the duration of the event, the event after one will be eliminated.
         /// </summary>
         /// <param name="listOfEvents"></param>
         /// <returns></returns>

@@ -1,18 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Drawing;
-//using System.IO;
-using TowseyLibrary;
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-
-
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using System.IO;
+    using TowseyLibrary;
+
     public class FindMatchingEvents
     {
 
@@ -83,7 +82,7 @@ namespace AudioAnalysisTools
         /// <param name="maxHz"></param>
         /// <param name="dBThreshold">Not used in calculation. Only used to speed up loop over the spectrogram.</param>
         /// <returns></returns>
-        public static System.Tuple<double[]> Execute_Bi_or_TrinaryMatch(double[,] template, SpectrogramStandard sonogram, 
+        public static System.Tuple<double[]> Execute_Bi_or_TrinaryMatch(double[,] template, SpectrogramStandard sonogram,
                                                                          List<AcousticEvent> segments, int minHz, int maxHz, double dBThreshold)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
@@ -98,7 +97,7 @@ namespace AudioAnalysisTools
 
             // ######### Following line normalises template scores for comparison between templates.
             // ######### Ensures OP=0 for featureless sonogram #########
-            // ######### template score = (average dB of on-template-cells - average dB of off-template-cells). 
+            // ######### template score = (average dB of on-template-cells - average dB of off-template-cells).
             WriteTemplate2Console(template);
             var tuple1 = NormaliseBiTrinaryMatrix(template);
             template = tuple1.Item1;
@@ -109,7 +108,7 @@ namespace AudioAnalysisTools
 
             double[] scores = new double[sonogram.FrameCount];
 
-            
+
             foreach (AcousticEvent av in segments)
             {
                 Log.WriteLine("SEARCHING SEGMENT.");
@@ -124,9 +123,9 @@ namespace AudioAnalysisTools
                     double max = -double.MaxValue;
                     //int maxOnCount= 0; //used to display % ON-count and maybe to modify the score.
                     int binBuffer = 10;
-                    for (int bin = -binBuffer; bin < +binBuffer; bin++) 
+                    for (int bin = -binBuffer; bin < +binBuffer; bin++)
                     {
-                        int c = minBin + bin; 
+                        int c = minBin + bin;
                         if(c < 0) c = 0;
                         double crossCor = 0.0;
                         //int onCount = 0;
@@ -161,7 +160,7 @@ namespace AudioAnalysisTools
                     if (scores[r] < dBThreshold) r += 3; //skip where score is low
 
                 } // end of rows in segment
-                LoggedConsole.WriteLine("\nFINISHED SEARCHING SEGMENT FOR ACOUSTIC EVENT."); 
+                LoggedConsole.WriteLine("\nFINISHED SEARCHING SEGMENT FOR ACOUSTIC EVENT.");
             } // foreach (AcousticEvent av in segments)
 
             var tuple = System.Tuple.Create(scores);
@@ -247,7 +246,7 @@ namespace AudioAnalysisTools
                                     }
                             }
                         } // calculate similarity
-                        double similarity = (onSum / (double)positiveCount) - (offSum / (double)negativeCount); 
+                        double similarity = (onSum / (double)positiveCount) - (offSum / (double)negativeCount);
                         if (similarity > maxSimilarity) maxSimilarity = similarity;
                     } // end freq bins
 
@@ -342,12 +341,12 @@ namespace AudioAnalysisTools
             int cols = target.GetLength(1);
             var m = new double[rows, cols];
             int posCount = 0;
-            int negCount = 0; 
+            int negCount = 0;
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
                     if (target[r, c] > 0) posCount++;
-                    else 
+                    else
                     if (target[r, c] < 0) negCount++;
             }
             double ratio = posCount / (double)negCount;
@@ -386,7 +385,7 @@ namespace AudioAnalysisTools
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
             int targetLength = target.GetLength(0);
 
-            //adjust target's dynamic range to that set by user 
+            //adjust target's dynamic range to that set by user
             target = SNR.SetDynamicRange(target, 0.0, dynamicRange); //set event's dynamic range
             double[] v1 = DataTools.Matrix2Array(target);
             v1 = DataTools.normalise2UnitLength(v1);
@@ -432,7 +431,7 @@ namespace AudioAnalysisTools
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
             int targetLength = target.GetLength(0);
 
-            //adjust target's dynamic range to that set by user 
+            //adjust target's dynamic range to that set by user
             target = SNR.SetDynamicRange(target, 3.0, dynamicRange); //set event's dynamic range
             double[,] edgeTarget = ImageTools.SobelEdgeDetection(target, 0.4);
             double[] v1 = DataTools.Matrix2Array(edgeTarget);
@@ -486,12 +485,12 @@ namespace AudioAnalysisTools
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
             int targetLength = target.GetLength(0);
 
-            //set up the matrix of cosine coefficients 
+            //set up the matrix of cosine coefficients
             int coeffCount = 12; //only use first 12 coefficients.
             int binCount = target.GetLength(1);  //number of filters in filter bank
             double[,] cosines = MFCCStuff.Cosines(binCount, coeffCount + 1); //set up the cosine coefficients
 
-            //adjust target's dynamic range to that set by user 
+            //adjust target's dynamic range to that set by user
             target = SNR.SetDynamicRange(target, 3.0, dynamicRange); //set event's dynamic range
             target = MFCCStuff.Cepstra(target, coeffCount, cosines);
             double[] v1 = DataTools.Matrix2Array(target);

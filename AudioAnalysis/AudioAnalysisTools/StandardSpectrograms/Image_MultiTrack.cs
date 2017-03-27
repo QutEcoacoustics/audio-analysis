@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Drawing;
-using System.Drawing.Imaging;
-using TowseyLibrary;
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.Linq;
+    using System.Text;
     using Acoustics.Shared;
+    using TowseyLibrary;
 
     public class Image_MultiTrack : IDisposable
     {
@@ -68,10 +67,10 @@ namespace AudioAnalysisTools
             {
                 // copied to satisfy closure constraint
                 PointOfInterest localCopy = pointOfInterest;
-                
+
                 // search current points to see if any share the same coordinates
-                
-                var match = this.Points.IndexOf(poi => poi.Point == localCopy.Point);                
+
+                var match = this.Points.IndexOf(poi => poi.Point == localCopy.Point);
                 if (match >= 0)
                 {
                     // if they do share the same coordinates, overwrite the old one
@@ -101,7 +100,7 @@ namespace AudioAnalysisTools
         {
             this.SuperimposedRainbowTransparency = m;
         }
-        
+
         public void OverlayDiscreteColorMatrix(int[,] m)
         {
             this.SuperimposedDiscreteColorMatrix = m;
@@ -139,7 +138,7 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// WARNING: graphics.DrawImage() or GDI cannot draw an image that is too big, typically 
+        /// WARNING: graphics.DrawImage() or GDI cannot draw an image that is too big, typically
         /// with an area larger than 10,385,000 pixels (Jiro estimated > 40000 pixels).
         /// This means it cannot handle recording sonograms longer than 2 minutes.
         /// Therefore call a recursive method to draw the image.
@@ -152,7 +151,7 @@ namespace AudioAnalysisTools
 
             // set up a new image having the correct dimensions
             var imageToReturn = new Bitmap(this.sonogramImage.Width, height, PixelFormat.Format32bppArgb);
-            
+
 
             // need to do this before get Graphics because cannot PutPixels into Graphics object.
             if (this.SuperimposedRedTransparency != null)
@@ -184,20 +183,20 @@ namespace AudioAnalysisTools
                 }
 
                 // draw events first because their rectangles can cover other features
-                if (this.Points != null) 
+                if (this.Points != null)
                 {
                     // var stats = new StatDescriptive(this.points.Select(p => p.Item2).ToArray());
-                    // stats.Analyze(); 
+                    // stats.Analyze();
                     foreach (PointOfInterest poi in this.Points)
                     {
                         //poi.DrawPoint(g, this.Points, this.sonogramImage.Height);
                         const int Radius = 12;
                         poi.DrawBox(g, this.Points, Radius);
-                    }       
+                    }
                 }
 
                 // draw spectral tracks
-                if (this.spectralTracks != null)  
+                if (this.spectralTracks != null)
                 {
                     foreach (SpectralTrack t in this.spectralTracks)
                     {
@@ -379,7 +378,7 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// superimposes a matrix of scores on top of a sonogram. USES RAINBOW PALLETTE
-        /// ASSUME MATRIX consists of integers >=0; 
+        /// ASSUME MATRIX consists of integers >=0;
         /// </summary>
         /// <param name="g"></param>
         void OverlayDiscreteColorMatrix(Graphics g, Bitmap bmp)
@@ -415,7 +414,7 @@ namespace AudioAnalysisTools
                 }
             }
         } //OverlayDiscreteColorMatrix()
-        
+
 
 
         #region IDisposable Members

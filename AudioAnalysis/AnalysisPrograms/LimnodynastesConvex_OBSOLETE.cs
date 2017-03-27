@@ -4,38 +4,30 @@
 //  The ACTION code for this analysis is: "LimnodynastesConvex"
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
+
 namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
     using System.Data;
-    using System.Diagnostics.Contracts;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
-
     using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
     using Acoustics.Tools;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
     using AnalysisPrograms.Production;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
     //using Emgu.CV.UI;
-
     using TowseyLibrary;
-
     using ProcessRunner = TowseyLibrary.ProcessRunner;
-
-
 
     /// <summary>
     /// NOTE: This recogniser is for the frog Limnodynastes convexiusculus.
@@ -44,7 +36,7 @@ namespace AnalysisPrograms
     /// 2. One from JCU, Lin and Kiyomi.
     /// Recording 2. also contains canetoad and Litoria fallax.
     /// So I have combined the three recognisers into one analysis.
-    /// 
+    ///
     /// </summary>
     public class LimnodynastesConvex_OBSOLETE : AbstractStrongAnalyser
     {
@@ -60,11 +52,11 @@ namespace AnalysisPrograms
 
         public override AnalysisSettings DefaultSettings => new AnalysisSettings
             {
-                SegmentMaxDuration = TimeSpan.FromMinutes(1), 
-                SegmentMinDuration = TimeSpan.FromSeconds(30), 
-                SegmentMediaType = MediaTypes.MediaTypeWav, 
+                SegmentMaxDuration = TimeSpan.FromMinutes(1),
+                SegmentMinDuration = TimeSpan.FromSeconds(30),
+                SegmentMediaType = MediaTypes.MediaTypeWav,
                 SegmentOverlapDuration = TimeSpan.Zero,
-                SegmentTargetSampleRate = ResampleRate
+                SegmentTargetSampleRate = ResampleRate,
             };
 
         public override string DisplayName => "Limnodynastes convex";
@@ -106,14 +98,14 @@ namespace AnalysisPrograms
                 string segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, StartMinute);
                 string sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, StartMinute);
                 string eventsFname = string.Format(
-                    "{0}_{1}min.{2}.Events.csv", 
-                    segmentFileStem, 
-                    StartMinute, 
+                    "{0}_{1}min.{2}.Events.csv",
+                    segmentFileStem,
+                    StartMinute,
                     "Towsey." + AnalysisName);
                 string indicesFname = string.Format(
-                    "{0}_{1}min.{2}.Indices.csv", 
-                    segmentFileStem, 
-                    StartMinute, 
+                    "{0}_{1}min.{2}.Indices.csv",
+                    segmentFileStem,
+                    StartMinute,
                     "Towsey." + AnalysisName);
 
                 if (true)
@@ -150,8 +142,8 @@ namespace AnalysisPrograms
                 if (!csvEvents.Exists)
                 {
                     Log.WriteLine(
-                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.", 
-                        arguments.Start.Value, 
+                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.",
+                        arguments.Start.Value,
                         arguments.Source.FullName);
                 }
                 else
@@ -165,8 +157,8 @@ namespace AnalysisPrograms
                 if (!csvIndicies.Exists)
                 {
                     Log.WriteLine(
-                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.", 
-                        arguments.Start.Value, 
+                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
+                        arguments.Start.Value,
                         arguments.Source.FullName);
                 }
                 else
@@ -209,22 +201,22 @@ namespace AnalysisPrograms
             {
                 // Process entire file
                 AudioFilePreparer.PrepareFile(
-                    arguments.Source, 
+                    arguments.Source,
                     tempF,
-                    new AudioUtilityRequest { TargetSampleRate = ResampleRate }, 
+                    new AudioUtilityRequest { TargetSampleRate = ResampleRate },
                     analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
             else
             {
                 AudioFilePreparer.PrepareFile(
-                    arguments.Source, 
-                    tempF, 
+                    arguments.Source,
+                    tempF,
                     new AudioUtilityRequest
                         {
-                            TargetSampleRate = ResampleRate, 
-                            OffsetStart = start, 
-                            OffsetEnd = start.Add(duration)
-                        }, 
+                            TargetSampleRate = ResampleRate,
+                            OffsetStart = start,
+                            OffsetEnd = start.Add(duration),
+                        },
                     analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
 
@@ -258,7 +250,7 @@ namespace AnalysisPrograms
             // execute actual analysis
             Dictionary<string, string> configuration = analysisSettings.Configuration;
             LimnodynastesConvexResults results = Analysis(audioFile, configuration, analysisSettings);
-            
+
             var analysisResults = new AnalysisResult2(analysisSettings, results.RecordingDuration);
 
             BaseSonogram sonogram = results.Sonogram;
@@ -295,11 +287,11 @@ namespace AnalysisPrograms
         }
 
         public override void SummariseResults(
-            AnalysisSettings settings, 
-            FileSegment inputFileSegment, 
-            EventBase[] events, 
-            SummaryIndexBase[] indices, 
-            SpectralIndexBase[] spectralIndices, 
+            AnalysisSettings settings,
+            FileSegment inputFileSegment,
+            EventBase[] events,
+            SummaryIndexBase[] indices,
+            SpectralIndexBase[] spectralIndices,
             AnalysisResult2[] results)
         {
             // noop
@@ -330,7 +322,7 @@ namespace AnalysisPrograms
         #region Methods
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="segmentOfSourceFile"></param>
         /// <param name="configDict"></param>
@@ -397,7 +389,7 @@ namespace AnalysisPrograms
             int F1AndF2Gap = (int)Math.Round(peakGapInHerz / herzPerBin);
             //int F1AndF2Gap = 10; // 10 = number of freq bins
             int F1AndF3Gap = 2 * F1AndF2Gap;
-            //int F1AndF3Gap = 20; 
+            //int F1AndF3Gap = 20;
 
             int hzBuffer  = 250;
             int bottomBin = 5;
@@ -448,7 +440,7 @@ namespace AnalysisPrograms
 
             // DEBUG ONLY // ################################ TEMPORARY ################################
             // superimpose point on RHZ HiRes spectrogram for debug purposes
-            bool drawOnHiResSpectrogram = true; 
+            bool drawOnHiResSpectrogram = true;
             //string filePath = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test\Towsey.HiResIndices\SpectrogramImages\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30_0min.CombinedGreyScale.png";
             var fileName = Path.GetFileNameWithoutExtension(analysisSettings.AudioFile.Name);
             string filePath = outputDir.FullName + @"\SpectrogramImages\" + fileName + ".CombinedGreyScale.png";
@@ -496,7 +488,7 @@ namespace AnalysisPrograms
                 SourceFName = recording.BaseName,
                 WindowSize = frameSize,
                 WindowOverlap = 0.0,
-                NoiseReductionType = NoiseReductionType.None
+                NoiseReductionType = NoiseReductionType.None,
             };
             // init sonogram
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
@@ -663,7 +655,7 @@ namespace AnalysisPrograms
                 //var ae = new AcousticEvent(oblong, recording.Nyquist, binCount, frameDurationInSeconds, frameStepInSeconds, frameCount);
                 //ae.StartOffset = TimeSpan.FromSeconds(Tframe * frameStepInSeconds);
 
-                
+
                 var pointF1 = new Point(2, topBin - F1bin);
                 var pointF2 = new Point(2, topBin - F2bin);
                 var pointF3 = new Point(2, topBin - F3bin);
@@ -747,26 +739,26 @@ namespace AnalysisPrograms
                 // mark off upper bound and lower frequency bound
                 sonoBmp.SetPixel(0, height - dominantBinMin, Color.Lime);
                 sonoBmp.SetPixel(0, height - dominantBinMax, Color.Lime);
-                sonoBmp.Save(filePath2);  
+                sonoBmp.Save(filePath2);
             }
             // END DEBUG ################################ TEMPORARY ################################
 
 
             return new LimnodynastesConvexResults
                        {
-                           Sonogram = sonogram, 
-                           Hits = null, 
-                           Plot = plot, 
-                           Events = acousticEvents, 
-                           RecordingDuration = recording.Duration()
+                           Sonogram = sonogram,
+                           Hits = null,
+                           Plot = plot,
+                           Events = acousticEvents,
+                           RecordingDuration = recording.Duration(),
                        };
         } // Analysis()
 
         private static Image DrawSonogram(
-            BaseSonogram sonogram, 
-            double[,] hits, 
-            Plot scores, 
-            List<AcousticEvent> predictedEvents, 
+            BaseSonogram sonogram,
+            double[,] hits,
+            Plot scores,
+            List<AcousticEvent> predictedEvents,
             double eventThreshold)
         {
             const bool DoHighlightSubband = false;
@@ -792,9 +784,9 @@ namespace AnalysisPrograms
             if ((predictedEvents != null) && (predictedEvents.Count > 0))
             {
                 image.AddEvents(
-                    predictedEvents, 
-                    sonogram.NyquistFrequency, 
-                    sonogram.Configuration.FreqBinCount, 
+                    predictedEvents,
+                    sonogram.NyquistFrequency,
+                    sonogram.Configuration.FreqBinCount,
                     sonogram.FramesPerSecond);
             }
 

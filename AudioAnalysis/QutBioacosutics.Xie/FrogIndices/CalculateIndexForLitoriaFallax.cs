@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using AudioAnalysisTools.StandardSpectrograms;
-using QutBioacosutics.Xie.Configuration;
-
-namespace QutBioacosutics.Xie.FrogIndices
+﻿namespace QutBioacosutics.Xie.FrogIndices
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using QutBioacosutics.Xie.Configuration;
+
     public static class CalculateIndexForLitoriaFallax
     {
 

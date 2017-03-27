@@ -169,7 +169,7 @@ namespace QutSensors.Shared
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="StatDescriptive"/> class. 
+        /// Initializes a new instance of the <see cref="StatDescriptive"/> class.
         /// Descriptive analysis default constructor.
         /// </summary>
         public StatDescriptive()
@@ -179,7 +179,7 @@ namespace QutSensors.Shared
         // default empty constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="StatDescriptive"/> class. 
+        /// Initializes a new instance of the <see cref="StatDescriptive"/> class.
         /// Descriptive analysis constructor.
         /// </summary>
         /// <param name="dataVariable">

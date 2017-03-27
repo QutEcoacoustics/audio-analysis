@@ -101,7 +101,7 @@
             {
                 WindowOverlap = 0, // was 0.5 when ppms was 0.08
                 WindowSize = 512,
-                DoSnr = false // might save us some time generating spectrograms.
+                DoSnr = false, // might save us some time generating spectrograms.
             };
 
             Bitmap image;
@@ -207,7 +207,7 @@
         #endregion
 
         /// <summary>
-        /// Get a spectrogram. 
+        /// Get a spectrogram.
         /// Channel must be > 0.
         /// </summary>
         /// <param name="reader">Wav Reader.</param>
@@ -256,7 +256,7 @@
             double windowPower = CalculateWindowPower(windowSize, windowWeights);
 
             // get coefficient count
-            // f[0]=DC;  f[256]=Nyquist  
+            // f[0]=DC;  f[256]=Nyquist
             int coeffCount = (windowSize / 2) + 1;
 
             // get amplitude sonogram.
@@ -646,7 +646,7 @@
         /// Does so using a series of overlapped matrices.
         /// TODO!!!! COULD SIMPLY THIS METHOD. JUST CALCULATE MODE FOR EACH FREQ BIN WITHOUT OVERLAP ....
         /// .... AND THEN APPLY MORE SEVERE SMOOTHING TO THE MODAL NOISE PROFILE IN PREVIOUS METHOD.
-        /// 
+        ///
         /// COMPARE THIS METHOD WITH SNR.SubtractModalNoise().
         /// </summary>
         /// <param name="matrix">Audio sample matrix.</param>
@@ -734,7 +734,7 @@
 
         /// <summary>
         /// Returns the submatrix of passed matrix.
-        /// Assume that RowTop less than RowBottom, ColumnLeft less than ColumnRight. 
+        /// Assume that RowTop less than RowBottom, ColumnLeft less than ColumnRight.
         /// Row, column indices start at 0.
         /// </summary>
         /// <param name="M"></param>
@@ -761,7 +761,7 @@
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="data"></param>
         /// <param name="binCount"></param>
@@ -850,7 +850,7 @@
         }
 
         /// <summary>
-        /// returns the index of max value in an array of doubles. 
+        /// returns the index of max value in an array of doubles.
         /// array index starts at zero.
         /// </summary>
         /// <param name="data">audio data.</param>

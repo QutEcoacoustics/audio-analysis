@@ -278,7 +278,7 @@
 
             if (this.BandpassLow.HasValue && this.BandpassHigh.HasValue)
             {
-                
+
                 if (this.BandpassLow.Value > this.BandpassHigh.Value)
                 {
                     var msg = string.Format(

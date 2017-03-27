@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-using AudioAnalysisTools.DSP;
-
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.DSP;
+    using TowseyLibrary;
+
     public class CrossCorrelation
     {
 
@@ -101,7 +100,7 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of sonogram.
-        /// 
+        ///
         /// </summary>
         /// <param name="m"></param>
         /// <param name="amplitudeThreshold"></param>
@@ -205,4 +204,4 @@ namespace AudioAnalysisTools
 
 
     } //class
-} 
+}

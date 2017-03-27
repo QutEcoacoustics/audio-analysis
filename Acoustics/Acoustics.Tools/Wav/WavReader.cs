@@ -10,9 +10,9 @@
 namespace Acoustics.Tools.Wav
 {
     using System;
-    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
+    using Acoustics.Shared.Contracts;
 
     /// <summary>
     /// Wave Reader.
@@ -244,7 +244,7 @@ namespace Acoustics.Tools.Wav
                     max = sample;
                 }
             }
-            
+
             return max;
         }
 
@@ -309,10 +309,10 @@ namespace Acoustics.Tools.Wav
             //   "inst" : Instrument Chunk
 
             // Observed but unknown;
-            //   "minf" : 
-            //   "elm1" : 
-            //   "regn" : 
-            //   "umid" : 
+            //   "minf" :
+            //   "elm1" :
+            //   "regn" :
+            //   "umid" :
 
             int offset = 12;
             while (offset < data.Length)
@@ -354,7 +354,7 @@ namespace Acoustics.Tools.Wav
                             }
                             offset += 2;
 
-                            // Channel Numbers 
+                            // Channel Numbers
                             this.Channels = BitConverter.ToUInt16(data, offset);
                             offset += 2;
 

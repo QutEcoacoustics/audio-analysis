@@ -252,9 +252,9 @@ namespace AudioAnalysisTools.Indices
             g.FillRectangle(Brushes.Black, dataLength + 1, 0, endWidth, trackHeight);
             g.DrawString(annotation, font, Brushes.White, new PointF(dataLength + 5, 2));
 
-            // now add in image patches for possible erroneous index segments 
+            // now add in image patches for possible erroneous index segments
             if ((errors != null) && (errors.Count > 0))
-            { 
+            {
                 bool verticalText = false;
                 foreach (ErroneousIndexSegments errorSegment in errors)
                 {
@@ -319,7 +319,7 @@ namespace AudioAnalysisTools.Indices
 
             foreach (dynamic config in configuration.Children)
             {
-                var ip = new IndexProperties();          
+                var ip = new IndexProperties();
                 ip.Key = config.Key;
                 ip.Name = config.Name;
                 string datatype = config.DataType;

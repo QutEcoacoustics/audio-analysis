@@ -1,23 +1,23 @@
-﻿using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using Dong.Felt.Configuration;
-using Dong.Felt.Preprocessing;
-using Dong.Felt.Representations;
-using Dong.Felt.SpectrogramDrawing;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-namespace Dong.Felt.Experiments
+﻿namespace Dong.Felt.Experiments
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using Dong.Felt.Configuration;
+    using Dong.Felt.Preprocessing;
+    using Dong.Felt.Representations;
+    using Dong.Felt.SpectrogramDrawing;
+    using TowseyLibrary;
+
     public class Experiment
-    {      
+    {
         /// <summary>
-        /// This one assume the query folder only contains one query. 
+        /// This one assume the query folder only contains one query.
         /// </summary>
         /// <param name="queryCsvFilePath"></param>
         /// <param name="queryAudioFilePath"></param>
@@ -31,7 +31,7 @@ namespace Dong.Felt.Experiments
         /// <param name="rank"></param>
         public static void MatchingBatchProcess(string queryCsvFilePath, string queryAudioFilePath,
             string trainingWavFileDirectory, int neighbourhoodLength,
-            RidgeDetectionConfiguration ridgeConfig, 
+            RidgeDetectionConfiguration ridgeConfig,
             SonogramConfig config, string queryRepresenationCsvPath,
             string regionPresentOutputCSVPath,
             string matchedCandidateOutputFile, int rank)
@@ -40,7 +40,7 @@ namespace Dong.Felt.Experiments
             {
                 var audioFiles = Directory.GetFiles(trainingWavFileDirectory, @"*.wav", SearchOption.AllDirectories);
                 var audioFilesCount = audioFiles.Count();
-                /// To save all the candidates for one recording      
+                /// To save all the candidates for one recording
                 var candidateList = new List<Candidates>();
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAudioFilePath);
                 var secondToMillionSecondUnit = 1000;
@@ -48,10 +48,10 @@ namespace Dong.Felt.Experiments
                 {
                     FrequencyScale = spectrogram.FBinWidth,
                     TimeScale = (spectrogram.FrameDuration - spectrogram.FrameStep) * secondToMillionSecondUnit,
-                    NyquistFrequency = spectrogram.NyquistFrequency
+                    NyquistFrequency = spectrogram.NyquistFrequency,
                 };
                 var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
-                var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
+                var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line.
                 var cols = spectrogram.Data.GetLength(0);
                 throw new Exception("this would not compile. You need to check this.");
                 List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNhRepresentationList = null; // = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(ridges, rows, cols, neighbourhoodLength, /*? UNKNOWN */ spectrogramConfig);
@@ -64,11 +64,11 @@ namespace Dong.Felt.Experiments
                     NormalizedNhRepresentationList, queryAudioFilePath);
                 var queryOutputFile = new FileInfo(queryRepresenationCsvPath);
                 CSVResults.RegionRepresentationListToCSV(queryOutputFile, queryRepresentation);
-                // regionRepresentation 
+                // regionRepresentation
                 var candidatesRegionList = new List<RegionRepresentation>();
                 for (int i = 0; i < audioFilesCount; i++)
                 {
-                    /// 2. Read the candidates 
+                    /// 2. Read the candidates
                     var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
                     var candidateRidges = POISelection.PostRidgeDetection4Dir(candidateSpectrogram, ridgeConfig);
                     var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
@@ -97,7 +97,7 @@ namespace Dong.Felt.Experiments
                     //var candidateDistanceList = Indexing.WeightedEuclideanDistCalculation(queryRepresentation, candidatesRegionList, weight1, weight2);
                     var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
 
-                    /// To save all matched acoustic events                    
+                    /// To save all matched acoustic events
                     simiScoreCandidatesList = simiScoreCandidatesList.OrderByDescending(x => x.Score).ToList();
                     candidateList.Add(simiScoreCandidatesList[0]);
                     //if (simiScoreCandidatesList.Count != 0)
@@ -146,7 +146,7 @@ namespace Dong.Felt.Experiments
                     NyquistFrequency = spectrogram.NyquistFrequency,
                 };
                 var queryRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
-                var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
+                var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line.
                 var cols = spectrogram.Data.GetLength(0);
                 var timeCompressedRidges = new List<PointOfInterest>();
                 var ridgeQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(queryRidges,
@@ -189,7 +189,7 @@ namespace Dong.Felt.Experiments
         //scores.Add(1.0);
         //var acousticEventlist = new List<AcousticEvent>();
         //var poiList = new List<PointOfInterest>();
-        //double eventThreshold = 0.5; // dummy variable - not used                               
+        //double eventThreshold = 0.5; // dummy variable - not used
         ////Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
         //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist,
         //    eventThreshold, poiList, compressConfig.CompressRate);
@@ -204,12 +204,12 @@ namespace Dong.Felt.Experiments
 
         //// experiments with similarity search with ridgeNeighbourhoodRepresentation.
         //if (true)
-        //{                  
+        //{
         //string csvOutputPath = Path.Combine(outputDirectory, csvOutputFileName);
         //string matchedCandidateFileName = "matched candidates--Scarlet Honeyeater1.csv";
         //string matchedCandidateOutputPath = Path.Combine(outputDirectory, matchedCandidateFileName);
 
-        //// Single experiment. 
+        //// Single experiment.
         //// FilePathSetting
         //string inputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\4.Easten Whipbird1\Query";
         //string outputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\4.Easten Whipbird1\Query\CSV Results";
@@ -228,7 +228,7 @@ namespace Dong.Felt.Experiments
         //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.6 };
         //var spectrogram = Preprocessing.AudioPreprosessing.AudioToSpectrogram(config, wavFilePath);
 
-        ///// spectrogramConfiguration setting                
+        ///// spectrogramConfiguration setting
         //var spectrogramConfig = new SpectrogramConfiguration
         //{
         //    FrequencyScale = spectrogram.FBinWidth,
@@ -261,7 +261,7 @@ namespace Dong.Felt.Experiments
         ////    }
         ////}
 
-        ///// Change my spectrogram.Data into Liang's. 
+        ///// Change my spectrogram.Data into Liang's.
         ////var spectrogramDataRows = spectrogram.Data.GetLength(0);
         ////var spectrogramDataColumns = spectrogram.Data.GetLength(1);
         ////for (int row = 0; row < spectrogramDataRows; row++)
@@ -277,7 +277,7 @@ namespace Dong.Felt.Experiments
         //scores.Add(1.0);
         //var acousticEventlist = new List<AcousticEvent>();
         //var poiList = new List<PointOfInterest>();
-        //double eventThreshold = 0.5; // dummy variable - not used                               
+        //double eventThreshold = 0.5; // dummy variable - not used
         //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
         //image.Save(imagePath, ImageFormat.Png);
 
@@ -293,10 +293,10 @@ namespace Dong.Felt.Experiments
         /////Output poiList to CSV
         ////string fileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-before refine direction.csv";
         ////string csvPath = Path.Combine(outputDirectory, fileName);
-        ////CSVResults.PointOfInterestListToCSV(ridges, csvPath, wavFilePath);  
+        ////CSVResults.PointOfInterestListToCSV(ridges, csvPath, wavFilePath);
 
-        ///// Read Liang's spectrogram data from csv file               
-        ////// each region should have same nhCount, here we just get it from the first region item. 
+        ///// Read Liang's spectrogram data from csv file
+        ////// each region should have same nhCount, here we just get it from the first region item.
         ////var dataOutputFile = @"C:\XUEYAN\DICTA Conference data\Spectrogram data for Toad.csv";
         ////var audioFilePath = "DM420008_262m_00s__264m_00s - Faint Toad.wav";
         ////results.Add(new List<string>() { "BaseName", "rowIndex", "colIndex", "value"});
@@ -305,15 +305,15 @@ namespace Dong.Felt.Experiments
         ////    for (int j = 0; j < matrix.GetLength(1); j++)
         ////    {
         ////        results.Add(new List<string>() { audioFilePath, i.ToString(), j.ToString(),matrix[i,j].ToString()});
-        ////    }           
+        ////    }
         ////}
         ////File.WriteAllLines(dataOutputFile, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
 
-        ///// Read the spectrogram.data into csv for Liang. 
+        ///// Read the spectrogram.data into csv for Liang.
         ////var result = new List<List<string>>();
         ////result.Add(new List<string>() { "BaseName", "Value" });
         ////string fileName = "SE_SE727_20101014-074900-075000";
-        ////string csvPath = Path.Combine(outputDirectory, fileName + ".csv");   
+        ////string csvPath = Path.Combine(outputDirectory, fileName + ".csv");
         ////for (int rowIndex = 0; rowIndex < rows; rowIndex++)
         ////{
         ////    for (int colIndex = 0; colIndex < cols; colIndex++)
@@ -323,14 +323,14 @@ namespace Dong.Felt.Experiments
         ////}
         ////File.WriteAllLines(csvPath, result.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
 
-        //var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
+        //var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line.
         //var cols = spectrogram.Data.GetLength(0);
         //var nhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(ridges, rows, cols, neighbourhoodLength, spectrogramConfig);
         //var NormalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties3(nhRepresentationList);
         //var file = new FileInfo(nhRepresentationCsvPath);
         //CSVResults.NhRepresentationListToCSV(file, NormalizedNhRepresentationList);
 
-        ///// Read query          
+        ///// Read query
         //var queryCsvFilePath = @"C:\XUEYAN\PHD research work\New Datasets\19.Torresian Crow\Query\SE_SE727_20101016-055700-055800-Torresian Crow.csv"; ;
         //var csvfile = new FileInfo(queryCsvFilePath);
         //var queryInfo = CSVResults.CsvToAcousticEvent(csvfile);
@@ -376,11 +376,11 @@ namespace Dong.Felt.Experiments
         //var candidateList = Indexing.DistanceCalculation(queryRegionRepresentation, candidatesRegionRepresentaion, weight1, weight2);
         ////var similarityScoreList = Indexing.DistanceListToSimilarityScoreList(candidateList);
 
-        ///// write the similarity score into csv file.       
+        ///// write the similarity score into csv file.
         //var candidateCsvFileName = "SE_SE727_20101016-055700-055800-Torresian Crow-candidates.csv";
         //var candidateOutputFilePath = Path.Combine(CSVResultDirectory, candidateCsvFileName);
         //var candidatefile = new FileInfo(candidateOutputFilePath);
-        //CSVResults.CandidateListToCSV(candidatefile, candidateList); 
+        //CSVResults.CandidateListToCSV(candidatefile, candidateList);
 
         ////reconstruct the spectrogram.
         //var gr = Graphics.FromImage(bmp);
@@ -392,7 +392,7 @@ namespace Dong.Felt.Experiments
         //image = (Image)bmp;
         //bmp.Save(imagePath);
 
-        //// To get the similairty score and get the ranking. 
+        //// To get the similairty score and get the ranking.
         //var rank = 10;
         //var itemList = (from l in listOfPositions
         //                orderby l.Item1 ascending
@@ -404,7 +404,7 @@ namespace Dong.Felt.Experiments
         //}
         //var finalListOfPositions = listOfPositions.GetRange(0, rank);
         //var times = queryFeatureVector.Count();
-        //var filterfinalListOfPositions = FilterOutOverlappedEvents(finalListOfPositions, searchFrameStep, times);   
+        //var filterfinalListOfPositions = FilterOutOverlappedEvents(finalListOfPositions, searchFrameStep, times);
         //var similarityScoreVector = StatisticalAnalysis.SimilarityScoreListToVector(similarityScoreList);
 
 
@@ -422,22 +422,22 @@ namespace Dong.Felt.Experiments
         //var filterOverlappedEvents = FilterOutOverlappedEvents(finalAcousticEvents);
         //var similarityScore = StatisticalAnalysis.ConvertDistanceToPercentageSimilarityScore(Indexing.DistanceScoreFromAudioRegionVectorRepresentation(queryRegionRepresentation, candidatesVector));
 
-        ////Read the acoustic events from csv files.  
+        ////Read the acoustic events from csv files.
         //acousticEventlist = CSVResults.CsvToAcousticEvent(file);
         //// output events image
         //imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
 
-        //// to save the ridge detection spectrogram. 
+        //// to save the ridge detection spectrogram.
         //image = (Image)bmp;
         //image.Save(annotatedImagePath);
 
-        //// to save the annotated spectrogram. 
+        //// to save the annotated spectrogram.
         //image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, ridges);
         //image.Save(imagePath, ImageFormat.Png);
         //}
 
         /// <summary>
-        /// Gaussian blur on ridge point of interest. 
+        /// Gaussian blur on ridge point of interest.
         /// </summary>
         /// <param name="audioFileDirectory"></param>
         /// <param name="config"></param>
@@ -463,13 +463,13 @@ namespace Dong.Felt.Experiments
                     scores.Add(1.0);
                     var acousticEventlist = new List<AcousticEvent>();
                     var poiList = new List<PointOfInterest>();
-                    double eventThreshold = 0.5; // dummy variable - not used   
+                    double eventThreshold = 0.5; // dummy variable - not used
                     var rows = spectrogram.Data.GetLength(1) - 1;
                     var cols = spectrogram.Data.GetLength(0);
                     //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
                     var smoothedRidges = ClusterAnalysis.SmoothRidges(ridges, rows, cols, 5, 3, 1.0, 3);
-                    
+
                     var ridgeSegmentList = ClusterAnalysis.SeparateRidgeListToEvents(
                         spectrogram,
                         smoothedRidges);
@@ -493,7 +493,7 @@ namespace Dong.Felt.Experiments
                         double herzScale = spectrogram.FBinWidth; //43 hz
                         TimeSpan time = TimeSpan.FromSeconds(poi.Point.Y * secondsScale);
                         double herz = (256 - poi.Point.X) * herzScale;
-                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi.
                         var poi1 = new PointOfInterest(time, herz);
                         poi.TimeScale = timeScale;
                         poi.HerzScale = herzScale;

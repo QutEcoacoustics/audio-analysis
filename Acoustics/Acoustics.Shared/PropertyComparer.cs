@@ -1,11 +1,11 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Reflection;
-
 namespace Be.Timvw.Framework.Collections.Generic
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Reflection;
+
     public class PropertyComparer<T> : IComparer<T>
     {
         private readonly IComparer comparer;

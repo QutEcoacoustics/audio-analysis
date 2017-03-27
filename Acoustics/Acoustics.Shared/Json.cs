@@ -24,7 +24,7 @@ namespace Acoustics.Shared
             using (var writer = new JsonTextWriter(stream))
             {
                 serializer.Serialize(writer, obj);
-            }   
+            }
         }
 
         public static void Serialise<T>(TextWriter stream, T obj)

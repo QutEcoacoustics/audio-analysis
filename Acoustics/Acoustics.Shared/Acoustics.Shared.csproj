@@ -40,7 +40,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\..\AudioAnalysis\style.ruleset</CodeAnalysisRuleSet>
     <CodeContractsEnableRuntimeChecking>True</CodeContractsEnableRuntimeChecking>
     <CodeContractsRuntimeOnlyPublicSurface>False</CodeContractsRuntimeOnlyPublicSurface>
     <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
@@ -213,6 +213,7 @@
     <Compile Include="CalcSunTimes.cs" />
     <Compile Include="ConfigFile\ConfigFile.cs" />
     <Compile Include="ConfigFile\ConfigFileException.cs" />
+    <Compile Include="Contracts\Contract.cs" />
     <Compile Include="Coordinate.cs" />
     <Compile Include="Csv\CsvExtensions.cs" />
     <Compile Include="Csv\Csv.cs" />

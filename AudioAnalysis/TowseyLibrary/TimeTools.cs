@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     public static class TimeTools
     {
 
@@ -18,7 +18,7 @@ namespace TowseyLibrary
         public static TimeSpan DateTimePlusTimeSpan(DateTimeOffset? dto, TimeSpan ts)
         {
             if (dto == null) return ts;
-            return ((DateTimeOffset)dto).TimeOfDay + ts;            
+            return ((DateTimeOffset)dto).TimeOfDay + ts;
         }
 
 

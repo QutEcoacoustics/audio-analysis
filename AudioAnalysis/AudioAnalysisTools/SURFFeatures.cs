@@ -170,7 +170,7 @@
             if (homography != null)
             {  //draw a rectangle along the projected model
                 Rectangle rect = model.Image.ROI;
-                PointF[] pts = new PointF[] { 
+                PointF[] pts = new PointF[] {
                new PointF(rect.Left, rect.Bottom),
                new PointF(rect.Right, rect.Bottom),
                new PointF(rect.Right, rect.Top),
@@ -181,7 +181,7 @@
             }
             #endregion
 
-            return result;        
+            return result;
         }
 
 
@@ -317,7 +317,7 @@
             if (homography != null)
             {  //draw a rectangle along the projected model
                 Rectangle rect = modelImage.ROI;
-                PointF[] pts = new PointF[] { 
+                PointF[] pts = new PointF[] {
                new PointF(rect.Left, rect.Bottom),
                new PointF(rect.Right, rect.Bottom),
                new PointF(rect.Right, rect.Top),

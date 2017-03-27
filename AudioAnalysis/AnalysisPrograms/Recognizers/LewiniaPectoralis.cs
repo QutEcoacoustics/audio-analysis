@@ -37,10 +37,10 @@ namespace AnalysisPrograms.Recognizers
     /// <summary>
     /// AKA: Lewin's Rail
     /// This call recognizer depends on an oscillation recognizer picking up the Kek-kek repeated at a period of 200ms
-    /// 
+    ///
     /// This recognizer was first developed around 2007 for Masters student, Jenny Gibson, and her supervisor, Ian Williamson.
-    /// It was updated in October 2016 to become one of the new recognizers derived from RecognizerBase. 
-    /// 
+    /// It was updated in October 2016 to become one of the new recognizers derived from RecognizerBase.
+    ///
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// </summary>
@@ -53,7 +53,7 @@ namespace AnalysisPrograms.Recognizers
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private const bool DoRecognizerTest = true;
-        // Return a DEBUG IMAGE this recognizer only. MUST set false for deployment. 
+        // Return a DEBUG IMAGE this recognizer only. MUST set false for deployment.
         //public bool returnDebugImage = false;
         public bool ReturnDebugImage = MainEntry.InDEBUG;
 
@@ -86,7 +86,7 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, 
+        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset,
                                                     Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
@@ -145,7 +145,7 @@ namespace AnalysisPrograms.Recognizers
                     //WindowFunction = WindowFunctions.NONE.ToString(),
                     // if do not use noise reduction can get a more sensitive recogniser.
                     //NoiseReductionType = NoiseReductionType.NONE,
-                    NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD")
+                    NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD"),
                 };
 
                 //#############################################################################################################################################
@@ -153,7 +153,7 @@ namespace AnalysisPrograms.Recognizers
                 var results = Analysis(recording, sonoConfig, recognizerConfig, ReturnDebugImage);
                 //######################################################################
 
-                if (results == null) return null; //nothing to process 
+                if (results == null) return null; //nothing to process
                 sonogram = results.Item1;
                 var hits = results.Item2;
                 var scoreArray = results.Item3;
@@ -209,7 +209,7 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram,
                 Hits = null,
                 Plots = plots,
-                Events = prunedEvents
+                Events = prunedEvents,
             };
         }
 
@@ -222,7 +222,7 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="lrConfig"></param>
         /// <param name="returnDebugImage"></param>
         /// <returns></returns>
-        private static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, Image> Analysis(AudioRecording recording, 
+        private static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, Image> Analysis(AudioRecording recording,
                                                                                   SonogramConfig sonoConfig, LewinsRailConfig lrConfig, bool returnDebugImage)
         {
             if (recording == null)
@@ -279,7 +279,7 @@ namespace AnalysisPrograms.Recognizers
             int stepCount = rowCount / step;
             int sampleLength = 64; //64 frames = 3.7 seconds. Suitable for Lewins Rail.
             double[] intensity   = new double[rowCount];
-            double[] periodicity = new double[rowCount]; 
+            double[] periodicity = new double[rowCount];
 
             //######################################################################
             //ii: DO THE ANALYSIS AND RECOVER SCORES
@@ -393,7 +393,7 @@ namespace AnalysisPrograms.Recognizers
 
 
     public class LewinsRailConfig
-    {        
+    {
         public string AnalysisName { get; set; }
         public string SpeciesName { get; set; }
         public string AbbreviatedSpeciesName { get; set; }

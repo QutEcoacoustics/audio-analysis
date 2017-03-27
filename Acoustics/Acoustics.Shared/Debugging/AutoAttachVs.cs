@@ -30,7 +30,7 @@ namespace Acoustics.Shared.Debugging
     /// <summary>
     /// Example taken from <a href="https://gist.github.com/3813175">this gist</a>.
     /// </summary>
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", 
+    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation",
         Justification = "Reviewed. Suppression is OK here.", Scope = "class")]
     public static class VisualStudioAttacher
     {
@@ -150,7 +150,7 @@ namespace Acoustics.Shared.Debugging
                 if (visualStudioForSolution != null)
                 {
                     return visualStudioForSolution;
-                    
+
                 }
             }
 
@@ -180,8 +180,8 @@ namespace Acoustics.Shared.Debugging
                         string actualSolutionName = Path.GetFileName(visualStudioInstance.Solution.FullName);
 
                         if (string.Compare(
-                            actualSolutionName, 
-                            solutionName, 
+                            actualSolutionName,
+                            solutionName,
                             StringComparison.InvariantCultureIgnoreCase) == 0)
                         {
                             return visualStudio;

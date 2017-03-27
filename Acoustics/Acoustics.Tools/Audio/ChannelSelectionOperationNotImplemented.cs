@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace Acoustics.Tools.Audio
+﻿namespace Acoustics.Tools.Audio
 {
+    using System;
+
     public class ChannelSelectionOperationNotImplemented : NotImplementedException
     {
         public ChannelSelectionOperationNotImplemented(string message)

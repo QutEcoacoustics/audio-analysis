@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Dong.Felt.Representations;
-using System.Globalization;
-
-namespace Dong.Felt.Features
+﻿namespace Dong.Felt.Features
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
+    using System.Text;
+    using Dong.Felt.Representations;
+
     public class FeatureExtraction
     {
         /// <summary>
@@ -23,7 +23,7 @@ namespace Dong.Felt.Features
             for (var r = 0; r < nhEvent.Count(); r+=nhCountInCol)
             {
                 var tempR = r + nhCountInCol;
-                int featureItem = 0; 
+                int featureItem = 0;
                 for (var i = r; i < tempR; i++)
                 {
                     featureItem += nhEvent[i].POICount;
@@ -36,7 +36,7 @@ namespace Dong.Felt.Features
                 int featureItem = 0;
                 for (var i = c; i < tempR; i += nhCountInCol)
                 {
-                    
+
                     featureItem += nhEvent[i].POICount;
                 }
                 ridgeFeatures.Add(featureItem);
@@ -61,7 +61,7 @@ namespace Dong.Felt.Features
                 var tempR = r + nhCountInCol;
                 var featureItem = new List<double>();
                 for (var i = r; i < tempR; i++)
-                {                   
+                {
                     featureItem.Add(Convert.ToDouble(nhEvent[i].HOrientationPOIHistogram.ToString("F03", CultureInfo.InvariantCulture)));
                     featureItem.Add(Convert.ToDouble(nhEvent[i].VOrientationPOIHistogram.ToString("F03", CultureInfo.InvariantCulture)));
                     featureItem.Add(Convert.ToDouble(nhEvent[i].PDOrientationPOIHistogram.ToString("F03", CultureInfo.InvariantCulture)));
@@ -84,8 +84,8 @@ namespace Dong.Felt.Features
                 ridgeFeatures.Add(featureItem);
             }
             return ridgeFeatures;
-        } 
-        
-     
+        }
+
+
     }
 }

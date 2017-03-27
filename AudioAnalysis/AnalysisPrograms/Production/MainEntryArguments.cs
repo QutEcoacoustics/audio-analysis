@@ -1,23 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace AnalysisPrograms.Production
+﻿namespace AnalysisPrograms.Production
 {
-    using System.Diagnostics.Contracts;
+    using System;
+    using System.Collections.Generic;
     using System.Dynamic;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
     using System.Security.Cryptography.X509Certificates;
-
+    using System.Text;
     using Acoustics.Shared;
     using Acoustics.Shared.Extensions;
-
     using AnalysisBase;
-
     using PowerArgs;
-
     using TowseyLibrary;
 
     public enum DebugOptions
@@ -35,7 +29,7 @@ namespace AnalysisPrograms.Production
         {
             this.DebugOption = DebugOptions.Prompt;
         }
-           
+
         [ArgRequired]
         [ArgPosition(0)]
         public string Action { get; set; }
@@ -105,7 +99,7 @@ namespace AnalysisPrograms.Production
                 {
                     return LogVerbosity.All;
                 }
-                
+
                 return this.logLevel;
             }
             set
@@ -113,7 +107,7 @@ namespace AnalysisPrograms.Production
                 this.Verbose = value == LogVerbosity.Debug;
                 this.VVerbose = value == LogVerbosity.Trace;
                 this.VVVerbose = value == LogVerbosity.All;
-                
+
                 this.logLevel = value;
             }
         }
@@ -148,10 +142,10 @@ namespace AnalysisPrograms.Production
         [ArgPosition(1)]
         public string ActionName { get; set; }
     }
-    
+
     public class SourceArguments
     {
-        
+
         [ArgDescription("The source audio file to operate on")]
         [Production.ArgExistingFile()]
         [ArgPosition(1)]

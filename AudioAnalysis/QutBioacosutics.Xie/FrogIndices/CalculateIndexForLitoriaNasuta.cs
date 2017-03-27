@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using QutBioacosutics.Xie.Configuration;
-using AudioAnalysisTools.StandardSpectrograms;
-using TowseyLibrary;
-
-namespace QutBioacosutics.Xie.FrogIndices
+﻿namespace QutBioacosutics.Xie.FrogIndices
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using QutBioacosutics.Xie.Configuration;
+    using TowseyLibrary;
+
     public static class CalculateIndexForLitoriaNasuta
     {
 
@@ -30,7 +30,7 @@ namespace QutBioacosutics.Xie.FrogIndices
                                         nasutaConfig.TrackThresholdNasuta, nasutaConfig.MaximumTrackDurationNasuta, nasutaConfig.MinimumTrackDurationNasuta,
                                         nasutaConfig.BinDifferenceNasuta, nasutaConfig.DoSlopeNasuta);
 
-            
+
             var harmonicHitsNasuta = FindHarmonics.GetHarmonic(trackHitsNasuta.Item4, nasutaConfig.HarmonicComponentNasuta,
                                                                     nasutaConfig.HarmonicSensityNasuta, nasutaConfig.HarmonicDiffrangeNasuta);
 
@@ -39,7 +39,7 @@ namespace QutBioacosutics.Xie.FrogIndices
             combinedIndex.TrackHitsNasuta = trackHitsNasuta;
 
             return combinedIndex;
-        
+
         }
 
         public class CombinedIndex

@@ -28,7 +28,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LdSpectrogramConfig"/> class. 
+        /// Initializes a new instance of the <see cref="LdSpectrogramConfig"/> class.
         /// CONSTRUCTOR
         /// </summary>
         public LdSpectrogramConfig()
@@ -36,7 +36,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // default values
             this.XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
             this.ColorMap1 = SpectrogramConstants.RGBMap_BGN_POW_CVR;
-            this.ColorMap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;     
+            this.ColorMap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
         }
 
         #endregion
@@ -132,7 +132,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
         /// <summary>
-        /// NOTE: As of August 2015, we are using EVN (event count) in both spectrograms because 
+        /// NOTE: As of August 2015, we are using EVN (event count) in both spectrograms because
         /// CVR (cover) is too highly correlated with POW.
         /// </summary>
         /// <returns></returns>
@@ -169,7 +169,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public static string[] GetKeys(string colorMap1, string colorMap2)
         {
-            var keys = new List<string>(); 
+            var keys = new List<string>();
             if((colorMap1 != null) && (colorMap1.Length == 11))
             {
                 string[] codes = colorMap1.Split('-');

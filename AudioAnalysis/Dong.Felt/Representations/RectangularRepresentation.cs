@@ -15,26 +15,26 @@ namespace Dong.Felt
         public static Color DEFAULT_SCORE_COLOR = Color.Black;
 
         /// <summary>
-        /// Gets or sets the MinFrequency from the rectangular (box users drew), which is the frequency value of top line of the box. 
+        /// Gets or sets the MinFrequency from the rectangular (box users drew), which is the frequency value of top line of the box.
         /// </summary>
         public double MinFrequency { get; set; }
 
         /// <summary>
-        /// Gets or sets the MinFrequency from the rectangular (box users drew), which is the frequency value of bottom line of the box. 
+        /// Gets or sets the MinFrequency from the rectangular (box users drew), which is the frequency value of bottom line of the box.
         /// </summary>
         public double MaxFrequency { get; set; }
 
         /// <summary>
-        /// Gets or sets the duration from the rectangular (box users drew), which is equal to the width of box.  
+        /// Gets or sets the duration from the rectangular (box users drew), which is equal to the width of box.
         /// </summary>
         public double Duration { get; set; }
 
         /// <summary>
-        /// Gets or sets the startTime of the rectangular (box users drew), which is equal to the time value of left line of box.  
+        /// Gets or sets the startTime of the rectangular (box users drew), which is equal to the time value of left line of box.
         /// </summary>
         public double StartTime { get; set; }
 
-        /// <summary> 
+        /// <summary>
         /// required for conversions to & from MEL scale AND for drawing event on spectrum.
         /// </summary>
         public int FreqBinCount { get; set; }
@@ -69,7 +69,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// Calculate the centroid of the rectangular box. 
+        /// Calculate the centroid of the rectangular box.
         /// </summary>
         /// <param name="acousticEvent"></param>
         public void CentroidOfAcousticEvents(AcousticEvents acousticEvent)
@@ -81,7 +81,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        ///  Indexing each potential event at each frame. Have done the test. 
+        ///  Indexing each potential event at each frame. Have done the test.
         /// </summary>
         /// <param name="poiList"></param>
         /// <param name="maxFrequency"> this can be derived from a query.</param>
@@ -127,7 +127,7 @@ namespace Dong.Felt
             var startRowIndex = MinRowIndex - halfExtendedFrequencyRange;
             var listCount = 0;
 
-            //search along time position searchstep by searchstep. 
+            //search along time position searchstep by searchstep.
             for (int col = 0; col < colsCount; col += searchStep)
             {
                 // option one for the box that is not enough for a entire box, just ignore this part
@@ -190,7 +190,7 @@ namespace Dong.Felt
 
                 var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
                 var listCount = 0;
-                //search along frequency band by frequencyOffset. 
+                //search along frequency band by frequencyOffset.
                 for (int row = minRowIndex - frequencyOffset; row <= minRowIndex + frequencyOffset; row++)
                 {
                     // search along time position by searchStep
@@ -234,7 +234,7 @@ namespace Dong.Felt
                             }
                         }
                     }
-                }                  
+                }
             }
             return result;
         }
@@ -285,7 +285,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// Get the dominant orientation type and poiWith dominant orientation in a nh. 
+        /// Get the dominant orientation type and poiWith dominant orientation in a nh.
         /// </summary>
         /// <param name="slice"></param>
         /// <returns></returns>
@@ -300,9 +300,9 @@ namespace Dong.Felt
             array[1] = positiveDiagonalCount;
             array[2] = verticalCount;
             array[3] = negativeDiagonalCount;
-           
+
             var result = new Tuple<int, int>(0, 0);
-            var tempMaxCount = 0; 
+            var tempMaxCount = 0;
             var none = 0;
             var slopeIndexOffset = 2;
             for (int i = 0; i < array.Length; i++)
@@ -329,8 +329,8 @@ namespace Dong.Felt
             var arrayCount = orientationArray.Length;
             var result = 0;
             for (int i = 0; i < arrayCount; i++)
-            {             
-                 result += orientationArray[i];    
+            {
+                 result += orientationArray[i];
             }
 
             return result;
@@ -374,7 +374,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// This method is used for calculate each slice representation, each slice is derived from the origional rectangular. 
+        /// This method is used for calculate each slice representation, each slice is derived from the origional rectangular.
         /// </summary>
         /// <param name="matrix"></param>
         /// <param name="PointX">This value is the X coordinate of centroid of rectangular.</param>
@@ -392,12 +392,12 @@ namespace Dong.Felt
             var positiveDiagonalDirection = new int[2 * neighbourhoodWidth - 1];
             var negativeDiagonalDirection = new int[2 * neighbourhoodWidth - 1];
             var anchorPoint = new Point(radiusOfNeighbourhood, radiusOfNeighbourhood);
-            // For the calculation of horizontal direction byte, we need to check each row 
+            // For the calculation of horizontal direction byte, we need to check each row
             for (int rowNeighbourhoodIndex = -radiusOfNeighbourhood; rowNeighbourhoodIndex <= radiusOfNeighbourhood; rowNeighbourhoodIndex++)
             {
                 for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex <= radiusOfNeighbourhood; colNeighbourhoodIndex++)
                 {
-                    // check boundary of index 
+                    // check boundary of index
                     if (StatisticalAnalysis.checkBoundary(anchorPoint.X + rowNeighbourhoodIndex, anchorPoint.Y + colNeighbourhoodIndex, neighbourhoodWidth, neighbourhoodWidth))
                     {
                         if ((matrix[anchorPoint.X + rowNeighbourhoodIndex, anchorPoint.Y + colNeighbourhoodIndex].RidgeMagnitude != 0.0) && matrix[anchorPoint.X + rowNeighbourhoodIndex, anchorPoint.Y + colNeighbourhoodIndex].OrientationCategory == (int)Direction.East)
@@ -462,7 +462,7 @@ namespace Dong.Felt
                     var maxColIndex = neighbourhoodWidth;
                     if (StatisticalAnalysis.checkBoundary(startPointRowIndex, startPointColIndex, maxRowIndex, maxColIndex))
                     {
-                        // 
+                        //
                         if ((matrix[startPointRowIndex, startPointColIndex].RidgeMagnitude != 0.0) && (matrix[startPointRowIndex, startPointColIndex].OrientationCategory == (int)Direction.NorthEast))
                         {
                             var index = neighbourhoodWidth - offset - 1;
@@ -499,7 +499,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// Still need to work on this one. 
+        /// Still need to work on this one.
         /// </summary>
         /// <param name="poiList"></param>
         /// <param name="maxFrequency"></param>
@@ -542,7 +542,7 @@ namespace Dong.Felt
             for (int row = MinRowIndex - halfExtendedFrequencyRange; row < MaxRowIndex + extendedFrequencyRange - halfExtendedFrequencyRange; row += sizeofNeighbourhood)
             //for (int row = 149; row < MaxRowIndex + extendedFrequencyRange - halfExtendedFrequencyRange; row += sizeofNeighbourhood)
             {
-                // search along time position one by one. 
+                // search along time position one by one.
                 //for (int col = 308; col < MaxColIndex + extendedTimeRange - halfExtendedTimeRange; col += sizeofNeighbourhood)
                 for (int col = MinColIndex - halfExtendedTimeRange; col < MaxColIndex + extendedTimeRange - halfExtendedTimeRange; col += sizeofNeighbourhood)
                 {
@@ -558,7 +558,7 @@ namespace Dong.Felt
                             VerticalVector = partialFeatureVector.VerticalVector,
                             PositiveDiagonalVector = partialFeatureVector.PositiveDiagonalVector,
                             NegativeDiagonalVector = partialFeatureVector.NegativeDiagonalVector,
-                            TimePositionPix = MinColIndex,                           
+                            TimePositionPix = MinColIndex,
                         });
                     }
                 }
@@ -607,7 +607,7 @@ namespace Dong.Felt
             var result = new List<RidgeNeighbourhoodFeatureVector>();
             var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
             // search along the fixed frequency range.
-            for (int row = MinRowIndex - halfExtendedFrequencyRange; row < MaxRowIndex + extendedFrequencyRange - halfExtendedFrequencyRange; row += sizeofNeighbourhood)          
+            for (int row = MinRowIndex - halfExtendedFrequencyRange; row < MaxRowIndex + extendedFrequencyRange - halfExtendedFrequencyRange; row += sizeofNeighbourhood)
             {
                 for (int col = MinColIndex - halfExtendedTimeRange; col < MaxColIndex + extendedTimeRange - halfExtendedTimeRange; col += sizeofNeighbourhood)
                 {

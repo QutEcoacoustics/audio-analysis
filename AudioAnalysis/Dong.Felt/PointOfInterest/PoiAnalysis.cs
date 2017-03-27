@@ -13,23 +13,21 @@ namespace Dong.Felt
     using System.CodeDom;
     using System.Collections.Generic;
     using System.Data;
-    using System.Diagnostics.Contracts;
     using System.Drawing;
     using System.IO;
     using System.Linq;
+    using Accord.Math.Decompositions;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Extensions;
+    using AForge.Imaging.Filters;
+    using AnalysisBase.ResultBases;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using TowseyLibrary;
-    using AForge.Imaging.Filters;
-    using Accord.Math.Decompositions;
-
-    using AnalysisBase.ResultBases;
-
     using Dong.Felt.Preprocessing;
     using Dong.Felt.Representations;
     using Dong.Felt.SpectrogramDrawing;
+    using TowseyLibrary;
 
     // several types of points of interest (for later use)
     public enum FeatureType { NONE, LOCALMAXIMA, RIDGE, STRUCTURE_TENSOR }
@@ -54,7 +52,7 @@ namespace Dong.Felt
         /// for slideWindowFrame.
         /// </param>
         /// <returns>
-        /// strings of out of points. 
+        /// strings of out of points.
         /// </returns>
         public static string PeakAmplitudeDetection(
             AmplitudeSonogram amplitudeSpectrogram,
@@ -107,7 +105,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// Make fake acoustic events randomly. 
+        /// Make fake acoustic events randomly.
         /// </summary>
         /// <param name="numberOfFakes">
         /// The number Of Fakes.
@@ -244,7 +242,7 @@ namespace Dong.Felt
 
         public static Tuple<int, int, double[,]> result { get; set; }
 
-        // Why I have to this step? I forgot. 
+        // Why I have to this step? I forgot.
         public static List<PointOfInterest> ConnectPOI(List<PointOfInterest> poi)
         {
             var result = new List<PointOfInterest>();
@@ -285,7 +283,7 @@ namespace Dong.Felt
                 }
             }
             return result;
-        }        
+        }
 
         public static double MeasureHLineOfBestfit(PointOfInterest[,] poiMatrix, double lineOfSlope, double intersect)
         {
@@ -395,7 +393,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// This method aims to filter out point of interest which has spikes characteristics, these poi are possibly MP3 artefact. 
+        /// This method aims to filter out point of interest which has spikes characteristics, these poi are possibly MP3 artefact.
         /// length can be 9, stdThreshold 4.0.
         /// </summary>
         /// <param name="poiList"></param>
@@ -439,7 +437,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// This method is designed for remove poi that are lower than the intensity threshold. 
+        /// This method is designed for remove poi that are lower than the intensity threshold.
         /// </summary>
         /// <param name="poiList"></param>
         /// <param name="rows"></param>
@@ -489,7 +487,7 @@ namespace Dong.Felt
                     newMatrix[rowIndex, colIndex] = tempPoi;
                 }
             }
-            var offset = 2;         
+            var offset = 2;
             for (var r = offset; r < rows - offset; r++)
             {
                 for (var c = offset; c < cols - offset; c++)
@@ -504,7 +502,7 @@ namespace Dong.Felt
                     {
                         newMatrix[r, c] = poiMatrix[r, c];
                         newMatrix[r + 1, c + 1] = poiMatrix[r, c];
-                        newMatrix[r - 1, c - 1] = poiMatrix[r, c];                       
+                        newMatrix[r - 1, c - 1] = poiMatrix[r, c];
                     }
                     if (poiMatrix[r, c].OrientationCategory == 4)
                     {
@@ -577,6 +575,6 @@ namespace Dong.Felt
             }
             return r;
         }
-       
+
     }
 }

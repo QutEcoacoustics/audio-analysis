@@ -1,19 +1,15 @@
-﻿using FELT.Results;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.IO;
-using Microsoft.FSharp.Collections;
-
-namespace FELT.Tests
+﻿namespace FELT.Tests
 {
+    using System;
     using System.Diagnostics;
+    using System.IO;
     using System.Reflection;
-
     using FELT.Classifiers;
-
-    using MQUTeR.FSharp.Shared;
-
+    using FELT.Results;
+    using Microsoft.FSharp.Collections;
     using Microsoft.FSharp.Core;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using MQUTeR.FSharp.Shared;
 
     /// <summary>
     ///This is a test class for ResultsComputationTest and is intended
@@ -43,7 +39,7 @@ namespace FELT.Tests
         }
 
         #region Additional test attributes
-        // 
+        //
         //You can use the following additional attributes as you write your tests:
         //
         //Use ClassInitialize to run code before running the first test in the class
@@ -87,7 +83,7 @@ namespace FELT.Tests
                         {
                             new Tuple<string, DataType>("health", DataType.Number),
                             new Tuple<string, DataType>("age", DataType.Number),
-                            new Tuple<string, DataType>("skill", DataType.Number)
+                            new Tuple<string, DataType>("skill", DataType.Number),
                         });
 
             var col1 = new Tuple<string, Value[]>(
@@ -116,7 +112,7 @@ namespace FELT.Tests
                         {
                             new Tuple<string, DataType>("health", DataType.Number),
                             new Tuple<string, DataType>("age", DataType.Number),
-                            new Tuple<string, DataType>("skill", DataType.Number)
+                            new Tuple<string, DataType>("skill", DataType.Number),
                         });
 
             var col12 = new Tuple<string, Value[]>(
@@ -144,13 +140,13 @@ namespace FELT.Tests
                     new[]
                         {
                             new Tuple<double, int>(2.780300164, 2), new Tuple<double, int>(3.1, 1),
-                            new Tuple<double, int>(4.312771731, 0)
+                            new Tuple<double, int>(4.312771731, 0),
                         },
                     new[]
                         {
                             new Tuple<double, int>(1.122497216, 0), new Tuple<double, int>(3.385597289, 2),
-                            new Tuple<double, int>(8.141867108, 1)
-                        }
+                            new Tuple<double, int>(8.141867108, 1),
+                        },
                 };
 
             #endregion
@@ -159,17 +155,17 @@ namespace FELT.Tests
             var result = ec.Classify(trainingData, testData);
 
             DateTime runDate = DateTime.Now;
-            FileInfo fiReport = new FileInfo("..\\..\\..\\" + runDate.ToString("yyyy-MM-dd HH_mm_ss") + ".xlsx"); 
+            FileInfo fiReport = new FileInfo("..\\..\\..\\" + runDate.ToString("yyyy-MM-dd HH_mm_ss") + ".xlsx");
             FileInfo fiTemplate = new FileInfo("ExcelResultsComputationTemplate.xlsx");
-            
+
             var config = new ReportConfig(runDate, "Test analysis", 69, 69, testData.Classes.Length, trainingData.Classes.Length,  fiReport, fiTemplate, false, false);
-            
+
             ResultsComputation target = new ResultsComputation(config);
 
             var ops = new[]
                 {
                     new Tuple<string, string, string>("abc", "123", string.Empty), new Tuple<string, string, string>("bca", "456", "test info"),
-                    new Tuple<string, string, string>("cab", "789", string.Empty)
+                    new Tuple<string, string, string>("cab", "789", string.Empty),
                 };
 
             target.Calculate(trainingData, testData, result, ListModule.OfArray(ops));

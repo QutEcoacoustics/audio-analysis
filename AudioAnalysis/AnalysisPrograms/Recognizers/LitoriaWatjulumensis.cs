@@ -3,7 +3,7 @@
 //   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
-//   
+//
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ namespace AnalysisPrograms.Recognizers
     /// It looks for synchronous oscillations in two frequency bands
     /// This recognizer has also been used for Litoria bicolor
     /// However the Correlation technique used for the Lewins Rail did not work because the oscilations in the upper and lower freq bands are not correlated.
-    /// Instead measure the oscillations in the upper and lower bands independently. 
+    /// Instead measure the oscillations in the upper and lower bands independently.
     /// </summary>
 
     public class LitoriaWatjulumensis : RecognizerBase
@@ -121,7 +121,7 @@ namespace AnalysisPrograms.Recognizers
                 //WindowFunction = WindowFunctions.NONE.ToString(),
                 // if do not use noise reduction can get a more sensitive recogniser.
                 //NoiseReductionType = NoiseReductionType.NONE,
-                NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD")
+                NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD"),
             };
 
 
@@ -130,7 +130,7 @@ namespace AnalysisPrograms.Recognizers
             var results = Analysis(recording, sonoConfig, recognizerConfig, MainEntry.InDEBUG);
             //######################################################################
 
-            if (results == null) return null; //nothing to process 
+            if (results == null) return null; //nothing to process
             var sonogram = results.Item1;
             var hits = results.Item2;
             var scoreArray = results.Item3;
@@ -170,14 +170,14 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram,
                 Hits = hits,
                 Plots = plot.AsList(),
-                Events = predictedEvents
+                Events = predictedEvents,
             };
         }
 
 
         /// <summary>
         /// ################ THE KEY ANALYSIS METHOD for TRILLS
-        /// 
+        ///
         /// See Anthony's ExempliGratia.Recognize() method in order to see how to use methods for config profiles.
         /// </summary>
         /// <param name="recording"></param>
@@ -185,10 +185,10 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="lwConfig"></param>
         /// <param name="returnDebugImage"></param>
         /// <returns></returns>
-        private static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, Image> Analysis(AudioRecording recording, SonogramConfig sonoConfig, 
+        private static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, Image> Analysis(AudioRecording recording, SonogramConfig sonoConfig,
                                                                                                LitoriaWatjulumConfig lwConfig, bool returnDebugImage)
         {
-            double intensityThreshold = lwConfig.IntensityThreshold;   
+            double intensityThreshold = lwConfig.IntensityThreshold;
             double minDuration = lwConfig.MinDurationOfTrill;  // seconds
             double maxDuration = lwConfig.MaxDurationOfTrill;  // seconds
             double minPeriod = lwConfig.MinPeriod;  // seconds
@@ -208,11 +208,11 @@ namespace AnalysisPrograms.Recognizers
 
             // duration of DCT in seconds - want it to be about 3X or 4X the expected maximum period
             double dctDuration = 4 * maxPeriod;
-            // duration of DCT in frames 
+            // duration of DCT in frames
             int dctLength = (int)Math.Round(framesPerSecond * dctDuration);
             // set up the cosine coefficients
-            double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); 
-            
+            double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength);
+
             int upperBandMinBin = (int)Math.Round(lwConfig.UpperBandMinHz / freqBinWidth) + 1;
             int upperBandMaxBin = (int)Math.Round(lwConfig.UpperBandMaxHz / freqBinWidth) + 1;
             int lowerBandMinBin = (int)Math.Round(lwConfig.LowerBandMinHz / freqBinWidth) + 1;
@@ -323,7 +323,7 @@ namespace AnalysisPrograms.Recognizers
                 //{
                     ae2.Name = $"{lwConfig.AbbreviatedSpeciesName}.{lwConfig.ProfileNames[1]}";
                     //ae2.Score_MaxInEvent = maximumIntensity;
-                    ae2.Profile = lwConfig.ProfileNames[1]; 
+                    ae2.Profile = lwConfig.ProfileNames[1];
                     confirmedEvents.Add(ae2);
                 //}
 
@@ -360,7 +360,7 @@ namespace AnalysisPrograms.Recognizers
                 //WindowFunction = WindowFunctions.NONE.ToString(),
                 // if do not use noise reduction can get a more sensitive recogniser.
                 //NoiseReductionType = NoiseReductionType.NONE,
-                NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD")
+                NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD"),
             };
             BaseSonogram returnSonogram = new SpectrogramStandard(returnSonoConfig, recording.WavReader);
             return Tuple.Create(returnSonogram, hits, scores, confirmedEvents, debugImage);

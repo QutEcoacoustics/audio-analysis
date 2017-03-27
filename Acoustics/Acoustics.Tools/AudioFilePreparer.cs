@@ -30,7 +30,7 @@
         /// <returns>
         /// The prepared file.
         /// </returns>
-        /// 
+        ///
         /*public static FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, AudioUtilityRequest request, DirectoryInfo temporaryFilesDirectory)
         {
             var audioUtility = new MasterAudioUtility(temporaryFilesDirectory);
@@ -125,13 +125,13 @@
             var result = new AudioUtilityModifiedInfo
                 {
                     TargetInfo = audioUtility.Info(outputFile),
-                    SourceInfo = audioUtility.Info(sourceFile)
+                    SourceInfo = audioUtility.Info(sourceFile),
                 };
             return result;
         }
 
         /// <summary>
-        /// Divide a value (numerator) by a segment value (denominator) 
+        /// Divide a value (numerator) by a segment value (denominator)
         /// to get segments of as equal size as possible.
         /// </summary>
         /// <param name="numerator">
@@ -159,7 +159,7 @@
         }
 
         /// <summary>
-        /// Divide a value (numerator) by a segment value (denominator) 
+        /// Divide a value (numerator) by a segment value (denominator)
         /// to get segments of exactly denominator in size, and the leftovers at the end.
         /// </summary>
         /// <param name="numerator">

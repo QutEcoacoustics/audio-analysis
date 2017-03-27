@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using AudioAnalysisTools.StandardSpectrograms;
-using QutBioacosutics.Xie.Configuration;
-using TowseyLibrary;
-
-namespace QutBioacosutics.Xie.FrogIndices
+﻿namespace QutBioacosutics.Xie.FrogIndices
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using QutBioacosutics.Xie.Configuration;
+    using TowseyLibrary;
+
     class CalculateIndexForLitoriaCaerulea
     {
 
@@ -17,13 +17,13 @@ namespace QutBioacosutics.Xie.FrogIndices
                                                   caeruleaConfig.FrequencyLowCaerulea, caeruleaConfig.FrequencyHighCaerulea);
 
             return peakHitsCaerulea;
-        
+
         }
 
 
         public static System.Tuple<double[], double[,], double[], double[,]> GetFrogTracks(CaeruleaConfiguration caeruleaConfig, SpectrogramStandard spectrogramLong,
                                                                                                    double[,] peakHitsCaerulea)
- 
+
         {
             var peakHitsCaeruleaRotated = MatrixTools.MatrixRotate90Anticlockwise(peakHitsCaerulea);
 
@@ -33,7 +33,7 @@ namespace QutBioacosutics.Xie.FrogIndices
                                                             caeruleaConfig.BinDifferenceCaerulea, caeruleaConfig.DoSlopeCaerulea);
 
             return trackHitsCaerulea;
-        
+
         }
         // Find the peaks based on tracks (# should be 2 or 3)
 
@@ -44,7 +44,7 @@ namespace QutBioacosutics.Xie.FrogIndices
                                                                            caeruleaConfig.Dct_DurationCaerulea, caeruleaConfig.Dct_ThresholdCaerulea,
                                                                            caeruleaConfig.MinimumOscillationNumberCaerulea, caeruleaConfig.MaximumOscillationNumberCaerulea);
             return caeruleaOscillationHits;
-        
+
         }
 
     }

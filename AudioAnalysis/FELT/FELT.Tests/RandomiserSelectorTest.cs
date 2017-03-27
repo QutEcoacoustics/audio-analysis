@@ -1,13 +1,10 @@
-﻿using FELT.Selectors;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-
-namespace FELT.Tests
+﻿namespace FELT.Tests
 {
+    using System;
     using System.Diagnostics;
-
     using System.Linq;
-
+    using FELT.Selectors;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using MQUTeR.FSharp.Shared;
 
     /// <summary>
@@ -38,7 +35,7 @@ namespace FELT.Tests
         }
 
         #region Additional test attributes
-        // 
+        //
         //You can use the following additional attributes as you write your tests:
         //
         //Use ClassInitialize to run code before running the first test in the class
@@ -89,7 +86,7 @@ namespace FELT.Tests
 
             CollectionAssert.AllItemsAreUnique(result.Classes);
             CollectionAssert.AreEquivalent(seed, result.Classes);
-            
+
             CollectionAssert.AreNotEqual(seed, result.Classes);
         }
 
@@ -101,7 +98,7 @@ namespace FELT.Tests
             var bit1 = new FuzzyBit(0.5);
 
             var bit2 = new FuzzyBit(1.0);
-            
+
         }
 
 

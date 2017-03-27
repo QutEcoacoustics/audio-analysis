@@ -23,7 +23,7 @@ namespace AudioAnalysisTools.Indices
     /// 3) Calculate the INDEX some where. In the case of Acoustic Indices, they are calculated in the class IndicesCalculate.cs.
     /// 4) Store the value of the index in the class IndexValues
     /// 4a) e.g. for spectral index:   indexValues.AddSpectrum(InitialiseIndexProperties.KEYspectralENT, spectrumOfENTvalues);
-    /// 4b) e.g. for summary index:    indexValues.StoreIndex(InitialiseIndexProperties.KEYindexName, indexValue); 
+    /// 4b) e.g. for summary index:    indexValues.StoreIndex(InitialiseIndexProperties.KEYindexName, indexValue);
     /// ==============
 
 
@@ -74,7 +74,7 @@ namespace AudioAnalysisTools.Indices
         public const string KEYspectralEVN = "EVN";
         public const string KEYspectralSPT = "SPT";
 
-       
+
         public const double DEFAULT_SIGNAL_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //in decibels
         public static int bitsPerSample = 16;
         public static double epsilon = Math.Pow(0.5, bitsPerSample - 1);

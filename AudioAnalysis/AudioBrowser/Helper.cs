@@ -1,24 +1,23 @@
-﻿using AnalysisPrograms.SourcePreparers;
-
-namespace AudioBrowser
+﻿namespace AudioBrowser
 {
-    using Acoustics.Shared;
-    using Acoustics.Tools.Audio;
-    using AnalysisBase;
-    using AudioAnalysisTools;
-    using AudioBase;
-    using log4net;
     using System;
     using System.Collections.Generic;
     using System.Data;
     using System.Diagnostics;
-    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Text;
     using System.Threading;
     using System.Windows.Forms;
+    using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
+    using Acoustics.Tools.Audio;
+    using AnalysisBase;
+    using AnalysisPrograms.SourcePreparers;
+    using AudioAnalysisTools;
+    using AudioBase;
+    using log4net;
     using TowseyLibrary;
 
     public class Helper
@@ -120,7 +119,7 @@ namespace AudioBrowser
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="audioFile"></param>
         /// <param name="analyser"></param>
@@ -136,7 +135,7 @@ namespace AudioBrowser
             bool saveIntermediateWavFiles = false;
             if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.SaveIntermediateWavFiles))
                 saveIntermediateWavFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.SaveIntermediateWavFiles, settings.ConfigDict);
-            
+
             bool saveIntermediateCsvFiles = false;
             if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.SaveIntermediateWavFiles))
                 saveIntermediateCsvFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.SaveIntermediateCsvFiles, settings.ConfigDict);
@@ -156,9 +155,9 @@ namespace AudioBrowser
             //initilise classes that will do the analysis
             this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles ? SaveBehavior.Always : SaveBehavior.Never, saveSonogramImages ? SaveBehavior.Always : SaveBehavior.Never, saveIntermediateCsvFiles)
             {
-                DeleteFinished = (!saveIntermediateWavFiles), // create and delete directories 
+                DeleteFinished = (!saveIntermediateWavFiles), // create and delete directories
                 IsParallel = doParallelProcessing,         // ########### PARALLEL OR SEQUENTIAL ??????????????
-                SubFoldersUnique = false
+                SubFoldersUnique = false,
             };
 
             Stopwatch stopwatch = new Stopwatch();
@@ -267,10 +266,10 @@ namespace AudioBrowser
         {
             FolderBrowserDialog fdlg = new FolderBrowserDialog();
 
-            // Set the help text description for the FolderBrowserDialog. 
+            // Set the help text description for the FolderBrowserDialog.
             fdlg.Description = descr;
 
-            // Do not allow the user to create new files via the FolderBrowserDialog. 
+            // Do not allow the user to create new files via the FolderBrowserDialog.
             fdlg.ShowNewFolderButton = false;
 
             if (!string.IsNullOrWhiteSpace(initialDirectory) && Directory.Exists(initialDirectory))
@@ -289,7 +288,7 @@ namespace AudioBrowser
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="csvFile"></param>
         /// <param name="diSourceDir"></param>

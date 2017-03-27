@@ -322,15 +322,15 @@ namespace AnalysisPrograms
             public bool TileOutput { get; private set; }
 
             /// <summary>
-            /// Gets the duration of the sub-segment for which indices are calculated. 
+            /// Gets the duration of the sub-segment for which indices are calculated.
             /// Default = 60 seconds i.e. same duration as the Segment.
             /// </summary>
             public TimeSpan IndexCalculationDuration { get; private set; }
 
             /// <summary>
-            /// Gets the amount of audio either side of the required subsegment from which to derive an estimate of background noise. 
+            /// Gets the amount of audio either side of the required subsegment from which to derive an estimate of background noise.
             /// Units = seconds
-            /// As an example: IF (IndexCalculationDuration = 1 second) AND (BGNNeighborhood = 10 seconds) 
+            /// As an example: IF (IndexCalculationDuration = 1 second) AND (BGNNeighborhood = 10 seconds)
             ///                THEN BG noise estimate will be derived from 21 seconds of audio centred on the subsegment.
             ///                In case of edge effects, the BGnoise neighborhood will be truncated to start or end of the audio segment (typically expected to be one minute long).
             /// </summary>
@@ -453,7 +453,7 @@ namespace AnalysisPrograms
             }
 
             // #################################################################
-            // PRODUCE Hi-RESOLUTION SPECTROGRAM IMAGES 
+            // PRODUCE Hi-RESOLUTION SPECTROGRAM IMAGES
             // Instead of saving the standard spectrogram images, in this analysis we save the Hi-Res Indices spectrogram images.
             FileInfo ipConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile;
             double defaultScale = 0.1;
@@ -470,7 +470,7 @@ namespace AnalysisPrograms
                 ColourMap1 = "BGN-POW-EVN",
                 ColourMap2 = "PHN-RVT-SPT", //PHN is new derived index
                 //ColourMap2 = "RHZ-RPS-RNG",
-                                
+
                 TemporalScale = hiResTimeScale,
             };
             // Create output directory if it does not exist
@@ -485,7 +485,7 @@ namespace AnalysisPrograms
             bool saveRidgeSpectrograms = (bool?)analysisSettings.Configuration["SaveRidgeSpectrograms"] ?? false;
             if (saveRidgeSpectrograms)
             {
-                // 1: DRAW the coloured ridge spectrograms 
+                // 1: DRAW the coloured ridge spectrograms
                 DirectoryInfo inputDirectory = LDFCSpectrogramArguments.InputDataDirectory;
                 Image ridgeSpectrogram = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(inputDirectory, ipConfig, fileStem, (double)hiResScale, dictionaryOfSpectra);
                 //var opImages = new List<Image>();
@@ -511,7 +511,7 @@ namespace AnalysisPrograms
             // 3. DRAW False-colour Spectrograms
             bool saveTwoMapsSpectrograms = (bool?)analysisSettings.Configuration["SaveTwoMapsSpectrograms"] ?? false;
             if (saveTwoMapsSpectrograms)
-            {                    
+            {
                 opImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(LDFCSpectrogramArguments, fileStem, dictionaryOfSpectra);
                 var opImages = new List<Image>();
                 opImages.Add(opImage);
@@ -546,7 +546,7 @@ namespace AnalysisPrograms
             }
 
             // #################################################################
-            // Place LOW RESOLUTION SPECTRAL INDICES INTO analysisResults before returning. 
+            // Place LOW RESOLUTION SPECTRAL INDICES INTO analysisResults before returning.
             int windowLength   = (int?)analysisSettings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
             int spectrumLength = windowLength / 2;
             Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(ipConfig);
@@ -597,7 +597,7 @@ namespace AnalysisPrograms
             }
 
             // #################################################################
-            // Place LOW RESOLUTION SUMMARY INDICES INTO analysisResults before returning. 
+            // Place LOW RESOLUTION SUMMARY INDICES INTO analysisResults before returning.
             if (analysisSettings.SummaryIndicesFile != null)
             {
                 this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
@@ -606,7 +606,7 @@ namespace AnalysisPrograms
 
             // TODO TODO TODO
             // THe following converts events detected by a recogniser into summary events.
-            //  This will over-write the summary events that were stored in analysisResults just above. 
+            //  This will over-write the summary events that were stored in analysisResults just above.
             // CONVERT EVENTS TO SUMMARY INDICES
             if (analysisSettings.SummaryIndicesFile != null)
             {
@@ -639,8 +639,8 @@ namespace AnalysisPrograms
             foreach (EventBase baseEvent in results)
             {
                 AcousticEvent ae = (AcousticEvent)baseEvent;
-                line = String.Format("{0},{1:f2},{2:f3},{3},{4},{5},{6},{7:f3},{8:f2},{9},{10},{11}", 
-                                     ae.StartOffset, ae.TimeEnd, ae.Duration, ae.MinFreq,     ae.MaxFreq, 
+                line = String.Format("{0},{1:f2},{2:f3},{3},{4},{5},{6},{7:f3},{8:f2},{9},{10},{11}",
+                                     ae.StartOffset, ae.TimeEnd, ae.Duration, ae.MinFreq,     ae.MaxFreq,
                                      ae.SegmentStartOffset, ae.SegmentDuration,
                                      ae.Score,       ae.Score2,  ae.Name,     ae.SpeciesName, ae.FileName);
                 lines.Add(line);
@@ -726,7 +726,7 @@ namespace AnalysisPrograms
                                           BGNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
                                           MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
                                           BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
-                                          LongDurationSpectrogramConfig = ldSpectrogramConfig
+                                          LongDurationSpectrogramConfig = ldSpectrogramConfig,
                                       };
             var icdPath = FilenameHelpers.AnalysisResultPath(
                 resultsDirectory,
@@ -760,8 +760,8 @@ namespace AnalysisPrograms
                         outputDirectory: resultsDirectory,
                         ldSpectrogramConfig: ldSpectrogramConfig,
                         indexPropertiesConfigPath: indicesPropertiesConfig,
-                        indexGenerationData: indexConfigData, 
-                        basename: basename, 
+                        indexGenerationData: indexConfigData,
+                        basename: basename,
                         analysisType: this.Identifier,
                         indexSpectrograms: dictionaryOfSpectra,
                         indexStatistics: indexDistributions,
@@ -776,7 +776,7 @@ namespace AnalysisPrograms
                     foreach (var image in images)
                     {
                         TileOutput(resultsDirectory, Path.GetFileNameWithoutExtension(sourceAudio.Name), image.Item2 + ".Tile", inputFileSegment.TargetFileStartDate.Value, image.Item1);
-                    }                    
+                    }
                 }
             }
         }
@@ -785,7 +785,7 @@ namespace AnalysisPrograms
         {
             const int TileHeight = 256;
             const int TileWidth = 60;
-            
+
             // seconds per pixel
             const double Scale = 60.0;
             TimeSpan scale = Scale.Seconds();
@@ -853,7 +853,7 @@ namespace AnalysisPrograms
                     SegmentMinDuration = TimeSpan.FromSeconds(1),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
+                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
                 };
             }
         }
@@ -876,7 +876,7 @@ namespace AnalysisPrograms
                                            AudioFile = null,
                                            EventsFile = null,
                                            SummaryIndicesFile = null,
-                                           ImageFile = null
+                                           ImageFile = null,
                                        };
 
             var start = TimeSpan.Zero;

@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     public static class StructureTensor
     {
         //private double[,] StructureTensorMatrix = new double[2,2];
@@ -161,7 +161,7 @@ namespace TowseyLibrary
                 dydx0 += dx0 * dy1;
                 dydx2 += dx2 * dy3;
 
-                // count number of contributing cells so can get average 
+                // count number of contributing cells so can get average
                 N++;
             }
             // get average
@@ -178,12 +178,12 @@ namespace TowseyLibrary
 
             double[,] stM1 = {
                          { dxdx0, dydx0},
-                         { dydx0, dydy1}
+                         { dydx0, dydy1},
                       };
             double[] eigenvalues1 = CalculateEigenValues(stM1);
             double[,] stM2 = {
                          { dxdx2, dydx2},
-                         { dydx2, dydy3}
+                         { dydx2, dydy3},
                       };
             double[] eigenvalues2 = CalculateEigenValues(stM2);
 
@@ -248,7 +248,7 @@ namespace TowseyLibrary
         {
             // create a local image matrix
             double[,] image = { {0.9, 10.0,},
-                                {10.0, 0.0,}
+                                {10.0, 0.0,},
                                 };
 
             var structureTensorMatrix = StructureTensor.CalculateStructureTensor(image);

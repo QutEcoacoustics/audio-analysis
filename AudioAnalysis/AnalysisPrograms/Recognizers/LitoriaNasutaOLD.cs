@@ -33,10 +33,10 @@ namespace AnalysisPrograms.Recognizers
     /// Litoria nasuta  AKA The Striped Rocket Frog
     /// TODO: This frog recognizer is incomplete. Currently just looks for energy in the user defined freq band.
     /// TODO: THis is unlikely to work when other species and/or are present.
-    /// 
+    ///
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
-    /// 
+    ///
     /// </summary>
     public class LitoriaNasutaOLD : RecognizerBase
     {
@@ -97,7 +97,7 @@ namespace AnalysisPrograms.Recognizers
                 // if do not use noise reduction can get a more sensitive recogniser.
                 //NoiseReductionType = NoiseReductionType.None
                 NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = 0.0
+                NoiseReductionParameter = 0.0,
             };
 
             TimeSpan recordingDuration = recording.WavReader.Time;
@@ -164,7 +164,7 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram,
                 Hits = hits,
                 Plots = plot.AsList(),
-                Events = acousticEvents
+                Events = acousticEvents,
             };
         }
     }
@@ -193,12 +193,12 @@ namespace AnalysisPrograms.Recognizers
             MinHz = (int)configuration[AnalysisKeys.MinHz];
             MaxHz = (int)configuration[AnalysisKeys.MaxHz];
 
-            // duration of DCT in seconds 
+            // duration of DCT in seconds
             DctDuration = (double)configuration[AnalysisKeys.DctDuration];
             // minimum acceptable value of a DCT coefficient
             DctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
 
-            // min and max duration of event in seconds 
+            // min and max duration of event in seconds
             MinDuration = (double)configuration[AnalysisKeys.MinDuration];
             MaxDuration = (double)configuration[AnalysisKeys.MaxDuration];
 

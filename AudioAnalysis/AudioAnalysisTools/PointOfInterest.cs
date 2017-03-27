@@ -92,7 +92,7 @@ namespace AudioAnalysisTools
         public double HerzScale { get; set; }
 
         /// <summary>
-        /// Gets or sets the matrix of fft. 
+        /// Gets or sets the matrix of fft.
         /// </summary>
         public double[,] fftMatrix { get; set; }
         /// <summary>
@@ -355,7 +355,7 @@ namespace AudioAnalysisTools
             // THis one for decibel ridges
             int x = this.Point.X;
             int y = this.Point.Y;
-            // this one for amplitude ridges. 
+            // this one for amplitude ridges.
             //int x = this.Point.X;
             //int y = this.Point.Y + 36;
             //int x = (int)Math.Round(this.TimeLocation.TotalSeconds / this.TimeScale.TotalSeconds);
@@ -413,7 +413,7 @@ namespace AudioAnalysisTools
                             }
                     }
                 }
-            } // if (orientationCategory == 0) else                           
+            } // if (orientationCategory == 0) else
             bmp.SetPixel(x, y, color);
         } // DrawOrientationPoint
 

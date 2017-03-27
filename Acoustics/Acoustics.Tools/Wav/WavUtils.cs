@@ -72,7 +72,7 @@
         /// using (DeflateStream oZip = new DeflateStream(outFile, CompressionMode.Compress))
         /// StreamCopy(iFile, oZip);
         /// </code>
-        /// Depending on what you are actually trying to do, you'd chain the streams differently. 
+        /// Depending on what you are actually trying to do, you'd chain the streams differently.
         /// This also uses relatively little memory, because only the data being operated upon is in memory.
         /// </example>
         public static void StreamCopy(this Stream source, Stream target)
@@ -240,7 +240,7 @@
             return samples;
         }
 
-       
+
 
         /// <summary>
         /// Get samples per channel. The first channel (mono if it is the only channel) is usually the left.

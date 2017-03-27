@@ -1,32 +1,25 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
-
-using Acoustics.Shared;
-using Acoustics.Tools;
-using Acoustics.Tools.Audio;
-using AnalysisBase;
-
-using TowseyLibrary;
-using AudioAnalysisTools;
-
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
-    using System.Diagnostics.Contracts;
 
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Extensions;
-
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
+    using AnalysisBase;
     using AnalysisPrograms.Production;
-
+    using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
+    using TowseyLibrary;
 
     /// This class is a combination of analysers
     /// When adding a new analyser to this class need to modify two methods:
@@ -70,7 +63,7 @@ namespace AnalysisPrograms
                 //HUMAN
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\Crows111216-001Mono5-7min.mp3";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\PramukSpeech_20090615.wav"; //WARNING: RECORDING IS 44 MINUTES LONG. NEEDT TO SAMPLE
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Wimmer_DM420011.wav";         
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Wimmer_DM420011.wav";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min452Speech.wav";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\BAC2_20071018-143516_speech.wav";
@@ -131,7 +124,7 @@ namespace AnalysisPrograms
                     Indices = indicesFname,
                     Sgram = sonogramFname,
                     Start = tsStart.TotalSeconds,
-                    Duration = tsDuration.TotalSeconds
+                    Duration = tsDuration.TotalSeconds,
                 };
             }
 
@@ -389,7 +382,7 @@ namespace AnalysisPrograms
             keysFiltered = DictionaryTools.FilterKeysInDictionary(configDict, "KOALAMALE");
 
             // derive new dictionary for crow
-            foreach (string key in keysFiltered) 
+            foreach (string key in keysFiltered)
             {
                 string newKey = key.Substring(10);
                 newDict.Add(newKey, configDict[key]);
@@ -510,14 +503,14 @@ namespace AnalysisPrograms
 
             string[] headers = { AudioAnalysisTools.AnalysisKeys.EventCount,
                                  AudioAnalysisTools.AnalysisKeys.EventStartMin,
-                                 AudioAnalysisTools.AnalysisKeys.EventStartSec, 
+                                 AudioAnalysisTools.AnalysisKeys.EventStartSec,
                                  AudioAnalysisTools.AnalysisKeys.EventStartAbs,
                                  AudioAnalysisTools.AnalysisKeys.KeySegmentDuration,
-                                 AudioAnalysisTools.AnalysisKeys.EventDuration, 
+                                 AudioAnalysisTools.AnalysisKeys.EventDuration,
                                  //AudioAnalysisTools.Keys.EVENT_INTENSITY,
                                  AudioAnalysisTools.AnalysisKeys.EventName,
                                  AudioAnalysisTools.AnalysisKeys.EventScore,
-                                 AudioAnalysisTools.AnalysisKeys.EventNormscore 
+                                 AudioAnalysisTools.AnalysisKeys.EventNormscore,
 
                                };
             //                   1                2               3              4                5              6               7              8
@@ -627,7 +620,7 @@ namespace AnalysisPrograms
 
 
         /// <summary>
-        /// This method should no longer be used. 
+        /// This method should no longer be used.
         /// It depends on use of the DataTable class which ceased when Anthony did a major refactor in mid-2014.
         /// </summary>
         /// <param name="fiCsvFile"></param>
@@ -660,7 +653,7 @@ namespace AnalysisPrograms
                     SegmentMinDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
+                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
                 };
             }
         }

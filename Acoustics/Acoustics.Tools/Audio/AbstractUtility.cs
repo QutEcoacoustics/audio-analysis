@@ -30,7 +30,7 @@
             "Mime type ({0})  does not match File extension ({1}).";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AbstractUtility"/> class. 
+        /// Initializes a new instance of the <see cref="AbstractUtility"/> class.
         /// </summary>
         protected AbstractUtility()
         {

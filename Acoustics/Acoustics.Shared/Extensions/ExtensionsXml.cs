@@ -25,7 +25,7 @@
                 _writer = new XmlTextWriter(new StringWriter(_xmlTextBuilder))
                 {
                     Formatting = Formatting.Indented,
-                    Indentation = 2
+                    Indentation = 2,
                 };
             }
 

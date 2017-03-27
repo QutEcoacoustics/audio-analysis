@@ -105,8 +105,8 @@
         /// </param>
         public void SendStandardInput(string input)
         {
-            // To use StandardInput, you must set ProcessStartInfo.UseShellExecute to false, 
-            // and you must set ProcessStartInfo.RedirectStandardInput to true. Otherwise, 
+            // To use StandardInput, you must set ProcessStartInfo.UseShellExecute to false,
+            // and you must set ProcessStartInfo.RedirectStandardInput to true. Otherwise,
             // writing to the StandardInput stream throws an exception.
             this.process.StandardInput.WriteLine(input);
         }
@@ -120,8 +120,8 @@
         }
 
         /// <summary>
-        /// Run the process with 
-        /// <paramref name="arguments"/> 
+        /// Run the process with
+        /// <paramref name="arguments"/>
         /// in the <paramref name="workingDirectory"/>.
         /// Waits indefinitely for the process to exit.
         /// </summary>
@@ -143,7 +143,7 @@
 
         private void PrepareRun(string arguments, string workingDirectory)
         {
-            // reset 
+            // reset
             this.standardOutput.Length = 0;
             this.errorOutput.Length = 0;
 
@@ -154,7 +154,7 @@
 
             if (this.process != null)
             {
-                
+
                 KillProcess();
 
                 this.process.Dispose();
@@ -182,7 +182,7 @@
         }
 
         /// <summary>
-        /// THis function kills a process... or attempts to do so gracefully. 
+        /// THis function kills a process... or attempts to do so gracefully.
         /// Processes that currently terminating are indistinguishable from process that cannot be killed due to permission issues.
         /// Processes that are terminating also do no satisy the HasExited flag.
         /// </summary>
@@ -199,7 +199,7 @@
                     // nothing to do here
                     return;
                 }
-                else 
+                else
                 {
                     try
                     {
@@ -221,7 +221,7 @@
 
             throw new InvalidOperationException(
                 "Cannot kill the current process! tried {0} times. Process Name: {1}. Arguments: {2}."
-                    .Format2(exceptions.Count, this.ExecutableFile.FullName, this.process.StartInfo.Arguments), 
+                    .Format2(exceptions.Count, this.ExecutableFile.FullName, this.process.StartInfo.Arguments),
                 new AggregateException(exceptions));
         }
 
@@ -248,7 +248,7 @@
 
             this.process.Start();
 
-            // WARNING: can sometimes miss output if the program runs too fast for 
+            // WARNING: can sometimes miss output if the program runs too fast for
             // BeginOutputReadLine and BeginErrorReadLine to start receiving input
             // http://alabaxblog.info/2013/06/redirectstandardoutput-beginoutputreadline-pattern-broken/
 
@@ -308,7 +308,7 @@
                         standardOutput.Append(outputReader.Result);
                         errorOutput.Append(errorReader.Result);
                     }
-                    
+
                 }
                 else
                 {
@@ -321,7 +321,7 @@
                     this.ExitCode = process.ExitCode;
                     standardOutput.Append(outputReader.Result);
                     errorOutput.Append(errorReader.Result);
-                    
+
                 }
             }
         }

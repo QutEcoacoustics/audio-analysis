@@ -16,17 +16,17 @@
     {
         protected static string[] DateTimeFormatStrings = new[]
             {
-                "yyyy-MM-ddTHH:mm:ss.fffzzz", 
-                "yyyy-MM-ddTHH:mm:ss.fffzz", 
+                "yyyy-MM-ddTHH:mm:ss.fffzzz",
+                "yyyy-MM-ddTHH:mm:ss.fffzz",
                 "yyyy-MM-ddTHH:mm:ss.fff",
-                "yyyy-MM-ddTHH:mm:ss"
+                "yyyy-MM-ddTHH:mm:ss",
             };
 
         protected static DateTimeStyles DateTimeStyles = DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeLocal;
 
         protected static string[] TimeSpanFormatStrings = new[]
             {
-                "ddd.hh:mm:ss.fff", "hh:mm:ss.fff", "ddd.hh:mm:ss", "hh:mm:ss"
+                "ddd.hh:mm:ss.fff", "hh:mm:ss.fff", "ddd.hh:mm:ss", "hh:mm:ss",
             };
 
         /// <summary>
@@ -360,7 +360,7 @@
 
             File.WriteAllText(output.FullName, sb.ToString());
             /*
-          
+
 SELECT TOP 1000 [PageEventId]
       ,[UserId]
       ,[DateTimeOccurred]
@@ -375,18 +375,18 @@ SELECT TOP 1000 [PageEventId]
   FROM [QutSensors].[Ecosounds].[PageEvents]
   where userid = '66E4A431-41E1-430F-8E29-FBD22DEF21BB'
   order by pageeventid desc
-      
-             
-             
+
+
+
 SELECT TOP 1000 b.boundid,b.audioreadingid,l.text,b.starttimeoffsetMs, b.endtimeoffsetms,lb.createddate,l.createddate,b.createddate,u.username,u.userid,
-	b.endtimeoffsetms - b.starttimeoffsetMs as tagdurationms, 
+	b.endtimeoffsetms - b.starttimeoffsetMs as tagdurationms,
 	cast(datepart(year, lb.createddate) as varchar(100))+'/'+
        cast(datepart(month, lb.createddate) as varchar(100))+'/'+
        cast(datepart(day, lb.createddate) as varchar(100)) as CreatedDate
        ,cast(datepart(hh,lb.createddate) as varchar(100))+':'+
        cast(datepart(minute, lb.createddate) as varchar(100))+':'+
        cast(datepart(second, lb.createddate) as varchar(100)) as CreatedTime
-       
+
 	   ,cast(datepart(year,dateadd(millisecond, b.starttimeoffsetMs, ar.Time)) as varchar(100))+'/'+
        cast(datepart(month,dateadd(millisecond, b.starttimeoffsetMs, ar.Time)) as varchar(100))+'/'+
        cast(datepart(day,dateadd(millisecond, b.starttimeoffsetMs, ar.Time)) as varchar(100)) as StartDate
@@ -406,10 +406,10 @@ SELECT TOP 1000 b.boundid,b.audioreadingid,l.text,b.starttimeoffsetMs, b.endtime
   inner join audioreadings ar on b.audioreadingid = ar.audioreadingid
   where b.createdtagtypecontext = 'SamfordBirdWalkDawnQuest'
   order by lb.createdbyuserid, b.starttimeoffsetMs
-  
-             
-             
-             
+
+
+
+
              */
 
         }

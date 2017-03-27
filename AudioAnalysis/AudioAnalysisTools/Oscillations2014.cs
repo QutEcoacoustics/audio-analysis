@@ -1,45 +1,41 @@
-﻿using AudioAnalysisTools.DSP;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-using MathNet.Numerics;
-using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.LinearAlgebra.Double;
-using MathNet.Numerics.LinearAlgebra.Generic.Factorization;
-using MathNet.Numerics.LinearAlgebra.Generic;
-using AudioAnalysisTools.WavTools;
-using AudioAnalysisTools.StandardSpectrograms;
-
-
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using MathNet.Numerics;
+    using MathNet.Numerics.LinearAlgebra;
+    using MathNet.Numerics.LinearAlgebra.Double;
+    using MathNet.Numerics.LinearAlgebra.Generic;
+    using MathNet.Numerics.LinearAlgebra.Generic.Factorization;
+    using TowseyLibrary;
 
     /// <summary>
     /// This is the latest of three implementations to detect oscillations in a spectrogram.
-    /// This implementation is generic, that is, it attempts to find any and all oscillations in each of the 
+    /// This implementation is generic, that is, it attempts to find any and all oscillations in each of the
     /// frequency bins of a short duration spectorgram.
-    /// 
+    ///
     /// There are three versions of the generic algorithm implemented in three different methods:
     /// 1) uses auto-correlation, then FFT
     /// 2) uses auto-correlation, then singular value decomposition, then FFT
     /// 3) uses wavelets
-    /// 
+    ///
     /// I gave up on wavelets after some time. Might work with persistence!
     /// Singular value decomposition is used as a filter to select the dominant oscillations in the audio segment against noise.
-    /// 
-    /// The Oscillations2012 class uses the DCT to find oscillations. It works well when the sought oscillation rate is known 
-    /// and the DCT can be tuned to find it. It works well, for example, to find canetoad calls. 
+    ///
+    /// The Oscillations2012 class uses the DCT to find oscillations. It works well when the sought oscillation rate is known
+    /// and the DCT can be tuned to find it. It works well, for example, to find canetoad calls.
     /// However it did not easily extend to finding generic oscillations.
-    /// 
+    ///
     /// Oscillations2014 therefore complements the Oscillations2012 class but does not replace it.
-    /// 
+    ///
     /// </summary>
     public static class Oscillations2014
     {
@@ -89,7 +85,7 @@ namespace AudioAnalysisTools
             {
                 sampleLength = Int32.Parse(configDict[AnalysisKeys.OscilDetection2014SampleLength]);
             }
-            
+
             SonogramConfig sonoConfig = new SonogramConfig(configDict); // default values config
             if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014FrameSize))
             {
@@ -116,7 +112,7 @@ namespace AudioAnalysisTools
             double[,] freqOscilMatrix1 = Oscillations2014.GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName);
 
             //get the max spectral index - this reduces the matrix to an array
-            double[] spectralIndex = Oscillations2014.ConvertMatrix2SpectralIndex(freqOscilMatrix1);            
+            double[] spectralIndex = Oscillations2014.ConvertMatrix2SpectralIndex(freqOscilMatrix1);
 
             ///DEBUGGING
             // Add spectralIndex into the matrix because want to add it to image.
@@ -217,7 +213,7 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="M"></param>
         /// <param name="framesPerSecond"></param>
@@ -319,16 +315,16 @@ namespace AudioAnalysisTools
         /// <summary>
         /// reduces the sequence of Xcorrelation vectors to a single summary vector.
         /// Does this by:
-        /// (1) do SVD on the collection of XCORRELATION vectors 
+        /// (1) do SVD on the collection of XCORRELATION vectors
         /// (2) select the dominant ones based on the eigen values - 90% threshold
         ///     Typically there are 1 to 10 eigen values depending on how busy the bin is.
         /// (3) Do an FFT on each of the returned SVD vectors to pick the dominant oscillation rate.
         /// (4) Accumulate the oscillations in a freq by oscillation rate matrix.
         ///     The amplitude value for the oscillation is the eigenvalue.
-        /// 
+        ///
         /// NOTE: There should only be one dominant oscilation in any one freq band at one time.
         ///       Birds with oscillating calls do call simultaneously, but this technique will only pick up the dominant call.
-        ///             
+        ///
         /// </summary>
         /// <param name="xCorrByTimeMatrix">double[,] xCorrelationsByTime = new double[sampleLength, sampleCount]; </param>
         /// <param></param>
@@ -402,7 +398,7 @@ namespace AudioAnalysisTools
                 var fft = new FFT(autocor.Length, wf);
                 var spectrum = fft.Invoke(autocor);
 
-                // skip spectrum[0] because it is DC or zero oscillations/sec 
+                // skip spectrum[0] because it is DC or zero oscillations/sec
                 spectrum = DataTools.Subarray(spectrum, 1, spectrum.Length - 2);
 
                 // reduce the power in first coeff because it can dominate - this is a hack!
@@ -464,7 +460,7 @@ namespace AudioAnalysisTools
                 var fft = new FFT(autocor.Length, wf);
                 var spectrum = fft.Invoke(autocor);
 
-                // skip spectrum[0] because it is DC or zero oscillations/sec 
+                // skip spectrum[0] because it is DC or zero oscillations/sec
                 spectrum = DataTools.Subarray(spectrum, 1, spectrum.Length - 2);
 
                 // reduce the power in first coeff because it can dominate - this is a hack!
@@ -592,7 +588,7 @@ namespace AudioAnalysisTools
                 var fft = new FFT(autocor.Length, wf);
                 var spectrum = fft.Invoke(autocor);
 
-                // skip spectrum[0] because it is DC or zero oscillations/sec 
+                // skip spectrum[0] because it is DC or zero oscillations/sec
                 spectrum = DataTools.Subarray(spectrum, 1, spectrum.Length - 2);
 
                 // reduce the power in first coeff because it can dominate - this is a hack!
@@ -675,7 +671,7 @@ namespace AudioAnalysisTools
                 }
                 spectralIndex[c] = sum;
             }
-        
+
             return spectralIndex;
         }
 

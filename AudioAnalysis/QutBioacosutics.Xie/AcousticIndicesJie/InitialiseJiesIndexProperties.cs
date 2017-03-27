@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools;
-
-
-namespace AcousticIndicesJie
+﻿namespace AcousticIndicesJie
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
 
     ///
@@ -20,11 +18,11 @@ namespace AcousticIndicesJie
 
     /// <summary>
     /// This static class contains all the keys to identify available acoustic indices.
-    /// The principle method, 
+    /// The principle method,
     ///         public static Dictionary<string, IndexProperties> InitialisePropertiesOfIndices()
     /// creates a dictionary of index properties.
     /// THIS CLASS DOES NOT STORE THE VALUE OF THE INDEX - the value is stored in class IndexValues.
-    /// To create a new index you initialise it in the above method and add it to the dictionary of indices. 
+    /// To create a new index you initialise it in the above method and add it to the dictionary of indices.
     /// </summary>
     public static class InitialiseJiesIndexProperties
     {
@@ -36,7 +34,7 @@ namespace AcousticIndicesJie
 
 
 
-        // KEYS for referring to indices. These should really be an enum                
+        // KEYS for referring to indices. These should really be an enum
         //KEYS FOR SUMMARY INDICES
         public const string keyCOUNT = "COUNT";
         public const string keySTART_MIN = "START-MIN";
@@ -95,7 +93,7 @@ namespace AcousticIndicesJie
 
             //IMPORTANT:  SPECTRAL INDCIES MUST BE OF TYPE Double[]
 
-            //string key, string name, typeof(double[]), bool doDisplay, double normMin, double normMax, "dB", bool _includeInComboIndex, 
+            //string key, string name, typeof(double[]), bool doDisplay, double normMin, double normMax, "dB", bool _includeInComboIndex,
 
 
             throw new NotImplementedException("Ask Anthony why this no longer works!");
@@ -131,7 +129,7 @@ namespace AcousticIndicesJie
                     Name = "BGN",
                     DataType = typeof(double[]),
                     NormMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20, //-20 adds more contrast into BGN spectrogram
-                    NormMax = -20.0, 
+                    NormMax = -20.0,
                     DefaultValue = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20,
                     Units = "dB",
                     Comment = "dB value of the bcakground 'noise' removed each frequency bin."

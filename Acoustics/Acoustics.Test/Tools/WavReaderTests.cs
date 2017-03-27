@@ -228,7 +228,7 @@ namespace Acoustics.Test.Tools
         public void WavReaderChannelOutOfBoundsFails()
         {
             var source = TestHelper.GetTestAudioFile("different_channels_tone.wav");
-          
+
             var reader = new WavReader(source);
 
             Assert.Throws<IndexOutOfRangeException>(() =>{ reader.GetChannel(-1); });

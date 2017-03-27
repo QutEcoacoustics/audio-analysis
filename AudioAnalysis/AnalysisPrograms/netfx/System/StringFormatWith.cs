@@ -1,5 +1,5 @@
 ﻿#region BSD License
-/* 
+/*
 Copyright (c) 2010, NETFx
 All rights reserved.
 
@@ -24,7 +24,7 @@ using System.Text;
 using System.Web.UI;
 using System.Web;
 using System.IO;
-using System.Diagnostics.Contracts;
+using Acoustics.Shared.Contracts;
 
 /// <summary>
 /// Requires a reference to System.Web.
@@ -32,10 +32,10 @@ using System.Diagnostics.Contracts;
 internal static class StringFormatWithExtension
 {
 	/// <summary>
-	/// Formats the string with the given source object. 
-	/// Expression like {Id} are replaced with the corresponding 
-	/// property value in the <paramref name="source"/>. Supports 
-	/// all <see cref="DataBinder.Eval"/> expressions formats 
+	/// Formats the string with the given source object.
+	/// Expression like {Id} are replaced with the corresponding
+	/// property value in the <paramref name="source"/>. Supports
+	/// all <see cref="DataBinder.Eval"/> expressions formats
 	/// for property access.
 	/// </summary>
 	/// <nuget id="netfx-System.StringFormatWith" />

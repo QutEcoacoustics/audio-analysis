@@ -61,7 +61,7 @@ namespace AudioAnalysisTools.Indices
 
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="signalEnvelope">envelope of the original signal</param>
         /// <param name="audioDuration"></param>
@@ -73,8 +73,8 @@ namespace AudioAnalysisTools.Indices
         /// <returns></returns>
         public static Dictionary<string, double> GetIndices(double[] signalEnvelope, TimeSpan audioDuration, TimeSpan frameStepDuration, double[,] spectrogram, int lowFreqBound, int midFreqBound, double binWidth)
         {
-            int chunkDuration = 10; //seconds - assume that signal is not less than one minute duration            
- 
+            int chunkDuration = 10; //seconds - assume that signal is not less than one minute duration
+
             double framesPerSecond = 1 / frameStepDuration.TotalSeconds;
             int chunkCount = (int)Math.Round(audioDuration.TotalSeconds / (double)chunkDuration);
             int framesPerChunk = (int)(chunkDuration * framesPerSecond);
@@ -131,17 +131,17 @@ namespace AudioAnalysisTools.Indices
         /// <param name="midFreqBound"></param>
         /// <param name="binWidth"></param>
         /// <returns></returns>
-        public static RainStruct Get10SecondIndices(double[] signal, double[,] spectrogram, int lowFreqBound, int midFreqBound, 
+        public static RainStruct Get10SecondIndices(double[] signal, double[,] spectrogram, int lowFreqBound, int midFreqBound,
                                                     TimeSpan frameDuration, double binWidth)
         {
-            // i: FRAME ENERGIES - 
+            // i: FRAME ENERGIES -
             double StandardDeviationCount = 0.1;
             var results3 = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(signal), StandardDeviationCount); //use Lamel et al.
             var dBarray = SNR.TruncateNegativeValues2Zero(results3.NoiseReducedSignal);
 
             bool[] activeFrames = new bool[dBarray.Length]; //record frames with activity >= threshold dB above background and count
             for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= ActivityAndCover.DefaultActivityThresholdDb) activeFrames[i] = true;
-            //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB)); 
+            //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB));
             int activeFrameCount = DataTools.CountTrues(activeFrames);
 
             double spikeThreshold = 0.05;
@@ -150,10 +150,10 @@ namespace AudioAnalysisTools.Indices
             //DataTools.writeBarGraph(signal);
 
             RainStruct rainIndices; // struct in which to store all indices
-            rainIndices.activity = activeFrameCount / (double)dBarray.Length;  //fraction of frames having acoustic activity 
+            rainIndices.activity = activeFrameCount / (double)dBarray.Length;  //fraction of frames having acoustic activity
             rainIndices.bgNoise = results3.NoiseMode;                         //bg noise in dB
             rainIndices.snr = results3.Snr;                               //snr
-            rainIndices.avSig_dB = 20 * Math.Log10(signal.Average());        //10 times log of amplitude squared 
+            rainIndices.avSig_dB = 20 * Math.Log10(signal.Average());        //10 times log of amplitude squared
             rainIndices.temporalEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(signal)); //ENTROPY of ENERGY ENVELOPE
             rainIndices.spikes = spikeIndex;
 
@@ -218,7 +218,7 @@ namespace AudioAnalysisTools.Indices
 
         public static Dictionary<string, double> ConvertClassifcations2Dictionary(string[] classifications)
         {
-            Dictionary<string, double> dict = new Dictionary<string, double>(); 
+            Dictionary<string, double> dict = new Dictionary<string, double>();
 
             int length = classifications.Length;
             int rainCount = 0;
@@ -242,7 +242,7 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// The values in this class were derived from See5 runs of data taken from ???? 
+        /// The values in this class were derived from See5 runs of data taken from ????
         /// </summary>
         /// <param name="indices"></param>
         /// <returns></returns>
@@ -256,7 +256,7 @@ namespace AudioAnalysisTools.Indices
             }
             else
             {
-                if ((indices.spectralEntropy < 0.6) && (indices.bgNoise > -20)) 
+                if ((indices.spectralEntropy < 0.6) && (indices.bgNoise > -20))
                     return header_cicada;
             }
             return classification;

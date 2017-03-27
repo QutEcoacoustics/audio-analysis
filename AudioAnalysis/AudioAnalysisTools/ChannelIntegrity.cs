@@ -127,7 +127,7 @@ namespace AudioAnalysisTools
             ZeroCrossingIndex(channelL, channelR, out zeroCrossingFractionL, out zeroCrossingFractionR);
 
             Console.WriteLine(String.Format("Zero crossings: L={0:f3}   R={1:f3}", zeroCrossingFractionL, zeroCrossingFractionR));
-            Console.WriteLine(String.Format("Similarity Index: SimIndex={0:f3}   SimIndexdB={1:f3}   avBiasdB={2:f3}   medianBiasdB={3:f3}", 
+            Console.WriteLine(String.Format("Similarity Index: SimIndex={0:f3}   SimIndexdB={1:f3}   avBiasdB={2:f3}   medianBiasdB={3:f3}",
                                                 similarityIndex, similarityIndexDecibel, avDecibelBias, medianDecibelBias));
             Console.WriteLine(String.Format("dB Bias Index: low band={0:f3}   mid band={1:f3}   high band={2:f3}",
                                                 lowDecibelBias, midDecibelBias, hiDecibelBias));
@@ -148,7 +148,7 @@ namespace AudioAnalysisTools
                     OffsetEnd = args.EndOffset,
                     TargetSampleRate = args.SamplingRate,
                     Channels = new[] { 1, 2 },
-                    MixDownToMono = false
+                    MixDownToMono = false,
                 };
             var audioFile = AudioFilePreparer.PrepareFile(args.OpDir, ipFile, args.OutputMediaType, request, args.OpDir).TargetInfo.SourceFile;
 
@@ -160,8 +160,8 @@ namespace AudioAnalysisTools
             epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
         }
 
-        public static void SimilarityIndex(double[] channelL, double[] channelR, double epsilon, int sampleRate, 
-                                             out double similarityIndex, out double decibelIndex, 
+        public static void SimilarityIndex(double[] channelL, double[] channelR, double epsilon, int sampleRate,
+                                             out double similarityIndex, out double decibelIndex,
                                              out double avDecibelBias, out double medianDecibelBias,
                                              out double lowFreqDbBias, out double midFreqDbBias, out double hiFreqDbBias)
         {
@@ -187,9 +187,9 @@ namespace AudioAnalysisTools
                 double max = Math.Max(avSpectrumL[i], avSpectrumR[i]);
                 if (max <= 0.000001) max = 0.000001;  // to prevent division by zero.
 
-                // index = min / max; 
-                double index = (min*min) / (max*max); 
-                similarityIndex += index; 
+                // index = min / max;
+                double index = (min*min) / (max*max);
+                similarityIndex += index;
 
                 double dBmin = 20 * Math.Log10(min);
                 double dBmax = 20 * Math.Log10(max);

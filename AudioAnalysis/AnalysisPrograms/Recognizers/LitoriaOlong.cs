@@ -85,11 +85,11 @@ namespace AnalysisPrograms.Recognizers
             // BETTER TO CALCULATE THIS. IGNORE USER!
             // double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);
 
-            // duration of DCT in seconds 
+            // duration of DCT in seconds
             double dctDuration = (double)configuration[AnalysisKeys.DctDuration];
 
             // minimum acceptable value of a DCT coefficient
-            double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];  
+            double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
 
             // ignore oscillations below this threshold freq
             int minOscilFreq = (int)configuration[AnalysisKeys.MinOscilFreq];
@@ -97,12 +97,12 @@ namespace AnalysisPrograms.Recognizers
             // ignore oscillations above this threshold freq
             int maxOscilFreq = (int)configuration[AnalysisKeys.MaxOscilFreq];
 
-            // min duration of event in seconds 
+            // min duration of event in seconds
             double minDuration = (double)configuration[AnalysisKeys.MinDuration];
 
-            // max duration of event in seconds                 
+            // max duration of event in seconds
             double maxDuration = (double)configuration[AnalysisKeys.MaxDuration];
-            
+
             // The default was 512 for Canetoad.
             // Framesize = 128 seems to work for Littoria fallax.
             // frame size
@@ -128,7 +128,7 @@ namespace AnalysisPrograms.Recognizers
                 SourceFName = recording.BaseName,
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
-                NoiseReductionType = NoiseReductionType.None
+                NoiseReductionType = NoiseReductionType.None,
             };
 
             // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
@@ -142,7 +142,7 @@ namespace AnalysisPrograms.Recognizers
              * 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
              * 2048     17640       116.1ms          8.6         8.6    7430ms           551hz          1100hz
              */
-             
+
             // int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
             // int maxbin = minBin + numberOfBins - 1;
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
@@ -181,14 +181,14 @@ namespace AnalysisPrograms.Recognizers
             });
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
-            
+
 
             return new RecognizerResults()
             {
                 Sonogram = sonogram,
                 Hits = hits,
                 Plots = plot.AsList(),
-                Events = acousticEvents
+                Events = acousticEvents,
             };
         }
     }

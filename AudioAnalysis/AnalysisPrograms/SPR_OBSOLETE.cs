@@ -1,25 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-using TowseyLibrary;
-
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
+
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
     using AnalysisPrograms.Production;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using TowseyLibrary;
 
     /// <summary>
     /// Implements a simple form of Syntactic Pattern Recognition to find defined bird calls in spectra.
     /// </summary>
     public class SPR_OBSOLETE  //Syntactic Pattern Recognition
     {
-        //Keys to recognise identifiers in PARAMETERS - INI file. 
+        //Keys to recognise identifiers in PARAMETERS - INI file.
         public static string key_CALL_NAME       = "CALL_NAME";
         public static string key_DO_SEGMENTATION = "DO_SEGMENTATION";
         public static string key_FRAME_OVERLAP   = "FRAME_OVERLAP";
@@ -43,13 +40,13 @@ namespace AnalysisPrograms
         public static Arguments Dev()
         {
             //WHIPBIRD
-            //spr C:\SensorNetworks\WavFiles\BridgeCreek\cabin_GoldenWhistler_file0127_extract1.mp3  C:\SensorNetworks\Output\SPR_WHIPBIRD\SPR_WHIPBIRD_Params.txt events.txt 
-            //spr C:\SensorNetworks\WavFiles\BridgeCreek\WhipbirdCalls\file0151mono.wav_segment_19.wav C:\SensorNetworks\Output\SPR_WHIPBIRD\SPR_WHIPBIRD_Params.txt events.txt 
+            //spr C:\SensorNetworks\WavFiles\BridgeCreek\cabin_GoldenWhistler_file0127_extract1.mp3  C:\SensorNetworks\Output\SPR_WHIPBIRD\SPR_WHIPBIRD_Params.txt events.txt
+            //spr C:\SensorNetworks\WavFiles\BridgeCreek\WhipbirdCalls\file0151mono.wav_segment_19.wav C:\SensorNetworks\Output\SPR_WHIPBIRD\SPR_WHIPBIRD_Params.txt events.txt
             //CURLEW
-            //spr C:\SensorNetworks\WavFiles\Curlew\Curlew2\HoneymoonBay_StBees_20080914-003000.wav  C:\SensorNetworks\Output\SPR_CURLEW\SPR_CURLEW_Params.txt events.txt 
-            //spr C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged\West_Knoll_Bees_20091102-210000.mp3  C:\SensorNetworks\Output\SPR_CURLEW\SPR_CURLEW_Params.txt events.txt 
+            //spr C:\SensorNetworks\WavFiles\Curlew\Curlew2\HoneymoonBay_StBees_20080914-003000.wav  C:\SensorNetworks\Output\SPR_CURLEW\SPR_CURLEW_Params.txt events.txt
+            //spr C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged\West_Knoll_Bees_20091102-210000.mp3  C:\SensorNetworks\Output\SPR_CURLEW\SPR_CURLEW_Params.txt events.txt
             //CURRAWONG
-            //spr C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-170000.wav  C:\SensorNetworks\Output\SPR_CURRAWONG\SPR_CURRAWONG_Params.txt events.txt  
+            //spr C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-170000.wav  C:\SensorNetworks\Output\SPR_CURRAWONG\SPR_CURRAWONG_Params.txt events.txt
             throw new NotImplementedException();
             return new Arguments();
         }
@@ -65,7 +62,7 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("Syntactic Pattern Recognition\n");
             //StringBuilder sb = new StringBuilder("DATE AND TIME:" + DateTime.Now + "\n");
             //sb.Append("SCAN ALL RECORDINGS IN A DIRECTORY USING HTK-RECOGNISER\n");
-            
+
             Log.Verbosity = 1;
 
             FileInfo recordingPath = arguments.Source;
@@ -89,14 +86,14 @@ namespace AnalysisPrograms
             //WHIPBIRD PARAMETERS
             int whistle_MinHz = Int32.Parse(dict[key_WHISTLE_MIN_HZ]);
             int whistle_MaxHz = Int32.Parse(dict[key_WHISTLE_MAX_HZ]);
-            double optimumWhistleDuration = Double.Parse(dict[key_WHISTLE_DURATION]);   //optimum duration of whistle in seconds 
+            double optimumWhistleDuration = Double.Parse(dict[key_WHISTLE_DURATION]);   //optimum duration of whistle in seconds
             int whip_MinHz      = (dict.ContainsKey(key_WHIP_MIN_HZ)) ? Int32.Parse(dict[key_WHIP_MIN_HZ]) : 0;
             int whip_MaxHz      = (dict.ContainsKey(key_WHIP_MAX_HZ))   ? Int32.Parse(dict[key_WHIP_MAX_HZ])    : 0;
-            double whipDuration = (dict.ContainsKey(key_WHIP_DURATION)) ? Double.Parse(dict[key_WHIP_DURATION]) : 0.0; //duration of whip in seconds 
+            double whipDuration = (dict.ContainsKey(key_WHIP_DURATION)) ? Double.Parse(dict[key_WHIP_DURATION]) : 0.0; //duration of whip in seconds
             //CURLEW PARAMETERS
-            double minDuration = (dict.ContainsKey(key_MIN_DURATION)) ? Double.Parse(dict[key_MIN_DURATION]) : 0.0; //min duration of call in seconds 
-            double maxDuration = (dict.ContainsKey(key_MAX_DURATION)) ? Double.Parse(dict[key_MAX_DURATION]) : 0.0; //duration of call in seconds 
-            
+            double minDuration = (dict.ContainsKey(key_MIN_DURATION)) ? Double.Parse(dict[key_MIN_DURATION]) : 0.0; //min duration of call in seconds
+            double maxDuration = (dict.ContainsKey(key_MAX_DURATION)) ? Double.Parse(dict[key_MAX_DURATION]) : 0.0; //duration of call in seconds
+
             double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);     //min score for an acceptable event
             int DRAW_SONOGRAMS = Convert.ToInt16(dict[key_DRAW_SONOGRAMS]);
 
@@ -114,7 +111,7 @@ namespace AnalysisPrograms
                 {
                     NoiseReductionType = NoiseReductionType.None,
                     //NoiseReductionType = NoiseReductionType.STANDARD,
-                    WindowOverlap = frameOverlap
+                    WindowOverlap = frameOverlap,
                 };
                 sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             }
@@ -150,7 +147,7 @@ namespace AnalysisPrograms
                 scores = result3.Item1;
                 hits = DataTools.AddMatrices(mHori, mVert);
 
-                predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, whip_MinHz, whip_MaxHz, 
+                predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, whip_MinHz, whip_MaxHz,
                                                               sonogram.FramesPerSecond, sonogram.FBinWidth,
                                                               eventThreshold, minDuration, maxDuration);
                 foreach (AcousticEvent ev in predictedEvents)
@@ -183,7 +180,7 @@ namespace AnalysisPrograms
                 //detect curlew calls
                 int minBound_Whistle = (int)(whistle_MinHz / sonogram.FBinWidth);
                 int maxBound_Whistle = (int)(whistle_MaxHz / sonogram.FBinWidth);
-                int whistleFrames = (int)(sonogram.FramesPerSecond * optimumWhistleDuration); 
+                int whistleFrames = (int)(sonogram.FramesPerSecond * optimumWhistleDuration);
                 var result3 = DetectCurlew(mHori, mVert, minBound_Whistle, maxBound_Whistle, whistleFrames, smallLengthThreshold);
 
                 //process curlew scores - look for curlew characteristic periodicity
@@ -240,7 +237,7 @@ namespace AnalysisPrograms
                 }
             }
 
-            //write event count to results file. 
+            //write event count to results file.
             double sigDuration = sonogram.Duration.TotalSeconds;
             //string fname = Path.GetFileName(recordingPath);
             int count = predictedEvents.Count;
@@ -332,7 +329,7 @@ namespace AnalysisPrograms
                         {
                             if (m[r, c] < 0.00001) continue;
                             double sum = 0.0;
-                            for (int j = 0; j < lineLength; j++) 
+                            for (int j = 0; j < lineLength; j++)
                                 if (m[r + (int)(cosAngle * j), c + (int)(sinAngle * j)] > intensityThreshold) sum++;
                             if (sum > sumThreshold)
                                 for (int j = 0; j < lineLength; j++) mOut[r + (int)(cosAngle * j), c + (int)(sinAngle * j)] = 1.0;
@@ -360,8 +357,8 @@ namespace AnalysisPrograms
 
 
 
-        public static Tuple<double[]> DetectWhipBird(double[,] mHori, double[,] mVert, 
-                                                 int minBound_Whistle, int maxBound_Whistle, int optimumWhistleDuration, 
+        public static Tuple<double[]> DetectWhipBird(double[,] mHori, double[,] mVert,
+                                                 int minBound_Whistle, int maxBound_Whistle, int optimumWhistleDuration,
                                                  int minBound_Whip,    int maxBound_Whip,    int whipDuration, int lineLength)
         {
             int rows = mHori.GetLength(0);
@@ -408,7 +405,7 @@ namespace AnalysisPrograms
                 }
 
             } //for all rows
-            
+
             //combine scores and extract events
             var scores = new double[rows];
             for (int i = 0; i < whipScores.Length; i++)
@@ -509,7 +506,7 @@ namespace AnalysisPrograms
                 //    intensity = DataTools.normalise(intensity);
                 //    image.AddTrack(Image_Track.GetScoreTrack(intensity, 0.0, 1.0, eventThreshold));
                 //}
-                //image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount); 
+                //image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount);
                 image.Save(path);
             }
         }

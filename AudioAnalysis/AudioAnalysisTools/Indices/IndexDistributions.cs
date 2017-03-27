@@ -89,7 +89,7 @@ namespace AudioAnalysisTools.Indices
         }
 
         public static Dictionary<string, SpectralStats> ReadSpectralIndexDistributionStatistics(DirectoryInfo opDir, string fileStem)
-        {           
+        {
             FileInfo statsFile = new FileInfo(GetSpectralStatsPath(opDir, fileStem));
             if (!statsFile.Exists)
             {
@@ -102,7 +102,7 @@ namespace AudioAnalysisTools.Indices
         public static Dictionary<string, SpectralStats> WriteSpectralIndexDistributionStatistics(Dictionary<string, double[,]> spectrogramMatrices, DirectoryInfo outputDirectory, string fileStem)
         {
             // to accumulate the images
-            int width = 300;  // pixels 
+            int width = 300;  // pixels
             int height = 100; // pixels
             var imageList = new List<Image>();
             Dictionary<string, SpectralStats> indexDistributionStatistics = new Dictionary<string, SpectralStats>();
@@ -149,7 +149,7 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="matrix"></param>
         /// <param name="width"></param>
@@ -161,7 +161,7 @@ namespace AudioAnalysisTools.Indices
             SpectralStats stats = GetModeAndOneTailedStandardDeviation(matrix, width, IndexDistributions.UPPER_PERCENTILE_DEFAULT);
             double value = stats.GetValueOfNthPercentile(IndexDistributions.UPPER_PERCENTILE_DEFAULT);
 
-            var image = 
+            var image =
                 ImageTools.DrawHistogram(
                     label,
                     stats.Distribution,
@@ -180,13 +180,13 @@ namespace AudioAnalysisTools.Indices
             return image;
         }
 
-    
+
 
 
     public static Dictionary<string, SpectralStats> WriteSummaryIndexDistributionStatistics(Dictionary<string, double[]> summaryIndices, DirectoryInfo outputDirectory, string fileStem)
         {
             // to accumulate the images
-            int width = 100;  // pixels 
+            int width = 100;  // pixels
             int height = 100; // pixels
             var imageList = new List<Image>();
             Dictionary<string, SpectralStats> indexDistributionStatistics = new Dictionary<string, SpectralStats>();
@@ -234,7 +234,7 @@ namespace AudioAnalysisTools.Indices
 
         public static SpectralStats GetModeAndOneTailedStandardDeviation(double[,] M)
         {
-            int binCount = 100; 
+            int binCount = 100;
             int upperPercentile = 0;
             double[] values = DataTools.Matrix2Array(M);
             const bool DisplayHistogram = false;
@@ -249,7 +249,7 @@ namespace AudioAnalysisTools.Indices
                 Mode = mode,
                 StandardDeviation = SD,
                 UpperPercentile = upperPercentile,
-                Distribution = histogram
+                Distribution = histogram,
             };
         }
 
@@ -274,7 +274,7 @@ namespace AudioAnalysisTools.Indices
                 StandardDeviation = SD,
                 UpperPercentile = upperPercentile,
                 Distribution = histogram,
-                Count = values.Length
+                Count = values.Length,
             };
         }
 

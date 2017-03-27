@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace QutBioacosutics.Xie.Configuration
+﻿namespace QutBioacosutics.Xie.Configuration
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     public class FallaxConfiguration
     {
         public double AmplitudeThresholdFallax { get; set; }
@@ -39,13 +39,13 @@ namespace QutBioacosutics.Xie.Configuration
             //int rangeFallax = configuration.RangeFallax;                                // Frame---the distance in either side for selecting peaks
             //int distanceFallax = configuration.DistanceFallax;                          // Frame---remove near peaks
             // Track parameters
-            BinToleranceFallax = configuration.BinToleranceFallax;                 // Bin---the fluctuation of the dominant frequency bin 
-            FrameThresholdFallax = configuration.FrameThresholdFallax;              // Frame---frame numbers of the silence    
+            BinToleranceFallax = configuration.BinToleranceFallax;                 // Bin---the fluctuation of the dominant frequency bin
+            FrameThresholdFallax = configuration.FrameThresholdFallax;              // Frame---frame numbers of the silence
             TrackDurationThresholdFallax = configuration.TrackDurationThresholdFallax;
-            TrackThresholdFallax = configuration.TrackThresholdFallax;           // Used for calculating the percent of peaks in one track    
+            TrackThresholdFallax = configuration.TrackThresholdFallax;           // Used for calculating the percent of peaks in one track
             MaximumTrackDurationFallax = configuration.MaximumTrackDurationFallax;  // Minimum duration of tracks
-            MinimumTrackDurationFallax = configuration.MinimumTrackDurationFallax;  // Maximum duration of tracks   
-            BinDifferencFallax = configuration.BinDifferenceFallax;             // Difference between the highest and lowest bins   
+            MinimumTrackDurationFallax = configuration.MinimumTrackDurationFallax;  // Maximum duration of tracks
+            BinDifferencFallax = configuration.BinDifferenceFallax;             // Difference between the highest and lowest bins
             // Band tracks parameters
             FrequencyLowFallax = configuration.FrequencyLowFallax;
             FrequencyHighFallax = configuration.FrequencyHighFallax;

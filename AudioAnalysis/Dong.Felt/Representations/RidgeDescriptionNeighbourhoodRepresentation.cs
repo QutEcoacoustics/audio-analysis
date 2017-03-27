@@ -1,17 +1,17 @@
-﻿using AudioAnalysisTools;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using AudioAnalysisTools.StandardSpectrograms;
-using Dong.Felt.Configuration;
-using TowseyLibrary;
-using System.IO;
-using Dong.Felt.Preprocessing;
-
-namespace Dong.Felt.Representations
+﻿namespace Dong.Felt.Representations
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using Dong.Felt.Configuration;
+    using Dong.Felt.Preprocessing;
+    using TowseyLibrary;
+
     public class RidgeDescriptionNeighbourhoodRepresentation
     {
         public const string FeaturePropSet1 = "FeaturePropSet1";
@@ -23,7 +23,7 @@ namespace Dong.Felt.Representations
         public const string FeaturePropSet6 = "FeaturePropSet6";
         // fft features
         public const string FeaturePropSet7 = "FeaturePropSet7";
-        // 8 directional histogram-based on original HOG 
+        // 8 directional histogram-based on original HOG
         public const string FeaturePropSet8 = "FeaturePropSet8";
         // only entropy of poi in rows and cols
         public const string FeaturePropSet9 = "FeaturePropSet9";
@@ -82,47 +82,47 @@ namespace Dong.Felt.Representations
         /// </summary>
         public double NDOrientationPOIHistogram { get; set; }
         /// <summary>
-        /// To get or set the the percentage of pointsOfinterest in a neighbourhood.  
+        /// To get or set the the percentage of pointsOfinterest in a neighbourhood.
         /// </summary>
         public double POICountPercentage { get; set; }
 
         /// <summary>
-        /// To get or set the the ColumnEnergyEntropy of pointsOfinterest in a neighbourhood.  
+        /// To get or set the the ColumnEnergyEntropy of pointsOfinterest in a neighbourhood.
         /// </summary>
         public double ColumnEnergyEntropy { get; set; }
 
         /// <summary>
-        /// To get or set the the RowEnergyEntropy of pointsOfinterest in a neighbourhood.  
+        /// To get or set the the RowEnergyEntropy of pointsOfinterest in a neighbourhood.
         /// </summary>
         public double RowEnergyEntropy { get; set; }
 
         /// <summary>
-        /// To get or set the the pointsOfinterest count in a neighbourhood. 
+        /// To get or set the the pointsOfinterest count in a neighbourhood.
         /// </summary>
         public int POICount { get; set; }
 
         /// <summary>
-        /// If the neighbourhood is a square, it could be odd numbers. 
+        /// If the neighbourhood is a square, it could be odd numbers.
         /// </summary>
         public int neighbourhoodSize { get; set; }
 
         /// <summary>
-        /// A feature vector could contain any double values for subsequent matching. 
+        /// A feature vector could contain any double values for subsequent matching.
         /// </summary>
         internal List<double> FeatureVector { get; set; }
 
         /// <summary>
-        /// gets or sets the rowIndex of a neighbourhood, which indicates the frequency value, its unit is herz. 
+        /// gets or sets the rowIndex of a neighbourhood, which indicates the frequency value, its unit is herz.
         /// </summary>
         public double FrequencyIndex { get; set; }
 
         /// <summary>
-        /// gets or sets the FrameIndex of a neighbourhood, which indicates the frame, its unit is milliseconds. 
+        /// gets or sets the FrameIndex of a neighbourhood, which indicates the frame, its unit is milliseconds.
         /// </summary>
         public double FrameIndex { get; set; }
 
         /// <summary>
-        /// gets or sets the widthPx of a neighbourhood in pixels. 
+        /// gets or sets the widthPx of a neighbourhood in pixels.
         /// </summary>
         public int WidthPx { get; set; }
 
@@ -132,7 +132,7 @@ namespace Dong.Felt.Representations
         public int HeightPx { get; set; }
 
         /// <summary>
-        /// gets or sets the Duration of a neighbourhood in millisecond, notice here the unit is millisecond. 
+        /// gets or sets the Duration of a neighbourhood in millisecond, notice here the unit is millisecond.
         /// </summary>
         public TimeSpan Duration { get; set; }
 
@@ -147,12 +147,12 @@ namespace Dong.Felt.Representations
         public bool IsSquare { get { return this.WidthPx == this.HeightPx; } }
 
         /// <summary>
-        /// The magnitude is the original score for a neighbourhood. 
+        /// The magnitude is the original score for a neighbourhood.
         /// </summary>
         public double magnitude { get; set; }
 
         /// <summary>
-        /// gets or sets the orientation for a neighbourhood.  
+        /// gets or sets the orientation for a neighbourhood.
         /// </summary>
         public double orientation { get; set; }
 
@@ -364,7 +364,7 @@ namespace Dong.Felt.Representations
         public void SetDominantNeighbourhoodRepresentation(PointOfInterest[,] neighbourhood, int pointX, int pointY, int neighbourhoodLength, SpectrogramConfiguration spectrogramConfig)
         {
             var frequencyScale = spectrogramConfig.FrequencyScale;
-            var timeScale = spectrogramConfig.TimeScale; // millisecond - ms      
+            var timeScale = spectrogramConfig.TimeScale; // millisecond - ms
 
             var ridgeNeighbourhoodFeatureVector = RectangularRepresentation.SliceRidgeRepresentation(neighbourhood, pointX, pointY);
             var ridgeDominantOrientationRepresentation = RectangularRepresentation.SliceMainSlopeRepresentation(ridgeNeighbourhoodFeatureVector);
@@ -398,8 +398,8 @@ namespace Dong.Felt.Representations
         }
 
         /// <summary>
-        /// To set the neighbourhood representation using a vector which contains the maginitude and orientation. 
-        /// The result can be obtained by calculating the X and Y components. 
+        /// To set the neighbourhood representation using a vector which contains the maginitude and orientation.
+        /// The result can be obtained by calculating the X and Y components.
         /// </summary>
         /// <param name="neighbourhood"></param>
         /// <param name="pointX"></param>
@@ -465,10 +465,10 @@ namespace Dong.Felt.Representations
                 {
                     FrequencyScale = spectrogram.FBinWidth,
                     TimeScale = (spectrogram.FrameDuration - spectrogram.FrameStep) * secondToMillionSecondUnit,
-                    NyquistFrequency = spectrogram.NyquistFrequency
+                    NyquistFrequency = spectrogram.NyquistFrequency,
                 };
                 var queryRidges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
-                var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
+                var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line.
                 var cols = spectrogram.Data.GetLength(0);
                 var ridgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(queryRidges, rows, cols,
                 neighbourhoodLength, featurePropSet, spectrogramConfig, compressConfig);
@@ -549,7 +549,7 @@ namespace Dong.Felt.Representations
                     {
                         if (pointsOfInterest[colIndex, rowIndex].RidgeMagnitude != 0)
                         {
-                            // added if will consider the orientation, comment it will not consider the orientation. 
+                            // added if will consider the orientation, comment it will not consider the orientation.
                             //if (pointsOfInterest[colIndex, rowIndex].OrientationCategory == (int)Direction.North)
                             //{
                             //columnEnergy[rowIndex] += 1.0;   // Count of POI
@@ -603,13 +603,13 @@ namespace Dong.Felt.Representations
         /// <param name="row"></param>
         /// <param name="col"></param>
         /// <param name="spectrogramConfig"></param>
-        public void FeatureSet5Representation(PointOfInterest[,] pointsOfInterest, int row, int col, 
+        public void FeatureSet5Representation(PointOfInterest[,] pointsOfInterest, int row, int col,
             SpectrogramConfiguration spectrogramConfig, CompressSpectrogramConfig compressConfig)
         {
             var EastBin = 0.0;
             var NorthEastBin = 0.0;
             var NorthBin = 0.0;
-            var NorthWestBin = 0.0;          
+            var NorthWestBin = 0.0;
             var frequencyScale = spectrogramConfig.FrequencyScale;
             var timeScale = spectrogramConfig.TimeScale; // millisecond
             for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
@@ -619,11 +619,11 @@ namespace Dong.Felt.Representations
                     if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
                     {
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
-                        {                                                       
+                        {
                             EastBin += 1.0;
                         }
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthEast)
-                        {                           
+                        {
                             NorthEastBin += 1.0;
                         }
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
@@ -631,7 +631,7 @@ namespace Dong.Felt.Representations
                             NorthBin += 1.0;
                         }
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthWest)
-                        {                            
+                        {
                             NorthWestBin += 1.0;
                         }
                     }
@@ -671,7 +671,7 @@ namespace Dong.Felt.Representations
                     {
                         if (pointsOfInterest[colIndex, rowIndex].RidgeMagnitude != 0)
                         {
-                            // added if will consider the orientation, comment it will not consider the orientation. 
+                            // added if will consider the orientation, comment it will not consider the orientation.
                             //if (pointsOfInterest[colIndex, rowIndex].OrientationCategory == (int)Direction.North)
                             //{
                             //columnEnergy[rowIndex] += 1.0;   // Count of POI
@@ -764,7 +764,7 @@ namespace Dong.Felt.Representations
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
             GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
-            var sumPOIMagnitude = (double)(EastBin + NorthEastBin + NorthBin + NorthWestBin);            
+            var sumPOIMagnitude = (double)(EastBin + NorthEastBin + NorthBin + NorthWestBin);
 
             if (sumPOIMagnitude == 0)
             {
@@ -830,7 +830,7 @@ namespace Dong.Felt.Representations
 
         /// <summary>
         /// This version is trying to calculate the featureSet5 based on POI count.
-        /// It contains 8 histogram bins. 
+        /// It contains 8 histogram bins.
         /// </summary>
         /// <param name="pointsOfInterest"></param>
         /// <param name="row"></param>
@@ -908,7 +908,7 @@ namespace Dong.Felt.Representations
                 this.Orientation4POIMagnitude = 0.0;
                 this.Orientation5POIMagnitude = 0.0;
                 this.Orientation6POIMagnitude = 0.0;
-                this.Orientation7POIMagnitude = 0.0;              
+                this.Orientation7POIMagnitude = 0.0;
             }
             else
             {
@@ -927,7 +927,7 @@ namespace Dong.Felt.Representations
 
         /// <summary>
         /// This version is trying to calculate the featureSet5 presentation combining ridges historgram poi count based and entropy.
-        /// It contains 8 histogram bins + 2 entropy. 
+        /// It contains 8 histogram bins + 2 entropy.
         /// </summary>
         /// <param name="pointsOfInterest"></param>
         /// <param name="row"></param>
@@ -1028,7 +1028,7 @@ namespace Dong.Felt.Representations
                         if (pointsOfInterest[colIndex, rowIndex].RidgeMagnitude != 0)
                         {
                             var magnitude = pointsOfInterest[colIndex, rowIndex].RidgeMagnitude;
-                            columnEnergy[rowIndex] += magnitude;                            
+                            columnEnergy[rowIndex] += magnitude;
                         }
                     }
                 }
@@ -1038,7 +1038,7 @@ namespace Dong.Felt.Representations
                     for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
                     {
                         if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
-                        {                            
+                        {
                             var magnitude = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
                             rowEnergy[rowIndex] += magnitude;
                         }
@@ -1067,7 +1067,7 @@ namespace Dong.Felt.Representations
 
         /// <summary>
         /// This version is trying to calculate the featureSet5 presentation combining ridges historgram magnitude based and entropy.
-        /// It contains 8 histogram bins + 2 entropy. 
+        /// It contains 8 histogram bins + 2 entropy.
         /// </summary>
         /// <param name="pointsOfInterest"></param>
         /// <param name="row"></param>
@@ -1136,7 +1136,7 @@ namespace Dong.Felt.Representations
 
             this.POIMagnitudeSum = (double)(Bin0 + Bin1 + Bin2 + Bin3 + Bin4 + Bin5 + Bin6 + Bin7);
             var maxPOICount = 3.0 * pointsOfInterest.GetLength(0);
-            var maxPOIMagnitude = maxPOICount * 10.0;            
+            var maxPOIMagnitude = maxPOICount * 10.0;
             if (this.POIMagnitudeSum == 0)
             {
                 this.Orientation0POIMagnitude = 0.0;
@@ -1208,14 +1208,14 @@ namespace Dong.Felt.Representations
 
         /// <summary>
         /// This version of feature set 6 representation use magnitudes of poi to calculate featureset.
-        /// This feature vector contains 8 values for 8 directional edges. 
+        /// This feature vector contains 8 values for 8 directional edges.
         /// </summary>
         /// <param name="pointsOfInterest"></param>
         /// <param name="row"></param>
         /// <param name="col"></param>
         /// <param name="spectrogramConfig"></param>
         public void FeatureSet8Representation(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
-        {           
+        {
             var Bin0 = 0.0;
             var Bin1 = 0.0;
             var Bin2 = 0.0;
@@ -1298,20 +1298,20 @@ namespace Dong.Felt.Representations
                 this.Orientation5POIMagnitude = Bin5 / maxPOIMagnitude;
                 this.Orientation6POIMagnitude = Bin6 / maxPOIMagnitude;
                 this.Orientation7POIMagnitude = Bin7 / maxPOIMagnitude;
-            }               
+            }
         }
 
         /// <summary>
         /// This version of feature set 9 representation.
-        /// This feature vector contains 2 values for 4 directional ridges. 
+        /// This feature vector contains 2 values for 4 directional ridges.
         /// </summary>
         /// <param name="pointsOfInterest"></param>
         /// <param name="row"></param>
         /// <param name="col"></param>
         /// <param name="spectrogramConfig"></param>
         public void FeatureSet9Representation(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
-        {         
-                        
+        {
+
             double sumPOICount = 0;
             var frequencyScale = spectrogramConfig.FrequencyScale;
             var timeScale = spectrogramConfig.TimeScale; // millisecond
@@ -1333,7 +1333,7 @@ namespace Dong.Felt.Representations
             GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
             if (sumPOICount == 0)
-            {                
+            {
                 this.ColumnEnergyEntropy = 0.0;
                 this.RowEnergyEntropy = 0.0;
             }
@@ -1345,10 +1345,10 @@ namespace Dong.Felt.Representations
                     for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
                     {
                         if (pointsOfInterest[colIndex, rowIndex].RidgeMagnitude != 0)
-                        {                            
+                        {
                             var magnitude = pointsOfInterest[colIndex, rowIndex].RidgeMagnitude;
                             columnEnergy[rowIndex] += magnitude;
-                            
+
                         }
                     }
                 }
@@ -1358,9 +1358,9 @@ namespace Dong.Felt.Representations
                     for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
                     {
                         if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
-                        {                           
+                        {
                             var magnitude = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
-                            rowEnergy[rowIndex] += magnitude;                           
+                            rowEnergy[rowIndex] += magnitude;
                         }
                     }
                 }
@@ -1382,12 +1382,12 @@ namespace Dong.Felt.Representations
                 {
                     this.RowEnergyEntropy = rowEnergyEntropy;
                 }
-            }          
+            }
         }
 
         /// <summary>
         /// This version of feature set 10 representation.
-        /// This feature vector contains information about position of poi. 
+        /// This feature vector contains information about position of poi.
         /// </summary>
         /// <param name="pointsOfInterest"></param>
         /// <param name="row"></param>
@@ -1414,13 +1414,13 @@ namespace Dong.Felt.Representations
                         list.Add(newPoint);
                     }
                 }
-            }           
-            this.PointList = list;         
+            }
+            this.PointList = list;
         }
 
         /// <summary>
         /// This version of feature set 6 representation use poi count to calculate featureset.
-        /// This feature vector contains 8 values for 8 directional edges. 
+        /// This feature vector contains 8 values for 8 directional edges.
         /// </summary>
         /// <param name="pointsOfInterest"></param>
         /// <param name="row"></param>
@@ -1515,7 +1515,7 @@ namespace Dong.Felt.Representations
 
         /// <summary>
         /// This version of feature set 14 representation use gradient count to calculate featureset.
-        /// This feature vector contains 4 values for 4 directional edges. 
+        /// This feature vector contains 4 values for 4 directional edges.
         /// </summary>
         /// <param name="pointsOfInterest"></param>
         /// <param name="row"></param>
@@ -1562,7 +1562,7 @@ namespace Dong.Felt.Representations
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
             GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
             this.POICount = Bin0 + Bin1 + Bin2 + Bin3;
-            var maxPOICount = 4.0 * pointsOfInterest.GetLength(0);            
+            var maxPOICount = 4.0 * pointsOfInterest.GetLength(0);
             if (this.POICount == 0)
             {
                 this.Orientation0POIMagnitude = 0.0;
@@ -1581,7 +1581,7 @@ namespace Dong.Felt.Representations
 
         /// <summary>
         /// This version of feature set 15 representation use magnitudes of poi to calculate featureset.
-        /// This feature vector contains 4 values for 4 directional edges. 
+        /// This feature vector contains 4 values for 4 directional edges.
         /// </summary>
         /// <param name="pointsOfInterest"></param>
         /// <param name="row"></param>
@@ -1592,7 +1592,7 @@ namespace Dong.Felt.Representations
             var Bin0 = 0.0;
             var Bin1 = 0.0;
             var Bin2 = 0.0;
-            var Bin3 = 0.0;            
+            var Bin3 = 0.0;
             var frequencyScale = spectrogramConfig.FrequencyScale;
             var timeScale = spectrogramConfig.TimeScale; // millisecond
             for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
@@ -1616,7 +1616,7 @@ namespace Dong.Felt.Representations
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 6)
                         {
                             Bin3 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
-                        }                        
+                        }
                     }
                 }
             }
@@ -1635,14 +1635,14 @@ namespace Dong.Felt.Representations
                 this.Orientation0POIMagnitude = 0.0;
                 this.Orientation1POIMagnitude = 0.0;
                 this.Orientation2POIMagnitude = 0.0;
-                this.Orientation3POIMagnitude = 0.0;               
+                this.Orientation3POIMagnitude = 0.0;
             }
             else
             {
                 this.Orientation0POIMagnitude = Bin0 / maxPOIMagnitude;
                 this.Orientation1POIMagnitude = Bin1 / maxPOIMagnitude;
                 this.Orientation2POIMagnitude = Bin2 / maxPOIMagnitude;
-                this.Orientation3POIMagnitude = Bin3 / maxPOIMagnitude;                
+                this.Orientation3POIMagnitude = Bin3 / maxPOIMagnitude;
             }
         }
 
@@ -1710,7 +1710,7 @@ namespace Dong.Felt.Representations
             var EastBin = 0.0;
             var NorthEastBin = 0.0;
             var NorthBin = 0.0;
-            var NorthWestBin = 0.0;          
+            var NorthWestBin = 0.0;
             var frequencyScale = spectrogramConfig.FrequencyScale;
             var timeScale = spectrogramConfig.TimeScale; // millisecond
             for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
@@ -1720,11 +1720,11 @@ namespace Dong.Felt.Representations
                     if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
                     {
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
-                        {                                                       
+                        {
                             EastBin += 1.0;
                         }
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthEast)
-                        {                           
+                        {
                             NorthEastBin += 1.0;
                         }
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
@@ -1732,7 +1732,7 @@ namespace Dong.Felt.Representations
                             NorthBin += 1.0;
                         }
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthWest)
-                        {                            
+                        {
                             NorthWestBin += 1.0;
                         }
                     }
@@ -1817,7 +1817,7 @@ namespace Dong.Felt.Representations
                     hSlope = Math.Atan(slopeTemp);
                     hYIntersect = meanY - hSlope * meanX;
                 }
-                else   // if the slope is 90 degree. 
+                else   // if the slope is 90 degree.
                 {
                     hSlope = Math.PI / 2;
                     hYIntersect = 0.0;
@@ -1865,7 +1865,7 @@ namespace Dong.Felt.Representations
                     vSlope = Math.Atan(slopeTemp);
                     vYIntersect = meanY - vSlope * meanX;
                 }
-                else   // if the slope is 90 degree. 
+                else   // if the slope is 90 degree.
                 {
                     vSlope = Math.PI / 2;
                     vYIntersect = 0.0;
@@ -1901,7 +1901,7 @@ namespace Dong.Felt.Representations
         }
 
         /// <summary>
-        /// This method uses the line of best fit to calculate the orientation of a Nh. In particular, the slope is regarded as orientation.  
+        /// This method uses the line of best fit to calculate the orientation of a Nh. In particular, the slope is regarded as orientation.
         /// </summary>
         /// <param name="pointsOfInterest"></param>
         /// <param name="row"></param>
@@ -1910,7 +1910,7 @@ namespace Dong.Felt.Representations
         public void BestFitLineNhRepresentation(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
         {
             var frequencyScale = spectrogramConfig.FrequencyScale;
-            var timeScale = spectrogramConfig.TimeScale; // millisecond           
+            var timeScale = spectrogramConfig.TimeScale; // millisecond
             var sumXInNh = 0.0;
             var sumYInNh = 0.0;
             var sumSquareX = 0.0;
@@ -1956,7 +1956,7 @@ namespace Dong.Felt.Representations
                     yIntersect = meanY - slope * meanX;
 
                 }
-                else   // if the slope is 90 degree. 
+                else   // if the slope is 90 degree.
                 {
                     slope = Math.PI / 2;
                     yIntersect = 0.0;
@@ -1981,10 +1981,10 @@ namespace Dong.Felt.Representations
         }
 
         /// <summary>
-        /// This one will use mask-based method to obtain the NH vector.The final result will include 12 direction possibilities. 
+        /// This one will use mask-based method to obtain the NH vector.The final result will include 12 direction possibilities.
         /// </summary>
         /// <param name="pointsOfInterest">
-        /// It takes into a neighbourhood * neighbourhood size of pointOfInterest. 
+        /// It takes into a neighbourhood * neighbourhood size of pointOfInterest.
         /// </param>
         /// <param name="row"></param>
         /// <param name="col"></param>
@@ -1993,7 +1993,7 @@ namespace Dong.Felt.Representations
         public void SetNeighbourhoodVectorRepresentation2(PointOfInterest[,] pointsOfInterest, int row, int col, int neighbourhoodLength, SpectrogramConfiguration spectrogramConfig)
         {
             var frequencyScale = spectrogramConfig.FrequencyScale;
-            var timeScale = spectrogramConfig.TimeScale; // millisecond               
+            var timeScale = spectrogramConfig.TimeScale; // millisecond
             var m = new double[neighbourhoodLength, neighbourhoodLength];
             for (int rowIndex = 0; rowIndex < neighbourhoodLength; rowIndex++)
             {
@@ -2016,7 +2016,7 @@ namespace Dong.Felt.Representations
                 }
             }
             var proportionParameter = 0.15;
-            var poiCountThreshold = (int)neighbourhoodLength * neighbourhoodLength * proportionParameter;           
+            var poiCountThreshold = (int)neighbourhoodLength * neighbourhoodLength * proportionParameter;
             this.magnitude = magnitude;
             this.orientation = direction;
             FrameIndex = col * timeScale;
@@ -2026,7 +2026,7 @@ namespace Dong.Felt.Representations
         }
 
         /// <summary>
-        /// This method is used for obtaining the general representation based on different orientations. 
+        /// This method is used for obtaining the general representation based on different orientations.
         /// </summary>
         /// <param name="neighbourhood"></param>
         public void GetNeighbourhoodRepresentationPOIProperty(PointOfInterest[,] poiNeighbourhood)
@@ -2077,7 +2077,7 @@ namespace Dong.Felt.Representations
             else
             {
                 this.POICountPercentage = this.POICount / (double)POICountMaximum;
-            }           
+            }
         }
 
         public static List<RidgeDescriptionNeighbourhoodRepresentation> CombinedNhRepresentation(List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNhRrepresentation,
@@ -2102,7 +2102,7 @@ namespace Dong.Felt.Representations
                  featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19 ||
                  featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20 ||
                  featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet21 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet22 
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet22
                     )
                 {
                     item = ridgeNhRrepresentation[c];
@@ -2122,12 +2122,12 @@ namespace Dong.Felt.Representations
                     item = gradientNhRepresentation[c];
                     item.ColumnEnergyEntropy = ridgeNhRrepresentation[c].ColumnEnergyEntropy;
                     item.RowEnergyEntropy = ridgeNhRrepresentation[c].RowEnergyEntropy;
-                } 
+                }
                 result.Add(item);
             }
-            return result; 
+            return result;
         }
-      
+
         public static List<RidgeDescriptionNeighbourhoodRepresentation> FromAudioFilePointOfInterestList(List<PointOfInterest> poiList,
             int rowsCount, int colsCount, int neighbourhoodLength, string featurePropertySet,
             SpectrogramConfiguration spectrogramConfig, CompressSpectrogramConfig compressConfig)
@@ -2158,29 +2158,29 @@ namespace Dong.Felt.Representations
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11)
                         {
-                            // This one is similar to featureSet5, but based on POI Magnitude. 
+                            // This one is similar to featureSet5, but based on POI Magnitude.
                             ridgeNeighbourhoodRepresentation.FeatureSet11Representation(subMatrix, row, col, spectrogramConfig);
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
                         {
-                            // This one is similar to featureSet5, but give more directions. 
+                            // This one is similar to featureSet5, but give more directions.
                             ridgeNeighbourhoodRepresentation.FeatureSet5Representation2(subMatrix, row, col, spectrogramConfig);
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6 ||
                             featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12)
-                        {                                                    
+                        {
                             ridgeNeighbourhoodRepresentation.FeatureSet6Representation(subMatrix, row, col, spectrogramConfig);
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8)
                         {
-                            ridgeNeighbourhoodRepresentation.FeatureSet8Representation(subMatrix, row, col, spectrogramConfig);                           
+                            ridgeNeighbourhoodRepresentation.FeatureSet8Representation(subMatrix, row, col, spectrogramConfig);
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9)
                         {
                             ridgeNeighbourhoodRepresentation.FeatureSet9Representation(subMatrix, row, col, spectrogramConfig);
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10)
-                        {                           
+                        {
                             var instance = new RidgeDescriptionNeighbourhoodRepresentation(new List<Point>());
                             instance.FeatureSet10Representation(subMatrix, row, col, spectrogramConfig);
                             ridgeNeighbourhoodRepresentation = instance;
@@ -2191,7 +2191,7 @@ namespace Dong.Felt.Representations
             }
             return result;
         }
-       
+
         /// <summary>
         /// This one is for freq compression only.
         /// </summary>
@@ -2234,8 +2234,8 @@ namespace Dong.Felt.Representations
                             ridgeNeighbourhoodRepresentation.FeatureSet4Representation(subMatrix, row, col, spectrogramConfig);
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5)
-                        {                           
-                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation(subMatrix, row, col, 
+                        {
+                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation(subMatrix, row, col,
                                 spectrogramConfig, compressConfig);
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9 ||
@@ -2248,15 +2248,15 @@ namespace Dong.Felt.Representations
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11)
                         {
-                            // This one is similar to featureSet5, but based on POI Magnitude. 
+                            // This one is similar to featureSet5, but based on POI Magnitude.
                             ridgeNeighbourhoodRepresentation.FeatureSet11Representation(subMatrix, row, col, spectrogramConfig);
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
-                            
+
                         {
-                            // This one is similar to featureSet5, but give more directions. 
+                            // This one is similar to featureSet5, but give more directions.
                             ridgeNeighbourhoodRepresentation.FeatureSet5Representation2(subMatrix, row, col, spectrogramConfig);
-                        } 
+                        }
                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19)
                        {
                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation3(subMatrix, row, col, spectrogramConfig);
@@ -2266,7 +2266,7 @@ namespace Dong.Felt.Representations
                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation4(subMatrix, row, col, spectrogramConfig);
                        }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10)
-                        {                           
+                        {
                             var instance = new RidgeDescriptionNeighbourhoodRepresentation(new List<Point>());
                             instance.FeatureSet10Representation(subMatrix, row, col, spectrogramConfig);
                             ridgeNeighbourhoodRepresentation = instance;
@@ -2336,12 +2336,12 @@ namespace Dong.Felt.Representations
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11)
                         {
-                            // This one is similar to featureSet5, but based on POI Magnitude. 
+                            // This one is similar to featureSet5, but based on POI Magnitude.
                             ridgeNeighbourhoodRepresentation.FeatureSet11Representation(subMatrix, row, col, spectrogramConfig);
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
                         {
-                            // This one is similar to featureSet5, but give more directions. 
+                            // This one is similar to featureSet5, but give more directions.
                             ridgeNeighbourhoodRepresentation.FeatureSet5Representation2(subMatrix, row, col, spectrogramConfig);
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19)
@@ -2364,7 +2364,7 @@ namespace Dong.Felt.Representations
             }
             return result;
         }
- 
+
         public static List<RidgeDescriptionNeighbourhoodRepresentation> FromGradientPOIList(List<PointOfInterest> gradientList,
             int rowsCount, int colsCount, int neighbourhoodLength, string featurePropertySet,
             SpectrogramConfiguration spectrogramConfig)
@@ -2384,13 +2384,13 @@ namespace Dong.Felt.Representations
                             if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6 ||
                                 featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12)
                             {
-                                // this one is used for HoG 8 poi count based. 
+                                // this one is used for HoG 8 poi count based.
                                 ridgeNeighbourhoodRepresentation.FeatureSet6Representation(subMatrix, row, col, spectrogramConfig);
                             }
                             if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8 ||
                                 featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13)
                             {
-                                //This one is used for HoG 8 magnitude based. 
+                                //This one is used for HoG 8 magnitude based.
                                 ridgeNeighbourhoodRepresentation.FeatureSet8Representation(subMatrix, row, col, spectrogramConfig);
                             }
                             if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet14 ||
@@ -2411,7 +2411,7 @@ namespace Dong.Felt.Representations
             return result;
         }
 
-        
+
         public static RidgeDescriptionNeighbourhoodRepresentation FromNeighbourhoodCsv(IEnumerable<string> lines)
         {
             // assume csv file is laid out as we expect it to be.
@@ -2511,7 +2511,7 @@ namespace Dong.Felt.Representations
         }
 
         /// <summary>
-        /// This method is used for reconstruct the spectrogram with ridge neighbourhood representation, it can be done by show ridge neighbourhood representation on image. 
+        /// This method is used for reconstruct the spectrogram with ridge neighbourhood representation, it can be done by show ridge neighbourhood representation on image.
         /// </summary>
         /// <param name="graphics"></param>
         /// <param name="nhRepresentation"></param>
@@ -2544,7 +2544,7 @@ namespace Dong.Felt.Representations
             var greenBrush = new SolidBrush(Color.Green);
             var purpleBrush = new SolidBrush(Color.Purple);
 
-            if (orientation > -Math.PI / 8 && orientation <= Math.PI / 8)  // fill the neighbourhood with horizontal lines. 
+            if (orientation > -Math.PI / 8 && orientation <= Math.PI / 8)  // fill the neighbourhood with horizontal lines.
             {
                 if (score == 1)
                 {
@@ -2600,7 +2600,7 @@ namespace Dong.Felt.Representations
         }
 
         /// <summary>
-        /// This method is used to fill the neighbourhood by drawing lines. The lines can be horizontal, vertical, diagonal. 
+        /// This method is used to fill the neighbourhood by drawing lines. The lines can be horizontal, vertical, diagonal.
         /// </summary>
         /// <param name="graphics"></param>
         /// <param name="brush"></param>
@@ -2626,7 +2626,7 @@ namespace Dong.Felt.Representations
             var purplePen = new Pen(Color.Purple);
             if (times > 0)
             {
-                if (orientationType == 0)  // fill the neighbourhood with horizontal lines. 
+                if (orientationType == 0)  // fill the neighbourhood with horizontal lines.
                 {
                     for (int index = 1; index <= maxIntegerIndex; index++)
                     {
@@ -2654,8 +2654,8 @@ namespace Dong.Felt.Representations
                         graphics.FillRectangle(redBrush, startPointX, startPointY - nhRadius + modOffset, modValue, 1);
                         //graphics.FillRectangle(greyBrush, startPointX, startPointY - nhRadius + modOffset, modValue, 1);
                     }
-                }//end if orientation  
-                // need to think more about it. 
+                }//end if orientation
+                // need to think more about it.
                 if (orientationType == 2)  //fill in the line above the diagonal centroid of nh.
                 {
                     for (int index = 1; index <= maxIntegerIndex; index++)
@@ -2675,7 +2675,7 @@ namespace Dong.Felt.Representations
                             graphics.DrawLine(greenPen, startPoint, endPoint);
                         }
                     } // end for
-                    // maybe need to fix these lines. If the modValue is 1, we have to use fillRectangle. 
+                    // maybe need to fix these lines. If the modValue is 1, we have to use fillRectangle.
                     if (modOffset % 2 == 0)
                     {
                         var lastStartPoint1 = new Point(startPointX, startPointY - modOffset);
@@ -2688,8 +2688,8 @@ namespace Dong.Felt.Representations
                         var lastEndPoint1 = new Point(startPointX + modValue, startPointY - modValue);
                         graphics.DrawLine(greenPen, lastStartPoint1, lastEndPoint1);
                     }
-                }//end if orientation.  
-                else if (orientationType == 4) // fill the neighbourhood with vertical lines. 
+                }//end if orientation.
+                else if (orientationType == 4) // fill the neighbourhood with vertical lines.
                 {
                     for (int index = 1; index <= maxIntegerIndex; index++)
                     {
@@ -2713,8 +2713,8 @@ namespace Dong.Felt.Representations
                     {
                         graphics.FillRectangle(blueBrush, startPointX + nhRadius + modOffset, startPointY - neighbourhoodLength, 1, modValue);
                     }
-                } // end if orientation.               
-                if (orientationType == 6)  // fill the neighbourhood with horizontal lines. 
+                } // end if orientation.
+                if (orientationType == 6)  // fill the neighbourhood with horizontal lines.
                 {
                     for (int index = 1; index <= maxIntegerIndex; index++)
                     {
@@ -2746,11 +2746,11 @@ namespace Dong.Felt.Representations
                         var lastEndPoint1 = new Point(startPointX + modValue - 1, startPointY - neighbourhoodLength + modValue + 1);
                         graphics.DrawLine(purplePen, lastStartPoint1, lastEndPoint1);
                     }
-                }//end if orientation  
+                }//end if orientation
             }// end if times > 0
             else
             {
-                if (orientationType == 0)  // fill the neighbourhood with horizontal lines. 
+                if (orientationType == 0)  // fill the neighbourhood with horizontal lines.
                 {
                     graphics.FillRectangle(redBrush, startPointX, startPointY - nhRadius, modValue, 1);
                 }
@@ -2789,7 +2789,7 @@ namespace Dong.Felt.Representations
                         {
                             var lastStartPoint1 = new Point(startPointX, startPointY - neighbourhoodLength + 1);
                             var lastEndPoint1 = new Point(startPointX + modValue - 1, startPointY - neighbourhoodLength + modValue);
-                            // drawLine function cann't draw one point, so here we use fill Rectangle. 
+                            // drawLine function cann't draw one point, so here we use fill Rectangle.
                             graphics.FillRectangle(purpleBrush, lastStartPoint1.X, lastStartPoint1.Y, 1, 1);
                         }
                     }

@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-namespace NeuralNets
+﻿namespace NeuralNets
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using TowseyLibrary;
+
     public class VQ
     {
         private const int trainingRepeats = 30;
@@ -137,17 +137,17 @@ namespace NeuralNets
                 }
                 int minID = DataTools.GetMinIndex(euclidDist);
                 error += euclidDist[minID];
-                Clusters[minID].Vectors.Add(initialCluster.Vectors[v]); 
+                Clusters[minID].Vectors.Add(initialCluster.Vectors[v]);
             }
             error /= vectorCount;
             return error;
         }
-       
+
         public double[] Average()
         {
             return (initialCluster.CalculateCentroid());
         }
 
-    
+
     }//end class VQ
 }

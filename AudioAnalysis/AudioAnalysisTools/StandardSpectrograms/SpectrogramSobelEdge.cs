@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-using Acoustics.Tools.Wav;
-using AudioAnalysisTools.DSP;
-
-
-
-namespace AudioAnalysisTools.StandardSpectrograms
+﻿namespace AudioAnalysisTools.StandardSpectrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Tools.Wav;
+    using AudioAnalysisTools.DSP;
+    using TowseyLibrary;
+
     public class SpectrogramSobelEdge : BaseSonogram
     {
         public SpectrogramSobelEdge(string configFile, WavReader wav)

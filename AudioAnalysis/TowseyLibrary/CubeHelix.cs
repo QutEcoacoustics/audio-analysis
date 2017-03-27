@@ -1,15 +1,12 @@
-using ColorMine.ColorSpaces;
-using System;
-using System.Drawing;
-
-
 namespace TowseyLibrary
 {
-
+    using System;
+    using System.Drawing;
+    using ColorMine.ColorSpaces;
 
 public class CubeHelix
         {
-            
+
             const double Radians = Math.PI / 180;
 
             private readonly Hsl colorA;
@@ -110,9 +107,9 @@ public class CubeHelix
                            {
                                R = (luminosity + (amplitude * ((-0.14861 * cosh) + (1.78277 * sinh)))) * 255,
                                G = (luminosity + (amplitude * ((-0.29227 * cosh) - (0.90649 * sinh)))) * 255,
-                               B = (luminosity + (amplitude * (+1.97294 * cosh))) * 255
+                               B = (luminosity + (amplitude * (+1.97294 * cosh))) * 255,
                            };
-                
+
             }
 
 
@@ -313,9 +310,9 @@ public class CubeHelix
         return v < 0x10 ? "0" + s : s;
       }
   
-             * 
-             * 
-             * 
+             *
+             *
+             *
              * **/
 
         public static void DrawTestImage()
@@ -339,7 +336,7 @@ public class CubeHelix
 
         /// <summary>
         /// This HSL values in this method have been set specially for use with the high-resolution zooming spectrograms.
-        /// There are limits to the values that can be used. 
+        /// There are limits to the values that can be used.
         /// The purpose for chaning the default values was to increase the colour saturation.
         /// </summary>
         /// <returns></returns>
@@ -356,7 +353,7 @@ public class CubeHelix
             colorBRgb.H = -240;
             colorBRgb.S = 0.5;
             colorBRgb.L = 1.0;
-                
+
             var cch = new CubeHelix(colorARgb, colorBRgb);
             cch.SetDefaultCubeHelix();
             return cch;

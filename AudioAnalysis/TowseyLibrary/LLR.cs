@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
 
     /// <summary>
     /// This class is used to calculate a simple log likelihood ratio for a matrix
-    /// of counts over two variables that take discrete values. 
+    /// of counts over two variables that take discrete values.
     /// There is no constructor.
     /// All methods are static.
     /// Author: Michael Towsey
@@ -30,8 +29,8 @@ namespace TowseyLibrary
             double value = ColumnRelativeFrequency(table, column, totalCount)* RowRelativeFrequency(table, row, totalCount) * totalCount;
 
             //LoggedConsole.WriteLine("ColRelativeFrequency(matrix, " + column + ", " + sequences + ") = " + ColumnRelativeFrequency(matrix, column, sequences));
-            //LoggedConsole.WriteLine("RowRelativeFrequency(matrix, " + row + ", " + sequences + ") = " + RowRelativeFrequency(matrix, row, sequences));		
-            //LoggedConsole.WriteLine("e(" + row + "," + column + ") = " + value + ", sequences = " + sequences);		
+            //LoggedConsole.WriteLine("RowRelativeFrequency(matrix, " + row + ", " + sequences + ") = " + RowRelativeFrequency(matrix, row, sequences));
+            //LoggedConsole.WriteLine("e(" + row + "," + column + ") = " + value + ", sequences = " + sequences);
             return value;
         }
 
@@ -48,10 +47,10 @@ namespace TowseyLibrary
 		    // first get the total count of instances in the matrix
 		    int totalCount=0;
 		    for(int row = 0; row < rowNum; row++)
-		    { 
+		    {
                 for(int col = 0; col < colNum; col++) totalCount += contingencyTable[row, col];
-		    }	
-			
+		    }
+
 		    //LoggedConsole.WriteLine("sequences: " + sequences);
 		    double[,] llrs = new double[rowNum, colNum];
 		    for(int row = 0; row < rowNum; row++)
@@ -67,7 +66,7 @@ namespace TowseyLibrary
                     double lr = o * totalCount / DataTools.GetRowSum(contingencyTable, row) / DataTools.SumColumn(contingencyTable, col);
                     if (lr == 0) llrs[row, col] = -999.9; // take log to get LLR
 				    else         llrs[row, col] = Math.Log10(lr);
-			    }	
+			    }
 		    } // for all rows and columns
 		    return llrs;
 	    }
@@ -129,7 +128,7 @@ namespace TowseyLibrary
         //table of chi2 distribution critical values
         //left most column is degrees of freedom
         //top row is the p value associated with column.
-        double[,] table = { 
+        double[,] table = {
         {0, 0.995,	0.975,	0.95,    0.20,	0.10,	0.05,	0.025,	0.02,	0.01,	0.005,	0.002,	0.001},
         {1,	0.0000393,	0.000982,   0.00393, 1.642,	2.706,	3.841,	5.024,	5.412,	6.635,	7.879,	9.550,	10.828},
         {2,	0.010,	0.0506,	0.103,  3.219,	4.605,	5.991,	7.378,	7.824,	9.210,	10.597,	12.429,	13.816},
@@ -447,14 +446,14 @@ namespace TowseyLibrary
                         else sb.Append(m[r,c].ToString("F3"));
 
                     //double conf = chiDF1(m[r,c]);
-                    //if(conf < 0.05) sb.append("** p="+conf);		    
+                    //if(conf < 0.05) sb.append("** p="+conf);
                     sb.Append("\t");
                 }
                 sb.Append("\n");
             }
             sb.Append("NOTE: p<0.05 for 2*llr>3.84\n");
             return sb.ToString();
-        } // end WriteLlrMatrix() 
+        } // end WriteLlrMatrix()
 
 
         /// <summary>

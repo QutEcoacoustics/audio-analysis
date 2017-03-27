@@ -43,17 +43,17 @@ namespace Acoustics.Shared
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Coordinate"/> struct. This is a public facing class meant for deserialisation. The serializable parts of this spec are designed NOT to give pin-point lat and longs. The degree of accuracy is determined from the 
+        /// Initializes a new instance of the <see cref="Coordinate"/> struct. This is a public facing class meant for deserialisation. The serializable parts of this spec are designed NOT to give pin-point lat and longs. The degree of accuracy is determined from the
         /// <code>
         /// AccuracyLimit
         /// </code>
         /// constant. Choices for valid values can be found: http://en.wikipedia.org/wiki/Decimal_degrees.
         /// </summary>
         /// <param name="latitude">
-        /// The latitude. 
+        /// The latitude.
         /// </param>
         /// <param name="longitude">
-        /// The longitude. 
+        /// The longitude.
         /// </param>
         public Coordinate(double latitude, double longitude)
         {
@@ -140,7 +140,7 @@ namespace Acoustics.Shared
         /// The get location.
         /// </summary>
         /// <param name="coordinate">
-        /// The coordinate. 
+        /// The coordinate.
         /// </param>
         /// <returns>
         /// The get location.

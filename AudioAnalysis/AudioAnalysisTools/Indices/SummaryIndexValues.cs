@@ -21,9 +21,9 @@ namespace AudioAnalysisTools.Indices
     public class IndexCalculateResult
     {
         public IndexCalculateResult(
-            int freqBinCount, 
-            Dictionary<string, IndexProperties> indexProperties, 
-            TimeSpan indexCalculationDuration, 
+            int freqBinCount,
+            Dictionary<string, IndexProperties> indexProperties,
+            TimeSpan indexCalculationDuration,
             TimeSpan subsegmentOffset)
         {
             TimeSpan durationOfResult = indexCalculationDuration; // subsegment TimeSpan
@@ -37,19 +37,19 @@ namespace AudioAnalysisTools.Indices
 
             this.SummaryIndexValues = new SummaryIndexValues(durationOfResult, indexProperties)
                                           {
-                                              // give the results object an offset value so it can be sorted. 
+                                              // give the results object an offset value so it can be sorted.
                                               StartOffset =
                                                   subsegmentOffsetFromStartOfSource,
                                               SegmentDuration =
-                                                  durationOfResult
+                                                  durationOfResult,
                                           };
             this.SpectralIndexValues = new SpectralIndexValues(freqBinCount, indexProperties)
                                            {
-                                               // give the results object an offset value so it can be sorted. 
+                                               // give the results object an offset value so it can be sorted.
                                                StartOffset =
-                                                   subsegmentOffsetFromStartOfSource, 
+                                                   subsegmentOffsetFromStartOfSource,
                                                SegmentDuration =
-                                                   durationOfResult
+                                                   durationOfResult,
                                            };
         }
 
@@ -186,7 +186,7 @@ namespace AudioAnalysisTools.Indices
                 var selector = keyValuePair.Value;
 
                 CachedSelectorsInternal.Add(
-                    keyValuePair.Key, 
+                    keyValuePair.Key,
                     spectrumBase => selector((SpectralIndexValues)spectrumBase));
             }
 
@@ -303,10 +303,10 @@ namespace AudioAnalysisTools.Indices
         public double[] POW { get; set; }
 
         /// Spectral Ridges Horizontal
-        public double[] RHZ { get; set; } 
+        public double[] RHZ { get; set; }
 
         /// Spectral Ridges Vertical
-        public double[] RVT { get; set; } 
+        public double[] RVT { get; set; }
 
         /// Spectral Ridges Positive slope
         public double[] RPS { get; set; }
@@ -315,7 +315,7 @@ namespace AudioAnalysisTools.Indices
         public double[] RNG { get; set; }
 
         // Spectral Peak Tracks
-        public double[] SPT { get; set; } 
+        public double[] SPT { get; set; }
 
         public double[] SUM { get; set; }
 

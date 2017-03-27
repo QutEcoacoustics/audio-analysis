@@ -7,38 +7,36 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-using Acoustics.Shared;
-
 namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using Acoustics.Shared;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using Recognizers.Base;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
+    using Recognizers.Base;
     using TowseyLibrary;
 
     /// <summary>
     /// Crinia remota, AKA: The remote froglet
     /// This is a frog recognizer based on the "trill" or "washboard" template
     /// It detects an irregular trill type typical of many frogs.
-    /// NOTE: The standard canetoad oscillation recognizer is not suitable for those frogs whose trill is irregular. 
+    /// NOTE: The standard canetoad oscillation recognizer is not suitable for those frogs whose trill is irregular.
     /// The algorithm implemented in this recognizer is as follows:
-    /// 
-    /// 1. Extract the frequency band containing the call and average the energy in each frame.  
+    ///
+    /// 1. Extract the frequency band containing the call and average the energy in each frame.
     /// 2. Extract the side-bands (leaving a gap) and calculate average energy in each from of each side-band.
     /// 3. Subtract sidebands from dominant call band.
     /// 4. Find the C.remota calls using an IMPULSE/DECAY filter that is tuned to the expected pulse interval, even though irregular.
     /// 5. Pass the resulting score array (output from impulse-decay filter) through an event recognizer.
     /// 6. This returns events within user set duration bounds.
-    /// 
+    ///
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// </summary>
@@ -100,7 +98,7 @@ namespace AnalysisPrograms.Recognizers
                 // if do not use noise reduction can get a more sensitive recogniser.
                 //NoiseReductionType = NoiseReductionType.None
                 NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = 0.0
+                NoiseReductionParameter = 0.0,
             };
 
             TimeSpan recordingDuration = recording.WavReader.Time;
@@ -226,7 +224,7 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram,
                 Hits = hits,
                 Plots = plot.AsList(),
-                Events = prunedEvents
+                Events = prunedEvents,
                 //Events = events
             };
 
@@ -258,12 +256,12 @@ namespace AnalysisPrograms.Recognizers
             MinHz = (int)configuration[AnalysisKeys.MinHz];
             MaxHz = (int)configuration[AnalysisKeys.MaxHz];
 
-            // duration of DCT in seconds 
+            // duration of DCT in seconds
             DctDuration = (double)configuration[AnalysisKeys.DctDuration];
             // minimum acceptable value of a DCT coefficient
             DctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
 
-            // min and max duration of event in seconds 
+            // min and max duration of event in seconds
             MinDuration = (double)configuration[AnalysisKeys.MinDuration];
             MaxDuration = (double)configuration[AnalysisKeys.MaxDuration];
 

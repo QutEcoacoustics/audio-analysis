@@ -79,15 +79,15 @@ namespace AnalysisPrograms
             {
                 throw new ArgumentException(
                     "Sample rate of recording ({0}) does not match the desired sample rate ({1})".Format2(
-                        recording.SampleRate, 
-                        sampleRate), 
+                        recording.SampleRate,
+                        sampleRate),
                     "sampleRate");
             }
 
             var config = new SonogramConfig
                              {
                                  NoiseReductionType = NoiseReductionType.Standard,
-                                 NoiseReductionParameter = 3.5
+                                 NoiseReductionParameter = 3.5,
                              };
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, recording.WavReader);
 

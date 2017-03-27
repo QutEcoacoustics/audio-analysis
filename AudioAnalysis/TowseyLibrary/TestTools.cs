@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-using log4net;
-using Acoustics.Shared.Csv;
-using System.Diagnostics;
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Globalization;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared.Csv;
+    using log4net;
+
     public static class TestTools
     {
 
@@ -37,7 +37,7 @@ namespace TowseyLibrary
             {
                 CompareArrayWithBenchmark(testName, scoreArray, new FileInfo(benchmarkFilePath));
             }
-        } 
+        }
 
 
         /// <summary>

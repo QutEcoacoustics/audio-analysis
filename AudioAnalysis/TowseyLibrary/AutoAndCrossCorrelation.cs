@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+
     public static class AutoAndCrossCorrelation
     {
 
@@ -112,9 +111,9 @@ on [-K..M-1],  you can still use this subroutine, just shift result by K.
 
 -- ALGLIB --
 Copyright 21.07.2009 by Bochkanov Sergey
- * 
- * 
- * 
+ *
+ *
+ *
 public static void corrr1d(
 double[] signal,
 int n,
@@ -364,7 +363,7 @@ out double[] r)
         /// <summary>
         /// my own effort at Crosscorrelation.
         /// Input array is assumed to be of even length.
-        /// It returns an array twice length of input array. 
+        /// It returns an array twice length of input array.
         /// The first and last entries of the returned array will not be written to and contain zeros.
         /// </summary>
         /// <param name="X"></param>
@@ -394,7 +393,7 @@ out double[] r)
             {
                 double leftShiftSum = 0.0;
                 int count = 0;
-                for (int i = 0; i < length - lag; i++) 
+                for (int i = 0; i < length - lag; i++)
                 {
                     leftShiftSum += (X1[i] * X2[i + lag]);
                     count++;
@@ -413,14 +412,14 @@ out double[] r)
         public static double[] AutoCorrelationOldJavaVersion(double[] X)
         {
 
-            int size = X.Length; 
+            int size = X.Length;
             double[] R = new double[size];
             double sum;
 
-            for (int i=0; i < size; i++) 
+            for (int i=0; i < size; i++)
             {
                 sum=0;
-                for (int j=0;j<size-i;j++) 
+                for (int j=0;j<size-i;j++)
                 {
                     sum += X[j] * X[j+i];
                 }

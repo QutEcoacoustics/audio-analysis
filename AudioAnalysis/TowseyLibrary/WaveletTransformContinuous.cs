@@ -1,14 +1,13 @@
-﻿using MathNet.Numerics.LinearAlgebra.Generic;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using MathNet.Numerics.LinearAlgebra.Generic;
 
     /// <summary>
     /// An implementation of Continuous Wavelet Transform (CWT) using the Haar wavelet.
@@ -42,7 +41,7 @@ namespace TowseyLibrary
         public double[,] GetScaleTimeMatrix()
         {
             int length = this.Signal.Length;
-            
+
 
             int seed = 123;
 
@@ -147,7 +146,7 @@ namespace TowseyLibrary
                     double coeff = inputM[scale - 1, t];
                     for (int offset = 1-scale; offset <= scale; offset++)
                     {
-                        if (scaleTimeMatrix[scale - 1, t + offset] < coeff) 
+                        if (scaleTimeMatrix[scale - 1, t + offset] < coeff)
                             scaleTimeMatrix[scale - 1, t + offset] = coeff;
                     }
                 }
@@ -165,7 +164,7 @@ namespace TowseyLibrary
 
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="fftWindowWidth"></param>
@@ -198,7 +197,7 @@ namespace TowseyLibrary
         }
 
 
-            
+
 
         /// <summary>
         /// implements the Haar low pass filter
@@ -280,7 +279,7 @@ namespace TowseyLibrary
             double[] signal = { 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
                                 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
                                 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
-                                1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0 };
+                                1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, };
 
             //this 128 sample signal contains mixed cycles
             //double[] signal = { 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
@@ -290,7 +289,7 @@ namespace TowseyLibrary
 
             //this 128 sample signal contains 64 cycles
             //The output bin vector tree and image will show strong energy at level level 8, bin zero and bin 64.
-            //i.e. bin 64 implies 64 cycles within the length of the WPD window of 128. 
+            //i.e. bin 64 implies 64 cycles within the length of the WPD window of 128.
             //double[] signal = { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
             //                    1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
             //                    1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
@@ -300,7 +299,7 @@ namespace TowseyLibrary
             //RandomNumber rn = new RandomNumber();
             //double[] rv = RandomNumber.GetRandomVector(128, rn);
 
-            // note that even when noise is twice amplitude of signal the first column of UMatrix is excellent reproduction of 
+            // note that even when noise is twice amplitude of signal the first column of UMatrix is excellent reproduction of
             // first column when signal has no added noise.
             // relative noise amplitude
             //double noiseAmplitude = 2.0;
@@ -333,15 +332,15 @@ namespace TowseyLibrary
         //#########################################################################################################################################################
 
         /*
-         * Below are the coefficients for the scaling functions for D2-20. 
+         * Below are the coefficients for the scaling functions for D2-20.
          * They were obtained from http://en.wikipedia.org/wiki/Daubechies_wavelet
-         * The wavelet coefficients are derived by 
-         * reversing the order of the scaling function coefficients and then reversing the sign of every second one, 
-         * (i.e., D4 wavelet = {-0.1830127, -0.3169873, 1.1830127, -0.6830127}). 
-         * Mathematically, this looks like b_k = (-1)^{k} a_{N - 1 - k}  
-         * where 
-         *      k is the coefficient index, 
-         *      b is a coefficient of the wavelet sequence and a a coefficient of the scaling sequence. 
+         * The wavelet coefficients are derived by
+         * reversing the order of the scaling function coefficients and then reversing the sign of every second one,
+         * (i.e., D4 wavelet = {-0.1830127, -0.3169873, 1.1830127, -0.6830127}).
+         * Mathematically, this looks like b_k = (-1)^{k} a_{N - 1 - k}
+         * where
+         *      k is the coefficient index,
+         *      b is a coefficient of the wavelet sequence and a a coefficient of the scaling sequence.
          *      N is the wavelet index, i.e., 2 for D2.
          * */
 
@@ -363,12 +362,12 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// The wavelet coefficients are derived by reversing the order of the scaling function coefficients and then reversing the sign of every second one, 
-        /// (i.e., D4 wavelet = {-0.1830127, -0.3169873, 1.1830127, -0.6830127}). 
-        /// Mathematically, this looks like b_k = (-1)^{k} a_{N - 1 - k}  
-        /// where 
-        ///     k is the coefficient index, 
-        ///     b is a coefficient of the wavelet sequence and a a coefficient of the scaling sequence. 
+        /// The wavelet coefficients are derived by reversing the order of the scaling function coefficients and then reversing the sign of every second one,
+        /// (i.e., D4 wavelet = {-0.1830127, -0.3169873, 1.1830127, -0.6830127}).
+        /// Mathematically, this looks like b_k = (-1)^{k} a_{N - 1 - k}
+        /// where
+        ///     k is the coefficient index,
+        ///     b is a coefficient of the wavelet sequence and a a coefficient of the scaling sequence.
         ///     N is the wavelet index, i.e., 2 for D2.
         /// </summary>
         /// <param name="Daubechies_DN"></param>
@@ -394,7 +393,7 @@ namespace TowseyLibrary
         public static double[] Daubechies_D8 = { 0.32580343, 1.01094572, 0.8922014, -0.03957503, -0.26450717, 0.0436163, 0.0465036, -0.01498699 };
 
         public static double[] Daubechies_D10 = { 0.22641898, 0.85394354, 1.02432694, 0.19576696, -0.34265671, -0.04560113, 0.10970265, -0.00882680,
-                                                  -0.01779187, 4.71742793e-3};
+                                                  -0.01779187, 4.71742793e-3,};
 
         public static double[] Daubechies_D12 = { 0.15774243, 0.69950381, 1.06226376, 0.44583132, -0.3199866, -0.18351806, 0.13788809, 0.03892321, -0.04466375,
                                                   7.83251152e-4, 6.75606236e-3, -1.52353381e-3};

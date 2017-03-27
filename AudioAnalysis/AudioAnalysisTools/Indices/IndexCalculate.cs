@@ -97,7 +97,7 @@ namespace AudioAnalysisTools.Indices
         /// an audio recording
         /// </param>
         /// <param name="subsegmentOffsetTimeSpan">
-        /// The start time of the required subsegment relative to start of SOURCE audio recording. 
+        /// The start time of the required subsegment relative to start of SOURCE audio recording.
         ///     i.e. SegmentStartOffset + time duration from Segment start to subsegment start.
         /// </param>
         /// <param name="indexCalculationDuration">
@@ -119,20 +119,20 @@ namespace AudioAnalysisTools.Indices
         /// </returns>
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Reviewed. Suppression is OK here.")]
         public static IndexCalculateResult Analysis(
-            AudioRecording recording, 
-            TimeSpan subsegmentOffsetTimeSpan, 
-            TimeSpan indexCalculationDuration, 
-            TimeSpan bgNoiseNeighborhood, 
-            FileInfo indicesPropertiesConfig, 
-            int sampleRateOfOriginalAudioFile, 
-            TimeSpan segmentStartOffset, 
-            dynamic configuration, 
+            AudioRecording recording,
+            TimeSpan subsegmentOffsetTimeSpan,
+            TimeSpan indexCalculationDuration,
+            TimeSpan bgNoiseNeighborhood,
+            FileInfo indicesPropertiesConfig,
+            int sampleRateOfOriginalAudioFile,
+            TimeSpan segmentStartOffset,
+            dynamic configuration,
             bool returnSonogramInfo = true)
         {
             string recordingFileName = recording.BaseName;
             double epsilon   = Math.Pow(0.5, recording.BitsPerSample - 1);
             int signalLength = recording.WavReader.GetChannel(0).Length;
-            int sampleRate   = recording.WavReader.SampleRate; 
+            int sampleRate   = recording.WavReader.SampleRate;
             TimeSpan recordingSegmentDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
 
             var config = configuration;
@@ -141,7 +141,7 @@ namespace AudioAnalysisTools.Indices
             // get frame parameters for the analysis
             int frameSize = (int?)config[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
             int frameStep = frameSize; // this default = zero overlap
-            //WARNING: DO NOT USE Frame Overlap when calculating acoustic indices. 
+            //WARNING: DO NOT USE Frame Overlap when calculating acoustic indices.
             //          It yields ACI, BGN, AVG and EVN results that are significantly different from the default.
             //          I have not had time to check if the difference is meaningful. Best to avoid.
             //double windowOverlap = 0.0;
@@ -173,7 +173,7 @@ namespace AudioAnalysisTools.Indices
             int subsegmentSampleCount = (int)(subsegmentSecondsDuration * sampleRate);
             //calculate the exact number of frames in the exact subsegment duration
             double frameCount = subsegmentSampleCount / (double)frameStep;
-            //In order not to lose the last fracional frame, round up the frame number 
+            //In order not to lose the last fracional frame, round up the frame number
             // and get the exact number of samples in the integer number of frames.
             subsegmentSampleCount = (int)Math.Ceiling(frameCount) * frameStep;
             int sampleEnd   = sampleStart + subsegmentSampleCount - 1;
@@ -199,7 +199,7 @@ namespace AudioAnalysisTools.Indices
             // minimum samples needed to calculate data
             // this value was chosen somewhat arbitrarily
             int minimumViableDuration = frameSize * 8;
-            
+
             // set the SUBSEGMENT recording = total segment if its length >= 60 seconds
             AudioRecording subsegmentRecording = recording;
             if (indexCalculationDuration < recordingSegmentDuration)
@@ -216,7 +216,7 @@ namespace AudioAnalysisTools.Indices
                     // this is an effectively silent correction
                     var oldStart = sampleStart;
                     sampleStart = signalLength - subsegmentSampleCount;
-                    
+
                     Logger.Trace("Backtracking to fill missing data from imperfect audio cuts because not enough samples available. " + (oldStart - sampleStart) + " samples overlap.");
                 }
 
@@ -258,43 +258,43 @@ namespace AudioAnalysisTools.Indices
 
             // (A) ################################## EXTRACT SUMMARY INDICES FROM THE SIGNAL WAVEFORM ##################################
             // average absolute value over the minute recording
-            // double[] avAbsolute = dspOutput1.Average; 
+            // double[] avAbsolute = dspOutput1.Average;
             double[] signalEnvelope  = dspOutput1.Envelope;
             double avgSignalEnvelope = signalEnvelope.Average();
 
 
             // average high ampl rate per second
             summaryIndices.HighAmplitudeIndex = dspOutput1.MaxAmplitudeCount / subsegmentSecondsDuration;
-			
+
             // average clip rate per second
             result.SummaryIndexValues.ClippingIndex = dspOutput1.ClipCount / subsegmentSecondsDuration;
 
-            // Following deals with case where the signal waveform is continuous flat with values < 0.001. Has happened!! 
+            // Following deals with case where the signal waveform is continuous flat with values < 0.001. Has happened!!
             // Although signal appears zero, this condition is required.
             if (avgSignalEnvelope < 0.001)
             {
                 Logger.Debug("Segment skipped because avSignalEnvelope is < 0.001!");
-                result.SummaryIndexValues.ZeroSignal = 1; 
+                result.SummaryIndexValues.ZeroSignal = 1;
                 return result;
             }
 
             // i: FRAME ENERGIES - convert signal to decibels and subtract background noise.
             double[] dBSignal = SNR.Signal2Decibels(dspOutput1.Envelope);
             double[] dBArray  = SNR.SubtractAndTruncate2Zero(dBSignal, signalBGN);
-           
-            // 10 times log of amplitude squared     
+
+            // 10 times log of amplitude squared
             summaryIndices.AvgSignalAmplitude = 20 * Math.Log10(avgSignalEnvelope);
 
             // bg noise in dB
             summaryIndices.BackgroundNoise = signalBGN;
 
             // SNR
-            summaryIndices.Snr = dBArray.Max(); 
+            summaryIndices.Snr = dBArray.Max();
 
             // ii: ACTIVITY and EVENT STATISTICS for NOISE REDUCED ARRAY
             var activity = ActivityAndCover.CalculateActivity(dBArray, frameStepTimeSpan);
 
-            // fraction of frames having acoustic activity 
+            // fraction of frames having acoustic activity
             summaryIndices.Activity = activity.fractionOfActiveFrames;
 
             // snr calculated from active frames only
@@ -320,9 +320,9 @@ namespace AudioAnalysisTools.Indices
             summaryIndices.NDSI = SpectrogramTools.CalculateNDSI(tuple3.Item1, sampleRate, 1000, 2000, 8000);
 
 
-            // (B) ################################## EXTRACT SPECTRAL INDICES FROM THE AMPLITUDE SPECTROGRAM ################################## 
+            // (B) ################################## EXTRACT SPECTRAL INDICES FROM THE AMPLITUDE SPECTROGRAM ##################################
 
-            // i: CALCULATE SPECTRUM OF THE SUM OF FREQ BIN AMPLITUDES - used for later calculation of ACI 
+            // i: CALCULATE SPECTRUM OF THE SUM OF FREQ BIN AMPLITUDES - used for later calculation of ACI
             spectralIndices.SUM = MatrixTools.SumColumns(amplitudeSpectrogram);
 
             // calculate bin id of boundary between low & mid frequency bands. This is to avoid low freq bins that likely contain anthropogenic noise.
@@ -347,8 +347,8 @@ namespace AudioAnalysisTools.Indices
 
             // ii: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
             spectralIndices.DIF = AcousticComplexityIndex.SumOfAmplitudeDifferences(amplitudeSpectrogram);
-            
-            double[] aciSpectrum = AcousticComplexityIndex.CalculateACI(amplitudeSpectrogram);           
+
+            double[] aciSpectrum = AcousticComplexityIndex.CalculateACI(amplitudeSpectrogram);
             spectralIndices.ACI = aciSpectrum;
 
             // remove low freq band of ACI spectrum and store average ACI value
@@ -382,7 +382,7 @@ namespace AudioAnalysisTools.Indices
             summaryIndices.EntropyOfVarianceSpectrum = 1 - tuple.Item2;
             // ENTROPY of spectrum of Coefficient of Variation values
             summaryIndices.EntropyOfCoVSpectrum = 1 - tuple.Item3;
-   
+
 
 
             // vi: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.
@@ -403,8 +403,8 @@ namespace AudioAnalysisTools.Indices
             ////summaryIndices.CicadaIndex = dict[InitialiseIndexProperties.keyCICADA];
 
 
-            // (C) ################################## EXTRACT SPECTRAL INDICES FROM THE DECIBEL SPECTROGRAM ##################################           
-                        
+            // (C) ################################## EXTRACT SPECTRAL INDICES FROM THE DECIBEL SPECTROGRAM ##################################
+
             // i: generate the SUBSEGMENT deciBel spectrogram from the SUBSEGMENT amplitude spectrogram
             deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput1.amplitudeSpectrogram, dspOutput1.WindowPower, sampleRate, epsilon);
 
@@ -412,7 +412,7 @@ namespace AudioAnalysisTools.Indices
             spectralIndices.BGN = spectralDecibelBGN;
             //DataTools.writeBarGraph(spectralDecibelBGN);
 
-            // iii: CALCULATE noise reduced AVERAGE DECIBEL POWER SPECTRUM 
+            // iii: CALCULATE noise reduced AVERAGE DECIBEL POWER SPECTRUM
             deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, spectralDecibelBGN);
             double nhDecibelThreshold = 2.0; // SPECTRAL dB THRESHOLD for smoothing background
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, nhDecibelThreshold);
@@ -540,7 +540,7 @@ namespace AudioAnalysisTools.Indices
             const int HitThreshold = 3; // used to remove wt vectors which have fewer than the threshold hits
 
             // Skip clustering if not enough suitable training data
-            if (data.trainingData.Count <= 8)     
+            if (data.trainingData.Count <= 8)
             {
                 clusterInfo.clusterHits2 = null;
                 summaryIndices.ClusterCount = 0;
@@ -573,13 +573,13 @@ namespace AudioAnalysisTools.Indices
 
                 scores.Add(new Plot(label, DataTools.normalise(clusterHits), 0.0)); // location of cluster hits
             }
-           
+
 
 
             result.Sg = sonogram;
             result.Hits = hits;
             result.TrackScores = scores;
-            //result.Tracks = sptInfo.listOfSPTracks; // not calculated but could be 
+            //result.Tracks = sptInfo.listOfSPTracks; // not calculated but could be
             return result;
         } // end of method Analysis()
 
@@ -655,7 +655,7 @@ namespace AudioAnalysisTools.Indices
                 }
             }
 
-            int arrayLength = columns[0].Length; // assume all columns are of same length 
+            int arrayLength = columns[0].Length; // assume all columns are of same length
             double[] weightedIndices = new double[arrayLength];
             for (int i = 0; i < arrayLength; i++)
             {

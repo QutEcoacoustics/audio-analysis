@@ -1,26 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-using Acoustics.Shared;
-using AnalysisBase;
-using AnalysisPrograms;
-using AudioAnalysisTools;
-using log4net;
-
-using AudioAnalysisTools.WavTools;
-using TowseyLibrary;
-
-namespace AudioBrowser
+﻿namespace AudioBrowser
 {
+
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Diagnostics;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
+    using AnalysisBase;
+    using AnalysisPrograms;
+    using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using log4net;
+    using TowseyLibrary;
 
     public class TabBrowseAudio
     {
@@ -106,7 +103,7 @@ namespace AudioBrowser
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="csvFile">Indices CSV file. Must exist if given. Specify either indices csv file or indices image file, not both.</param>
         /// <param name="indicesImageFile">Indices image file. Must exist if given. Specify either indices csv file or indices image file, not both.</param>
@@ -358,7 +355,7 @@ namespace AudioBrowser
 
         // ********************************************************************************************
         // Refresh indices image from image file
-        // ******************************************************************************************** 
+        // ********************************************************************************************
 
         public void UpdateIndicesFromImageFile()
         {
@@ -372,7 +369,7 @@ namespace AudioBrowser
             this.CsvHeaderInfo = "Indices used to create image";
             this.CsvHeaderList = new List<string>()
             {
-                "Temporal Entropy", "Acoustic Complexity Index", "Average Power"
+                "Temporal Entropy", "Acoustic Complexity Index", "Average Power",
             };
         }
 
@@ -445,7 +442,7 @@ namespace AudioBrowser
                     this.selectionTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
                     this.pictureBoxBarTrack.Image = this.selectionTrackImage;
 
-                    //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
+                    //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS
                     this.pictureBoxBarTrack.Location = new Point(0, this.pictureBoxVisualIndices.Height + 1);
                     //this.pictureBoxVisualIndex.Location = new Point(0, tracksImage.Height + 1);
                     this.panelDisplayImageAndTrackBar.Height = this.pictureBoxVisualIndices.Height + this.pictureBoxBarTrack.Height + 20; //20 = ht of scroll bar
@@ -473,7 +470,7 @@ namespace AudioBrowser
 
         // ********************************************************************************************
         // Refresh indices image from csv file
-        // ******************************************************************************************** 
+        // ********************************************************************************************
 
         public void UpdateIndicesFromCsvFile()
         {
@@ -551,14 +548,14 @@ namespace AudioBrowser
 
         // ********************************************************************************************
         // Refresh Sonogram Image
-        // ******************************************************************************************** 
+        // ********************************************************************************************
 
         private static FileInfo GetAudioSegmentFile(FileInfo audioFile, TimeSpan offsetStart, DirectoryInfo outputDir)
         {
             int minInHour = 60;
             int currentCursorX = (int)offsetStart.TotalMinutes;
             string timeStr = String.Format("{0:d2}{1:d2}h", (currentCursorX / minInHour), (currentCursorX % minInHour));
-                                           
+
             var segmentFileName = Path.GetFileNameWithoutExtension(audioFile.FullName) + "_" + timeStr + ".wav";
 
             var segmentFilePath = Path.Combine(outputDir.FullName, segmentFileName);
@@ -569,8 +566,8 @@ namespace AudioBrowser
 
         //########################################################################################################
         //#### The below three methods were transfered from the class IndexDisplay.cs on 02-12-2014.
-        //#### They use the Datatable class for handling the index data. 
-        //#### This was discontinued when Anthony refactored the code mid2014. however it still persists in the Audio Browser. 
+        //#### They use the Datatable class for handling the index data.
+        //#### This was discontinued when Anthony refactored the code mid2014. however it still persists in the Audio Browser.
         //############################################################################################
         //########################################################################################################
 
@@ -655,7 +652,7 @@ namespace AudioBrowser
         } // ProcessCsvFile()
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="dt"></param>
         /// <param name="trackHeight"></param>

@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using TowseyLibrary;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-
-
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using TowseyLibrary;
 
     /// <summary>
     /// NOTE: 21st June 2012.
-    /// 
-    /// This class contains methods to detect oscillations in a the sonogram of an audio signal. 
+    ///
+    /// This class contains methods to detect oscillations in a the sonogram of an audio signal.
     /// The method Execute() returns all info about oscillaitons in the passed sonogram.
     /// This method should be called in preference to those in the class OscillationAnalysis.
     /// (The latter should be depracated.)
@@ -63,7 +60,7 @@ namespace AudioAnalysisTools
 
             Execute(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, dctThreshold, scoreThreshold,
                                                minDuration, maxDuration, scoreSmoothingWindow,
-                                               out scores, out events, out hits);        
+                                               out scores, out events, out hits);
         }
 
 
@@ -129,11 +126,11 @@ namespace AudioAnalysisTools
 
                     double[] dctCoeff = MFCCStuff.DCT(dctArray, cosines);
                     // convert to absolute values because not interested in negative values due to phase.
-                    for (int i = 0; i < dctLength; i++) 
+                    for (int i = 0; i < dctLength; i++)
                         dctCoeff[i] = Math.Abs(dctCoeff[i]);
                     // remove low freq oscillations from consideration
                     int thresholdIndex = minIndex / 4;
-                    for (int i = 0; i < thresholdIndex; i++) 
+                    for (int i = 0; i < thresholdIndex; i++)
                         dctCoeff[i] = 0.0;
 
                     dctCoeff = DataTools.normalise2UnitLength(dctCoeff);
@@ -143,10 +140,10 @@ namespace AudioAnalysisTools
 
                     // #### Tried this option for scoring oscillation hits but did not work well.
                     // #### Requires very fine tuning of thresholds
-                    //dctCoeff = DataTools.Normalise2Probabilites(dctCoeff); 
+                    //dctCoeff = DataTools.Normalise2Probabilites(dctCoeff);
                     //// sum area under curve where looking for oscillations
                     //double sum = 0.0;
-                    //for (int i = minIndex; i <= maxIndex; i++) 
+                    //for (int i = minIndex; i <= maxIndex; i++)
                     //    sum += dctCoeff[i];
                     //if (sum > dctThreshold)
                     //{
@@ -222,10 +219,10 @@ namespace AudioAnalysisTools
 
                 // #### Tried this option for scoring oscillation hits but did not work well.
                 // #### Requires very fine tuning of thresholds
-                //dctCoeff = DataTools.Normalise2Probabilites(dctCoeff); 
+                //dctCoeff = DataTools.Normalise2Probabilites(dctCoeff);
                 //// sum area under curve where looking for oscillations
                 //double sum = 0.0;
-                //for (int i = minIndex; i <= maxIndex; i++) 
+                //for (int i = minIndex; i <= maxIndex; i++)
                 //    sum += dctCoeff[i];
                 //if (sum > dctThreshold)
                 //{
@@ -335,7 +332,7 @@ namespace AudioAnalysisTools
         }//end method GetODFrequency()
 
         /// <summary>
-        /// Converts the Oscillation Detector score array to a list of AcousticEvents. 
+        /// Converts the Oscillation Detector score array to a list of AcousticEvents.
         /// </summary>
         /// <param name="scores">the array of OD scores</param>
         /// <param name="oscFreq"></param>
@@ -348,8 +345,8 @@ namespace AudioAnalysisTools
         /// <param name="maxScoreThreshold"></param>
         /// <param name="minDurationThreshold"></param>
         /// <returns></returns>
-        public static List<AcousticEvent> ConvertOscillationScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz, double framesPerSec, 
-                                                                         double freqBinWidth, double maxScoreThreshold, 
+        public static List<AcousticEvent> ConvertOscillationScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz, double framesPerSec,
+                                                                         double freqBinWidth, double maxScoreThreshold,
                                                                          double minDurationThreshold, double maxDurationThreshold, string fileName)
         {
             //double minThreshold = 0.1;
@@ -402,7 +399,7 @@ namespace AudioAnalysisTools
                 //if ((scores[i] >= maxThreshold) && (maxThreshold >= scoreThreshold)) scoreThreshold *= 1.01;
                 //else
                 //if ((scores[i] <= minThreshold) && (minThreshold <= scoreThreshold)) scoreThreshold *= 0.95;
-                
+
 
             } //end of pass over all frames
             return events;
@@ -420,7 +417,7 @@ namespace AudioAnalysisTools
         public static double CalculateRequiredFrameOverlap(int sr, int frameWidth, double maxOscilation)
         {
             double optimumFrameRate = 3 * maxOscilation; //so that max oscillation sits in 3/4 along the array of DCT coefficients
-            int frameOffset = (int)(sr / optimumFrameRate); 
+            int frameOffset = (int)(sr / optimumFrameRate);
 
             // this line added 17 Aug 2016 to deal with high Oscillation rate frog ribits.
             if (frameOffset > frameWidth) frameOffset = frameWidth;
@@ -429,5 +426,5 @@ namespace AudioAnalysisTools
             return overlap;
         }
 
-    }//end class 
+    }//end class
 } //AudioAnalysisTools

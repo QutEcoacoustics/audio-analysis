@@ -1,12 +1,11 @@
-﻿using MathNet.Numerics.LinearAlgebra.Generic;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using MathNet.Numerics.LinearAlgebra.Generic;
 
     /// <summary>
     /// An implementation of wavelet pack decomposition (WPD) using the Haar wavelet.
@@ -94,7 +93,7 @@ namespace TowseyLibrary
             return wpdEnergyVector;
         }
 
-        
+
         /// <summary>
         /// Represents a single node in the WPD tree.
         /// THe nodes are usually called "bin vectors".
@@ -116,7 +115,7 @@ namespace TowseyLibrary
             {
                 this.levelNumber = _levelNumber;
                 this.binNumber   = _binNumber;
-                this.sequenceNumber = (int)Math.Pow(2, (_levelNumber - 1)) - 1 + _binNumber; 
+                this.sequenceNumber = (int)Math.Pow(2, (_levelNumber - 1)) - 1 + _binNumber;
                 this.signal      = _signal;
                 this.binLength = 0;
                 if (_signal != null) binLength = _signal.Length;
@@ -150,7 +149,7 @@ namespace TowseyLibrary
         // ############################### NEXT TWO METHODS CREATE THE TREE. SECOND METHOD IS RECURSIVE ###########################
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="signal"></param>
         /// <returns></returns>
@@ -211,7 +210,7 @@ namespace TowseyLibrary
 
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="fftWindowWidth"></param>
@@ -284,10 +283,10 @@ namespace TowseyLibrary
             int windowWidth = (int)Math.Pow(2, levelNumber);
             int halfWindow = windowWidth / 2;
             int sampleCount = signal.Length / windowWidth;
-            //int minLag, 
+            //int minLag,
             //int maxLag
             double[,] wpdByTime = new double[halfWindow, sampleCount];
-            
+
             for (int s = 0; s < sampleCount; s++)
             {
                 int start = s * windowWidth;
@@ -346,14 +345,14 @@ namespace TowseyLibrary
                 var wpd = new WaveletPacketDecomposition(subArray);
                 double[] energyVector = wpd.GetWPDEnergyVector();
 
-                // reverse the energy vector so that low resolution coefficients are at the bottom. 
+                // reverse the energy vector so that low resolution coefficients are at the bottom.
                 energyVector = DataTools.reverseArray(energyVector);
                 MatrixTools.SetColumn(wpdByTime, s, energyVector);
             }
 
             return wpdByTime;
         }
-            
+
 
         /// <summary>
         /// implements the Haar low pass filter
@@ -408,7 +407,7 @@ namespace TowseyLibrary
             //double[] signal = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
             //                    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
             double[] signal = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, };
 
 
 
@@ -439,7 +438,7 @@ namespace TowseyLibrary
 
             //this 128 sample signal contains 64 cycles
             //The output bin vector tree and image will show strong energy at level level 8, bin zero and bin 64.
-            //i.e. bin 64 implies 64 cycles within the length of the WPD window of 128. 
+            //i.e. bin 64 implies 64 cycles within the length of the WPD window of 128.
             //double[] signal = { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
             //                    1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
             //                    1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
@@ -449,7 +448,7 @@ namespace TowseyLibrary
             //RandomNumber rn = new RandomNumber();
             //double[] rv = RandomNumber.GetRandomVector(128, rn);
 
-            // note that even when noise is twice amplitude of signal the first column of UMatrix is excellent reproduction of 
+            // note that even when noise is twice amplitude of signal the first column of UMatrix is excellent reproduction of
             // first column when signal has no added noise.
             // relative noise amplitude
             //double noiseAmplitude = 2.0;
@@ -473,7 +472,7 @@ namespace TowseyLibrary
 
         }
 
-    
-    
+
+
     }
 }

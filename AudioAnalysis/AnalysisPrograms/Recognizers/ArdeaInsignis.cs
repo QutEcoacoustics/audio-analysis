@@ -31,7 +31,7 @@ namespace AnalysisPrograms.Recognizers
     using Acoustics.Shared.Csv;
 
     /// <summary>
-    /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs 
+    /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs
     /// e.g. Litoria rothii and Litoria olongburesnsis.
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
@@ -63,13 +63,6 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
-        /// <param name="recording"></param>
-        /// <param name="configuration"></param>
-        /// <param name="segmentStartOffset"></param>
-        /// <param name="getSpectralIndexes"></param>
-        /// <param name="outputDirectory"></param>
-        /// <param name="imageWidth"></param>
-        /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
 
@@ -83,7 +76,7 @@ namespace AnalysisPrograms.Recognizers
 
             // BETTER TO CALCULATE THIS. IGNORE USER!
             // double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);
-            // duration of DCT in seconds 
+            // duration of DCT in seconds
             //double dctDuration = (double)configuration[AnalysisKeys.DctDuration];
 
             // minimum acceptable value of a DCT coefficient
@@ -98,10 +91,10 @@ namespace AnalysisPrograms.Recognizers
             int maxOscilRate = (int)Math.Ceiling(1 /minPeriod);
             //int minOscilRate = (int)Math.Floor(1 /maxPeriod);
 
-            // min duration of event in seconds 
+            // min duration of event in seconds
             double minDuration = (double)configuration[AnalysisKeys.MinDuration];
 
-            // max duration of event in seconds                 
+            // max duration of event in seconds
             double maxDuration = (double)configuration[AnalysisKeys.MaxDuration];
 
             // min score for an acceptable event
@@ -110,7 +103,7 @@ namespace AnalysisPrograms.Recognizers
             // this default framesize and overlap is best for the White Hrron of Bhutan.
             const int frameSize = 2048;
             double windowOverlap = 0.0;
-            
+
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
             {
@@ -120,7 +113,7 @@ namespace AnalysisPrograms.Recognizers
                 // the default window is HAMMING
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
                 NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = noiseReductionParameter
+                NoiseReductionParameter = noiseReductionParameter,
             };
 
             TimeSpan recordingDuration = recording.Duration();
@@ -134,13 +127,13 @@ namespace AnalysisPrograms.Recognizers
              * 1024     22050       46.4ms          21.5        21.5    2944ms          1376hz          2752hz
              * 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
              * 2048     17640      116.1ms           8.6         8.6    7430ms           551hz          1100hz
-             * 2048     22050       92.8ms          21.5        10.7666 1472ms          
+             * 2048     22050       92.8ms          21.5        10.7666 1472ms
              */
 
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
-            
+
             //var templates = GetTemplatesForAlgorithm1(14);
 
             double[] amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxBin);
@@ -195,7 +188,7 @@ namespace AnalysisPrograms.Recognizers
                 {
                     int start = i - templateOffset;
                     if (start < 0) start = 0;
-                    var endLocality = DataTools.Subarray(amplitudeArray, start, endTemplate.Length); 
+                    var endLocality = DataTools.Subarray(amplitudeArray, start, endTemplate.Length);
                     double endScore = DataTools.CosineSimilarity(endLocality, endTemplate);
                     for (int to = -templateOffset; to < (endTemplate.Length- templateOffset); to++)
                     {
@@ -210,13 +203,13 @@ namespace AnalysisPrograms.Recognizers
                     {
                         amplitudeScores[i + k] = 0.0;
                     }
-                    continue;                  
+                    continue;
                 }
 
                 // Get the start template which depends on distance to next peak.
                 var startTemplate = GetTemplateForAlgorithm2(distanceToNextPeak, templateEndPadding);
 
-                // now calculate similarity of locality with the startTemplate 
+                // now calculate similarity of locality with the startTemplate
                 var locality = DataTools.Subarray(amplitudeArray, i-2, startTemplate.Length); // i-2 because first two places should be zero.
                 double score = DataTools.CosineSimilarity(locality, startTemplate);
                 for (int t = 0; t < startTemplate.Length; t++)
@@ -263,7 +256,7 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram,
                 Hits = hits,
                 Plots = plot.AsList(),
-                Events = prunedEvents
+                Events = prunedEvents,
             };
 
         }

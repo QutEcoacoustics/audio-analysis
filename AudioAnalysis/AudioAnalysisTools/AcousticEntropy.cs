@@ -24,7 +24,7 @@ namespace AudioAnalysisTools
             double[] tenSp = new double[freqBinCount];      // array of H[t] indices, one for each freq bin
 
             // for all frequency bins
-            for (int j = 0; j < freqBinCount; j++)         
+            for (int j = 0; j < freqBinCount; j++)
             {
                 double[] column = MatrixTools.GetColumn(spectrogram, j);
 

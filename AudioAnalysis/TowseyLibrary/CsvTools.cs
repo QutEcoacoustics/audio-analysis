@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Data;
-using System.IO;
-
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.IO;
+    using System.Linq;
 
     [Obsolete]
     public static class CsvTools
@@ -33,7 +31,7 @@ namespace TowseyLibrary
                  for (int i = 0; i < headers.Length; i++)
                  {
                      if(types == null) dt.Columns.Add(headers[i], typeof(string));
-                     else 
+                     else
                          if (types.Length <= i) dt.Columns.Add(headers[i], typeof(double));
                      else                       dt.Columns.Add(headers[i], types[i]);
                  }
@@ -151,7 +149,7 @@ namespace TowseyLibrary
             return output;
         }
 
- 
+
         //#######################################################################################
         //WRITE A CSV FILE FROM A MATRIX and headers
         public static void WriteDictionaryOfDoubles2CSV(Dictionary<string, double[]> dictionary, FileInfo opFile)
@@ -287,7 +285,7 @@ namespace TowseyLibrary
                     {
                         values[c][r - 1] = value;
                     }
-                    else 
+                    else
                     {
                         values[c][r - 1] = 0.0;
                     }
@@ -306,7 +304,7 @@ namespace TowseyLibrary
                 string line;
                 int firstIndex = 0;
                 if (skipFirstColumn) firstIndex = 1;
-                if (skipHeader) 
+                if (skipHeader)
                     line = reader.ReadLine(); // skip first header line
                 while ((line = reader.ReadLine()) != null)
                 {
@@ -430,7 +428,7 @@ namespace TowseyLibrary
                 {
                     array[i - 1] = 0.0;
                 }
-            }//end 
+            }//end
             return array;
         }
     }

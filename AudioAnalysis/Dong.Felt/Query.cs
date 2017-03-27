@@ -14,7 +14,7 @@
 
     using TowseyLibrary;
 
-    // The query is defined by a region bounded with a fixed frequency range and duration range. 
+    // The query is defined by a region bounded with a fixed frequency range and duration range.
     public class Query
     {
         #region Public Properties
@@ -37,27 +37,27 @@
 
         /// <summary>
         /// gets or sets the endTime, the right boundary of the region.
-        /// The unit is second. 
+        /// The unit is second.
         /// </summary>
         public double endTime { get; set; }
 
         /// <summary>
-        /// gets or sets the duration: endTime substracting startTime, its unit is millisecond. 
+        /// gets or sets the duration: endTime substracting startTime, its unit is millisecond.
         /// </summary>
         public double duration { get; set; }
 
         /// <summary>
-        /// gets or sets the frequencyRange by maxFrequency substracting minFrequency. 
+        /// gets or sets the frequencyRange by maxFrequency substracting minFrequency.
         /// </summary>
         public double frequencyRange { get; set; }
 
         /// <summary>
-        /// gets or sets the nhCountInRow in a region, which indicates the rowscount of neighbourhoods in the region. 
+        /// gets or sets the nhCountInRow in a region, which indicates the rowscount of neighbourhoods in the region.
         /// </summary>
         public int nhCountInRow { get; set; }
 
         /// <summary>
-        /// gets or sets the nhCountInColumn in a region, which indicates the columnscount of neighbourhoods in the region. 
+        /// gets or sets the nhCountInColumn in a region, which indicates the columnscount of neighbourhoods in the region.
         /// </summary>
         public int nhCountInColumn { get; set; }
 
@@ -100,7 +100,7 @@
         }
 
         /// <summary>
-        /// set the properties through parsing the parameters. 
+        /// set the properties through parsing the parameters.
         /// </summary>
         /// <param name="maximumFrequency"></param>
         /// <param name="minimumFrequency"></param>
@@ -125,7 +125,7 @@
         }
 
         /// <summary>
-        /// set the properties through parsing the parameters. 
+        /// set the properties through parsing the parameters.
         /// </summary>
         /// <param name="maximumFrequency"></param>
         /// <param name="minimumFrequency"></param>
@@ -188,7 +188,7 @@
             // ceiling is try to increase the value.
             var nhCountInRows = (int)Math.Ceiling(frequencyRange / nhFrequencyLength) + enlargedOffset;
             var nhCountInCols = (int)Math.Ceiling(this.duration / nhFrameLength) + enlargedOffset;
-            /// Here is a trick. Trying to get the nearest and lowest NH frame and frequencyIndex.          
+            /// Here is a trick. Trying to get the nearest and lowest NH frame and frequencyIndex.
             this.nhStartColIndex = (int)Math.Floor(this.startTime / nhFrameLength);
             this.nhStartRowIndex = this.maxNhRowIndex - (int)Math.Ceiling(this.maxFrequency / nhFrequencyLength);
             var nhendTime = (this.nhStartColIndex + nhCountInCols) * nhFrameLength;
@@ -215,7 +215,7 @@
         }
 
         /// <summary>
-        /// Keep it consistent with neighbourhoodRepresentation list. 
+        /// Keep it consistent with neighbourhoodRepresentation list.
         /// </summary>
         /// <param name="queryCsvFile"></param>
         /// <param name="neighbourhoodLength"></param>

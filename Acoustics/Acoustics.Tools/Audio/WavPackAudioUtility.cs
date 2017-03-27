@@ -27,16 +27,16 @@
         ////private readonly static string WavUnPackArgs = " -m -q -ss ";
 
         // --skip=[sample|hh:mm:ss.ss] = start decoding at specified sample/time
-        // Specifies an alternate start position for decoding, as either an integer sample 
+        // Specifies an alternate start position for decoding, as either an integer sample
         // index or as a time in hours, minutes, and seconds (with fraction). The WavPack
-        // file must be seekable (i.e. not a pipe). This option can be used with the --until 
+        // file must be seekable (i.e. not a pipe). This option can be used with the --until
         // option to decode a specific region of a track.
 
         // --until=[+|-][sample|hh:mm:ss.ss] = stop decoding at specified sample/time
         // Specifies an alternate stop position for decoding, as either an integer sample
-        // index or as a time in hours, minutes, and seconds (with fraction). 
-        // If a plus ('+') or minus ('-') sign is inserted before the specified sample (or time) 
-        // then it becomes a relative amount, either from the position specified by a --start option 
+        // index or as a time in hours, minutes, and seconds (with fraction).
+        // If a plus ('+') or minus ('-') sign is inserted before the specified sample (or time)
+        // then it becomes a relative amount, either from the position specified by a --start option
         // (if plus) or from the end of the file (if minus).
 
         // -w = regenerate .wav header (ignore RIFF data in file)
@@ -48,7 +48,7 @@
         private const string ArgsFile = " \"{0}\" ";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WavPackAudioUtility"/> class. 
+        /// Initializes a new instance of the <see cref="WavPackAudioUtility"/> class.
         /// </summary>
         /// <param name="wavUnpack">
         /// The wav Unpack.
@@ -68,7 +68,7 @@
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WavPackAudioUtility"/> class. 
+        /// Initializes a new instance of the <see cref="WavPackAudioUtility"/> class.
         /// </summary>
         /// <param name="wavUnpack">
         /// The wav Unpack.
@@ -260,7 +260,7 @@
                 var formats = new[]
                         {
                             @"h\:mm\:ss\.ff", @"hh\:mm\:ss\.ff", @"h:mm:ss.ff",
-                            @"hh:mm:ss.ff"
+                            @"hh:mm:ss.ff",
                         };
 
                 TimeSpan tsresult;

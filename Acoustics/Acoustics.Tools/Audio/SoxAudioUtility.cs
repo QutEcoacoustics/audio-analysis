@@ -14,7 +14,7 @@
     public class SoxAudioUtility : AbstractAudioUtility, IAudioUtility
     {
         /*
-         * Some things to test out/try: 
+         * Some things to test out/try:
          * stat - audio stats
          * stats - audio stats
          * spectrogram - create an image (has options to change)
@@ -72,9 +72,9 @@
         public enum SoxResampleQuality
         {
             /// <summary>
-            /// −q 
-            /// bandwidth: n/a 
-            /// Rej dB: ~30 @ Fs/4 
+            /// −q
+            /// bandwidth: n/a
+            /// Rej dB: ~30 @ Fs/4
             /// Typical Use: playback on ancient hardware.
             /// </summary>
             Quick = 0,
@@ -106,7 +106,7 @@
             /// <summary>
             /// −v
             /// bandwidth: 95%
-            /// Rej dB: 175 
+            /// Rej dB: 175
             /// Typical Use: 24-bit mastering.
             /// </summary>
             VeryHigh = 4
@@ -203,7 +203,7 @@
                         var center = width / 2.0;
                         bandpass += "bandpass {0}k width{k}".Format(center / 1000, width / 1000);
                         break;
-                    case BandPassType.None:    
+                    case BandPassType.None:
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -236,7 +236,7 @@
         private static string FormatChannelSelection(AudioUtilityRequest request)
         {
             /*
-             * Where a range of channels is specified, the channel numbers to the left and right of the hyphen are 
+             * Where a range of channels is specified, the channel numbers to the left and right of the hyphen are
              * optional and default to 1 and to the number of input channels respectively. Thus
              *    sox input.wav output.wav remix −
              * performs a mix-down of all input channels to mono.
@@ -347,7 +347,7 @@
                 var formats = new[]
                         {
                             @"h\:mm\:ss\.ff", @"hh\:mm\:ss\.ff", @"h:mm:ss.ff",
-                            @"hh:mm:ss.ff"
+                            @"hh:mm:ss.ff",
                         };
 
                 TimeSpan tsresult;
@@ -412,7 +412,7 @@
                 {
                     value = value * 1000 * 1000;
                 }
-                
+
                 result.BitsPerSecond = Convert.ToInt32(value);
 
                 if (result.MediaType == MediaTypes.MediaTypeWav)
@@ -518,15 +518,15 @@
         private AudioUtilityInfo SoxStats(FileInfo source)
         {
             /*
-             * −w name 
+             * −w name
              * Window: Hann (default), Hamming, Bartlett, Rectangular or Kaiser
-             * 
-             * 
-            sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.wav" -n 
-             * stat stats trim 0 60 spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o 
-             * "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.png" 
+             *
+             *
+            sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.wav" -n
+             * stat stats trim 0 60 spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o
+             * "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.png"
              * stats stat
-             * 
+             *
              * sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.wav" -n stat stats trim 0 60 spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.png" stats stat
 
 sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8.wav" -n trim 0 10 noiseprof | sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8.wav" "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8-reduced.wav" noisered
@@ -535,7 +535,7 @@ sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_
 
 I:\Projects\QUT\QutSensors\sensors-trunk\Extra Assemblies\sox>sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.wav" -n trim 0 60  spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoal
 a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
-             * 
+             *
              * Could also do this for every minute of recording, using trim <start seconds> <end seconds> and looping.
             */
 
@@ -560,7 +560,7 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
                 return new AudioUtilityInfo();
             }
 
-            // 
+            //
 
             // first 15 are split by colon (:)
             var statOutputRaw = lines.Take(15).Select(l => l.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries).Select(i => i.Trim()));

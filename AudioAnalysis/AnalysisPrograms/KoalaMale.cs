@@ -3,61 +3,56 @@
 //   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
+
 namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
     using System.Data;
-    using System.Diagnostics.Contracts;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
-
     using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
     using Acoustics.Tools;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
     using AnalysisPrograms.Production;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
     using TowseyLibrary;
-
     using ProcessRunner = TowseyLibrary.ProcessRunner;
 
     /// <summary>
-    ///  NOTES: 
+    ///  NOTES:
     /// (1) The main part of a male koala call consists of a series of inhlations and exhalations;
     ///     The inhalations are longer and sound like snoring. The exhalations are shorter and the sound is similar to belching.
     ///     For more on the koala bellow see http://theconversation.com/grunt-work-unique-vocal-folds-give-koalas-their-low-pitched-voice-20800
     ///     The article interviews Dr. Ben Charlton who came to work with us in 2012.
-    /// 
-    /// (2) This class detects male koala calls by detecting the characteristic oscillations of their snoring or inhalations. 
+    ///
+    /// (2) This class detects male koala calls by detecting the characteristic oscillations of their snoring or inhalations.
     ///     These snoring oscillations = approx 20-50 per second.
     ///     They are not constant but tend to increase in rate through the inhalation.
-    /// 
-    /// (3) In order to detect 50 oscillations/sec, we need at the very least 100 frames/sec and preferably a frame rate = 150/sec 
+    ///
+    /// (3) In order to detect 50 oscillations/sec, we need at the very least 100 frames/sec and preferably a frame rate = 150/sec
     ///        so that a period = 50/s sits near the middle of the array of DCT coefficients.
-    ///        
-    /// (4) Frame rate is affected by three parameters: 1) SAMPLING RATE; 2) FRAME LENGTH; 3) FRAME OVERLAP. 
+    ///
+    /// (4) Frame rate is affected by three parameters: 1) SAMPLING RATE; 2) FRAME LENGTH; 3) FRAME OVERLAP.
     ///     If the SR ~= 170640, the FRAME LENGTH should = 256 or 512.
     ///     The best way to adjust frame rate is to adjust frame overlap. I finally decided on the option of automatically calculating the frame overlap
     ///     to suit the maximum oscillation to be detected.
     ///     This calculation is done by the method OscillationDetector.CalculateRequiredFrameOverlap();
-    ///     
+    ///
     /// (5) One should not set the DCT length to be too long because (1) the DCT is expensive to calculate.
     ///      and (2) the koala oscillation is not constant but the DCT assumes stationarity. 0.3s is good for koala. 0.5s - 1.0s is OK for canetoad.
-    ///     
-    /// (6) To reduce the probability of false-positives, the Koala Recognizer filters out oscillation events 
-    ///     that are not accompanied by neighbouring oscillation events within 4 seconds. 
+    ///
+    /// (6) To reduce the probability of false-positives, the Koala Recognizer filters out oscillation events
+    ///     that are not accompanied by neighbouring oscillation events within 4 seconds.
     ///     This filtering is done in the method KoalaMale.FilterMaleKoalaEvents().
-    ///     
+    ///
     /// The action code for this analysis (to enter on the command line) is "KoalaMale".
     /// </summary>
     public class KoalaMale : AbstractStrongAnalyser
@@ -88,11 +83,11 @@ namespace AnalysisPrograms
             {
                 return new AnalysisSettings
                            {
-                               SegmentMaxDuration = TimeSpan.FromMinutes(1), 
-                               SegmentMinDuration = TimeSpan.FromSeconds(30), 
-                               SegmentMediaType = MediaTypes.MediaTypeWav, 
-                               SegmentOverlapDuration = TimeSpan.Zero, 
-                               SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
+                               SegmentMaxDuration = TimeSpan.FromMinutes(1),
+                               SegmentMinDuration = TimeSpan.FromSeconds(30),
+                               SegmentMediaType = MediaTypes.MediaTypeWav,
+                               SegmentOverlapDuration = TimeSpan.Zero,
+                               SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
                            };
             }
         }
@@ -175,7 +170,7 @@ namespace AnalysisPrograms
                         Indices = indicesFname,
                         Sgram = sonogramFname,
                         Start = start.TotalSeconds,
-                        Duration = duration.TotalSeconds
+                        Duration = duration.TotalSeconds,
                     };
                 }
 
@@ -267,7 +262,7 @@ namespace AnalysisPrograms
             // BETTER TO CALUCLATE THIS. IGNORE USER!
             // double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);
 
-            // duration of DCT in seconds 
+            // duration of DCT in seconds
             double dctDuration = double.Parse(configDict[AnalysisKeys.DctDuration]);
 
             // minimum acceptable value of a DCT coefficient
@@ -279,30 +274,30 @@ namespace AnalysisPrograms
             // ignore oscillations above this threshold freq
             int maxOscilFreq = int.Parse(configDict[AnalysisKeys.MaxOscilFreq]);
 
-            // min duration of event in seconds 
+            // min duration of event in seconds
             double minDuration = double.Parse(configDict[AnalysisKeys.MinDuration]);
 
-            // max duration of event in seconds                 
+            // max duration of event in seconds
             double maxDuration = double.Parse(configDict[AnalysisKeys.MaxDuration]);
 
             // min score for an acceptable event
             double eventThreshold = double.Parse(configDict[AnalysisKeys.EventThreshold]);
 
-            // seems to work  -- frameSize = 512 and 1024 does not catch all oscillations; 
+            // seems to work  -- frameSize = 512 and 1024 does not catch all oscillations;
             const int FrameSize = 256;
 
             double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
-                recording.SampleRate, 
-                FrameSize, 
+                recording.SampleRate,
+                FrameSize,
                 maxOscilFreq);
 
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
                                  {
-                                     SourceFName = recording.BaseName, 
-                                     WindowSize = FrameSize, 
-                                     WindowOverlap = windowOverlap, 
-                                     NoiseReductionType = NoiseReductionType.None
+                                     SourceFName = recording.BaseName,
+                                     WindowSize = FrameSize,
+                                     WindowOverlap = windowOverlap,
+                                     NoiseReductionType = NoiseReductionType.None,
                                  };
 
             ////sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
@@ -328,18 +323,18 @@ namespace AnalysisPrograms
             List<AcousticEvent> events;
             double[,] hits;
             Oscillations2012.Execute(
-                (SpectrogramStandard)sonogram, 
-                minHz, 
-                maxHz, 
-                dctDuration, 
-                minOscilFreq, 
-                maxOscilFreq, 
-                dctThreshold, 
-                eventThreshold, 
-                minDuration, 
-                maxDuration, 
-                out scores, 
-                out events, 
+                (SpectrogramStandard)sonogram,
+                minHz,
+                maxHz,
+                dctDuration,
+                minOscilFreq,
+                maxOscilFreq,
+                dctThreshold,
+                eventThreshold,
+                minDuration,
+                maxDuration,
+                out scores,
+                out events,
                 out hits);
 
             // remove isolated koala events - this is to remove false positive identifications
@@ -365,11 +360,11 @@ namespace AnalysisPrograms
 
             return new KoalaMaleResults
                        {
-                           Events = events, 
-                           Hits = hits, 
-                           Plot = plot, 
-                           RecordingtDuration = recordingDuration, 
-                           Sonogram = sonogram
+                           Events = events,
+                           Hits = hits,
+                           Plot = plot,
+                           RecordingtDuration = recordingDuration,
+                           Sonogram = sonogram,
                        };
         }
 
@@ -395,22 +390,22 @@ namespace AnalysisPrograms
             {
                 // Process entire file
                 AudioFilePreparer.PrepareFile(
-                    arguments.Source, 
-                    tempF, 
-                    new AudioUtilityRequest { TargetSampleRate = ResampleRate }, 
+                    arguments.Source,
+                    tempF,
+                    new AudioUtilityRequest { TargetSampleRate = ResampleRate },
                     analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
             else
             {
                 AudioFilePreparer.PrepareFile(
-                    arguments.Source, 
-                    tempF, 
+                    arguments.Source,
+                    tempF,
                     new AudioUtilityRequest
                         {
-                            TargetSampleRate = ResampleRate, 
-                            OffsetStart = start, 
-                            OffsetEnd = start.Add(duration)
-                        }, 
+                            TargetSampleRate = ResampleRate,
+                            OffsetStart = start,
+                            OffsetEnd = start.Add(duration),
+                        },
                     analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
 
@@ -511,7 +506,7 @@ namespace AnalysisPrograms
 
             var analysisResults = new AnalysisResult2(analysisSettings, results.RecordingtDuration)
                                       {
-                                          AnalysisIdentifier = this.Identifier
+                                          AnalysisIdentifier = this.Identifier,
                                       };
 
             analysisResults.Events = results.Events.ToArray();
@@ -526,9 +521,9 @@ namespace AnalysisPrograms
             {
                 TimeSpan unitTime = TimeSpan.FromMinutes(1.0);
                 analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(
-                    analysisResults.Events, 
-                    unitTime, 
-                    analysisResults.SegmentAudioDuration, 
+                    analysisResults.Events,
+                    unitTime,
+                    analysisResults.SegmentAudioDuration,
                     0);
 
                 this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
@@ -547,11 +542,11 @@ namespace AnalysisPrograms
         }
 
         public override void SummariseResults(
-            AnalysisSettings settings, 
-            FileSegment inputFileSegment, 
-            EventBase[] events, 
-            SummaryIndexBase[] indices, 
-            SpectralIndexBase[] spectralIndices, 
+            AnalysisSettings settings,
+            FileSegment inputFileSegment,
+            EventBase[] events,
+            SummaryIndexBase[] indices,
+            SpectralIndexBase[] spectralIndices,
             AnalysisResult2[] results)
         {
             // noop
@@ -577,10 +572,10 @@ namespace AnalysisPrograms
         #region Methods
 
         private static Image DrawSonogram(
-            BaseSonogram sonogram, 
-            double[,] hits, 
-            Plot scores, 
-            List<AcousticEvent> predictedEvents, 
+            BaseSonogram sonogram,
+            double[,] hits,
+            Plot scores,
+            List<AcousticEvent> predictedEvents,
             double eventThreshold)
         {
             var image = new Image_MultiTrack(sonogram.GetImage());
@@ -604,9 +599,9 @@ namespace AnalysisPrograms
             if ((predictedEvents != null) && (predictedEvents.Count > 0))
             {
                 image.AddEvents(
-                    predictedEvents, 
-                    sonogram.NyquistFrequency, 
-                    sonogram.Configuration.FreqBinCount, 
+                    predictedEvents,
+                    sonogram.NyquistFrequency,
+                    sonogram.Configuration.FreqBinCount,
                     sonogram.FramesPerSecond);
             }
 

@@ -1,22 +1,21 @@
-﻿using Acoustics.Shared;
-
-namespace Dong.Felt
+﻿namespace Dong.Felt
 {
     using System;
     using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
     using System.Linq;
     using System.Text;
-    using System.IO;
+    using Acoustics.Shared;
     using Acoustics.Shared.Csv;
-    using Representations;
+    using AnalysisBase;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
-    using System.Drawing;
     using Dong.Felt.Configuration;
-    using TowseyLibrary;
-    using AnalysisBase;
-    using Dong.Felt.ResultsOutput;
     using Dong.Felt.Features;
+    using Dong.Felt.ResultsOutput;
+    using Representations;
+    using TowseyLibrary;
 
     public class CSVResults
     {
@@ -25,16 +24,16 @@ namespace Dong.Felt
 
         public static List<Query> CsvToQuery(FileInfo queryCsvfile)
         {
-            return Csv.ReadFromCsv<Query>(queryCsvfile).ToList();           
+            return Csv.ReadFromCsv<Query>(queryCsvfile).ToList();
         }
 
         //public static string Test(IEnumerable<string> i)
-        //{ 
-        //    return string.Join(", ", i); 
+        //{
+        //    return string.Join(", ", i);
         //}
 
         public static AcousticEvent CsvToAcousticEvent(FileInfo file)
-        {           
+        {
             var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
             var header = lines.Take(1).ToList();
             var lines1 = lines.Skip(1);
@@ -52,8 +51,8 @@ namespace Dong.Felt
                     result.TimeStart = double.Parse(csvRow[3]);
                     result.TimeEnd = double.Parse(csvRow[4]);
                     result.Duration = double.Parse(csvRow[5]);
-                    //result.FreqBinCount = int.Parse(csvRow[6]);   
-                }               
+                    //result.FreqBinCount = int.Parse(csvRow[6]);
+                }
             }
             return result;
         }
@@ -65,7 +64,7 @@ namespace Dong.Felt
             var lines1 = lines.Skip(1);
             var results = new List<MFCC>();
             foreach (var csvRow in lines1)
-            {                
+            {
                 var mfccItem = new MFCC();
                 for (var i = 0; i < csvRow.Count(); i++)
                 {
@@ -83,9 +82,9 @@ namespace Dong.Felt
         {
             return Csv.ReadFromCsv<RidgeDescriptionNeighbourhoodRepresentation>(file).ToList();
         }
-       
-        /// Write ridgeNeighbourhoodRepresentation list into csv file by using CsvTools.WriteResultsToCsv. 
-        /// Notice, this method can only write the public properties in the class and it should have get and set.  
+
+        /// Write ridgeNeighbourhoodRepresentation list into csv file by using CsvTools.WriteResultsToCsv.
+        /// Notice, this method can only write the public properties in the class and it should have get and set.
         public static void NeighbourhoodRepresentationsToCSV(FileInfo outputFilePath, List<RidgeDescriptionNeighbourhoodRepresentation> nhList)
         {
             Csv.WriteToCsv(outputFilePath, nhList);
@@ -98,7 +97,7 @@ namespace Dong.Felt
 
         public static void PointOfInterestListToCSV(FileInfo outputFilePath, List<PointOfInterest> poiList)
         {
-            Csv.WriteToCsv(outputFilePath, poiList);       
+            Csv.WriteToCsv(outputFilePath, poiList);
         }
 
         public static void RidgeListToCSV(FileInfo outputFilePath, List<Ridge> ridgeList)
@@ -116,7 +115,7 @@ namespace Dong.Felt
                 var item = 0.0;
                 if (csvRow[0] != "")
                 {
-                    item = double.Parse(csvRow[0]); 
+                    item = double.Parse(csvRow[0]);
                 }
                 result.Add(item);
             }
@@ -124,10 +123,10 @@ namespace Dong.Felt
         }
 
         public static void MatchingStatResultsToCSV(FileInfo file, List<MathingResultsAnalysis> matchedResults)
-        {         
+        {
             Csv.WriteToCsv(file, matchedResults);
         }
-        
+
         /// <summary>
         /// Write ridgeRegionRepresentation list into csv file.
         /// </summary>
@@ -199,8 +198,8 @@ namespace Dong.Felt
                 var similarityDistanceScore = scoreList[i].Item1;
                 var regionTimePostion = scoreList[i].Item2;
                 var regionFrequencyPosition = scoreList[i].Item3;
-                results.Add(new List<string>() { similarityDistanceScore.ToString(), regionFrequencyPosition.ToString(), 
-                            regionTimePostion.ToString() });
+                results.Add(new List<string>() { similarityDistanceScore.ToString(), regionFrequencyPosition.ToString(),
+                            regionTimePostion.ToString(), });
             }
             File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
         }

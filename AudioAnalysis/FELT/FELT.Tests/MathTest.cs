@@ -27,7 +27,7 @@
         public TestContext TestContext { get; set; }
 
         #region Additional test attributes
-        // 
+        //
         //You can use the following additional attributes as you write your tests:
         //
         //Use ClassInitialize to run code before running the first test in the class
@@ -69,7 +69,7 @@
             double expected = 0.0;
             double actual;
             actual = Math.euclideanDist<double>(vectorP, vectorQ);
-            Assert.AreEqual(expected, actual);      
+            Assert.AreEqual(expected, actual);
         }
 
         /// <summary>
@@ -113,7 +113,7 @@
         {
             IEnumerable<object> vectorP = new IComparable[] { 1.0, 2, IntegerZ1440.Create(16) };
             IEnumerable<object> vectorQ = new IComparable[] { 5.0, -23.3, IntegerZ1440.Create(3) };
-         
+
             double expected = 28.724379888867923130;
             double actual;
             actual = Math.euclideanDist(vectorP, vectorQ);
@@ -195,7 +195,7 @@
 
             var mine = Math.Array.mean(input);
             Assert.AreEqual(Expected, mine, MinDeltaForDoubleTests);
-   
+
         }
     }
 }

@@ -96,7 +96,7 @@
                 MixDownToMono = true,
                 OffsetStart = request.Start,
                 OffsetEnd = request.End,
-                TargetSampleRate = 22050
+                TargetSampleRate = 22050,
             };
 
             this.audioUtility.Modify(source, sourceMimeType, tempFile, MediaTypes.MediaTypeWav, audioUtilRequest);
@@ -186,7 +186,7 @@
         }
 
         /// <summary>
-        /// Get a spectrogram. 
+        /// Get a spectrogram.
         /// Channel must be > 0.
         /// </summary>
         /// <param name="reader">Wav Reader.</param>
@@ -235,7 +235,7 @@
             double windowPower = CalculateWindowPower(windowSize, windowWeights);
 
             // get coefficient count
-            // f[0]=DC;  f[256]=Nyquist  
+            // f[0]=DC;  f[256]=Nyquist
             int coeffCount = (windowSize / 2) + 1;
 
             // get amplitude sonogram.
@@ -627,7 +627,7 @@
         /// Does so using a series of overlapped matrices.
         /// TODO!!!! COULD SIMPLY THIS METHOD. JUST CALCULATE MODE FOR EACH FREQ BIN WITHOUT OVERLAP ....
         /// .... AND THEN APPLY MORE SEVERE SMOOTHING TO THE MODAL NOISE PROFILE IN PREVIOUS METHOD.
-        /// 
+        ///
         /// COMPARE THIS METHOD WITH SNR.SubtractModalNoise().
         /// </summary>
         /// <param name="matrix">Audio sample matrix.</param>
@@ -715,7 +715,7 @@
 
         /// <summary>
         /// Returns the submatrix of passed matrix.
-        /// Assume that r1 less than r2, c1 less than c2. 
+        /// Assume that r1 less than r2, c1 less than c2.
         /// Row, column indices start at 0.
         /// </summary>
         /// <param name="M"></param>
@@ -742,7 +742,7 @@
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="data"></param>
         /// <param name="binCount"></param>
@@ -831,7 +831,7 @@
         }
 
         /// <summary>
-        /// returns the index of max value in an array of doubles. 
+        /// returns the index of max value in an array of doubles.
         /// array index starts at zero.
         /// </summary>
         /// <param name="data">audio data.</param>
