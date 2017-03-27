@@ -439,7 +439,7 @@ namespace Acoustics.Tools.Wav
         /// Get the zero-indexed channel data from channel <c>c</c>.
         /// </summary>
         /// <param name="c">The zero-indexed channel to get.</param>
-        /// <returns></returns>
+        /// <returns>the requested channel</returns>
         public double[] GetChannel(int c)
         {
             Contract.Requires<IndexOutOfRangeException>(c >= 0);
@@ -449,7 +449,7 @@ namespace Acoustics.Tools.Wav
             int j, cc = this.Channels;
             for (int i = 0; i < channelSignal.Length; i++)
             {
-                j = i * cc + c;
+                j = (i * cc) + c;
                 channelSignal[i] = this.samples[j];
             }
 
