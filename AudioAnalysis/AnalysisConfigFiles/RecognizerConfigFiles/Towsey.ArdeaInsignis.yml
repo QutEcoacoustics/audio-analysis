@@ -35,10 +35,10 @@ SegmentDuration: 1
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 5
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-SaveIntermediateWavFiles: Never
+SaveIntermediateWavFiles: WhenEventsDetected
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-SaveSonogramImages: Never
+SaveSonogramImages: WhenEventsDetected
 # DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 ParallelProcessing: false
