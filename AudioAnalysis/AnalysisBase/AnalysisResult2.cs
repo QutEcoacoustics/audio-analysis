@@ -23,7 +23,7 @@ namespace AnalysisBase
     public class AnalysisResult2 : IComparable<AnalysisResult2>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AnalysisResult2"/> class. 
+        /// Initializes a new instance of the <see cref="AnalysisResult2"/> class.
         /// This is the standard result class for <c>IAnalyser2</c> results.
         /// </summary>
         /// <param name="settingsUsed">

@@ -1,11 +1,11 @@
 # Load the NMF package before using this function
-# library(NMF)
 
 NMF.analysis <- function(amplitudes.matrix){
-  
+  library(NMF)
+  set.seed(10)
 # randomise the spectrogram matrix (by rows)
-# row.no<-sample(nrow(amplitudes.matrix))
-# random.amp<-amplitudes.matrix[row.no, ]
+#   row.no<-sample(nrow(amplitudes.matrix))
+#   random.amp<-amplitudes.matrix[row.no, ]
 
 # randomise the spectrogram matrix (by columns)
   col.no<-sample(ncol(amplitudes.matrix))

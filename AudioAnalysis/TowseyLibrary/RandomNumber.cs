@@ -1,11 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-
-
 namespace TowseyLibrary
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
 	public class RandomNumber
 	{
 		Random random;
@@ -68,7 +67,7 @@ namespace TowseyLibrary
 			for (int k = N - 1; k >= 0; k--) // in decending order
 			{
 				R = rn.GetInt(k);                 // a random integer between 0 and k
-				valueAtIndexK  = randomArray[k];  // swap the numbers in position K and romdon  position R 
+				valueAtIndexK  = randomArray[k];  // swap the numbers in position K and romdon  position R
 				randomArray[k] = randomArray[R];
 				randomArray[R] = valueAtIndexK;
 			}

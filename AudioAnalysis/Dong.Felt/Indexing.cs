@@ -19,7 +19,7 @@ namespace Dong.Felt
 
     public class Indexing
     {
-        // Todo: extract query region representaiton by providing the boundary information of the query. 
+        // Todo: extract query region representaiton by providing the boundary information of the query.
         public static List<RegionRepresentation> ExtractQueryRegionRepresentation(Query query, int neighbourhoodLength,
            string audioFileName, SpectrogramStandard spectrogram)
         {
@@ -52,13 +52,13 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// To extract query region representation from a list of nhRepr of the query audio file. 
+        /// To extract query region representation from a list of nhRepr of the query audio file.
         /// </summary>
         /// <param name="query"></param>
         /// <param name="ridgeNeighbourhood"></param>
         /// <param name="audioFileName"></param>
         /// <returns>
-        /// returns a list of region representation, each region represtation contains a ridge nh representation and some derived property. 
+        /// returns a list of region representation, each region represtation contains a ridge nh representation and some derived property.
         /// </returns>
         public static List<RegionRepresentation> ExtractQueryRegionRepresentationFromAudioNhRepresentations(Query query, int neighbourhoodLength,
             List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, string audioFileName)
@@ -102,7 +102,7 @@ namespace Dong.Felt
                     tempResult.Add(ridgeNeighbourhood[rowIndex, colIndex]);
                 }
             }
-            // The top left nh frequency and frame index will be the index of a region representation. 
+            // The top left nh frequency and frame index will be the index of a region representation.
             for (int i = 0; i < tempResult.Count; i++)
             {
                 var frequencyIndex = tempResult[0].FrequencyIndex;
@@ -118,13 +118,13 @@ namespace Dong.Felt
 
         /// <summary>
         /// To extract query region representation from a list of nhRepr of the query audio file.
-        /// This version is to add buffer zone to the query so that small patterns can be differenciated with large patterns. 
+        /// This version is to add buffer zone to the query so that small patterns can be differenciated with large patterns.
         /// </summary>
         /// <param name="query"></param>
         /// <param name="ridgeNeighbourhood"></param>
         /// <param name="audioFileName"></param>
         /// <returns>
-        /// returns a list of region representations, each region represtation contains a ridge nh representation and some derived property. 
+        /// returns a list of region representations, each region represtation contains a ridge nh representation and some derived property.
         /// </returns>
         public static List<RegionRepresentation> ExtractQRegionReprFromNhRepreList(Query query, int neighbourhoodLength,
             List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, string audioFileName)
@@ -189,7 +189,7 @@ namespace Dong.Felt
                     tempResult.Add(ridgeNeighbourhood[rowIndex, colIndex]);
                 }
             }
-            // The top left nh frequency and frame index will be the index of a region representation. 
+            // The top left nh frequency and frame index will be the index of a region representation.
             for (int i = 0; i < tempResult.Count; i++)
             {
                 var frequencyIndex = tempResult[0].FrequencyIndex;
@@ -205,7 +205,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// This version is to extract query region repre from a bunch of nh representation. 
+        /// This version is to extract query region repre from a bunch of nh representation.
         /// This is done by specifying the query bounds through query csv files.
         /// </summary>
         /// <param name="query"></param>
@@ -258,7 +258,7 @@ namespace Dong.Felt
                     tempResult.Add(ridgeNeighbourhood[rowIndex, colIndex]);
                 }
             }
-            // The top left nh frequency and frame index will be the index of a region representation. 
+            // The top left nh frequency and frame index will be the index of a region representation.
             for (int i = 0; i < tempResult.Count; i++)
             {
                 var frequencyIndex = tempResult[0].FrequencyIndex;
@@ -273,13 +273,13 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// To extract query region representation from an audio file which contains the query. 
+        /// To extract query region representation from an audio file which contains the query.
         /// </summary>
         /// <param name="query"></param>
         /// <param name="ridgeNeighbourhood"></param>
         /// <param name="audioFileName"></param>
         /// <returns>
-        /// returns a list of acoustic event representation, each region represtation contains a ridge nh representation and some derived property. 
+        /// returns a list of acoustic event representation, each region represtation contains a ridge nh representation and some derived property.
         /// </returns>
         public static List<EventBasedRepresentation> QueryRepresentationFromEventRepresentations(Query query, int neighbourhoodLength,
             List<EventBasedRepresentation> eventRepresentationList, string audioFileName,
@@ -421,7 +421,7 @@ namespace Dong.Felt
             var startRowIndex = queryRepresentation.StartRowIndex;
             var endRowIndex = queryRepresentation.EndRowIndex;
             var colRange = queryRepresentation.fftFeatures.GetLength(1) - 1;
-            // The one sets the none structure tensor point to null features. 
+            // The one sets the none structure tensor point to null features.
             var stMatrix = StatisticalAnalysis.TransposeStPOIsToMatrix(stList, rowsCount, colsCount);
             // The one sets all the features in the region to 0,  this one is useful to calculate the distance based on purely Euclidean
             //var stMatrix = StatisticalAnalysis.TransposePOIsToMatrix2(stList, rowsCount, colsCount);
@@ -436,11 +436,11 @@ namespace Dong.Felt
                     // check whether the region is null
                     var regionItem = new RegionRepresentation();
                     //if (!StatisticalAnalysis.checkNullRegion(subRegionMatrix))
-                    //{                      
+                    //{
                     regionItem.fftFeatures = subRegionMatrix;
                     //}
                     //else
-                    //{                        
+                    //{
                     //    regionItem.fftFeatures = null;
 
                     //}
@@ -548,13 +548,13 @@ namespace Dong.Felt
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet21 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet22)
-            {               
+            {
                 result = Indexing.Feature5EuclideanDist2(query, candidates,
                     weight1, weight2, featurePropSet);
             }
             return result;
         }
-        
+
         public static List<Candidates> WeightedEuclideanDistance(List<RegionRepresentation> query,
             List<RegionRepresentation> candidates, double weight1, double weight2)
         {
@@ -574,7 +574,7 @@ namespace Dong.Felt
             return result;
         }
 
-        // Need to be changed. 
+        // Need to be changed.
         public static List<Candidates> EuclideanDistanceOnFFTMatrix(RegionRepresentation query, List<RegionRepresentation> candidates,
             double matchedThreshold, double weight)
         {
@@ -592,8 +592,8 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// To calculate the distance between regionRepresentation of a query and a candidate. 
-        /// This distance calculation method will be based on 2 values feature vector. 
+        /// To calculate the distance between regionRepresentation of a query and a candidate.
+        /// This distance calculation method will be based on 2 values feature vector.
         /// </summary>
         /// <param name="query"></param>
         /// <param name="candidates"></param>
@@ -608,7 +608,7 @@ namespace Dong.Felt
             var candidatesCount = candidates.Count;
             for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
             {
-                // The frequencyDifference is a problem. 
+                // The frequencyDifference is a problem.
                 tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
                 var duration = tempRegionList[0].Duration.TotalMilliseconds;
                 var distance = SimilarityMatching.WeightedDistanceScoreRegionRepresentation2(query, tempRegionList, weight1, weight2);
@@ -621,7 +621,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// This distance calculation method will be based on 4 values feature vector. 
+        /// This distance calculation method will be based on 4 values feature vector.
         /// </summary>
         /// <param name="query"></param>
         /// <param name="candidates"></param>
@@ -639,7 +639,7 @@ namespace Dong.Felt
             var candidatesCount = candidates.Count;
             for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
             {
-                // The frequencyDifference is a problem. 
+                // The frequencyDifference is a problem.
                 tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
                 var duration = tempRegionList[0].Duration.TotalMilliseconds;
                 var distance = SimilarityMatching.WeightedDistanceScoreRegionRepresentation3(query, tempRegionList, weight1, weight2,
@@ -652,9 +652,9 @@ namespace Dong.Felt
             return result;
         }
 
-        
 
-        // this function is used for calculating the distance based on HOG features. 
+
+        // this function is used for calculating the distance based on HOG features.
         public static List<Candidates> HoGEuclideanDist(List<RegionRepresentation> query, List<RegionRepresentation> candidates)
         {
             var result = new List<Candidates>();
@@ -663,7 +663,7 @@ namespace Dong.Felt
             var candidatesCount = candidates.Count;
             for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
             {
-                // The frequencyDifference is a problem. 
+                // The frequencyDifference is a problem.
                 tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
                 var duration = tempRegionList[0].Duration.TotalMilliseconds;
                 var distance = SimilarityMatching.DistanceHoGRepresentation(query, tempRegionList);
@@ -676,8 +676,8 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// Euclidean Distance calculation for feature5. 
-        /// This version is a basic version to select candidates to compared, on average, 300 candidates will be chosen for each 1 minute recording. 
+        /// Euclidean Distance calculation for feature5.
+        /// This version is a basic version to select candidates to compared, on average, 300 candidates will be chosen for each 1 minute recording.
         /// </summary>
         /// <param name="query"></param>
         /// <param name="candidates"></param>
@@ -691,7 +691,7 @@ namespace Dong.Felt
             var candidatesCount = candidates.Count;
             for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
             {
-                // The frequencyDifference is a problem. 
+                // The frequencyDifference is a problem.
                 tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
                 var notNullNhCount = 0;
                 var nhCountInRegion = tempRegionList.Count;
@@ -718,7 +718,7 @@ namespace Dong.Felt
 
 
         /// <summary>
-        /// Euclidean Distance calculation for feature5. 
+        /// Euclidean Distance calculation for feature5.
         /// This version is on compressed spectrogram.
         /// </summary>
         /// <param name="query"></param>
@@ -789,7 +789,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// Euclidean Distance calculation for feature5. 
+        /// Euclidean Distance calculation for feature5.
         /// This version aims to reduce the amount of potential candidates to be compared. on average, 100 candidates will be chosen for each 1 minute recording.
         /// </summary>
         /// <param name="query"></param>
@@ -881,7 +881,7 @@ namespace Dong.Felt
             var candidatesCount = candidates.Count;
             for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
             {
-                // The frequencyDifference is a problem. 
+                // The frequencyDifference is a problem.
                 tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
                 var matchedNotNullNhCount = 0;
                 var notNullNhCountInQ = 0;
@@ -918,7 +918,7 @@ namespace Dong.Felt
             // to get the distance and frequency band index
             var result = new List<double>();
             var vectorCount = candidates.Count;
-            // each sublist has the same count, so here we want to get its length from the first value. 
+            // each sublist has the same count, so here we want to get its length from the first value.
             var regionCountINVector = candidates[0].Count;
             var regionIndicator = 0;
             var j = 0;
@@ -962,8 +962,8 @@ namespace Dong.Felt
 
         /// <summary>
         /// Function to scan a list of representation in an audio file  within the same frequency band with the query.
-        /// This name should be changed, because it is not doing indexing. It atually extracts the a list of region representation. 
-        /// And the region size is the same as the query. 
+        /// This name should be changed, because it is not doing indexing. It atually extracts the a list of region representation.
+        /// And the region size is the same as the query.
         /// </summary>
         /// <param name="query"></param>
         /// <param name="queryRepresentation"></param>
@@ -1277,7 +1277,7 @@ namespace Dong.Felt
             return score;
         }
 
-        //The score calculated here is just based on masks. 
+        //The score calculated here is just based on masks.
         public static double ScoreOver2GauMasks(RegionRepresentation q, RegionRepresentation c, int n, double weight1, double weight2)
         {
             var score = 0.0;
@@ -1475,7 +1475,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// It takes in 2 event-based region representation, then it generates three score values, overlap score, fEntropy score, and tEntropy score.   
+        /// It takes in 2 event-based region representation, then it generates three score values, overlap score, fEntropy score, and tEntropy score.
         /// </summary>
         /// <param name="events1"></param>
         /// <param name="events2"></param>
@@ -1587,7 +1587,7 @@ namespace Dong.Felt
                 {
                     if (e.Area > 0.1 * majorEventArea)
                     {
-                        // Bottom and Left will be used for calculating overlap score.              
+                        // Bottom and Left will be used for calculating overlap score.
                         var item = new EventBasedRepresentation(e.TimeScale, e.FreqScale, e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
                         var eBottom = e.Bottom;
                         item.Bottom = eBottom - regionBottom;
@@ -1599,7 +1599,7 @@ namespace Dong.Felt
                         // Centroid will be used for finding nearest events to compare.
                         var eCentroidX = e.Centroid.X - regionLeft;
                         var eCentroidY = e.Centroid.Y - regionBottom;
-                        // 
+                        //
                         item.Centroid = new Point(eCentroidX, eCentroidY);
                         item.Area = item.Width * item.Height;
                         result.Add(item);

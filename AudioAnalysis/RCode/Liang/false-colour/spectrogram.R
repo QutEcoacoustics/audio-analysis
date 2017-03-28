@@ -1,32 +1,31 @@
 
-spectrogram <- function(filepath, TFRAME=512){
-  
-  library(tuneR)
+spectrogram <- function(signal, bit, TFRAME=512){
 
   #read and shape the original signal
   hamming <- 0.54 - 0.46 * cos(2 * pi * c(1:TFRAME) / (TFRAME - 1))
-
-  #mono signal (left channel)
-  # origin <- readWave('cabin_EarlyMorning4_CatBirds20091101-000000_0min.wav')
-  origin <- readWave(filepath)
-  sampRate <- origin@samp.rate
-  bit <- origin@bit
-  left <- origin@left
-  len <- length(left)
-  sig <- left[c(1:(len - len %% TFRAME))]
-  sig <- sig / (2 ^ (bit - 1))        #normalised by the maximum signed value of 16 bit
+  
+  #segment the signal to an integer number of frames
+  len <- length(signal)
+  sig <- signal[c(1:(len - len %% TFRAME))]
+  
+  #normalised by the maximum signed value of 16 bit
+  sig <- sig / (2 ^ (bit - 1))
+  
+  #reshape the signal to a matrix for computational convenience
   nframe <- length(sig) / TFRAME
   dim(sig) <- c(TFRAME, nframe)
   sig <- Mod(mvfft(sig * hamming))
 
-  # smooth the data
+  # smooth the amplitudes value
   temp <- sig[1, ]
   sig <- filter(sig, rep(1 / 3, 3))
   sig[1, ] <- temp
+  
+  # subset the valid frequency based on Nyquist theory
   amp <- sig[c(1:(TFRAME / 2)), ]
+  amp <- t(amp)
 
-  result <- list(amp=amp, sampleRate=sampRate, bit=bit)
-  return(result)
+  return(amp)
   
   ######################
   # draw the spectrogram

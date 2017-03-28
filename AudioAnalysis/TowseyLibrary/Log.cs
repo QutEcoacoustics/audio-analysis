@@ -17,7 +17,7 @@ namespace TowseyLibrary
 
     public static class Log
     {
-        
+
 
         ////private const string MesgFormat = "{0:yyyy-MM-dd HH:mm:ss.fff}  {1}";
 
@@ -47,5 +47,5 @@ namespace TowseyLibrary
     }
 
 
-    
+
 }

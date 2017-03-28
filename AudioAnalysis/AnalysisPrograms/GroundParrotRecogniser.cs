@@ -3,7 +3,7 @@
 //   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
-//   
+//
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -77,7 +77,7 @@ namespace AnalysisPrograms
                 { 16.834467, 17.020227, 4694.238281, 4392.773438 },
                 { 17.147937, 17.264036, 4737.304688, 4478.906250 },
                 { 17.391746, 17.577506, 4823.437500, 4478.906250 },
-                { 17.705215, 17.821315, 4780.371094, 4521.972656 }
+                { 17.705215, 17.821315, 4780.371094, 4521.972656 },
             };
 
         #endregion
@@ -139,7 +139,7 @@ namespace AnalysisPrograms
                 ae.BorderColour = aedConfiguration.AedEventColor;
                 ae.SegmentStartOffset = segmentStartOffset;
                 ae.SegmentDuration = aed.Item2.Duration();
-                
+
                 eprEvents.Add(ae);
             }
 
@@ -292,7 +292,7 @@ namespace AnalysisPrograms
             var analysisResults = new AnalysisResult2(analysisSettings, results.Item1.Duration)
                                       {
                                           AnalysisIdentifier = this.Identifier,
-                                          Events = results.Item2.ToArray()
+                                          Events = results.Item2.ToArray(),
                                       };
             BaseSonogram sonogram = results.Item1;
 

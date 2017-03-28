@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-
-
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using TowseyLibrary;
+
     public static class Oscillations2010
     {
 
@@ -33,7 +31,7 @@ namespace AudioAnalysisTools
         /// <param name="hits">a matrix that show where there is an oscillation of sufficient amplitude in the correct range.
         ///                    Values in the matrix are the oscillation rate. i.e. if OR = 2.0 = 2 oscillations per second. </param>
         public static void Execute(SpectrogramStandard sonogram, bool doSegmentation, int minHz, int maxHz,
-                                   double dctDuration, double dctThreshold, bool normaliseDCT, int minOscilFreq, int maxOscilFreq, 
+                                   double dctDuration, double dctThreshold, bool normaliseDCT, int minOscilFreq, int maxOscilFreq,
                                    double scoreThreshold, double minDuration, double maxDuration,
                                    out double[] scores, out List<AcousticEvent> events, out Double[,] hits, out double[] intensity,
                                    out TimeSpan totalTime)
@@ -51,9 +49,9 @@ namespace AudioAnalysisTools
             var segmentEvents = tuple.Item1;
             intensity = tuple.Item5;
             Log.WriteLine("Number of segments={0}", segmentEvents.Count);
-            TimeSpan span1 = DateTime.Now.Subtract(startTime1); 
-            Log.WriteLine(" SEGMENTATION COMP TIME = " + span1.TotalMilliseconds.ToString() + "ms");            
-            DateTime startTime2 = DateTime.Now; 
+            TimeSpan span1 = DateTime.Now.Subtract(startTime1);
+            Log.WriteLine(" SEGMENTATION COMP TIME = " + span1.TotalMilliseconds.ToString() + "ms");
+            DateTime startTime2 = DateTime.Now;
 
             //DETECT OSCILLATIONS
             hits = DetectOscillationsInSonogram(sonogram, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT, minOscilFreq, maxOscilFreq, segmentEvents);
@@ -192,7 +190,7 @@ namespace AudioAnalysisTools
                         //    r += 6; //skip rows
                         //    continue;
                         //}
-                        
+
                         int lowFreqBuffer = 5;
                         double[] dct = MFCCStuff.DCT(array, cosines);
                         for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
@@ -202,7 +200,7 @@ namespace AudioAnalysisTools
                         double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
                               //DataTools.writeBarGraph(dct);
                               //LoggedConsole.WriteLine("oscilFreq ={0:f2}  (max index={1})  Amp={2:f2}", oscilFreq, indexOfMaxValue, dct[indexOfMaxValue]);
-                              
+
                         //calculate specificity i.e. what other oscillations are present.
                         //double offMaxAmplitude = 0.0;
                         //for (int i = lowFreqBuffer; i < dctLength; i++) offMaxAmplitude += dct[i];
@@ -384,7 +382,7 @@ namespace AudioAnalysisTools
         /// <param name="timeScale">frames per Second</param>
         /// <returns></returns>
         public static double[] FillScoreArray(double[] oscillations, double fillDuration, double timeScale)
-        {                   
+        {
             int L = oscillations.Length;
             var ret = new double[L];
             int fillLength = (int)Math.Round(timeScale * fillDuration);
@@ -437,7 +435,7 @@ namespace AudioAnalysisTools
             int maxBin = (int)(maxHz / freqBinWidth);
             int binCount = maxBin - minBin + 1;
             //double hitRange = binCount * 0.5 * 0.9; //set hit range slightly < half the bins. Half because only scan every second bin.
-            double hitRange = binCount * 0.9; //set hit range slightly less than bin count 
+            double hitRange = binCount * 0.9; //set hit range slightly less than bin count
             var scores = new double[rows];
             for (int r = 0; r < rows; r++)
             {
@@ -454,7 +452,7 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// for each frame, returns the average oscilation rate for those freq bins that register a hit. 
+        /// for each frame, returns the average oscilation rate for those freq bins that register a hit.
         /// </summary>
         /// <param name="hits"></param>
         /// <param name="minHz"></param>
@@ -490,7 +488,7 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// Converts the Oscillation Detector score array to a list of AcousticEvents. 
+        /// Converts the Oscillation Detector score array to a list of AcousticEvents.
         /// NOTE: Method assumes passed score array was normalised.
         /// See the CousticEvent class for a generic version of this method.
         /// </summary>
@@ -507,7 +505,7 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static List<AcousticEvent> ConvertODScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz,
                                                                double framesPerSec, double freqBinWidth, int freqBinCount,
-                                                               double scoreThreshold, double minDuration, double maxDuration, 
+                                                               double scoreThreshold, double minDuration, double maxDuration,
                                                                string fileName)
         {
             int count = scores.Length;
@@ -545,11 +543,11 @@ namespace AudioAnalysisTools
                         av /= (double)(i - startFrame - 1);
                         ev.SetScores(av, 0.0, 1.0);  // assumes passed score array was normalised.
 
-                        //calculate average oscillation freq and assign to ev.Score2 
+                        //calculate average oscillation freq and assign to ev.Score2
                         ev.Score2Name = "OscRate"; //score2 name
                         av = 0.0;
                         for (int n = startFrame + 1; n < (i - 1); n++) av += oscFreq[n];//ignore first and last frames
-                        ev.Score2 = av / (double)(i - startFrame - 1); 
+                        ev.Score2 = av / (double)(i - startFrame - 1);
                         events.Add(ev);
                     }
             } // end of pass over all frames
@@ -597,7 +595,7 @@ namespace AudioAnalysisTools
 
             double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); //set up the cosine coefficients
             double[] dct = MFCCStuff.DCT(A, cosines);
-            
+
             for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
             //DataTools.writeBarGraph(dct);
             for (int i = 0; i < 3; i++) dct[i] = 0.0;   //remove low freq oscillations from consideration

@@ -54,7 +54,7 @@ namespace AnalysisPrograms.Recognizers.Base
             {
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = 0.1,
-                WindowSize = 512                
+                WindowSize = 512,
             };
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
 
@@ -98,7 +98,7 @@ namespace AnalysisPrograms.Recognizers.Base
                     output.Plots.ForEach(p => p.ScaleDataArray(sonogram.FrameCount));
 
                     plots.AddRange(output.Plots);
-                    
+
                 }
             }
 
@@ -112,16 +112,16 @@ namespace AnalysisPrograms.Recognizers.Base
                     ScoreTrack = scoreTrackImage,
                     Sonogram = sonogram,
                     Plots = plots,
-                    Hits = null
+                    Hits = null,
                 };
         }
 
         public override void SummariseResults(
-            AnalysisSettings settings, 
-            FileSegment inputFileSegment, 
-            EventBase[] events, 
-            SummaryIndexBase[] indices, 
-            SpectralIndexBase[] spectralIndices, 
+            AnalysisSettings settings,
+            FileSegment inputFileSegment,
+            EventBase[] events,
+            SummaryIndexBase[] indices,
+            SpectralIndexBase[] spectralIndices,
             AnalysisResult2[] results)
         {
             // no-op
@@ -151,8 +151,8 @@ namespace AnalysisPrograms.Recognizers.Base
                 recording,
                 configuration,
                 segmentStartOffset,
-                indices, 
-                outputDirectory, 
+                indices,
+                outputDirectory,
                 imageWidth);
             Log.Debug("MultiRecognizer: Completed single recognizer" + name);
 

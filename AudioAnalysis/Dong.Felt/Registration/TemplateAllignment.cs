@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Dong.Felt.Representations;
-using AudioAnalysisTools.StandardSpectrograms;
-
-
-namespace Dong.Felt.Registration
+﻿namespace Dong.Felt.Registration
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using Dong.Felt.Representations;
+
     /// <summary>
     /// This class aims to locate matching candidates.
     /// </summary>
@@ -15,7 +14,7 @@ namespace Dong.Felt.Registration
     {
         // This method does matching based on neighbourhood representation
         // each list of region representation is an candidate.
-        public static List<List<RegionRepresentation>> SearchCandidatesRegionBased(List<RegionRepresentation> template,     
+        public static List<List<RegionRepresentation>> SearchCandidatesRegionBased(List<RegionRepresentation> template,
             List<RegionRepresentation> candidatesLibrary, double percentageThreshold)
         {
             var results = new List<List<RegionRepresentation>>();
@@ -24,7 +23,7 @@ namespace Dong.Felt.Registration
             var candidatesCount = candidatesLibrary.Count;
             for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
             {
-                // The frequencyDifference is a problem. 
+                // The frequencyDifference is a problem.
                 tempRegionItem = StatisticalAnalysis.SubRegionFromRegionList(candidatesLibrary, i, regionCountInAcandidate);
                 var matchedNotNullNhCount = 0;
                 var notNullNhCountInQ = 0;
@@ -50,14 +49,14 @@ namespace Dong.Felt.Registration
             }
             return results;
         }
- 
+
         /// <summary>
         /// This method does matching based on event representation
         /// each list of event representation is an candidate.
         /// </summary>
         /// <param name="queryRepresentations"></param>
         /// <param name="candidateEventList"></param>
-        /// <param name="centroidFreqOffset"> 
+        /// <param name="centroidFreqOffset">
         /// </param>
         /// <returns></returns>
         public static List<RegionRepresentation> ExtractCandidateAE(SpectrogramStandard spectrogram,

@@ -153,22 +153,22 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 keys);
             timer.Stop();
             Log.Info("Time to read spectral index files = " + timer.Elapsed.TotalSeconds + " seconds");
-            
 
 
-            // TOP MOST ZOOMED-OUT IMAGES 
+
+            // TOP MOST ZOOMED-OUT IMAGES
             Log.Info("START DRAWING ZOOMED-OUT INDEX SPECTROGRAMS");
             foreach (double scale in imageScales)
             {
                 Log.Info("Starting scale: " + scale);
                 TimeSpan imageScale = TimeSpan.FromSeconds(scale);
                 TimeOffsetSingleLayerSuperTile[] superTiles = ZoomTiledSpectrograms.DrawSuperTilesFromIndexSpectrograms(
-                    ldsConfig, 
-                    indexProperties, 
-                    zoomConfig, 
-                    imageScale, 
+                    ldsConfig,
+                    indexProperties,
+                    zoomConfig,
+                    imageScale,
                     spectra,
-                    indexGeneration, 
+                    indexGeneration,
                     fileStem,
                     namingPattern.ChromeOption);
 
@@ -256,7 +256,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 current = next ?? generateStandardSpectrogramGenerator(minute);
 
                 next = minute + 1 < minuteCount ? generateStandardSpectrogramGenerator(minute + 1) : null;
-                
+
                 // ReSharper disable once ConditionIsAlwaysTrueOrFalse
 
                 // set SaveSuperTiles=false when want the tiler to save the images
@@ -286,7 +286,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                             next?.Value[i]);
                         Log.Debug("Begin tile production for minute: " + minute);
                     }
-                    
+
                 }
             }*/
 
@@ -326,9 +326,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// The index Wt.
         /// </param>
         public static void CombineFrameDataWithIndexData(
-            double[,] frameData, 
-            double[,] indexData, 
-            double frameWt, 
+            double[,] frameData,
+            double[,] indexData,
+            double frameWt,
             double indexWt)
         {
             int rowCount = frameData.GetLength(0); // number of rows should be same in both matrices
@@ -353,7 +353,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             IndexGenerationData indexGeneration,
             ImageChrome chromeOption)
         {
-            // TODO:  the following normalisation bounds could be passed instead of using hard coded. 
+            // TODO:  the following normalisation bounds could be passed instead of using hard coded.
             double min = tilingConfig.LowerNormalisationBoundForDecibelSpectrograms;
             double max = tilingConfig.UpperNormalisationBoundForDecibelSpectrograms;
 
@@ -373,12 +373,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string title = $"ZOOM SCALE={frameScale.TotalMilliseconds}ms/pixel ";
             Image titleBar = ZoomFocusedSpectrograms.DrawTitleBarOfZoomSpectrogram(title, spectrogramImage.Width);
             spectrogramImage = ZoomFocusedSpectrograms.FrameZoomSpectrogram(
-                spectrogramImage, 
-                titleBar, 
-                startTimeOfData, 
-                frameScale, 
-                config.XAxisTicInterval, 
-                nyquist, 
+                spectrogramImage,
+                titleBar,
+                startTimeOfData,
+                frameScale,
+                config.XAxisTicInterval,
+                nyquist,
                 herzInterval);
             return spectrogramImage;
         }
@@ -427,13 +427,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             for (int t = 0; t < superTileCount; t++)
             {
                 Image image = ZoomTiledSpectrograms.DrawOneScaledIndexSpectrogramTile(
-                    analysisConfig, 
+                    analysisConfig,
                     indexGeneration,
-                    indexProperties, 
-                    startTime, 
-                    dataScale, 
-                    imageScale, 
-                    superTileWidth, 
+                    indexProperties,
+                    startTime,
+                    dataScale,
+                    imageScale,
+                    superTileWidth,
                     spectra,
                     basename,
                     chromeOption);
@@ -441,9 +441,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 imageArray[t] = new TimeOffsetSingleLayerSuperTile
                                     {
                                         TimeOffset = startTime,
-                                        Scale = imageScale, 
-                                        SpectrogramType = SpectrogramType.Index, 
-                                        Image = image
+                                        Scale = imageScale,
+                                        SpectrogramType = SpectrogramType.Index,
+                                        Image = image,
                                     };
 
                 startTime += superTileDuration;
@@ -619,7 +619,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             bool skipHeader = true;
             bool skipFirstColumn = true;
 
-            // read spectrogram into a list of frames 
+            // read spectrogram into a list of frames
             List<double[]> frameList = CsvTools.ReadCSVFileOfDoubles(csvPath, skipHeader, skipFirstColumn);
             if (frameList == null)
             {
@@ -666,11 +666,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 double[,] data = frameData.CompressMatrixInTemporalDirectionByTakingAverage(imageScale);
 
                 Image spectrogramImage = ZoomTiledSpectrograms.DrawFrameSpectrogramAtScale(
-                    analysisConfig, 
-                    tilingConfig, 
-                    startTimeOfData, 
-                    imageScale, 
-                    data, 
+                    analysisConfig,
+                    tilingConfig,
+                    startTimeOfData,
+                    imageScale,
+                    data,
                     indexGeneration,
                     chromeOption);
 
@@ -678,9 +678,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 str[scale] = new TimeOffsetSingleLayerSuperTile
                                  {
                                      TimeOffset = startTimeOfData,
-                                     Scale = imageScale, 
-                                     SpectrogramType = SpectrogramType.Frame, 
-                                     Image = spectrogramImage
+                                     Scale = imageScale,
+                                     SpectrogramType = SpectrogramType.Frame,
+                                     Image = spectrogramImage,
                                  };
             }
 

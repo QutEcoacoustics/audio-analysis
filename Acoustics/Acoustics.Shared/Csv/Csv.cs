@@ -12,16 +12,14 @@ namespace Acoustics.Shared.Csv
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.Contracts;
     using System.Drawing;
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
+    using Contracts;
     using CsvHelper;
     using CsvHelper.Configuration;
     using CsvHelper.TypeConversion;
-
     using Fasterflect;
 
     /// <summary>
@@ -63,7 +61,7 @@ namespace Acoustics.Shared.Csv
         {
             // This is a manually maintained method
             TypeConverterFactory.AddConverter<ISet<Point>>(new CsvSetPointConverter());
-            
+
         }
 
         public static CsvConfiguration DefaultConfiguration
@@ -73,7 +71,7 @@ namespace Acoustics.Shared.Csv
                 // change the defaults here if you want
                 var settings = new CsvConfiguration()
                                    {
-                                       HasHeaderRecord = true
+                                       HasHeaderRecord = true,
                                    };
                 foreach (var classMap in ClassMapsToRegister)
                 {
@@ -108,7 +106,7 @@ namespace Acoustics.Shared.Csv
         /// IMPORTANT NOTE:
         /// If I get an exception, how do I tell what line the exception is on?
         /// There is a lot of information held in Exception.Data["CsvHelper"]
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
@@ -174,7 +172,7 @@ namespace Acoustics.Shared.Csv
                 columnCount = 0;
                 return new List<T[]>();
             }
-            
+
             var headers = reader.FieldHeaders;
             if (includeRowIndex && headers[0] != "Index")
             {

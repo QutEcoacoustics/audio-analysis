@@ -70,13 +70,13 @@ namespace AnalysisPrograms
                     DurationSeconds = 20.0,
                     Jitter = 0.0,
                     Parallel = true,
-                    Seed = null
+                    Seed = null,
                 };
             }
 
             Log.Info("Starting dummy analysis");
 
-            
+
             Random random;
             if (arguments.Seed.HasValue)
             {

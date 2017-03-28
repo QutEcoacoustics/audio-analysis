@@ -1,32 +1,27 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
-
-using Acoustics.Shared;
-using Acoustics.Tools;
-using Acoustics.Tools.Audio;
-using AnalysisBase;
-
-using TowseyLibrary;
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
-    using System.Diagnostics.Contracts;
 
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Extensions;
-
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
+    using AnalysisBase;
     using AnalysisPrograms.Production;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using TowseyLibrary;
 
     public class Human1 : IAnalyser
     {
@@ -94,7 +89,7 @@ namespace AnalysisPrograms
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows_Cassandra\Crows111216-001Mono5-7min.mp3";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Airplane.wav";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\PramukSpeech_20090615.wav";
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Wimmer_DM420011.wav";         
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Wimmer_DM420011.wav";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\BAC2_20071018-143516_speech.wav";
                 string recordingPath =
                     @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav";
@@ -189,7 +184,7 @@ namespace AnalysisPrograms
         public static void Execute(Arguments arguments)
         {
             Contract.Requires(arguments != null);
-           
+
 
             AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
             TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
@@ -248,7 +243,7 @@ namespace AnalysisPrograms
             var results = Analysis(fiAudioF, configDict);
             //######################################################################
 
-            if (results == null) return analysisResults; //nothing to process 
+            if (results == null) return analysisResults; //nothing to process
             var sonogram = results.Item1;
             var hits = results.Item2;
             var scores = results.Item3;
@@ -429,14 +424,14 @@ namespace AnalysisPrograms
             List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(scoreArray, minHz, maxHz, sonogram.FramesPerSecond, freqBinWidth,
                                                                                          intensityThreshold, minDuration, maxDuration);
 
-            //predictedEvents = Human2.FilterHumanSpeechEvents(predictedEvents); //remove isolated speech events - expect humans to talk like politicians 
+            //predictedEvents = Human2.FilterHumanSpeechEvents(predictedEvents); //remove isolated speech events - expect humans to talk like politicians
 
             Plot plot = new Plot(Human1.AnalysisName, intensity, intensityThreshold);
             return System.Tuple.Create(sonogram, hits, plot, predictedEvents, tsRecordingtDuration);
         } //Analysis()
 
         ///
-        /// THis method removes isolated speech events. Expect at least 2 events in 2 seconds 
+        /// THis method removes isolated speech events. Expect at least 2 events in 2 seconds
         public static List<AcousticEvent> FilterHumanSpeechEvents(List<AcousticEvent> events)
         {
             int count = events.Count;
@@ -486,7 +481,7 @@ namespace AnalysisPrograms
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             if (scores != null) image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
             if (hits != null)   image.OverlayRainbowTransparency(hits);
-            if ((predictedEvents != null) && (predictedEvents.Count > 0)) 
+            if ((predictedEvents != null) && (predictedEvents.Count > 0))
                 image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             return image.GetImage();
         } //DrawSonogram()
@@ -497,17 +492,17 @@ namespace AnalysisPrograms
             if (predictedEvents == null) return null;
             string[] headers = { AudioAnalysisTools.AnalysisKeys.EventCount,
                                  AudioAnalysisTools.AnalysisKeys.EventStartMin,
-                                 AudioAnalysisTools.AnalysisKeys.EventStartSec, 
+                                 AudioAnalysisTools.AnalysisKeys.EventStartSec,
                                  AudioAnalysisTools.AnalysisKeys.EventStartAbs,
                                  AudioAnalysisTools.AnalysisKeys.KeySegmentDuration,
-                                 AudioAnalysisTools.AnalysisKeys.EventDuration, 
+                                 AudioAnalysisTools.AnalysisKeys.EventDuration,
                                  AudioAnalysisTools.AnalysisKeys.EventIntensity,
                                  AudioAnalysisTools.AnalysisKeys.EventName,
                                  AudioAnalysisTools.AnalysisKeys.EventScore,
-                                 AudioAnalysisTools.AnalysisKeys.EventNormscore 
+                                 AudioAnalysisTools.AnalysisKeys.EventNormscore,
                                };
             //                   1                2               3              4                5              6               7              8
-            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), 
+            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string),
                              typeof(double), typeof(double) };
 
             var dataTable = DataTableTools.CreateTable(headers, types);
@@ -565,7 +560,7 @@ namespace AnalysisPrograms
             }
             return newtable;
         }
-        
+
         public static void AddContext2Table(DataTable dt, TimeSpan segmentStartMinute, TimeSpan recordingTimeSpan)
         {
             if (dt == null) return;
@@ -714,7 +709,7 @@ namespace AnalysisPrograms
                     SegmentMinDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
+                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
                 };
             }
         }

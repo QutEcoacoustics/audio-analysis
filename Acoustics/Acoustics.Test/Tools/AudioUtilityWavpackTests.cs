@@ -1,17 +1,14 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-namespace Acoustics.Test.Tools
+﻿namespace Acoustics.Test.Tools
 {
+    using System;
+    using System.Collections.Generic;
     using System.IO;
-
+    using System.Linq;
+    using System.Text;
     using Acoustics.Shared;
     using Acoustics.Tools;
-
     using EcoSounds.Mvc.Tests;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     /// <summary>
     /// The audio utility wavpack tests.
@@ -29,7 +26,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 22050,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 353000
+                BitsPerSecond = 353000,
             };
 
             var request = new AudioUtilityRequest
@@ -61,14 +58,14 @@ namespace Acoustics.Test.Tools
                 SampleRate = 22050,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 353000
+                BitsPerSecond = 353000,
             };
 
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = false,
                 OffsetStart = TimeSpan.FromSeconds(15),
-                OffsetEnd = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(35)
+                OffsetEnd = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(35),
             };
 
             var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
@@ -92,7 +89,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 22050,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 353000
+                BitsPerSecond = 353000,
             };
 
             var request = new AudioUtilityRequest
@@ -124,7 +121,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 22050,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 353000
+                BitsPerSecond = 353000,
             };
 
             var request = new AudioUtilityRequest
@@ -156,7 +153,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 22050,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 353000
+                BitsPerSecond = 353000,
             };
 
             var request = new AudioUtilityRequest
@@ -188,7 +185,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 22050,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 353000
+                BitsPerSecond = 353000,
             };
 
             var request = new AudioUtilityRequest
@@ -220,7 +217,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 22050,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 353000
+                BitsPerSecond = 353000,
             };
 
             var request = new AudioUtilityRequest
@@ -249,7 +246,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 17460,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 279000
+                BitsPerSecond = 279000,
             };
 
             var request = new AudioUtilityRequest
@@ -257,7 +254,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(20),
                 OffsetEnd = TimeSpan.FromSeconds(50),
-                TargetSampleRate = 17460
+                TargetSampleRate = 17460,
             };
 
             var util = TestHelper.GetAudioUtility();
@@ -283,14 +280,14 @@ namespace Acoustics.Test.Tools
                 SampleRate = 22050,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 353000
+                BitsPerSecond = 353000,
             };
 
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(15),
-                OffsetEnd = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(35)
+                OffsetEnd = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(35),
             };
 
             var util = TestHelper.GetAudioUtility();
@@ -316,14 +313,14 @@ namespace Acoustics.Test.Tools
                 SampleRate = 17460,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 279000
+                BitsPerSecond = 279000,
             };
 
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = true,
                 OffsetEnd = TimeSpan.FromSeconds(52),
-                TargetSampleRate = 17460
+                TargetSampleRate = 17460,
             };
 
             var util = TestHelper.GetAudioUtility();
@@ -349,7 +346,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 17460,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 279000
+                BitsPerSecond = 279000,
             };
 
             var request = new AudioUtilityRequest
@@ -357,7 +354,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(15),
                 OffsetEnd = TimeSpan.FromSeconds(75),
-                TargetSampleRate = 17460
+                TargetSampleRate = 17460,
             };
 
             var util = TestHelper.GetAudioUtility();
@@ -383,14 +380,14 @@ namespace Acoustics.Test.Tools
                 SampleRate = 17460,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 279000
+                BitsPerSecond = 279000,
             };
 
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(27),
-                TargetSampleRate = 17460
+                TargetSampleRate = 17460,
             };
 
             var util = TestHelper.GetAudioUtility();
@@ -416,7 +413,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 17460,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 279000
+                BitsPerSecond = 279000,
             };
 
             var request = new AudioUtilityRequest
@@ -450,7 +447,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 17460,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 279000
+                BitsPerSecond = 279000,
             };
 
             var request = new AudioUtilityRequest

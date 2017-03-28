@@ -1,11 +1,11 @@
-﻿using AudioAnalysisTools;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Dong.Felt.Features
+﻿namespace Dong.Felt.Features
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools;
+
     public class Ridge
     {
         #region Public Properties
@@ -19,7 +19,7 @@ namespace Dong.Felt.Features
         /// </summary>
         public double RidgeMagnitude { get; set; }
 
-        
+
         /// <summary>
         /// Gets or sets the Local Ridge Orientation.
         /// </summary>

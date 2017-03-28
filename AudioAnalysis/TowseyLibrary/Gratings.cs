@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     public class Gratings
     {
 
@@ -164,7 +164,7 @@ namespace TowseyLibrary
 
 
         /// <summary>
-        /// Steps through the passed array and and at each step cuts out a segment having length  = numberOfCycles * cyclePeriod. 
+        /// Steps through the passed array and and at each step cuts out a segment having length  = numberOfCycles * cyclePeriod.
         /// Each segment is then reduced to length = numberOfCycles * 2.
         /// Then the reduced segment is passed to check for a grating pattern having period = 2 signal samples.
         /// Use this method when the array to be scanned will be reduced on the fly.
@@ -221,7 +221,7 @@ namespace TowseyLibrary
             reducedSegment = new double[reducedLength];
             for (int x = 0; x < reducedLength; x++)
             {
-                    //################# Two ways to reduce: 
+                    //################# Two ways to reduce:
                     //################ (1) by average of the period or (2) by max of the period
                     double sum = 0;
                     for (int c = 0; c < halfPeriod; c++) sum += array[(x * halfPeriod) + c];

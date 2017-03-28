@@ -1,12 +1,10 @@
-﻿using FELT.Selectors;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-
-namespace FELT.Tests
+﻿namespace FELT.Tests
 {
-    using MQUTeR.FSharp.Shared;
-
+    using System;
+    using FELT.Selectors;
     using Microsoft.FSharp.Collections;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using MQUTeR.FSharp.Shared;
 
     /// <summary>
     ///This is a test class for OneForOneSelectorTest and is intended
@@ -36,7 +34,7 @@ namespace FELT.Tests
         }
 
         #region Additional test attributes
-        // 
+        //
         //You can use the following additional attributes as you write your tests:
         //
         //Use ClassInitialize to run code before running the first test in the class

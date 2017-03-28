@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace QutBioacosutics.Xie.Configuration
+﻿namespace QutBioacosutics.Xie.Configuration
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     class LatopalmataConfiguration
     {
         public double AmplitudeThresholdLatopalmata { get; set; }
@@ -42,13 +42,13 @@ namespace QutBioacosutics.Xie.Configuration
             RangeLatopalmata = configuration.RangeLatopalmata;                                // Frame---the distance in either side for selecting peaks
             DistanceLatopalmata = configuration.DistanceLatopalmata;                          // Frame---remove near peaks
             // Track parameters
-            BinToleranceLatopalmata = configuration.BinToleranceLatopalmata;                 // Bin---the fluctuation of the dominant frequency bin 
-            FrameThresholdLatopalmata = configuration.FrameThresholdLatopalmata;              // Frame---frame numbers of the silence    
+            BinToleranceLatopalmata = configuration.BinToleranceLatopalmata;                 // Bin---the fluctuation of the dominant frequency bin
+            FrameThresholdLatopalmata = configuration.FrameThresholdLatopalmata;              // Frame---frame numbers of the silence
             TrackDurationThresholdLatopalmata = configuration.TrackDurationThresholdLatopalmata;
-            TrackThresholdLatopalmata = configuration.TrackThresholdLatopalmata;           // Used for calculating the percent of peaks in one track    
+            TrackThresholdLatopalmata = configuration.TrackThresholdLatopalmata;           // Used for calculating the percent of peaks in one track
             MaximumTrackDurationLatopalmata = configuration.MaximumTrackDurationLatopalmata;  // Minimum duration of tracks
-            MinimumTrackDurationLatopalmata = configuration.MinimumTrackDurationLatopalmata;  // Maximum duration of tracks   
-            BinDifferenceLatopalmata = configuration.BinDifferenceLatopalmata;             // Difference between the highest and lowest bins   
+            MinimumTrackDurationLatopalmata = configuration.MinimumTrackDurationLatopalmata;  // Maximum duration of tracks
+            BinDifferenceLatopalmata = configuration.BinDifferenceLatopalmata;             // Difference between the highest and lowest bins
             // Band tracks parameters
             FrequencyLowLatopalmata = configuration.FrequencyLowLatopalmata;
             FrequencyHighLatopalmata = configuration.FrequencyHighLatopalmata;

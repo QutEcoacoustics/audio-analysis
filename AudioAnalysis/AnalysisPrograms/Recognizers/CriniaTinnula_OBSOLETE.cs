@@ -36,13 +36,13 @@ namespace AnalysisPrograms.Recognizers
 
     /// <summary>
     /// This is a frog recognizer is designed to detect a short honk (30ms long) that has the structure of stacked harmonics, similar to crow, female koala etc.
-    /// 
+    ///
     /// Step 1: It detects energy in relevant frequency band.
-    /// 
+    ///
     /// This type recognizer was first developed for Crinia tinnula and could be duplicated for other frogs with similar call structure
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
-    /// 
+    ///
     /// </summary>
  /*   class CriniaTinnula2 : RecognizerBase
     {
@@ -83,13 +83,13 @@ namespace AnalysisPrograms.Recognizers
             // common properties
             string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-     
+
             // min and max frequency of event in Hz
             int minHz = (int)configuration[AnalysisKeys.MinHz];
             int maxHz = (int)configuration[AnalysisKeys.MaxHz];
 
-            // min & max duration of event in seconds 
-            double minDuration = (double)configuration[AnalysisKeys.MinDuration];                
+            // min & max duration of event in seconds
+            double minDuration = (double)configuration[AnalysisKeys.MinDuration];
             double maxDuration = (double)configuration[AnalysisKeys.MaxDuration];
 
             // min score for an acceptable event
@@ -169,7 +169,7 @@ namespace AnalysisPrograms.Recognizers
             List<Plot> plots,
             double[,] hits)
         {
-            //DEBUG IMAGE this recogniser only. MUST set false for deployment. 
+            //DEBUG IMAGE this recogniser only. MUST set false for deployment.
             bool displayDebugImage = MainEntry.InDEBUG;
             if (displayDebugImage)
             {

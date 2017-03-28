@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using AudioAnalysisTools.StandardSpectrograms;
-using QutBioacosutics.Xie.Configuration;
-
-namespace QutBioacosutics.Xie.FrogIndices
+﻿namespace QutBioacosutics.Xie.FrogIndices
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using QutBioacosutics.Xie.Configuration;
+
     public static class CalculateIndexForCanetoad
     {
         public static double[,] GetPeakHits(CanetoadConfiguration canetoadConfig, SpectrogramStandard spectrogramLong)
@@ -18,7 +18,7 @@ namespace QutBioacosutics.Xie.FrogIndices
             return peakHitsCanetoad;
         }
 
-        public static System.Tuple<double[], double[,], double[], double[,]> GetFrogTracks(CanetoadConfiguration canetoadConfig, SpectrogramStandard spectrogramLong, 
+        public static System.Tuple<double[], double[,], double[], double[,]> GetFrogTracks(CanetoadConfiguration canetoadConfig, SpectrogramStandard spectrogramLong,
                                                                                             double[,] peakHitsCanetoad)
         {
             var trackHitsCanetoad = ExtractTracks.GetTracks(spectrogramLong, peakHitsCanetoad, canetoadConfig.FrequencyLowCanetoad, canetoadConfig.FrequencyHighCanetoad,
@@ -26,21 +26,21 @@ namespace QutBioacosutics.Xie.FrogIndices
                                                             canetoadConfig.TrackThresholdCanetoad, canetoadConfig.MaximumTrackDurationCanetoad, canetoadConfig.MinimumTrackDurationCanetoad,
                                                             canetoadConfig.BinDifferenceCanetoad, canetoadConfig.DoSlopeCanetoad);
             return trackHitsCanetoad;
-        
+
         }
 
         public static double[,] GetOscillationRate(  CanetoadConfiguration canetoadConfig,SpectrogramStandard spectrogramShort)
-        { 
-        
-            var canetoadOscillationHits = FindOscillation.CalculateOscillationRate( spectrogramShort, canetoadConfig.MinimumFrequencyCanetoad, 
-                                                                                    canetoadConfig.MaximumFrequencyCanetoad,canetoadConfig.Dct_DurationCanetoad, 
-                                                                                    canetoadConfig.Dct_ThresholdCanetoad,canetoadConfig.MinimumOscillationNumberCanetoad, 
+        {
+
+            var canetoadOscillationHits = FindOscillation.CalculateOscillationRate( spectrogramShort, canetoadConfig.MinimumFrequencyCanetoad,
+                                                                                    canetoadConfig.MaximumFrequencyCanetoad,canetoadConfig.Dct_DurationCanetoad,
+                                                                                    canetoadConfig.Dct_ThresholdCanetoad,canetoadConfig.MinimumOscillationNumberCanetoad,
                                                                                     canetoadConfig.MaximumOscillationNumberCanetoad);
 
             var canetoadOscillationResults = RemoveSparseHits.PruneHits(canetoadOscillationHits);
 
-            return canetoadOscillationResults;   
-                
+            return canetoadOscillationResults;
+
         }
 
     }

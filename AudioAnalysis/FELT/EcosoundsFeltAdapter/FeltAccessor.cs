@@ -9,11 +9,10 @@ namespace EcosoundsFeltAdapter
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
+    using Acoustics.Shared.Contracts;
     using FELT;
     using FELT.Classifiers;
     using FELT.Cleaners;
@@ -21,13 +20,10 @@ namespace EcosoundsFeltAdapter
     using FELT.Selectors;
     using FELT.Trainers;
     using FELT.Transformers;
-
+    using log4net;
     using Microsoft.FSharp.Collections;
     using Microsoft.FSharp.Core;
-
     using MQUTeR.FSharp.Shared;
-
-    using log4net;
 
     /// <summary>
     /// The felt accessor.

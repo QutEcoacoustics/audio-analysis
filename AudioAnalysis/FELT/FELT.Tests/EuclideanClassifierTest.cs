@@ -1,15 +1,14 @@
-﻿using FELT.Classifiers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using MQUTeR.FSharp.Shared;
-
-namespace FELT.Tests
+﻿namespace FELT.Tests
 {
+    using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using FELT.Classifiers;
     using Microsoft.FSharp.Collections;
     using Microsoft.FSharp.Core;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using MQUTeR.FSharp.Shared;
 
     /// <summary>
     ///This is a test class for EuclideanClassifierTest and is intended
@@ -39,7 +38,7 @@ namespace FELT.Tests
         }
 
         #region Additional test attributes
-        // 
+        //
         //You can use the following additional attributes as you write your tests:
         //
         //Use ClassInitialize to run code before running the first test in the class
@@ -86,7 +85,7 @@ namespace FELT.Tests
 
             FSharpFunc<int, Tuple<double, int>[]> func = ((ClassifierResult.Function)actual).Item;
             var length = testData.Classes.Length;
-         
+
             Assert.IsTrue(length == testData.Instances.First().Value.Length);
 
             var rs = new List<Tuple<double, int>[]>(length);
@@ -109,7 +108,7 @@ namespace FELT.Tests
                 {
                     var ecell = erow[j];
                     var acell = arow[j];
-                    Assert.AreEqual(ecell.Item2, acell.Item2); 
+                    Assert.AreEqual(ecell.Item2, acell.Item2);
                     Assert.AreEqual(ecell.Item1, acell.Item1,  0.000000005);
                 }
             }
@@ -162,7 +161,7 @@ namespace FELT.Tests
                         {
                             new Tuple<string, DataType>("health", DataType.Number),
                             new Tuple<string, DataType>("age", DataType.Number),
-                            new Tuple<string, DataType>("skill", DataType.Number)
+                            new Tuple<string, DataType>("skill", DataType.Number),
                         });
 
             var col1 = new Tuple<string, Value[]>("health", new Value[] { new Number(0.5), new Number(0.8), new Number(0.213) });
@@ -182,7 +181,7 @@ namespace FELT.Tests
                         {
                             new Tuple<string, DataType>("health", DataType.Number),
                             new Tuple<string, DataType>("age", DataType.Number),
-                            new Tuple<string, DataType>("skill", DataType.Number)
+                            new Tuple<string, DataType>("skill", DataType.Number),
                         });
 
             var col12 = new Tuple<string, Value[]>("health", new Value[] { new Number(0.9), new Number(0.3), new Number(0.6) });
@@ -205,13 +204,13 @@ namespace FELT.Tests
                     new[]
                         {
                             new Tuple<double, int>(2.780300164, 2), new Tuple<double, int>(3.1, 1),
-                            new Tuple<double, int>(4.312771731, 0)
+                            new Tuple<double, int>(4.312771731, 0),
                         },
                     new[]
                         {
                             new Tuple<double, int>(1.122497216, 0), new Tuple<double, int>(3.385597289, 2),
-                            new Tuple<double, int>(8.141867108, 1)
-                        }
+                            new Tuple<double, int>(8.141867108, 1),
+                        },
                 };
 
             #endregion

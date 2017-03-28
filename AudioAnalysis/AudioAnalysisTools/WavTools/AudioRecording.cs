@@ -20,7 +20,7 @@
 	public class AudioRecording : IDisposable
 	{
         private readonly WavReader wavReader = null;
-        
+
         #region Properties
 
         /// <summary>
@@ -35,7 +35,7 @@
         #endregion
 
         /// <summary>
-        /// Wrapper for the wav reader. 
+        /// Wrapper for the wav reader.
         /// Audio must be in wav format.
         /// Use MasterAudioUtility to convert or segment the audio first.
         /// </summary>
@@ -47,7 +47,7 @@
         }
 
         /// <summary>
-        /// Wrapper for the wav reader. 
+        /// Wrapper for the wav reader.
         /// Audio must be in wav format.
         /// Use MasterAudioUtility to convert or segment the audio first.
         /// </summary>
@@ -55,11 +55,11 @@
         {
             this.FilePath  = path;
             this.BaseName  = Path.GetFileNameWithoutExtension(path);
-            this.wavReader = new WavReader(path);           
+            this.wavReader = new WavReader(path);
         }
 
         /// <summary>
-        /// Wrapper for the wav reader. 
+        /// Wrapper for the wav reader.
         /// Audio must be in wav format.
         /// Use MasterAudioUtility to convert or segment the audio first.
         /// </summary>
@@ -68,12 +68,12 @@
             this.FilePath = name;
             this.BaseName = Path.GetFileNameWithoutExtension(name);
             this.Bytes    = bytes;
-            if (Bytes != null) 
+            if (Bytes != null)
                 this.wavReader = new WavReader(bytes);
         }
 
         /// <summary>
-        /// Wrapper for the wav reader. 
+        /// Wrapper for the wav reader.
         /// Audio must be in wav format.
         /// Use MasterAudioUtility to convert or segment the audio first.
         /// </summary>
@@ -97,8 +97,8 @@
         /// NOTE: from Michael Towsey May 2014
         /// WARNING!!!! THIS METHOD IS UNSAFE AND SHOULD BE DEPRACATED
         /// It subsamples without first removing high frequency content.
-        /// 
-        /// Reduces the signal sample rate to 22050Hz. 
+        ///
+        /// Reduces the signal sample rate to 22050Hz.
         /// Requires the existing signal to be either 44100Hz or 88200 Hz.
         /// </summary>
         //[Obsolete]
@@ -134,7 +134,7 @@
         }
 
         ///// <summary> OBSOLETE - SHOULD NEVER BE USED
-        ///// Reduces the signal sample rate by a factor of N if sample rate. 
+        ///// Reduces the signal sample rate by a factor of N if sample rate.
         ///// Requires the existing signal to be either 44100Hz or 88200 Hz.
         ///// </summary>
         //public void ReduceSampleRateByFactor(int factor)
@@ -145,7 +145,7 @@
         //}
 
         ///// <summary> OBSOLETE - SHOULD NEVER BE USED
-        ///// Reduces the signal sample rate by a factor of N if sample rate exceed passed threshold. 
+        ///// Reduces the signal sample rate by a factor of N if sample rate exceed passed threshold.
         ///// Requires the existing signal to be either 44100Hz or 88200 Hz.
         ///// </summary>
         //public void ReduceSampleRateByFactor(int threshold, int factor)
@@ -274,16 +274,16 @@
         {
             double[,] envelope = GetWaveFormDB(imageWidth, dBMin);
             //envelope values should all lie in [-40.0, 0.0].
-            double slope = -(1 / dBMin); 
+            double slope = -(1 / dBMin);
             int halfHeight = imageHeight / 2;
             Color c = Color.FromArgb(0x6F, 0xa1, 0xdc);
             Color b = Color.FromArgb(0xd8, 0xeb, 0xff);
 
             //set up min, max, range for normalising of dB values
-            
-            
+
+
             Bitmap bmp = new Bitmap(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
-            
+
             for (int w = 0; w < imageWidth; w++)
             {
                 //Convert log values to interval [0,1]
@@ -369,7 +369,7 @@
         //##  STATIC METHODS BELOW ###############################################################################################################################################
         //########################################################################################################################################################################
         //########################################################################################################################################################################
-        
+
         /// <summary>
         /// returns an audio recording given a file path
         /// </summary>
@@ -394,7 +394,7 @@
         //    // WRITE FILTERED SIGNAL IF NEED TO DEBUG
         //    //write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
         //    //int bitRate = 16;
-        //    //WavWriter.WriteWavFile(recording.GetWavReader().Samples, filteredRecording.SampleRate, bitRate, recordingPath + "filtered.wav"); 
+        //    //WavWriter.WriteWavFile(recording.GetWavReader().Samples, filteredRecording.SampleRate, bitRate, recordingPath + "filtered.wav");
 
         //    return recording;
         //}
@@ -421,7 +421,7 @@
                     {
                         TargetSampleRate = resampleRate,
                         OffsetStart = TimeSpan.FromMilliseconds(startMilliseconds),
-                        OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds)
+                        OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds),
                     });
 
             return new AudioRecording(opPath);

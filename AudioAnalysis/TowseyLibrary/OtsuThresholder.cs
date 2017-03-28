@@ -1,12 +1,10 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Drawing;
-
-
 namespace TowseyLibrary
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
 
     /// <summary>
     /// Go to following link for info on Otsu threshold
@@ -45,7 +43,7 @@ namespace TowseyLibrary
                 OutputFileName = new FileInfo(Path.Combine(opDir.FullName, outputFilename)),
                 SpectrogramConfigPath = fiSpectrogramConfig,
                 // background threshold value that is subtracted from all spectrograms.
-                BgnThreshold = 3.0
+                BgnThreshold = 3.0,
             };
             throw new Exception();
         } //Dev()
@@ -69,7 +67,7 @@ namespace TowseyLibrary
 
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="arguments"></param>
         public static void Execute(Arguments arguments)
@@ -81,7 +79,7 @@ namespace TowseyLibrary
                 LoggedConsole.WriteLine("Test of OtsuThresholder class");
                 LoggedConsole.WriteLine(date);
                 LoggedConsole.WriteLine();
-            } // if 
+            } // if
 
             // Load Source image
             Image srcImage = null;
@@ -120,7 +118,7 @@ namespace TowseyLibrary
             // Create Otsu Thresholder
             OtsuThresholder thresholder = new OtsuThresholder();
             int threshold = thresholder.CalculateThreshold(vector, out outputArray);
-            
+
             byte[,] opByteMatrix = DataTools.Array2Matrix(outputArray, width, height);
             */
 
@@ -134,7 +132,7 @@ namespace TowseyLibrary
             Console.WriteLine("Threshold: {0}", threshold);
 
             Image opImage = ConvertMatrixToGreyScaleImage(opByteMatrix);
-            
+
 
             Image[] imageArray = { srcImage, opImage, histoImage };
 
@@ -327,7 +325,7 @@ namespace TowseyLibrary
             for (int r = 0; r < height; r++)
             {
                 for (int c = 0; c < width; c++)
-                {                    
+                {
                     Color color = image.GetPixel(c, r);
 
                    // alpha = imData.data[i + 3];
@@ -448,7 +446,7 @@ namespace TowseyLibrary
             int threshold;
             GetOtsuThreshold(byteMatrix, out opByteMatrix, out threshold, out histogramImage);
             opThreshold = threshold / (double)byte.MaxValue;
-            opThreshold = min + (opThreshold * (max - min));            
+            opThreshold = min + (opThreshold * (max - min));
         }
 
 
@@ -511,9 +509,9 @@ namespace TowseyLibrary
 
 
         /// <summary>
-        /// The core of the Otsu algorithm is shown here. 
+        /// The core of the Otsu algorithm is shown here.
         /// The input is an array of bytes, srcData that stores the greyscale image.
-        /// 
+        ///
         /// </summary>
         //public static double OtsuThreshold(byte[] srcData)
         //{

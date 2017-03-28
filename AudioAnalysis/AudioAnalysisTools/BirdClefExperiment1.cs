@@ -1,25 +1,24 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-
-using Acoustics.Shared;
-
-using TowseyLibrary;
-using AudioAnalysisTools.Indices;
-using System.Drawing;
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+
+
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
+    using AudioAnalysisTools.Indices;
+    using TowseyLibrary;
+
     /// <summary>
     /// This class is experimental work on the Bird50 dataset provided by Herve Glotin.
     /// The work was started in Toulon (February 2016) and continued after my return in March 2016.
     /// The bird50 dataset is a randomly selected subset of the 2014 BirdClef 500 data set.
     /// The 2014 competition was won by Dan Stowell (QMUL).
-    /// The 2015 competition containing 999 bird call recordings was won by Mario Lessek (Berlin)  
-    /// 
+    /// The 2015 competition containing 999 bird call recordings was won by Mario Lessek (Berlin)
+    ///
     /// This class prepares species representations of bird calls by summing or averaging the instance representations.
     /// The representation consists of the concatenation of a set of spectra.
     /// There are currently five spectra derived from the spectra indices: SPT, RHZ, RVT, RPS and RNG.
@@ -40,7 +39,7 @@ namespace AudioAnalysisTools
         /// Access to the EXECUTE class is currently from the Sandpit.cs class.
         /// "sandpit" as the FIRST AND ONLY command line argument
         /// Activity Codes for other tasks to do with spectrograms and audio files:
-        /// 
+        ///
         /// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
         /// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
         /// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
@@ -51,7 +50,7 @@ namespace AudioAnalysisTools
         /// audiofilecheck - Writes information about audio files to a csv file.
         /// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
         /// audiocutter - Cuts audio into segments of desired length and format
-        /// createfoursonograms 
+        /// createfoursonograms
         /// </summary>
         public static Arguments Dev()
         {
@@ -83,12 +82,12 @@ namespace AudioAnalysisTools
                 SpectrogramConfigPath = fiSpectrogramConfig,
                 SpeciesLabelsFile = speciesLabelsFile,
                 SpeciesCount  = 50,
-                InstanceCount = 924, //trainingCount            
+                InstanceCount = 924, //trainingCount
                 //int instanceCount = 375; //testCount
                 //instanceCount = 2;
 
                 // background threshold value that is subtracted from all spectrograms.
-                BgnThreshold = 3.0
+                BgnThreshold = 3.0,
         };
             throw new Exception();
         } //Dev()
@@ -159,21 +158,21 @@ namespace AudioAnalysisTools
                     //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
                     LoggedConsole.WriteLine();
                 } // if (verbose)
-            } // if 
+            } // if
 
 
             // This analysis consits of six steps.
 
             //[1] Obtain feature representation of every instance.
             //[2] Obtain feature representation of every species.
-            //    This is done by summing or averaging the instance representations. 
+            //    This is done by summing or averaging the instance representations.
             //[3] Normalisation and Concatentation of spectra.
-            //    This can be done in three ways ie (i) Unit length (ii) Unit Area (iii) Unit bounds i.e. 0,1.  
+            //    This can be done in three ways ie (i) Unit length (ii) Unit Area (iii) Unit bounds i.e. 0,1.
             //[4] Calculation of similarity scores
-            //    This will be done using Cosine similarity. Could also use Euclidian distance..  
+            //    This will be done using Cosine similarity. Could also use Euclidian distance..
             //[5] Calculation of accuracy measures
-            //    CONFUSION MATRIX and the RANK ORDER MATRIX.  
-            //[6] Construct datasets for WEKA machine learning  
+            //    CONFUSION MATRIX and the RANK ORDER MATRIX.
+            //[6] Construct datasets for WEKA machine learning
 
             //[1] Obtain feature representation of every instance.
             Output output = GetInstanceRepresentations(arguments);
@@ -191,7 +190,7 @@ namespace AudioAnalysisTools
             //[5] Calculation of accuracy measures
             CalculateAccuracy(arguments, output);
 
-            //[6] Construct datasets for WEKA machine learning  
+            //[6] Construct datasets for WEKA machine learning
             ConstructWekaDatasets(arguments, output);
         } //Execute()
 
@@ -251,7 +250,7 @@ namespace AudioAnalysisTools
             double[,] instanceFeatureMatrix = new double[instanceCount, totalFeatureCount];
 
 
-            // loop through all all instances 
+            // loop through all all instances
             for (int j = 0; j < instanceCount; j++)
             {
                 LoggedConsole.Write(".");
@@ -382,7 +381,7 @@ namespace AudioAnalysisTools
             int instanceCount = arguments.InstanceCount;
             int speciesCount = arguments.SpeciesCount;
             var keyArray = FEATURE_KEYS.Split(',');
-            
+
             int featureCount = output.InstanceFeatureMatrix.GetLength(1);
 
             // initialise species description matrix
@@ -465,7 +464,7 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// Normalisation and Concatentation of spectra: 
+        /// Normalisation and Concatentation of spectra:
         /// can be done in three ways ie (i) Unit length (ii) Unit Area (iii) Unit bounds i.e. 0,1.
         /// </summary>
         /// <param name="arguments"></param>
@@ -522,7 +521,7 @@ namespace AudioAnalysisTools
                 double[] subvector = DataTools.Subarray(ipVector, offset, partialLength);
 
                 // NOTE: HERE WE HAVE SMOOTHING OPTIONS  ###############################################
-                // window = 3 made things worse. Did not try any more. 
+                // window = 3 made things worse. Did not try any more.
                 //subvector = DataTools.filterMovingAverage(subvector, 3);
 
                 // NOTE: HERE WE HAVE THREE OPTIONS  ###############################################
@@ -573,7 +572,7 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// Produce a CONFUSION MATRIX and a RANK ORDER MATRIX. 
+        /// Produce a CONFUSION MATRIX and a RANK ORDER MATRIX.
         /// </summary>
         /// <param name=""></param>
         /// <param name=""></param>
@@ -615,7 +614,7 @@ namespace AudioAnalysisTools
 
             int diagonalSum = 0;
             for (int r = 0; r < speciesCount; r++)
-            { 
+            {
                     diagonalSum += output.ConfusionMatrix[r, r];
             }
             LoggedConsole.WriteLine("Diagonal Sum = " + diagonalSum);
@@ -636,7 +635,7 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// Construct datasets for WEKA machine learning  
+        /// Construct datasets for WEKA machine learning
         /// </summary>
         /// <param name="arguments"></param>
         /// <param name="output"></param>

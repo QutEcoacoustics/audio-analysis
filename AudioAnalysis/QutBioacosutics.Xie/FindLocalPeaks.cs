@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using TowseyLibrary;
-using AudioAnalysisTools.StandardSpectrograms;
-
-
-namespace QutBioacosutics.Xie
+﻿namespace QutBioacosutics.Xie
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using TowseyLibrary;
+
     public class FindLocalPeaks
     {
 
@@ -37,7 +36,7 @@ namespace QutBioacosutics.Xie
                         columnPeak.Add(matrix[nc, nr]);
                         rowIndex.Add(nr);
                         index = index + 1;
-                    }                   
+                    }
                 }
                 // Remove close peaks
                 if (index > 1)
@@ -60,11 +59,11 @@ namespace QutBioacosutics.Xie
                             }
                         }
 
-                        if (j >= (rowIndex.Count - 2)) 
+                        if (j >= (rowIndex.Count - 2))
                         {
                             break;
                         }
-                     } 
+                     }
                   }
 
                   for(int i = 0; i < columnPeak.Count; i++)
@@ -83,7 +82,7 @@ namespace QutBioacosutics.Xie
 
             int maxBin = row - (int)(minHz / sonogram.FBinWidth) - 1;
             int minBin = row - (int)(maxHz / sonogram.FBinWidth) - 1;
-           
+
             double[,] result = new double[row, column];
             for (int nc = 0; nc < column; nc++)
             {
@@ -93,7 +92,7 @@ namespace QutBioacosutics.Xie
                 {
                     columnValue.Add(matrix[nr, nc]);
                 }
-                
+
                 double max = columnValue.Max();
                 if (max > ampthreshold)
                 {

@@ -1,32 +1,27 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
-
-using Acoustics.Shared;
-using Acoustics.Tools;
-using Acoustics.Tools.Audio;
-using AnalysisBase;
-
-using TowseyLibrary;
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
-    using System.Diagnostics.Contracts;
 
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Extensions;
-
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
+    using AnalysisBase;
     using AnalysisPrograms.Production;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using TowseyLibrary;
 
     public class PlanesTrainsAndAutomobiles : IAnalyser
     {
@@ -98,7 +93,7 @@ namespace AnalysisPrograms
                     Indices = indicesFname,
                     Sgram = sonogramFname,
                     Start = tsStart.TotalSeconds,
-                    Duration = tsDuration.TotalSeconds
+                    Duration = tsDuration.TotalSeconds,
                 };
             }
 
@@ -155,7 +150,7 @@ namespace AnalysisPrograms
         public static void Execute(Arguments arguments)
         {
             Contract.Requires(arguments != null);
-           
+
             AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
             TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
             TimeSpan tsDuration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
@@ -206,7 +201,7 @@ namespace AnalysisPrograms
             var results = Analysis(fiAudioF, configDict);
             //######################################################################
 
-            if (results == null) return analysisResults; //nothing to process 
+            if (results == null) return analysisResults; //nothing to process
             var sonogram = results.Item1;
             var hits = results.Item2;
             var scores = results.Item3;
@@ -329,7 +324,7 @@ namespace AnalysisPrograms
             double frameDuration = windowSize / (double)sr;           // Duration of full frame or window in seconds
             double frameOffset = frameDuration * (1 - windowOverlap); //seconds between starts of consecutive frames
             double framesPerSecond = 1 / frameOffset;
-            //double framesPerSecond = sr / (double)windowSize; 
+            //double framesPerSecond = sr / (double)windowSize;
             //int frameOffset = (int)(windowSize * (1 - overlap));
             //int frameCount = (length - windowSize + frameOffset) / frameOffset;
 
@@ -432,18 +427,18 @@ namespace AnalysisPrograms
             if (predictedEvents == null) return null;
             string[] headers = { AudioAnalysisTools.AnalysisKeys.EventCount,
                                  AudioAnalysisTools.AnalysisKeys.EventStartMin,
-                                 AudioAnalysisTools.AnalysisKeys.EventStartSec, 
+                                 AudioAnalysisTools.AnalysisKeys.EventStartSec,
                                  AudioAnalysisTools.AnalysisKeys.EventStartAbs,
                                  AudioAnalysisTools.AnalysisKeys.KeySegmentDuration,
-                                 AudioAnalysisTools.AnalysisKeys.EventDuration, 
+                                 AudioAnalysisTools.AnalysisKeys.EventDuration,
                                  AudioAnalysisTools.AnalysisKeys.EventIntensity,
                                  AudioAnalysisTools.AnalysisKeys.EventName,
                                  AudioAnalysisTools.AnalysisKeys.EventScore,
-                                 AudioAnalysisTools.AnalysisKeys.EventNormscore 
+                                 AudioAnalysisTools.AnalysisKeys.EventNormscore,
 
                                };
             //                   1                2               3              4                5              6               7              8
-            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), 
+            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string),
                              typeof(double), typeof(double) };
 
             var dataTable = DataTableTools.CreateTable(headers, types);
@@ -647,7 +642,7 @@ namespace AnalysisPrograms
                     SegmentMinDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
+                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
                 };
             }
         }

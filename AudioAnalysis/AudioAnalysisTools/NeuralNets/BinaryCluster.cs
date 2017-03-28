@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-
-namespace NeuralNets
+﻿namespace NeuralNets
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using TowseyLibrary;
+
     public sealed class BinaryCluster
     {
 
@@ -124,7 +123,7 @@ namespace NeuralNets
             for (int x = 0; x < dataSetSize; x++) prevCategory[x] = inputCategory[x];
 
             //remove committed F2 nodes that are not having wins
-            for (int j = 0; j < this.OPSize; j++) 
+            for (int j = 0; j < this.OPSize; j++)
                 if ((this.committedNode[j]) && (OPwins[j] == 0)) this.committedNode[j] = false;
 
             if (BinaryCluster.Verbose)
@@ -141,7 +140,7 @@ namespace NeuralNets
     /// <summary>
     /// Only calculate ouputs for committed nodes. Output of uncommitted nodes = 0;
     /// Output for any OP node = AND_OR_Similarity with input.
-    /// 
+    ///
     /// Output = 1 - fractional Hamming distance
     ///        = 1 - (hammingDistance / (double)this.IPSize)
     /// </summary>
@@ -160,7 +159,7 @@ namespace NeuralNets
                 OP[F2uNo] = BinaryCluster.AND_OR_Similarity(IP, wts[F2uNo]);
             }
         }  //end for all the F2 nodes}
-           
+
         return OP;
     } //end of method PropagateToF2()
 
@@ -180,7 +179,7 @@ namespace NeuralNets
 
     /// <summary>
     /// original Pascal header was: Procedure ChangeWtsFuzzyART(var index:word);
-    /// 
+    ///
     /// </summary>
     /// <param name="index"></param>
     public int ChangeWts(double[] IP, double[] OP)
@@ -194,14 +193,14 @@ namespace NeuralNets
         if (noCommittedNodes == 0)
         {
             ChangeWtsOfFirstUncommittedNode(IP);
-            return index; 
+            return index;
         }
 
         bool matchFound = false;
         int numberOfTestedNodes = 0;
         while (!matchFound)  //repeat //{until a good match found}
         {
-            index = IndexOfMaxF2Unit(OP);  //get index of the winning F2 node i.e. the unit with maxOP. 
+            index = IndexOfMaxF2Unit(OP);  //get index of the winning F2 node i.e. the unit with maxOP.
             //{calculate match between the weight and input vectors of the max unit.
             // match = |IP^wts|/|IP|   which is measure of degree to which the input is a fuzzy subset of the wts. }
             double match = BinaryCluster.HammingSimilarity(IP, this.wts[index]);
@@ -210,7 +209,7 @@ namespace NeuralNets
             if (match < this.vigilance_rho)  // ie vigilance indicates a BAD match}
             {
                 // 2:  none of the committed nodes offer a good match - therefore draft an uncommitted node
-                if (numberOfTestedNodes == noCommittedNodes) 
+                if (numberOfTestedNodes == noCommittedNodes)
                 {
                     index = ChangeWtsOfFirstUncommittedNode(IP);    //{all nodes committed and no good match}
                     return index;
@@ -243,7 +242,7 @@ namespace NeuralNets
     {
         int length = this.committedNode.Length;
         int id = -1;
-        for (int i = 0; i < length; i++) 
+        for (int i = 0; i < length; i++)
             if (!this.committedNode[i]) return i;
             //{
             //    id = i;
@@ -261,7 +260,7 @@ namespace NeuralNets
     {
         int index = GetIndexOfFirstUncommittedNode();
         if(index == -1) return index; //all nodes committed
-        
+
         if(index >= this.wts.Count) this.wts.Add(IP);
         else this.wts[index] = IP;
         committedNode[index] = true;
@@ -277,7 +276,7 @@ namespace NeuralNets
     public void ChangeWtsOfCommittedNode(double[] IP, int index)
     {
         this.wts[index] = IP;
-    }        
+    }
 
     public int CountCommittedF2Nodes()
     {
@@ -350,7 +349,7 @@ namespace NeuralNets
             if (wtVectors[i].Sum() < wtThreshold) continue;
             if (clusterSizes[i] < hitThreshold) continue;
             prunedClusterWeights.Add(wtVectors[i]);
-            clusterMapping_old2new[i] = prunedClusterWeights.Count - 1; // -1 because want index - not total count. index = count-1. 
+            clusterMapping_old2new[i] = prunedClusterWeights.Count - 1; // -1 because want index - not total count. index = count-1.
         }
 
         // calculate new list of cluster hits
@@ -393,7 +392,7 @@ namespace NeuralNets
         }
 
 
-        // remove wt vector if it does NOT SATISFY three constraints  
+        // remove wt vector if it does NOT SATISFY three constraints
         int clusterCount_final = 0;
         for (int i = 0; i < wtVectors.Count; i++)
         {
@@ -441,7 +440,7 @@ namespace NeuralNets
         return (1 - (hammingDistance / (double)v1.Length));
     }
     /// <summary>
-    /// Given two binary vectors, returns the 'AND count' divided by the 'OR count'. 
+    /// Given two binary vectors, returns the 'AND count' divided by the 'OR count'.
     /// The AND count is always less than or equal to OR count and therefore
     /// the returned values must lie in 0,1.
     /// Is equivalent to average of recall and precision if one of the vectors is considered a target.
@@ -480,7 +479,7 @@ namespace NeuralNets
             LoggedConsole.WriteLine("trnSetSize=" + trainingData.Count + "  IPsize=" + trainingData[0].Length + "  Vigilance=" + vigilance);
             LoggedConsole.WriteLine("\n BEGIN TRAINING");
         }
-        
+
         var output = binaryCluster.TrainNet(trainingData, maxIterations, seed, initialClusterCount);
         int iterCount     = output.Item1;
         int clusterCount  = output.Item2;
@@ -491,7 +490,7 @@ namespace NeuralNets
         {
             LoggedConsole.WriteLine("FINISHED TRAINING: (" + iterCount + " iterations)" + "    CommittedNodes=" + clusterCount);
         }
-        
+
         return System.Tuple.Create(clusterHits, clusterWts);  //keepScore;
 
     } //END of ClusterBinaryVectors.

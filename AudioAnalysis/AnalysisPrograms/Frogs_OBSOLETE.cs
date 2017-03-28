@@ -1,33 +1,27 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
-
-using Acoustics.Shared;
-using Acoustics.Tools;
-using Acoustics.Tools.Audio;
-using AnalysisBase;
-
-using TowseyLibrary;
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
-    using System.Diagnostics.Contracts;
 
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Extensions;
-
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
+    using AnalysisBase;
     using AnalysisPrograms.Production;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using TowseyLibrary;
 
     [Obsolete]
     public class Frogs_OBSOLETE : IAnalyser
@@ -36,7 +30,7 @@ namespace AnalysisPrograms
         public class Arguments : AnalyserArguments
         {
         }
-        
+
         public static string key_FROG_DATA = "FROG_DATA_FILE";
 
 
@@ -84,7 +78,7 @@ namespace AnalysisPrograms
                 string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Frogs.cfg";
 
                 string outputDir = @"C:\SensorNetworks\Output\Frogs\";
-                
+
                 // example
                 // "C:\SensorNetworks\WavFiles\Frogs\Rheobatrachus_silus_MONO.wav" C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.RheobatrachusSilus.cfg" "C:\SensorNetworks\Output\Frogs\"
 
@@ -109,7 +103,7 @@ namespace AnalysisPrograms
                     Indices = indicesFname,
                     Sgram = sonogramFname,
                     Start = tsStart.TotalSeconds,
-                    Duration = tsDuration.TotalSeconds
+                    Duration = tsDuration.TotalSeconds,
                 };
             }
 
@@ -177,7 +171,7 @@ namespace AnalysisPrograms
 
             string outputDir    = analysisSettings.ConfigFile.Directory.FullName;
 
-            //get the data file to identify frog calls. Check it exists and then store full path in dictionary. 
+            //get the data file to identify frog calls. Check it exists and then store full path in dictionary.
             string frogParametersPath = analysisSettings.ConfigDict[key_FROG_DATA];
             FileInfo fi_FrogData = new FileInfo(Path.Combine(outputDir, frogParametersPath));
 
@@ -239,7 +233,7 @@ namespace AnalysisPrograms
             var results = Analysis(fiAudioF, analysisSettings);
             //######################################################################
 
-            if (results == null) return result; //nothing to process 
+            if (results == null) return result; //nothing to process
             var sonogram = results.Item1;
             var hits = results.Item2;
             var scores = results.Item3;
@@ -448,15 +442,15 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="targets"></param>
         /// <param name="data"></param>
         /// <returns></returns>
         public static double GetNaiveBayesScore(double[] targetMeans, double[] data)
         {
-            // ASSUME that one SD of the distribution feature values = 1/10th of the mean. 
-            double SD_FACTOR = 0.1; 
+            // ASSUME that one SD of the distribution feature values = 1/10th of the mean.
+            double SD_FACTOR = 0.1;
             double dataProb = 1.0;
             for (int i = 0; i < data.Length; i++)
             {
@@ -709,11 +703,11 @@ namespace AnalysisPrograms
                                  AudioAnalysisTools.AnalysisKeys.DominantFrequency,
                                  AudioAnalysisTools.AnalysisKeys.OscillationRate,
                                  AudioAnalysisTools.AnalysisKeys.EventScore,
-                                 AudioAnalysisTools.AnalysisKeys.EventNormscore 
+                                 AudioAnalysisTools.AnalysisKeys.EventNormscore,
 
                                };
             //                   1                2               3              4                5              6               7              8
-            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), typeof(double), 
+            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), typeof(double),
                              typeof(double), typeof(double), typeof(double) };
 
             var dataTable = DataTableTools.CreateTable(headers, types);
@@ -920,7 +914,7 @@ namespace AnalysisPrograms
                     SegmentMinDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
+                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
                 };
             }
         }

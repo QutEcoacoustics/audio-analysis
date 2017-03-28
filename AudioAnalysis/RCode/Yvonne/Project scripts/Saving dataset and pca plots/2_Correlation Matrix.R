@@ -21,28 +21,28 @@ a <- abs(cor(indices_all[,1:19], use = "complete.obs"))
 write.csv(a, file = "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\Correlation matrices\\Correlation_matrix.csv")
 rm(gympie_indices, woondum_indices, indices_all, a)
 
-##############################################
-# Read Spectral Indices
-##############################################
+##################################################
+# Read and save Spectral Indices as a RData file
+##################################################
 gympie_ACI <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\datasets\\Gympie_20150622_20160723_ACI_spect_avgs.csv")
 woondum_ACI <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\datasets\\Woondum_20150622_20160723_ACI_spect_avgs.csv")
 ACI_spect <- rbind(gympie_ACI, woondum_ACI)
 rm(gympie_ACI, woondum_ACI)
 
-gympie_ACI <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\datasets\\Gympie_20150622_20160723_ACI_spect_avgs_range3.csv")
-woondum_ACI <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\datasets\\Woondum_20150622_20160723_ACI_spect_avgs_range3.csv")
-ACI_spect <- rbind(gympie_ACI, woondum_ACI)
-rm(gympie_ACI, woondum_ACI)
+#gympie_ACI <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\datasets\\Gympie_20150622_20160723_ACI_spect_avgs_range3.csv")
+#woondum_ACI <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\datasets\\Woondum_20150622_20160723_ACI_spect_avgs_range3.csv")
+#ACI_spect <- rbind(gympie_ACI, woondum_ACI)
+#rm(gympie_ACI, woondum_ACI)
 
 gympie_BGN <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\datasets\\Gympie_20150622_20160723_BGN_spect_avgs.csv")
 woondum_BGN <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\datasets\\Woondum_20150622_20160723_BGN_spect_avgs.csv")
 BGN_spect <- rbind(gympie_BGN, woondum_BGN)
 rm(gympie_BGN, woondum_BGN)
 
-gympie_BGN <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\datasets\\Gympie_20150622_20160723_BGN_spect_avgs_range3.csv")
-woondum_BGN <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\datasets\\Woondum_20150622_20160723_BGN_spect_avgs_range3.csv")
-BGN_spect <- rbind(gympie_BGN, woondum_BGN)
-rm(gympie_BGN, woondum_BGN)
+#gympie_BGN <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\datasets\\Gympie_20150622_20160723_BGN_spect_avgs_range3.csv")
+#woondum_BGN <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\datasets\\Woondum_20150622_20160723_BGN_spect_avgs_range3.csv")
+#BGN_spect <- rbind(gympie_BGN, woondum_BGN)
+#rm(gympie_BGN, woondum_BGN)
 
 gympie_EVN <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\datasets\\Gympie_20150622_20160723_EVN_spect_avgs.csv")
 woondum_EVN <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\datasets\\Woondum_20150622_20160723_EVN_spect_avgs.csv")
@@ -67,7 +67,12 @@ rm(gympie_SPT, woondum_SPT)
 indices_all_spect <- cbind(ACI_spect, BGN_spect, ENT_spect, 
                            EVN_spect, POW_spect, SPT_spect)
 
-save(indices_all_spect, file="data/datasets/spect_data_BGN4_ACI5.RData")
+save(indices_all_spect, file="data/datasets/spectral_indices.RData")
+
+#rm(list = ls())
+#load(file="data/datasets/spectral_indices.RData")
+
+#View(indices_all_spect)
 
 # range 2 ##################################
 gympie_ACI <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\datasets\\Gympie_20150622_20160723_ACI_spect_avgs_range2.csv")
@@ -164,5 +169,3 @@ a <- abs(cor(ENT_spect[,-c(1,7,12,19,26,33)], use = "complete.obs"))
 
 write.csv(a, file = "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\Correlation matrices\\Correlation_matrix_ENT_1000_2000_spectral_indices.csv")
 # rm(indices_all_spect, a)
-
-

@@ -29,8 +29,8 @@ namespace Acoustics.Test
         private readonly Dictionary<string, Func<DummyData, double[]>> selectors =
             new Dictionary<string, Func<DummyData, double[]>>()
                 {
-                    { "Field1", dd => dd.Field1 }, 
-                    { "Field2", dd => dd.Field2 }
+                    { "Field1", dd => dd.Field1 },
+                    { "Field2", dd => dd.Field2 },
                 };
 
         [TestInitialize]
@@ -40,14 +40,14 @@ namespace Acoustics.Test
                                   {
                                       new DummyData()
                                           {
-                                              Field1 = new[] { 0.0, 1, 2, 3, 4, }, 
-                                              Field2 = new[] { 5.0, 6, 7, 8, 9, }
-                                          }, 
+                                              Field1 = new[] { 0.0, 1, 2, 3, 4, },
+                                              Field2 = new[] { 5.0, 6, 7, 8, 9, },
+                                          },
                                       new DummyData()
                                           {
-                                              Field1 = new[] { 10.0, 11, 12, 13, 14 }, 
-                                              Field2 = new[] { 15.0, 16, 17, 18, 19 }
-                                          }, 
+                                              Field1 = new[] { 10.0, 11, 12, 13, 14 },
+                                              Field2 = new[] { 15.0, 16, 17, 18, 19 },
+                                          },
                                   };
         }
 
@@ -130,8 +130,8 @@ namespace Acoustics.Test
             var input = new[] { 3, 4, 5, 6, 7, 8, 9, 10 };
             int[][] expected =
                 {
-                    new[] { 3, 4 }, new[] { 4, 5 }, new[] { 5, 6 }, new[] { 6, 7 }, new[] { 7, 8 }, 
-                    new[] { 8, 9 }, new[] { 9, 10 }
+                    new[] { 3, 4 }, new[] { 4, 5 }, new[] { 5, 6 }, new[] { 6, 7 }, new[] { 7, 8 },
+                    new[] { 8, 9 }, new[] { 9, 10 },
                 };
 
             input.Windowed(2).ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
@@ -141,7 +141,7 @@ namespace Acoustics.Test
         public void TestWindowedFunctionSingleItem()
         {
             var input = new[] { 3};
-            
+
             var windowed = input.Windowed(2);
             Assert.AreEqual(0, windowed.Count());
             ////windowed.ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
@@ -154,7 +154,7 @@ namespace Acoustics.Test
             int[][] expected =
                 {
                     new[] { 3, 4, 5 }, new[] { 4, 5, 6 }, new[] { 5, 6, 7 }, new[] { 6, 7, 8 },
-                    new[] { 7, 8, 9 }, new[] { 8, 9, 10 }
+                    new[] { 7, 8, 9 }, new[] { 8, 9, 10 },
                 };
 
             var windowed = input.Windowed(3);
@@ -171,8 +171,8 @@ namespace Acoustics.Test
             int[][] expected =
                 {
                     new[] { int.MinValue, 3 },
-                    new[] { 3, 4 }, new[] { 4, 5 }, new[] { 5, 6 }, new[] { 6, 7 }, new[] { 7, 8 }, 
-                    new[] { 8, 9 }, new[] { 9, 10 }, new[] {10, int.MinValue}
+                    new[] { 3, 4 }, new[] { 4, 5 }, new[] { 5, 6 }, new[] { 6, 7 }, new[] { 7, 8 },
+                    new[] { 8, 9 }, new[] { 9, 10 }, new[] {10, int.MinValue},
                 };
 
             input.WindowedOrDefault(2, int.MinValue).ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
@@ -185,7 +185,7 @@ namespace Acoustics.Test
             int[][] expected =
                 {
                     new[] { int.MinValue, 3 },
-                    new[] { 3, int.MinValue }
+                    new[] { 3, int.MinValue },
                 };
 
             var windowed = input.WindowedOrDefault(2, int.MinValue);
@@ -200,9 +200,9 @@ namespace Acoustics.Test
             var input = new[] { 3, 4, 5, 6, 7, 8, 9, 10 };
             int[][] expected =
                 {
-                    new[] { 0, 0, 3 }, new[] { 0, 3, 4 }, 
-                    new[] { 3, 4, 5 }, new[] { 4, 5, 6 }, new[] { 5, 6, 7 }, new[] { 6, 7, 8 }, new[] { 7, 8, 9 }, 
-                    new[] { 8, 9, 10 }, new[] { 9, 10, 0 }, new[] { 10, 0, 0 }
+                    new[] { 0, 0, 3 }, new[] { 0, 3, 4 },
+                    new[] { 3, 4, 5 }, new[] { 4, 5, 6 }, new[] { 5, 6, 7 }, new[] { 6, 7, 8 }, new[] { 7, 8, 9 },
+                    new[] { 8, 9, 10 }, new[] { 9, 10, 0 }, new[] { 10, 0, 0 },
                 };
 
             var windowed = input.WindowedOrDefault(3);
@@ -216,10 +216,10 @@ namespace Acoustics.Test
             var input = new[] { 3, 4, 5, 6};
             int[][] expected =
                 {
-                    new[] { 0, 0, 0, 3 }, new[] { 0, 0, 3, 4 }, 
-                    new[] { 0, 3, 4, 5 }, new[] { 3, 4, 5, 6 }, 
+                    new[] { 0, 0, 0, 3 }, new[] { 0, 0, 3, 4 },
+                    new[] { 0, 3, 4, 5 }, new[] { 3, 4, 5, 6 },
                     new[] { 4, 5, 6, 0 }, new[] { 5, 6, 0, 0 },
-                    new[] { 6, 0, 0, 0 }
+                    new[] { 6, 0, 0, 0 },
                 };
 
             var windowed = input.WindowedOrDefault(4);

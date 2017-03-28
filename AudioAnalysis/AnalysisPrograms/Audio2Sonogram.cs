@@ -44,7 +44,7 @@ namespace AnalysisPrograms
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        // use the following paths for the command line for the <audio2sonogram> task. 
+        // use the following paths for the command line for the <audio2sonogram> task.
         // audio2sonogram "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
         [CustomDetailedDescription]
         [CustomDescription]
@@ -75,7 +75,7 @@ namespace AnalysisPrograms
 
             return new Arguments
             {
-                //MARINE 
+                //MARINE
                 Source = @"C:\SensorNetworks\WavFiles\MarineRecordings\20130318_171500.wav".ToFileInfo(),
 
                 //CANETOAD
@@ -151,7 +151,7 @@ namespace AnalysisPrograms
             // bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
             // scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
 
-            // Resample rate must be 2 X the desired Nyquist. 
+            // Resample rate must be 2 X the desired Nyquist.
             // WARNING: Default used to be the SR of the recording. NOW DEFAULT = 22050.
             var resampleRate = (int?)configuration[AnalysisKeys.ResampleRate] ?? AppConfigHelper.DefaultTargetSampleRate;
 
@@ -162,7 +162,7 @@ namespace AnalysisPrograms
             configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true;
 
             // # REDUCTION FACTORS for freq and time dimensions
-            // #TimeReductionFactor: 1          
+            // #TimeReductionFactor: 1
             // #FreqReductionFactor: 1
 
             bool makeSoxSonogram = (bool?)configuration[AnalysisKeys.MakeSoxSonogram] ?? false;
@@ -181,13 +181,13 @@ namespace AnalysisPrograms
             // ####################################################################
             // SET THE 2 PARAMETERS HERE FOR DETECTION OF OSCILLATION
             // often need different frame size doing Oscil Detection
-            const int OscilDetection2014FrameSize = 256; 
+            const int OscilDetection2014FrameSize = 256;
             configDict[AnalysisKeys.OscilDetection2014FrameSize] = OscilDetection2014FrameSize.ToString();
 
             // window width when sampling along freq bins
             // 64 is better where many birds and fast chaning activity
             ////int sampleLength = 64;
-            
+
             // 128 is better where slow moving changes to acoustic activity
             const int SampleLength = 128;
             configDict[AnalysisKeys.OscilDetection2014SampleLength] = SampleLength.ToString();
@@ -196,7 +196,7 @@ namespace AnalysisPrograms
             ////string algorithmName = "Autocorr-SVD-FFT";
             // use this if want more detailed output - but not necessrily accurate!
             string algorithmName = "Autocorr-FFT";
-            
+
             // tried but not working
             ////string algorithmName = "CwtWavelets";
 
@@ -215,18 +215,18 @@ namespace AnalysisPrograms
             // 3: GET RECORDING
             // put temp FileSegment in same directory as the required output image.
             FileInfo tempAudioSegment = new FileInfo(Path.Combine(output.FullName, "tempWavFile.wav"));
-            
+
             // delete the temp audio file if it already exists.
             if (File.Exists(tempAudioSegment.FullName))
             {
                 File.Delete(tempAudioSegment.FullName);
             }
-            
+
             // This line creates a temporary version of the source file downsampled as per entry in the config file
             MasterAudioUtility.SegmentToWav(sourceRecording, tempAudioSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
 
             // ###### get sonogram image ##############################################################################################
-            GenerateSpectrogramImages(tempAudioSegment, configDict, output, dataOnly: false, makeSoxSonogram: makeSoxSonogram);           
+            GenerateSpectrogramImages(tempAudioSegment, configDict, output, dataOnly: false, makeSoxSonogram: makeSoxSonogram);
 
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
         }
@@ -241,17 +241,17 @@ namespace AnalysisPrograms
 
             // path to spectrogram image
             public FileInfo SpectrogramImage { get; set; }
-            
+
             public FileInfo FreqOscillationImage { get; set; }
-            
+
             public FileInfo FreqOscillationData { get; set; }
         }
 
         public static AudioToSonogramResult GenerateSpectrogramImages(
-            FileInfo sourceRecording, 
-            Dictionary<string, string> configDict, 
-            DirectoryInfo outputDirectory, 
-            bool dataOnly = false, 
+            FileInfo sourceRecording,
+            Dictionary<string, string> configDict,
+            DirectoryInfo outputDirectory,
+            bool dataOnly = false,
             bool makeSoxSonogram = false)
         {
             string sourceName = configDict[ConfigKeys.Recording.Key_RecordingFileName];
@@ -291,7 +291,7 @@ namespace AnalysisPrograms
                 // 1) draw amplitude spectrogram
                 AudioRecording recordingSegment = new AudioRecording(sourceRecording.FullName);
                 SonogramConfig sonoConfig = new SonogramConfig(configDict); // default values config
-                
+
                 // disable noise removal for first two spectrograms
                 var disabledNoiseReductionType = sonoConfig.NoiseReductionType;
                 sonoConfig.NoiseReductionType = NoiseReductionType.None;
@@ -300,7 +300,7 @@ namespace AnalysisPrograms
                 // remove the DC bin
                 sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, sonogram.Configuration.FreqBinCount);
                 //save spectrogram data at this point - prior to noise reduction
-                double[,] spectrogramDataBeforeNoiseReduction = sonogram.Data; 
+                double[,] spectrogramDataBeforeNoiseReduction = sonogram.Data;
 
                 double neighbourhoodSeconds = 0.25;
                 int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * neighbourhoodSeconds);
@@ -352,7 +352,7 @@ namespace AnalysisPrograms
                 // #NOISE REDUCTION PARAMETERS - MARINE HACK ##################################################################
                 //sonoConfig.NoiseReductionType = NoiseReductionType.FIXED_DYNAMIC_RANGE;
                 //sonoConfig.NoiseReductionParameter = 80.0;
-    
+
                 sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
                 image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM + Lamel noise subtraction");
                 list.Add(image);
@@ -418,7 +418,7 @@ namespace AnalysisPrograms
                 SegmentMaxDuration = TimeSpan.FromMinutes(1),
                 SegmentMinDuration = TimeSpan.FromSeconds(20),
                 SegmentMediaType = MediaTypes.MediaTypeWav,
-                SegmentOverlapDuration = TimeSpan.Zero
+                SegmentOverlapDuration = TimeSpan.Zero,
             };
         }
 

@@ -130,11 +130,11 @@ namespace AudioAnalysisTools
                 //{
                 //    if ((spectrum[i] == 1.0) && (spectrum[i - 1] == 0.0) && (spectrum[i + 1] == 0.0))
                 //    {
-                //        spectrum[i] = 0.0; 
+                //        spectrum[i] = 0.0;
                 //    }
                 //}
 
-                if (spectrum.Sum() > cp.rowSumThreshold)  // only include frames where activity exceeds threshold 
+                if (spectrum.Sum() > cp.rowSumThreshold)  // only include frames where activity exceeds threshold
                 {
                     trainingData.Add(spectrum);
                     IncludeSpectrumInSpectrogram(trainingDataAsSpectrogram, r, cp.lowBinBound, spectrum, cp.reductionFactor);
@@ -144,7 +144,7 @@ namespace AudioAnalysisTools
 
             return new TrainingDataInfo(trainingDataAsSpectrogram, trainingData, selectedFrames, cp.lowBinBound, cp.upperBinBound, cp.intensityThreshold, cp.reductionFactor);
         }
-        
+
         /// <summary>
         /// Clusters the spectra in a spectrogram. USED to determine the spectral diversity and persistence of spectral types.
         /// The spectrogram is passed as a matrix. Note that the spectrogram is in amplitude values in [0, 1];
@@ -154,7 +154,7 @@ namespace AudioAnalysisTools
         /// <param name="binaryThreshold"></param>
         /// <returns></returns>
         public static ClusterInfo ClusterAnalysis(List<double[]> trainingData, double wtThreshold, int hitThreshold, bool[] selectedFrames)
-        {            
+        {
             BinaryCluster.Verbose = SpectralClustering.Verbose;
 
             int frameCount = selectedFrames.Length;
@@ -234,7 +234,7 @@ namespace AudioAnalysisTools
         public static void IncludeSpectrumInSpectrogram(double[,] trainingDataAsBinarySpectrogram, int row, int lowOffset, double[] binarySpectrum, int reductionFactor)
         {
             int colCount = binarySpectrum.Length;
-            for (int c = 0; c < colCount; c++) 
+            for (int c = 0; c < colCount; c++)
             {
                 int start = c * reductionFactor;
                 for (int j = 0; j < reductionFactor; j++) trainingDataAsBinarySpectrogram[row, lowOffset + start + j] = binarySpectrum[c];
@@ -303,7 +303,7 @@ namespace AudioAnalysisTools
                     {
                         //if (spectrogram[i, j] > data.intensityThreshold)
                         if (fullLengthSpectrum[j] > 0.0)
-                            clusterSpectrogram[i, j] = clusterID + 1;//+1 so do not have zero index for a cluster 
+                            clusterSpectrogram[i, j] = clusterID + 1;//+1 so do not have zero index for a cluster
                         if (clusterSpectrogram[i, j] < 0) clusterSpectrogram[i, j] = 0; //correct for case where set hit count < 0 for pruned wts.
                     }
                     count++;
@@ -335,7 +335,7 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// displays a histogram of cluster counts.
-        /// the argument clusters is an array of integer. Indicates cluster assigned to each binary frame. 
+        /// the argument clusters is an array of integer. Indicates cluster assigned to each binary frame.
         /// </summary>
         /// <param name="clusters"></param>
         public static void OutputClusterAndWeightInfo(int[] clusters, List<double[]> wts, string imagePath)

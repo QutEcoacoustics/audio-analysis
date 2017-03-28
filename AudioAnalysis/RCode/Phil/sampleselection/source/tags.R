@@ -334,3 +334,28 @@ GetSpeciesList <- function () {
     
 }
 
+GetSpeciesMinutesMatrix <- function () {
+    
+
+    # gets a list of tags
+    tags <- GetTags(FALSE, TRUE, TRUE)
+
+    mins <- tags$mins
+    species.ids <- tags$species.id
+    
+    # hack to make a sparse matrix of species vs minutes, including minutes that have no species at all
+    # add 1 of the first species to each minute of the day, then after calculating the sparse matrix, subtract 1 for that column
+    sp1 <- tags$species.id[1]
+    mins <- c(mins, 1:1440)
+    species.ids <- c(species.ids, rep(sp1, 1440))
+    
+    m <- xtabs(~ mins + species.ids, sparse = TRUE)
+    m <- as.matrix(m)
+    
+    # remove the extra count for each minute added to 
+    m[,sp1] <- m[,sp1] - 1
+    
+    
+    
+}
+

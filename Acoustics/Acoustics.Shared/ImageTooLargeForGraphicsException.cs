@@ -18,7 +18,7 @@ namespace Acoustics.Shared
     public class ImageTooLargeForGraphicsException : InvalidOperationException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ImageTooLargeForGraphicsException"/> class. 
+        /// Initializes a new instance of the <see cref="ImageTooLargeForGraphicsException"/> class.
         /// Initializer for spectrogram generation.
         /// </summary>
         /// <param name="widthAtException">

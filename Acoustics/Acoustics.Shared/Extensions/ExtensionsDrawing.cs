@@ -62,9 +62,9 @@
         /// Cropped image.
         /// </returns>
         /// <remarks>
-        /// Use Graphics.DrawImage() to copy the selection portion of the source image. 
-        /// You'll need the overload that takes a source and a destination Rectangle. 
-        /// Create the Graphics instance from Graphics.FromImage() on a new bitmap that 
+        /// Use Graphics.DrawImage() to copy the selection portion of the source image.
+        /// You'll need the overload that takes a source and a destination Rectangle.
+        /// Create the Graphics instance from Graphics.FromImage() on a new bitmap that
         /// has the same size as the rectangle.
         /// from: http://stackoverflow.com/questions/2405261/how-to-clip-a-rectangle-from-a-tiff.
         /// </remarks>

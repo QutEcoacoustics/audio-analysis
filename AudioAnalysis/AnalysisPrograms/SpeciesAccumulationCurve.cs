@@ -1,23 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.IO;
-
-using TowseyLibrary;
-using AudioAnalysisTools;
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
+
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.IO;
+    using System.Linq;
     using Acoustics.Shared.Extensions;
-
     using AnalysisPrograms.Production;
-
+    using AudioAnalysisTools;
     using PowerArgs;
+    using TowseyLibrary;
 
     public class SpeciesAccumulationStats
     {
-        // Fixed number of samples an ecologist is prepared to process. 
+        // Fixed number of samples an ecologist is prepared to process.
         public int s25  { get; set; }
         public int s50  { get; set; }
         public int s75  { get; set; }
@@ -246,8 +243,8 @@ namespace AnalysisPrograms
             //READ CSV FILE TO MASSAGE DATA
             var results1 = READ_CALL_OCCURENCE_CSV_DATA(callOccurenceFilePath);
             List<string> totalSpeciesList = results1.Item1;
-            List<string> callingSpeciesList = results1.Item2; // Some species will not call in a particular day 
-            byte[,] callMatrix = results1.Item3; // rows=minutes,  cols=species 
+            List<string> callingSpeciesList = results1.Item2; // Some species will not call in a particular day
+            byte[,] callMatrix = results1.Item3; // rows=minutes,  cols=species
 
             int speciesCount = 0;
             int sampleNumber = 0;
@@ -360,10 +357,10 @@ namespace AnalysisPrograms
                 int startSample = 291;  // 4:51am = civil dawn
                 //int startSample = 315;  // 5:15am = sunrise
                 int trialCount = 5000;
-                int N = 180; //maximum Sample Number i.e. sampling duration in minutes = 3 hours 
-                //int N = 240; //maximum Sample Number i.e. sampling duration in minutes = 4 hours 
-                //int N = 360; //maximum Sample Number i.e. sampling duration in minutes = 6 hours 
-                //int N = 480; //maximum Sample Number i.e. sampling duration in minutes = 8 hours 
+                int N = 180; //maximum Sample Number i.e. sampling duration in minutes = 3 hours
+                //int N = 240; //maximum Sample Number i.e. sampling duration in minutes = 4 hours
+                //int N = 360; //maximum Sample Number i.e. sampling duration in minutes = 6 hours
+                //int N = 480; //maximum Sample Number i.e. sampling duration in minutes = 8 hours
                 //int C = occurenceMatrix.GetLength(1); //total species count
 
                 int[] s25array = new int[trialCount];
@@ -416,7 +413,7 @@ namespace AnalysisPrograms
 
                 //###############################################################################################################################################
                 // OPTION 1: USE FOLLOWING two lines to rank by just a single column of acoustic indices matrix.
-                //int colNumber = 22;  // 1=avAmplitude; 6=segCount; 12=H[spectralPeaks]; 15=ACI; 22=KNOWN UNIQUE CALL COUNT 
+                //int colNumber = 22;  // 1=avAmplitude; 6=segCount; 12=H[spectralPeaks]; 15=ACI; 22=KNOWN UNIQUE CALL COUNT
                 //LoggedConsole.WriteLine("SAMPLES REQUIRED WHEN RANK BY " + headers[colNumber]);
                 //int[] rankOrder = GetRankOrder(indicesFilePath, colNumber);
 
@@ -428,14 +425,14 @@ namespace AnalysisPrograms
 //                if (doReverseOrder)
 //                    rankOrder = DataTools.reverseArray(rankOrder);
 
-                // OPTION 4: SAMPLE IN RANK ORDER 
+                // OPTION 4: SAMPLE IN RANK ORDER
                 //int[] finalSamplingOrder = rankOrder;
                 //int[] accumulationCurve = GetAccumulationCurve(callMatrix, finalSamplingOrder);
                 //SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
                 //stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, callingSpeciesList.Count);
                 //stats.WriteStats();
 
-                // OPTION 5: RANDOM SAMPLE FROM RANK ORDER USING PROBABILITY DISTRIBUTION 
+                // OPTION 5: RANDOM SAMPLE FROM RANK ORDER USING PROBABILITY DISTRIBUTION
                 var list = new List<SpeciesAccumulationStats>();
                 int reps = 5000;
                 for (int i = 0; i < reps; i++)
@@ -450,7 +447,7 @@ namespace AnalysisPrograms
                 }
                 SpeciesAccumulationStats.WriteArrayStats(list);
 
-                // OPTION 6: SEARCH WEIGHT SPACE FOR OPTIMSED RANK ORDER USING WEIGHTED COMBINATIONS OF INDICES 
+                // OPTION 6: SEARCH WEIGHT SPACE FOR OPTIMSED RANK ORDER USING WEIGHTED COMBINATIONS OF INDICES
                 //OptimsedRankOrder(table, callMatrix, callingSpeciesList.Count);
 
             } // ######################## END SMART SAMPLING #############################
@@ -556,7 +553,7 @@ namespace AnalysisPrograms
             double[] array3 = CsvTools.ReadColumnOfCSVFile(fileName, colNumber3, out header3);
             array3 = DataTools.NormaliseArea(array3);
 
-            int colNumber4 = offset + 9;  //H[varSpectrum] 
+            int colNumber4 = offset + 9;  //H[varSpectrum]
             double[] array4 = CsvTools.ReadColumnOfCSVFile(fileName, colNumber4, out header4);
             array4 = DataTools.NormaliseArea(array4);
 
@@ -583,11 +580,11 @@ namespace AnalysisPrograms
             double bgThreshold = -35; //dB
             double bgVarianceThreshold = 2.5; //dB
             double[] bgBias = CalculateBGNoiseSamplingBias(array1, bgThreshold, bgVarianceThreshold, noiseBias); //array1 contains BG noise values.
-           
+
             double wt1 = 0.0;//background noise //do not use here - use instead to bias sampling
             double wt2 = 0.0;//SegmentCount
             double wt3 = 0.4;//H[avSpectrum]
-            double wt4 = 0.1;//H[varSpectrum] 
+            double wt4 = 0.1;//H[varSpectrum]
             double wt5 = 0.4;//number of clusters
             double wt6 = 0.1;//av cluster duration
 
@@ -652,15 +649,15 @@ namespace AnalysisPrograms
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0, 0.0, 59.22, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -19.02 }; // 21 indices
             // FEATURE SET 11..... 1 feature av cluster duration  -- sometimes need to multiply by -1.
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.047, 0.0, 0.0, 0.0, 0.00, -0.49 }; // 21 indices
-            // FEATURE SET 12..... 1 feature av cluster 
+            // FEATURE SET 12..... 1 feature av cluster
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.069, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 1.03 }; // 21 indices
-            // FEATURE SET 13..... 1 feature H[peaks] 
+            // FEATURE SET 13..... 1 feature H[peaks]
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 19.09, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -9.38 }; // 21 indices
-            // FEATURE SET 14..... 1 feature activity 
+            // FEATURE SET 14..... 1 feature activity
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, -16.28, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -1.53 }; // 21 indices
-            // FEATURE SET 15..... 1 feature mf 
+            // FEATURE SET 15..... 1 feature mf
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -12.96, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -0.088 }; // 21 indices
-            // FEATURE SET 16..... 1 feature # clusters 
+            // FEATURE SET 16..... 1 feature # clusters
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.47, 0.0, 0.0, 0.0, 0.0, 0.00, -0.023 }; // 21 indices
 
             // {1:count,2:avAmp,3:snr,4:actSnr,5:bg,6:act,7:seg#,8:segDur,9:hf,10:mf,11:lf,12:Ht,13:Hm,14:Hs,15:Hv,16:ACI,17:clust#,18:"avClustDur19:3g#,20:av3gRep,21:SpPkTr,22:SpPkTrDur,23:call#
@@ -676,7 +673,7 @@ namespace AnalysisPrograms
 
             int wtCount = weights.Length;
             var columns = DataTableTools.ListOfColumnValues(table); // extract columns from table as list
-            columns = DataTableTools.NormaliseColumnValues(columns, minValues, maxValues); // normalise column value 
+            columns = DataTableTools.NormaliseColumnValues(columns, minValues, maxValues); // normalise column value
             int rowCount = columns[0].Length;
             // reverse those column values as required - to do with entropy.
             //for (int r = 0; r < rowCount; r++)
@@ -712,12 +709,12 @@ namespace AnalysisPrograms
 
         public static void OptimsedRankOrder(DataTable table, byte[,] callMatrix, int speciesCount)
         {
-            //                   {  1,    2,    3,   4,    5,  0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6,  1.7,   1.8, 0.0, 0.0, 0.0, 0.0 }; 
+            //                   {  1,    2,    3,   4,    5,  0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6,  1.7,   1.8, 0.0, 0.0, 0.0, 0.0 };
             double[] minValues = { 0.0, -50.0, 3.0, 0.0,-50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.2,  0.0,   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
             double[] maxValues = { 1.0, -5.0, 30.0, 1.0, -5.0, 1.0, 200, 500, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 20.0, 200.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
 
             var columns = DataTableTools.ListOfColumnValues(table); // extract columns from table as list
-            columns = DataTableTools.NormaliseColumnValues(columns, minValues, maxValues); // normalise column value 
+            columns = DataTableTools.NormaliseColumnValues(columns, minValues, maxValues); // normalise column value
             int rowCount = columns[0].Length;
             // reverse those column values as required - to do with entropy.
             //for (int r = 0; r < rowCount; r++)
@@ -725,7 +722,7 @@ namespace AnalysisPrograms
             //    columns[11][r] = 1 - columns[11][r]; // H[t]
             //    //columns[14][r] = 1 - columns[14][r]; // H[s]
             //}
-            
+
             // FIXED WEIGHTS
             // {1:count,2:avAmp,3:snr,4:actSnr,5:bg,6:act,7:seg#,8:segDur,9:hf,10:mf,11:lf,12:Ht,13:Hm,14:Hs,15:Hv,16:ACI,17:clust#,18:"avClustDur19:3g#,20:av3gRep,21:SpPkTr,22:SpPkTrDur,23:call#
             //                 { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2 }; // 21 indices
@@ -777,9 +774,9 @@ namespace AnalysisPrograms
                                 score += (/*stats.percentRecognitionWith30Samples*/ +stats.percentRecognitionWith60Samples + stats.percentRecognitionWith120Samples); // +stats.percentRecognitionWith120Samples;
                                 if (score >= maxScore)
                                 {
-                                    Console.WriteLine("Score={0:f1}   60samples>{1}%   amp(wt1)={2}  act(wt5)={3}  seg#(wt6)={4}  Ht(wt11)={5}   Hs(wt13)={6}  Hv(wt14)={7}  ACI(wt15)={8}  SpD(wt16)={9}", 
+                                    Console.WriteLine("Score={0:f1}   60samples>{1}%   amp(wt1)={2}  act(wt5)={3}  seg#(wt6)={4}  Ht(wt11)={5}   Hs(wt13)={6}  Hv(wt14)={7}  ACI(wt15)={8}  SpD(wt16)={9}",
                                         maxScore, stats.percentRecognitionWith60Samples, weights[1], weights[5],   weights[6],    weights[11],   weights[13],  weights[14],  weights[15],   weights[16]);
-                                   
+
                                     maxScore = score;
                                 } // if (score >= maxScore)
              //               } // n
@@ -819,7 +816,7 @@ namespace AnalysisPrograms
         public static double[] CalculateBGNoiseSamplingBias(double[] bgArray, double bgThreshold, double bgVarianceThreshold, double noiseBias)
         {
             int resolution = 12; //i.e. calculate bg variance in blocks of one hour
-            int oneHourCount = bgArray.Length / resolution; 
+            int oneHourCount = bgArray.Length / resolution;
 
             double[] bgVariance = new double[bgArray.Length];
             for (int b = 0; b < resolution; b++) //over all onr hour blocks
@@ -833,12 +830,12 @@ namespace AnalysisPrograms
             }
             bgVariance = DataTools.filterMovingAverage(bgVariance, 5);
 
-            double[] bgBias = new double[bgArray.Length]; 
+            double[] bgBias = new double[bgArray.Length];
             for (int i = 0; i < bgArray.Length; i++)
             {
                 //if (bgArray[i] > bgThreshold) bgBias[i] = noiseBias;
                 //else
-                //if ((bgVariance[i] > bgVarianceThreshold) || (bgVariance[i] < 1.0)) bgBias[i] = noiseBias; 
+                //if ((bgVariance[i] > bgVarianceThreshold) || (bgVariance[i] < 1.0)) bgBias[i] = noiseBias;
                 //else bgBias[i] = 1.0; //
 
                 if ((bgVariance[i] > bgVarianceThreshold) && (bgArray[i] > bgThreshold)) bgBias[i] = noiseBias; else bgBias[i] = 1.0; //
@@ -910,7 +907,7 @@ namespace AnalysisPrograms
             List<string> totalSpeciesList = new List<string>();
             List<string> callingSpeciesList = new List<string>();   // not all species call in the 24 hour period
             string[] headerLine = text[0].Split(',');               // read and split the first line to get species names
-            int[] columnSums = DataTools.GetColumnSums(callMatrix); // 
+            int[] columnSums = DataTools.GetColumnSums(callMatrix); //
             for (int j = 0; j < columnSums.Length; j++)
             {
                 totalSpeciesList.Add(headerLine[startColumn + j]);

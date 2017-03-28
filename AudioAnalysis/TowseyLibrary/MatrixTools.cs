@@ -1,21 +1,18 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-
-using System.Numerics;
-
-using MathNet.Numerics;
-//using MathNet.Numerics.ComplexExtensions;
-using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.LinearAlgebra.Double;
-using MathNet.Numerics.LinearAlgebra.Generic;
-
-
 namespace TowseyLibrary
 {
+
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
+    using System.Numerics;
+    using System.Text;
+    using MathNet.Numerics;
+    //using MathNet.Numerics.ComplexExtensions;
+    using MathNet.Numerics.LinearAlgebra;
+    using MathNet.Numerics.LinearAlgebra.Double;
+    using MathNet.Numerics.LinearAlgebra.Generic;
 
     public class MatrixTools
     {
@@ -45,7 +42,7 @@ namespace TowseyLibrary
             bool doit1 = false;
             if (doit1) //test Submatrix()
             {
-                LoggedConsole.WriteLine(""); 
+                LoggedConsole.WriteLine("");
                 //string fName = testDir + "testOfReadingMatrixFile.txt";
                 //double[,] matrix = FileTools.ReadDoubles2Matrix(fName);
                 ////int rowCount = matrix.GetLength(0);//height
@@ -68,7 +65,7 @@ namespace TowseyLibrary
 
 
             if (true) //test normalise(double[,] m, double normMin, double normMax)
-            {   
+            {
                 //string fName = testDir + "testOfReadingMatrixFile.txt";
                 //double[,] matrix = FileTools.ReadDoubles2Matrix(fName);
                 //LoggedConsole.WriteLine("\n");
@@ -116,7 +113,7 @@ namespace TowseyLibrary
         //}
 
         /// <summary>
-        /// TODO: This method concatenates time-sequence data but does not check that the files are in temporal sequence. 
+        /// TODO: This method concatenates time-sequence data but does not check that the files are in temporal sequence.
         ///       Nor does it check for temporal gaps.
         /// This method assumes that the column count for each matrix in list is identical
         /// </summary>
@@ -141,7 +138,7 @@ namespace TowseyLibrary
                 int rows = list[m].GetLength(0);
                 // the rows of each matrix
                 for (int r = 0; r < rows; r++)
-                {                    
+                {
                     for (int c = 0; c < colCount; c++)
                     {
                         opMatrix[thisRowID, c] = list[m][r, c];
@@ -233,7 +230,7 @@ namespace TowseyLibrary
         /// <param name="frameWidth">The number of rows/columns of zeros to be added</param>
         /// <returns></returns>
         public static double[,] FrameMatrixWithZeros(double[,] M, int frameWidth)
-        {            
+        {
             int inRowCount = M.GetLength(0);
             int inColCount = M.GetLength(1);
 
@@ -259,7 +256,7 @@ namespace TowseyLibrary
         /// <summary>
         /// Returns the submatrix of passed matrix.
         /// The returned submatrix includes the rows and column passed as bounds.
-        /// Assume that RowTop GT RowBottom, ColumnLeft LT ColumnRight. 
+        /// Assume that RowTop GT RowBottom, ColumnLeft LT ColumnRight.
         /// Row, column indices start at 0
         /// </summary>
         /// <param name="m"></param>
@@ -288,7 +285,7 @@ namespace TowseyLibrary
         /// <summary>
         /// Returns an array of row averages in the submatrix of passed matrix.
         /// This method combines two methods, Submatrix() & GetRowAverages(), for efficiency
-        /// Assume that RowTop LT RowBottom, ColumnLeft LT ColumnRight. 
+        /// Assume that RowTop LT RowBottom, ColumnLeft LT ColumnRight.
         /// Row, column indices start at 0
         /// </summary>
         /// <param name="M"></param>
@@ -546,7 +543,7 @@ namespace TowseyLibrary
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    if (matrix[r, c] > threshold) 
+                    if (matrix[r, c] > threshold)
                         outM[r, c] = matrix[r, c];
                 }
             }
@@ -677,7 +674,7 @@ namespace TowseyLibrary
         /// When filterCoeff >= 1.0, the matrix remains unchanged, that is, that is, y=x represents the unfiltered matrix.
         /// When filterCoeff LT  0.1, the matrix is maximally filtered, i.e. y=x^2 represents the filtered matrix.
         /// In a grey scale image, this has the effect of diminshing the low amplitude values, thereby enhancing the highlights.
-        /// 
+        ///
         /// </summary>
         /// <param name="M"></param>
         /// <param name="filterCoeff"></param>
@@ -782,16 +779,16 @@ namespace TowseyLibrary
                     if (count > 2) continue;
 
                     // now check the 8 directions. Assume adjacent because have already called PruneSingletons();
-                    if ((m[r, c + 1] > 0.0) && (m[r, c + 2] > 0.0)) continue; // three in a row 
-                    if ((m[r - 1, c + 1] > 0.0) && (m[r - 2, c + 2] > 0.0)) continue; // three on a diagonal 
-                    if ((m[r - 1, c] > 0.0) && (m[r - 2, c] > 0.0)) continue; // three in a col 
-                    if ((m[r - 1, c - 1] > 0.0) && (m[r - 2, c - 2] > 0.0)) continue; // three on a diagonal 
-                    if ((m[r, c - 1] > 0.0) && (m[r, c - 2] > 0.0)) continue; // three in a row 
-                    if ((m[r + 1, c - 1] > 0.0) && (m[r + 2, c - 2] > 0.0)) continue; // three on a diagonal 
-                    if ((m[r + 1, c] > 0.0) && (m[r + 2, c] > 0.0)) continue; // three in a col 
-                    if ((m[r + 1, c + 1] > 0.0) && (m[r + 2, c + 2] > 0.0)) continue; // three on a diagonal 
+                    if ((m[r, c + 1] > 0.0) && (m[r, c + 2] > 0.0)) continue; // three in a row
+                    if ((m[r - 1, c + 1] > 0.0) && (m[r - 2, c + 2] > 0.0)) continue; // three on a diagonal
+                    if ((m[r - 1, c] > 0.0) && (m[r - 2, c] > 0.0)) continue; // three in a col
+                    if ((m[r - 1, c - 1] > 0.0) && (m[r - 2, c - 2] > 0.0)) continue; // three on a diagonal
+                    if ((m[r, c - 1] > 0.0) && (m[r, c - 2] > 0.0)) continue; // three in a row
+                    if ((m[r + 1, c - 1] > 0.0) && (m[r + 2, c - 2] > 0.0)) continue; // three on a diagonal
+                    if ((m[r + 1, c] > 0.0) && (m[r + 2, c] > 0.0)) continue; // three in a col
+                    if ((m[r + 1, c + 1] > 0.0) && (m[r + 2, c + 2] > 0.0)) continue; // three on a diagonal
 
-                    //if ((m[r - 1, c] > 0.0) && (m[r + 1, c] == 0.0)) continue; // three in a column 
+                    //if ((m[r - 1, c] > 0.0) && (m[r + 1, c] == 0.0)) continue; // three in a column
                     //if ((m[r - 1, c - 1] > 0.0) && (m[r + 1, c + 1] == 0.0)) continue; // three on a diagonal
                     //if ((m[r - 1, c + 1] > 0.0) && (m[r + 1, c - 1] == 0.0)) continue; // three on a diagonal
 
@@ -898,7 +895,7 @@ namespace TowseyLibrary
       }
   }
   public static void writeMatrix(double[,] matrix)
-  {  
+  {
       writeMatrix(matrix, "F2");
   }
 
@@ -1087,7 +1084,7 @@ namespace TowseyLibrary
       }
       return newMatrix;
   }
-        
+
     public static double[,] SubtractValuesFromOne(double[,] m)
     {
         int rows = m.GetLength(0);
@@ -1277,7 +1274,7 @@ namespace TowseyLibrary
       int rows = m.GetLength(0);
       int cols = m.GetLength(1);
       if (rows != cols)
-      {    
+      {
           sum = Double.NaN;
           count = 0;
           return;
@@ -1595,7 +1592,7 @@ namespace TowseyLibrary
                         //newCol = 1;
                         if (newRow >= newRowCount) newRow = newRowCount - 1;
                         if (newCol >= newColCount) newCol = newColCount - 1;
-                        //if (newMatrix[newRow, newCol] < matrix[r, c]) 
+                        //if (newMatrix[newRow, newCol] < matrix[r, c])
                             newMatrix[newRow, newCol] = matrix[r, c];
                     }
             }
@@ -1640,7 +1637,7 @@ namespace TowseyLibrary
         //    int rows = m.GetLength(0);
         //    int cols = m.GetLength(1);
         //    double av; double sd;
-        //    NormalDist.AverageAndSD(m, out av, out sd);  
+        //    NormalDist.AverageAndSD(m, out av, out sd);
 
         //    double[,] ret = new double[rows,cols];
 
@@ -1737,7 +1734,7 @@ namespace TowseyLibrary
 
             for (int i = 0; i < rows; i++)
                 for (int j = 0; j < cols; j++)
-                {   
+                {
                     double norm01 = (m[i, j] - min) / range;
                     ret[i, j] = normMin + (norm01 * normRange);
                 }
@@ -1873,7 +1870,7 @@ namespace TowseyLibrary
             for (int i = 0; i < rows; i++)   m[i, 0]      = edge;
             for (int i = 0; i < rows; i++)   m[i, cols-1] = edge;
             for (int i = 1; i < cols-1; i++) m[0, i]      = edge;
-            for (int i = 1; i < cols-1; i++) m[rows-1, i] = edge; 
+            for (int i = 1; i < cols-1; i++) m[rows-1, i] = edge;
 
             //find min and max
             double min = Double.MaxValue;
@@ -2121,7 +2118,7 @@ namespace TowseyLibrary
 
 
         /*
-         * 
+         *
          */
         public static double[] GetMaximumRowValues(double[,] M)
         {

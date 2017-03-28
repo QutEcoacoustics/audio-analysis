@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Acoustics.Shared
+﻿namespace Acoustics.Shared
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     public struct Span<T> : IEquatable<Span<T>>, IComparable<Span<T>> where T : struct, IComparable<T>
     {
         public Span(T lower, T upper)

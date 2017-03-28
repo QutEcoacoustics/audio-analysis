@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-using Acoustics.Shared;
-using AudioAnalysisTools;
-using AudioAnalysisTools.Indices;
-using AudioAnalysisTools.LongDurationSpectrograms;
-using System.Drawing;
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.LongDurationSpectrograms;
+    using TowseyLibrary;
+
     public static class HerveGlotinCollaboration
     {
 
@@ -22,7 +22,7 @@ namespace AnalysisPrograms
         /// ############################# IMPORTANT ########################################
         /// In order to analyse the short recordings in BIRD50 dataset, need following change to code:
         /// need to modify    AudioAnalysis.AnalysisPrograms.AcousticIndices.cs #line648
-        /// need to change    SegmentMinDuration = TimeSpan.FromSeconds(20),  
+        /// need to change    SegmentMinDuration = TimeSpan.FromSeconds(20),
         /// to                SegmentMinDuration = TimeSpan.FromSeconds(1),
         /// THIS iS to analyse BIRD50 short recordings.
 
@@ -36,7 +36,7 @@ namespace AnalysisPrograms
             //string parentDir = @"C:\SensorNetworks\Output\BIRD50";
             //string speciesLabelsFile = parentDir + @"\AmazonBird50_training_output.csv";
             //int speciesCount = 50;
-            //////set file name format -depends on train or test. E.g.  "ID0003";     
+            //////set file name format -depends on train or test. E.g.  "ID0003";
             //string fileStemFormatString = "ID{0:d4}";   // for training files
             //string indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
             //string learningMode = "Train";
@@ -46,7 +46,7 @@ namespace AnalysisPrograms
             string parentDir = @"C:\SensorNetworks\Output\BIRD50";
             string speciesLabelsFile = null;
             int speciesCount = 50;
-            ////set file name format -depends on train or test. E.g.  "ID0003";     
+            ////set file name format -depends on train or test. E.g.  "ID0003";
             string fileStemFormatString = "ID1{0:d3}"; // for testing files
             string indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
             string learningMode = "Test";
@@ -57,7 +57,7 @@ namespace AnalysisPrograms
             //string parentDir = @"C:\SensorNetworks\Output\Glotin\Bombyx_SpermWhales";
             //string speciesLabelsFile = null;
             //int speciesCount = 0;
-            //////set file name format -depends on train or test. E.g.  "ID0003";     
+            //////set file name format -depends on train or test. E.g.  "ID0003";
             //string fileStemFormatString = null;
             ////string fileStemFormatString = "ID1{0:d3}"; // for testing files
             //string indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiResGianniPavan.yml";
@@ -128,7 +128,7 @@ namespace AnalysisPrograms
                     {
                         Source = recordingPath.ToFileInfo(),
                         Config = audio2csvConfigPath.ToFileInfo(),
-                        Output = outputDir.ToDirectoryInfo()
+                        Output = outputDir.ToDirectoryInfo(),
                     };
 
                     if (!audio2csvArguments.Source.Exists)
@@ -215,10 +215,10 @@ namespace AnalysisPrograms
                     }
 
                     // there are two possible tasks
-                    // 1: draw the aggregated grey scale spectrograms 
+                    // 1: draw the aggregated grey scale spectrograms
                     int secDuration = DrawLongDurationSpectrograms.DrawAggregatedSpectrograms(LDFCSpectrogramArguments, fileStem);
 
-                    // 2: draw the coloured ridge spectrograms 
+                    // 2: draw the coloured ridge spectrograms
                     secDuration = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(LDFCSpectrogramArguments, fileStem);
 
                     // copy files
@@ -303,10 +303,10 @@ namespace AnalysisPrograms
 
 
                 // there are two possible tasks
-                // 1: draw the aggregated grey scale spectrograms 
+                // 1: draw the aggregated grey scale spectrograms
                 int secDuration = DrawLongDurationSpectrograms.DrawAggregatedSpectrograms(LDFCSpectrogramArguments, fileStem);
 
-                // 2: draw the coloured ridge spectrograms 
+                // 2: draw the coloured ridge spectrograms
                 DrawLongDurationSpectrograms.DrawRidgeSpectrograms(LDFCSpectrogramArguments, fileStem);
 
 
@@ -374,10 +374,10 @@ namespace AnalysisPrograms
 
 
                 // there are two possible tasks
-                // 1: draw the aggregated grey scale spectrograms 
+                // 1: draw the aggregated grey scale spectrograms
                 int rowCount = DrawLongDurationSpectrograms.DrawAggregatedSpectrograms(LDFCSpectrogramArguments, fileStem);
 
-                // 2: draw the coloured ridge spectrograms 
+                // 2: draw the coloured ridge spectrograms
                 //DrawLongDurationSpectrograms.DrawRidgeSpectrograms(LDFCSpectrogramArguments, fileStem);
 
 

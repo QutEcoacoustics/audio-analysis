@@ -50,6 +50,8 @@ MyPackages <- function () {
 }
 #MyPackages()
 require('templator')
+require('datatrack')
+library('dviewer')
 
 #require(data.table) 
 #require(dplyr) 
@@ -77,7 +79,7 @@ source('util.R')
 source('time.R')
 source('spectrogram.R')
 source('audio.R')
-source('output.R')
+# source('output.R') # deprecated. Use datatrack. Function names are not the same, so need to rewrite function calls to this
 source('user.input.R')
 source('indices.R')
 source('lines.R')
@@ -114,7 +116,6 @@ SS.fixedwidth <- function () {
     # Step 5
     # Cluster Segments
     ClusterEvents()
-    
     
     # Step 5.1
     # inspect clusters

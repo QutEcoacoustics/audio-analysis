@@ -1,3 +1,9 @@
+##
+# Deprecated. 
+# This file has been replaced by the datatrack package. Don't use it. 
+#
+##
+
 g.output.parent.dir <- "/Users/n8933464/Documents/sample_selection_output"
 g.output.master.dir <- file.path(g.output.parent.dir, 'master')
 g.hash.dir <- file.path(g.output.parent.dir, 'hash')

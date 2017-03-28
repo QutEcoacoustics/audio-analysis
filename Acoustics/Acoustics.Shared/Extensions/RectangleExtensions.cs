@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Acoustics.Shared.Extensions
+﻿namespace Acoustics.Shared.Extensions
 {
+    using System;
+    using System.Collections.Generic;
     using System.Drawing;
+    using System.Linq;
+    using System.Text;
 
     public static class RectangleExtensions
     {
@@ -14,7 +13,7 @@ namespace Acoustics.Shared.Extensions
             return point.X >= rectangle.Left && point.X < rectangle.Right && point.Y >= rectangle.Bottom
                    && point.Y < rectangle.Top;
         }
-        
+
         public static bool PointIntersect(this Rectangle rectangle, int x, int y)
         {
             return x >= rectangle.Left && x < rectangle.Right && y >= rectangle.Bottom

@@ -30,9 +30,9 @@ namespace Acoustics.Shared
                 var parser = new EventReader(new MergingParser(new Parser(stream)));
 
                 // MEGA HACK TIME - I APOLOGIZE TO FUTURE ME :-(
-                // There's a bug in the YamlStream implementation that does not allow the MergingParser's magic to work because it produces a 
+                // There's a bug in the YamlStream implementation that does not allow the MergingParser's magic to work because it produces a
                 // a duplicate key in an object mapping graph in a yaml back referencing scenario.
-                // So to deserialize the graph properly, we first deserialize it generically - which expands all the yaml back references - and we 
+                // So to deserialize the graph properly, we first deserialize it generically - which expands all the yaml back references - and we
                 // then reserialize to an in memory string, which we can finally send to DynamicYaml (which uses yamlDocument.Load under the sheets).
                 // TODO: file a bug against the YamlDotNet project.
                 var d = new Deserializer();
@@ -44,7 +44,8 @@ namespace Acoustics.Shared
                 {
                     s.Serialize(stream2, deserializedObject);
 
-                    data = new DynamicYaml(stream2.ToString());
+                    var yaml = stream2.ToString();
+                    data = new DynamicYaml(yaml);
                 }
                 return data;
             }
@@ -63,7 +64,7 @@ namespace Acoustics.Shared
                 // allow merging in yaml back references
                 var parser = new EventReader(new MergingParser(new Parser(stream)));
                 var deserializer = new Deserializer();
-                
+
                 return deserializer.Deserialize<T>(parser);
             }
         }
@@ -74,7 +75,7 @@ namespace Acoustics.Shared
             {
                 var serializer = new Serializer(SerializationOptions.EmitDefaults);
                 serializer.Serialize(stream, obj);
-            }   
+            }
         }
     }
 

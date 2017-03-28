@@ -107,7 +107,7 @@
         /// <param name="verbose"></param>
         /// <returns></returns>
         public static Bitmap DrawImageOfSummaryIndices(
-            Dictionary<string, IndexProperties> listOfIndexProperties,  
+            Dictionary<string, IndexProperties> listOfIndexProperties,
 
             Dictionary<string, double[]> dictionaryOfSummaryIndices,
             string titleText,
@@ -306,7 +306,7 @@
         // ===========================================================================================================================================================
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="dt"></param>
         /// <param name="trackHeight"></param>

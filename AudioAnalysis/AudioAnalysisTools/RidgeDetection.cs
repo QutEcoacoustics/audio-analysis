@@ -1,13 +1,12 @@
-﻿using AudioAnalysisTools.StandardSpectrograms;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using TowseyLibrary;
+
     public class RidgeDetection
     {
         public static double ridgeDetectionmMagnitudeThreshold = 0.2;
@@ -62,7 +61,7 @@ namespace AudioAnalysisTools
 
                     var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
                     double magnitude;
-                    // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4. 
+                    // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4.
                     double direction;
                     bool isRidge = false;
 
@@ -78,7 +77,7 @@ namespace AudioAnalysisTools
                         double localThreshold = sd * 0.9;
                         if ((subM[halfLength, halfLength] - av) < localThreshold) continue;
 
-                        // Ridge orientation Category only has four values, they are 0, 1, 2, 3. 
+                        // Ridge orientation Category only has four values, they are 0, 1, 2, 3.
                         //int orientationCategory = (int)Math.Round((direction * 8) / Math.PI);
                         hits[r, c] = (byte)(direction + 1);
                         if (direction == 1)
@@ -115,8 +114,8 @@ namespace AudioAnalysisTools
                         }
                     }
                 }
-            }  
-            
+            }
+
             /// filter out some redundant ridges
             //var prunedPoiList = ImageTools.PruneAdjacentTracks(poiList, rows, cols);
             //var prunedPoiList1 = ImageTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
@@ -139,7 +138,7 @@ namespace AudioAnalysisTools
             int edgeBuffer = 2;
 
             //A: Init MATRICES FOR SPECTRAL RIDGES IN FOUR DIRECTIONS
-            // Ridge orientation Category only has four values, they are 0, 1, 2, 3. 
+            // Ridge orientation Category only has four values, they are 0, 1, 2, 3.
             //int orientationCategory = (int)Math.Round((direction * 8) / Math.PI);
             var rhz = new double[rows, cols];
             var rps = new double[rows, cols];
@@ -153,7 +152,7 @@ namespace AudioAnalysisTools
                 for (int c = edgeBuffer; c < cols - edgeBuffer; c++)
                 {
                     var subM = MatrixTools.Submatrix(matrix, r - edgeBuffer, c - edgeBuffer, r + edgeBuffer, c + edgeBuffer); // extract NxN submatrix
-                    // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4. 
+                    // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4.
 
                     // ridge magnitudes are in decibels
                     double[] ridgeMagnitudes = ImageTools.Sobel5X5RidgeDetection(subM);
@@ -235,7 +234,7 @@ namespace AudioAnalysisTools
         /// 1 = ridge direction = horizontal or slope = 0;
         /// 2 = ridge is positive slope or pi/4
         /// 3 = ridge is vertical or pi/2
-        /// 4 = ridge is negative slope or 3pi/4. 
+        /// 4 = ridge is negative slope or 3pi/4.
         /// </summary>
         /// <param name="matrix"></param>
         /// <param name="magnitudeThreshold"></param>
@@ -260,7 +259,7 @@ namespace AudioAnalysisTools
 
                     var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
                     double magnitude;
-                    // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4. 
+                    // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4.
                     double direction;
                     bool isRidge = false;
 
@@ -295,7 +294,7 @@ namespace AudioAnalysisTools
                         double localThreshold = sd * 0.9;
                         if ((subM2[halfLength + 1, halfLength + 1] - av) < localThreshold) continue;
 
-                        // Ridge orientation Category only has four values, they are 0, 1, 2, 3. 
+                        // Ridge orientation Category only has four values, they are 0, 1, 2, 3.
                         //int orientationCategory = (int)Math.Round((direction * 8) / Math.PI);
                         if (direction == 1)
                         {
@@ -352,7 +351,7 @@ namespace AudioAnalysisTools
             //double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
-            // will extract 7x7 image portions 
+            // will extract 7x7 image portions
             int halfLength = 3;
 
             //A: CONVERT MATRIX to BINARY FORM INDICATING SPECTRAL RIDGES
@@ -366,7 +365,7 @@ namespace AudioAnalysisTools
                 {
                     var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
                     double magnitude;
-                    // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4. 
+                    // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4.
                     double direction;
                     bool isRidge = false;
 
@@ -392,11 +391,11 @@ namespace AudioAnalysisTools
         }
 
         // ############################################################################################################################
-        // METHODS BELOW HERE ARE OLDER AND TRANSFERED FROM THE MATRIXTOOLS class in September 2014. 
+        // METHODS BELOW HERE ARE OLDER AND TRANSFERED FROM THE MATRIXTOOLS class in September 2014.
         // ############################################################################################################################
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
@@ -529,9 +528,9 @@ namespace AudioAnalysisTools
                         newM[r + 3, c] = hits[r, c]; //fill gap
                     }
 
-                    if (hits[r + 2, c - 1] > 0) 
+                    if (hits[r + 2, c - 1] > 0)
                         newM[r + 1, c] = hits[r, c]; //fill gap
-                    if (hits[r + 2, c + 1] > 0) 
+                    if (hits[r + 2, c + 1] > 0)
                         newM[r + 1, c] = hits[r, c]; //fill gap
 
                     //if (hits[r + 2, c - 3] > 0) newM[r + 1, c - 2] = hits[r, c]; //fill gap
@@ -657,7 +656,7 @@ namespace AudioAnalysisTools
             return binary;
         }
 
-    
+
     }
 
 }

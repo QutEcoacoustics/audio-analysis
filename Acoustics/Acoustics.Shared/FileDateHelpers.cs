@@ -25,12 +25,12 @@ namespace Acoustics.Shared
     {
         private static readonly string[] AcceptedFormatsNoTimeZone = {
                 "yyyyMMdd[-|T|_]HHmmss (if timezone offset hint provided)",
-                "yyyyMMdd[-|T|_]HHmmssZ"
+                "yyyyMMdd[-|T|_]HHmmssZ",
             };
 
         private static readonly string[] AcceptedFormatsTimeZone = {
                 "yyyyMMdd[-|T|_]HHmmss[+|-]HH",
-                "yyyyMMdd[-|T|_]HHmmss[+|-]HHmm"
+                "yyyyMMdd[-|T|_]HHmmss[+|-]HHmm",
             };
 
         internal static readonly DateVariants[] PossibleFormats =
@@ -40,12 +40,12 @@ namespace Acoustics.Shared
                 // valid: SERF_20130314_000021_000.wav, a_20130314_000021_a.a, a_99999999_999999_a.dnsb48364JSFDSD
                 new DateVariants(
                     @"^(.*)(?<date>(\d{4})(\d{2})(\d{2})(?<separator>T|-|_)(\d{2})(\d{2})(\d{2})(?![+-][\d:]{2,5}|Z)).*\.([a-zA-Z0-9]+)$",
-                     AppConfigHelper.StandardDateFormatNoTimeZone, 
+                     AppConfigHelper.StandardDateFormatNoTimeZone,
                     false,
                     AcceptedFormatsNoTimeZone),
 
-                // valid: prefix_20140101-235959+10.mp3, a_00000000-000000+00.a, a_99999999-999999+9999.dnsb48364JSFDSD                                    
-                // valid: prefix_20140101_235959+10.mp3, a_00000000_000000+00.a, a_99999999_999999+9999.dnsb48364JSFDSD                                    
+                // valid: prefix_20140101-235959+10.mp3, a_00000000-000000+00.a, a_99999999-999999+9999.dnsb48364JSFDSD
+                // valid: prefix_20140101_235959+10.mp3, a_00000000_000000+00.a, a_99999999_999999+9999.dnsb48364JSFDSD
                 // ISO8601-ish (supports a file compatible variant of ISO8601)
                 // valid: prefix_20140101T235959+10.mp3, a_00000000T000000+00.a, a_99999999T999999+9999.dnsb48364JSFDSD
                 new DateVariants(
@@ -114,7 +114,7 @@ namespace Acoustics.Shared
                 var success = ParseFileDateTimeBase(
                     fileName,
                     format,
-                    out parsedDate, 
+                    out parsedDate,
                     offsetHint);
 
                 if (success)
@@ -152,7 +152,7 @@ namespace Acoustics.Shared
             if (format.ParseTimeZone)
             {
                 var offsetText = match.Groups["offset"].Value;
-                
+
                 if (offsetText.Equals("Z", StringComparison.InvariantCultureIgnoreCase))
                 {
                     var parseFormat = format.ParseFormat.Replace("zzz", "Z");

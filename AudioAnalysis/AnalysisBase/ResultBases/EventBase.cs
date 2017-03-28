@@ -14,7 +14,7 @@ namespace AnalysisBase.ResultBases
     /// <summary>
     /// The base class for all Event style results
     /// </summary>
-    public abstract class EventBase : ResultBase 
+    public abstract class EventBase : ResultBase
     {
         private double eventStartSeconds;
 
@@ -22,7 +22,7 @@ namespace AnalysisBase.ResultBases
 
         /// <summary>
         /// Gets or sets the time the current audio segment is offset from the start of the file/recording.
-        /// 
+        ///
         /// </summary>
         public TimeSpan SegmentStartOffset
         {

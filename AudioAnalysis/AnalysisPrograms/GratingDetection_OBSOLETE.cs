@@ -1,34 +1,29 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
-
-using TowseyLibrary;
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-
-using Acoustics.Shared;
-using Acoustics.Tools.Audio;
-
-
-
-//Here is link to wiki page containing info about how to write Analysis techniques
+﻿//Here is link to wiki page containing info about how to write Analysis techniques
 //https://wiki.qut.edu.au/display/mquter/Audio+Analysis+Processing+Architecture
 //
 
 
 namespace AnalysisPrograms
 {
-    using Acoustics.Shared.Extensions;
 
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
+    using Acoustics.Shared.Extensions;
+    using Acoustics.Tools.Audio;
     using AnalysisPrograms.Production;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using TowseyLibrary;
 
     [Obsolete]
     public class GratingDetection_OBSOLETE
@@ -66,7 +61,7 @@ namespace AnalysisPrograms
         //public const string key_MAX_FREQ = "maxFreq";
         public const string key_SCORE = "score";
         public const string key_PERIODICITY = "periodicity";
-        
+
 
 
 
@@ -89,7 +84,7 @@ namespace AnalysisPrograms
             EVENT_HEADERS[2] = key_START_SEC;        EVENT_COL_TYPES[2] = typeof(int);
             EVENT_HEADERS[3] = key_SEGMENT_DURATION; EVENT_COL_TYPES[3] = typeof(double);
             EVENT_HEADERS[4] = key_CALL_DENSITY;     EVENT_COL_TYPES[4] = typeof(int);
-            EVENT_HEADERS[5] = key_CALL_SCORE;       EVENT_COL_TYPES[5] = typeof(double); 
+            EVENT_HEADERS[5] = key_CALL_SCORE;       EVENT_COL_TYPES[5] = typeof(double);
             return Tuple.Create(EVENT_HEADERS,       EVENT_COL_TYPES);
         }
         //INITIALISE OUTPUT TABLE OF INDICES
@@ -137,7 +132,7 @@ namespace AnalysisPrograms
                    {
                        Source = recordingPath.ToFileInfo(),
                        Config = configPath.ToFileInfo(),
-                       Output = outputDir.ToDirectoryInfo()
+                       Output = outputDir.ToDirectoryInfo(),
                    };
         }
 
@@ -176,7 +171,7 @@ namespace AnalysisPrograms
             if(dt == null)
             {
                 Log.WriteLine("\n\n\n##############################\n WARNING! No events returned.");
-            } else 
+            } else
             {
                 //LoggedConsole.WriteLine("\tRecording Duration: {0:f2}seconds", recordingTimeSpan.TotalSeconds);
                 LoggedConsole.WriteLine("# Event count for minute {0} = {1}", startMinute, dt.Rows.Count);
@@ -262,7 +257,7 @@ namespace AnalysisPrograms
             Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, eventThreshold);
             string imagePath = Path.Combine(diOutputDir.FullName, newFileNameWithoutExtention + ".png");
             image.Save(imagePath, ImageFormat.Png);
-            return image; 
+            return image;
         }
 
         /// <summary>
@@ -271,7 +266,7 @@ namespace AnalysisPrograms
         /// </summary>
         /// <param name="config"></param>
         /// <param name="segmentAudioFile"></param>
-        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, TimeSpan> 
+        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, TimeSpan>
                                         Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir, string opFileName)
         {
             //set default values
@@ -289,7 +284,7 @@ namespace AnalysisPrograms
             }
             int sr = recording.SampleRate;
             double binWidth = recording.SampleRate / (double)frameSize;
-            double frameDuration = frameSize / (double)sr; 
+            double frameDuration = frameSize / (double)sr;
             double frameOffset   = frameDuration * (1 - windowOverlap); //seconds between start of each frame
             double framesPerSecond = 1 / frameOffset;
             TimeSpan tsRecordingtDuration = recording.Duration();
@@ -373,7 +368,7 @@ namespace AnalysisPrograms
             bool doNoiseremoval = true;
             int minPeriod = 2;    //both period values must be even numbers
             int maxPeriod = 20;   //Note: 17.2 frames per second i.e. period=20 is just over 1s.
-            int numberOfCycles = 4; 
+            int numberOfCycles = 4;
             int step = 1;
 
             int rowCount = matrix.GetLength(0);
@@ -399,20 +394,20 @@ namespace AnalysisPrograms
                 }
 
                 //var events = CrossCorrelation.DetectBarsEventsBySegmentationAndXcorrelation(amplitudeArray, intensityThreshold);
-                
+
                 var scores           = Gratings.ScanArrayForGratingPattern(amplitudeArray, minPeriod, maxPeriod, numberOfCycles, step);
                 var mergedOutput     = Gratings.MergePeriodicScoreArrays(scores, minPeriod, maxPeriod);
-                double[] intensity   = mergedOutput.Item1; 
+                double[] intensity   = mergedOutput.Item1;
                 double[] periodicity = mergedOutput.Item2;
                 var events = Gratings.ExtractPeriodicEvents(intensity, periodicity, intensityThreshold);
-                
+
                 foreach (Dictionary<string, double> item in events)
                 {
                     item[key_MIN_FREQBIN] = minCol;
                     item[key_MAX_FREQBIN] = maxCol;
                     events2return.Add(item);
                 }
-                
+
                 if (b == 3) array2return = amplitudeArray; //returned for debugging purposes only
             } //for loop over bands of columns
 
@@ -548,5 +543,5 @@ namespace AnalysisPrograms
         //    } //foreach
         //    return list;
         //} //ExtractPeriodicEvents()
-    } 
+    }
 }

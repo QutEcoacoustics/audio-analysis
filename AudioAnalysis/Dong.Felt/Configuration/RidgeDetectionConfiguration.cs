@@ -6,7 +6,7 @@
     using System.Text;
 
     /// <summary>
-    /// This class is to store the 
+    /// This class is to store the
     /// </summary>
     public class RidgeDetectionConfiguration
     {
@@ -20,7 +20,7 @@
         public int FilterRidgeMatrixLength { get; set; }
 
         public int MinimumNumberInRidgeInMatrix { get; set; }
-      
+
     }
 }
 

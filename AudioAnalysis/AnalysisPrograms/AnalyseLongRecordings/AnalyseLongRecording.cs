@@ -7,8 +7,6 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-using AnalysisPrograms.SourcePreparers;
-
 namespace AnalysisPrograms.AnalyseLongRecordings
 {
     using System;
@@ -20,21 +18,17 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools.Audio;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
     using AnalysisPrograms.Production;
+    using AnalysisPrograms.SourcePreparers;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
-
     using log4net;
     using log4net.Repository.Hierarchy;
-
 
     public partial class AnalyseLongRecording
     {
@@ -107,7 +101,7 @@ Output  to  directory: {1}
             bool saveIntermediateCsvFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
             SaveBehavior saveSonogramsImages = (SaveBehavior?)configuration[AnalysisKeys.SaveSonogramImages] ?? SaveBehavior.Never;
             bool doParallelProcessing = (bool?)configuration[AnalysisKeys.ParallelProcessing] ?? false;
-            
+
             bool filenameDate = (bool?)configuration[AnalysisKeys.RequireDateInFilename] ?? false;
 
             string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
@@ -155,14 +149,14 @@ Output  to  directory: {1}
             var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonogramsImages, saveIntermediateCsvFiles, arguments.Channels, arguments.MixDownToMono)
             {
                 // create and delete directories
-                DeleteFinished = true,  
+                DeleteFinished = true,
                 IsParallel = doParallelProcessing,
-                SubFoldersUnique = false
+                SubFoldersUnique = false,
             };
 
             // 4. get the segment of audio to be analysed
             // if tiling output, specify that FileSegment needs to be able to read the date
-            var fileSegment = new FileSegment(sourceAudio, arguments.AlignToMinute); 
+            var fileSegment = new FileSegment(sourceAudio, arguments.AlignToMinute);
             var bothOffsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
             if (bothOffsetsProvided)
             {

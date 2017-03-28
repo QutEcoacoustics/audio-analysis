@@ -1,32 +1,26 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
-
-using Acoustics.Shared;
-using Acoustics.Tools;
-using Acoustics.Tools.Audio;
-using AnalysisBase;
-
-using TowseyLibrary;
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
-    using System.Diagnostics.Contracts;
 
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
     using Acoustics.Shared.Extensions;
-
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
+    using AnalysisBase;
     using AnalysisPrograms.Production;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using TowseyLibrary;
 
     [Obsolete]
     public class LewinsRail3OBSOLETE : IAnalyser
@@ -129,7 +123,7 @@ namespace AnalysisPrograms
                     Indices = indicesFname,
                     Sgram = sonogramFname,
                     Start = tsStart.TotalSeconds,
-                    Duration = tsDuration.TotalSeconds
+                    Duration = tsDuration.TotalSeconds,
                 };
             }
 
@@ -234,7 +228,7 @@ namespace AnalysisPrograms
             var results = Analysis(fiAudioF, configDict);
             //######################################################################
 
-            if (results == null) return result; //nothing to process 
+            if (results == null) return result; //nothing to process
             var sonogram = results.Item1;
             var hits = results.Item2;
             var scores = results.Item3;
@@ -368,7 +362,7 @@ namespace AnalysisPrograms
             int stepCount = rowCount / step;
             int sampleLength = 64; //64 frames = 3.7 seconds. Suitable for Lewins Rail.
             double[] intensity   = new double[rowCount];
-            double[] periodicity = new double[rowCount]; 
+            double[] periodicity = new double[rowCount];
 
             //######################################################################
             //ii: DO THE ANALYSIS AND RECOVER SCORES
@@ -452,18 +446,18 @@ namespace AnalysisPrograms
             if (predictedEvents == null) return null;
             string[] headers = { AudioAnalysisTools.AnalysisKeys.EventCount,
                                  AudioAnalysisTools.AnalysisKeys.EventStartMin,
-                                 AudioAnalysisTools.AnalysisKeys.EventStartSec, 
+                                 AudioAnalysisTools.AnalysisKeys.EventStartSec,
                                  AudioAnalysisTools.AnalysisKeys.EventStartAbs,
                                  AudioAnalysisTools.AnalysisKeys.KeySegmentDuration,
-                                 AudioAnalysisTools.AnalysisKeys.EventDuration, 
+                                 AudioAnalysisTools.AnalysisKeys.EventDuration,
                                  AudioAnalysisTools.AnalysisKeys.EventIntensity,
                                  AudioAnalysisTools.AnalysisKeys.EventName,
                                  AudioAnalysisTools.AnalysisKeys.EventScore,
-                                 AudioAnalysisTools.AnalysisKeys.EventNormscore 
+                                 AudioAnalysisTools.AnalysisKeys.EventNormscore,
 
                                };
             //                   1                2               3              4                5              6               7              8
-            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), 
+            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string),
                              typeof(double), typeof(double) };
 
             var dataTable = DataTableTools.CreateTable(headers, types);
@@ -668,7 +662,7 @@ namespace AnalysisPrograms
                     SegmentMinDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
+                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
                 };
             }
         }

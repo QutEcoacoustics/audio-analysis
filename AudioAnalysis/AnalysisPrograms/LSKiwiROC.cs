@@ -1,19 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-using AudioAnalysisTools;
-using TowseyLibrary;
-using Acoustics.Shared;
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
-    using AnalysisPrograms.Production;
 
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
+    using AnalysisPrograms.Production;
+    using AudioAnalysisTools;
     using PowerArgs;
+    using TowseyLibrary;
 
     public class LSKiwiROC
     {
@@ -102,21 +100,21 @@ namespace AnalysisPrograms
             string header_Harmonics = "Harmonics";
             string header_Quality = "Quality";
             string[] ROC_HEADERS = { AnalysisKeys.EventStartAbs,     //typeof(double)
-                                       AnalysisKeys.EventStartMin, 
-                                       AnalysisKeys.EventStartSec, 
-                                       AnalysisKeys.EventIntensity, 
-                                       LSKiwiHelper.key_GRID_SCORE, 
-                                       LSKiwiHelper.key_DELTA_SCORE, 
-                                       LSKiwiHelper.key_CHIRP_SCORE, 
-                                       LSKiwiHelper.key_PEAKS_SNR_SCORE, 
-                                       LSKiwiHelper.key_BANDWIDTH_SCORE, 
-                                       AnalysisKeys.EventScore, 
-                                       AnalysisKeys.EventNormscore, 
-                                       header_predictedSex, 
-                                       header_Harmonics, 
-                                       header_trueSex, 
-                                       header_Quality, 
-                                       "TP", "FP", "FN" };
+                                       AnalysisKeys.EventStartMin,
+                                       AnalysisKeys.EventStartSec,
+                                       AnalysisKeys.EventIntensity,
+                                       LSKiwiHelper.key_GRID_SCORE,
+                                       LSKiwiHelper.key_DELTA_SCORE,
+                                       LSKiwiHelper.key_CHIRP_SCORE,
+                                       LSKiwiHelper.key_PEAKS_SNR_SCORE,
+                                       LSKiwiHelper.key_BANDWIDTH_SCORE,
+                                       AnalysisKeys.EventScore,
+                                       AnalysisKeys.EventNormscore,
+                                       header_predictedSex,
+                                       header_Harmonics,
+                                       header_trueSex,
+                                       header_Quality,
+                                       "TP", "FP", "FN", };
 
             //string[] ROC_HEADERS = { "startSec",   "min",         "secOffset",  "intensity",     "gridScore",    "deltaScore",  "chirpScore",      "PeaksSnrScore"  "bwScore",      "comboScore",   "normScore",     "preSex",     "Harmonics",   "truSex",      "Quality",    "TP",       "FP",        "FN"};
             Type[] ROC_COL_TYPES = { typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), typeof(int), typeof(string), typeof(int), typeof(int), typeof(int), typeof(int) };
@@ -130,7 +128,7 @@ namespace AnalysisPrograms
             dtPredictions = LSKiwiHelper.MergeAdjacentPredictions(dtPredictions);
             //var weights = LSKiwiHelper.GetFeatureWeights(); //to try different weightings.
 
-            //string colName  = "Species"; 
+            //string colName  = "Species";
             //string value    = "LSK";
             //DataTableTools.DeleteRows(dtADResults, colName, value); //delete rows where Species name is not "LSK"
             var dtOutput = DataTableTools.CreateTable(ROC_HEADERS, ROC_COL_TYPES);
@@ -193,13 +191,13 @@ namespace AnalysisPrograms
                     if ((trueStart >= (myStartSecAbs - 10)) && (trueStart <= (myStartSecAbs + 20)) && (predictedSex == trueSex)) //myStart is close to trueStart AND same sex THERFORE TRUE POSTIIVE
                     {
                         isTP = true;
-                        trueEvent["Begin Time (s)"] = Double.NaN; //mark so that will not use again 
+                        trueEvent["Begin Time (s)"] = Double.NaN; //mark so that will not use again
                         opRow[header_Quality] = trueEvent[header_Quality];
                         opRow[header_trueSex] = trueEvent["Sex"];
                         opRow[header_Harmonics] = trueEvent[header_Harmonics];
                         break;
                     }
-                } //foreach - AD loop 
+                } //foreach - AD loop
                 if (isTP)
                 {
                     opRow["TP"] = 1;
@@ -399,7 +397,7 @@ namespace AnalysisPrograms
                     //intensityScore = 0.0;
                     continue;
                 }
-                //string quality        = ((int)row["Quality"]).ToString();     
+                //string quality        = ((int)row["Quality"]).ToString();
                 string quality = "--";
                 double gridScore = (double)row[LSKiwiHelper.key_GRID_SCORE];
                 double deltScore = (double)row[LSKiwiHelper.key_DELTA_SCORE];

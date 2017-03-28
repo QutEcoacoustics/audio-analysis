@@ -78,7 +78,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
                                  MinuteOffset =
                                      TimeSpan.FromMinutes(19 * 60),
                                  FrameWidth = 256,
-                                 SampleRate = 22050
+                                 SampleRate = 22050,
                              }; // default values have been set
 
             //config.ColourMap = "TRK-OSC-HAR";
@@ -95,7 +95,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             {
                 // use the default set of index properties in the AnalysisConfig directory.
                 IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigForFrogs.yml".ToFileInfo(),
-                SpectrogramConfigPath = fiSpectrogramConfig
+                SpectrogramConfigPath = fiSpectrogramConfig,
             };
             throw new Exception();
         }
@@ -120,12 +120,12 @@ namespace QutBioacosutics.Xie.LDSpectrograms
 
 
         /// <summary>
-        ///  This IS THE MAJOR STATIC METHOD FOR CREATING LD SPECTROGRAMS 
-        /// 
-        /// 
+        ///  This IS THE MAJOR STATIC METHOD FOR CREATING LD SPECTROGRAMS
+        ///
+        ///
         /// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOT MICHAELS COPY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ///
-        ///  
+        ///
         /// </summary>
         /// <param name="configuration"></param>
         public static void DrawSpectrogramsFromSpectralIndicesJiesCopyDoNotUseAnthonyThisWholeCopyingMethodsThingIsConfusingMe(FileInfo spectrogramConfigPath, FileInfo indicesConfigPath)

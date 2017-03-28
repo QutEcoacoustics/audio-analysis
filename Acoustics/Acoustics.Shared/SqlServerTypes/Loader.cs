@@ -1,11 +1,11 @@
-﻿using System;
-using System.IO;
-using System.Runtime.InteropServices;
-
-namespace SqlServerTypes
+﻿namespace SqlServerTypes
 {
+    using System;
+    using System.IO;
+    using System.Runtime.InteropServices;
+
     /// <summary>
-    /// Utility methods related to CLR Types for SQL Server 
+    /// Utility methods related to CLR Types for SQL Server
     /// </summary>
     internal class Utilities
     {

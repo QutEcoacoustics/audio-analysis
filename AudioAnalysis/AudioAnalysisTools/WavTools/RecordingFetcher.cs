@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace AudioAnalysisTools.WavTools
+﻿namespace AudioAnalysisTools.WavTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     public class RecordingFetcher
     {
         private const string SERVER = "http://sensor.mquter.qut.edu.au/sensors";
@@ -26,7 +26,7 @@ namespace AudioAnalysisTools.WavTools
             string uriString = string.Format("{0}/{1}/{2}.{3}", SERVER, sensorName, recordingName, extension);
 
             return new Uri(uriString);
-            
+
         }
 
         private static void ParseFilename(string filename, out string sensorname, out string recordingname, out string extension)
@@ -36,7 +36,7 @@ namespace AudioAnalysisTools.WavTools
             string[] parts = filename.Split('_');
             sensorname = parts[0];
             string fileId = parts[1];
-            
+
             string[] parts2 = fileId.Split('.');
             recordingname = parts2[0];
             extension = parts2[1];

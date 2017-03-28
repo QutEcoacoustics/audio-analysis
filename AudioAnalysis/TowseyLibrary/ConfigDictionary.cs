@@ -140,7 +140,7 @@ namespace TowseyLibrary
             return GetInt(key, this.dictionary);
         }
 
-        public int? GetIntNullable(string key)  
+        public int? GetIntNullable(string key)
         {
             return GetIntNullable(key, this.dictionary);
         }
@@ -216,7 +216,7 @@ namespace TowseyLibrary
         {
 
             //if (Double.TryParse(str, out d))     dic.Add(key, str); // if done, then is a number
-            
+
             if (! dict.ContainsKey(key))
             {
                 Log.WriteLine("ERROR READING PROPERTIES FILE");
@@ -320,7 +320,7 @@ namespace TowseyLibrary
         {
             var fileInfo = fileName;
             if (!fileInfo.Exists) return null;
-           
+
             var table = new Dictionary<string, string>();
             using (TextReader reader = fileName.OpenText())
             {

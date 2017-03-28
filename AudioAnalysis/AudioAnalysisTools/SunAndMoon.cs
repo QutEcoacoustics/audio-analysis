@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using TowseyLibrary;
+
     public static class SunAndMoon
     {
         public class SunMoonTides
@@ -22,7 +22,7 @@ namespace AudioAnalysisTools
             //public DateTimeOffset Sunrise { get; set; }
             //public DateTimeOffset Sunset { get; set; }
 
-            public Dictionary<string, DateTimeOffset> dictionary = new Dictionary<string, DateTimeOffset>(); 
+            public Dictionary<string, DateTimeOffset> dictionary = new Dictionary<string, DateTimeOffset>();
 
         }
 
@@ -33,7 +33,7 @@ namespace AudioAnalysisTools
         /// <summary>
         /// The data for establishing the exact startDTO for the phase of moon in 2010 was obtained at the folowing website:
         /// http://www.timeanddate.com/moon/phases/australia/brisbane
-        /// 
+        ///
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
@@ -42,13 +42,13 @@ namespace AudioAnalysisTools
             double lunarCycle = 29.53; // one lunar cycle in days
             // a known new moon in Brisbane
             var startDTO = new DateTimeOffset(2010, 1, 15, 17, 11, 0, TimeSpan.Zero);
-            // the below line tests case of a known full moon PRIOR to the startDTO. 
+            // the below line tests case of a known full moon PRIOR to the startDTO.
             // Did this to check negative cycles - It works!
             //dto = new DateTimeOffset(2008, 7, 18, 17, 59, 0, TimeSpan.Zero); // a known full moon in Brisbane
 
             double totalElapsedDays = (dto - startDTO).TotalDays;
             double cycles = totalElapsedDays / lunarCycle;
-            double remainderCycle = cycles - Math.Truncate(cycles); 
+            double remainderCycle = cycles - Math.Truncate(cycles);
 
             if (remainderCycle < 0)
                 remainderCycle = 1 + remainderCycle;
@@ -136,7 +136,7 @@ namespace AudioAnalysisTools
             //
             //        public static Bitmap AddSunTrackToImage(int width, DateTimeOffset? dateTimeOffset, SiteDescription siteDescription)
             //        {
-            //            return AddSunTrackToImage(width, dateTimeOffset, siteDescription.SiteName, siteDescription.Latitude, siteDescription.Longitude);        
+            //            return AddSunTrackToImage(width, dateTimeOffset, siteDescription.SiteName, siteDescription.Latitude, siteDescription.Longitude);
             //=======
             //            int year = ((DateTimeOffset)dateTimeOffset).Year;
             //            int dayOfYear = ((DateTimeOffset)dateTimeOffset).DayOfYear;
@@ -217,7 +217,7 @@ namespace AudioAnalysisTools
                     g.DrawString(moonPhase, font, Brushes.White, new PointF(5, 1));
                 }
 
-            } catch 
+            } catch
             {
                 // error reading the sunrise/sunset data file
                 return null;
@@ -253,7 +253,7 @@ namespace AudioAnalysisTools
 
                 // this is a hack to deal with inserting weekly gridlines rather than overwriting the image.
                 // This was done for EASY images but not for 3D!!
-                // ONE DAY THIS WILL HAVE TO BE FIXED! 
+                // ONE DAY THIS WILL HAVE TO BE FIXED!
                 if ((dayOfYear % 7 == 0)|| (dayOfYear % 30 == 0))
                 {
                     imageRow++;
@@ -332,11 +332,11 @@ namespace AudioAnalysisTools
 
                 var dto = new DateTimeOffset(year, month, day, hour, minute, 0, TimeSpan.Zero );
                 if ((ampm == "PM") && (hour < 12)) dto = dto.AddHours(12);
-                else 
+                else
                 if ((ampm == "AM") && (hour == 12)) dto = dto.AddHours(-12);
 
                 // correct for daylight saving
-                if (est == "EDT") dto = dto.AddHours(-1); 
+                if (est == "EDT") dto = dto.AddHours(-1);
 
 
 

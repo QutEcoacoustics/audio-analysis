@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-//using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    //using System.Linq;
+    using System.Text;
+    using TowseyLibrary;
+
     public static class SprTools
     {
 
@@ -15,7 +15,7 @@ namespace AudioAnalysisTools
         public static char[] code = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l' };   //15 degree jumps
         //90 degree angle = symbol 'g' i.e. the vertical
         public const int resolutionAngle = 15;
-        
+
 
         /// <summary>
         /// returns the angle difference between two angle symbols
@@ -81,7 +81,7 @@ namespace AudioAnalysisTools
                     {
                         int degrees = result.Item1;
                         double intensity = result.Item2;
-                        
+
                         if ((intensity > sumThreshold) && (intensity > intensityScores[r, c]))
                         {
                             //if (intensity > intensityScores[r, c]) intensityScores[r, c] = intensity; // store the intensity
@@ -92,7 +92,7 @@ namespace AudioAnalysisTools
                             {
                                 int row = r + (int)(cosAngle * j);
                                 int col = c + (int)(sinAngle * j);
-                                if (intensity > intensityScores[row, col]) 
+                                if (intensity > intensityScores[row, col])
                                 symbolic[row, col] = code[degrees / resolutionAngle];
                             } // line length
 
@@ -119,7 +119,7 @@ namespace AudioAnalysisTools
             for (int r = 1; r < rows-1; r++)
             {
                 for (int c = 1; c < cols-1; c++)
-                { 
+                {
                     if (inputM[r,c] == '-') continue;
 
                     if ((inputM[r, c - 1] == '-') && (inputM[r, c + 1] == '-') && (inputM[r-1, c] == '-') && (inputM[r+1, c] == '-'))

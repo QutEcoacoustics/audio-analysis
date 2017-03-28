@@ -59,7 +59,7 @@ namespace AudioAnalysisTools.TileImage
             var xOffset = (TimeSpan)this.GetTileIndexes(calculatedLayers, selectedLayer, tileOffsets);
             var tileDate = this.baseDateUtc.Add(xOffset);
             var formattedDateTime = tileDate.ToString(AppConfigHelper.StandardDateFormatUtcWithFractionalSeconds);
-            
+
             var zoomIndex = (double)this.GetZoomIndex(calculatedLayers, selectedLayer);
 
             var basename = FilenameHelpers.AnalysisResultName(this.prefix, this.tag, null,  formattedDateTime, zoomIndex.ToString());

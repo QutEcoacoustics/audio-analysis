@@ -10,15 +10,15 @@
 
     /// <summary>
     /// A class for generating RidgeNeighbourhoodFeatureVector for decribing the acoustic events(bird calls).
-    /// </summary>   
+    /// </summary>
     public class RidgeNeighbourhoodFeatureVector
     {
         #region Public Properties
 
         public double NeighbourhoodMagnitude { get; set; }
- 
+
         public double NeighbourhoodOrientation { get; set; }
-        
+
         public int MinRowIndex { get; set; }
 
         public int MaxRowIndex { get; set; }
@@ -32,12 +32,12 @@
         public double MaxFrequency { get; set; }
 
         /// <summary>
-        /// to keep the time position in the long audio file for calculating the representation for this position. 
+        /// to keep the time position in the long audio file for calculating the representation for this position.
         /// </summary>
         public double TimePosition_TopLeft { get; set; }
 
         /// <summary>
-        /// to keep the frequencyband for calculating the representation for this position. 
+        /// to keep the frequencyband for calculating the representation for this position.
         /// </summary>
         public double FrequencyBand_TopLeft { get; set; }
 
@@ -49,28 +49,28 @@
 
         public int neighbourhoodWidth { get; set; }
 
-        // Gets or sets the orientation type 
+        // Gets or sets the orientation type
         public int OrientationType { get; set; }
 
         public int poiatParticularOrientationCount { get; set; }
 
-        // the first value means the orentation type, and the second values means the count of poi with this orentation type. 
+        // the first value means the orentation type, and the second values means the count of poi with this orentation type.
         public Tuple<int, int> Slope { get; set; }
 
         public int SlopeScore { get; set; }
 
         /// <summary>
-        /// Gets or sets the HorizontalByteVector, part of a composite  edge RidgeNeighbourhoodFeatureVector, representing the horizontal direction of edge(one kind of feature). 
+        /// Gets or sets the HorizontalByteVector, part of a composite  edge RidgeNeighbourhoodFeatureVector, representing the horizontal direction of edge(one kind of feature).
         /// </summary>
         public int[] HorizontalVector { get; set; }
 
         /// <summary>
-        /// Gets or sets the HorizontalBitVector, part of a composite  edge RidgeNeighbourhoodFeatureVector, representing the horizontal direction of edge(one kind of feature). 
+        /// Gets or sets the HorizontalBitVector, part of a composite  edge RidgeNeighbourhoodFeatureVector, representing the horizontal direction of edge(one kind of feature).
         /// </summary>
         public int[] HorizontalBitVector { get; set; }
 
         /// <summary>
-        /// Gets or sets the HorizontalBitVector, part of a composite  edge RidgeNeighbourhoodFeatureVector, representing the horizontal direction of edge(one kind of feature). 
+        /// Gets or sets the HorizontalBitVector, part of a composite  edge RidgeNeighbourhoodFeatureVector, representing the horizontal direction of edge(one kind of feature).
         /// </summary>
         public double[] HorizontalFractionVector { get; set; }
 
@@ -80,12 +80,12 @@
         public int[] VerticalVector { get; set; }
 
         /// <summary>
-        /// Gets or sets the VerticalBitVector, part of a composite  RidgeNeighbourhoodFeatureVector, representing the vertital direction of edge(one kind of feature). 
+        /// Gets or sets the VerticalBitVector, part of a composite  RidgeNeighbourhoodFeatureVector, representing the vertital direction of edge(one kind of feature).
         /// </summary>
         public int[] VerticalBitVector { get; set; }
 
         /// <summary>
-        /// Gets or sets the VerticalBitVector, part of a composite  RidgeNeighbourhoodFeatureVector, representing the vertital direction of edge(one kind of feature). 
+        /// Gets or sets the VerticalBitVector, part of a composite  RidgeNeighbourhoodFeatureVector, representing the vertital direction of edge(one kind of feature).
         /// </summary>
         public double[] VerticalFractionVector { get; set; }
 
@@ -100,7 +100,7 @@
         public int[] PositiveDiagonalBitVector { get; set; }
 
         /// <summary>
-        /// Gets or sets the PositiveDiagonalBitVector, part of a composite  RidgeNeighbourhoodFeatureVector, representing the NorthEast direction of edge(one kind of feature). 
+        /// Gets or sets the PositiveDiagonalBitVector, part of a composite  RidgeNeighbourhoodFeatureVector, representing the NorthEast direction of edge(one kind of feature).
         /// </summary>
         public double[] PositiveDiagonalFractionVector { get; set; }
 
@@ -115,17 +115,17 @@
         public int[] NegativeDiagonalBitVector { get; set; }
 
         /// <summary>
-        /// Gets or sets the NegativeDiagonalBitVector, part of a composite  RidgeNeighbourhoodFeatureVector, representing the NorthWest direction of edge(one kind of feature). 
+        /// Gets or sets the NegativeDiagonalBitVector, part of a composite  RidgeNeighbourhoodFeatureVector, representing the NorthWest direction of edge(one kind of feature).
         /// </summary>
         public double[] NegativeDiagonalFractionVector { get; set; }
 
         /// <summary>
-        /// Gets or sets the anchor point of search neighbourhood. 
+        /// Gets or sets the anchor point of search neighbourhood.
         /// </summary>
         public Point Point { get; set; }
 
         /// <summary>
-        /// Gets or sets the percentageByteVector, another type of edge feature vector, representing the percentage of each direction of edge account for. 
+        /// Gets or sets the percentageByteVector, another type of edge feature vector, representing the percentage of each direction of edge account for.
         /// Especially, it [0], horizontal, [1], vertical, [2], positiveDiagonal, [3], negativeDiagonal.
         /// </summary>
         public double HorizontalPercentage { get; set; }
@@ -147,10 +147,10 @@
 
         public int TimePositionPix { get; set; }
 
-        
+
 
         #region constructor
-       
+
         /// <summary>
         /// A constructor takes in point
         /// </summary>
@@ -159,7 +159,7 @@
         {
             Point = point;
         }
-        
+
         #endregion constructor
 
         #endregion public properties
@@ -168,8 +168,8 @@
         #region Public Method
 
         /// <summary>
-        /// This method tries to use a feature vector,{m, o}, to represent a ridge Neighbourhood. 
-        /// So the result is a list of vectors. 
+        /// This method tries to use a feature vector,{m, o}, to represent a ridge Neighbourhood.
+        /// So the result is a list of vectors.
         /// </summary>
         /// <param name="poiList"></param>
         /// <param name="rowsCount"></param>
@@ -192,12 +192,12 @@
                     double magnitudeX = 0.0;
                     double magnitudeY = 0.0;
 
-                    // For the calculation of horizontal direction byte, we need to check each row 
+                    // For the calculation of horizontal direction byte, we need to check each row
                     for (int rowNeighbourhoodIndex = -radiusOfNeighbourhood; rowNeighbourhoodIndex <= radiusOfNeighbourhood; rowNeighbourhoodIndex++)
                     {
                         for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex <= radiusOfNeighbourhood; colNeighbourhoodIndex++)
                         {
-                            // check boundary of index 
+                            // check boundary of index
                             if (StatisticalAnalysis.checkBoundary(row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex, rowsCount, colsCount))
                             {
                                 var OrientationDegree = matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex].RidgeOrientation / Math.PI * 180;
@@ -217,11 +217,11 @@
                     });
                 }
             }
-            return result; 
+            return result;
         }
 
         /// <summary>
-        /// This method uses another diagonal orientation edge representation.  And e.g. the neighbourhoodWindow size is 13 * 13, then the feature vector can 
+        /// This method uses another diagonal orientation edge representation.  And e.g. the neighbourhoodWindow size is 13 * 13, then the feature vector can
         /// be up to 13(vertical edge) + 13(horizontal edge) + 25 (positiveDiagonal edge) + 25 (negativeDiagonal edge).
         /// </summary>
         /// <param name="poiList"></param>
@@ -253,12 +253,12 @@
                         var positiveDiagonalDirection = new int[2 * sizeOfNeighbourhood - 1];
                         var negativeDiagonalDirection = new int[2 * sizeOfNeighbourhood - 1];
 
-                        // For the calculation of horizontal direction byte, we need to check each row 
+                        // For the calculation of horizontal direction byte, we need to check each row
                         for (int rowNeighbourhoodIndex = -radiusOfNeighbourhood; rowNeighbourhoodIndex <= radiusOfNeighbourhood; rowNeighbourhoodIndex++)
                         {
                             for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex <= radiusOfNeighbourhood; colNeighbourhoodIndex++)
                             {
-                                // check boundary of index 
+                                // check boundary of index
                                 if (StatisticalAnalysis.checkBoundary(row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex, rowsCount, colsCount))
                                 {
                                     if ((Matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex] != null) && Matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex].OrientationCategory == (int)Direction.East)
@@ -339,13 +339,13 @@
                                 }
                             }
                         }
-                        
+
                         result.Add(new RidgeNeighbourhoodFeatureVector(new Point(row, col))
                         {
                             HorizontalVector = horizontalDirection,
                             VerticalVector = verticalDirection,
                             PositiveDiagonalVector = positiveDiagonalDirection,
-                            NegativeDiagonalVector = negativeDiagonalDirection
+                            NegativeDiagonalVector = negativeDiagonalDirection,
                         });
                     }
                 }
@@ -354,16 +354,16 @@
         }
 
         /// <summary>
-        /// The method of DirectionByteRidgeNeighbourhoodFeatureVectors can be used to generate integer directionRidgeNeighbourhoodFeatureVectors, it include 13 * 13 values for a 
+        /// The method of DirectionByteRidgeNeighbourhoodFeatureVectors can be used to generate integer directionRidgeNeighbourhoodFeatureVectors, it include 13 * 13 values for a
         /// 13 * 13 neighbourhoodsize.
         /// </summary>
         /// <param name="poiList"> pointsOfInterest to be used to calculate the DirectionByteRidgeNeighbourhoodFeatureVector.</param>
-        /// <param name="rowsCount"> the column count of original spectrogram. </param> 
+        /// <param name="rowsCount"> the column count of original spectrogram. </param>
         /// <param name="colsCount"> the row count of original spectrogram. </param>
-        /// <param name="sizeOfNeighbourhood"> 
+        /// <param name="sizeOfNeighbourhood">
         /// the size of Neighbourhood will determine the size of search area.</param>
         /// <returns>
-        /// It will return a list of RidgeNeighbourhoodFeatureVector objects whose DirectionByteRidgeNeighbourhoodFeatureVectors have been assigned, this can be used for similarity matching. 
+        /// It will return a list of RidgeNeighbourhoodFeatureVector objects whose DirectionByteRidgeNeighbourhoodFeatureVectors have been assigned, this can be used for similarity matching.
         /// </returns>
         public static List<RidgeNeighbourhoodFeatureVector> IntegerEdgeOrientationRidgeNeighbourhoodFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
         {
@@ -389,12 +389,12 @@
                         var positiveDiagonalDirection = new int[sizeOfNeighbourhood];
                         var negativeDiagonalDirection = new int[sizeOfNeighbourhood];
 
-                        // For the calculation of horizontal direction byte, we need to check each row 
+                        // For the calculation of horizontal direction byte, we need to check each row
                         for (int rowNeighbourhoodIndex = -radiusOfNeighbourhood; rowNeighbourhoodIndex <= radiusOfNeighbourhood; rowNeighbourhoodIndex++)
                         {
                             for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex <= radiusOfNeighbourhood; colNeighbourhoodIndex++)
                             {
-                                // check boundary of index 
+                                // check boundary of index
                                 if (StatisticalAnalysis.checkBoundary(row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex, rowsCount, colsCount))
                                 {
                                     if ((Matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex] != null) && Matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex].OrientationCategory == (int)Direction.East)
@@ -454,7 +454,7 @@
                             HorizontalVector = horizontalDirection,
                             VerticalVector = verticalDirection,
                             PositiveDiagonalVector = positiveDiagonalDirection,
-                            NegativeDiagonalVector = negativeDiagonalDirection
+                            NegativeDiagonalVector = negativeDiagonalDirection,
                         });
                     }
                 }
@@ -467,7 +467,7 @@
         /// </summary>
         /// <param name="array"></param>
         /// <returns>
-        /// return a double array which is made up with decimals between 0 and 1.  
+        /// return a double array which is made up with decimals between 0 and 1.
         /// </returns>
         public static double[] NormalizedRidgeNeighbourhoodFeatureVector(int[] array)
         {
@@ -482,8 +482,8 @@
         }
 
         /// <summary>
-        /// In order to make the comparison of feature vectors much more easier, we can set up a threshold to generate a bit fecture vector which is composed of     
-        /// and 1. 
+        /// In order to make the comparison of feature vectors much more easier, we can set up a threshold to generate a bit fecture vector which is composed of
+        /// and 1.
         /// </summary>
         /// <param name="RidgeNeighbourhoodFeatureVectorList"></param>
         /// <returns> returns a list RidgeNeighbourhoodFeatureVector which contains the direction bit Feature vector
@@ -544,7 +544,7 @@
         }
 
         /// <summary>
-        /// The method of DirectionByteRidgeNeighbourhoodFeatureVectors can be used to generate directionFractionRidgeNeighbourhoodFeatureVectors, which means it includes sub-feature vector 
+        /// The method of DirectionByteRidgeNeighbourhoodFeatureVectors can be used to generate directionFractionRidgeNeighbourhoodFeatureVectors, which means it includes sub-feature vector
         /// for each direction. And the size of each sub-RidgeNeighbourhoodFeatureVector is determined by sizeOfNeighbourhood. Especially, each value in the feature vector is a fraction.
         /// </summary>
         /// <param name="poiList"></param>
@@ -576,12 +576,12 @@
                         var positiveDiagonalDirection = new int[sizeOfNeighbourhood];
                         var negativeDiagonalDirection = new int[sizeOfNeighbourhood];
 
-                        // For the calculation of horizontal direction byte, we need to check each row 
+                        // For the calculation of horizontal direction byte, we need to check each row
                         for (int rowNeighbourhoodIndex = -radiusOfNeighbourhood; rowNeighbourhoodIndex <= radiusOfNeighbourhood; rowNeighbourhoodIndex++)
                         {
                             for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex <= radiusOfNeighbourhood; colNeighbourhoodIndex++)
                             {
-                                // check boundary of index 
+                                // check boundary of index
                                 if (StatisticalAnalysis.checkBoundary(row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex, rowsCount, colsCount))
                                 {
                                     if ((Matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex] != null) && Matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex].OrientationCategory == (int)Direction.East)
@@ -641,7 +641,7 @@
                             HorizontalFractionVector = NormalizedRidgeNeighbourhoodFeatureVector(horizontalDirection),
                             VerticalFractionVector = NormalizedRidgeNeighbourhoodFeatureVector(verticalDirection),
                             PositiveDiagonalFractionVector = NormalizedRidgeNeighbourhoodFeatureVector(positiveDiagonalDirection),
-                            NegativeDiagonalFractionVector = NormalizedRidgeNeighbourhoodFeatureVector(negativeDiagonalDirection)
+                            NegativeDiagonalFractionVector = NormalizedRidgeNeighbourhoodFeatureVector(negativeDiagonalDirection),
                         });
                     }
                 }
@@ -650,16 +650,16 @@
         }
 
         /// <summary>
-        /// The method of DirectionByteRidgeNeighbourhoodFeatureVectors can be used to generate directionByteRidgeNeighbourhoodFeatureVectors, which means it includes sub-feature vector 
+        /// The method of DirectionByteRidgeNeighbourhoodFeatureVectors can be used to generate directionByteRidgeNeighbourhoodFeatureVectors, which means it includes sub-feature vector
         /// for each direction. And the size of each sub-RidgeNeighbourhoodFeatureVector is determined by sizeOfNeighbourhood.
         /// </summary>
         /// <param name="poiList"> pointsOfInterest to be used to calculate the DirectionByteRidgeNeighbourhoodFeatureVector.</param>
-        /// <param name="rowsCount"> the column count of original spectrogram. </param> 
+        /// <param name="rowsCount"> the column count of original spectrogram. </param>
         /// <param name="colsCount"> the row count of original spectrogram. </param>
-        /// <param name="sizeOfNeighbourhood"> 
+        /// <param name="sizeOfNeighbourhood">
         /// the size of Neighbourhood will determine the size of search area.</param>
         /// <returns>
-        /// It will return a list of RidgeNeighbourhoodFeatureVector objects whose DirectionByteRidgeNeighbourhoodFeatureVectors have been assigned, this can be used for similarity matching. 
+        /// It will return a list of RidgeNeighbourhoodFeatureVector objects whose DirectionByteRidgeNeighbourhoodFeatureVectors have been assigned, this can be used for similarity matching.
         /// </returns>
         public static List<RidgeNeighbourhoodFeatureVector> DirectionByteRidgeNeighbourhoodFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
         {
@@ -681,14 +681,14 @@
                         var verticalDirection = new int[sizeOfNeighbourhood];
                         var horizontalDirection = new int[sizeOfNeighbourhood];
                         //var positiveDiagonalDirection = new int[2 * sizeOfNeighbourhood - 1];
-                        //var negativeDiagonalDirection = new int[2 * sizeOfNeighbourhood - 1]; 
+                        //var negativeDiagonalDirection = new int[2 * sizeOfNeighbourhood - 1];
 
-                        // For the calculation of horizontal direction byte, we need to check each row 
+                        // For the calculation of horizontal direction byte, we need to check each row
                         for (int rowNeighbourhoodIndex = 0; rowNeighbourhoodIndex < sizeOfNeighbourhood; rowNeighbourhoodIndex++)
                         {
                             for (int colNeighbourhoodIndex = 0; colNeighbourhoodIndex < sizeOfNeighbourhood; colNeighbourhoodIndex++)
                             {
-                                // check boundary of index 
+                                // check boundary of index
                                 if (StatisticalAnalysis.checkBoundary(row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex, rowsCount, colsCount))
                                 {
                                     if ((Matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex] != null) && Matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex].OrientationCategory == (int)Direction.East)
@@ -724,14 +724,14 @@
 
         /// <summary>
         /// This method is to generate percentageByteRidgeNeighbourhoodFeatureVectors in where each of byte represents hte percentage of each direction accounts for.
-        /// it will be done in a fixed neighbourhood. 
+        /// it will be done in a fixed neighbourhood.
         /// </summary>
         /// <param name="poiList"> pointsOfInterest to be used to calculate the DirectionByteRidgeNeighbourhoodFeatureVector.</param>
         /// <param name="rowsCount"> the column count of original spectrogram.</param>
         /// <param name="colsCount"> the row count of original spectrogram.</param>
         /// <param name="sizeOfNeighbourhood"> the size of Neighbourhood will determine the size of search area.</param>
-        /// <returns> 
-        /// It will return a list of RidgeNeighbourhoodFeatureVector objects whose PercentageByteRidgeNeighbourhoodFeatureVectors have been assigned, this can be used for similarity matching. 
+        /// <returns>
+        /// It will return a list of RidgeNeighbourhoodFeatureVector objects whose PercentageByteRidgeNeighbourhoodFeatureVectors have been assigned, this can be used for similarity matching.
         /// </returns>
         public static List<RidgeNeighbourhoodFeatureVector> PercentageRidgeNeighbourhoodFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
         {
@@ -799,7 +799,7 @@
                         result.Add(new RidgeNeighbourhoodFeatureVector(new Point(row, col)) { HorizontalPercentage = percentageOfHorizontal,
                                                                             VerticalPercentage = percentageOfVertical,
                                                                             PositiveDiagonalPercentage = percentageOfpositiveDiagonal,
-                                                                            NegativeDiagonalPercentage = percentageOfnegativeDiagonal});
+                                                                            NegativeDiagonalPercentage = percentageOfnegativeDiagonal,});
                     }
                 }
             }

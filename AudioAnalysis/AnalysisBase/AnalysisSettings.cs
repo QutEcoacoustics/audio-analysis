@@ -27,7 +27,7 @@ namespace AnalysisBase
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The only files and folders an analysis may access are the audio file, 
+    /// The only files and folders an analysis may access are the audio file,
     /// configuration file and any file or folder in the working directory.
     /// The working directory may be deleted after the analysis is complete.
     /// </para>
@@ -48,7 +48,7 @@ namespace AnalysisBase
         private int? instanceId = null;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AnalysisSettings"/> class. 
+        /// Initializes a new instance of the <see cref="AnalysisSettings"/> class.
         /// </summary>
         public AnalysisSettings()
         {
@@ -75,7 +75,7 @@ namespace AnalysisBase
 
                 }
 
-                return this.instanceId.Value;                
+                return this.instanceId.Value;
             }
         }
 
@@ -241,7 +241,7 @@ namespace AnalysisBase
 
         /// <summary>
         /// Gets or sets the sample rate of the original audio file from which segment was extracted.
-        /// THIS IS A HACK!!! IT IS A WAY OF STORING INFORMATION THAT WE WANT 
+        /// THIS IS A HACK!!! IT IS A WAY OF STORING INFORMATION THAT WE WANT
         /// TO PASS DOWN INTO THE ANALYSIS LEVEL
         /// </summary>
         public int? SampleRateOfOriginalAudioFile { get; set; }
@@ -276,6 +276,7 @@ namespace AnalysisBase
         /// </summary>
         public object AnalyzerSpecificConfiguration { get; set; }
 
+        /// <inheritdoc/>
         public object Clone()
         {
             AnalysisSettings deepClone = this.DeepClone();
@@ -283,6 +284,7 @@ namespace AnalysisBase
             return deepClone;
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"Settings for {this.AudioFile.Name} with instance id {this.InstanceId} and config file {this.ConfigFile.Name}.";

@@ -4,22 +4,18 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-using System;
-
-using MSTestExtensions;
-
 namespace Acoustics.Test
 {
+    using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
-
     using Acoustics.Shared;
-
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-    using static DateTimeOffset;
+    using MSTestExtensions;
+    using static System.DateTimeOffset;
+    using DateTimeOffset = System.DateTimeOffset;
 
     [TestClass]
     public class FileDateHelpersTests : BaseTest
@@ -61,14 +57,14 @@ namespace Acoustics.Test
                 // do not allow invalid offsets
                 "blah_T-suffix20140301-085031-7s:dncv*_-T&^%34jd.ext",
                 // require at least a time seperator
-                "20150727133138.mp3", "blah_T-suffix20140301085031:dncv*_-T&^%34jd.ext"
+                "20150727133138.mp3", "blah_T-suffix20140301085031:dncv*_-T&^%34jd.ext",
             };
 
         private readonly string[] invalidDates =
             {
                 "a_99999999_999999_a.dnsb48364JSFDSD", "a_00000000_000000.a",
                 "a_00000000_000000+00.a", "a_99999999_999999.dnsb48364JSFDSD", "a_00000000-000000+00.a",
-                "a_99999999_999999+9999.dnsb48364JSFDSD"
+                "a_99999999_999999+9999.dnsb48364JSFDSD",
             };
 
         [TestMethod]
@@ -164,7 +160,7 @@ namespace Acoustics.Test
                 @"Y:\2015Sept20\Woondum3\20150920_064555Z.wav", @"Y:\2015Sept20\Woondum3\20150920-133145Z.wav",
                 @"Y:\2015Sept20\Woondum3\20150917-064553Z.wav", @"Y:\2015Sept20\Woondum3\20150917_133143+1000.wav",
                 @"Y:\2015Sept20\Woondum3\20150917_201733+1000.wav", @"Y:\2015Aug2\GympieNP\20150801_000004+1000.wav",
-                
+
             @"Y:\2015Aug2\GympieNP\20150801-064555.wav", @"Y:\2015Aug2\GympieNP\20150801_133148+1000.wav", @"Y:\2015Aug2\GympieNP\20150801-064555+1000.wav",
                 @"Y:\2015Aug2\GympieNP\20150801-201742+1000.wav", @"Y:\2015Aug2\GympieNP\20150802-000006Z.wav",
                 @"Y:\2015Aug2\GympieNP\20150802-064559+1000.wav", @"Y:\2015Sept20\Woondum3\20150919_000006+1000.wav",
@@ -186,7 +182,7 @@ namespace Acoustics.Test
                 Parse("2015-07-27T13:31:38.000+06:30"), Parse("2015-07-27T13:31:38.000+06:30"),
                 Parse("2015-07-27T13:31:38.000+06:30"), Parse("2015-07-27T13:31:38.000+06:30"),
                 Parse("2015-07-27T13:31:38.000+06:30"), Parse("2015-07-27T13:31:38.000+06:30"),
-                Parse("2015-07-27T13:31:38.000+06:30")
+                Parse("2015-07-27T13:31:38.000+06:30"),
             };
 
         [TestMethod]

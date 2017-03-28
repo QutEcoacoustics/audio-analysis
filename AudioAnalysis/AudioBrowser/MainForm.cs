@@ -65,7 +65,7 @@
             RichTextBoxAppender.SetRichTextBox(this.richTextBoxConsole, "RichTextBoxAppender");
 
             // available logging levels:
-            //Log.Fatal("Fatal", exception); //Log.FatalFormat("{0}", "Fatal"); 
+            //Log.Fatal("Fatal", exception); //Log.FatalFormat("{0}", "Fatal");
             //Log.Error("Error", exception); //Log.FatalFormat("{0}", "Error");
             //Log.Warn("Warn", exception); //Log.FatalFormat("{0}", "Warn");
             //Log.Info("Info", exception); //Log.FatalFormat("{0}", "Info");
@@ -519,13 +519,13 @@
 
             if (audacityExe == null || !File.Exists(audacityExe.FullName))
             {
-                LoggedConsole.WriteWarnLine("Audacity.exe not found." + 
+                LoggedConsole.WriteWarnLine("Audacity.exe not found." +
                                            " Edit the AudioBrowser.exe.config file and enter correct path in the 'AudacityExeList' key.");
                 // switch to the console.
                 this.tabControlMain.SelectTab(this.tabPageConsole);
                 //MessageBox.Show("Could not find Audacity. Is it installed?");
             }
-            else 
+            else
             {
                 string audioSegmentPath = string.Empty;
                 if (audioSegmentFile == null || !File.Exists(audioSegmentFile.FullName))
@@ -538,7 +538,7 @@
                 }
                 TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(this.helper.AudacityExe.FullName);
                 process.Run(audioSegmentPath, this.helper.DefaultOutputDir.FullName, false);
-            }                            
+            }
         }
 
         private void pictureBoxAudioNavIndicies_MouseHover(object sender, EventArgs e)
@@ -636,7 +636,7 @@
 
                 //Accord.Math.Distance.Euclidean(
             }
-            // 
+            //
         }
 
         // ********************************************************************************************
@@ -686,7 +686,7 @@
             this.comboboxAnalyseAnalyser.ValueMember = "Key";
             this.comboboxAnalyseAnalyser.DisplayMember = "Value";
 
-            // set defaults 
+            // set defaults
             this.AnalyserOutputDir = this.helper.DefaultOutputDir;
             this.AnalyserAnalysisSelected = this.helper.DefaultAnalysisIdentifier;
 

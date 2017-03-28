@@ -10,9 +10,9 @@
 namespace Acoustics.Tools.Wav
 {
     using System;
-    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
+    using Acoustics.Shared.Contracts;
 
     /// <summary>
     /// Wave Reader.
@@ -244,7 +244,7 @@ namespace Acoustics.Tools.Wav
                     max = sample;
                 }
             }
-            
+
             return max;
         }
 
@@ -309,10 +309,10 @@ namespace Acoustics.Tools.Wav
             //   "inst" : Instrument Chunk
 
             // Observed but unknown;
-            //   "minf" : 
-            //   "elm1" : 
-            //   "regn" : 
-            //   "umid" : 
+            //   "minf" :
+            //   "elm1" :
+            //   "regn" :
+            //   "umid" :
 
             int offset = 12;
             while (offset < data.Length)
@@ -354,7 +354,7 @@ namespace Acoustics.Tools.Wav
                             }
                             offset += 2;
 
-                            // Channel Numbers 
+                            // Channel Numbers
                             this.Channels = BitConverter.ToUInt16(data, offset);
                             offset += 2;
 
@@ -439,7 +439,7 @@ namespace Acoustics.Tools.Wav
         /// Get the zero-indexed channel data from channel <c>c</c>.
         /// </summary>
         /// <param name="c">The zero-indexed channel to get.</param>
-        /// <returns></returns>
+        /// <returns>the requested channel</returns>
         public double[] GetChannel(int c)
         {
             Contract.Requires<IndexOutOfRangeException>(c >= 0);
@@ -449,7 +449,7 @@ namespace Acoustics.Tools.Wav
             int j, cc = this.Channels;
             for (int i = 0; i < channelSignal.Length; i++)
             {
-                j = i * cc + c;
+                j = (i * cc) + c;
                 channelSignal[i] = this.samples[j];
             }
 

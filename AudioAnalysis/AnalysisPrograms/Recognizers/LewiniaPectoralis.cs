@@ -4,6 +4,7 @@
 // </copyright>
 // <summary>
 //   AKA: The Lewin's Rail
+// To call this recognizer, the first command line argument must be "EventRecognizer".
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -17,7 +18,7 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
-    using AnalysisPrograms.Recognizers.Base;
+    using Recognizers.Base;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -30,15 +31,16 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.Indices;
     using Acoustics.Shared.ConfigFile;
     using System.Drawing;
-    using Acoustics.Shared;
+
+    using static Acoustics.Shared.FilenameHelpers;
 
     /// <summary>
     /// AKA: Lewin's Rail
     /// This call recognizer depends on an oscillation recognizer picking up the Kek-kek repeated at a period of 200ms
-    /// 
+    ///
     /// This recognizer was first developed around 2007 for Masters student, Jenny Gibson, and her supervisor, Ian Williamson.
-    /// It was updated in October 2016 to become one of the new recognizers derived from RecognizerBase. 
-    /// 
+    /// It was updated in October 2016 to become one of the new recognizers derived from RecognizerBase.
+    ///
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// </summary>
@@ -51,7 +53,7 @@ namespace AnalysisPrograms.Recognizers
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private const bool DoRecognizerTest = true;
-        // Return a DEBUG IMAGE this recognizer only. MUST set false for deployment. 
+        // Return a DEBUG IMAGE this recognizer only. MUST set false for deployment.
         //public bool returnDebugImage = false;
         public bool ReturnDebugImage = MainEntry.InDEBUG;
 
@@ -84,9 +86,15 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, 
-                                            Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset,
+                                                    Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
+            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            // this default framesize seems to work for Lewin's Rail
+            const int frameSize = 512;
+            // DO NOT SET windowOverlap. Calculate it below.
+
             if (imageWidth == null) throw new ArgumentNullException(nameof(imageWidth));
 
             // check the sample rate. Must be 22050
@@ -96,11 +104,7 @@ namespace AnalysisPrograms.Recognizers
             }
             TimeSpan recordingDuration = recording.WavReader.Time;
 
-            // this default framesize seems to work for Lewin's Rail
-            const int frameSize = 512;
-            //const int FrameSize = 1024;
-
-            // check for the profiles
+            // check for the profiles in the config file
             bool hasProfiles = ConfigFile.HasProfiles(configuration);
             if (!hasProfiles)
             {
@@ -141,7 +145,7 @@ namespace AnalysisPrograms.Recognizers
                     //WindowFunction = WindowFunctions.NONE.ToString(),
                     // if do not use noise reduction can get a more sensitive recogniser.
                     //NoiseReductionType = NoiseReductionType.NONE,
-                    NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD")
+                    NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD"),
                 };
 
                 //#############################################################################################################################################
@@ -149,7 +153,7 @@ namespace AnalysisPrograms.Recognizers
                 var results = Analysis(recording, sonoConfig, recognizerConfig, ReturnDebugImage);
                 //######################################################################
 
-                if (results == null) return null; //nothing to process 
+                if (results == null) return null; //nothing to process
                 sonogram = results.Item1;
                 var hits = results.Item2;
                 var scoreArray = results.Item3;
@@ -158,8 +162,16 @@ namespace AnalysisPrograms.Recognizers
 
                 //#############################################################################################################################################
 
-                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.BaseName), SpeciesName, "png", "DebugSpectrogram"));
-                debugImage.Save(debugPath.FullName);
+                if (debugImage == null)
+                {
+                    Log.Debug("DebugImage is null, not writing file");
+                }
+                else
+                {
+                    var imageName = AnalysisResultName(recording.BaseName, this.SpeciesName, "png", "DebugSpectrogram");
+                    var debugPath = outputDirectory.Combine(imageName);
+                    debugImage.Save(debugPath.FullName);
+                }
 
                 foreach (var ae in predictedEvents)
                 {
@@ -174,7 +186,7 @@ namespace AnalysisPrograms.Recognizers
                 }
 
                 // do a recognizer TEST.
-                if (true)
+                if (false)
                 {
                     var testDir = new DirectoryInfo(outputDirectory.Parent.Parent.FullName);
                     TestTools.RecognizerScoresTest(recording.BaseName, testDir, recognizerConfig.AnalysisName, scoreArray);
@@ -197,7 +209,7 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram,
                 Hits = null,
                 Plots = plots,
-                Events = prunedEvents
+                Events = prunedEvents,
             };
         }
 
@@ -210,9 +222,17 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="lrConfig"></param>
         /// <param name="returnDebugImage"></param>
         /// <returns></returns>
-        private static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, Image> Analysis(AudioRecording recording, 
+        private static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, Image> Analysis(AudioRecording recording,
                                                                                   SonogramConfig sonoConfig, LewinsRailConfig lrConfig, bool returnDebugImage)
         {
+            if (recording == null)
+            {
+                LoggedConsole.WriteLine("AudioRecording == null. Analysis not possible.");
+                return null;
+            }
+
+            int sr = recording.SampleRate;
+
             int upperBandMinHz = lrConfig.UpperBandMinHz;
             int upperBandMaxHz = lrConfig.UpperBandMaxHz;
             int lowerBandMinHz = lrConfig.LowerBandMinHz;
@@ -223,16 +243,12 @@ namespace AnalysisPrograms.Recognizers
             double maxDuration = lrConfig.MaxDuration;  // seconds
             double minPeriod = lrConfig.MinPeriod;  // seconds
             double maxPeriod = lrConfig.MaxPeriod;  // seconds
+            int windowSize = lrConfig.WindowSize;
 
-            if (recording == null)
-            {
-                LoggedConsole.WriteLine("AudioRecording == null. Analysis not possible.");
-                return null;
-            }
+            //double freqBinWidth = sr / (double)windowSize;
+            double freqBinWidth = sr / (double)sonoConfig.WindowSize;
 
             //i: MAKE SONOGRAM
-            int sr = recording.SampleRate;
-            double freqBinWidth = sr / (double)sonoConfig.WindowSize;
             double framesPerSecond = freqBinWidth;
 
 
@@ -263,7 +279,7 @@ namespace AnalysisPrograms.Recognizers
             int stepCount = rowCount / step;
             int sampleLength = 64; //64 frames = 3.7 seconds. Suitable for Lewins Rail.
             double[] intensity   = new double[rowCount];
-            double[] periodicity = new double[rowCount]; 
+            double[] periodicity = new double[rowCount];
 
             //######################################################################
             //ii: DO THE ANALYSIS AND RECOVER SCORES
@@ -377,10 +393,11 @@ namespace AnalysisPrograms.Recognizers
 
 
     public class LewinsRailConfig
-    {        
+    {
         public string AnalysisName { get; set; }
         public string SpeciesName { get; set; }
         public string AbbreviatedSpeciesName { get; set; }
+        public int WindowSize { get; set; }
         public int UpperBandMinHz { get; set; }
         public int UpperBandMaxHz { get; set; }
         public int LowerBandMinHz { get; set; }

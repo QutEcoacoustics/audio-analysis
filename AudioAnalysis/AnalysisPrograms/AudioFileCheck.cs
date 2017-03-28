@@ -1,19 +1,19 @@
-﻿using Acoustics.Tools.Audio;
-using AnalysisPrograms.Production;
-using log4net;
-using PowerArgs;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
+    using System.Security.Cryptography;
+    using System.Text;
+    using Acoustics.Shared.Contracts;
+    using Acoustics.Tools.Audio;
+    using AnalysisPrograms.Production;
+    using log4net;
+    using PowerArgs;
+
     public class AudioFileCheck
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -51,7 +51,7 @@ namespace AnalysisPrograms
 
             public void Validate()
             {
-                // three args: 
+                // three args:
                 // first is output file path
                 // second is whether to recurse or not
                 // third is dir containing audio files

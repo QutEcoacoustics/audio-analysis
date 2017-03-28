@@ -125,7 +125,7 @@ namespace AnalysisPrograms
             //    // Do the noise removal
             //    const int BackgroundThreshold = 5;
             //    var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);
-            //    //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
+            //    //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);
             //    Log.Info("NoiseReduction");
 
             //    //var differenceOfGaussian = StructureTensor.BasicDifferenceOfGaussian(StructureTensor.gaussianBlur5);
@@ -147,7 +147,7 @@ namespace AnalysisPrograms
             //    imageResult.Save(path + "1.png");
             //    Log.Info("Show the result of Final PointsOfInterest");
             ////}
-         
+
             var result = new AnalysisResult();
             return result;
         }
@@ -235,10 +235,10 @@ namespace AnalysisPrograms
 
         /// <summary>
         /// This is the (first)entry point, while I am doing developing / testing.
-        /// This method should set up any artificial testing parameters, and then call the execute method. 
+        /// This method should set up any artificial testing parameters, and then call the execute method.
         /// </summary>
         /// <param name="arguments">
-        /// The arguments. 
+        /// The arguments.
         /// </param>
         public static void Dev(Arguments arguments)
         {
@@ -253,11 +253,11 @@ namespace AnalysisPrograms
         private static Arguments EntryArguments;
 
         /// <summary>
-        /// This is the (second) main entry point, that my code will use when it is run on a super computer. 
+        /// This is the (second) main entry point, that my code will use when it is run on a super computer.
         /// It should take all of the parameters from the arguments parameter.
         /// </summary>
         /// <param name="arguments">
-        /// The arguments.  
+        /// The arguments.
         /// </param>
         public static void Execute(Arguments arguments)
         {
@@ -268,8 +268,8 @@ namespace AnalysisPrograms
             }
 
             // create a new "analysis"
-            var felt = new FeltAnalysis(); 
-        
+            var felt = new FeltAnalysis();
+
             // merge config settings with analysis settings
             var analysisSettings = felt.GetDefaultSettings;
 
@@ -304,7 +304,7 @@ namespace AnalysisPrograms
 
             this.EventStartSeconds = pointOfInterest.TimeLocation.TotalSeconds;
             this.FileName = analysisSettings.SourceFile.FullName;
-            
+
         }
 
         public int BinMaximum { get; set; }
@@ -326,12 +326,12 @@ namespace AnalysisPrograms
         {
             var audioFile = analysisSettings.AudioFile;
             var startOffset = analysisSettings.SegmentStartOffset ?? TimeSpan.Zero;
-            
+
             var recording = new AudioRecording(audioFile.FullName);
-            
+
             var result = new AnalysisResult2(analysisSettings, recording.Duration())
                          {
-                             AnalysisIdentifier = this.Identifier
+                             AnalysisIdentifier = this.Identifier,
                          };
 
             if (recording.SampleRate != 22050)
@@ -342,14 +342,14 @@ namespace AnalysisPrograms
             var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.Standard, WindowOverlap = 0.5};
             var sonogram = new SpectrogramStandard(config, recording.WavReader);
 
-            // This config is to set up the parameters used in ridge Detection, the parameters can be changed. 
+            // This config is to set up the parameters used in ridge Detection, the parameters can be changed.
             var ridgeConfig = new RidgeDetectionConfiguration {
                 RidgeDetectionmMagnitudeThreshold = 5.5,
                 RidgeMatrixLength = 5,
                 FilterRidgeMatrixLength = 7,
-                MinimumNumberInRidgeInMatrix = 3
+                MinimumNumberInRidgeInMatrix = 3,
             };
-            
+
             var ridges = POISelection.RidgeDetection(sonogram, ridgeConfig);
 
             if (ridges.IsNullOrEmpty())
@@ -441,7 +441,7 @@ namespace AnalysisPrograms
                     SegmentMinDuration = TimeSpan.FromSeconds(20),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = 22050
+                    SegmentTargetSampleRate = 22050,
                 };
             }
         }

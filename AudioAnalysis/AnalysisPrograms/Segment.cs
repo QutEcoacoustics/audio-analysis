@@ -1,24 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using TowseyLibrary;
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.WavTools;
-
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
     using Acoustics.Shared.Extensions;
-
     using AnalysisPrograms.Production;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using TowseyLibrary;
 
     public class Segment
     {
-        //Keys to recognise identifiers in PARAMETERS - INI file. 
+        //Keys to recognise identifiers in PARAMETERS - INI file.
         //public static string key_FILE_EXT    = "FILE_EXT";
         public static string key_MIN_HZ        = "MIN_HZ";
         public static string key_MAX_HZ        = "MAX_HZ";
@@ -82,8 +78,8 @@ namespace AnalysisPrograms
             double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
             double smoothWindow = Double.Parse(dict[key_SMOOTH_WINDOW]);   //smoothing window (seconds) before segmentation
             double thresholdSD  = Double.Parse(dict[key_THRESHOLD]);       //segmentation threshold in noise SD
-            double minDuration  = Double.Parse(dict[key_MIN_DURATION]);    //min duration of segment & width of smoothing window in seconds 
-            double maxDuration  = Double.Parse(dict[key_MAX_DURATION]);    //max duration of segment in seconds 
+            double minDuration  = Double.Parse(dict[key_MIN_DURATION]);    //min duration of segment & width of smoothing window in seconds
+            double maxDuration  = Double.Parse(dict[key_MAX_DURATION]);    //max duration of segment in seconds
             int DRAW_SONOGRAMS  = Int32.Parse(dict[key_DRAW_SONOGRAMS]);   //options to draw sonogram
 
             Log.WriteIfVerbose("# Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
@@ -106,7 +102,7 @@ namespace AnalysisPrograms
                                        sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
                                       (sonogram.FrameStep * 1000), sonogram.FramesPerSecond, frameOverlap);
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
-            Log.WriteLine("# FreqBand: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount); 
+            Log.WriteLine("# FreqBand: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
             Log.WriteLine("# Intensity array - noise removal: Q={0:f1}dB. 1SD={1:f3}dB. Threshold={2:f3}dB.", Q, oneSD_dB, dBThreshold);
             Log.WriteLine("# Events:  Count={0}", predictedEvents.Count());
             int pcHIF = 100;
@@ -116,7 +112,7 @@ namespace AnalysisPrograms
                 pcHIF = 100 * hifCount / sonogram.FrameCount;
             }
 
-            //write event count to results file. 
+            //write event count to results file.
             double sigDuration = sonogram.Duration.TotalSeconds;
             string fname = recordingPath.Name;
             int count = predictedEvents.Count;
@@ -147,7 +143,7 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="wavPath"></param>
         /// <param name="minHz"></param>
@@ -172,7 +168,7 @@ namespace AnalysisPrograms
 
             //iii: DETECT SEGMENTS
             Log.WriteLine("# Start event detection");
-            var tuple = AcousticEvent.GetSegmentationEvents((SpectrogramStandard)sonogram, minHz, maxHz, smoothWindow, 
+            var tuple = AcousticEvent.GetSegmentationEvents((SpectrogramStandard)sonogram, minHz, maxHz, smoothWindow,
                                                                       thresholdSD, minDuration, maxDuration);
             var tuple2 = System.Tuple.Create(sonogram, tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5);
             return tuple2;

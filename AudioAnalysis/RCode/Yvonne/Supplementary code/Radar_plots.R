@@ -37,7 +37,7 @@ for(i in 1:length(num_clus)) {
 }
 rownames(medoids) <- as.character(as.numeric(num_clus))
 
-View(medoids)
+#View(medoids)
 #write.csv(medoids, "medoids_all_data.csv", row.names = T)
 
 dd <- medoids

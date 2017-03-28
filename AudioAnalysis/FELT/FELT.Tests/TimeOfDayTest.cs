@@ -1,20 +1,17 @@
-﻿using FELT.Transformers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using QuickGraph;
-using QuickGraph.Algorithms;
-using MQUTeR.FSharp.Shared;
-using Microsoft.FSharp.Collections;
-using System.Linq;
-
-namespace FELT.Tests
+﻿namespace FELT.Tests
 {
+    using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
-
+    using System.Linq;
+    using FELT.Transformers;
+    using Microsoft.FSharp.Collections;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Minimod.PrettyPrint;
-
+    using MQUTeR.FSharp.Shared;
+    using QuickGraph;
+    using QuickGraph.Algorithms;
     using QuickGraph.Algorithms.Observers;
 
     /// <summary>
@@ -46,7 +43,7 @@ namespace FELT.Tests
 
         #region Additional test attributes
 
-        // 
+        //
         //You can use the following additional attributes as you write your tests:
         //
         //Use ClassInitialize to run code before running the first test in the class
@@ -85,7 +82,7 @@ namespace FELT.Tests
             Assert.IsTrue(todg.AllowParallelEdges);
 
             var testPhase = SunCalc.DawnAstronomicalTwilight;
-            
+
             var distances = todg.ShortestPathsDijkstra(x => 1.0, testPhase);
 
             IEnumerable<UndirectedEdge<string>> dist1;
@@ -115,7 +112,7 @@ namespace FELT.Tests
                     SunCalcTest.Parse("Mon Apr 30 2012 06:15:00 GMT+1000"),
                     SunCalcTest.Parse("Mon Apr 30 2012 14:30:00 GMT+1000"),
                     SunCalcTest.Parse("Mon Apr 30 2012 22:30:00 GMT+1000"),
-                    SunCalcTest.Parse("Mon Apr 30 2012 17:30:00 GMT+1000")
+                    SunCalcTest.Parse("Mon Apr 30 2012 17:30:00 GMT+1000"),
                 };
             var expectedPhases = new[]
                 {
@@ -123,7 +120,7 @@ namespace FELT.Tests
                     SunCalc.Sunrise,
                     SunCalc.Afternoon,
                     SunCalc.Night,
-                    SunCalc.EveningCivilTwilight
+                    SunCalc.EveningCivilTwilight,
                 };
 
             var lat = new Number(-27.461165450724938);
@@ -135,7 +132,7 @@ namespace FELT.Tests
                         {
                             new Tuple<string, DataType>("createdDate", DataType.Date),
                             new Tuple<string, DataType>("Latitude", DataType.Number),
-                            new Tuple<string, DataType>("Longitude", DataType.Number)
+                            new Tuple<string, DataType>("Longitude", DataType.Number),
                         });
 
             var col1 = new Tuple<string, Value[]>(
@@ -157,7 +154,7 @@ namespace FELT.Tests
                 new FSharpMap<string, DataType>(
                     new[]
                         {
-                            new Tuple<string, DataType>(PhaseColName, DataType.Text)
+                            new Tuple<string, DataType>(PhaseColName, DataType.Text),
                         });
 
             var col12 = new Tuple<string, Value[]>(

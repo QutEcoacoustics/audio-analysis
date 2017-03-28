@@ -111,9 +111,9 @@ namespace System
         }
 
         /// <summary>
-        /// Converts the string representation of a Guid to its Guid 
-        /// equivalent. A return value indicates whether the operation 
-        /// succeeded. 
+        /// Converts the string representation of a Guid to its Guid
+        /// equivalent. A return value indicates whether the operation
+        /// succeeded.
         /// </summary>
         /// <param name="s">
         /// A string containing a Guid to convert.
@@ -122,7 +122,7 @@ namespace System
         /// The value.
         /// </param>
         /// <value>
-        /// <see langword="true"/> if <paramref name="s"/> was converted 
+        /// <see langword="true"/> if <paramref name="s"/> was converted
         /// successfully; otherwise, <see langword="false"/>.
         /// </value>
         /// <exception cref="ArgumentNullException">
@@ -301,7 +301,7 @@ namespace System
         ///   child table, using the column(s) specified.
         /// </summary>
         /// <param name="sourceTable">
-        ///    The source DataTable, which must be within a DataSet.  
+        ///    The source DataTable, which must be within a DataSet.
         ///    This source table will become the "child" table.
         /// </param>
         /// <param name="parentTableName">

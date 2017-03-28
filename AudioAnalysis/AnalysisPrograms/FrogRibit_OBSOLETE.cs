@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using TowseyLibrary;
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
     using AnalysisPrograms.Production;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using TowseyLibrary;
 
     [Obsolete]
     public class FrogRibit_OBSOLETE
@@ -55,7 +52,7 @@ namespace AnalysisPrograms
             //i: Set up the file names
             //string outputDir = Path.GetDirectoryName(iniPath) + "\\";
 
-            //ii: READ PARAMETER VALUES FROM INI FILE 
+            //ii: READ PARAMETER VALUES FROM INI FILE
             //var config = new Configuration(iniPath);
             //Dictionary<string, string> dict = config.GetTable();
             //string sourceFile = dict[FeltTemplate_Create.key_SOURCE_RECORDING];
@@ -69,14 +66,14 @@ namespace AnalysisPrograms
 
 
             //IMPORTANT NOTE:
-            // You must determine a value for the variable maxOscilScore. This is used to normalize the oscillation scores so that lie in 0,1. 
+            // You must determine a value for the variable maxOscilScore. This is used to normalize the oscillation scores so that lie in 0,1.
             // The default Value = 60.0; but it must be determined for each species.
-            // This is obtained from the score on training data. 
+            // This is obtained from the score on training data.
             // Find the relevant commented Code in the FrogRibbitRecognizer() method.
 
 
             string frogName; //, filterName;
-            //double windowDuration, windowOverlap, dctDuration, dctThreshold, 
+            //double windowDuration, windowOverlap, dctDuration, dctThreshold,
             int midBandFreq; //, minOscilRate, maxOscilRate;
             //bool normaliseDCT = false;
 
@@ -90,7 +87,7 @@ namespace AnalysisPrograms
             //############### Buffo sp. - CANE TOAD #########################################################################
             frogName       = "Cane_toad";
             Log.WriteLine("# Do Recognizer:- "+ frogName);
-            midBandFreq    = 640;    // middle of freq band of interest 
+            midBandFreq    = 640;    // middle of freq band of interest
             //Default windowDuration = 5.0 milliseconds - NOTE: 128 samples @ 22.050kHz = 5.805ms.
             Tuple<double[], AudioRecording, double[], double[]> results = FrogRibbitRecognizer(
                 recording,
@@ -106,14 +103,14 @@ namespace AnalysisPrograms
             //############### Litoria rothii - Laughing tree Frog #########################################################################
             frogName = "Litoria_rothii";
             Log.WriteLine("# Do Recognizer:- " + frogName);
-            midBandFreq = 1850; // middle of freq band of interest 
+            midBandFreq = 1850; // middle of freq band of interest
             results = FrogRibbitRecognizer(recording, "Chebyshev_Lowpass_3000", midBandFreq, dctDuration: 0.5, minOscilRate:9, maxOscilRate:11, maxOscilScore: 30.0);
             scores.Add(results.Item1);
 
             //############### Rheobatrachus silus -  GASTRIC BROODING FROG #########################################################################
             frogName = "Rheobatrachus silus";
             Log.WriteLine("# Do Recognizer:- " + frogName);
-            midBandFreq = 1550; // middle of freq band of interest 
+            midBandFreq = 1550; // middle of freq band of interest
             results = FrogRibbitRecognizer(recording, "Chebyshev_Lowpass_3000", midBandFreq, dctDuration: 0.2, minOscilRate: 55, maxOscilRate: 65, maxOscilScore: 60.0);
             scores.Add(results.Item1);
 
@@ -121,7 +118,7 @@ namespace AnalysisPrograms
             //WARNING####!!!!!! THIS IS NOT A RIBBIT FROG
             //frogName = "Lymnodynastes_peronii";
             //Log.WriteLine("# Do Recognizer:- " + frogName);
-            //midBandFreq    = 1500; // middle of freq band of interest 
+            //midBandFreq    = 1500; // middle of freq band of interest
             //results = FrogRibbitRecognizer(recording, "Chebyshev_Lowpass_3000", midBandFreq, dctDuration:0.2, minOscilRate:55, maxOscilRate:75, maxOscilScore:60.0);
             //scores.Add(results.Item1);
 
@@ -131,7 +128,7 @@ namespace AnalysisPrograms
             //vii: MAKE SONOGRAM
             Log.WriteLine("# Make sonogram.");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName = recording.BaseName;            
+            sonoConfig.SourceFName = recording.BaseName;
             sonoConfig.WindowSize = SonogramConfig.DEFAULT_WINDOW_SIZE;
             sonoConfig.WindowOverlap = 0.5;      // set default value
             sonoConfig.DoMelScale = false;
@@ -142,11 +139,11 @@ namespace AnalysisPrograms
             //AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
             AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, filteredRecording.WavReader);
             SpectrogramStandard  sonogram = new SpectrogramStandard(basegram);         //spectrogram has dim[N,257]
-             
+
             //viii WRITE FILTERED SIGNAL IF NEED TO DEBUG
             //write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
             //int bitRate = 16;
-            //WavWriter.WriteWavFile(filteredRecording.GetWavReader().Samples, filteredRecording.SampleRate, bitRate, recordingPath + "filtered.wav");        
+            //WavWriter.WriteWavFile(filteredRecording.GetWavReader().Samples, filteredRecording.SampleRate, bitRate, recordingPath + "filtered.wav");
 
 
             // ix: DRAW SONOGRAM AND SCORES
@@ -155,7 +152,7 @@ namespace AnalysisPrograms
             var miscell = results.Item4;
             DrawSonogram(sonogram, imagePath, dBarray, miscell, scores);
 
-            Log.WriteLine("# Finished everything!"); 
+            Log.WriteLine("# Finished everything!");
         }
 
 
@@ -177,7 +174,7 @@ namespace AnalysisPrograms
         /// <param name="maxOscilScore">this is obtained from score on training data. Used to normalise osc scores</param>
         /// <returns></returns>
         public static System.Tuple<double[], AudioRecording, double[], double[]>
-         FrogRibbitRecognizer(AudioRecording recording, string filterName, int midBandFreq, double windowDuration = 5.0, double windowOverlap = 0.5, 
+         FrogRibbitRecognizer(AudioRecording recording, string filterName, int midBandFreq, double windowDuration = 5.0, double windowOverlap = 0.5,
            double dctDuration = 0.5, double dctThreshold = 0.4, bool normaliseDCT = false, int minOscilRate = 11, int maxOscilRate = 17, double maxOscilScore=20.0)
         {
             int sr = recording.SampleRate;
@@ -297,4 +294,3 @@ namespace AnalysisPrograms
         }
     }
 }
- 

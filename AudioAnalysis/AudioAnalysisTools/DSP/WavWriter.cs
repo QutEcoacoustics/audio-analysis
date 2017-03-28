@@ -1,20 +1,20 @@
-﻿using System;
-using System.IO;
-
-namespace AudioAnalysisTools.DSP
+﻿namespace AudioAnalysisTools.DSP
 {
+    using System;
+    using System.IO;
+
     public class WavWriter
     {
 
         /// <summary>
-        /// The basic WAV file format follows the Interchange File Format specification. 
-        /// An IFF file consists of a series of "chunks" where chunks can contain other chunks. 
-        /// Each chunk starts with an eight byte header: four bytes describing the chunk, 
-        /// followed by four bytes giving the size of the chunk (not counting the eight byte header). 
-        /// The header is followed by the given number of bytes of data in a chunk-specific format. 
-        /// A WAV file consists of one main chunk called RIFF that contains three things: the string "WAVE", 
+        /// The basic WAV file format follows the Interchange File Format specification.
+        /// An IFF file consists of a series of "chunks" where chunks can contain other chunks.
+        /// Each chunk starts with an eight byte header: four bytes describing the chunk,
+        /// followed by four bytes giving the size of the chunk (not counting the eight byte header).
+        /// The header is followed by the given number of bytes of data in a chunk-specific format.
+        /// A WAV file consists of one main chunk called RIFF that contains three things: the string "WAVE",
         /// a "format" chunk that describes the sample rate, etc, and a "data" chunk that contains the sampled waveform.
-        /// This code does NOT use any advanced WAV file features like cue points or playlists or compression. 
+        /// This code does NOT use any advanced WAV file features like cue points or playlists or compression.
         /// It just dumps some data.
         /// Play it with the WAV file player. It uses CD quality audio -- 44100 samples per second, each one with 16 bits per sample.
         /// Unlike a CD, do this in mono, not stereo.
@@ -25,7 +25,7 @@ namespace AudioAnalysisTools.DSP
         public static void Write16bitWavFile(double[] signal, int samplesPerSecond, string path)
         {
             int samples = signal.Length;
-            
+
             FileStream stream = new FileStream(path, FileMode.Create);
             BinaryWriter writer = new BinaryWriter(stream);
 
@@ -162,7 +162,7 @@ namespace AudioAnalysisTools.DSP
 
                 //52 49 46 46 16 0A 04 00 57 41 56 45 66 6D 74 20
                 //10 00 00 00 01 00 01 00 44 AC 00 00 88 58 01 00
-                //02 00 10 00 64 61 74 61 98 09 04 00      
+                //02 00 10 00 64 61 74 61 98 09 04 00
 
                 Byte[] header = { 82, 73, 70, 70, 22, 10, 4, 0, 87, 65, 86, 69, 102, 109, 116, 32 };
                 bw.Write(header);
@@ -250,44 +250,44 @@ namespace AudioAnalysisTools.DSP
              * Chunk - format
              */
 
-            // "fmt " Note the chunk ID string 
+            // "fmt " Note the chunk ID string
             // ends with the space character (0x20).
             int chunkIdFormat = 0x20746D66;
 
-            // the size of the standard wave format data (16 bytes) 
-            // plus the size of any extra format bytes needed for 
-            // the specific Wave format, if it does not contain 
-            // uncompressed PCM data. 
+            // the size of the standard wave format data (16 bytes)
+            // plus the size of any extra format bytes needed for
+            // the specific Wave format, if it does not contain
+            // uncompressed PCM data.
             int chunkDataSizeFormat = 16;
 
-            // The first word of format data specifies 
-            // the type of compression used on the Wave 
+            // The first word of format data specifies
+            // the type of compression used on the Wave
             // data included in the Wave chunk found in this "RIFF" chunk.
             short compressionCode = 1;
 
-            // how many separate audio signals that are 
-            // encoded in the wave data chunk. A value of 
+            // how many separate audio signals that are
+            // encoded in the wave data chunk. A value of
             // 1 means a mono signal, a value of 2 means a stereo signal.
             short numberOfChannels = 1;
 
-            // The number of sample slices per second. 
+            // The number of sample slices per second.
             // This value is unaffected by the number of channels.
             int sampleRate = wavInfo.SampleRate;
 
             // Average Bytes Per Second
-            // This value indicates how many bytes of wave 
-            // data must be streamed to a D/A converter per 
-            // second in order to play the wave file. This 
+            // This value indicates how many bytes of wave
+            // data must be streamed to a D/A converter per
+            // second in order to play the wave file. This
             // information is useful when determining if
-            // data can be streamed from the source fast 
-            // enough to keep up with playback. This value 
+            // data can be streamed from the source fast
+            // enough to keep up with playback. This value
             // can be easily calculated with the formula:
             // AvgBytesPerSec = SampleRate * BlockAlign
             int bytesPerSecond = wavInfo.BytesPerSecond;
 
 
             // Block Align / bytes per sample. (frame)
-            // The number of bytes per sample slice. This value 
+            // The number of bytes per sample slice. This value
             // is not affected by the number of channels and can be
             // calculated with the formula:
             // BlockAlign = SignificantBitsPerSample / 8 * NumChannels
@@ -297,8 +297,8 @@ namespace AudioAnalysisTools.DSP
 
 
             // Significant Bits Per Sample
-            // This value specifies the number of bits used to define each sample. 
-            // This value is usually 8, 16, 24 or 32. If the number of bits is not 
+            // This value specifies the number of bits used to define each sample.
+            // This value is usually 8, 16, 24 or 32. If the number of bits is not
             // byte aligned (a multiple of 8) then the number of bytes used per sample
             // is rounded up to the nearest byte size and the unused bytes are set to 0 and ignored.
             short bitsPerSample = wavInfo.BitsPerSample;
@@ -344,7 +344,7 @@ namespace AudioAnalysisTools.DSP
             data chunk size == NumSamples * NumChannels * BitsPerSample/8
             This is the number of bytes in the data.
             You can also think of this as the size
-            of the read of the subchunk following this 
+            of the read of the subchunk following this
             number.
             */
 
@@ -359,8 +359,8 @@ namespace AudioAnalysisTools.DSP
             /*
            file size = 36 + SubChunk2Size, or more precisely:
             4 + (8 + SubChunk1Size) + (8 + SubChunk2Size)
-            This is the size of the rest of the chunk 
-            following this number.  This is the size of the 
+            This is the size of the rest of the chunk
+            following this number.  This is the size of the
             entire file in bytes minus 8 bytes for the
             two fields not included in this count:
             ChunkID and ChunkSize.

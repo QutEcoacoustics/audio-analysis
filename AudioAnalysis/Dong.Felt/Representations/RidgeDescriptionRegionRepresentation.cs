@@ -6,12 +6,12 @@ namespace Dong.Felt.Representations
     using System.Linq;
     using System.Text;
 
-    //This class will contain a bunch of neighbourhoods. 
+    //This class will contain a bunch of neighbourhoods.
     public class RidgeDescriptionRegionRepresentation : RegionRepresentation
     {
 
         /// <summary>
-        /// This method is trying to normalize the neighbourhood ridge properties based on featurePropertySet. 
+        /// This method is trying to normalize the neighbourhood ridge properties based on featurePropertySet.
         /// </summary>
         /// <param name="ridgeNhRepresentationList"></param>
         /// <param name="featurePropertySet"></param>
@@ -39,7 +39,7 @@ namespace Dong.Felt.Representations
         }
 
 
-        //// nhRepre has already had these two properties, it indicates the top left point coordinates. 
+        //// nhRepre has already had these two properties, it indicates the top left point coordinates.
         //public double frameIndex { get; set; }
 
         //public double frequencyIndex { get; set; }

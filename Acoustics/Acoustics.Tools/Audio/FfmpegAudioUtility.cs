@@ -26,12 +26,12 @@
         // -i input file.  extension used to determine filetype.
 
         // -nostdin ‘-stdin’
-        // Enable interaction on standard input. On by default unless standard input is used as an input. 
+        // Enable interaction on standard input. On by default unless standard input is used as an input.
         // To explicitly disable interaction you need to specify -nostdin.
-        // Disabling interaction on standard input is useful, for example, if ffmpeg is in the background 
+        // Disabling interaction on standard input is useful, for example, if ffmpeg is in the background
         // process group. Roughly the same result can be achieved with ffmpeg ... < /dev/null but it requires a shell.
 
-        // ‘-stats (global)’ Print encoding progress/statistics. 
+        // ‘-stats (global)’ Print encoding progress/statistics.
         // It is on by default, to explicitly disable it you need to specify -nostats.
 
         private const string ArgsOverwriteSource = " -nostdin -y -i \"{0}\" ";
@@ -56,7 +56,7 @@
         private const string ArgsCodecOutput = " -acodec {0}  \"{1}\" ";
 
         // -map_channel [input_file_id.stream_specifier.channel_id]
-        // Map an audio channel from a given input to an output. 
+        // Map an audio channel from a given input to an output.
         // The order of the "-map_channel" option specifies the order of the channels in the output stream.
         // input_file_id, stream_specifier, and channel_id are indexes starting from 0.
         // assumes that the audio file has one stream.
@@ -65,12 +65,12 @@
         // -ac[:stream_specifier] channels (input/output,per-stream)
         // Set the number of audio channels. For output streams it is set by default to the number of input audio channels.
         // ‘-ac[:stream_specifier] integer (input/output,audio)
-        // set number of audio channels 
-        // Note that ffmpeg integrates a default down-mix (and up-mix) system that should be preferred (see "-ac" option) unless you have very specific needs. 
+        // set number of audio channels
+        // Note that ffmpeg integrates a default down-mix (and up-mix) system that should be preferred (see "-ac" option) unless you have very specific needs.
         private const string ArgsChannelCount = " -ac {0} ";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FfmpegAudioUtility"/> class. 
+        /// Initializes a new instance of the <see cref="FfmpegAudioUtility"/> class.
         /// </summary>
         /// <param name="ffmpegExe">
         /// The ffmpeg exe.
@@ -91,7 +91,7 @@
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FfmpegAudioUtility"/> class. 
+        /// Initializes a new instance of the <see cref="FfmpegAudioUtility"/> class.
         /// </summary>
         /// <param name="ffmpegExe">
         /// The ffmpeg exe.
@@ -170,7 +170,7 @@
                     break;
                 case MediaTypes.ExtOgg:
                 case MediaTypes.ExtOggAudio: // http://wiki.hydrogenaudio.org/index.php?title=Recommended_Ogg_Vorbis#Recommended_Encoder_Settings
-                    codec = "libvorbis -q 7"; // ogg container vorbis encoder at quality level of 7 
+                    codec = "libvorbis -q 7"; // ogg container vorbis encoder at quality level of 7
                     break;
                 case MediaTypes.ExtWebm:
                 case MediaTypes.ExtWebmAudio:
@@ -292,7 +292,7 @@
                 var formats = new[]
                         {
                             @"h\:mm\:ss\.ffffff", @"hh\:mm\:ss\.ffffff", @"h:mm:ss.ffffff",
-                            @"hh:mm:ss.ffffff"
+                            @"hh:mm:ss.ffffff",
                         };
 
                 TimeSpan tsresult;

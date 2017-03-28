@@ -38,10 +38,10 @@ namespace AnalysisPrograms.Recognizers
     /// This frog recognizer is based on the "kek-kek" recognizer for the Lewin's Rail
     /// It looks for synchronous oscillations in two frequency bands
     /// This recognizer was first developed for Jenny ???, a Masters student around 2007.
-    /// It has been updated in October 2016 to become one of the new RecognizerBase recognizers. 
+    /// It has been updated in October 2016 to become one of the new RecognizerBase recognizers.
     /// however the Correlation technique used for the Lewins Rail did not work because the ossilations in the upper and lower freq bands are not correlated.
-    /// Instead measure the oscillations in the upper and lower bands independently. 
-    /// 
+    /// Instead measure the oscillations in the upper and lower bands independently.
+    ///
     /// </summary>
 
 
@@ -101,7 +101,7 @@ namespace AnalysisPrograms.Recognizers
             //// ignore oscillations above this threshold freq
             int maxOscilRate = (int)Math.Ceiling(1 / recognizerConfig.MinPeriod);
 
-            // this default framesize seems to work 
+            // this default framesize seems to work
             const int frameSize = 128;
             double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
                 recording.SampleRate,
@@ -121,7 +121,7 @@ namespace AnalysisPrograms.Recognizers
                 //WindowFunction = WindowFunctions.NONE.ToString(),
                 // if do not use noise reduction can get a more sensitive recogniser.
                 //NoiseReductionType = NoiseReductionType.NONE,
-                NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD")
+                NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD"),
             };
 
             //#############################################################################################################################################
@@ -129,7 +129,7 @@ namespace AnalysisPrograms.Recognizers
             var results = Analysis(recording, sonoConfig, recognizerConfig, MainEntry.InDEBUG);
             //######################################################################
 
-            if (results == null) return null; //nothing to process 
+            if (results == null) return null; //nothing to process
             var sonogram = results.Item1;
             var hits = results.Item2;
             var scoreArray = results.Item3;
@@ -165,7 +165,7 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram,
                 Hits = hits,
                 Plots = plot.AsList(),
-                Events = predictedEvents
+                Events = predictedEvents,
             };
         }
 
@@ -199,11 +199,11 @@ namespace AnalysisPrograms.Recognizers
 
             // duration of DCT in seconds - want it to be about 3X or 4X the expected maximum period
             double dctDuration = 3 * lbConfig.MaxPeriod;
-            // duration of DCT in frames 
+            // duration of DCT in frames
             int dctLength = (int)Math.Round(framesPerSecond * dctDuration);
             // set up the cosine coefficients
-            double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); 
-            
+            double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength);
+
             int upperBandMinBin = (int)Math.Round(lbConfig.UpperBandMinHz / freqBinWidth) + 1;
             int upperBandMaxBin = (int)Math.Round(lbConfig.UpperBandMaxHz / freqBinWidth) + 1;
             int lowerBandMinBin = (int)Math.Round(lbConfig.LowerBandMinHz / freqBinWidth) + 1;
@@ -228,7 +228,7 @@ namespace AnalysisPrograms.Recognizers
 
 
             //iii: CONVERT decibel sum-diff SCORES TO ACOUSTIC EVENTS
-            var predictedEvents = AcousticEvent.ConvertScoreArray2Events(amplitudeScores, lbConfig.LowerBandMinHz, lbConfig.UpperBandMaxHz, sonogram.FramesPerSecond, 
+            var predictedEvents = AcousticEvent.ConvertScoreArray2Events(amplitudeScores, lbConfig.LowerBandMinHz, lbConfig.UpperBandMaxHz, sonogram.FramesPerSecond,
                                                                           freqBinWidth, decibelThreshold, lbConfig.MinDuration, lbConfig.MaxDuration);
 
             for (int i = 0; i < differenceScores.Length; i++)
@@ -288,14 +288,14 @@ namespace AnalysisPrograms.Recognizers
                 }
 
             }
-        
-            
+
+
             //######################################################################
 
             // calculate the cosine similarity scores
             var scorePlot = new Plot(lbConfig.SpeciesName, scores, intensityThreshold);
 
-            //DEBUG IMAGE this recognizer only. MUST set false for deployment. 
+            //DEBUG IMAGE this recognizer only. MUST set false for deployment.
             Image debugImage = null;
             if (drawDebugImage)
             {
@@ -331,7 +331,7 @@ namespace AnalysisPrograms.Recognizers
                 //WindowFunction = WindowFunctions.NONE.ToString(),
                 // if do not use noise reduction can get a more sensitive recogniser.
                 //NoiseReductionType = NoiseReductionType.NONE,
-                NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD")
+                NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD"),
             };
             BaseSonogram returnSonogram = new SpectrogramStandard(returnSonoConfig, recording.WavReader);
             return Tuple.Create(returnSonogram, hits, scores, confirmedEvents, debugImage);

@@ -7,7 +7,7 @@
 //
 // Action code for this analysis = ColourSpectrogram
 // Activity Codes for other tasks to do with spectrograms and audio files:
-// 
+//
 // audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
 // audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
 // indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
@@ -18,7 +18,7 @@
 // audiofilecheck - Writes information about audio files to a csv file.
 // snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
 // audiocutter - Cuts audio into segments of desired length and format
-// createfoursonograms 
+// createfoursonograms
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -78,7 +78,7 @@ namespace AnalysisPrograms
         /// <summary>
         /// To get to this DEV method, the FIRST AND ONLY command line argument must be "colourspectrogram"
         /// Activity Codes for other tasks to do with spectrograms and audio files:
-        /// 
+        ///
         /// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
         /// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
         /// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
@@ -89,7 +89,7 @@ namespace AnalysisPrograms
         /// audiofilecheck - Writes information about audio files to a csv file.
         /// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
         /// audiocutter - Cuts audio into segments of desired length and format
-        /// createfoursonograms 
+        /// createfoursonograms
         /// </summary>
         public static Arguments Dev()
         {
@@ -180,7 +180,7 @@ namespace AnalysisPrograms
                 // use the default set of index properties in the AnalysisConfig directory.
                 IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
                 //IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml".ToFileInfo(),
-                SpectrogramConfigPath = fiSpectrogramConfig 
+                SpectrogramConfigPath = fiSpectrogramConfig,
             };
             throw new NoDeveloperMethodException();
     }
@@ -244,7 +244,7 @@ namespace AnalysisPrograms
                 basename: originalBaseName,
                 analysisType: Acoustic.TowseyAcoustic,
                 indexSpectrograms: null,
-                indexDistributions: indexDistributionsData,
+                indexStatistics: indexDistributionsData,
                 imageChrome: false.ToImageChrome());
         } // Execute()
 
@@ -282,7 +282,7 @@ namespace AnalysisPrograms
             int sampleRate = 22050;
             int frameWidth = 512;
             //double backgroundFilter = 0.0; // 0.0 means small values are removed.
-            double backgroundFilter = 0.75;  // 0.75 means small values are accentuated. 
+            double backgroundFilter = 0.75;  // 0.75 means small values are accentuated.
             string analysisType = "Towsey.Acoustic";
             string[] keys = { "ACI", "POW", "BGN", "CVR", "ENT", "EVN", "RHZ", "RVT", "RPS", "RNG", "SPT" };
 
@@ -398,7 +398,7 @@ namespace AnalysisPrograms
 
             int sampleRate = 22050;
             int frameWidth = 512;
-            double backgroundFilter = 0.75;  // 0.75 means small values are accentuated. 
+            double backgroundFilter = 0.75;  // 0.75 means small values are accentuated.
             var minuteOffset = TimeSpan.Zero;
             var dataScale = args.TemporalScale;
             string colourMode = "NEGATIVE";
@@ -460,7 +460,7 @@ namespace AnalysisPrograms
         {
             string analysisType = "Towsey.Acoustic";
             //double backgroundFilter = 0.0; // 0.0 means small values are removed.
-            double backgroundFilter = 0.75;  // 0.75 means small values are accentuated. 
+            double backgroundFilter = 0.75;  // 0.75 means small values are accentuated.
             TimeSpan dataScale = TimeSpan.FromSeconds(scale);
 
             Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(ipConfig);
@@ -507,7 +507,7 @@ namespace AnalysisPrograms
             //Font stringFont = new Font("Arial", 6);
             int pixelWidth = 0;
 
-            // constants for labels 
+            // constants for labels
             Brush[] brush = { Brushes.Blue, Brushes.Green, Brushes.Red, Brushes.Orange, Brushes.Purple };
             Color[] color = { Color.Blue, Color.Green, Color.Red, Color.Orange, Color.Purple };
             int labelYvalue = 3;
@@ -597,12 +597,12 @@ namespace AnalysisPrograms
                         if (value < (spectra[keys[i]])[row, col])
                              value = (spectra[keys[i]])[row, col];
                     }
-                    compositeIndex[row, col] = value;                  
+                    compositeIndex[row, col] = value;
                 }
             }
             return compositeIndex;
         }
-        
+
 
 
     } // class DrawLongDurationSpectrograms

@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace QutBioacosutics.Xie.Configuration
+﻿namespace QutBioacosutics.Xie.Configuration
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     public class NasutaConfiguration
     {
         public double AmplitudeThresholdNasuta { get; set; }
@@ -34,22 +34,22 @@ namespace QutBioacosutics.Xie.Configuration
         public int HarmonicComponentNasuta { get; set; }
         public int HarmonicSensityNasuta { get; set; }
         public int HarmonicDiffrangeNasuta { get; set; }
-    
+
 
         public NasutaConfiguration(dynamic configuration)
-        {                            
+        {
             // Peak parameters
             AmplitudeThresholdNasuta = configuration.AmplitudeThresholdNasuta;   // Decibel---the minimum amplitude value
             RangeNasuta = configuration.RangeNasuta;                                // Frame---the distance in either side for selecting peaks
             DistanceNasuta = configuration.DistanceNasuta;                          // Frame---remove near peaks
             // Track parameters
-            BinToleranceNasuta = configuration.BinToleranceNasuta;                 // Bin---the fluctuation of the dominant frequency bin 
-            FrameThresholdNasuta = configuration.FrameThresholdNasuta;              // Frame---frame numbers of the silence    
+            BinToleranceNasuta = configuration.BinToleranceNasuta;                 // Bin---the fluctuation of the dominant frequency bin
+            FrameThresholdNasuta = configuration.FrameThresholdNasuta;              // Frame---frame numbers of the silence
             TrackDurationThresholdNasuta = configuration.TrackDurationThresholdNasuta;
-            TrackThresholdNasuta = configuration.TrackThresholdNasuta;           // Used for calculating the percent of peaks in one track    
+            TrackThresholdNasuta = configuration.TrackThresholdNasuta;           // Used for calculating the percent of peaks in one track
             MaximumTrackDurationNasuta = configuration.MaximumTrackDurationNasuta;  // Minimum duration of tracks
-            MinimumTrackDurationNasuta = configuration.MinimumTrackDurationNasuta;  // Maximum duration of tracks   
-            BinDifferenceNasuta = configuration.BinDifferenceNasuta;             // Difference between the highest and lowest bins   
+            MinimumTrackDurationNasuta = configuration.MinimumTrackDurationNasuta;  // Maximum duration of tracks
+            BinDifferenceNasuta = configuration.BinDifferenceNasuta;             // Difference between the highest and lowest bins
             // Band tracks parameters
             FrequencyLowNasuta = configuration.FrequencyLowNasuta;
             FrequencyHighNasuta = configuration.FrequencyHighNasuta;
@@ -67,7 +67,7 @@ namespace QutBioacosutics.Xie.Configuration
             HarmonicSensityNasuta = configuration.HarmonicSensityNasuta;
             HarmonicDiffrangeNasuta = configuration.HarmonicDiffrangeNasuta;
         } // consturctor
-            
+
     } // class
 
 }

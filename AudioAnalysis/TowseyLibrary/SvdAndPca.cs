@@ -1,28 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using MathNet.Numerics;
-//using MathNet.Numerics.ComplexExtensions;
-using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.LinearAlgebra.Double;
-using MathNet.Numerics.LinearAlgebra.Generic.Factorization;
-using MathNet.Numerics.LinearAlgebra.Generic;
-
-
-
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using MathNet.Numerics;
+    //using MathNet.Numerics.ComplexExtensions;
+    using MathNet.Numerics.LinearAlgebra;
+    using MathNet.Numerics.LinearAlgebra.Double;
+    using MathNet.Numerics.LinearAlgebra.Generic;
+    using MathNet.Numerics.LinearAlgebra.Generic.Factorization;
 
     /// <summary>
     /// contains methods and test example to do Singular Value decomposition and Principal Components Analysis
-    /// 
+    ///
     /// IMPORTANT NOTE: The underlying storage of the Matrix class is a one dimensional array in column-major order (column by column).
     ///                 NOT Row by row!!
-    /// 
-    /// 
+    ///
+    ///
     /// </summary>
     public static class SvdAndPca
     {
@@ -36,7 +32,7 @@ namespace TowseyLibrary
         ///     V is an orthogonal matrix, whose columns are the right singular vectors;
         ///     Note 1: the transpose of V is used in the decomposition, and that the diagonal matrix S is typically stored as a vector.
         ///     Note 2: the values on the diagonal of S are the square-root of the eigenvalues.
-        ///     
+        ///
         /// THESE TWO METHODS HAVE BEEN TESTED ON TOY EXAMPLES AND WORKED i.e. returned conrrect values
         /// </summary>
         /// <param name="matrix"></param>
@@ -128,7 +124,7 @@ namespace TowseyLibrary
         {
             double[,] matrix1 = {
                                         { 3.0, -1.0 },
-                                        { -1.0, 3.0 }
+                                        { -1.0, 3.0 },
                                     };
             SvdAndPca.EigenVectors(matrix1);
 
@@ -142,7 +138,7 @@ namespace TowseyLibrary
                                         {2, 4},
                                         {1, 3},
                                         {0, 0},
-                                        {0, 0}
+                                        {0, 0},
                                      };
             var tuple = SvdAndPca.SingularValueDecompositionOutput(matrix2);
             Vector<double> sdValues = tuple.Item1;
@@ -162,7 +158,7 @@ namespace TowseyLibrary
         public static void ExampleOfSVD_2()
         {
 
-            //// this example given in 
+            //// this example given in
             //double[,] matrix1 = {
             //                            { 1.0, 1.0, 1.0, 0.0, 0.0 },
             //                            { 3.0, 3.0, 3.0, 0.0, 0.0 },
@@ -173,7 +169,7 @@ namespace TowseyLibrary
             //                            { 0.0, 1.0, 0.0, 2.0, 2.0 },
             //                    };
 
-            // this example given on page 21 of Singular Value Decomposition Tutorial" by Kirk Baker  March 29, 2005 (Revised January 14, 2013) 
+            // this example given on page 21 of Singular Value Decomposition Tutorial" by Kirk Baker  March 29, 2005 (Revised January 14, 2013)
             // see that page for an interpretation of the U matrix.
             double[,] matrix1 = {
                                         { 2.0, 0.0, 8.0, 6.0, 0.0 },
@@ -189,18 +185,18 @@ namespace TowseyLibrary
                       nurse  { 5.0, 0.0, 7.0, 4.0, 0.0 },
                       hospit { 7.0, 0.0, 8.0, 5.0, 0.0 },
                       wheel  { 0.0,10.0, 0.0, 0.0, 7.0 },
-             * 
-             * 
+             *
+             *
              * THE U - MATRIX should be
              * −0.54  0.07  0.82 −0.11  0.12
                −0.10 −0.59 −0.11 −0.79 −0.06
                −0.53  0.06 −0.21  0.12 −0.81
                −0.65  0.07 −0.51  0.06  0.56
                −0.06 −0.80  0.09  0.59  0.04
-             * 
+             *
              * However note that the signs of the values in the matrix are frequently reversed.
              * Interpretation:
-             * The signs in the first column vector are all negative, indicating the general cooccurence of words and documents. 
+             * The signs in the first column vector are all negative, indicating the general cooccurence of words and documents.
              * Two groups are visible in the second column of U: car and wheel have negative coefficients, while doctor, nurse, and hospital are all positive -
              * this indicates a grouping in which wheel only cooccurs with car.
              * The third dimension indicates a grouping in which car, nurse, and hospital occur only with each other.
@@ -262,12 +258,12 @@ namespace TowseyLibrary
             double[] signal = { 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
                                     1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
                                     1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
-                                    1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0 };
+                                    1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, };
             // add noise to signal
             RandomNumber rn = new RandomNumber();
             double[] rv = RandomNumber.GetRandomVector(128, rn);
 
-            // note that even when noise is twice amplitude of signal the first column of UMatrix is excellent reproduction of 
+            // note that even when noise is twice amplitude of signal the first column of UMatrix is excellent reproduction of
             // first column when signal has no added noise.
             // relative noise amplitude
             double noiseAmplitude = 2.0;
@@ -304,7 +300,7 @@ namespace TowseyLibrary
                 // e1=4.0     e2=2.0 and the singular values are the same
                 double[,] M = {
                                     { 3.0, -1.0 },
-                                    {-1.0,  20.0 }
+                                    {-1.0,  20.0 },
                                 };
 
                 // e1=e2=0.333333

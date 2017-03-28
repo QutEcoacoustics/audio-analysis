@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-
-namespace BTR.Core.Linq
+﻿namespace BTR.Core.Linq
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.Linq;
+    using System.Linq.Expressions;
+    using System.Text;
+
     public static class ExpressionExtensions
     {
         public static Expression Visit<T>(

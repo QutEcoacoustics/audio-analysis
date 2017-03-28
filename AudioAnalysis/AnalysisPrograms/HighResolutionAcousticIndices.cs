@@ -37,10 +37,10 @@ namespace AnalysisPrograms
         /// Access to this DEV class is from the EXECUTE class.
         /// Access to the EXECUTE class is currently from the Sandpit.cs class.
         /// "sandpit" as the FIRST AND ONLY command line argument
-        /// 
-        /// 
+        ///
+        ///
         /// Activity Codes for other tasks to do with spectrograms and audio files:
-        /// 
+        ///
         /// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
         /// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
         /// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
@@ -51,7 +51,7 @@ namespace AnalysisPrograms
         /// audiofilecheck - Writes information about audio files to a csv file.
         /// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
         /// audiocutter - Cuts audio into segments of desired length and format
-        /// createfoursonograms 
+        /// createfoursonograms
         /// </summary>
         public static Arguments Dev()
         {
@@ -72,7 +72,7 @@ namespace AnalysisPrograms
             string spectrogramConfig     = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramFalseColourConfig.yml";
             string indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
             string audio2csvConfigPath   = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiRes.yml";
-            
+
             return new Arguments
             {
                 DebugRecording = new FileInfo(debugRecordingPath),
@@ -88,7 +88,7 @@ namespace AnalysisPrograms
                 HiResZoomConfig = new FileInfo(hiResZoomConfigPath),
 
                 // background threshold value that is subtracted from all spectrograms.
-                BgnThreshold = 3.0
+                BgnThreshold = 3.0,
             };
             throw new Exception();
         } //Dev()
@@ -110,7 +110,7 @@ namespace AnalysisPrograms
             public DirectoryInfo ImageOutputDir { get; set; }
             public FileInfo Audio2CsvConfig { get; set; }
             public FileInfo HiResZoomConfig { get; set; }
-            
+
             [ArgDescription("User specified file containing a list of indices and their properties.")]
             public FileInfo IndexPropertiesConfig { get; set; }
 
@@ -167,7 +167,7 @@ namespace AnalysisPrograms
                     //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
                     LoggedConsole.WriteLine();
                 } // if (verbose)
-            } // if 
+            } // if
 
 
             FileInfo[] wavFiles = { arguments.DebugRecording };
@@ -200,7 +200,7 @@ namespace AnalysisPrograms
                     {
                         Source = recordingPath.ToFileInfo(),
                         Config = arguments.Audio2CsvConfig,
-                        Output = arguments.OutputDirectory
+                        Output = arguments.OutputDirectory,
                     };
 
                     if (!audio2csvArguments.Source.Exists)
@@ -286,10 +286,10 @@ namespace AnalysisPrograms
                     }
 
                     // there are two possible tasks
-                    // 1: draw the aggregated grey scale spectrograms 
+                    // 1: draw the aggregated grey scale spectrograms
                     int secDuration = DrawLongDurationSpectrograms.DrawAggregatedSpectrograms(LDFCSpectrogramArguments, fileStem);
 
-                    // 2: draw the coloured ridge spectrograms 
+                    // 2: draw the coloured ridge spectrograms
                     secDuration = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(LDFCSpectrogramArguments, fileStem);
 
                 } // try block

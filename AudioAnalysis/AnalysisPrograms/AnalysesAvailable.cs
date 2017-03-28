@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-using AnalysisBase;
-using AnalysisPrograms.Recognizers.Base;
-using TowseyLibrary;
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
+
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
     using Acoustics.Shared.Extensions;
-
+    using AnalysisBase;
     using AnalysisPrograms.Production;
-
+    using AnalysisPrograms.Recognizers.Base;
     using PowerArgs;
+    using TowseyLibrary;
 
     public class AnalysesAvailable
     {
@@ -26,7 +22,7 @@ namespace AnalysisPrograms
         public static void Execute(object args)
         {
             LoggedConsole.WriteLine("\nListing the available IAnalyzer2 implementations:\n");
-            
+
             var table = GetAnalyzersTable();
             LoggedConsole.WriteLine(table.ToString());
 

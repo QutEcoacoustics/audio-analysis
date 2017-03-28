@@ -118,7 +118,7 @@ namespace AnalysisPrograms.Recognizers
                 string profileName = kvp.Key;
                 Log.Info($"Analyzing profile: {profileName}");
                 dynamic currentProfile = kvp.Value;
-                
+
                 // extract parameters
                 int minHz = (int)configuration[AnalysisKeys.MinHz];
 
@@ -190,7 +190,7 @@ namespace AnalysisPrograms.Recognizers
             var config = new SonogramConfig
             {
                 NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = (double?)configuration[AnalysisKeys.NoiseBgThreshold] ?? 0.0
+                NoiseReductionParameter = (double?)configuration[AnalysisKeys.NoiseBgThreshold] ?? 0.0,
             };
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
 
@@ -227,7 +227,7 @@ namespace AnalysisPrograms.Recognizers
                 Hits = null,
                 ScoreTrack = null,
                 //Plots = null,
-                Sonogram = sonogram
+                Sonogram = sonogram,
             };
         }
     }

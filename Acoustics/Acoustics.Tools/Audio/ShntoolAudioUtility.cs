@@ -176,7 +176,7 @@
                 if (line.StartsWith(WavDataSize))
                 {
                     wavDataSizeBytes = ParseLongStringWithException(
-                        line.Replace(WavDataSize, string.Empty).Replace("bytes", string.Empty).Trim(), 
+                        line.Replace(WavDataSize, string.Empty).Replace("bytes", string.Empty).Trim(),
                         "shntool.DataSize").Value;
                 }
 
