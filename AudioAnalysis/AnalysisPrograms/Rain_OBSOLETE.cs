@@ -339,7 +339,7 @@
 
             //i: EXTRACT ENVELOPE and FFTs
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            var signalextract = DSP_Frames.ExtractEnvelopeAndFFTs(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, windowOverlap);
+            var signalextract = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, windowOverlap);
             double[]  envelope    = signalextract.Envelope;
             double[,] spectrogram = signalextract.AmplitudeSpectrogram;  //amplitude spectrogram
             int colCount = spectrogram.GetLength(1);

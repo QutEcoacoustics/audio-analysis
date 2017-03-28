@@ -625,7 +625,7 @@
 
         public static void AssertFrequencyInSignal(WavReader wavReader, double[] signal, int[] frequencies, int variance = 1)
         {
-            var fft = DSP_Frames.ExtractEnvelopeAndFFTs(signal, wavReader.SampleRate, wavReader.Epsilon, 512, 0.0);
+            var fft = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(signal, wavReader.SampleRate, wavReader.Epsilon, 512, 0.0);
 
             var histogram = SpectrogramTools.CalculateAvgSpectrumFromSpectrogram(fft.AmplitudeSpectrogram);
 

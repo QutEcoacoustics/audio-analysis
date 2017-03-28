@@ -168,11 +168,11 @@ namespace AudioAnalysisTools
             frameSize *= 16; // take longer window to get low freq
             frameStep *= 16;
 
-            var dspOutputL = DSP_Frames.ExtractEnvelopeAndFFTs(channelL, sampleRate, epsilon, frameSize, frameStep);
+            var dspOutputL = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(channelL, sampleRate, epsilon, frameSize, frameStep);
             var avSpectrumL = MatrixTools.GetColumnsAverages(dspOutputL.AmplitudeSpectrogram);
             //var medianSpectrumL = MatrixTools.GetColumnMedians(dspOutputL.amplitudeSpectrogram);
 
-            var dspOutputR = DSP_Frames.ExtractEnvelopeAndFFTs(channelR, sampleRate, epsilon, frameSize, frameStep);
+            var dspOutputR = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(channelR, sampleRate, epsilon, frameSize, frameStep);
             var avSpectrumR = MatrixTools.GetColumnsAverages(dspOutputR.AmplitudeSpectrogram);
             //var medianSpectrumR = MatrixTools.GetColumnMedians(dspOutputR.amplitudeSpectrogram);
 
@@ -245,10 +245,10 @@ namespace AudioAnalysisTools
             int frameSize = 512;
             int frameStep = 512;
 
-            var dspOutputL = DSP_Frames.ExtractEnvelopeAndFFTs(channelL, sampleRate, epsilon, frameSize, frameStep);
+            var dspOutputL = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(channelL, sampleRate, epsilon, frameSize, frameStep);
             var spgrmL = dspOutputL.AmplitudeSpectrogram;
 
-            var dspOutputR = DSP_Frames.ExtractEnvelopeAndFFTs(channelR, sampleRate, epsilon, frameSize, frameStep);
+            var dspOutputR = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(channelR, sampleRate, epsilon, frameSize, frameStep);
             var spgrmR = dspOutputR.AmplitudeSpectrogram;
 
             double similarityIndex = 0;

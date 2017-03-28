@@ -293,7 +293,7 @@ namespace AnalysisPrograms
 
             //i: GET SONOGRAM AS MATRIX
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.WavReader.Samples, sr, epsilon, frameSize, windowOverlap);
+            var results2 = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, sr, epsilon, frameSize, windowOverlap);
             double[] avAbsolute = results2.Average; //average absolute value over the minute recording
             //double[] envelope = results2.Item2;
             double[,] spectrogram = results2.AmplitudeSpectrogram;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.

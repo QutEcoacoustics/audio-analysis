@@ -40,7 +40,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.Duration = sg.Duration;
             this.Configuration.epsilon = sg.Configuration.epsilon;
             this.FrameCount = sg.FrameCount;
-            this.Max_dBReference = sg.Max_dBReference;
+            this.DecibelReference = sg.DecibelReference;
             this.MaxAmplitude = sg.MaxAmplitude;
             this.SampleRate = sg.SampleRate;
             this.SigState = sg.SigState;
@@ -70,14 +70,14 @@ namespace AudioAnalysisTools.StandardSpectrograms
             for (int i = 0; i < frameCount; i++) this.DecibelsPerFrame[i] = sg.DecibelsPerFrame[startFrame + i];
 
             ////energy and dB per frame sub-band
-            this.SubBandMinHz = sg.SubBandMinHz; //min freq (Hz) of the required subband
-            this.SubBandMaxHz = sg.SubBandMaxHz; //max freq (Hz) of the required subband
+            this.subBandMinHz = sg.subBandMinHz; //min freq (Hz) of the required subband
+            this.subBandMaxHz = sg.subBandMaxHz; //max freq (Hz) of the required subband
 
             //sg.SnrSubband { get; private set; }
             this.DecibelsInSubband = new double[frameCount];  // Normalised decibels in extracted freq band
             for (int i = 0; i < frameCount; i++) this.DecibelsInSubband[i] = sg.DecibelsInSubband[startFrame + i];
 
-            this.Max_dBReference = sg.Max_dBReference; // Used to normalise the dB values for MFCCs
+            this.DecibelReference = sg.DecibelReference; // Used to normalise the dB values for MFCCs
             this.DecibelsNormalised = new double[frameCount];
             for (int i = 0; i < frameCount; i++) this.DecibelsNormalised[i] = sg.DecibelsNormalised[startFrame + i];
 

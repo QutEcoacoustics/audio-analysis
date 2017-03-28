@@ -664,8 +664,8 @@
         {
             var track = new Image_Track(TrackType.segmentation, sg.DecibelsNormalised);
             track.intData = sg.SigState;
-            track.SegmentationThreshold_k1 = EndpointDetectionConfiguration.K1Threshold / sg.Max_dBReference;
-            track.SegmentationThreshold_k2 = EndpointDetectionConfiguration.K2Threshold / sg.Max_dBReference;
+            track.SegmentationThreshold_k1 = EndpointDetectionConfiguration.K1Threshold / sg.DecibelReference;
+            track.SegmentationThreshold_k2 = EndpointDetectionConfiguration.K2Threshold / sg.DecibelReference;
             return track;
         }
 

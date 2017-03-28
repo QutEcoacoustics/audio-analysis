@@ -1,7 +1,8 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="InitialiseIndexProperties.cs" company="QutBioacoustics">
+// <copyright file="InitialiseIndexProperties.cs" company="QutEcoacoustics">
 //   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
+
 // <summary>
 //   This static class contains all the keys to identify available acoustic indices.
 //   THIS CLASS DOES NOT STORE THE VALUE OF THE INDEX - the value is stored in class IndexValues.
@@ -13,8 +14,7 @@ namespace AudioAnalysisTools.Indices
     using System;
     using System.Collections.Generic;
     using System.Linq;
-
-    using AudioAnalysisTools.DSP;
+    using DSP;
 
     ///
     /// TO CREATE AND IMPLEMENT A NEW ACOUSTIC INDEX (BOTH SUMMARY AND SPECTRAL INDICES), DO THE FOLLOWING:
@@ -26,14 +26,12 @@ namespace AudioAnalysisTools.Indices
     /// 4b) e.g. for summary index:    indexValues.StoreIndex(InitialiseIndexProperties.KEYindexName, indexValue);
     /// ==============
 
-
     /// <summary>
     /// This static class contains all the keys to identify available acoustic indices.
     /// THIS CLASS DOES NOT STORE THE VALUE OF THE INDEX - the value is stored in class IndexValues.
     /// </summary>
     public static class InitialiseIndexProperties
     {
-
         // KEYS FOR SUMMARY INDICES
         // WARNING!!! DO NOT change the below keys without ALSO changing in the IndexPropertiesConfig.yml file.
         public const string KEYRankOrder = "RankOrder";
@@ -73,16 +71,14 @@ namespace AudioAnalysisTools.Indices
         public const string KEYspectralENT = "ENT";
         public const string KEYspectralEVN = "EVN";
         public const string KEYspectralSPT = "SPT";
-
-
-        public const double DEFAULT_SIGNAL_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //in decibels
+        public const double DEFAULT_SIGNAL_MIN = SNR.MinimumDbBoundForZeroSignal - 20; //in decibels
         public static int bitsPerSample = 16;
         public static double epsilon = Math.Pow(0.5, bitsPerSample - 1);
         public static double CLIPPING_THRESHOLD = epsilon * 4; // estimate of fraction of clipped values in wave form
         public const double ZERO_SIGNAL_THRESHOLD = 0.001; // all values in zero signal are less than this value
 
-        public static Dictionary<string, IndexProperties> FilterIndexPropertiesForSpectralOnly
-            (Dictionary<string, IndexProperties> indexProperties)
+        public static Dictionary<string, IndexProperties> FilterIndexPropertiesForSpectralOnly(
+            Dictionary<string, IndexProperties> indexProperties)
         {
             return indexProperties
                 .Where((kvp, i) => kvp.Value.IsSpectralIndex)
@@ -92,7 +88,7 @@ namespace AudioAnalysisTools.Indices
         public static Dictionary<string, IndexProperties> GetDictionaryOfSummaryIndexProperties(Dictionary<string, IndexProperties> indexProperties)
         {
             var dict = new Dictionary<string, IndexProperties>();
-            foreach (IndexProperties ip in indexProperties.Values)
+            foreach (var ip in indexProperties.Values)
             {
                 if (!ip.IsSpectralIndex)
                 {
@@ -100,10 +96,11 @@ namespace AudioAnalysisTools.Indices
                     dict.Add(ip.Key, ip);
                 }
             }
+
             return dict;
         }
 
-
+        /*
         public static string[] GetArrayOfIndexTypes(Dictionary<string, IndexProperties> properties)
         {
             string[] typeArray = new string[properties.Count];
@@ -127,6 +124,7 @@ namespace AudioAnalysisTools.Indices
                 nameArray[count] = ic.Name;
                 count++;
             }
+
             return nameArray;
         }
 
@@ -140,6 +138,7 @@ namespace AudioAnalysisTools.Indices
                 doDisplayArray[count] = ic.DoDisplay;
                 count++;
             }
+
             return doDisplayArray;
         }
 
@@ -153,48 +152,48 @@ namespace AudioAnalysisTools.Indices
                 weightArray[count] = ic.ComboWeight;
                 count++;
             }
+
             return weightArray;
         }
-
+*/
 
         public static Dictionary<string, string> GetKeyTranslationDictionary()
         {
-            var dict = new Dictionary<string, string>();
-            dict.Add("IndexCount", "RankOrder");
-            dict.Add("COUNT", "RankOrder");
-            dict.Add("START-MIN", "StartMinute");
-            dict.Add("SEGMENT-DUR", "SegmentDuration");
-            dict.Add("hiSIG-AMPL", "HighAmplitudeIndex");
-            dict.Add("CLIPPING", "ClippingIndex");
-            dict.Add("SIGNAL-AMPL", "AvSignalAmplitude");
-            dict.Add("BKGROUND", "BackgroundNoise");
-            dict.Add("SNR", "SNR");
-            dict.Add("SNR-ACTIVE", "AvSNRActive");
-            dict.Add("AvSNROfActiveFrames", "AvSNRActive");
-            dict.Add("ACTIVITY", "Activity");
-            dict.Add("EVENTS-RATE", "EventsPerSec");
-            dict.Add("avEVENT-DUR", "AvEventDuration");
-            dict.Add("HF-CVR", "HF_CVR");
-            dict.Add("MF-CVR", "MF_CVR");
-            dict.Add("LF-CVR", "LF_CVR");
-            dict.Add("H-TEMP", "Htemp");
-            dict.Add("Htemporal", "Htemp");
-            dict.Add("H-PEAK", "Hpeak");
-            dict.Add("H-SPG", "HAvSpectrum");
-            dict.Add("H-VAR", "HVarSpectrum");
-            dict.Add("ACI", "AcousticComplexity");
-            dict.Add("CLUSTER-COUNT", "ClusterCount");
-            dict.Add("avCLUST-DUR", "AvClusterDuration");
-            dict.Add("3GRAM-COUNT", "3GramCount");
-            dict.Add("SPT-RATE", "SPTPerSec");
-            dict.Add("avSPT-DUR", "AvSPTDuration");
-            dict.Add("RAIN", "RainIndex");
-            dict.Add("CICADA", "CicadaIndex");
-
-
+            var dict = new Dictionary<string, string>
+            {
+                {"IndexCount", "RankOrder" },
+                {"COUNT", "RankOrder" },
+                {"START-MIN", "StartMinute" },
+                {"SEGMENT-DUR", "SegmentDuration" },
+                {"hiSIG-AMPL", "HighAmplitudeIndex" },
+                {"CLIPPING", "ClippingIndex" },
+                {"SIGNAL-AMPL", "AvSignalAmplitude" },
+                {"BKGROUND", "BackgroundNoise" },
+                {"SNR", "SNR" },
+                {"SNR-ACTIVE", "AvSNRActive" },
+                {"AvSNROfActiveFrames", "AvSNRActive" },
+                {"ACTIVITY", "Activity" },
+                {"EVENTS-RATE", "EventsPerSec" },
+                {"avEVENT-DUR", "AvEventDuration" },
+                {"HF-CVR", "HF_CVR" },
+                {"MF-CVR", "MF_CVR" },
+                {"LF-CVR", "LF_CVR" },
+                {"H-TEMP", "Htemp" },
+                {"Htemporal", "Htemp" },
+                {"H-PEAK", "Hpeak" },
+                {"H-SPG", "HAvSpectrum" },
+                {"H-VAR", "HVarSpectrum" },
+                {"ACI", "AcousticComplexity" },
+                {"CLUSTER-COUNT", "ClusterCount" },
+                {"avCLUST-DUR", "AvClusterDuration" },
+                {"3GRAM-COUNT", "3GramCount" },
+                {"SPT-RATE", "SPTPerSec" },
+                {"avSPT-DUR", "AvSPTDuration" },
+                {"RAIN", "RainIndex" },
+                {"CICADA", "CicadaIndex" },
+            };
 
             return dict;
         }
-
     }
 }

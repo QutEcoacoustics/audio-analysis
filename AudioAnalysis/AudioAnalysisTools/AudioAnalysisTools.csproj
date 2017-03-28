@@ -297,6 +297,7 @@
     <Compile Include="Oscillations2014.cs" />
     <Compile Include="RidgeDetection.cs" />
     <Compile Include="SiteDescription.cs" />
+    <Compile Include="StandardSpectrograms\AmplitudeSonogram.cs" />
     <Compile Include="SunAndMoon.cs" />
     <Compile Include="SURFFeatures.cs" />
     <Compile Include="TileImage\AbsoluteDateTillingProfile.cs" />
