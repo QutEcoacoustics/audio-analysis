@@ -1,4 +1,8 @@
-﻿namespace AcousticIndicesJie
+﻿// <copyright file="InitialiseJiesIndexProperties.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace AcousticIndicesJie
 {
     using System;
     using System.Collections.Generic;
@@ -14,7 +18,6 @@
     /// 2) Declare the new index and its properties in the method IndexConstants.InitialisePropertiesOfIndices();
     /// 3) Calculate the INDEX some where. In the case of Acoustic Indices, they are calculated in the class IndicesCalculate.cs.
     /// 4) Store the value of the index in the class IndexValues
-    //==============
 
     /// <summary>
     /// This static class contains all the keys to identify available acoustic indices.
@@ -26,7 +29,7 @@
     /// </summary>
     public static class InitialiseJiesIndexProperties
     {
-        public const double DEFAULT_SIGNAL_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //in decibels
+        public const double DEFAULT_SIGNAL_MIN = SNR.MinimumDbBoundForZeroSignal - 20; //in decibels
         public static int bitsPerSample = 16;
         public static double epsilon = Math.Pow(0.5, bitsPerSample - 1);
         public static double CLIPPING_THRESHOLD = epsilon * 4; // estimate of fraction of clipped values in wave form

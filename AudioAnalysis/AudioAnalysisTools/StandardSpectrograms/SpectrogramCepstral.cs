@@ -31,7 +31,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.DecibelsNormalised = sg.DecibelsNormalised;
             this.Duration = sg.Duration;
             this.FrameCount = sg.FrameCount;
-            this.Max_dBReference = sg.Max_dBReference;
+            this.DecibelReference = sg.DecibelReference;
             this.MaxAmplitude = sg.MaxAmplitude;
             this.SampleRate = sg.SampleRate;
             this.SigState = sg.SigState;
@@ -48,13 +48,13 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.Duration = sg.Duration;
             //this.epsilon = sg.epsilon;
             this.FrameCount = sg.FrameCount;
-            this.Max_dBReference = sg.Max_dBReference;
+            this.DecibelReference = sg.DecibelReference;
             this.MaxAmplitude = sg.MaxAmplitude;
             this.SampleRate = sg.SampleRate;
             this.SigState = sg.SigState;
             this.SnrFullband = sg.SnrFullband;
-            this.SubBandMinHz = minHz;
-            this.SubBandMaxHz = maxHz;
+            this.subBandMinHz = minHz;
+            this.subBandMaxHz = maxHz;
 
             //double[] noise_subband = BaseSonogram.ExtractModalNoiseSubband(this.SnrFullband.ModalNoiseProfile, minHz, maxHz, sg.doMelScale,
             //                                                   sonogram.Configuration.FreqBinCount, sonogram.FBinWidth);

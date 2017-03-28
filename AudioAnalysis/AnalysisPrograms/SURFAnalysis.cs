@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Audio2InputForConvCNN.cs" company="QutBioacoustics">
+// <copyright file="Audio2InputForConvCNN.cs" company="QutEcoacoustics">
 //   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
@@ -30,7 +30,6 @@ namespace AnalysisPrograms
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
 
@@ -177,7 +176,7 @@ namespace AnalysisPrograms
                                         record.event_start_seconds.TotalSeconds, record.event_end_seconds.TotalSeconds,
                                         result.SnrStatistics.ExtractDuration.TotalSeconds,
                                         result.SnrStatistics.Threshold, result.SnrStatistics.Snr,
-                                        result.SnrStatistics.FractionOfFramesExceedingThreshold, result.SnrStatistics.FractionOfFramesExceedingOneThirdSNR,
+                                        result.SnrStatistics.FractionOfFramesExceedingThreshold, result.SnrStatistics.FractionOfFramesExceedingOneThirdSnr,
                                         result.SpectrogramFile.FullName);
 
             // It is helpful to write to the output file as we go, so as to keep a record of where we are up to.
@@ -379,7 +378,7 @@ namespace AnalysisPrograms
         {
             //  path to spectrogram image
             public FileInfo SpectrogramFile { get; set; }
-            public SNR.SNRStatistics SnrStatistics { get; set; }
+            public SNR.SnrStatistics SnrStatistics { get; set; }
         }
 
         public static AudioToSonogramResult GenerateSpectrogramImages(FileInfo sourceRecording, Dictionary<string, string> configDict, DirectoryInfo opDir)

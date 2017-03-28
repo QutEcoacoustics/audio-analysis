@@ -675,7 +675,7 @@ namespace AnalysisPrograms
             /// <summary>
             /// snr information for this recording
             /// </summary>
-            public SNR.SNRStatistics SnrStatistics { get; set; }
+            public SNR.SnrStatistics SnrStatistics { get; set; }
 
             /// <summary>
             /// CONSTRUCT the header for csv file
@@ -692,7 +692,7 @@ namespace AnalysisPrograms
                     this.SnrStatistics.Threshold,
                     this.SnrStatistics.Snr,
                     this.SnrStatistics.FractionOfFramesExceedingThreshold,
-                    this.SnrStatistics.FractionOfFramesExceedingOneThirdSNR,
+                    this.SnrStatistics.FractionOfFramesExceedingOneThirdSnr,
                     this.SnrStatistics.ExtractDuration.TotalSeconds,
                     this.SpectrogramFile.FullName);
                 return line;
