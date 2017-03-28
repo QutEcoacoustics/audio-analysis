@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace AnalysisPrograms.Production
+﻿namespace AnalysisPrograms.Production
 {
-    using System.Diagnostics.Contracts;
+    using System;
+    using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
+    using System.Text;
     using System.Text.RegularExpressions;
-
+    using Acoustics.Shared.Contracts;
     using PowerArgs;
 
     /// <summary>

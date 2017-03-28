@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Acoustics.Shared.Extensions
+﻿namespace Acoustics.Shared.Extensions
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
     using Microsoft.FSharp.Core;
 
     public static class FSharpExtensions

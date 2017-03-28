@@ -1,22 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace TowseyLibrary
 {
-
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
 
     public class NormalDist
     {
 
-        double av;        //mean of the data 
+        double av;        //mean of the data
         double sd;        //SD of the data
         double[,] bins;   //histogram of distribution over 16 bins about the mean
         int totalCount;   //number of samples
         double min;       //min and max of data
-        double max; 
+        double max;
 
-       
+
         /// <summary>
         /// CONSTRUCTOR for integer data
         /// </summary>
@@ -33,7 +31,7 @@ namespace TowseyLibrary
             double[] doubleData = new double[totalCount];
             for (int i = 0; i < totalCount; i++) doubleData[i] = (double)data[i];
             bins = get16binDistribution(doubleData, this.av, this.sd);
-            
+
             DataTools.MinMax(doubleData, out min, out max);
         }
 
@@ -208,7 +206,7 @@ namespace TowseyLibrary
             //LoggedConsole.WriteLine("av="+av+" SD="+SD);
         }
 
-        
+
         static public void AverageAndSD(List<double> data, out double av, out double sd)
         {
             AverageAndSD(data.ToArray(), out av, out sd);
@@ -219,7 +217,7 @@ namespace TowseyLibrary
         {
             int rows = data.GetLength(0);
             int cols = data.GetLength(1);
-            
+
             double[] values = new double[rows*cols];
             int id = 0;
             for (int i = 0; i < rows; i++)
@@ -275,7 +273,7 @@ namespace TowseyLibrary
 
         /**
          * Variance = (av of squares) - (square of the average)
-         * i.e.  SS/n - mean^2  
+         * i.e.  SS/n - mean^2
          *    =  SS/n - (sum/n)^2
          *    = (SS*n - sum^2)/n^2
          * @param SumSq
@@ -323,7 +321,7 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Converts an array of values (assumed to be a signal superimposed on Gaussian noise)
-        /// to z-scores and then converts z-scores to probabilites 
+        /// to z-scores and then converts z-scores to probabilites
         /// </summary>
         /// <param name="values">array of score values</param>
         /// <returns>array of probability scores</returns>
@@ -380,9 +378,9 @@ namespace TowseyLibrary
 
 
         /**
-         * returns the upper limit for each bin in a 16 bin histogram 
+         * returns the upper limit for each bin in a 16 bin histogram
          * from an array of data given the data's
-         * average and standard deviation. 
+         * average and standard deviation.
          * @param data
          * @param av
          * @param SD
@@ -415,7 +413,7 @@ namespace TowseyLibrary
 
         /**
          * returns an 8 bin histogram from an array of data given the data's
-         * average and standard deviation. 
+         * average and standard deviation.
          * @param data
          * @param av
          * @param SD
@@ -460,36 +458,36 @@ namespace TowseyLibrary
 
 
         /**
-         * returns a 16 bin histogram from an array of data given 
-         * the data's average and standard deviation. 
+         * returns a 16 bin histogram from an array of data given
+         * the data's average and standard deviation.
          * The histogram is represented by a matrix of doubles.
          * One row represents data in one bin.
          * 5 columns are: 1 upper bound of bin
          *                2 midpoint of bin
          *                3 absolute counts in bin
          *                4 fraction of counts in bin
-         *                5 ln(fraction)  
+         *                5 ln(fraction)
          * @param data
          * @param av
          * @param SD
          * @return
          */
         public static double[,] get16binDistribution(double[] data, double av, double SD)
-  { 
+  {
   	//get the upper bounds on the 16 bins
   	//highest bin has no upper bound - therefore bounds.mapLength=15
   	double[] bounds = getBinLimits(av, SD);
 
   	// init array to collect counts
   	int[] counts = new int[16];
-    for(int c=0;c<16;c++) counts[c] = 0; 
-  	
+    for(int c=0;c<16;c++) counts[c] = 0;
+
     // loop through data and collect the counts for each bin.
     for(int i=0;i<data.Length;i++)
     { double dd = data[i];
     	counts[getBin(dd, bounds)]++;
     }
-    
+
     int totalCounts = data.Length;
     double delta = SD/4;  //delta for midpoint of each bin.
     // init matrix to return
@@ -506,11 +504,11 @@ namespace TowseyLibrary
     }
     // correct error on last midpoint
     dist[15,1] = bounds[14]+delta; //there is error on last midpoint
-    
+
     return dist;
   }
 
-       
+
 
         public static double[,] get16binDistribution(int[] data, double av, double SD)
         {
@@ -597,23 +595,23 @@ namespace TowseyLibrary
         }
 
   public static void writeBinDistribution(int[] data, int binWidth)
-  { 
+  {
     int min;
     int max;
     DataTools.MinMax(data, out min, out max);
     int length = max / binWidth;
-    
+
     int[] counts = new int[length+1];
     for(int i=0;i<data.Length;i++)
     { counts[(data[i] / binWidth)]++;
     }
-    
+
         LoggedConsole.WriteLine("\n DISTRIBUTION");
         LoggedConsole.WriteLine("bin width = "+binWidth);
         LoggedConsole.WriteLine("geneStart \tend \tcount");
         for(int i=0;i<counts.Length;i++)
         {
-        LoggedConsole.WriteLine((i*binWidth)+" \t"+((i+1)*binWidth)+" \t"+counts[i]);   
+        LoggedConsole.WriteLine((i*binWidth)+" \t"+((i+1)*binWidth)+" \t"+counts[i]);
         }
     }
 
@@ -714,21 +712,21 @@ namespace TowseyLibrary
                     break;
                 }
             }
-            return 2 - (2*p); // convert alpha to probability event drawn from same population having given mean and SD. 
+            return 2 - (2*p); // convert alpha to probability event drawn from same population having given mean and SD.
         }
 
 
         public static void main(String[] args)
 	{
-		
-    
-/*	
+
+
+/*
   	double[] roots = NormalDist.quadraticRoots(6, -13, 6);
 		LoggedConsole.WriteLine("root1="+roots[0]+"  root2="+roots[1]);
 */
 
 
-    
+
   }
 
     }

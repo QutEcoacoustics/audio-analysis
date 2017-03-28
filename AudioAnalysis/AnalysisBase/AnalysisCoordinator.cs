@@ -13,22 +13,21 @@ namespace AnalysisBase
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
-
+    using Acoustics.Shared.Contracts;
     using log4net;
 
     /// <summary>
     /// Prepares, runs and completes analyses.
-    /// 
+    ///
     /// *** DO NOT CHANGE THIS CLASS UNLESS INSTRUCTED TOO ***
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The process to analyse files can be a little complex. The overall idea is 
+    /// The process to analyse files can be a little complex. The overall idea is
     /// to begin with an analysis type and a list of file paths and segments inside those files.
     /// Then those files are segmented using default settings from the analysis and possible modifications to the defaults by a user.
     /// Each segment is analysed, and the results are put into either a purpose-created folder (which might be deledt once that analysis is complete),
@@ -48,7 +47,7 @@ namespace AnalysisBase
 
         private readonly int[] channelSelection;
         private readonly bool mixDownToMono;
-        
+
         private readonly SaveBehavior saveIntermediateWavFiles;
         private readonly SaveBehavior saveImageFiles;
         private readonly bool saveIntermediateCsvFiles;
@@ -108,8 +107,8 @@ namespace AnalysisBase
         public bool DeleteFinished { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to create 
-        /// uniquely named sub folders for each run, 
+        /// Gets or sets a value indicating whether to create
+        /// uniquely named sub folders for each run,
         /// or reuse a single folder named using the analysis name.
         /// </summary>
         public bool SubFoldersUnique { get; set; }
@@ -217,7 +216,7 @@ namespace AnalysisBase
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            // Analyze the sub-segments in parallel or sequentially (IsParallel property), 
+            // Analyze the sub-segments in parallel or sequentially (IsParallel property),
             // Create and delete directories and/or files as indicated by properties
             // DeleteFinished and SubFoldersUnique
             if (this.IsParallel)
@@ -354,20 +353,21 @@ namespace AnalysisBase
         ///     The settings.
         /// </param>
         /// <param name="parallelised"></param>
-        /// Set to true if segments processing should be parallelized. 
+        /// Set to true if segments processing should be parallelized.
         /// <returns>
         /// The results from the analysis.
         /// </returns>
-        private AnalysisResult2 PrepareFileAndRunAnalysis(FileSegment fileSegment, IAnalyser2 analyser, AnalysisSettings localCopyOfSettings, bool parallelised)
-       {
-           Contract.Requires(localCopyOfSettings != null, "Settings must not be null.");
+        private AnalysisResult2 PrepareFileAndRunAnalysis(FileSegment fileSegment, IAnalyser2 analyser,
+            AnalysisSettings localCopyOfSettings, bool parallelised)
+        {
+            Contract.Requires(localCopyOfSettings != null, "Settings must not be null.");
             Contract.Requires(fileSegment != null, "File Segments must not be null.");
             Contract.Requires(fileSegment.Validate(), "File Segment must be valid.");
 
             var start = fileSegment.SegmentStartOffset ?? TimeSpan.Zero;
             var end = fileSegment.SegmentEndOffset ?? fileSegment.TargetFileDuration.Value;
-           
-           // set directories
+
+            // set directories
             this.PrepareDirectories(analyser, localCopyOfSettings);
 
             var tempDir = localCopyOfSettings.AnalysisInstanceTempDirectoryChecked;
@@ -381,8 +381,8 @@ namespace AnalysisBase
                 start,
                 end,
                 localCopyOfSettings.SegmentTargetSampleRate,
-                tempDir, 
-                this.channelSelection, 
+                tempDir,
+                this.channelSelection,
                 this.mixDownToMono);
 
             var preparedFilePath = preparedFile.TargetFile;
@@ -398,17 +398,18 @@ namespace AnalysisBase
 
             string fileName = Path.GetFileNameWithoutExtension(preparedFile.TargetFile.Name);
 
-           localCopyOfSettings.SegmentSaveBehavior = this.saveImageFiles;
+            localCopyOfSettings.SegmentSaveBehavior = this.saveImageFiles;
 
-            // if user requests, save the sonogram files 
+            // if user requests, save the sonogram files
             if (this.saveImageFiles != SaveBehavior.Never)
             {
                 // save spectrogram to output dir - saving to temp dir means possibility of being overwritten
                 localCopyOfSettings.ImageFile =
-                    new FileInfo(Path.Combine(localCopyOfSettings.AnalysisInstanceOutputDirectory.FullName, fileName + ".png"));
+                    new FileInfo(Path.Combine(localCopyOfSettings.AnalysisInstanceOutputDirectory.FullName,
+                        fileName + ".png"));
             }
 
-            // if user requests, save the intermediate csv files 
+            // if user requests, save the intermediate csv files
             if (this.saveIntermediateCsvFiles)
             {
                 // always save csv to output dir
@@ -422,10 +423,12 @@ namespace AnalysisBase
                         Path.Combine(
                             localCopyOfSettings.AnalysisInstanceOutputDirectory.FullName,
                             fileName + ".Indices.csv"));
-                localCopyOfSettings.SpectrumIndicesDirectory = new DirectoryInfo(localCopyOfSettings.AnalysisInstanceOutputDirectory.FullName);
+                localCopyOfSettings.SpectrumIndicesDirectory =
+                    new DirectoryInfo(localCopyOfSettings.AnalysisInstanceOutputDirectory.FullName);
             }
 
-            Log.DebugFormat("Item {0} started analysing file {1}.", localCopyOfSettings.InstanceId, localCopyOfSettings.AudioFile.Name);
+            Log.DebugFormat("Item {0} started analysing file {1}.", localCopyOfSettings.InstanceId,
+                localCopyOfSettings.AudioFile.Name);
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -434,7 +437,8 @@ namespace AnalysisBase
             /* ####################################################################################### */
 
             stopwatch.Stop();
-            Log.DebugFormat("Item {0} finished analysing {1}, took {2}.", localCopyOfSettings.InstanceId, localCopyOfSettings.AudioFile.Name, stopwatch.Elapsed);
+            Log.DebugFormat("Item {0} finished analysing {1}, took {2}.", localCopyOfSettings.InstanceId,
+                localCopyOfSettings.AudioFile.Name, stopwatch.Elapsed);
 
             // add information to the results
             result.AnalysisIdentifier = analyser.Identifier;
@@ -453,14 +457,17 @@ namespace AnalysisBase
                 // delete the prepared audio file segment. Don't delete the directory - all instances use the same directory!
                 if (this.saveIntermediateWavFiles.ShouldSave(result.Events.Length))
                 {
-                    Log.DebugFormat("File {0} not deleted because saveIntermediateWavFiles was set to Always/WhenEventsDetected", localCopyOfSettings.AudioFile.FullName);
-                }       
+                    Log.DebugFormat(
+                        "File {0} not deleted because saveIntermediateWavFiles was set to Always/WhenEventsDetected",
+                        localCopyOfSettings.AudioFile.FullName);
+                }
                 else
                 {
                     try
                     {
                         File.Delete(localCopyOfSettings.AudioFile.FullName);
-                        Log.DebugFormat("Item {0} deleted file {1}.", localCopyOfSettings.InstanceId, localCopyOfSettings.AudioFile.FullName);
+                        Log.DebugFormat("Item {0} deleted file {1}.", localCopyOfSettings.InstanceId,
+                            localCopyOfSettings.AudioFile.FullName);
                     }
                     catch (Exception ex)
                     {
@@ -479,93 +486,97 @@ namespace AnalysisBase
         /// This method simply ensures that certain requirements are fullfilled by IAnalyser2.Analyze results.
         /// It only runs when the program is built as DEBUG.
         /// </summary>
-       [Conditional("DEBUG")]
-       private static void ValidateResult(AnalysisSettings preAnalysisSettings, AnalysisResult2 result, TimeSpan start, TimeSpan preparedFileDuration, bool parallelised)
-       {
+        [Conditional("DEBUG")]
+        private static void ValidateResult(AnalysisSettings preAnalysisSettings, AnalysisResult2 result, TimeSpan start,
+            TimeSpan preparedFileDuration, bool parallelised)
+        {
             if (parallelised)
             {
                 Log.Warn("VALIDATION OF ANALYSIS RESULTS BYPASSED BECAUSE THE ANALYSIS IS IN PARALLEL!");
                 return;
             }
 
-           Debug.Assert(result.SettingsUsed != null, "The settings used in the analysis must be populated in the analysis result.");
-           Debug.Assert(result.SegmentStartOffset == start, "The segment start offset of the result should match the start offset that it was instructed to analyse");
-           Debug.Assert(Math.Abs((result.SegmentAudioDuration - preparedFileDuration).TotalMilliseconds) < 1.0, "The duration analyzed (reported by the analysis result) should be withing a millisecond of the provided audio file");
+            Debug.Assert(result.SettingsUsed != null,
+                "The settings used in the analysis must be populated in the analysis result.");
+            Debug.Assert(result.SegmentStartOffset == start,
+                "The segment start offset of the result should match the start offset that it was instructed to analyse");
+            Debug.Assert(Math.Abs((result.SegmentAudioDuration - preparedFileDuration).TotalMilliseconds) < 1.0,
+                "The duration analyzed (reported by the analysis result) should be withing a millisecond of the provided audio file");
 
-           if (preAnalysisSettings.ImageFile != null)
-           {
-               if (preAnalysisSettings.SegmentSaveBehavior == SaveBehavior.Always
-                   || (preAnalysisSettings.SegmentSaveBehavior == SaveBehavior.WhenEventsDetected
-                       && result.Events.Length > 0))
-               {
-                   Debug.Assert(
-                       preAnalysisSettings.ImageFile.Exists,
-                       "If the analysis was instructed to produce an image file, then it should exist");
-               }
-           }
+            if (preAnalysisSettings.ImageFile != null)
+            {
+                if (preAnalysisSettings.SegmentSaveBehavior == SaveBehavior.Always
+                    || (preAnalysisSettings.SegmentSaveBehavior == SaveBehavior.WhenEventsDetected
+                        && result.Events.Length > 0))
+                {
+                    Debug.Assert(
+                        preAnalysisSettings.ImageFile.Exists,
+                        "If the analysis was instructed to produce an image file, then it should exist");
+                }
+            }
 
-           Debug.Assert(result.Events != null, "The Events array should never be null. No events should be represted by a zero length Events array.");
-           if (result.Events.Length != 0 && preAnalysisSettings.EventsFile != null)
-           {
-               Debug.Assert(
-                   result.EventsFile.Exists,
-                   "If events were produced and an events file was expected, then the events file should exist");
-           }
+            Debug.Assert(result.Events != null,
+                "The Events array should never be null. No events should be represted by a zero length Events array.");
+            if (result.Events.Length != 0 && preAnalysisSettings.EventsFile != null)
+            {
+                Debug.Assert(
+                    result.EventsFile.Exists,
+                    "If events were produced and an events file was expected, then the events file should exist");
+            }
 
-           Debug.Assert(result.SummaryIndices != null, "The SummaryIndices array should never be null. No SummaryIndices should be represented by a zero length SummaryIndices array.");
-           if (result.SummaryIndices.Length != 0 && preAnalysisSettings.SummaryIndicesFile != null)
-           {
-               Debug.Assert(
-                   result.SummaryIndicesFile.Exists,
-                   "If SummaryIndices were produced and an SummaryIndices file was expected, then the SummaryIndices file should exist");
-           }
+            Debug.Assert(result.SummaryIndices != null,
+                "The SummaryIndices array should never be null. No SummaryIndices should be represented by a zero length SummaryIndices array.");
+            if (result.SummaryIndices.Length != 0 && preAnalysisSettings.SummaryIndicesFile != null)
+            {
+                Debug.Assert(
+                    result.SummaryIndicesFile.Exists,
+                    "If SummaryIndices were produced and an SummaryIndices file was expected, then the SummaryIndices file should exist");
+            }
 
-           Debug.Assert(result.SpectralIndices != null, "The SpectralIndices array should never be null. No SpectralIndices should be represented by a zero length SpectralIndices array.");
-           if (result.SpectralIndices.Length != 0 && preAnalysisSettings.SpectrumIndicesDirectory != null)
-           {
-               foreach (var spectraIndicesFile in result.SpectraIndicesFiles)
-               {
-                   Debug.Assert(spectraIndicesFile.Exists, "If SpectralIndices were produced and SpectralIndices files were expected, then the SpectralIndices files should exist");
-               }
-           }
+            Debug.Assert(result.SpectralIndices != null,
+                "The SpectralIndices array should never be null. No SpectralIndices should be represented by a zero length SpectralIndices array.");
+            if (result.SpectralIndices.Length != 0 && preAnalysisSettings.SpectrumIndicesDirectory != null)
+            {
+                foreach (var spectraIndicesFile in result.SpectraIndicesFiles)
+                {
+                    Debug.Assert(spectraIndicesFile.Exists,
+                        "If SpectralIndices were produced and SpectralIndices files were expected, then the SpectralIndices files should exist");
+                }
+            }
 
+            foreach (var eventBase in result.Events)
+            {
+                Debug.Assert(
+                    eventBase.StartOffset >= result.SegmentStartOffset,
+                    "Every event detected by this analysis should of been found within the bounds of the segment analyzed");
+                Debug.Assert(
+                    Math.Abs((eventBase.EventStartSeconds % 60.0) - (eventBase.StartOffset.TotalSeconds % 60)) < 0.001,
+                    "The relative EventStartSeconds should equal the seconds component of StartOffset");
+                Debug.Assert(
+                    eventBase.SegmentStartOffset == result.SegmentStartOffset,
+                    "Segment start offsets must match");
+            }
 
-           foreach (var eventBase in result.Events)
-           {
-               Debug.Assert(
-                   eventBase.StartOffset >= result.SegmentStartOffset,
-                   "Every event detected by this analysis should of been found within the bounds of the segment analyzed");
-               Debug.Assert(
-                   Math.Abs((eventBase.EventStartSeconds % 60.0) - (eventBase.StartOffset.TotalSeconds % 60)) < 0.001,
-                   "The relative EventStartSeconds should equal the seconds component of StartOffset");
-               Debug.Assert(
-                   eventBase.SegmentStartOffset == result.SegmentStartOffset,
-                   "Segment start offsets must match");
-           }
+            foreach (var summaryIndexBase in result.SummaryIndices)
+            {
+                Debug.Assert(
+                    summaryIndexBase.StartOffset >= result.SegmentStartOffset,
+                    "Every summary index generated by this analysis should of been found within the bounds of the segment analyzed");
+            }
 
-           foreach (var summaryIndexBase in result.SummaryIndices)
-           {
-               Debug.Assert(
-                   summaryIndexBase.StartOffset >= result.SegmentStartOffset,
-                   "Every summary index generated by this analysis should of been found within the bounds of the segment analyzed");
-           }
-
-           foreach (var spectralIndexBase in result.SpectralIndices)
-           {
-               Debug.Assert(
-                   spectralIndexBase.StartOffset >= result.SegmentStartOffset,
-                   "Every spectral index generated by this analysis should of been found within the bounds of the segment analyzed");
-           }
-       }
-
+            foreach (var spectralIndexBase in result.SpectralIndices)
+            {
+                Debug.Assert(
+                    spectralIndexBase.StartOffset >= result.SegmentStartOffset,
+                    "Every spectral index generated by this analysis should of been found within the bounds of the segment analyzed");
+            }
+        }
 
         private void PrepareDirectories(IAnalyser2 analysis, AnalysisSettings settings)
         {
             Contract.Requires(analysis != null, "analysis must not be null.");
             Contract.Requires(settings != null, "settings must not be null.");
             Contract.Requires(settings.AnalysisBaseOutputDirectory != null, "AnalysisBaseOutputDirectory is not set.");
-            Contract.Ensures(settings.AnalysisInstanceOutputDirectory != null, "AnalysisInstanceOutputDirectory was not set.");
-            Contract.Ensures(Directory.Exists(settings.AnalysisInstanceOutputDirectory.FullName), "AnalysisInstanceOutputDirectory did not exist.");
 
             // create directory for analysis run
             settings.AnalysisInstanceOutputDirectory = this.SubFoldersUnique
@@ -589,6 +600,9 @@ namespace AnalysisBase
                     Directory.CreateDirectory(settings.AnalysisInstanceTempDirectory.FullName);
                 }
             }
+
+            Contract.Ensures(settings.AnalysisInstanceOutputDirectory != null, "AnalysisInstanceOutputDirectory was not set.");
+            Contract.Ensures(Directory.Exists(settings.AnalysisInstanceOutputDirectory.FullName), "AnalysisInstanceOutputDirectory did not exist.");
         }
 
         /// <summary>
@@ -607,14 +621,16 @@ namespace AnalysisBase
         private DirectoryInfo CreateUniqueRunDirectory(DirectoryInfo analysisBaseDirectory, string analysisIdentifier)
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(analysisIdentifier), "analysisIdentifier must be set.");
-            Contract.Ensures(Contract.Result<DirectoryInfo>() != null, "Directory was null.");
-            Contract.Ensures(Directory.Exists(Contract.Result<DirectoryInfo>().FullName), "Directory was not created.");
 
             var dirName = Path.GetRandomFileName();
             var runDirectory = Path.Combine(analysisBaseDirectory.FullName, analysisIdentifier, dirName);
 
             var dir = new DirectoryInfo(runDirectory);
             Directory.CreateDirectory(runDirectory);
+
+            Contract.Ensures(dir != null, "Directory was null.");
+            Contract.Ensures(Directory.Exists(dir.FullName), "Directory was not created.");
+
             return dir;
         }
 
@@ -634,13 +650,15 @@ namespace AnalysisBase
         private DirectoryInfo CreateNamedRunDirectory(DirectoryInfo analysisBaseDirectory, string analysisIdentifier)
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(analysisIdentifier), "analysisIdentifier must be set.");
-            Contract.Ensures(Contract.Result<DirectoryInfo>() != null, "Directory was null.");
-            Contract.Ensures(Directory.Exists(Contract.Result<DirectoryInfo>().FullName), "Directory was not created.");
 
             var runDirectory = Path.Combine(analysisBaseDirectory.FullName, analysisIdentifier);
 
             var dir = new DirectoryInfo(runDirectory);
             Directory.CreateDirectory(runDirectory);
+
+            Contract.Ensures(dir != null, "Directory was null.");
+            Contract.Ensures(Directory.Exists(dir.FullName), "Directory was not created.");
+
             return dir;
         }
 

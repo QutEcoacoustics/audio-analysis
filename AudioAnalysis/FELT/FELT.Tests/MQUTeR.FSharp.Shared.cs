@@ -1,17 +1,14 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-namespace FELT.Tests
+﻿namespace FELT.Tests
 {
+    using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
-
-    using MQUTeR.FSharp.Shared;
-
+    using System.Linq;
+    using System.Text;
     using Microsoft.FSharp.Collections;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using MQUTeR.FSharp.Shared;
 
     [TestClass]
     public class MQUTeR_FSharp_Shared_CSV
@@ -91,7 +88,7 @@ namespace FELT.Tests
             FSharpList<string> expected = ListModule.OfArray( new[]
                 {
                     "Hello", " this is  a", "test", "hell,lo", " to see", "", " what happen", " soooo",
-                    "\"we need a value\", said bree", " something else "
+                    "\"we need a value\", said bree", " something else ",
                 });
 
             string[] result = null;// = CSV.rowToList(',', test);
@@ -114,7 +111,7 @@ namespace FELT.Tests
                 enumer.MoveNext();
                 var res = enumer.Current;
                 Assert.AreEqual(value, res);
-               
+
 
             }
 
@@ -157,7 +154,7 @@ namespace FELT.Tests
                     {
                         "01-07-89 00:00:00.00", "02-07-89 12:00:00.00", "03-07-89 10:00:00.00", "04-07-89 00:03:00.00",
                         "05-07-89 00:00:00.00", "06-07-89 00:00:00.00", "07-07-89 00:40:00.00", "08-07-1989 19:53:12.623",
-                        "09-07-89 05:00:00.00", "10-07-89 00:00:13.00"
+                        "09-07-89 05:00:00.00", "10-07-89 00:00:13.00",
                     }).Select(DateTimeOffset.Parse).ToArray(),
                 data.Instances["Date of Birth"].Select((x) => ((Date)x).Value).ToArray());
 

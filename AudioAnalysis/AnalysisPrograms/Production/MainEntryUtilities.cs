@@ -9,21 +9,20 @@
 
 namespace AnalysisPrograms
 {
+    using Acoustics.Shared.Contracts;
+
     #if DEBUG
 #endif
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Diagnostics;
-    using System.Diagnostics.Contracts;
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
     using System.Runtime.Serialization;
     using System.Text;
-
     using Acoustics.Shared;
-
     using log4net.Appender;
     using log4net.Core;
     using log4net.Filter;
@@ -31,11 +30,8 @@ namespace AnalysisPrograms
 #if DEBUG
     using Acoustics.Shared.Debugging;
 #endif
-
     using AnalysisPrograms.Production;
-
     using log4net;
-
     using PowerArgs;
 
     public static partial class MainEntry
@@ -193,7 +189,7 @@ namespace AnalysisPrograms
                                                                        ShowColumnHeaders = false,
                                                                        ShowPosition = true,
                                                                        ShowType = true,
-                                                                       NoOptionsMessage = "<< no arguments >>"
+                                                                       NoOptionsMessage = "<< no arguments >>",
                                                                    };
 
         private const string ApPlainLogging = "AP_PLAIN_LOGGING";
@@ -374,7 +370,7 @@ namespace AnalysisPrograms
             if (ex is AggregateException)
             {
                 var aex = (AggregateException)ex;
-                 
+
                 //innerExceptions.AppendLine("Writing detailed information about inner exceptions!");
 
                 foreach (var exception in aex.InnerExceptions)
@@ -510,7 +506,7 @@ namespace AnalysisPrograms
             }
 
             repository.RaiseConfigurationChanged(EventArgs.Empty);
-            
+
             Log.Debug("Log level changed to: " + arguments.LogLevel);
 
             // log test

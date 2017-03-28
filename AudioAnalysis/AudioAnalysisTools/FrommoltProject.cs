@@ -1,16 +1,16 @@
-﻿using Acoustics.Shared;
-using AudioAnalysisTools.Indices;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using TowseyLibrary;
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using System.Text.RegularExpressions;
+    using Acoustics.Shared;
+    using AudioAnalysisTools.Indices;
+    using TowseyLibrary;
+
     public static class FrommoltProject
     {
 
@@ -43,7 +43,7 @@ namespace AudioAnalysisTools
                 LoggedConsole.WriteLine("# Time Zone  = " + timeSpanOffsetHint.ToString());
             }
 
-            //string dirMatch = "Monitoring_Rosin_2012*T*+0200_.merged.wav.channel_0.wav"; 
+            //string dirMatch = "Monitoring_Rosin_2012*T*+0200_.merged.wav.channel_0.wav";
             string stem = "Monitoring_Rosin_2012????T??0000+0200_.merged.wav.channel_";
             string dirMatch = stem + "?.wav";
             DirectoryInfo[] subDirectories = dataDir.GetDirectories(dirMatch, SearchOption.AllDirectories);
@@ -54,7 +54,7 @@ namespace AudioAnalysisTools
             //string fileMatch = stem + "?__" + fileSuffix;
             //FileInfo[] files = IndexMatrices.GetFilesInDirectories(subDirectories, fileMatch);
 
-            // Sort the files by date and return as a dictionary: sortedDictionaryOfDatesAndFiles<DateTimeOffset, FileInfo> 
+            // Sort the files by date and return as a dictionary: sortedDictionaryOfDatesAndFiles<DateTimeOffset, FileInfo>
             //var sortedDictionaryOfDatesAndFiles = FileDateHelpers.FilterFilesForDates(files, timeSpanOffsetHint);
 
             //following needed if a day is missing.
@@ -87,7 +87,7 @@ namespace AudioAnalysisTools
                     continue;
                 }
 
-                // Sort the files by date and return as a dictionary: sortedDictionaryOfDatesAndFiles<DateTimeOffset, FileInfo> 
+                // Sort the files by date and return as a dictionary: sortedDictionaryOfDatesAndFiles<DateTimeOffset, FileInfo>
                 //var sortedDictionaryOfDatesAndFiles = FileDateHelpers.FilterFilesForDates(files, timeSpanOffsetHint);
 
                 Image image = ConcatenateFourChannelImages(files, imageDirectory, fileSuffix, date);

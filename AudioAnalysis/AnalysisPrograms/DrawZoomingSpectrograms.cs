@@ -25,7 +25,7 @@ namespace AnalysisPrograms
     /// <summary>
     /// First argument on command line to call this action is "ZoomingSpectrograms"
     /// Activity Codes for other tasks to do with spectrograms and audio files:
-    /// 
+    ///
     /// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
     /// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
     /// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
@@ -36,7 +36,7 @@ namespace AnalysisPrograms
     /// audiofilecheck - Writes information about audio files to a csv file.
     /// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
     /// audiocutter - Cuts audio into segments of desired length and format
-    /// createfoursonograms 
+    /// createfoursonograms
     /// </summary>
     public static class DrawZoomingSpectrograms
     {
@@ -226,11 +226,11 @@ namespace AnalysisPrograms
                         arguments.SourceDirectory,
                         arguments.Output,
                         common);
-            
+
                     break;
                 default:
                     Log.Warn("Other ZoomAction results in standard LD Spectrogram to be drawn");
-                    // draw standard false colour spectrograms - useful to check what spectrograms of the indiviual indices are like. 
+                    // draw standard false colour spectrograms - useful to check what spectrograms of the indiviual indices are like.
 
                     throw new NotImplementedException();
                     /*LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(

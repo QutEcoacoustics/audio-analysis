@@ -1,28 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using TowseyLibrary;
-
-using Acoustics.Shared;
-using AudioAnalysisTools;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-using AudioAnalysisTools.StandardSpectrograms;
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
-    using Acoustics.Shared.Extensions;
-
-    using AnalysisPrograms.Production;
-
-    using PowerArgs;
-
-    using System.Text;
+    using System;
+    using System.Collections.Generic;
     using System.Drawing;
-
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
+    using Acoustics.Shared.Extensions;
     using Acoustics.Tools;
+    using AnalysisPrograms.Production;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using PowerArgs;
+    using TowseyLibrary;
 
     public class SnrAnalysis
     {
@@ -75,10 +68,10 @@ namespace AnalysisPrograms
                            //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-143516_speech.wav".ToFileInfo(),
                            //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST_1min.wav".ToFileInfo(),
                            //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\TOWERB_20110302_202900_22.LSK.F.wav".ToFileInfo(),
-                
+
                            Config =
                                @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SNRConfig.yml".ToFileInfo(),
-                           Output = @"C:\SensorNetworks\Output\SNR".ToDirectoryInfo()
+                           Output = @"C:\SensorNetworks\Output\SNR".ToDirectoryInfo(),
                        };
             throw new NotImplementedException();
         }
@@ -117,7 +110,7 @@ namespace AnalysisPrograms
             //ii: SET SONOGRAM CONFIGURATION
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName = arguments.Source.FullName;
-            sonoConfig.WindowSize = (int?)configuration.FrameSize ?? 512; // 
+            sonoConfig.WindowSize = (int?)configuration.FrameSize ?? 512; //
             sonoConfig.WindowOverlap = (double?)configuration.FrameOverlap ?? 0.5;
             sonoConfig.WindowFunction = configuration.WindowFunction;
             sonoConfig.NPointSmoothFFT = (int?)configuration.NpointSmoothFFT ?? 256;
@@ -255,8 +248,8 @@ namespace AnalysisPrograms
             //NoiseReductionType nrt = NoiseReductionType.LOWEST_PERCENTILE;
             //System.Tuple<double[,], double[]> tuple = SNR.NoiseReduce(deciBelSpectrogram, nrt, upperPercentileBound);
 
-            // (H) ################################## Calculate BRIGGS noise removal from amplitude spectrum 
-            int percentileBound = 20; // low energy percentile for noise removal            
+            // (H) ################################## Calculate BRIGGS noise removal from amplitude spectrum
+            int percentileBound = 20; // low energy percentile for noise removal
             //double binaryThreshold   = 0.6;   //works for higher SNR recordings
             double binaryThreshold = 0.4; //works for lower SNR recordings
             //double binaryThreshold = 0.3;   //works for lower SNR recordings
@@ -276,7 +269,7 @@ namespace AnalysisPrograms
             //Image image2 = NoiseRemoval_Briggs.BriggsNoiseFilterAndGetSonograms(amplitudeSpectrogram, upperPercentileBound, binaryThreshold,
             //                                                                          wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
 
-            // (I) ################################## Calculate MEDIAN noise removal from amplitude spectrum 
+            // (I) ################################## Calculate MEDIAN noise removal from amplitude spectrum
 
             //double upperPercentileBound = 0.8;    // lowest percentile for noise removal
             //NoiseReductionType nrt = NoiseReductionType.MEDIAN;

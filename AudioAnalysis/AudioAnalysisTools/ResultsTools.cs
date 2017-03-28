@@ -3,7 +3,7 @@
 //   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
-//   
+//
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -33,11 +33,11 @@ namespace AudioAnalysisTools
         public const string ReportFileExt = "csv";
         private static readonly ILog Log = LogManager.GetLogger(typeof(ResultsTools));
 
-        /* 
+        /*
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        /// <param name="analyserResults"></param>  
+        /// <param name="analyserResults"></param>
         /// <returns></returns>
         [Obsolete]
         public static DataTable MergeResultsIntoSingleDataTable(IEnumerable<AnalysisResult> analyserResults)
@@ -56,7 +56,7 @@ namespace AudioAnalysisTools
             }
             return mergedDatatable;
         }
-       
+
         [Obsolete]
         public static Tuple<EventBase[], IndexBase[]> MergeResults(IEnumerable<AnalysisResult> results)
         {
@@ -68,12 +68,12 @@ namespace AudioAnalysisTools
                 eventCount += result.Data.Count();
                 indexCount += result.Indices.Count();
             }
-            
+
             var mergedEvents = eventCount > 0 ? new EventBase[eventCount] : null;
             var mergedIndices = indexCount > 0 ? new IndexBase[indexCount] :  null;
 
             int eventIndex = 0;
-            int indexIndex = 0;            
+            int indexIndex = 0;
             foreach (AnalysisResult2 result in results)
             {
                 eventIndex = ResultsTools.CorrectEventOffsets(mergedEvents, eventIndex, result);
@@ -83,7 +83,7 @@ namespace AudioAnalysisTools
 
             return Tuple.Create(mergedEvents, mergedIndices);
         }*/
-         
+
 
         public static T[] MergeResults<T>(IEnumerable<AnalysisResult2> results, Func<AnalysisResult2, T[]> selector,
             Action<AnalysisResult2, T, int, int> correctionFunc) where T : ResultBase
@@ -206,7 +206,7 @@ namespace AudioAnalysisTools
             return dt;
         } //GetSegmentDatatableWithContext()
          */
-         
+
 
         public static void CorrectEvent(AnalysisResult2 result, EventBase eventToBeFixed, int totalEventsSoFar, int totalEventsInResultSoFar)
         {
@@ -226,7 +226,7 @@ namespace AudioAnalysisTools
 
         /*
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="masterDataTable"></param>
         /// <param name="segmentDataTable"></param>
@@ -266,11 +266,11 @@ namespace AudioAnalysisTools
                     if (headers.Contains(Keys.SEGMENT_TIMESPAN)) row[Keys.SEGMENT_TIMESPAN] = segmentDuration.TotalSeconds;
                     masterDataTable.ImportRow(row);
                 }
-              
+
             return masterDataTable;
         }
         */
-        
+
         /*
         /// <summary>
         /// AT THE END OF FILE ANALYSIS NEED TO CONSTRUCT EVENTS AND INDICES DATATABLES
@@ -287,7 +287,7 @@ namespace AudioAnalysisTools
         {
             DataTable eventsDatatable = null;
             DataTable indicesDatatable = null;
-            if (masterDataTable.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KEY_RankOrder)) //outputdata consists of rows of one minute indices 
+            if (masterDataTable.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KEY_RankOrder)) //outputdata consists of rows of one minute indices
             {
                 // in this case masterDataTable is the indicies table and there is no table of events.
                 eventsDatatable = null;
@@ -353,7 +353,7 @@ namespace AudioAnalysisTools
             FileInfo fiIndices = null;
 
             //different things happen depending on the content of the analysis data table
-            if (indicesDatatable != null) //outputdata consists of rows of one minute indices 
+            if (indicesDatatable != null) //outputdata consists of rows of one minute indices
             {
                 DataTableTools.WriteTable2ConsoleInLongLayout(indicesDatatable); //for debugging
 
@@ -376,7 +376,7 @@ namespace AudioAnalysisTools
                 fiIndices = new FileInfo(reportfilePath);
             }
 
-            if (eventsDatatable != null) //outputdata consists of rows of acoustic events 
+            if (eventsDatatable != null) //outputdata consists of rows of acoustic events
             {
                 string sortString = (AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS + " ASC");
                 eventsDatatable = DataTableTools.SortTable(eventsDatatable, sortString);    //sort by start time
@@ -446,7 +446,7 @@ namespace AudioAnalysisTools
                     builder = new StringBuilder();
                     foreach (string key in keys)
                     {
-                        IndexProperties ip = dictOfIndexProperties[key]; 
+                        IndexProperties ip = dictOfIndexProperties[key];
                         string str = ib.GetIndexAsString(key, ip.Units, ip.DataType);
 
                         builder.Append(seperator).Append(str);
@@ -463,7 +463,7 @@ namespace AudioAnalysisTools
             }
         } // DataTable2CSV()
         */
-        
+
 
         public static FileInfo SaveEvents(IAnalyser2 analyser2, string fileName,
             DirectoryInfo outputDirectory, IEnumerable<EventBase> events)
@@ -472,7 +472,7 @@ namespace AudioAnalysisTools
         }
 
         public static FileInfo SaveSummaryIndices(IAnalyser2 analyser2, string fileName,
-            DirectoryInfo outputDirectory, IEnumerable<SummaryIndexBase> indices) 
+            DirectoryInfo outputDirectory, IEnumerable<SummaryIndexBase> indices)
         {
             return SaveResults(outputDirectory, fileName, analyser2.Identifier + ".Indices", analyser2.WriteSummaryIndicesFile, indices);
         }
@@ -494,10 +494,10 @@ namespace AudioAnalysisTools
             if (results == null)
             {
                 Log.Debug("No results returned... file not written:" + resultFilenamebase + ReportFileExt);
-                return null;    
+                return null;
             }
 
-            
+
             var reportfilePath = FilenameHelpers.AnalysisResultPath(outputDirectory, resultFilenamebase, analysisTag, ReportFileExt).ToFileInfo();
             var reportfilePathBackup = FilenameHelpers.AnalysisResultPath(outputDirectory, resultFilenamebase, analysisTag, ReportFileExt, "BACKUP").ToFileInfo();
 

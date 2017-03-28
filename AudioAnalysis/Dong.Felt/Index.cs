@@ -14,7 +14,7 @@
             foreach (var af in audioFileFeature)
             {
                 int sameCount = 0;
-                var frequencyBand = 0; 
+                var frequencyBand = 0;
                 for (int i = 0; i < numberOfSlice; i++)
                 {
                     for (int j = 0; j < numberOfFeatureVectorValue; j++)
@@ -44,6 +44,6 @@
             return result;
         }
 
-        
+
     }
 }

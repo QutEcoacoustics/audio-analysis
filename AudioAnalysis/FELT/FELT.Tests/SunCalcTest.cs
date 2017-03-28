@@ -46,7 +46,7 @@ namespace FELT.Tests
         [TestMethod]
         public void TestPhasesAsMap()
         {
-            
+
         }
 
 
@@ -93,15 +93,15 @@ namespace FELT.Tests
             /*
             var expectedPhases = new SunCalc.SunPhases(
                 dawn,
-                new Interval<DateTimeOffset>(sunriseStart, sunriseEnd), 
+                new Interval<DateTimeOffset>(sunriseStart, sunriseEnd),
                 transit,
-                new Interval<DateTimeOffset>(sunsetStart, sunsetEnd), 
-                dusk, 
+                new Interval<DateTimeOffset>(sunsetStart, sunsetEnd),
+                dusk,
                 new FSharpOption<SunCalc.Twilights>(
                     new SunCalc.Twilights(
                         new Interval<DateTimeOffset>(mtAstroStart, mtAstroEnd),
                         new Interval<DateTimeOffset>(mtNautStart, mtNautEnd),
-                        new Interval<DateTimeOffset>(mtCivilStart, mtCivilEnd))), 
+                        new Interval<DateTimeOffset>(mtCivilStart, mtCivilEnd))),
                 new FSharpOption<SunCalc.Twilights>(
                     new SunCalc.Twilights(
                         new Interval<DateTimeOffset>(etAstroStart, etAstroEnd),
@@ -113,9 +113,9 @@ namespace FELT.Tests
             //Debug.WriteLine(a);
             /*
             var e = Minimod.PrettyPrint.PrettyPrintMinimod.PrettyPrint(expectedPhases, typeof(SunCalc.SunPhases));
-            
+
             Debug.WriteLine(e);
-            
+
 
             Assert.AreEqual(expectedPhases, sunPhases);*/
 
@@ -210,7 +210,7 @@ namespace FELT.Tests
                 end: Mon Apr 30 2012 17:18:52 GMT+1000 (E. Australia Standard Time)
                 start: Mon Apr 30 2012 17:16:23 GMT+1000 (E. Australia Standard Time)
                 transit: Mon Apr 30 2012 11:46:32 GMT+1000 (E. Australia Standard Time)
-             * 
+             *
              */
         }
 
@@ -236,7 +236,7 @@ namespace FELT.Tests
         {
         }
  */
-    
+
 
     #endregion
 

@@ -2,24 +2,24 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
     using System.Linq;
     using System.Text;
-    using AudioAnalysisTools;
-    using System.IO;
-    using System.Drawing;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Extensions;
-    using System.Diagnostics.Contracts;
+    using AudioAnalysisTools;
 
     class LocalMaximaAnalysis
     {
         /// <summary>
-        /// get a list of localMaxima hit 
+        /// get a list of localMaxima hit
         /// </summary>
         /// <param name="matrix">
-        /// the original spectrogram/image data 
+        /// the original spectrogram/image data
         /// </param>
         /// <returns>
-        /// return a list of points of interest 
+        /// return a list of points of interest
         /// </returns>
         public static List<PointOfInterest> LocalMaximaHit(double[,] matrix, int neighbourhoodLength)
         {
@@ -30,7 +30,7 @@
 
             // Filter out points
             const int AmplitudeThreshold = 10;
-            var filterOutPoints = FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold                
+            var filterOutPoints = FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold
 
             // Remove points which are too close
             const int DistanceThreshold = 7;
@@ -56,7 +56,7 @@
         /// The points of interest.
         /// </param>
         /// <returns>
-        /// The Average Distance Score will be got for each locamima in the list. 
+        /// The Average Distance Score will be got for each locamima in the list.
         /// </returns>
         public static double[] AverageDistanceScores(List<Point> template, List<PointOfInterest> candidateList)
         {
@@ -119,7 +119,7 @@
         /// The m means a matrix which represents the coordinates of pixels in the spectrogram.
         /// </param>
         /// <param name="neighborWindowSize">
-        /// The neighbor window size. It better be an odd number, like 3 or 5. 
+        /// The neighbor window size. It better be an odd number, like 3 or 5.
         /// </param>
         /// <returns>
         /// return a list of PointOfInterest.
@@ -185,7 +185,7 @@
         }
 
         /// <summary>
-        /// To remove points which are too close. 
+        /// To remove points which are too close.
         /// e.g. there are two close points, require to check whose amplitude is higher, then keep the higher amplitude one.
         /// </summary>
         /// <param name="pointsOfInterest">
@@ -295,7 +295,7 @@
         }
 
         /// <summary>
-        /// To get the matched localMaxima in a candidate with a template. 
+        /// To get the matched localMaxima in a candidate with a template.
         /// </summary>
         /// <param name="pointsOfInterest">
         /// The points of interest.
@@ -321,7 +321,7 @@
                 {
                     var poi = pointsOfInterest[i];
 
-                    // fix possible hit points around a fixed frequency-the frequency of LewinsRailTemplate's centroid   
+                    // fix possible hit points around a fixed frequency-the frequency of LewinsRailTemplate's centroid
                     var frequencyOffset = Math.Abs(poi.Point.Y - TemplateTools.CentroidFrequencyOfLewinsRailTemplate);
 
                     // probably need to fix this magic number

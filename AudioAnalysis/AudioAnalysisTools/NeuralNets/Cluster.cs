@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-namespace NeuralNets
+﻿namespace NeuralNets
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using TowseyLibrary;
+
     public class Cluster
     {
         public int Size { get { return Vectors.Count; } }
@@ -67,8 +67,8 @@ namespace NeuralNets
         {
             this.Vectors = new List<double[]>();
         }
-        
-        
+
+
         /// <summary>
         /// calculate euclidian distance of vector from centroid
         /// </summary>

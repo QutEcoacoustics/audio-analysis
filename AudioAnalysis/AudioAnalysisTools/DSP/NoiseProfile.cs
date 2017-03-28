@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using TowseyLibrary;
-
-namespace AudioAnalysisTools.DSP
+﻿namespace AudioAnalysisTools.DSP
 {
 
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using TowseyLibrary;
 
     /// <summary>
     /// contains info re noise profile of an entire spectrogram
@@ -31,7 +29,7 @@ namespace AudioAnalysisTools.DSP
         // #############################################################################################################################
         // ################################# FOUR DIFFERENT METHODS TO CALCULATE THE BACKGROUND NOISE PROFILE
         //
-        // (1) MODAL METHOD    (2) LOWEST PERCENTILE FRAMES METHOD    
+        // (1) MODAL METHOD    (2) LOWEST PERCENTILE FRAMES METHOD
         // (3) BIN-WISE LOWEST PERCENTILE CELLS METHOD           (4) FIRST N FRAMES          ######################
 
         /// <summary>
@@ -68,7 +66,7 @@ namespace AudioAnalysisTools.DSP
                 NoiseSd = noiseSD,
                 NoiseThresholds = noiseThreshold,
                 MinDb = minsOfBins,
-                MaxDb = maxsOfBins
+                MaxDb = maxsOfBins,
             };
             return profile;
         }
@@ -117,7 +115,7 @@ namespace AudioAnalysisTools.DSP
 
             double[] noiseProfile = new double[colCount];
 
-            // sum the lowest percentile frames 
+            // sum the lowest percentile frames
             for (int i = 0; i < cutoff; i++)
             {
                 double[] row = DataTools.GetRow(matrix, order[i]);
@@ -127,7 +125,7 @@ namespace AudioAnalysisTools.DSP
                 }
                 //Console.WriteLine(values[i]);
             }
-            // get average of the lowest percentile frames 
+            // get average of the lowest percentile frames
             for (int c = 0; c < colCount; c++)
             {
                 noiseProfile[c] /= cutoff;

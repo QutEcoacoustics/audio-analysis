@@ -1,17 +1,13 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-namespace FELT.Tests
+﻿namespace FELT.Tests
 {
+    using System;
     using System.Collections;
-
-    using MQUTeR.FSharp.Shared;
-
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
     using Microsoft.FSharp.Collections;
-
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using MQUTeR.FSharp.Shared;
 
     [TestClass]
     public class GroupTrainerTest
@@ -54,7 +50,7 @@ namespace FELT.Tests
             var values = new Value[]
                 {
                     new AverageText("billy", new[] { new Tuple<string, double>("billy", 0.5) }),
-                    new AverageText("ann", new[] { new Tuple<string, double>("ann", 1) })
+                    new AverageText("ann", new[] { new Tuple<string, double>("ann", 1) }),
                 };
             CollectionAssert.AreNotEqual(
                 values,
@@ -63,7 +59,7 @@ namespace FELT.Tests
             var values2 = new Value[]
                 {
                     new AverageText("billy", new[] { new Tuple<string, double>("billy", 1.0) }),
-                    new AverageText("ann", new[] { new Tuple<string, double>("ann", 1.0) })
+                    new AverageText("ann", new[] { new Tuple<string, double>("ann", 1.0) }),
                 };
             CollectionAssert.AreEqual(
                 values2,

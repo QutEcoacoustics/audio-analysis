@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using TowseyLibrary;
-
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
     using AudioAnalysisTools.LongDurationSpectrograms;
+    using TowseyLibrary;
 
     public static class LDSpectrogramTStatistic
     {
@@ -58,33 +56,33 @@ namespace AudioAnalysisTools
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
             minuteOffset = (TimeSpan?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET; // default = zero minute of day i.e. midnight
             xScale = (TimeSpan?)configuration.X_Scale ?? SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default is one minute spectra i.e. 60 per hour
-            sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE;  
-            frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_LENGTH; 
+            sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE;
+            frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_LENGTH;
 
-            tStatThreshold = (double?)configuration.TStatThreshold ?? T_STAT_THRESHOLD;  
-           
+            tStatThreshold = (double?)configuration.TStatThreshold ?? T_STAT_THRESHOLD;
+
             DrawTStatisticThresholdedDifferenceSpectrograms(new DirectoryInfo(ipdir),
                                                             new FileInfo(ipFileName1), new FileInfo(ipSdFileName1),
-                                                            new FileInfo(ipFileName2), new FileInfo(ipSdFileName2), 
+                                                            new FileInfo(ipFileName2), new FileInfo(ipSdFileName2),
                                                             new DirectoryInfo(opdir));
         }
 
 
         /// <summary>
-        /// This method compares the acoustic indices derived from two different long duration recordings of the same length. 
+        /// This method compares the acoustic indices derived from two different long duration recordings of the same length.
         /// It takes as input six csv files of acoustic indices in spectrogram columns, three csv files for each of the original recordings to be compared.
         /// The method produces four spectrogram image files:
         /// 1) A triple image. Top:    The spectrogram for index 1, recording 1.
         ///                    Middle: The spectrogram for index 1, recording 2.
-        ///                    Bottom: A t-statistic thresholded difference spectrogram for INDEX 1 (derived from recordings 1 and 2).   
+        ///                    Bottom: A t-statistic thresholded difference spectrogram for INDEX 1 (derived from recordings 1 and 2).
         /// 2) A triple image. Top:    The spectrogram for index 2, recording 1.
         ///                    Middle: The spectrogram for index 2, recording 2.
-        ///                    Bottom: A t-statistic thresholded difference spectrogram for INDEX 2 (derived from recordings 1 and 2).   
+        ///                    Bottom: A t-statistic thresholded difference spectrogram for INDEX 2 (derived from recordings 1 and 2).
         /// 3) A triple image. Top:    The spectrogram for index 3, recording 1.
         ///                    Middle: The spectrogram for index 3, recording 2.
-        ///                    Bottom: A t-statistic thresholded difference spectrogram for INDEX 3 (derived from recordings 1 and 2).   
+        ///                    Bottom: A t-statistic thresholded difference spectrogram for INDEX 3 (derived from recordings 1 and 2).
         /// 4) A double image. Top:    A t-statistic thresholded difference spectrogram (t-statistic is positive).
-        ///                    Bottom: A t-statistic thresholded difference spectrogram (t-statistic is negative).   
+        ///                    Bottom: A t-statistic thresholded difference spectrogram (t-statistic is negative).
         /// </summary>
         /// <param name="ipdir"></param>
         /// <param name="ipFileName1"></param>
@@ -93,7 +91,7 @@ namespace AudioAnalysisTools
         /// <param name="ipSdFileName2"></param>
         /// <param name="opdir"></param>
         public static void DrawTStatisticThresholdedDifferenceSpectrograms(DirectoryInfo ipdir, FileInfo ipFileName1, FileInfo ipSdFileName1,
-                                                                                                FileInfo ipFileName2, FileInfo ipSdFileName2, 
+                                                                                                FileInfo ipFileName2, FileInfo ipSdFileName2,
                                                                                                 DirectoryInfo opdir)
         {
             string opFileName1 = ipFileName1.Name;
@@ -253,7 +251,7 @@ namespace AudioAnalysisTools
             //titleBar = SpectrogramDifference.DrawTitleBarOfTStatisticSpectrogram(cs1.BaseName, cs2.BaseName, image1.Width, titleHt);
             //image3 = ColourSpectrogram.FrameSpectrogram(image3, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
 
-            //draw a difference spectrogram derived from by thresholding a t-statistic matrix 
+            //draw a difference spectrogram derived from by thresholding a t-statistic matrix
             Image image4 = LDSpectrogramTStatistic.DrawDifferenceSpectrogramDerivedFromSingleTStatistic(key, cs1, cs2, tStatThreshold, colourGain);
             title = String.Format("{0} DIFFERENCE SPECTROGRAM (thresholded by t-statistic={3}) for: {1} - {2}.      (scale:hours x kHz)", key, cs1.FileName, cs2.FileName, tStatThreshold);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image2.Width);

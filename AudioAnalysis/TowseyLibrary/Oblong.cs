@@ -47,7 +47,7 @@ namespace TowseyLibrary
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Oblong"/> class. 
+        /// Initializes a new instance of the <see cref="Oblong"/> class.
         /// CONSTRUCTOR
         /// </summary>
         /// <param name="row1">
@@ -64,7 +64,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Oblong"/> class. 
+        /// Initializes a new instance of the <see cref="Oblong"/> class.
         /// CONSTRUCTOR
         /// </summary>
         /// <param name="row1">
@@ -517,7 +517,7 @@ namespace TowseyLibrary
 
                     if (((s1.ColWidth / (double)s2.ColWidth) > ratio) || ((s2.ColWidth / (double)s1.ColWidth) > ratio))
                     {
-                        continue; // too much difference in shape width  
+                        continue; // too much difference in shape width
                     }
 
                     // average the left and right column bounds
@@ -655,7 +655,7 @@ namespace TowseyLibrary
             // int min = Int32.MaxValue;
             // int[] histo = DataTools.Histo(areas, binCount, out binWidth, out min, out max);
             // DataTools.writeBarGraph(histo);
-            // int maxIndex; 
+            // int maxIndex;
             // DataTools.getMaxIndex(histo, out maxIndex);
             // int valueAtMaxindex = (int)((double)maxIndex*binWidth);
             // LoggedConsole.WriteLine("Value AtMaxindex=" + valueAtMaxindex);
@@ -733,7 +733,7 @@ namespace TowseyLibrary
                 // else shapeColor = ImageTools.darkColors[colorID];
 
                 // TransformCoordinates(RowTop, ColumnLeft, RowBottom, ColumnRight, out x1, out y1, out x2, out y2, mWidth);
-                // for (int r = shape.RowTop; r <= shape.RowBottom; r++) 
+                // for (int r = shape.RowTop; r <= shape.RowBottom; r++)
                 // for (int c = shape.ColumnLeft; c <= shape.ColumnRight; c++)
                 // bmp.SetPixel(c, r, colour);
                 for (int r = shape.RowTop; r <= shape.RowBottom; r++)
@@ -1283,7 +1283,7 @@ namespace TowseyLibrary
             {
                 FM[0] = 0;
             }
-                
+
                 // else FM[0] = LinearInterpolate(x1, y1, x2, y2, x3);
             else
             {

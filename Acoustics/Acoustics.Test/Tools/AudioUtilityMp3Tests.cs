@@ -1,17 +1,14 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-namespace Acoustics.Test.Tools
+﻿namespace Acoustics.Test.Tools
 {
+    using System;
+    using System.Collections.Generic;
     using System.IO;
-
+    using System.Linq;
+    using System.Text;
     using Acoustics.Shared;
     using Acoustics.Tools;
-
     using EcoSounds.Mvc.Tests;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
     public class AudioUtilityMp3Tests
@@ -25,7 +22,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 11025,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 16000
+                BitsPerSecond = 16000,
             };
 
             var request = new AudioUtilityRequest
@@ -33,7 +30,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(20),
                 OffsetEnd = TimeSpan.FromSeconds(50),
-                TargetSampleRate = 11025
+                TargetSampleRate = 11025,
             };
 
             var util = TestHelper.GetAudioUtilitySox();
@@ -59,14 +56,14 @@ namespace Acoustics.Test.Tools
                 SampleRate = 22050,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 32000
+                BitsPerSecond = 32000,
             };
 
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(15),
-                OffsetEnd = TimeSpan.FromMinutes(3) + TimeSpan.FromSeconds(35)
+                OffsetEnd = TimeSpan.FromMinutes(3) + TimeSpan.FromSeconds(35),
             };
 
             var util = TestHelper.GetAudioUtilitySox();
@@ -92,7 +89,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 11025,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 16000
+                BitsPerSecond = 16000,
             };
 
             var request = new AudioUtilityRequest
@@ -100,7 +97,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(0),
                 OffsetEnd = TimeSpan.FromSeconds(55),
-                TargetSampleRate = 11025
+                TargetSampleRate = 11025,
             };
 
             var util = TestHelper.GetAudioUtilitySox();
@@ -126,7 +123,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 11025,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 16000
+                BitsPerSecond = 16000,
             };
 
             var request = new AudioUtilityRequest
@@ -134,7 +131,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(15),
                 OffsetEnd = TimeSpan.FromSeconds(75),
-                TargetSampleRate = 11025
+                TargetSampleRate = 11025,
             };
 
             var util = TestHelper.GetAudioUtilitySox();
@@ -160,14 +157,14 @@ namespace Acoustics.Test.Tools
                 SampleRate = 44100,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 64000
+                BitsPerSecond = 64000,
             };
 
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(27),
-                TargetSampleRate = 44100
+                TargetSampleRate = 44100,
             };
 
             var util = TestHelper.GetAudioUtilitySox();
@@ -193,7 +190,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 11025,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 16000
+                BitsPerSecond = 16000,
             };
 
             var request = new AudioUtilityRequest
@@ -227,7 +224,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 11025,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 16000
+                BitsPerSecond = 16000,
             };
 
             var request = new AudioUtilityRequest
@@ -235,7 +232,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(20),
                 OffsetEnd = TimeSpan.FromSeconds(50),
-                TargetSampleRate = 11025
+                TargetSampleRate = 11025,
             };
 
             var util = TestHelper.GetAudioUtilityFfmpeg();
@@ -261,14 +258,14 @@ namespace Acoustics.Test.Tools
                 SampleRate = 22050,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 32000
+                BitsPerSecond = 32000,
             };
 
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(15),
-                OffsetEnd = TimeSpan.FromMinutes(3) + TimeSpan.FromSeconds(35)
+                OffsetEnd = TimeSpan.FromMinutes(3) + TimeSpan.FromSeconds(35),
             };
 
             var util = TestHelper.GetAudioUtilityFfmpeg();
@@ -294,14 +291,14 @@ namespace Acoustics.Test.Tools
                 SampleRate = 11025,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 16000
+                BitsPerSecond = 16000,
             };
 
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = true,
                 OffsetEnd = TimeSpan.FromSeconds(52),
-                TargetSampleRate = 11025
+                TargetSampleRate = 11025,
             };
 
             var util = TestHelper.GetAudioUtilityFfmpeg();
@@ -327,7 +324,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 44100,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 64000
+                BitsPerSecond = 64000,
             };
 
             var request = new AudioUtilityRequest
@@ -335,7 +332,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(15),
                 OffsetEnd = TimeSpan.FromSeconds(75),
-                TargetSampleRate = 44100
+                TargetSampleRate = 44100,
             };
 
             var util = TestHelper.GetAudioUtilityFfmpeg();
@@ -361,14 +358,14 @@ namespace Acoustics.Test.Tools
                 SampleRate = 44100,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 64000
+                BitsPerSecond = 64000,
             };
 
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(27),
-                TargetSampleRate = 44100
+                TargetSampleRate = 44100,
             };
 
             var util = TestHelper.GetAudioUtilityFfmpeg();
@@ -394,7 +391,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 11025,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 16000
+                BitsPerSecond = 16000,
             };
 
             var request = new AudioUtilityRequest
@@ -428,7 +425,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 44100,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 64100
+                BitsPerSecond = 64100,
             };
 
             var request = new AudioUtilityRequest
@@ -436,7 +433,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(20),
                 OffsetEnd = TimeSpan.FromSeconds(50),
-                TargetSampleRate = 44100
+                TargetSampleRate = 44100,
             };
 
             var util = TestHelper.GetAudioUtility();
@@ -462,14 +459,14 @@ namespace Acoustics.Test.Tools
                 SampleRate = 22050,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 32000
+                BitsPerSecond = 32000,
             };
 
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(15),
-                OffsetEnd = TimeSpan.FromMinutes(3) + TimeSpan.FromSeconds(35)
+                OffsetEnd = TimeSpan.FromMinutes(3) + TimeSpan.FromSeconds(35),
             };
 
             var util = TestHelper.GetAudioUtility();
@@ -492,7 +489,7 @@ namespace Acoustics.Test.Tools
             /*
              *
              * mp3splt accuracy varies with the quality of the input file!
-             * 
+             *
              */
             var expected = new AudioUtilityInfo
             {
@@ -500,7 +497,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 11025,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 16000
+                BitsPerSecond = 16000,
             };
 
             var request = new AudioUtilityRequest
@@ -508,7 +505,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.Zero,
                 OffsetEnd = TimeSpan.FromSeconds(48),
-                TargetSampleRate = 11025
+                TargetSampleRate = 11025,
             };
 
             var util = TestHelper.GetAudioUtility();
@@ -534,7 +531,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 44100,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 64000
+                BitsPerSecond = 64000,
             };
 
             var request = new AudioUtilityRequest
@@ -542,7 +539,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(15),
                 OffsetEnd = TimeSpan.FromSeconds(75),
-                TargetSampleRate = 44100
+                TargetSampleRate = 44100,
             };
 
             var util = TestHelper.GetAudioUtility();
@@ -568,14 +565,14 @@ namespace Acoustics.Test.Tools
                 SampleRate = 11025,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 16000
+                BitsPerSecond = 16000,
             };
 
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(27),
-                TargetSampleRate = 11025
+                TargetSampleRate = 11025,
             };
 
             var util = TestHelper.GetAudioUtility();
@@ -601,7 +598,7 @@ namespace Acoustics.Test.Tools
                 SampleRate = 44100,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 64000
+                BitsPerSecond = 64000,
             };
 
             var request = new AudioUtilityRequest

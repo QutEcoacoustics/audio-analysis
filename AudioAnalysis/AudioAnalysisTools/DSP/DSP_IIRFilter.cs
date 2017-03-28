@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TowseyLibrary;
-
-
-namespace AudioAnalysisTools.DSP
+﻿namespace AudioAnalysisTools.DSP
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using TowseyLibrary;
+
     /// <summary>
     /// digital signal processing FILTERS methods
-    /// 
-    /// "Finite impulse response" (FIR) filters use only the input signals, 
-    /// while an "infinite impulse response" filter (IIR) uses 
+    ///
+    /// "Finite impulse response" (FIR) filters use only the input signals,
+    /// while an "infinite impulse response" filter (IIR) uses
     /// both the input signal and previous samples of the output signal.
     /// FIR filters are always stable, while IIR filters may be unstable.
 
@@ -21,7 +20,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// method to convert string codes to a specific IIR filter.
         /// FOR EACH NEW FILTER ADD LINE HERE AND WRITE NEW METHOD TO CREATE FILTER
-        /// 
+        ///
         /// IMPORTANT: These filters assume a SAMPLE RATE = 22050!!!!!!!!!!!!!
         /// </summary>
         /// <param name="filterName"></param>
@@ -53,7 +52,7 @@ namespace AudioAnalysisTools.DSP
             a_coeff[9] =  -1.0;
             a_coeff[8] =   9.0;
             a_coeff[7] = -36.0;
-            a_coeff[6] =  84.0; 
+            a_coeff[6] =  84.0;
             a_coeff[5] =-126.0;
             a_coeff[4] = 126.0;
             a_coeff[3] = -84.0;
@@ -186,7 +185,7 @@ namespace AudioAnalysisTools.DSP
         public int order {get; set;}
         public double gain;
 
-        
+
         /// <summary>
         /// CONSTRUCTOR 1
         /// </summary>
@@ -267,7 +266,7 @@ namespace AudioAnalysisTools.DSP
                 for (j = 1; j <= i; j++) y[i] += (b[j] * y[i - j]);
             }
             /* end of initial part */
-            
+
             for (i = size; i < np; i++) //length of signal
             {
                 y[i] += (a[0] * x[i]);
@@ -278,7 +277,7 @@ namespace AudioAnalysisTools.DSP
             //the factor of 2.30 is an approximate value to make up the difference between theoretical gain and my observed gain.
             //that is after correction the area under curve of impulse reponse should be close to 1.0.
             double myGain = this.gain * 2.30;
-            for (i = 0; i < np; i++) 
+            for (i = 0; i < np; i++)
             {
                 y[i] /= myGain;
             }
@@ -324,7 +323,7 @@ namespace AudioAnalysisTools.DSP
 
                 double[] y;
                 filter.ApplyIIRFilter(impulse, out y);
-                
+
                 //DataTools.writeArray(y);
                 double myGain = 0.0;
                 for (int i = 0; i < y.Length; i++) //length of signal
@@ -349,7 +348,7 @@ namespace AudioAnalysisTools.DSP
 
 
         /// <summary>
-        /// This method implements a crude form of high pass filtering 
+        /// This method implements a crude form of high pass filtering
         /// </summary>
         /// <param name="inputSignal"></param>
         /// <param name="windowLength"></param>

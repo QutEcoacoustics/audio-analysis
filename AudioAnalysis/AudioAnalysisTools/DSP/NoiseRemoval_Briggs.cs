@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-using System.Drawing;
-
-
-namespace AudioAnalysisTools.DSP
+﻿namespace AudioAnalysisTools.DSP
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Linq;
+    using System.Text;
+    using TowseyLibrary;
+
     public static class NoiseRemoval_Briggs
     {
 
@@ -50,7 +48,7 @@ namespace AudioAnalysisTools.DSP
         /// Assumes the passed matrix is a spectrogram. i.e. rows=frames, cols=freq bins.
         /// WARNING: This method should NOT be used for short recordings (i.e LT approx 10-15 seconds long)
         /// because it obtains a background noise profile from the passed percentile of lowest energy frames.
-        /// 
+        ///
         /// Same method as above except take square root of the cell energy divided by the noise.
         /// Taking the square root has the effect of reducing image contrast.
         /// </summary>
@@ -92,7 +90,7 @@ namespace AudioAnalysisTools.DSP
         /// <param name="matrix"></param>
         /// <param name="percentileThreshold"></param>
         /// <returns></returns>
-        public static double[,] NoiseReduction_byLowestPercentileSubtraction(double[,] matrix, int percentileThreshold) 
+        public static double[,] NoiseReduction_byLowestPercentileSubtraction(double[,] matrix, int percentileThreshold)
         {
             double[] profile = NoiseProfile.GetNoiseProfile_fromLowestPercentileFrames(matrix, percentileThreshold);
             profile = DataTools.filterMovingAverage(profile, 3);
@@ -112,10 +110,10 @@ namespace AudioAnalysisTools.DSP
         }
 
 
-        
+
         /// <summary>
         /// Assumes the passed matrix is a spectrogram. i.e. rows=frames, cols=freq bins.
-        /// Does column-wise LCN (Local Contrast Normalisation. 
+        /// Does column-wise LCN (Local Contrast Normalisation.
         /// The denominator = (contrastLevel + Math.Sqrt(localVariance[y])
         /// A low contrastLevel = 0.1 give more grey image.
         /// A high contrastLevel = 1.0 give mostly white high contrast image.
@@ -132,9 +130,9 @@ namespace AudioAnalysisTools.DSP
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
             //to contain noise reduced matrix
-            double[,] outM = new double[rowCount, colCount]; 
+            double[,] outM = new double[rowCount, colCount];
             //for all cols i.e. freq bins
-            for (int col = 0; col < colCount; col++) 
+            for (int col = 0; col < colCount; col++)
             {
                 double[] column = MatrixTools.GetColumn(matrix, col);
                 double[] localVariance = NormalDist.CalculateLocalVariance(column, neighbourhood);
@@ -155,8 +153,8 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Assumes the passed matrix is a spectrogram. i.e. rows=frames, cols=freq bins.
         /// First obtains background noise profile calculated from lowest 20% of cells for each freq bin independently.
-        /// Loop over freq bins (columns) - subtract noise and divide by LCN (Local Contrast Normalisation. 
-        /// 
+        /// Loop over freq bins (columns) - subtract noise and divide by LCN (Local Contrast Normalisation.
+        ///
         /// The LCN denominator = (contrastLevelConstant + Sqrt(localVariance[y])
         /// Note that sqrt of variance = std dev.
         /// A low contrastLevel = 0.1 give more grey image.
@@ -195,7 +193,7 @@ namespace AudioAnalysisTools.DSP
 
         public static double[,] BriggsNoiseFilterAndGetMask(double[,] matrix, int percentileThreshold, double binaryThreshold)
         {
-            double[,] m = NoiseRemoval_Briggs.NoiseReduction_byDivision(matrix, percentileThreshold); 
+            double[,] m = NoiseRemoval_Briggs.NoiseReduction_byDivision(matrix, percentileThreshold);
 
             // smooth and truncate
             m = ImageTools.WienerFilter(m, 7); //Briggs uses 17
@@ -209,7 +207,7 @@ namespace AudioAnalysisTools.DSP
             //m = ImageTools.GaussianBlur_5cell(m); //do a seoncd time
             //m = ImageTools.Blur(m, 10); // use a simple neighbourhood blurring function.
             double binaryThreshold2 = binaryThreshold * 0.8;
-            m = MatrixTools.ThresholdMatrix2RealBinary(m, binaryThreshold2); 
+            m = MatrixTools.ThresholdMatrix2RealBinary(m, binaryThreshold2);
 
             return m;
         }
@@ -246,7 +244,7 @@ namespace AudioAnalysisTools.DSP
             //m = ImageTools.Blur(m, 5); // use a simple neighbourhood blurring function.
 
             double binaryThreshold2 = binaryThreshold * 0.8;
-            m = MatrixTools.ThresholdMatrix2RealBinary(m, binaryThreshold2); 
+            m = MatrixTools.ThresholdMatrix2RealBinary(m, binaryThreshold2);
             title = "TITLE FOUR";
             Image image4 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, nyquist, herzInterval, title);
             images.Add(image4);
@@ -256,13 +254,13 @@ namespace AudioAnalysisTools.DSP
             return combinedImage;
         }
 
-        public static Image DrawSonogram(double[,] data, TimeSpan recordingDuration, TimeSpan X_interval, TimeSpan xAxisPixelDuration, 
+        public static Image DrawSonogram(double[,] data, TimeSpan recordingDuration, TimeSpan X_interval, TimeSpan xAxisPixelDuration,
                                          int nyquist, int herzInterval, string title)
         {
             // the next two variables determine how the greyscale sonogram image is normalised.
             // The low  normalisation bound is min value of the average spectrogram derived from the lowest  percent of frames
             // The high normalisation bound is max value of the average spectrogram derived from the highest percent of frames
-            int minPercentile = 5;  
+            int minPercentile = 5;
             int maxPercentile = 10;
 
             Image image = BaseSonogram.GetSonogramImage(data, minPercentile, maxPercentile);

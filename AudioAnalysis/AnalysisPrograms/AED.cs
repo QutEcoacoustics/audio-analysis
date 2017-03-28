@@ -64,7 +64,7 @@ namespace AnalysisPrograms
                 this.NoiseReductionType = NoiseReductionType.None;
             }
 
-            public double IntensityThreshold { get; set; } 
+            public double IntensityThreshold { get; set; }
 
             public int SmallAreaThreshold { get; set; }
 
@@ -72,9 +72,9 @@ namespace AnalysisPrograms
 
             public int? BandpassMaximum { get; set; }
 
-            public NoiseReductionType NoiseReductionType { get; set; } 
+            public NoiseReductionType NoiseReductionType { get; set; }
 
-            public double NoiseReductionParameter { get; set; } 
+            public double NoiseReductionParameter { get; set; }
 
             public int ResampleRate { get; set; }
 
@@ -111,10 +111,10 @@ namespace AnalysisPrograms
             {
                 return new AnalysisSettings
                            {
-                               SegmentMaxDuration = TimeSpan.FromMinutes(1), 
-                               SegmentMinDuration = TimeSpan.FromSeconds(20), 
-                               SegmentMediaType = MediaTypes.MediaTypeWav, 
-                               SegmentOverlapDuration = TimeSpan.Zero, 
+                               SegmentMaxDuration = TimeSpan.FromMinutes(1),
+                               SegmentMinDuration = TimeSpan.FromSeconds(20),
+                               SegmentMediaType = MediaTypes.MediaTypeWav,
+                               SegmentOverlapDuration = TimeSpan.Zero,
                            };
             }
         }
@@ -168,7 +168,7 @@ namespace AnalysisPrograms
             var config = new SonogramConfig
                               {
                                   NoiseReductionType = aedConfiguration.NoiseReductionType,
-                                  NoiseReductionParameter = aedConfiguration.NoiseReductionParameter
+                                  NoiseReductionParameter = aedConfiguration.NoiseReductionParameter,
                               };
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, recording.WavReader);
 
@@ -185,7 +185,7 @@ namespace AnalysisPrograms
                                  {
                                      IntensityThreshold = aedConfiguration.IntensityThreshold,
                                      SmallAreaThreshold = aedConfiguration.SmallAreaThreshold,
-                                     DoNoiseRemoval = aedConfiguration.NoiseReductionType == NoiseReductionType.None
+                                     DoNoiseRemoval = aedConfiguration.NoiseReductionType == NoiseReductionType.None,
                                  };
 
             if (aedConfiguration.BandpassMinimum.HasValue && aedConfiguration.BandpassMaximum.HasValue)
@@ -196,7 +196,7 @@ namespace AnalysisPrograms
                         (double)aedConfiguration.BandpassMaximum.Value);
                 aedOptions.BandPassFilter = bandPassFilter.ToOption();
             }
-               
+
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(aedOptions,   sonogram.Data);
             Log.Info("AED finished");
 
@@ -219,7 +219,7 @@ namespace AnalysisPrograms
                         SegmentStartOffset = segmentStartOffset,
                         BorderColour = aedConfiguration.AedEventColor,
                         HitColour = aedConfiguration.AedHitColor,
-                        SegmentDuration = segmentDuration
+                        SegmentDuration = segmentDuration,
                     };
                 }).ToArray();
             return events;
@@ -241,9 +241,9 @@ namespace AnalysisPrograms
             ////image.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram, image.sonogramImage.Width));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             image.AddEvents(
-                events, 
-                sonogram.NyquistFrequency, 
-                sonogram.Configuration.FreqBinCount, 
+                events,
+                sonogram.NyquistFrequency,
+                sonogram.Configuration.FreqBinCount,
                 sonogram.FramesPerSecond);
 
             return image.GetImage();
@@ -318,6 +318,7 @@ namespace AnalysisPrograms
                 analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
 
                 this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
+                analysisResults.SummaryIndicesFile = analysisSettings.SummaryIndicesFile;
             }
 
 
@@ -355,16 +356,16 @@ namespace AnalysisPrograms
                            AedHitColor = ((string)configuration.AedHitColor).ParseAsColor(),
                            ResampleRate = configuration[AnalysisKeys.ResampleRate],
                            NoiseReductionType = noiseReduction,
-                           NoiseReductionParameter = configuration[AnalysisKeys.NoiseBgThreshold]
+                           NoiseReductionParameter = configuration[AnalysisKeys.NoiseBgThreshold],
                        };
         }
 
         public override void SummariseResults(
-            AnalysisSettings settings, 
-            FileSegment inputFileSegment, 
-            EventBase[] events, 
-            SummaryIndexBase[] indices, 
-            SpectralIndexBase[] spectralIndices, 
+            AnalysisSettings settings,
+            FileSegment inputFileSegment,
+            EventBase[] events,
+            SummaryIndexBase[] indices,
+            SpectralIndexBase[] spectralIndices,
             AnalysisResult2[] results)
         {
             // noop

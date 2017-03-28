@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace EcosoundsFeltAdapter
+﻿namespace EcosoundsFeltAdapter
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
     using MQUTeR.FSharp.Shared;
 
     public class UnavailableFeltAccessor : IFeltAccessor

@@ -9,11 +9,10 @@ namespace System
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.Contracts;
     using System.Linq;
     using System.Threading.Tasks;
-
     using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
 
     public static class EnumerableExtensions
     {
@@ -270,7 +269,7 @@ namespace System
                     for (var w = 1; w < windowSize; w++)
                     {
                         var lastOutput = new T[windowSize];
-                        
+
                         for (var ii = 0; ii < windowSize; ii++)
                         {
                             if (ii < (windowSize - w))

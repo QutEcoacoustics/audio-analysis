@@ -32,11 +32,11 @@ namespace AnalysisPrograms.Recognizers
     /// <summary>
     /// This is a frog recognizer based on the "honk" or "quack" template
     /// It detects honk type calls by extracting three features: dominant frequency, honk duration and match to honk spectrum profile.
-    /// 
-    /// This type recognizer was first developed for LimnodynastesConvex and can be duplicated with modification for other frogs 
+    ///
+    /// This type recognizer was first developed for LimnodynastesConvex and can be duplicated with modification for other frogs
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
-    /// 
+    ///
     /// </summary>
     class LimnodynastesConvex : RecognizerBase
     {
@@ -45,7 +45,7 @@ namespace AnalysisPrograms.Recognizers
         public override string SpeciesName => "LimnodynastesConvex";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        //DEBUG IMAGE this recognizer only. MUST set false for deployment. 
+        //DEBUG IMAGE this recognizer only. MUST set false for deployment.
         readonly bool _displayDebugImage = MainEntry.InDEBUG;
 
 
@@ -113,7 +113,7 @@ namespace AnalysisPrograms.Recognizers
             {
                 WindowSize = 512,
                 NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = noiseReductionParameter
+                NoiseReductionParameter = noiseReductionParameter,
             };
             config.WindowOverlap = 0.0;
 
@@ -141,7 +141,7 @@ namespace AnalysisPrograms.Recognizers
             // ## THREE THRESHOLDS ---- only one of these is given to user.
             // minimum dB to register a dominant freq peak. After noise removal
             double peakThresholdDb = 3.0;
-            // The threshold dB amplitude in the dominant freq bin required to yield an event 
+            // The threshold dB amplitude in the dominant freq bin required to yield an event
             double eventThresholdDb = 10.0;
             // minimum score for an acceptable event - that is when processing the score array.
             double similarityThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? 0.2;
@@ -174,7 +174,7 @@ namespace AnalysisPrograms.Recognizers
             var templates = GetLconvexTemplates(callBinWidth);
 
             int dominantFrequency = (int)configuration["DominantFrequency"];
-            // NOTE: could give user control over other call features 
+            // NOTE: could give user control over other call features
             //  Such as frequency gap between peaks. But not in this first iteration of the recognizer.
             //int peakGapInHerz = (int)configuration["PeakGap"];
             //int minHz = (int)configuration[AnalysisKeys.MinHz];
@@ -183,7 +183,7 @@ namespace AnalysisPrograms.Recognizers
 
             int hzBuffer = 250;
             int dominantBin = (int)Math.Round(dominantFrequency / herzPerBin);
-            int binBuffer = (int)Math.Round(hzBuffer / herzPerBin); 
+            int binBuffer = (int)Math.Round(hzBuffer / herzPerBin);
             int dominantBinMin = dominantBin - binBuffer;
             int dominantBinMax = dominantBin + binBuffer;
             //int bandwidth = dominantBinMax - dominantBinMin + 1;
@@ -271,7 +271,7 @@ namespace AnalysisPrograms.Recognizers
                 var newEvent = new AcousticEvent(startTime, durationTime, bottomFreqForEvent, topFreqForEvent)
                 {
                     DominantFreq = avDominantFreq,
-                    Score = eventScore
+                    Score = eventScore,
                 };
                 newEvent.SetTimeAndFreqScales(framesPerSec, herzPerBin);
                 newEvent.Name = ""; // remove name because it hides spectral content of the event.
@@ -307,7 +307,7 @@ namespace AnalysisPrograms.Recognizers
                 Events = potentialEvents,
                 Hits = hits,
                 Plots = plots,
-                Sonogram = sonogram
+                Sonogram = sonogram,
             };
         }
 

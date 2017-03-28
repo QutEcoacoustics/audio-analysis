@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-
-using TowseyLibrary;
-using AudioAnalysisTools.WavTools;
-using AudioAnalysisTools.StandardSpectrograms;
-
-
-
-
-namespace AudioAnalysisTools.DSP
+﻿namespace AudioAnalysisTools.DSP
 {
+
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using TowseyLibrary;
 
     /// <summary>
     /// this version of segmentation uses Spectral Peak tracking to remove noise
@@ -28,7 +24,7 @@ namespace AudioAnalysisTools.DSP
 
             //string wavDirName = @"C:\SensorNetworks\Templates\Template_3\TrainingSet1";
             string wavDirName = @"C:\SensorNetworks\Templates\Template_CURLEW1\data\train";
-            
+
             if (args.Length == 0)
             {
                 if (!Directory.Exists(wavDirName))
@@ -61,7 +57,7 @@ namespace AudioAnalysisTools.DSP
         */
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="wavDirName">dir containing wav files to be segmented</param>
         /// <param name="outputDir">dir where output files are to be placed</param>

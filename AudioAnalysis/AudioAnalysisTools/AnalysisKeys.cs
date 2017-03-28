@@ -58,7 +58,7 @@ namespace AudioAnalysisTools
         public const string SmoothingWindow = "SmoothingWindow";
         public const string Threshold = "Threshold";
 
-        // Keys to recognise identifiers in ANALYSIS CONFIG file. 
+        // Keys to recognise identifiers in ANALYSIS CONFIG file.
         public const string LowFreqBound  = "LowFreqBound";
         public const string MidFreqBound  = "MidFreqBound";
         public const string HighFreqBound = "HighFreqBound";

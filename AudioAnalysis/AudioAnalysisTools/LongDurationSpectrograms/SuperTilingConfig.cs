@@ -35,7 +35,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         #region Public Properties
 
         /// <summary>
-        /// Gets or sets an optional reference to a config that defines 
+        /// Gets or sets an optional reference to a config that defines
         /// the style for drawing LD spectrograms.
         /// </summary>
         /// <returns></returns>

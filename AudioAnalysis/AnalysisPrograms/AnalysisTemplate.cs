@@ -1,33 +1,27 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
-
-using Acoustics.Shared;
-using Acoustics.Tools;
-using Acoustics.Tools.Audio;
-using AnalysisBase;
-
-using TowseyLibrary;
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
+
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
     using Acoustics.Shared.Extensions;
-
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
+    using AnalysisBase;
     using AnalysisPrograms.Production;
-
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using TowseyLibrary;
 
     public class AnalysisTemplate : IAnalyser
     {
@@ -85,7 +79,7 @@ namespace AnalysisPrograms
                     Indices = indicesFname,
                     Sgram = sonogramFname,
                     Start = tsStart.TotalSeconds,
-                    Duration = tsDuration.TotalSeconds
+                    Duration = tsDuration.TotalSeconds,
                 };
 
                 if (false)
@@ -217,7 +211,7 @@ namespace AnalysisPrograms
             var results = Analysis(fiAudioF, analysisSettings.ConfigDict);
             //######################################################################
 
-            if (results == null) return analysisResults; //nothing to process 
+            if (results == null) return analysisResults; //nothing to process
             var sonogram = results.Item1;
             var hits = results.Item2;
             var scores = results.Item3;
@@ -280,7 +274,7 @@ namespace AnalysisPrograms
             //result.DisplayItems = { { 0, "example" }, { 1, "example 2" }, }
             //result.OutputFiles = { { "exmaple file key", new FileInfo("Where's that file?") } }
             return analysisResults;
-        } 
+        }
 
         /// <summary>
         /// ################ THE KEY ANALYSIS METHOD
@@ -402,18 +396,18 @@ namespace AnalysisPrograms
             if (predictedEvents == null) return null;
             string[] headers = { AudioAnalysisTools.AnalysisKeys.EventCount,
                                  AudioAnalysisTools.AnalysisKeys.EventStartMin,
-                                 AudioAnalysisTools.AnalysisKeys.EventStartSec, 
+                                 AudioAnalysisTools.AnalysisKeys.EventStartSec,
                                  AudioAnalysisTools.AnalysisKeys.EventStartAbs,
                                  AudioAnalysisTools.AnalysisKeys.KeySegmentDuration,
-                                 AudioAnalysisTools.AnalysisKeys.EventDuration, 
+                                 AudioAnalysisTools.AnalysisKeys.EventDuration,
                                  AudioAnalysisTools.AnalysisKeys.EventIntensity,
                                  AudioAnalysisTools.AnalysisKeys.EventName,
                                  AudioAnalysisTools.AnalysisKeys.EventScore,
-                                 AudioAnalysisTools.AnalysisKeys.EventNormscore 
+                                 AudioAnalysisTools.AnalysisKeys.EventNormscore,
 
                                };
             //                   1                2               3              4                5              6               7              8
-            Type[] types = { typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), 
+            Type[] types = { typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string),
                              typeof(double), typeof(double) };
 
             var dataTable = DataTableTools.CreateTable(headers, types);
@@ -487,7 +481,7 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// This method should no longer be used. 
+        /// This method should no longer be used.
         /// It depends on use of the DataTable class which ceased when Anthony did a major refactor in mid-2014.
         /// </summary>
         /// <param name="fiCsvFile"></param>
@@ -560,7 +554,7 @@ namespace AnalysisPrograms
                     SegmentMinDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
+                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
                 };
             }
         }

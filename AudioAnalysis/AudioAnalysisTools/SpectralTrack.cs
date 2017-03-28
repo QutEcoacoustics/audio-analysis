@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-
-using TowseyLibrary;
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Linq;
+    using System.Text;
+    using TowseyLibrary;
+
     public class SpectralTrack
     {
         private int startFrame;
@@ -28,7 +28,7 @@ namespace AudioAnalysisTools
         public double avPeriodicity { get { // calculate periodicity form midpoint of the array
             int midPoint = periodicity.Length /2;
             double average = (periodicity[midPoint - 2] + periodicity[midPoint] + periodicity[midPoint+ 2]) / 3;
-            return average; 
+            return average;
         } }
         public double avPeriodicityScore { get { return periodicityScore.Average(); } }
 
@@ -56,7 +56,7 @@ namespace AudioAnalysisTools
             status = 1;
             track = new List<int>();
             track.Add(_bin);
-            TimeSpan t = TimeSpan.FromSeconds(_start / _framesPerSecond); 
+            TimeSpan t = TimeSpan.FromSeconds(_start / _framesPerSecond);
             SetTimeAndFreqScales(_framesPerSecond, t, _herzPerBin, _herzOffset);
         }
 
@@ -70,7 +70,7 @@ namespace AudioAnalysisTools
 
         int FrameCountEquivalent(TimeSpan duration)
         {
-            return FrameCountEquivalent(duration, framesPerSecond);          
+            return FrameCountEquivalent(duration, framesPerSecond);
         }
 
         int BinCount(int herz)
@@ -94,7 +94,7 @@ namespace AudioAnalysisTools
 
         public TimeSpan Duration()
         {
-            double seconds = this.Length / framesPerSecond;  
+            double seconds = this.Length / framesPerSecond;
             return TimeSpan.FromSeconds(seconds);
         }
 
@@ -316,7 +316,7 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="spectralPeakArray">array (one element per frame) indicating which freq bin has max amplitude</param>
         /// <param name="_framesPerSecond">time scale</param>
@@ -342,7 +342,7 @@ namespace AudioAnalysisTools
         /// This method removes tracks that do not satisfy THREE conditions:
         /// 1: length is less than default number of frames (threshold given in seconds)
         /// 2: average freq of the track is below a threshold frequency
-        /// 3: track density is lower than threshold - density means that over given duration, % frames having that freq max exceeds a threshold. 
+        /// 3: track density is lower than threshold - density means that over given duration, % frames having that freq max exceeds a threshold.
         /// </summary>
         /// <param name="tracks">current list of tracks</param>
         /// <param name="currentFrame"></param>
@@ -360,7 +360,7 @@ namespace AudioAnalysisTools
                 {
                     tracks[i].status = 0; //set track status to closed
                     //int minFrameLength = tracks[i].FrameCountEquivalent(minimumDuration);
-                    if ((tracks[i].Duration() < minDuration) || (tracks[i].avBin > maxFreqBin) || (tracks[i].Density() < MIN_TRACK_DENSITY)) 
+                    if ((tracks[i].Duration() < minDuration) || (tracks[i].avBin > maxFreqBin) || (tracks[i].Density() < MIN_TRACK_DENSITY))
                         tracks.RemoveAt(i);
                 }
             }
@@ -368,7 +368,7 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="tracks"></param>
         /// <param name="currentFrame"></param>
@@ -409,7 +409,7 @@ namespace AudioAnalysisTools
             int length = track.Length;
             //only sample the middle third of track
             int start = length / 3;
-            int end = start + start - 1; 
+            int end = start + start - 1;
             //init score track and periodicity track
             double[] score = new double[start];
             double[] period = new double[start];
@@ -490,7 +490,7 @@ namespace AudioAnalysisTools
         private int frameCount;
         private double framesPerSecond;
         private int framesPerHalfSecond;
-        private int framesPerQuaterSecond; 
+        private int framesPerQuaterSecond;
         private int trackCount;
         public int TrackCount
         {
@@ -520,7 +520,7 @@ namespace AudioAnalysisTools
         {
             get { return totalSecondsContainingTracks / binDuration.TotalSeconds; }
         }
-    
+
 
         /// <summary>
         /// CONSTRUCTOR

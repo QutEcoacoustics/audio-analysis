@@ -45,7 +45,7 @@ namespace AnalysisPrograms
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        // use the following paths for the command line for the <audio2sonogram> task. 
+        // use the following paths for the command line for the <audio2sonogram> task.
         // audio2InputForConvCNN "Path to CSV file"   @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml"  "Output directory" true
         [CustomDetailedDescription]
         [CustomDescription]
@@ -179,7 +179,7 @@ namespace AnalysisPrograms
             {
                 LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
             }
-            
+
 
 
             // set up header of the output file
@@ -206,7 +206,7 @@ namespace AnalysisPrograms
             {
                 var file = new FileStream(csvFileInfo.FullName, FileMode.Open);
                 var sr = new StreamReader(file);
-                
+
                 // read the header and discard
                 string strLine;
                 lineNumber++;
@@ -221,7 +221,7 @@ namespace AnalysisPrograms
 
                     // cannot use next line because reads the entire file
                     ////var data = Csv.ReadFromCsv<string[]>(csvFileInfo).ToList();
-                    
+
                     // read single record from csv file
                     var record = CsvDataRecord.ReadLine(strLine);
 
@@ -241,17 +241,17 @@ namespace AnalysisPrograms
 
                     /*#######################################
                       #######################################
-                      my debug code for home to test on subset of data - comment these lines when at QUT! 
+                      my debug code for home to test on subset of data - comment these lines when at QUT!
                       Anthony will tell me I should use a conditional compilation flag.
                         -- Anthony will tell you that this is completely unnecessary!
                       ####################################### */
                     ////DirectoryInfo localSourceDir = new DirectoryInfo(@"C:\SensorNetworks\WavFiles\ConvDNNData");
                     ////sourceRecording = Path.Combine(localSourceDir.FullName + @"\" + parentDirectoryName + @"\" + directoryName, fileName).ToFileInfo();
                     ////record.path = sourceRecording;
-                    
+
                     /* ####################################### */
-                    
-                    // TO TEST PORTION OF DATA 
+
+                    // TO TEST PORTION OF DATA
                     doPreprocessing = false;
                     if (parentDirectoryName.Equals("0"))
                     {
@@ -475,7 +475,7 @@ namespace AnalysisPrograms
             // 1: GET RECORDING and make temporary copy
             // put temp audio FileSegment in same directory as the required output image.
             var tempAudioSegment = TempFileHelper.NewTempFile(outDirectory, "wav");
-            
+
             // delete the temp audio file if it already exists.
             if (File.Exists(tempAudioSegment.FullName))
             {
@@ -485,7 +485,7 @@ namespace AnalysisPrograms
             // This line creates a temporary version of the source file downsampled as per entry in the config file
             MasterAudioUtility.SegmentToWav(sourceRecording, tempAudioSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
 
-            // 2: Generate sonogram image files 
+            // 2: Generate sonogram image files
             AudioToSonogramResult result = new AudioToSonogramResult();
             result = Audio2InputForConvCNN.GenerateSpectrogramImages(tempAudioSegment, configDict, outDirectory);
 
@@ -567,7 +567,7 @@ namespace AnalysisPrograms
                 csvDataRecord.high_frequency_hertz = (int)Math.Round(double.Parse(fields[12]));
                 csvDataRecord.common_tags = fields[15];
                 csvDataRecord.species_tags = fields[16];
-                csvDataRecord.path = fields[20].ToFileInfo(); 
+                csvDataRecord.path = fields[20].ToFileInfo();
                 return csvDataRecord;
             }
         }
@@ -730,8 +730,8 @@ namespace AnalysisPrograms
             AudioRecording recordingSegment = new AudioRecording(sourceRecording.FullName);
 
             // default values config
-            SonogramConfig sonoConfig = new SonogramConfig(configDict); 
-                
+            SonogramConfig sonoConfig = new SonogramConfig(configDict);
+
             // disable noise removal for first two spectrograms
             sonoConfig.NoiseReductionType = NoiseReductionType.None;
 
@@ -856,7 +856,7 @@ namespace AnalysisPrograms
                 SegmentMaxDuration = TimeSpan.FromMinutes(1),
                 SegmentMinDuration = TimeSpan.FromSeconds(20),
                 SegmentMediaType = MediaTypes.MediaTypeWav,
-                SegmentOverlapDuration = TimeSpan.Zero
+                SegmentOverlapDuration = TimeSpan.Zero,
             };
         }
 

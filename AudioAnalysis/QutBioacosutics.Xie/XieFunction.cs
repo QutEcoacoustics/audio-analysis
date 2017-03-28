@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Drawing;
-using AudioAnalysisTools;
-using TowseyLibrary;
-using System.Drawing.Imaging;
-using System.IO;
-using AForge.Math;
-using Accord.Math;
-using AudioAnalysisTools.LongDurationSpectrograms;
-
-
-
-namespace QutBioacosutics.Xie
+﻿namespace QutBioacosutics.Xie
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Accord.Math;
     using Acoustics.Shared;
+    using AForge.Math;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.LongDurationSpectrograms;
+    using TowseyLibrary;
 
     public static class XieFunction
     {
@@ -39,7 +36,7 @@ namespace QutBioacosutics.Xie
             int number = 0;
             for (int i = 0; i < Array.Length; i++)
             {
-                if (Array[i] > 0) number++;          
+                if (Array[i] > 0) number++;
             }
             return number;
         }
@@ -52,10 +49,10 @@ namespace QutBioacosutics.Xie
             {
                 if (Array[i] > 0)
                 {
-                    index.Add(i);               
-                }                           
+                    index.Add(i);
+                }
             }
-      
+
             var result = index.ToArray();
             return result;
         }
@@ -82,7 +79,7 @@ namespace QutBioacosutics.Xie
 
             var tempMatrix = new double[length, length];
 
-            for (int c = 0; c < cols; c++) 
+            for (int c = 0; c < cols; c++)
             {
                 for (int r = 0; r < numRows; r++)
                 {
@@ -98,9 +95,9 @@ namespace QutBioacosutics.Xie
                     for (int i = length * r; i < length * (r + 1); i++)
                     {
                         matrix[i, c] = average;
-                      
+
                     }
-                }            
+                }
             }
 
             return matrix;
@@ -170,7 +167,7 @@ namespace QutBioacosutics.Xie
             double sumOfSquaresOfDifferences = data.Select(val => (val - average) * (val - average)).Sum();
             double sd = Math.Sqrt(sumOfSquaresOfDifferences / data.Length);
 
-            return sd;      
+            return sd;
         }
 
         public static double[] CrossCorrelation(double[] v1, double[] v2)
@@ -178,10 +175,10 @@ namespace QutBioacosutics.Xie
             int n = v1.Length;
             double[] r;
             alglib.corrr1d(v1, n, v2, n, out r);
-            
+
             int xcorrLength = 2 * n;
             double[] xCorr = new double[xcorrLength];
-            for (int i = 0; i < n - 1; i++) xCorr[i] = r[i + n] / (i + 1);  
+            for (int i = 0; i < n - 1; i++) xCorr[i] = r[i + n] / (i + 1);
             for (int i = n - 1; i < xcorrLength - 1; i++) xCorr[i] = r[i - n + 1] / (xcorrLength - i - 1);
 
             return xCorr;

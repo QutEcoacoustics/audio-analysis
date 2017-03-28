@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Dong.Felt
+﻿namespace Dong.Felt
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     public class Candidates
-    {      
+    {
         /// <summary>
         /// It could be distance or similarity score.
         /// </summary>
         public double Score {get; set;}
-       
+
         /// <summary>
         /// It indicates the max frequency of a candidate.
         /// </summary>
@@ -33,7 +33,7 @@ namespace Dong.Felt
         public double EndTime { get; set; }
 
         /// <summary>
-        /// It indidates the audio file where the candidate come from. 
+        /// It indidates the audio file where the candidate come from.
         /// </summary>
         public string SourceFilePath { get; set; }
 

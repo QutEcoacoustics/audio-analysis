@@ -1,13 +1,11 @@
-﻿using FELT;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using MQUTeR.FSharp.Shared;
-using Microsoft.FSharp.Collections;
-
-namespace FELT.Tests
+﻿namespace FELT.Tests
 {
-    
-    
+    using System;
+    using FELT;
+    using Microsoft.FSharp.Collections;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using MQUTeR.FSharp.Shared;
+
     /// <summary>
     ///This is a test class for FindEventsLikeThisTest and is intended
     ///to contain all FindEventsLikeThisTest Unit Tests
@@ -36,7 +34,7 @@ namespace FELT.Tests
         }
 
         #region Additional test attributes
-        // 
+        //
         //You can use the following additional attributes as you write your tests:
         //
         //Use ClassInitialize to run code before running the first test in the class
@@ -72,7 +70,7 @@ namespace FELT.Tests
         [TestMethod()]
         public void TestWorkflowInput()
         {
-         
+
 
 
         }

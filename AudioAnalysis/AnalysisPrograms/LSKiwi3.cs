@@ -1,33 +1,28 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
-
-using Acoustics.Shared;
-using Acoustics.Tools;
-using Acoustics.Tools.Audio;
-using AnalysisBase;
-
-using TowseyLibrary;
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
-    using System.Diagnostics.Contracts;
 
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Extensions;
-
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
+    using AnalysisBase;
     using AnalysisPrograms.Production;
-
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using TowseyLibrary;
 
     public class LSKiwi3 : IAnalyser
     {
@@ -117,7 +112,7 @@ namespace AnalysisPrograms
                     Indices = indicesFname,
                     Sgram = sonogramFname,
                     Start = tsStart.TotalSeconds,
-                    Duration = tsDuration.TotalSeconds
+                    Duration = tsDuration.TotalSeconds,
                 };
             }
 
@@ -172,7 +167,7 @@ namespace AnalysisPrograms
         public static void Execute(Arguments arguments)
         {
             Contract.Requires(arguments != null);
-            
+
 
             AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
             TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
@@ -225,7 +220,7 @@ namespace AnalysisPrograms
             var results = Analysis(fiAudioF, analysisSettings);
             //######################################################################
 
-            if (results == null) return analysisResults; //nothing to process 
+            if (results == null) return analysisResults; //nothing to process
             var sonogram = results.Item1;
             var hits = results.Item2;
             var scores = results.Item3;
@@ -378,12 +373,12 @@ namespace AnalysisPrograms
         {
             int step = (int)Math.Round(sonogram.FramesPerSecond); //take one second steps
             //#############################################################################################################################################
-            //                                                          (---frame duration --)  
+            //                                                          (---frame duration --)
             //window    sr          frameDuration   frames/sec  hz/bin   32       64      128      hz/64bins       hz/128bins
             // 1024     22050       46.4ms            21.5      21.5            2944ms              1376hz          2752hz
             // 1024     17640       58.0ms            17.2      17.2    1.85s   3.715s    7.42s     1100hz          2200hz  More than 3s is too long a sample - require stationarity.
             // 2048     17640       116.1ms            8.6       8.6    3.71s   7.430s   14.86s      551hz          1100hz
-            //@frame size = 1024: 
+            //@frame size = 1024:
             //@frame size = 2048: 32 frames = 1.85 seconds.   64 frames  (i.e. 3.7 seconds) is to long a sample - require stationarity.
             int sampleLength = 64; //assuming window = 1024
             if (sonogram.Configuration.WindowSize == 2048) sampleLength = 32;
@@ -473,7 +468,7 @@ namespace AnalysisPrograms
         //    double range = maxFramePeriod - minFramePeriod;
         //    for (int i = 0; i < periodicity.Length; i++)
         //    {
-        //        //if (i > 100) 
+        //        //if (i > 100)
         //        //    LoggedConsole.WriteLine("{0}      {1}",  periodicity[i], ((periodicity[i] - minFramePeriod) / range));
         //        if (periodicity[i] <= 0.0) continue;
         //        periodicity[i] = (periodicity[i] - minFramePeriod) / range;
@@ -580,7 +575,7 @@ namespace AnalysisPrograms
             return chirpScore;
         }
 
-        //returns a continuous average chirp score per second derived from the density and intensity of chirps 
+        //returns a continuous average chirp score per second derived from the density and intensity of chirps
         //public static double[] ConvertChirpsToScoreArray(double[] chirps, double[] dBArray, double framesPerSecond)
         //{
         //    int length = chirps.Length;
@@ -734,7 +729,7 @@ namespace AnalysisPrograms
         {
             int count = comboScore.Length;
             var events = new List<AcousticEvent>();
-            //double maxPossibleScore = 5 * scoreThreshold; // used to calculate a normalised score bewteen 0 - 1.0 
+            //double maxPossibleScore = 5 * scoreThreshold; // used to calculate a normalised score bewteen 0 - 1.0
             bool isHit = false;
             double frameOffset = 1 / framesPerSec; // frame offset in fractions of second
             double startTime = 0.0;
@@ -814,7 +809,7 @@ namespace AnalysisPrograms
                 double endEv1 = events[i].TimeEnd;
                 double startEv2 = events[i + 1].TimeStart;
                 //string name1    = events[i].Name;
-                //string name2    = events[i+1].Name; 
+                //string name2    = events[i+1].Name;
                 if ((startEv2 - endEv1) < 10) /*&& (name1 == name2))*/ // events are close so MergeEvents them
                 {
                     events[i].Oblong = null;
@@ -859,7 +854,7 @@ namespace AnalysisPrograms
                 ev.TimeStart = newMinRow * ev.FrameOffset;
                 ev.TimeEnd = newMaxRow * ev.FrameOffset;
                 ev.Duration = ev.TimeEnd - ev.TimeStart;
-                //int frameCount = (int)Math.Round(ev.Duration / ev.FrameOffset); 
+                //int frameCount = (int)Math.Round(ev.Duration / ev.FrameOffset);
             }
             for (int i = events.Count - 1; i >= 0; i--) if (events[i].Duration < minDurationInSeconds) events.Remove(events[i]);
         } //CropEvents()
@@ -904,16 +899,16 @@ namespace AnalysisPrograms
                                  AudioAnalysisTools.AnalysisKeys.EventName,      //6
                                  AudioAnalysisTools.AnalysisKeys.EventDuration,  //7
                                  AudioAnalysisTools.AnalysisKeys.EventIntensity, //8
-                                 LSKiwiHelper.key_GRID_SCORE,             //9   
+                                 LSKiwiHelper.key_GRID_SCORE,             //9
                                  LSKiwiHelper.key_DELTA_SCORE,            //10
-                                 LSKiwiHelper.key_CHIRP_SCORE,            //11  
-                                 LSKiwiHelper.key_PEAKS_SNR_SCORE,        //12   
+                                 LSKiwiHelper.key_CHIRP_SCORE,            //11
+                                 LSKiwiHelper.key_PEAKS_SNR_SCORE,        //12
                                  LSKiwiHelper.key_BANDWIDTH_SCORE,        //13
                                  LSKiwiHelper.key_COMBO_SCORE,            //14
-                                 AudioAnalysisTools.AnalysisKeys.EventNormscore  //15 
+                                 AudioAnalysisTools.AnalysisKeys.EventNormscore,  //15
                                };
             //                   1                2               3              4                5              6               7              8
-            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), typeof(double), typeof(double), 
+            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), typeof(double), typeof(double),
             //                   9                10              11               12              13             14              15
                              typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double)  };
 
@@ -995,7 +990,7 @@ namespace AnalysisPrograms
 
 
         /// <summary>
-        /// This method should no longer be used. 
+        /// This method should no longer be used.
         /// It depends on use of the DataTable class which ceased when Anthony did a major refactor in mid-2014.
         /// </summary>
         /// <param name="fiCsvFile"></param>
@@ -1061,7 +1056,7 @@ namespace AnalysisPrograms
                     SegmentMinDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
+                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
                 };
             }
         }
@@ -1076,7 +1071,7 @@ namespace AnalysisPrograms
         }
 
 
-        
+
 
     }
 }

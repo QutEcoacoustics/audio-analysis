@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using Acoustics.Shared;
-using AnalysisBase;
-using AnalysisPrograms.SourcePreparers;
-using EcoSounds.Mvc.Tests;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MSTestExtensions;
-
-namespace Analysis.Test
+﻿namespace Analysis.Test
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
+    using AnalysisBase;
+    using AnalysisPrograms.SourcePreparers;
+    using EcoSounds.Mvc.Tests;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using MSTestExtensions;
+
     [TestClass]
     public class LocalSourcePreparerTests : BaseTest
     {
@@ -28,7 +28,7 @@ namespace Analysis.Test
             this.settings = new AnalysisSettings()
             {
                 SegmentTargetSampleRate = 22050,
-                SegmentDuration = TimeSpan.FromSeconds(60)
+                SegmentDuration = TimeSpan.FromSeconds(60),
             };
         }
 
@@ -52,7 +52,7 @@ namespace Analysis.Test
                 Tuple.Create(60.0, 120.0),
                 Tuple.Create(120.0, 180.0),
                 Tuple.Create(180.0, 240.0),
-                Tuple.Create(240.0, 240.113)
+                Tuple.Create(240.0, 240.113),
             };
 
             for (int i = 0; i < analysisSegments.Length; i++)
@@ -81,7 +81,7 @@ namespace Analysis.Test
             var expected = new[]
             {
                 Tuple.Create(60.0, 120.0),
-                Tuple.Create(120.0, 180.0)
+                Tuple.Create(120.0, 180.0),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -104,7 +104,7 @@ namespace Analysis.Test
                 Tuple.Create(60.0, 120.0 + 30.0),
                 Tuple.Create(120.0, 180.0 + 30.0),
                 Tuple.Create(180.0, 240.0 + 0.113),
-                Tuple.Create(240.0, 240.113)
+                Tuple.Create(240.0, 240.113),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -129,7 +129,7 @@ namespace Analysis.Test
                 Tuple.Create(60.0, 120.0),
                 Tuple.Create(120.0, 180.0),
                 Tuple.Create(180.0, 240.0),
-                Tuple.Create(240.0, 240.113)
+                Tuple.Create(240.0, 240.113),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -169,7 +169,7 @@ namespace Analysis.Test
             var d = 48.0;
             var expected = new[]
             {
-                Tuple.Create(60.0 + d, 120.0 + d)
+                Tuple.Create(60.0 + d, 120.0 + d),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -192,7 +192,7 @@ namespace Analysis.Test
             {
                 Tuple.Create(0.0 + d, 60.0 + d),
                 Tuple.Create(60.0 + d, 120.0 + d),
-                Tuple.Create(120.0 + d, 180.0 + d)
+                Tuple.Create(120.0 + d, 180.0 + d),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -217,7 +217,7 @@ namespace Analysis.Test
                 Tuple.Create(0.0 + d, 60.0 + d),
                 Tuple.Create(60.0 + d, 120.0 + d),
                 Tuple.Create(120.0 + d, 180.0 + d),
-                Tuple.Create(180.0 + d, 240.113)
+                Tuple.Create(180.0 + d, 240.113),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -243,7 +243,7 @@ namespace Analysis.Test
                 Tuple.Create(0.0 + d, 60.0 + d),
                 Tuple.Create(60.0 + d, 120.0 + d),
                 Tuple.Create(120.0 + d, 180.0 + d),
-                Tuple.Create(180.0 + d, 240.113)
+                Tuple.Create(180.0 + d, 240.113),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -270,7 +270,7 @@ namespace Analysis.Test
                 Tuple.Create(0.0, d),
                 Tuple.Create(0.0 + d, 60.0 + d),
                 Tuple.Create(60.0 + d, 120.0 + d),
-                Tuple.Create(120.0 + d, 180.0 + d)
+                Tuple.Create(120.0 + d, 180.0 + d),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);

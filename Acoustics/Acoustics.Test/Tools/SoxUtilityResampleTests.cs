@@ -6,23 +6,18 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-using System.Linq;
-
 namespace Acoustics.Test.Tools
 {
     using System;
     using System.IO;
-
+    using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using Acoustics.Tools.Wav;
-
     using EcoSounds.Mvc.Tests;
     using EcoSounds.Mvc.Tests.AcousticsTools;
-
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-
     using MSTestExtensions;
 
     [TestClass]
@@ -37,13 +32,13 @@ namespace Acoustics.Test.Tools
                 SampleRate = 22050,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 352800
+                BitsPerSecond = 352800,
             };
 
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = true,
-                TargetSampleRate = 22050
+                TargetSampleRate = 22050,
             };
 
             var util = TestHelper.GetAudioUtility();

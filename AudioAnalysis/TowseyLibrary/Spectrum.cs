@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-//using System.Data;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
-    
+    using System;
+    using System.Collections.Generic;
+    //using System.Data;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
 
     public class Spectrum
     {
@@ -39,7 +36,7 @@ namespace TowseyLibrary
         public static string SpectrumToCsvString(int index, double[] values)
         {
             var sb = new StringBuilder(index.ToString());
-           
+
             for (int i = 0; i < values.Length; i++)
             {
                 sb.Append("," + values[i]);
@@ -67,7 +64,7 @@ namespace TowseyLibrary
 //        }
 
 //        private Dictionary<string, string> ToDictionary()
-//        { 
+//        {
 //
 //            var baseDictionary = new Dictionary<string, string>(this.values.Length + 2);
 //            baseDictionary.Add("Index", this.Index.ToString());
@@ -102,7 +99,7 @@ namespace TowseyLibrary
 //            //DateTime.Now.ToString("o")
 //            //StringBuilder sb = new StringBuilder(String.Format("{0}-{1}-{2}-{3}-{4}", year, month, day, hour, min));
 
-            
+
 
 //            var lines = new List<string>();
 //            lines.Add(sb.ToString());

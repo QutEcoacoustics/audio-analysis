@@ -3,13 +3,11 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
     using System.Text;
-
     using Acoustics.Shared;
-
+    using Acoustics.Shared.Contracts;
     using AudioAnalysisTools.Indices;
 
     public class ZoomCommonArguments

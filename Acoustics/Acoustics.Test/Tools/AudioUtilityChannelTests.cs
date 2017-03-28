@@ -43,7 +43,7 @@ namespace Acoustics.Test.Tools
             // array of channels of frequencies (expected in each channel)
             // expect 4 channels
             var expectedFrequencies = new[] { 4000.AsArray(), 3000.AsArray(), 2000.AsArray(), 1000.AsArray() };
-        
+
 
             ChannelTest(FourChannelFile, null, null, expectedFrequencies);
 
@@ -51,7 +51,7 @@ namespace Acoustics.Test.Tools
             // expect 2 channels
             var expectedFrequencies2 = new[]
                 {
-                    2000.AsArray(), 500.AsArray()
+                    2000.AsArray(), 500.AsArray(),
                 };
 
             ChannelTest(TwoChannelFile, null, null, expectedFrequencies2);
@@ -63,7 +63,7 @@ namespace Acoustics.Test.Tools
             // array of channels of frequencies (expected in each channel)
             var expectedFrequencies = new[]
                 {
-                    new[] { 4000 }
+                    new[] { 4000 },
                 };
 
             ChannelTest(FourChannelFile, new[] { 1 }, false, expectedFrequencies);
@@ -75,7 +75,7 @@ namespace Acoustics.Test.Tools
             // array of channels of frequencies (expected in each channel)
             var expectedFrequencies = new[]
                 {
-                    new[] { 3000 }
+                    new[] { 3000 },
                 };
 
             ChannelTest(FourChannelFile, new[] { 2 }, false, expectedFrequencies);
@@ -87,7 +87,7 @@ namespace Acoustics.Test.Tools
             // array of channels of frequencies (expected in each channel)
             var expectedFrequencies = new[]
                 {
-                    new[] { 2000 }
+                    new[] { 2000 },
                 };
 
             ChannelTest(FourChannelFile, new[] { 3 }, false, expectedFrequencies);
@@ -99,7 +99,7 @@ namespace Acoustics.Test.Tools
             // array of channels of frequencies (expected in each channel)
             var expectedFrequencies = new[]
                 {
-                    new[] { 1000 }
+                    new[] { 1000 },
                 };
 
             ChannelTest(FourChannelFile, new[] { 4 }, false, expectedFrequencies);
@@ -143,7 +143,7 @@ namespace Acoustics.Test.Tools
             var expectedFrequencies = new[]
                 {
                     new[] { 4000 },
-                    new[] { 3000 }
+                    new[] { 3000 },
                 };
 
             ChannelTest(FourChannelFile, new[] { 1, 2 }, false, expectedFrequencies);
@@ -156,7 +156,7 @@ namespace Acoustics.Test.Tools
             var expectedFrequencies = new[]
                 {
                     new[] { 2000 },
-                    new[] { 1000 }
+                    new[] { 1000 },
                 };
 
             ChannelTest(FourChannelFile, new[] { 3, 4 }, false, expectedFrequencies);
@@ -171,7 +171,7 @@ namespace Acoustics.Test.Tools
                     new[] { 4000 },
                     new[] { 3000 },
                     new[] { 2000 },
-                    new[] { 1000 }
+                    new[] { 1000 },
                 };
 
             ChannelTest(FourChannelFile, new[] {1, 2, 3, 4 }, false, expectedFrequencies);
@@ -183,7 +183,7 @@ namespace Acoustics.Test.Tools
             // array of channels of frequencies (expected in each channel)
             var expectedFrequencies = new[]
                 {
-                    new[] { 4000, 3000}
+                    new[] { 4000, 3000},
                 };
 
             ChannelTest(FourChannelFile, new[] { 1, 2 }, true, expectedFrequencies);
@@ -195,7 +195,7 @@ namespace Acoustics.Test.Tools
             // array of channels of frequencies (expected in each channel)
             var expectedFrequencies = new[]
                 {
-                    new[] { 2000, 1000 }
+                    new[] { 2000, 1000 },
                 };
 
             ChannelTest(FourChannelFile, new[] { 3, 4 }, true, expectedFrequencies);
@@ -207,7 +207,7 @@ namespace Acoustics.Test.Tools
             // array of channels of frequencies (expected in each channel)
             var expectedFrequencies = new[]
                 {
-                    new[] { 4000, 3000, 2000, 1000 }
+                    new[] { 4000, 3000, 2000, 1000 },
                 };
 
             ChannelTest(FourChannelFile, new[] {1, 2, 3, 4 }, true, expectedFrequencies);
@@ -219,7 +219,7 @@ namespace Acoustics.Test.Tools
             // array of channels of frequencies (expected in each channel)
             var expectedFrequencies = new[]
                 {
-                    new[] { 4000 }
+                    new[] { 4000 },
                 };
 
             ChannelTest(FourChannelFile, new[] { 1 }, true, expectedFrequencies);
@@ -248,7 +248,7 @@ namespace Acoustics.Test.Tools
                     new[] { 4000 },
                     new[] { 3000 },
                     new[] { 2000 },
-                    new[] { 1000 }
+                    new[] { 1000 },
                 };
 
             ChannelTest(FourChannelFile, new[] { 1, 2, 3, 4 }, false, expectedFrequencies);
@@ -263,7 +263,7 @@ namespace Acoustics.Test.Tools
                     new[] { 4000 },
                     new[] { 3000 },
                     new[] { 2000 },
-                    new[] { 1000 }
+                    new[] { 1000 },
                 };
 
             ChannelTest(FourChannelFileWavPack, new[] { 1, 2, 3, 4 }, false, expectedFrequencies);
@@ -278,7 +278,7 @@ namespace Acoustics.Test.Tools
                     new[] { 4000 },
                     new[] { 3000 },
                     new[] { 2000 },
-                    new[] { 1000 }
+                    new[] { 1000 },
                 };
 
             ChannelTest(FourChannelFileOgg, new[] { 1, 2, 3, 4 }, false, expectedFrequencies);
@@ -293,7 +293,7 @@ namespace Acoustics.Test.Tools
                     new[] { 4000 },
                     new[] { 3000 },
                     new[] { 2000 },
-                    new[] { 1000 }
+                    new[] { 1000 },
                 };
 
             ChannelTest(FourChannelFileFlac, new[] { 1, 2, 3, 4 }, false, expectedFrequencies);
@@ -305,8 +305,8 @@ namespace Acoustics.Test.Tools
             AssertAdvancedChannelConversionFails(
                 FourChannelFileFlac,
                 MediaTypes.MediaTypeFlacAudio,
-                TestHelper.GetAudioUtilityFfmpeg(), 
-                MediaTypes.MediaTypeMp3, 
+                TestHelper.GetAudioUtilityFfmpeg(),
+                MediaTypes.MediaTypeMp3,
                 skipMonoCheck: true);
         }
 

@@ -60,7 +60,7 @@ namespace AudioAnalysisTools
 
         public const double DefaultActivityThresholdDb = 6.0; // used to select frames that have 3dB > background
         // used to remove short events from consideration - NOT USED ANY MORE
-        //public static TimeSpan DEFAULT_MinimumEventDuration = TimeSpan.FromMilliseconds(100); 
+        //public static TimeSpan DEFAULT_MinimumEventDuration = TimeSpan.FromMilliseconds(100);
 
 
         public static SummaryActivity CalculateActivity(double[] dBarray, TimeSpan frameStepDuration)
@@ -70,7 +70,7 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// Returns the number of active frames and acoustic events and their average duration in milliseconds
-        /// Only counts an event if it is LONGER than one frame. 
+        /// Only counts an event if it is LONGER than one frame.
         /// Count events as number of transitions from active to non-active frame
         /// </summary>
         /// <param name="activeFrames"></param>
@@ -97,7 +97,7 @@ namespace AudioAnalysisTools
             }
 
             // following line is more elegant but want to keep active frame array
-            //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB));  
+            //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB));
             if (activeFrameCount != 0) activeAvDB /= (double)activeFrameCount;
 
             if (activeFrameCount <= 1)
@@ -155,18 +155,18 @@ namespace AudioAnalysisTools
             double[] coverSpectrum = new double[cols];
             double[] eventSpectrum = new double[cols];
             // for each frequency bin, calculate coverage
-            for (int c = 0; c < cols; c++) 
+            for (int c = 0; c < cols; c++)
             {
                 // get the freq bin containing dB values
-                double[] bin = MatrixTools.GetColumn(spectrogram, c); 
+                double[] bin = MatrixTools.GetColumn(spectrogram, c);
 
                 // get activity and event info
                 activity = ActivityAndCover.CalculateActivity(bin, frameStepDuration, dbThreshold);
                 //bool[] a1 = activity.activeFrames;
                 //int a2 = activity.activeFrameCount;
-                coverSpectrum[c] = activity.fractionOfActiveFrames; 
+                coverSpectrum[c] = activity.fractionOfActiveFrames;
                 //double a4 = activity.activeAvDB;
-                eventSpectrum[c] = activity.eventCount / recordingDurationInSeconds; 
+                eventSpectrum[c] = activity.eventCount / recordingDurationInSeconds;
                 //TimeSpan a6 = activity.avEventDuration;
                 //bool[] a7 = activity.eventLocations;
             }
@@ -177,7 +177,7 @@ namespace AudioAnalysisTools
             double sum = 0;
             for (int j = 0; j < lowFreqBinIndex; j++) { sum += coverSpectrum[j]; count++; }
             double lowFreqCover = sum / (double)count;
-            
+
             // calculate coverage for mid freq band as a percentage
             count = 0;
             sum = 0;
@@ -187,7 +187,7 @@ namespace AudioAnalysisTools
                 count++;
             }
             double midFreqCover = sum / (double)count;
-            
+
             // calculate coverage for high freq band as a percentage
             count = 0;
             sum = 0;

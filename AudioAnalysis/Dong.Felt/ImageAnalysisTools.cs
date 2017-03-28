@@ -7,12 +7,12 @@ namespace Dong.Felt
     using System.IO;
     using System.Text;
     using TowseyLibrary;
-    using System.Data;   
-    using AudioAnalysisTools;   
+    using System.Data;
+    using AudioAnalysisTools;
     using AForge.Math;
     using AudioAnalysisTools.DSP;
     using Dong.Felt.Configuration;
-    using Dong.Felt.ResultsOutput;    
+    using Dong.Felt.ResultsOutput;
     using Dong.Felt.Representations;
     using AForge.Imaging.Filters;
     using System.Drawing;
@@ -28,23 +28,23 @@ namespace Dong.Felt
                                                 {0.00038771,	0.01330373,	0.11098164,	0.22508352,	0.11098164,	0.01330373,	0.00038771},
                                                 {0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117},
                                                 {0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292},
-                                                {0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067}};
+                                                {0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067},};
 
         //5 * 5 gaussian blur
         public static double[,] gaussianBlur5 = {{0.0000,       0.0000,     0.0002,     0.0000,    0.0000},
                                                  {0.0000,       0.0113,     0.0837,     0.0113,    0.0000},
                                                  {0.0002,       0.0837,     0.6187,     0.0837,    0.0002},
                                                  {0.0000,       0.0113,     0.0837,     0.0113,    0.0000},
-                                                 {0.0000,       0.0000,     0.0002,     0.0000,    0.0000}};
+                                                 {0.0000,       0.0000,     0.0002,     0.0000,    0.0000},};
 
         // 3* 3 Sobel edge mask
         public static double[,] SobelX =  { {-1.0,  0.0,  1.0},
                                             {-2.0,  0.0,  2.0},
-                                            {-1.0,  0.0,  1.0} };
+                                            {-1.0,  0.0,  1.0}, };
 
         public static double[,] SobelY =  { { 1.0,  2.0,  1.0},
                                             { 0.0,  0.0,  0.0},
-                                            {-1.0, -2.0, -1.0} };
+                                            {-1.0, -2.0, -1.0}, };
 
         // 7 * 7 rectangular Sobel ridge mask
         public static double[,] SobelRidge7X = { {0.0,  0.0,  -1.0,  2.0,  -1.0,  0.0,  0.0},
@@ -68,51 +68,51 @@ namespace Dong.Felt
         // 3 * 3 sobel ridge mask
         public static double[,] SobelRidge3X = { {-1.0,  2.0,  -1.0},
                                                  {-2.0,  4.0,  -2.0},
-                                                 {-1.0,  2.0,  -1.0} };
+                                                 {-1.0,  2.0,  -1.0}, };
 
         public static double[,] SobelRidge3Y = { {-1.0,  -2.0,  -1.0},
                                                  { 2.0,   4.0,   2.0},
-                                                 {-1.0,  -2.0,  -1.0} };
+                                                 {-1.0,  -2.0,  -1.0}, };
 
         public static double[,] SobelRidge5X = { {-1.0,  -1.0,  4.0,  -1.0, -1.0},
                                                  {-1.0,  -1.0,  4.0,  -1.0, -1.0},
                                                  {-1.0,  -1.0,  4.0,  -1.0, -1.0},
                                                  {-1.0,  -1.0,  4.0,  -1.0, -1.0},
-                                                 {-1.0,  -1.0,  4.0,  -1.0, -1.0} };
+                                                 {-1.0,  -1.0,  4.0,  -1.0, -1.0}, };
 
 
         public static double[,] SobelRidge5Y = { {-1.0,  -1.0,  -1.0,  -1.0, -1.0},
                                                  {-1.0,  -1.0,  -1.0,  -1.0, -1.0},
                                                  { 4.0,   4.0,   4.0,   4.0,  4.0},
                                                  {-1.0,  -1.0,  -1.0,  -1.0, -1.0},
-                                                 {-1.0,  -1.0,  -1.0,  -1.0, -1.0} };
+                                                 {-1.0,  -1.0,  -1.0,  -1.0, -1.0}, };
 
         // TODO Xueyan : 5 * 5 Corner mask, still need to think about it
         public static double[,] SobelCorner = { {0.0,  -1.0,  2.0,  -1.0,   0.0},
                                                 {0.0,  -1.0,  2.0,  -1.0,  -1.0},
                                                 {0.0,  -1.0,  2.0,   2.0,   2.0},
                                                 {0.0,  -1.0, -1.0,  -1.0,  -1.0},
-                                                {0.0,   0.0,  0.0,   0.0,   0.0} };
+                                                {0.0,   0.0,  0.0,   0.0,   0.0}, };
 
         public static double[,] SobelCornerY = { { 0.0,  -1.0,  2.0,  -1.0,  0.0},
                                                 {-1.0,  -2.0,  4.0,  -2.0, -1.0},
                                                 {-2.0,  -4.0,  12.0, -4.0, -2.0},
                                                 {-1.0,  -2.0,  4.0,  -2.0, -1.0},
-                                                { 0.0,  -1.0,  2.0,  -1.0,  0.0} };
+                                                { 0.0,  -1.0,  2.0,  -1.0,  0.0}, };
 
         public const double Pi = Math.PI;
 
         #endregion
-        
-        /// Canny detector for edge detection in a noisy image 
-        /// it involves five steps here, first, it needs to do the Gaussian convolution, 
-        /// then a simple derivative operator(like Roberts Cross or Sobel operator) is applied to the smoothed image to highlight regions of the image. 
+
+        /// Canny detector for edge detection in a noisy image
+        /// it involves five steps here, first, it needs to do the Gaussian convolution,
+        /// then a simple derivative operator(like Roberts Cross or Sobel operator) is applied to the smoothed image to highlight regions of the image.
         #region Public Methods
 
         // Horizontal line structure
         public static double[,] Dilation(double[,] matrix, int windowSize)
-        {         
-            // According to Gaussian blur thoery, the centroid of the kernel matrix is maximum. 
+        {
+            // According to Gaussian blur thoery, the centroid of the kernel matrix is maximum.
             double[,] rotateMatrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
             var rows = rotateMatrix.GetLength(0) - 1;
             var cols = rotateMatrix.GetLength(1);
@@ -138,10 +138,10 @@ namespace Dong.Felt
         }
 
         public static double[,] GaussianBlur(double[,] matrix, double sigma, int size)
-        {           
-            var gaussianBlur = new GaussianBlur(sigma, size);           
+        {
+            var gaussianBlur = new GaussianBlur(sigma, size);
             var sumKernelValue = 0.0;
-            // According to Gaussian blur thoery, the centroid of the kernel matrix is maximum. 
+            // According to Gaussian blur thoery, the centroid of the kernel matrix is maximum.
 
             for (var i = 0; i < size; i++)
             {
@@ -149,10 +149,10 @@ namespace Dong.Felt
                 {
                     sumKernelValue += gaussianBlur.Kernel[i, j];
                 }
-            }           
+            }
             var doubleKernal = IntKernalToDouble(gaussianBlur.Kernel, 1.0 / sumKernelValue);
             return GaussianFilter(matrix, doubleKernal);
-        }        
+        }
 
         public static double[,] GetImageData(string imageFilePath)
         {
@@ -169,7 +169,7 @@ namespace Dong.Felt
             }
             return result;
         }
-       
+
         // Generate the gaussian kernel automatically
         public static double[,] GenerateGaussianKernel(int sizeOfKernel, double sigma)
         {
@@ -189,7 +189,7 @@ namespace Dong.Felt
                     sum += kernel[kernelRadius + i, kernelRadius + j];
                 }
             }
-            //the process of normalizing the kernel elements            
+            //the process of normalizing the kernel elements
             for (int i = 0; i < sizeOfKernel; i++)
             {
                 for (int j = 0; j < sizeOfKernel; j++)
@@ -343,8 +343,8 @@ namespace Dong.Felt
             return result;
         }
 
-        // From the gradient, we can get the gradientMagnitude which means the edge strengh. Simply put, it means how much the intensity of pixels changes in an image. 
-        // If it is large, it changes quickly; otherwise, it changes slowly. 
+        // From the gradient, we can get the gradientMagnitude which means the edge strengh. Simply put, it means how much the intensity of pixels changes in an image.
+        // If it is large, it changes quickly; otherwise, it changes slowly.
         // Here there are two ways to calculate: Manhattan distance = |GX| + |GY| , OR we can also use euclidean distance measure to get it
         public static double[,] GradientMagnitude(double[,] gradientX, double[,] gradientY)
         {
@@ -369,7 +369,7 @@ namespace Dong.Felt
 
         // Find the edge direction, from it we can know the intensity changes come along with which direction
         // But, its direction always perpendicular with the direction of normal edge
-        // this is done based on the gradient of sobel edge mask, so it only calculate the direction in a 3* 3 neighbourhood 
+        // this is done based on the gradient of sobel edge mask, so it only calculate the direction in a 3* 3 neighbourhood
         public static double[,] GradientDirection(double[,] gradientX, double[,] gradientY, double[,] gradientMagnitude)
         {
             int MaximumXindex = gradientX.GetLength(0);
@@ -381,7 +381,7 @@ namespace Dong.Felt
             {
                 for (int col = 0; col < MaximumYindex; col++)
                 {
-                    // here it's kind of tricky thing 
+                    // here it's kind of tricky thing
                     if (gradientX[row, col] == 0)
                     {
                         if (gradientY[row, col] == 0)
@@ -454,7 +454,7 @@ namespace Dong.Felt
             int MaximumYindex = gradientMagnitude.GetLength(1);
             int kernelRadius = neighborhoodSize / 2;
 
-            // check the direction 
+            // check the direction
             for (int i = kernelRadius; i < MaximumXindex - kernelRadius; i++)
             {
                 for (int j = kernelRadius; j < MaximumYindex - kernelRadius; j++)
@@ -500,7 +500,7 @@ namespace Dong.Felt
             return gradientMagnitude;
         }
 
-        //4.Double thresholding: Potential edges are determined by thresholding.  Canny detection algorithm uses double thresholding. Edge pixels stronger than 
+        //4.Double thresholding: Potential edges are determined by thresholding.  Canny detection algorithm uses double thresholding. Edge pixels stronger than
         // the high threshold are marked as strong; edge pixels weaker than the low threshold are marked as weak are suppressed and edge poxels between the two
         // thresholds are marked as weak.   The vaule is 2.0, 4.0, 6.0, 8.0
         public static double[,] DoubleThreshold(double[,] nonMaxima, double highThreshold, double lowThreshold)
@@ -694,11 +694,11 @@ namespace Dong.Felt
                     }
                 }
             }
-            //result = magnitude; 
+            //result = magnitude;
             return result;
         }
 
-        // Remove the poi which are too close in a 3 * 3 neighbourhood 
+        // Remove the poi which are too close in a 3 * 3 neighbourhood
         public static double[,] removeClosePoi(double[,] magnitude, int sizeOfNeighbourhood)
         {
             int MaximumXindex = magnitude.GetLength(0);
@@ -733,9 +733,9 @@ namespace Dong.Felt
             result = magnitude;
             return result;
         }
-        
+
         /// <summary>
-        /// This function tries to recheck the ridges that haved been detected by sobel ridge detection. 
+        /// This function tries to recheck the ridges that haved been detected by sobel ridge detection.
         /// </summary>
         /// <param name="m"></param>
         /// <returns></returns>
@@ -769,7 +769,7 @@ namespace Dong.Felt
             // We calculate the ridge magnitude for each possible ridge direction using masks.
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            if ((rows != cols) || (rows != 3)) // must be square 3X3 matrix 
+            if ((rows != cols) || (rows != 3)) // must be square 3X3 matrix
             {
                 isRidge = false;
                 magnitude = 0.0;
@@ -779,22 +779,22 @@ namespace Dong.Felt
 
             double[,] ridgeDir0Mask = { {-0.1,-0.1,-0.1},
                                         { 0.4, 0.4, 0.4},
-                                        {-0.1,-0.1,-0.1},                                        
+                                        {-0.1,-0.1,-0.1},
                                       };
 
             double[,] ridgeDir1Mask = { {-0.1,-0.1, 0.4},
                                         {-0.1, 0.4,-0.1},
-                                        { 0.4,-0.1,-0.1},                                       
+                                        { 0.4,-0.1,-0.1},
                                       };
 
             double[,] ridgeDir2Mask = { {-0.1, 0.4,-0.1},
                                         {-0.1, 0.4,-0.1},
-                                        {-0.1, 0.4,-0.1},                                      
+                                        {-0.1, 0.4,-0.1},
                                       };
 
             double[,] ridgeDir3Mask = { { 0.4,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1},
-                                        {-0.1,-0.1, 0.4},                                      
+                                        {-0.1,-0.1, 0.4},
                                       };
 
 
@@ -832,7 +832,7 @@ namespace Dong.Felt
             // We calculate the ridge magnitude for each possible ridge direction using masks.
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix 
+            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix
             {
                 isRidge = false;
                 magnitude = 0.0;
@@ -844,28 +844,28 @@ namespace Dong.Felt
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         { 0.4, 0.4, 0.4, 0.4, 0.4},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
                                       };
 
             double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
-                                        { 0.4,-0.1,-0.1,-0.1,-0.1}
+                                        { 0.4,-0.1,-0.1,-0.1,-0.1},
                                       };
 
             double[,] ridgeDir2Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1}
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
                                       };
 
             double[,] ridgeDir3Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1, 0.4}
+                                        {-0.1,-0.1,-0.1,-0.1, 0.4},
                                       };
 
 
@@ -892,9 +892,9 @@ namespace Dong.Felt
         {
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            if ((rows != 12) || (cols != 6)) // must be square 12X6 matrix 
-            {               
-                magnitude = 0.0;               
+            if ((rows != 12) || (cols != 6)) // must be square 12X6 matrix
+            {
+                magnitude = 0.0;
                 return;
             }
 
@@ -909,30 +909,30 @@ namespace Dong.Felt
                                               {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
                                               {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
                                               {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
-                                              {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1}
+                                              {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
                                             };
 
-           
+
             var ridgeMagnitude = MatrixTools.DotProduct(ridgeHorizontalMask, m);
-            magnitude = ridgeMagnitude / 2;           
+            magnitude = ridgeMagnitude / 2;
         }
 
         public static void ImprovedRidgeDetectionVDirection(double[,] m, out double magnitude)
         {
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            if ((rows != 6) || (cols != 12)) // must be square 6X12 matrix 
-            {               
+            if ((rows != 6) || (cols != 12)) // must be square 6X12 matrix
+            {
                 magnitude = 0.0;
                 return;
             }
-          
+
             double[,] ridgeVerticalMask = { {-0.1, -0.1,-0.1,-0.1,-0.1, 0.5, 0.5,-0.1,-0.1,-0.1,-0.1, -0.1},
                                             {-0.1, -0.1,-0.1,-0.1,-0.1, 0.5, 0.5,-0.1,-0.1,-0.1,-0.1, -0.1},
                                             {-0.1, -0.1,-0.1,-0.1,-0.1, 0.5, 0.5,-0.1,-0.1,-0.1,-0.1, -0.1},
                                             {-0.1, -0.1,-0.1,-0.1,-0.1, 0.5, 0.5,-0.1,-0.1,-0.1,-0.1, -0.1},
                                             {-0.1, -0.1,-0.1,-0.1,-0.1, 0.5, 0.5,-0.1,-0.1,-0.1,-0.1, -0.1},
-                                            {-0.1, -0.1,-0.1,-0.1,-0.1, 0.5, 0.5,-0.1,-0.1,-0.1,-0.1, -0.1}
+                                            {-0.1, -0.1,-0.1,-0.1,-0.1, 0.5, 0.5,-0.1,-0.1,-0.1,-0.1, -0.1},
                                       };
 
             var ridgeMagnitude = MatrixTools.DotProduct(ridgeVerticalMask, m);
@@ -943,7 +943,7 @@ namespace Dong.Felt
         {
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            if ((rows != 6) || (cols != 5)) // must be square 6X5 matrix 
+            if ((rows != 6) || (cols != 5)) // must be square 6X5 matrix
             {
                 magnitude = 0.0;
                 return;
@@ -964,7 +964,7 @@ namespace Dong.Felt
         public static void ImprovedRidgeDetectionNDDirection(double[] m, out double magnitude)
         {
             int rows = m.GetLength(0);
-            if (rows != 7) // must be square 6X5 matrix 
+            if (rows != 7) // must be square 6X5 matrix
             {
                 magnitude = 0.0;
                 return;
@@ -975,7 +975,7 @@ namespace Dong.Felt
             for (var i = 0; i < ridgeNegativeDiagonalMask.Length; i++)
             {
                 ridgeMagnitude += ridgeNegativeDiagonalMask[i] * m[i];
-            }            
+            }
             magnitude = ridgeMagnitude / 2;
         }
 
@@ -994,7 +994,7 @@ namespace Dong.Felt
             // We calculate the ridge magnitude for each possible ridge direction using masks.
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            if ((rows != cols) || (rows != 7)) // must be square 5X5 matrix 
+            if ((rows != cols) || (rows != 7)) // must be square 5X5 matrix
             {
                 isRidge = false;
                 magnitude = 0.0;
@@ -1008,7 +1008,7 @@ namespace Dong.Felt
                                         { 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1}
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
                                       };
 
             double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1, 0.4},
@@ -1017,7 +1017,7 @@ namespace Dong.Felt
                                         {-0.1,-0.1,-0.1, 0.4,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        { 0.4,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1}
+                                        { 0.4,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
                                       };
 
             double[,] ridgeDir2Mask = { {-0.1,-0.1,-0.1, 0.4,-0.1,-0.1,-0.1},
@@ -1026,7 +1026,7 @@ namespace Dong.Felt
                                         {-0.1,-0.1,-0.1, 0.4,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1, 0.4,-0.1,-0.1,-0.1}
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1,-0.1,-0.1},
                                       };
 
             double[,] ridgeDir3Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
@@ -1035,7 +1035,7 @@ namespace Dong.Felt
                                         {-0.1,-0.1,-0.1, 0.4,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1, 0.4,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1, 0.4}
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1, 0.4},
                                       };
 
             double[] ridgeMagnitudes = new double[4];
@@ -1059,7 +1059,7 @@ namespace Dong.Felt
         {
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix 
+            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix
             {
                 isRidge = false;
                 magnitude = 0.0;
@@ -1071,49 +1071,49 @@ namespace Dong.Felt
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         { 0.4, 0.4, 0.4, 0.4, 0.4},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
                                       };
             double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1, 0.4},
                                         {-0.1, 0.4, 0.4, 0.4,-0.1},
                                         { 0.4,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
                                       };
             double[,] ridgeDir2Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
-                                        { 0.4,-0.1,-0.1,-0.1,-0.1}
+                                        { 0.4,-0.1,-0.1,-0.1,-0.1},
                                       };
             double[,] ridgeDir3Mask = { {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1, 0.4,-0.1,-0.1,-0.1}
+                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
                                        };
             double[,] ridgeDir4Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1}
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
                                       };
             double[,] ridgeDir5Mask = { {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1, 0.4,-0.1}
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
                                       };
             double[,] ridgeDir6Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1, 0.4}
+                                        {-0.1,-0.1,-0.1,-0.1, 0.4},
                                       };
             double[,] ridgeDir7Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         { 0.4,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1, 0.4, 0.4, 0.4,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1, 0.4},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
                                       };
 
 
@@ -1143,12 +1143,12 @@ namespace Dong.Felt
         }
 
         public static void GradientCalculation(double[,] m, out bool isEdge, out double magnitude, out double direction)
-        {         
+        {
             double[,] edgeXMask = { {-1, 1},
-                                    { 0, 0}                                      
+                                    { 0, 0},
                                   };
             double[,] edgeYMask = { {-1, 0},
-                                    { 1, 0}                                     
+                                    { 1, 0},
                                   };
             var partialDifferenceX = MatrixTools.DotProduct(edgeXMask, m);
             var partialDifferenceY = MatrixTools.DotProduct(edgeYMask, m);
@@ -1162,12 +1162,12 @@ namespace Dong.Felt
             {
                 direction = Math.Atan2(partialDifferenceY, partialDifferenceX);
             }
-            double threshold = 0; 
+            double threshold = 0;
             isEdge = (magnitude > threshold);
         }
-       
+
         /// <summary>
-        /// This function implements the sobel edge detection in a different way. And the size of the mask neighbourhood is 3*3.  
+        /// This function implements the sobel edge detection in a different way. And the size of the mask neighbourhood is 3*3.
         /// </summary>
         /// <param name="m"></param>
         /// <param name="relThreshold"></param>
@@ -1235,7 +1235,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// This function is an implementation of CannyEdge detection. 
+        /// This function is an implementation of CannyEdge detection.
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
@@ -1269,7 +1269,7 @@ namespace Dong.Felt
             }
 
             //var sizeOfRidge = 5;
-            //var halfLength = sizeOfRidge/2; 
+            //var halfLength = sizeOfRidge/2;
             // better be odd number 3, 5
             //var kernelSizeOfGaussianBlur = 5;
             //double SigmaOfGaussianBlur = 1.0;
@@ -1289,13 +1289,13 @@ namespace Dong.Felt
             //var filterpoi = ImageAnalysisTools.filterPointsOfInterest(thin, matrix, 7);
             //var removeClose = ImageAnalysisTools.removeClosePoi(filterpoi, 3);
             ////var hysterisis = ImageAnalysisTools.HysterisisThresholding(doubleThreshold, gradientDirection, 3);
-            //magnitude = removeClose; 
+            //magnitude = removeClose;
             //direction = gradientDirection;
 
             result = Tuple.Create(result1, result2);
             return result;
         }
-       
+
         /// To cut off the overlapped lines in the same direction for 8 directions
         public static List<PointOfInterest> PruneAdjacentTracksBasedOn8Direction(List<PointOfInterest> poiList, int rows, int cols)
         {
@@ -1329,7 +1329,7 @@ namespace Dong.Felt
                     } // if (OrientationCategory)
                     else if (M[r, c].OrientationCategory == 2)  // positive diagonal line
                     {
-                        // Check whether it is connected to other poi with orientation 2. 
+                        // Check whether it is connected to other poi with orientation 2.
                         if ((M[r - 1, c + 1] != null) && (M[r - 1, c + 1].OrientationCategory == 2))
                         {
                             /// above and below
@@ -1347,7 +1347,7 @@ namespace Dong.Felt
                                 }
                             }
                             /// left and right
-                            if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 2)) // 
+                            if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 2)) //
                             {
 
                                 M[r, c - 1] = null;
@@ -1379,7 +1379,7 @@ namespace Dong.Felt
 
                             }
                             /// left and right
-                            if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 6)) // 
+                            if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 6)) //
                             {
 
                                 M[r, c - 1] = null;
@@ -1392,12 +1392,12 @@ namespace Dong.Felt
 
                             }
                         }
-                    } // end if (M[r, c].OrientationCategory == 0) 
+                    } // end if (M[r, c].OrientationCategory == 0)
                 } // c
             } // for r loop
             return PointOfInterest.TransferPOIMatrix2List(M);
         } // PruneAdjacentTracks()
-        
+
         /// To cut off the overlapped lines in the same direction
         public static List<PointOfInterest> PruneAdjacentTracks(List<PointOfInterest> poiList, int rows, int cols)
         {
@@ -1431,7 +1431,7 @@ namespace Dong.Felt
                     } // if (OrientationCategory)
                     else if (M[r, c].OrientationCategory == 2)  // positive diagonal line
                     {
-                        // Check whether it is connected to other poi with orientation 2. 
+                        // Check whether it is connected to other poi with orientation 2.
                         if ((M[r - 1, c + 1] != null) && (M[r - 1, c + 1].OrientationCategory == 2))
                         {
                             /// above and below
@@ -1450,7 +1450,7 @@ namespace Dong.Felt
                                 }
                             }
                             /// left and right
-                            if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 2)) // 
+                            if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 2)) //
                             {
                                 if (M[r, c - 1].RidgeMagnitude < M[r, c].RidgeMagnitude)
                                 {
@@ -1486,7 +1486,7 @@ namespace Dong.Felt
                                 }
                             }
                             /// left and right
-                            if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 6)) // 
+                            if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 6)) //
                             {
                                 if (M[r, c - 1].RidgeMagnitude < M[r, c].RidgeMagnitude)
                                 {
@@ -1501,13 +1501,13 @@ namespace Dong.Felt
                                 }
                             }
                         }
-                    } // end if (M[r, c].OrientationCategory == 0) 
+                    } // end if (M[r, c].OrientationCategory == 0)
                 } // c
             } // for r loop
             return PointOfInterest.TransferPOIMatrix2List(M);
-        } 
+        }
 
-        ///The difference between this function and PruneAdjacentTracks is that this function tries to cut off the overlapped ridges in different directions. 
+        ///The difference between this function and PruneAdjacentTracks is that this function tries to cut off the overlapped ridges in different directions.
         public static List<PointOfInterest> IntraPruneAdjacentTracks(List<PointOfInterest> poiList, int rows, int cols)
         {
             var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
@@ -1541,15 +1541,15 @@ namespace Dong.Felt
                         {
                             if (M[r, c + 1].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r, c + 1] = null;
                         }
-                    } // end if (M[r, c].OrientationCategory == 0) 
+                    } // end if (M[r, c].OrientationCategory == 0)
                 } // c
             } // for r loop
             return PointOfInterest.TransferPOIMatrix2List(M);
         } // PruneAdjacentTracks()
 
         /// <summary>
-        /// This function aims to remove isolated points of interest for filtering out the poi. 
-        /// The principle is that there are less than the threshold of the count of poi detected in a neighbourhood (it could be 7 * 7, 9 * 9, 11 * 11, 13 * 13). 
+        /// This function aims to remove isolated points of interest for filtering out the poi.
+        /// The principle is that there are less than the threshold of the count of poi detected in a neighbourhood (it could be 7 * 7, 9 * 9, 11 * 11, 13 * 13).
         /// </summary>
         /// <param name="poiList"></param>
         /// <param name="rows"></param>
@@ -1561,14 +1561,14 @@ namespace Dong.Felt
             int sizeOfNeighbourhood, int thresholdForLeastPoint)
         {
             var rows = M.GetLength(0);
-            var cols = M.GetLength(1);           
+            var cols = M.GetLength(1);
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    // Check whether it can fit in one neighbourhood, if not, just ignore it. Here didn't think about the part 
+                    // Check whether it can fit in one neighbourhood, if not, just ignore it. Here didn't think about the part
                     // where the boundary of index is out of range, so the last row (corresponding to the bottom line in the spectrogram)
-                    // didn't do the filtering. 
+                    // didn't do the filtering.
                     if (r + sizeOfNeighbourhood - 1 < rows && c + sizeOfNeighbourhood - 1 < cols)
                     {
                         var numberOfpoi = 0;
@@ -1592,7 +1592,7 @@ namespace Dong.Felt
                                     if (M[r + i, c + j] != null)
                                     {
                                         M[r + i, c + j].RidgeMagnitude = 0.0;
-                                        M[r + i, c + j].RidgeOrientation = 10.0;                                       
+                                        M[r + i, c + j].RidgeOrientation = 10.0;
                                     }
                                 }
                             }
@@ -1603,7 +1603,7 @@ namespace Dong.Felt
                 r += sizeOfNeighbourhood - 1;
             }
             return M;
-        }      
+        }
         #endregion
     }
 }

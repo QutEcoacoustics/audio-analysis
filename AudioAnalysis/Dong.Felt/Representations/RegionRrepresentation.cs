@@ -23,11 +23,11 @@ namespace Dong.Felt.Representations
         /// gets or sets the fft features for a region. This is based on Bardeli's algorithm.
         /// </summary>
         public PointOfInterest[,] fftFeatures { get; set; }
-   
+
         /// <summary>
         /// Index (0-based) for this region's highest frequency in the source audio file, its unit is hz.
         /// </summary>
-        public double MaxFrequencyIndex { get; set; }       
+        public double MaxFrequencyIndex { get; set; }
 
         /// <summary>
         /// Index (0-based) for the start time where this region starts located in the source audio file, its unit is ms.
@@ -45,39 +45,39 @@ namespace Dong.Felt.Representations
 
         public int EndColIndex { get; set; }
         /// <summary>
-        /// For each nh in a region, NhRowIndex will indicate its row index. 
+        /// For each nh in a region, NhRowIndex will indicate its row index.
         /// </summary>
         public int NhRowIndex { get; set; }
 
         /// <summary>
-        /// For each nh in a region, NhColIndex will indicate its col index. 
+        /// For each nh in a region, NhColIndex will indicate its col index.
         /// </summary>
         public int NhColIndex { get; set; }
 
         /// <summary>
-        /// A region matrix contains NhCountInRow rows. 
+        /// A region matrix contains NhCountInRow rows.
         /// </summary>
         public int NhCountInRow { get; set; }
 
         /// <summary>
-        /// To get or set the the ColumnEnergyEntropy of pointsOfinterest in a neighbourhood.  
+        /// To get or set the the ColumnEnergyEntropy of pointsOfinterest in a neighbourhood.
         /// </summary>
         public double ColumnEnergyEntropy { get; set; }
 
         /// <summary>
-        /// To get or set the the RowEnergyEntropy of pointsOfinterest in a neighbourhood.  
+        /// To get or set the the RowEnergyEntropy of pointsOfinterest in a neighbourhood.
         /// </summary>
         public double RowEnergyEntropy { get; set; }
 
         /// <summary>
-        /// A region matrix contains NhCountInCol cols. 
+        /// A region matrix contains NhCountInCol cols.
         /// </summary>
         public int NhCountInCol { get; set; }
 
         public Feature Features { get; set; }
 
         /// <summary>
-        /// Gets or sets the sourceAudioFile which contains the region.  
+        /// Gets or sets the sourceAudioFile which contains the region.
         /// </summary>
         public string SourceAudioFile { get; set; }
 
@@ -174,7 +174,7 @@ namespace Dong.Felt.Representations
         /// <param name="nhCountInCol"></param>
         /// <param name="rowIndex"></param>
         /// <param name="colIndex"></param>
-        public RegionRepresentation(RidgeDescriptionNeighbourhoodRepresentation nh, double frequencyIndex, double frameIndex, 
+        public RegionRepresentation(RidgeDescriptionNeighbourhoodRepresentation nh, double frequencyIndex, double frameIndex,
             int nhCountInRow, int nhCountInCol, int rowIndex, int colIndex, string file)
         {
             this.MaxFrequencyIndex = frequencyIndex;
@@ -216,7 +216,7 @@ namespace Dong.Felt.Representations
                 this.NDOrientationPOIHistogram = nh.PDOrientationPOIHistogram;
             }
             this.SourceAudioFile = file;
-            
+
         }
 
         public RegionRepresentation(List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods,
@@ -225,10 +225,10 @@ namespace Dong.Felt.Representations
         {
             this.ridgeNeighbourhoods = new List<RidgeDescriptionNeighbourhoodRepresentation>();
             foreach (var nh in ridgeNeighbourhoods)
-            {               
+            {
                 this.ridgeNeighbourhoods.Add(nh);
             }
-            // top left corner - this is the anchor point          
+            // top left corner - this is the anchor point
             this.NhCountInRow = nhCountInRow;
             this.NhCountInCol = nhCountInCol;
             this.MaxFrequencyIndex = frequencyIndex;
@@ -264,7 +264,7 @@ namespace Dong.Felt.Representations
 
         public RegionRepresentation(List<EventBasedRepresentation> eventList, string file)
         {
-            this.vEventList = eventList;            
+            this.vEventList = eventList;
             var allEventsInRegion = GroupEventBasedRepresentations(
                this.vEventList, this.hEventList, this.pEventList, this.nEventList);
             this.MajorEvent = FindLargestEvent(allEventsInRegion);
@@ -272,7 +272,7 @@ namespace Dong.Felt.Representations
         }
 
         public RegionRepresentation(List<List<EventBasedRepresentation>> eventList, string file, Query query)
-        {           
+        {
             // step 1 select events from specific boundary
             this.vEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(eventList[0], query);
             this.hEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(eventList[1], query);
@@ -285,9 +285,9 @@ namespace Dong.Felt.Representations
             // step 2 find the largest area of event in a specific region
             this.MajorEvent = FindLargestEvent(allEventsInRegion);
 
-            // step 3 specify the boundary of the region 
+            // step 3 specify the boundary of the region
             if (this.MajorEvent != null)
-            {               
+            {
                 this.topToBottomLeftVertex = query.TopInPixel - this.MajorEvent.Bottom;
                 this.bottomToBottomLeftVertex = this.MajorEvent.Bottom - query.BottomInPixel;
                 this.leftToBottomLeftVertex = this.MajorEvent.Left - query.LeftInPixel;
@@ -306,18 +306,18 @@ namespace Dong.Felt.Representations
         }
 
         public RegionRepresentation(List<List<EventBasedRepresentation>> eventList, string file)
-        {           
+        {
             this.vEventList = eventList[0];
             this.hEventList = eventList[1];
             this.pEventList = eventList[2];
             this.nEventList = eventList[3];
 
             var allEventsInRegion = GroupEventBasedRepresentations(
-               this.vEventList, this.hEventList, this.pEventList, this.nEventList);            
+               this.vEventList, this.hEventList, this.pEventList, this.nEventList);
             this.MajorEvent = FindLargestEvent(allEventsInRegion);
             this.SourceAudioFile = file;
         }
-        
+
         public static List<EventBasedRepresentation> GroupEventBasedRepresentations(List<EventBasedRepresentation> vEvents, List<EventBasedRepresentation> hEvents,
             List<EventBasedRepresentation> pEvents, List<EventBasedRepresentation> nEvents)
         {
@@ -331,28 +331,28 @@ namespace Dong.Felt.Representations
                 if (v.Area > vhThreshold)
                 {
                     overallRegionRepresentation.Add(v);
-                }              
+                }
             }
             foreach (var h in hEvents)
             {
                 if (h.Area > vhThreshold)
                 {
                     overallRegionRepresentation.Add(h);
-                }       
+                }
             }
             foreach (var p in pEvents)
             {
                 if (p.Area > pnThreshold)
                 {
                     overallRegionRepresentation.Add(p);
-                }                  
+                }
             }
             foreach (var n in nEvents)
             {
                 if (n.Area > pnThreshold)
                 {
                     overallRegionRepresentation.Add(n);
-                }               
+                }
             }
             return overallRegionRepresentation;
         }
@@ -371,16 +371,16 @@ namespace Dong.Felt.Representations
             }
         }
 
-        
-        
+
+
         /// <summary>
-        /// This representation is derived on eventRepresentations. 
+        /// This representation is derived on eventRepresentations.
         /// </summary>
         /// <param name="eventRepresentations"></param>
         /// <param name="file"></param>
         /// <param name="query"></param>
         public RegionRepresentation(List<EventBasedRepresentation> eventRepresentations, string file, Query query)
-        {            
+        {
             var queryEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(
                     eventRepresentations,
                     query);
@@ -392,23 +392,23 @@ namespace Dong.Felt.Representations
             }
             if (queryEventList.Count > 0)
             {
-                //queryEventList.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));               
-                //this.bottomLeftEvent = queryEventList[0]; 
+                //queryEventList.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
+                //this.bottomLeftEvent = queryEventList[0];
                 queryEventList.Sort((ae1, ae2) => ae1.Area.CompareTo(ae2.Area));
                 this.MajorEvent = queryEventList[queryEventList.Count - 1];
                 // get the distance difference between four sides and vertex of the bottomLeftEvent: left, bottom, right, top
                 this.topToBottomLeftVertex = query.TopInPixel - this.MajorEvent.Bottom;
                 this.bottomToBottomLeftVertex = this.MajorEvent.Bottom - query.BottomInPixel;
                 this.leftToBottomLeftVertex = this.MajorEvent.Left - query.LeftInPixel;
-                this.rightToBottomLeftVertex = query.RightInPixel - this.MajorEvent.Left;               
+                this.rightToBottomLeftVertex = query.RightInPixel - this.MajorEvent.Left;
                 this.TopInPixel = query.TopInPixel;
                 this.BottomInPixel = query.BottomInPixel;
                 this.LeftInPixel = query.LeftInPixel;
-                this.RightInPixel = query.RightInPixel; 
-            }           
+                this.RightInPixel = query.RightInPixel;
+            }
             this.SourceAudioFile = file;
-        }    
-  
+        }
+
         public static int NotNullListCount(List<EventBasedRepresentation> vEvents, List<EventBasedRepresentation> hEvents,
             List<EventBasedRepresentation> pEvents, List<EventBasedRepresentation> nEvents)
         {

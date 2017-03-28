@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace QutBioacosutics.Xie.Configuration
+﻿namespace QutBioacosutics.Xie.Configuration
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     public class CanetoadConfiguration
     {
         public double AmplitudeThresholdCanetoad { get; set; }
@@ -34,7 +34,7 @@ namespace QutBioacosutics.Xie.Configuration
 
         public CanetoadConfiguration(dynamic configuration)
         {
-            //***************************Canetoad*****************************//  
+            //***************************Canetoad*****************************//
             // Peak parameters
             AmplitudeThresholdCanetoad = configuration.AmplitudeThresholdCanetoad;   // Decibel---the minimum amplitude value,
             //RangeCanetoad = rangeCanetoad,

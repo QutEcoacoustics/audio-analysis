@@ -1,22 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
+    using System;
+    using System.Collections.Generic;
     using System.IO;
-
+    using System.Linq;
+    using System.Text;
     using Acoustics.Shared;
-
     using AnalysisPrograms.Production;
-
     using log4net;
-
     using PowerArgs;
-
-    using TowseyLibrary;
     using QutBioacosutics.Xie;
+    using TowseyLibrary;
 
     public static class XiesAnalysis
     {

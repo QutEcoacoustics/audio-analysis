@@ -1,41 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.IO;
-using TowseyLibrary;
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
     using Acoustics.Shared.Extensions;
-
     using AnalysisPrograms.Production;
-
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
     using PowerArgs;
+    using TowseyLibrary;
 
     /// <summary>
-    /// This program runs an alternative version of Event Pattern Recognition (EPR) 
+    /// This program runs an alternative version of Event Pattern Recognition (EPR)
     /// It can be used to detect Ground Parrots.
     /// It was developed by Michael Towsey in order to address difficulties in the original EPR algorithm - see more below.
     /// COMMAND LINE ARGUMENTS:
     /// string recordingPath = args[0];   //the recording to be scanned
     /// string iniPath       = args[1];   //the initialisation file containing parameters for AED and EPR
-    /// string targetName    = args[2];   //prefix of name of the created output files 
-    /// 
+    /// string targetName    = args[2];   //prefix of name of the created output files
+    ///
     /// The program currently produces only ONE output file: an image of the recording to be scanned with an energy track and two score tracks.
-    ///     1) Energy track  - Measure of the total energy in the user defined frequency band, one value per frame. 
+    ///     1) Energy track  - Measure of the total energy in the user defined frequency band, one value per frame.
     ///     2) Score Track 1 - Oscillation score - Requires user defined parameters to detect the repeated chirp of a Ground Parrot.
-    ///                        Is a way to cut down the search space. Only deploy template at places where high Oscillation score. 
+    ///                        Is a way to cut down the search space. Only deploy template at places where high Oscillation score.
     ///     3) Score Track 2 - Template score - dB centre-surround difference of each template rectangle.
     ///                        Currently the dB Score is averaged over the 15 AEs in the groundparrot template.
-    ///                        
+    ///
     /// THE EXISTING ALGORITHM:
     /// 1) Convert the signal to dB spectrogram
     /// 2) AED: i) noise removal
@@ -45,20 +40,20 @@ namespace AnalysisPrograms
     ///         v) Remove under-size events.
     /// 3) EPR: i) Align first AE of template to first 'valid' AE in spectrogram. A valid AE is one whose lower left vertex lies in the
     ///            user-defined freq band. Currently align lower left vertex for groundparrot recogniser.
-    ///        ii) For each AE in template find closest AE in spectrogram. (Least euclidian distance) 
+    ///        ii) For each AE in template find closest AE in spectrogram. (Least euclidian distance)
     ///       iii) For each AE in template, calculate percent overlap to closest AE in spectrogram.
     ///        iv) Apply threshold to adjust the FP-FN trade-off.
-    ///         
+    ///
     /// PROBLEM WITH EXISTING ALGORITHM:
     /// AED:
     ///        i) Major problem is that the AEs found by AED depend greatly on the user-supplied dB threshold.
     ///           If threshold too low, the components of the ground parrot call get incorporated into a single larger AE.
-    ///       ii) The spidering algorithm (copied by Brad from MatLab into F#) is computationally expensive.    
+    ///       ii) The spidering algorithm (copied by Brad from MatLab into F#) is computationally expensive.
     /// EPR:
     ///        i) EPR is hard coded for groundparrots. In particular the configuration of AEs in the template is hard-coded.
     ///       ii) EPR is hard coded to align the template using the lower-left vertex of the first AE.
     ///           This is suitable for the rising cadence of a groundparrot call - but not if descending.
-    ///           
+    ///
     /// POSSIBLE SOLUTIONS TO EPR AND AED
     /// AED:
     ///        i) Need an approach whose result does not depend critically on the user-supplied dB threshold.
@@ -68,42 +63,42 @@ namespace AnalysisPrograms
     /// EPR:
     ///        i) Instead of aligning lower-left of AEs align the centroid.
     ///       ii) Only consider AEs whose centroid lies in the frequency band.
-    ///      iii) Only consider AEs whose area is 'similar' to first AE of template. 
+    ///      iii) Only consider AEs whose area is 'similar' to first AE of template.
     ///       iv) Only find overlaps for AEs 2-15 if first overlap exceeds the threshold.
-    ///       
+    ///
     ///  ###############################################################################################################
     /// TWO NEW EPR ALGORITHMS BELOW:
     /// IDEA 1:
     /// Note: NOT all the above ideas have been implemented. Just a few.
     ///       The below does NOT implement AED and does not attempt noise removal to avoid the dB thresholding problem.
     ///       The below uses a different EPR metric
-    /// 1) Convert the signal to dB spectrogram   
+    /// 1) Convert the signal to dB spectrogram
     /// 2) Detect energy oscillations in the user defined frequency band.
     ///         i) Calulate the dB power in freq band of each frame.
     /// 3) DCT:
     ///         i) Use Discrete Cosine Transform to detect oscillations in band energy.
     ///        ii) Only apply template where the DCT score exceeds a threshold (normalised). Align start of template to high dB frame.
-    /// 4) TEMPLATE SCORE       
+    /// 4) TEMPLATE SCORE
     ///         i) Calculate dB score for first AE in template. dB score = max_dB - surround_dB
     ///                                    where max_dB = max dB value for all pixels in first template AE.
     ///        ii) Do not proceed if dB score below threshold else calculate dB score for remaining template AEs.
     ///       iii) Calculate average dB score over all 15 AEs in template.
-    /// 
+    ///
     /// COMMENT ON NEW ALGORITHM
     /// 1) It is very fast.
     /// 2) Works well where call shows up as energy oscillation.
     /// 3) Is not as accurate because the dB score has less discrimination than original EPR.
     /// BUT COULD COMBINE THE TWO APPROACHES.
-    /// 
+    ///
     /// ###############################################################################################################
     /// IDEA 2: ANOTHER EPR ALGORITHM
-    /// 1) Convert the signal to dB spectrogram   
+    /// 1) Convert the signal to dB spectrogram
     /// 2) Detect energy oscillations in the user defined frequency band.
     ///         i) Calulate the dB power in freq band of each frame.
-    ///        
+    ///
     /// 3) DCT: OPTIONAL
     /// ONLY PROCEED IF HAVE HIGH dB SCORE and HIGH DCT SCORE
-    /// 
+    ///
     /// 4) NOISE COMPENSAION
     ///         Subtract modal noise but DO NOT truncate -dB values to zero.
     ///
@@ -116,48 +111,48 @@ namespace AnalysisPrograms
     ///         a) extract AEs at dB threshold apporpriate to the valid AE
     ///         a) align centroid of valid AE with centroid of first template AE
     ///         c) calculate the overlap score
-    ///       
-    /// 
-    /// 
+    ///
+    ///
+    ///
     /// ###############################################################################################################
     /// HOW TO CALL F# METHODS FROM C# CODE.
     /// Use: Can call Brad's F# methods for AED and EPR, especially the spidering method.
-    /// 
+    ///
     /// var binaryMatrix = ConvertSpectrogram2Binary(spectrogram, threshold);
     /// var matrix       = Microsoft.FSharp.Math.MatrixModule.ofArray2D(binaryMatrix);
     /// var aeList       = QutSensors.AudioAnalysis.AED.GetAcousticEvents.getAcousticEvents(matrix);
-    /// 
+    ///
     /// more info here:
     /// http://stackoverflow.com/questions/271966/about-using-f-to-create-a-matrix-assembly-usable-from-c
     ///
     /// More generally can use F# for matrix manipulations as follows:
-    /// 
-    /// using System; 
-    /// using System.Text; 
-    /// using Microsoft.FSharp.Math; 
-    ///  
-    /// namespace CSharp 
-    /// { 
-    ///   class Program 
-    ///   { 
-    ///     static void Main(string[] args) 
-    ///     { 
+    ///
+    /// using System;
+    /// using System.Text;
+    /// using Microsoft.FSharp.Math;
+    ///
+    /// namespace CSharp
+    /// {
+    ///   class Program
+    ///   {
+    ///     static void Main(string[] args)
+    ///     {
     ///       // declare two matrices in C# type
-    ///       double[,] x = { { 1.0, 2.0 }, { 4.0, 5.0 } }; 
-    ///       double[,] y = { { 1.0, 2.0 }, { 7.0, 8.0 } }; 
+    ///       double[,] x = { { 1.0, 2.0 }, { 4.0, 5.0 } };
+    ///       double[,] y = { { 1.0, 2.0 }, { 7.0, 8.0 } };
     ///       // convert the two matrices to F# type
-    ///       Matrix<double> m1 = MatrixModule.of_array2(x); 
-    ///       Matrix<double> m2 = MatrixModule.of_array2(y); 
+    ///       Matrix<double> m1 = MatrixModule.of_array2(x);
+    ///       Matrix<double> m2 = MatrixModule.of_array2(y);
     ///       // perform the F# operation
-    ///       var mp = m1 * m2; 
-    ///       // convert the F# output back to C# type. 
-    ///       var output = mp.ToArray2(); 
-    ///       LoggedConsole.WriteLine(output.ToString()); 
-    ///       Console.ReadKey(); 
-    ///     } 
-    /// } 
-    /// 
-    /// 
+    ///       var mp = m1 * m2;
+    ///       // convert the F# output back to C# type.
+    ///       var output = mp.ToArray2();
+    ///       LoggedConsole.WriteLine(output.ToString());
+    ///       Console.ReadKey();
+    ///     }
+    /// }
+    ///
+    ///
     /// ###############################################################################################################
     /// </summary>
     public class EPR
@@ -167,7 +162,7 @@ namespace AnalysisPrograms
         // epr2 "C:\SensorNetworks\WavFiles\GroundParrot\Aug2010_Site1\audio\DM420013_0342m_00s__0344m_00s.mp3" C:\SensorNetworks\Output\EPR_GroundParrot\EPR_GroundParrot_Params.txt gp1
 
 
-        // Keys to recognise identifiers in PARAMETERS - INI file. 
+        // Keys to recognise identifiers in PARAMETERS - INI file.
         public static string key_CALL_NAME          = "CALL_NAME";
         public static string key_DO_SEGMENTATION    = "DO_SEGMENTATION";
         public static string key_EVENT_START        = "EVENT_START";
@@ -217,7 +212,7 @@ namespace AnalysisPrograms
 
             Log.Verbosity = 1;
 
-            string targetName    = arguments.Target; // prefix of name of created files 
+            string targetName    = arguments.Target; // prefix of name of created files
 
             string recordingFileName   = arguments.Source.Name;
             string recordingDirectory  = arguments.Source.DirectoryName;
@@ -242,7 +237,7 @@ namespace AnalysisPrograms
             // framing parameters
             //double frameOverlap      = FeltTemplates_Use.FeltFrameOverlap;   // default = 0.5
             double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
-            
+
             //frequency band
             int minHz = Int32.Parse(dict[key_MIN_HZ]);
             int maxHz = Int32.Parse(dict[key_MAX_HZ]);
@@ -252,8 +247,8 @@ namespace AnalysisPrograms
             double dctThreshold = Double.Parse(dict[OscillationRecogniser.key_DCT_THRESHOLD]);  // 0.5;
             int minOscilFreq    = Int32.Parse(dict[OscillationRecogniser.key_MIN_OSCIL_FREQ]);  // 4;
             int maxOscilFreq    = Int32.Parse(dict[OscillationRecogniser.key_MAX_OSCIL_FREQ]);  // 5;
-            bool normaliseDCT = false; 
-            
+            bool normaliseDCT = false;
+
             //double dBThreshold       = Double.Parse(dict[key_DECIBEL_THRESHOLD]);   //threshold to set MIN DECIBEL BOUND
             int DRAW_SONOGRAMS       = Int32.Parse(dict[key_DRAW_SONOGRAMS]);       //options to draw sonogram
 
@@ -320,7 +315,7 @@ namespace AnalysisPrograms
             //FileTools.WriteMatrix2File(templateMinusNoise, targetNoNoisePath); // write template values to file AFTER to noise removal.
             //FileTools.WriteArray2File(noiseSubband, noisePath);
 
-            // v: SAVE image of extracted event in the original sonogram 
+            // v: SAVE image of extracted event in the original sonogram
             string sonogramImagePath = outputDir + Path.GetFileNameWithoutExtension(recordingFileName) + ".png";
             DrawSonogram(sonogram, sonogramImagePath, dBArray, dBThreshold / maxDB, odScores, dctThreshold, gpScores, template);
 
@@ -415,7 +410,7 @@ namespace AnalysisPrograms
                 //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                 //var aes = new List<AcousticEvent>();
                 //aes.Add(ae);
-                image.AddEvents(list, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond); 
+                image.AddEvents(list, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
                 image.Save(path);
             }
         } //end DrawSonogram

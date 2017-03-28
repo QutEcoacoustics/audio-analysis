@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-using MathNet.Numerics;
-using System.Drawing;
-using System.Drawing.Imaging;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-
-namespace QutBioacosutics.Xie
+﻿namespace QutBioacosutics.Xie
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using MathNet.Numerics;
+    using TowseyLibrary;
+
     class FindOscillation
     {
         public double[] DetectOscillation(double[,] matrix, int zeroBinIndex)
@@ -19,7 +19,7 @@ namespace QutBioacosutics.Xie
             // Get oscillation of the whole duration of one recording
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
-      
+
             int numSubCols = cols / 128;
             int subCols = cols % 128;
 
@@ -38,8 +38,8 @@ namespace QutBioacosutics.Xie
                     if (peakMatrix[i, j] < 0)
                     {
                         peakMatrix[i, j] = 1;
-                    }                   
-                }           
+                    }
+                }
             }
 
             for (int i = 1; i < (rows-1); i++)
@@ -51,8 +51,8 @@ namespace QutBioacosutics.Xie
                         peakMatrix[i, j] = 0;
                         peakMatrix[(i+1), j] = 0;
                         peakMatrix[(i-1), j] = 0;
-                    }                
-                }            
+                    }
+                }
             }
 
             cols = cols - subCols;
@@ -61,7 +61,7 @@ namespace QutBioacosutics.Xie
 
             for (int r = zeroBinIndex; r < rows; r++)
             {
-        
+
                 for (int i = 0; i < numSubCols; i++)
                 {
                     var listLow = new List<int>();
@@ -79,7 +79,7 @@ namespace QutBioacosutics.Xie
                     if (arrayLow.Length > 2)
                     {
                         for (int j = 0; j < (arrayLow.Length - 3); j++)
-                        {          
+                        {
                                 double tempA = arrayLow[j + 1] - arrayLow[j];
                                 double tempB = arrayLow[j + 2] - arrayLow[j + 1];
                                 double tempC = arrayLow[j + 3] - arrayLow[j + 2];
@@ -98,8 +98,8 @@ namespace QutBioacosutics.Xie
                                         break;
                                     }
                                 }
-                        }                        
-                    }                          
+                        }
+                    }
                 }
             }
 

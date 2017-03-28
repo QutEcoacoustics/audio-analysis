@@ -30,7 +30,7 @@ namespace Acoustics.Tools.Audio
         private readonly SoxAudioUtility soxUtility;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MasterAudioUtility"/> class. 
+        /// Initializes a new instance of the <see cref="MasterAudioUtility"/> class.
         /// Creates a new audio utility that can be used to convert and segment audio, and to get information about audio.
         /// </summary>
         public MasterAudioUtility()
@@ -44,7 +44,7 @@ namespace Acoustics.Tools.Audio
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MasterAudioUtility"/> class. 
+        /// Initializes a new instance of the <see cref="MasterAudioUtility"/> class.
         /// Creates a new audio utility that can be used to convert and segment audio, and to get information about audio.
         /// </summary>
         /// <param name="temporaryFilesDirectory">Directory for temporary files.</param>
@@ -55,7 +55,7 @@ namespace Acoustics.Tools.Audio
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MasterAudioUtility"/> class. 
+        /// Initializes a new instance of the <see cref="MasterAudioUtility"/> class.
         /// Creates a new audio utility that can be used to convert and segment audio, and to get information about audio.
         /// The given audio utility instances will be used.
         /// </summary>
@@ -78,7 +78,7 @@ namespace Acoustics.Tools.Audio
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MasterAudioUtility"/> class. 
+        /// Initializes a new instance of the <see cref="MasterAudioUtility"/> class.
         /// Creates a new audio utility that can be used to convert and segment audio, and to get information about audio.
         /// The given audio utility instances will be used.
         /// </summary>
@@ -210,7 +210,7 @@ namespace Acoustics.Tools.Audio
                 {
                     OffsetStart = request.OffsetStart,
                     OffsetEnd = request.OffsetEnd,
-                    MixDownToMono = false
+                    MixDownToMono = false,
                 };
 
             FileInfo soxSourceFile;

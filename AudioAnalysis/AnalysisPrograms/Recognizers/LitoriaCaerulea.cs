@@ -7,26 +7,23 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-using Dong.Felt;
-
 namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Reflection;
-
+    using Acoustics.Shared;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using Recognizers.Base;
-    using Acoustics.Shared;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
+    using Dong.Felt;
     using log4net;
+    using Recognizers.Base;
     using TowseyLibrary;
 
     /// <summary>
@@ -34,7 +31,7 @@ namespace AnalysisPrograms.Recognizers
     /// This is a frog recognizer based on the "croak" or "honk" template
     /// It detects croak type calls by extracting three features: croak bandwidth, dominant frequency, croak duration.
     /// It may also look for trains of repeated croaks and set a minimum pulse train duration.
-    /// 
+    ///
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// </summary>
@@ -100,7 +97,7 @@ namespace AnalysisPrograms.Recognizers
                 // if do not use noise reduction can get a more sensitive recogniser.
                 //NoiseReductionType = NoiseReductionType.None
                 NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = 0.0
+                NoiseReductionParameter = 0.0,
             };
 
 
@@ -122,7 +119,7 @@ namespace AnalysisPrograms.Recognizers
             // get the freq band as set by min and max Herz
             var frogBand = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxBin);
 
-            // Now look for spectral maxima. For L.caerulea, the max should lie around 1100Hz +/-150 Hz. 
+            // Now look for spectral maxima. For L.caerulea, the max should lie around 1100Hz +/-150 Hz.
             // Skip over spectra where maximum is not in correct location.
             int buffer = 150;
             var croakScoreArray = new double[rowCount];
@@ -174,7 +171,7 @@ namespace AnalysisPrograms.Recognizers
 
 
             // Look for oscillations in the difference array
-            // duration of DCT in seconds 
+            // duration of DCT in seconds
             //croakScoreArray = DataTools.filterMovingAverageOdd(croakScoreArray, 5);
             double dctDuration = recognizerConfig.DctDuration;
             // minimum acceptable value of a DCT coefficient
@@ -187,7 +184,7 @@ namespace AnalysisPrograms.Recognizers
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
             var events = AcousticEvent.ConvertScoreArray2Events(dctScores, recognizerConfig.MinHz, recognizerConfig.MaxHz, sonogram.FramesPerSecond,
-                                                                          freqBinWidth, recognizerConfig.EventThreshold, 
+                                                                          freqBinWidth, recognizerConfig.EventThreshold,
                                                                           recognizerConfig.MinDuration, recognizerConfig.MaxDuration);
             double[,] hits = null;
             prunedEvents = new List<AcousticEvent>();
@@ -235,7 +232,7 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram,
                 Hits = hits,
                 Plots = scoresPlot.AsList(),
-                Events = prunedEvents
+                Events = prunedEvents,
                 //Events = events
             };
         }
@@ -271,7 +268,7 @@ namespace AnalysisPrograms.Recognizers
             MaxHz = (int)configuration[AnalysisKeys.MaxHz];
             DominantFreq = (int)configuration[AnalysisKeys.DominantFrequency];
 
-            // duration of DCT in seconds 
+            // duration of DCT in seconds
             DctDuration = (double)configuration[AnalysisKeys.DctDuration];
             // minimum acceptable value of a DCT coefficient
             DctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
@@ -282,7 +279,7 @@ namespace AnalysisPrograms.Recognizers
             // min and max duration of a sequence of croaks or a croak train
             MinDuration = (double)configuration[AnalysisKeys.MinDuration];
             MaxDuration = (double)configuration[AnalysisKeys.MaxDuration];
-            // min and max duration of a single croak event in seconds 
+            // min and max duration of a single croak event in seconds
             MinCroakDuration = (double)configuration["MinCroakDuration"];
             MaxCroakDuration = (double)configuration["MaxCroakDuration"];
 

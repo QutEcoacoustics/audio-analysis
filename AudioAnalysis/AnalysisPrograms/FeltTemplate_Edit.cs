@@ -1,21 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using TowseyLibrary;
-using AudioAnalysisTools;
-using System.Drawing;
-
-
-
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
     using Acoustics.Shared.Extensions;
-
+    using AudioAnalysisTools;
     using PowerArgs;
+    using TowseyLibrary;
 
     public class FeltTemplate_Edit
     {
@@ -80,7 +74,7 @@ namespace AnalysisPrograms
             //ii: READ PARAMETER VALUES FROM INI FILE
             var config = new ConfigDictionary(iniPath);
             Dictionary<string, string> dict = config.GetTable();
-            string sourceFile           = dict[FeltTemplate_Create.key_SOURCE_RECORDING]; 
+            string sourceFile           = dict[FeltTemplate_Create.key_SOURCE_RECORDING];
             string sourceDir            = dict[FeltTemplate_Create.key_SOURCE_DIRECTORY];
             double dB_Threshold         = Double.Parse(dict[FeltTemplate_Create.key_DECIBEL_THRESHOLD]);
             double maxTemplateIntensity = Double.Parse(dict[FeltTemplate_Create.key_TEMPLATE_MAX_INTENSITY]);
@@ -154,7 +148,7 @@ namespace AnalysisPrograms
                 string sprOutZipFile = outputDir + targetName + "_syntacticTemplate.zip";
                 FileTools.ZipFiles(filenames, sprOutZipFile);
             }
-            
+
             Log.WriteLine("\n\n#################################### TEST THE EXTRACTED EVENT ON SOURCE FILE ##################################");
             //vi: TEST THE EVENT ON ANOTHER FILE
             //felt  "C:\SensorNetworks\WavFiles\Canetoad\DM420010_128m_00s__130m_00s - Toads.mp3" C:\SensorNetworks\Output\FELT_CaneToad\FELT_CaneToad_Params.txt events.txt
@@ -187,11 +181,11 @@ arguments[0] = sourceDir + "\\" + sourceFile;
 
 
             Log.WriteLine("# Finished everything!");
-        } 
+        }
 
 
 
-        
+
         public static Bitmap Image2BinaryBitmap(Bitmap bitmap, int threshold)
         {
             int rows = bitmap.Height;//height

@@ -14,8 +14,7 @@ namespace AnalysisPrograms
     using System.Collections.Generic;
     using System.Data;
     using System.Diagnostics;
-    using System.Diagnostics.Contracts;
-    using System.Drawing;
+        using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
@@ -72,7 +71,7 @@ namespace AnalysisPrograms
 
 
 
-        // use the following paths for the command line for the <audio2sonogram> task. 
+        // use the following paths for the command line for the <audio2sonogram> task.
         // oscillationsGeneric "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
         [CustomDetailedDescription]
         [CustomDescription]
@@ -229,7 +228,7 @@ namespace AnalysisPrograms
 
             // ###############################################################
             // lowering the sensitivity threshold increases the number of hits.
-            if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SensitivityThreshold)) 
+            if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SensitivityThreshold))
                 Oscillations2014.DefaultSensitivityThreshold = double.Parse(configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold]);
 
             if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SampleLength))
@@ -293,7 +292,7 @@ namespace AnalysisPrograms
 
             // 3) now draw the noise reduced decibel spectrogram
             sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
-            sonoConfig.NoiseReductionParameter = configuration["BgNoiseThreshold"] ?? 3.0; 
+            sonoConfig.NoiseReductionParameter = configuration["BgNoiseThreshold"] ?? 3.0;
 
             sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
             image = sonogram.GetImageFullyAnnotated("NOISE-REDUCED DECIBEL  SPECTROGRAM");

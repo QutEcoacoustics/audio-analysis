@@ -12,7 +12,6 @@ namespace AnalysisBase
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.Contracts;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -25,7 +24,7 @@ namespace AnalysisBase
     using log4net;
 
     /// <summary>
-    /// Represents a segment of a target file. It can also store the parent file that a new segment has been derived from. 
+    /// Represents a segment of a target file. It can also store the parent file that a new segment has been derived from.
     /// A segment is just a stored start and end for a target file - it represents a future, or a request.
     /// Other functions can take the segment request, cut out the selected range, and return a new file segment.
     /// New file segments, or so segments that represent a whole file, will not have the segment properties set because they do not represent a request anymore.
@@ -151,7 +150,7 @@ namespace AnalysisBase
                 }
 
                 return this.fileStartDate;
-            } 
+            }
         }
 
         /// <summary>
@@ -160,7 +159,6 @@ namespace AnalysisBase
         /// <returns>
         /// True if properties are valid, otherwise false.
         /// </returns>
-        [Pure]
         public bool Validate()
         {
             if (this.TargetFile == null ||
@@ -202,6 +200,7 @@ namespace AnalysisBase
                 this.TargetFileSampleRate.HasValue ? ", " + this.TargetFileSampleRate.Value + "hz" : string.Empty);
         }
 
+        /// <inheritdoc/>
         public object Clone()
         {
             var newSegment = new FileSegment(

@@ -67,11 +67,11 @@
         /// An optional asynchronous callback, to be called when the read is complete.
         /// </param>
         /// <param name="state">
-        /// A user-provided object that distinguishes this particular 
+        /// A user-provided object that distinguishes this particular
         /// asynchronous read request from other requests.
         /// </param>
         /// <returns>
-        /// An IAsyncResult that represents the asynchronous read, 
+        /// An IAsyncResult that represents the asynchronous read,
         /// which could still be pending.
         /// </returns>
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count,
@@ -91,11 +91,11 @@
         /// An optional asynchronous callback, to be called when the write is complete.
         /// </param>
         /// <param name="state">
-        /// A user-provided object that distinguishes this particular asynchronous 
+        /// A user-provided object that distinguishes this particular asynchronous
         /// write request from other requests.
         /// </param>
         /// <returns>
-        /// An IAsyncResult that represents the asynchronous write, 
+        /// An IAsyncResult that represents the asynchronous write,
         /// which could still be pending.
         /// </returns>
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count,
@@ -160,9 +160,9 @@
         /// The reference to the pending asynchronous request to finish.
         /// </param>
         /// <returns>
-        /// The number of bytes read from the stream, between zero (0) 
-        /// and the number of bytes you requested. Streams only return 
-        /// zero (0) at the end of the stream, otherwise, they should 
+        /// The number of bytes read from the stream, between zero (0)
+        /// and the number of bytes you requested. Streams only return
+        /// zero (0) at the end of the stream, otherwise, they should
         /// block until at least one byte is available.
         /// </returns>
         public override int EndRead(IAsyncResult asyncResult)
@@ -229,25 +229,25 @@
         }
 
         /// <summary>
-        /// Reads a sequence of bytes from the underlying stream and advances the 
+        /// Reads a sequence of bytes from the underlying stream and advances the
         /// position within the stream by the number of bytes read.
         /// </summary>
         /// <param name="buffer">
-        /// An array of bytes. When this method returns, the buffer contains 
-        /// the specified byte array with the values between offset and 
+        /// An array of bytes. When this method returns, the buffer contains
+        /// the specified byte array with the values between offset and
         /// (offset + count- 1) replaced by the bytes read from the underlying source.
         /// </param>
         /// <param name="offset">
-        /// The zero-based byte offset in buffer at which to begin storing the data 
+        /// The zero-based byte offset in buffer at which to begin storing the data
         /// read from the underlying stream.
         /// </param>
         /// <param name="count">
-        /// The maximum number of bytes to be read from the 
+        /// The maximum number of bytes to be read from the
         /// underlying stream.
         /// </param>
-        /// <returns>The total number of bytes read into the buffer. 
-        /// This can be less than the number of bytes requested if that many 
-        /// bytes are not currently available, or zero (0) if the end of the 
+        /// <returns>The total number of bytes read into the buffer.
+        /// This can be less than the number of bytes requested if that many
+        /// bytes are not currently available, or zero (0) if the end of the
         /// stream has been reached.
         /// </returns>
         public override int Read(byte[] buffer, int offset, int count)
@@ -257,7 +257,7 @@
         }
 
         /// <summary>
-        /// Reads a byte from the stream and advances the position within the 
+        /// Reads a byte from the stream and advances the position within the
         /// stream by one byte, or returns -1 if at the end of the stream.
         /// </summary>
         /// <returns>The unsigned byte cast to an Int32, or -1 if at the end of the stream.</returns>
@@ -272,7 +272,7 @@
         /// </summary>
         /// <param name="offset">A byte offset relative to the origin parameter.</param>
         /// <param name="origin">
-        /// A value of type SeekOrigin indicating the reference 
+        /// A value of type SeekOrigin indicating the reference
         /// point used to obtain the new position.
         /// </param>
         /// <returns>The new position within the underlying stream.</returns>
@@ -293,15 +293,15 @@
         }
 
         /// <summary>
-        /// Writes a sequence of bytes to the underlying stream and advances 
+        /// Writes a sequence of bytes to the underlying stream and advances
         /// the current position within the stream by the number of bytes written.
         /// </summary>
         /// <param name="buffer">
-        /// An array of bytes. This method copies count bytes 
+        /// An array of bytes. This method copies count bytes
         /// from buffer to the underlying stream.
         /// </param>
         /// <param name="offset">
-        /// The zero-based byte offset in buffer at 
+        /// The zero-based byte offset in buffer at
         /// which to begin copying bytes to the underlying stream.
         /// </param>
         /// <param name="count">The number of bytes to be written to the underlying stream.</param>

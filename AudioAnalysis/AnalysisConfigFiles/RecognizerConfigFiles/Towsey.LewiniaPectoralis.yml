@@ -4,18 +4,21 @@ SpeciesName: Lewinia pectoralis
 CommonName: Lewin's Rail
 AbbreviatedSpeciesName: L.pect
 
-UpperFreqBandTop: 4100
-UpperFreqBandBottom: 3400
-LowerFreqBandTop: 2900
-LowerFreqBandBottom: 2600
-MinPeriod: 0.18
-MaxPeriod: 0.25
-MinDuration: 3
-MaxDuration: 15
-#use this threshold if averaging over a period - averaging seems to work better
-IntensityThreshold: 0.01
-#use this threshold if obtaining max value over a period
-#IntensityThreshold: 0.1
+Profiles:
+    Standard: &Standard
+        UpperFreqBandTop: 4100
+        UpperFreqBandBottom: 3400
+        LowerFreqBandTop: 2900
+        LowerFreqBandBottom: 2600
+        MinPeriod: 0.18
+        MaxPeriod: 0.25
+        MinDuration: 2
+        MaxDuration: 15
+        #use this threshold if averaging over a period - averaging seems to work better
+        #IntensityThreshold: 0.01
+        #use this threshold if obtaining max value over a period
+        IntensityThreshold: 0.1
+        EventThreshold: 0.1
 
 #######################################
 #DoNoiseReduction: true
@@ -23,6 +26,8 @@ IntensityThreshold: 0.01
 
 # Resample rate must be 2 X the desired Nyquist
 ResampleRate: 22050
+#Do not set Window Size. This is set in the recognizer code.
+#WindowSize:
 
 ## Specifically for AnalyzeLongRecording
 #SegmentDuration: minutes,   SegmentOverlap=seconds        
@@ -30,14 +35,15 @@ SegmentDuration: 1
 SegmentOverlap: 0
 
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-SaveIntermediateWavFiles: Never
+SaveIntermediateWavFiles: WhenEventsDetected
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-SaveSonogramImages: Never
+SaveSonogramImages: WhenEventsDetected
 # DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 ParallelProcessing: false
 ## End section for AnalyzeLongRecording
+
 
 # Other config files to reference
 IndexPropertiesConfig: "./IndexPropertiesConfigHiRes.yml"

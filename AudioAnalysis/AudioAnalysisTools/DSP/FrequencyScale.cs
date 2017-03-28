@@ -26,7 +26,7 @@ namespace AudioAnalysisTools.DSP
 
     public class FrequencyScale
     {
-        private LongDurationSpectrograms.FreqScaleType linear;
+        private FreqScaleType linear;
 
         /// <summary>
         /// half the sample rate

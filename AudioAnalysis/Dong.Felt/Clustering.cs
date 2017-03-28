@@ -10,13 +10,13 @@ namespace Dong.Felt
     using System.Drawing;
 
     /// <summary>
-    /// A class for clustering (grouping) events according to some rules. 
+    /// A class for clustering (grouping) events according to some rules.
     /// </summary>
     class Clustering
     {
-        
+
         /// <summary>
-        /// The ClusterEdge method wants to cluster edges which are connected into a acousticEvent. 
+        /// The ClusterEdge method wants to cluster edges which are connected into a acousticEvent.
         /// </summary>
         /// <param name="poiList"></param>
         /// <param name="rowsCount"></param>
@@ -36,7 +36,7 @@ namespace Dong.Felt
                     }
                     else
                     {
-                        var minRowIndex = row;                       
+                        var minRowIndex = row;
                         var minColIndex = col;
                         int count = 0;
                         var tuple = Traverse(matrix, row, col, count);
@@ -79,34 +79,34 @@ namespace Dong.Felt
                     }
                 }
             }
-            return result; 
+            return result;
         }
 
         /// <summary>
-        /// Traverse method is used to iteratively search edges connected each other. 
+        /// Traverse method is used to iteratively search edges connected each other.
         /// </summary>
         /// <param name="matrix"></param>
         /// <param name="row"></param>
         /// <param name="col"></param>
         /// <param name="count">
-        /// To calculate the number of times this method is called. 
+        /// To calculate the number of times this method is called.
         /// </param>
         /// <returns></returns>
         public static Tuple<int, int> Traverse(PointOfInterest[,] matrix,int row, int col, int count)
         {
             var rowsCount = matrix.GetLength(0);
-            var colsCount = matrix.GetLength(1);         
+            var colsCount = matrix.GetLength(1);
             var rightPoi = matrix[row, col + 1];
             var bottomPoi = matrix[row + 1, col];
             var rightBottomPoi = matrix[row + 1, col + 1];
             //var traversedFlag = new bool[rowsCount, colsCount];
             // base condition (limit condition)
             if ((!StatisticalAnalysis.checkBoundary(row + 1, col + 1, rowsCount, colsCount)) || (rightPoi == null && bottomPoi == null && rightBottomPoi == null))
-            {                          
-                return Tuple.Create(row, col);               
+            {
+                return Tuple.Create(row, col);
             }
             // continuation
-            else 
+            else
             {
                 if (matrix[row, col + 1] != null && matrix[row + 1, col] == null && matrix[row + 1, col + 1] == null)
                 {

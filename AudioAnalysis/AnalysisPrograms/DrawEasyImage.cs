@@ -9,7 +9,7 @@
 // Action code for this activity = "drawEasyImage"
 
 /// Activity Codes for other tasks to do with spectrograms and audio files:
-/// 
+///
 /// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
 /// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
 /// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
@@ -21,7 +21,7 @@
 /// audiofilecheck - Writes information about audio files to a csv file.
 /// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
 /// audiocutter - Cuts audio into segments of desired length and format
-/// createfoursonograms 
+/// createfoursonograms
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -99,7 +99,7 @@ namespace AnalysisPrograms
             FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigForEasyImages.yml");
             FileInfo sunrisesetData = new FileInfo(@"C:\SensorNetworks\OutputDataSets\SunRiseSet\SunriseSet2013Brisbane.csv");
 
-            // ########################## CSV FILES CONTAINING SUMMARY INDICES IN 24 hour BLOCKS 
+            // ########################## CSV FILES CONTAINING SUMMARY INDICES IN 24 hour BLOCKS
             // top level directory
             string opFileStem = "GympieNP-2015";
             DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP"), };
@@ -186,7 +186,7 @@ namespace AnalysisPrograms
                 return;
             }
 
-            // Sort the files by date and return as a dictionary: sortedDictionaryOfDatesAndFiles<DateTimeOffset, FileInfo> 
+            // Sort the files by date and return as a dictionary: sortedDictionaryOfDatesAndFiles<DateTimeOffset, FileInfo>
             //var sortedDictionaryOfDatesAndFiles = LDSpectrogramStitching.FilterFilesForDates(csvFiles, arguments.TimeSpanOffsetHint);
 
             // calculate new start date if passed value = null.
@@ -339,7 +339,7 @@ namespace AnalysisPrograms
 
                 for (int c = 0; c < colCount; c++)
                 {
-                    for (int r = 0; r < dayPixelHeight; r++) 
+                    for (int r = 0; r < dayPixelHeight; r++)
                     {
                         //transformedValue = Math.Sqrt(redArray[c]);
                         transformedValue = redArray[c] * redArray[c]; // square the value
@@ -360,7 +360,7 @@ namespace AnalysisPrograms
                         int bluVal = (int)Math.Round(transformedValue * 255);
                         if (bluVal < 0) bluVal = 0;
                         else
-                        if (bluVal > 255) bluVal = 255;  
+                        if (bluVal > 255) bluVal = 255;
                         bitmap.SetPixel(c, (currentRow + r), Color.FromArgb(redVal, grnVal, bluVal));
 
                     }

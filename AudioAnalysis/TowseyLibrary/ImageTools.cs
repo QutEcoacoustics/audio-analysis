@@ -1,23 +1,19 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Drawing;
-using System.Drawing.Imaging;
-
-//using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.LinearAlgebra.Double;
-using MathNet.Numerics.LinearAlgebra.Generic;
-
-using ColorMine.ColorSpaces;
-using AForge.Imaging.Filters;
-
-
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using AForge.Imaging.Filters;
+    using ColorMine.ColorSpaces;
+    //using MathNet.Numerics.LinearAlgebra;using MathNet.Numerics.LinearAlgebra.Double;
+    using MathNet.Numerics.LinearAlgebra.Generic;
+
     public enum Kernal
     {
         LowPass, HighPass1, HighPass2, VerticalLine, HorizontalLine3, HorizontalLine5,
@@ -48,65 +44,65 @@ namespace TowseyLibrary
                             "OrangeRed","Orchid","PaleGoldenrod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru",
                             "Pink","Plum","PowderBlue","Purple","Red","RosyBrown","RoyalBlue","SaddleBrown","Salmon","SandyBrown","SeaGreen",
                             "SeaShell","Sienna","Silver","SkyBlue","SlateBlue","SlateGray","Snow","SpringGreen","SteelBlue","Tan","Teal",
-                            "Thistle","Tomato",/*"Transparent",*/"Turquoise","Violet","Wheat","White","WhiteSmoke","Yellow","YellowGreen"};
+                            "Thistle","Tomato",/*"Transparent",*/"Turquoise","Violet","Wheat","White","WhiteSmoke","Yellow","YellowGreen",};
         public static Color[] colors = { Color.AliceBlue, Color.AntiqueWhite, Color.Aqua, Color.Aquamarine, Color.Azure, Color.Beige, Color.Bisque, Color.Black,
-                             Color.BlanchedAlmond, Color.Blue, Color.BlueViolet, Color.Brown, Color.BurlyWood, Color.CadetBlue, Color.Chartreuse, 
-                             Color.Chocolate, Color.Coral, Color.CornflowerBlue, Color.Cornsilk, Color.Crimson, Color.Cyan, Color.DarkBlue, 
-                             Color.DarkCyan, Color.DarkGoldenrod, Color.DarkGray, Color.DarkGreen, Color.DarkKhaki, Color.DarkMagenta, 
-                             Color.DarkOliveGreen, Color.DarkOrange, Color.DarkOrchid, Color.DarkRed, Color.DarkSalmon, Color.DarkSeaGreen, 
-                             Color.DarkSlateBlue, Color.DarkSlateGray, Color.DarkTurquoise, Color.DarkViolet, Color.DeepPink, Color.DeepSkyBlue, 
-                             Color.DimGray, Color.DodgerBlue, Color.Firebrick, Color.FloralWhite, Color.ForestGreen, Color.Fuchsia, 
-                             Color.Gainsboro, Color.GhostWhite, Color.Gold, Color.Goldenrod, Color.Gray, Color.Green, Color.GreenYellow, 
-                             Color.Honeydew, Color.HotPink, Color.IndianRed, Color.Indigo, Color.Ivory, Color.Khaki, Color.Lavender, 
-                             Color.LavenderBlush, Color.LawnGreen, Color.LemonChiffon, Color.LightBlue, Color.LightCoral, Color.LightCyan, 
-                             Color.LightGoldenrodYellow, Color.LightGray, Color.LightGreen, Color.LightPink, Color.LightSalmon, 
-                             Color.LightSeaGreen, Color.LightSkyBlue, Color.LightSlateGray, Color.LightSteelBlue, Color.LightYellow, Color.Lime, 
-                             Color.LimeGreen, Color.Linen, Color.Magenta, Color.Maroon, Color.MediumAquamarine, Color.MediumBlue, 
-                             Color.MediumOrchid, Color.MediumPurple, Color.MediumSeaGreen, Color.MediumSlateBlue, Color.MediumSpringGreen, 
-                             Color.MediumTurquoise, Color.MediumVioletRed, Color.MidnightBlue, Color.MintCream, Color.MistyRose, Color.Moccasin, 
-                             Color.NavajoWhite, Color.Navy, Color.OldLace, Color.Olive, Color.OliveDrab, Color.Orange, Color.OrangeRed, 
-                             Color.Orchid, Color.PaleGoldenrod, Color.PaleGreen, Color.PaleTurquoise, Color.PaleVioletRed, Color.PapayaWhip, 
-                             Color.PeachPuff, Color.Peru, Color.Pink, Color.Plum, Color.PowderBlue, Color.Purple, Color.Red, Color.RosyBrown, 
-                             Color.RoyalBlue, Color.SaddleBrown, Color.Salmon, Color.SandyBrown, Color.SeaGreen, Color.SeaShell, Color.Sienna, 
-                             Color.Silver, Color.SkyBlue, Color.SlateBlue, Color.SlateGray, Color.Snow, Color.SpringGreen, Color.SteelBlue, 
-                             Color.Tan, Color.Teal, Color.Thistle, Color.Tomato, /*Color.Transparent,*/ Color.Turquoise, Color.Violet, Color.Wheat, 
-                             Color.White, Color.WhiteSmoke, Color.Yellow, Color.YellowGreen };
+                             Color.BlanchedAlmond, Color.Blue, Color.BlueViolet, Color.Brown, Color.BurlyWood, Color.CadetBlue, Color.Chartreuse,
+                             Color.Chocolate, Color.Coral, Color.CornflowerBlue, Color.Cornsilk, Color.Crimson, Color.Cyan, Color.DarkBlue,
+                             Color.DarkCyan, Color.DarkGoldenrod, Color.DarkGray, Color.DarkGreen, Color.DarkKhaki, Color.DarkMagenta,
+                             Color.DarkOliveGreen, Color.DarkOrange, Color.DarkOrchid, Color.DarkRed, Color.DarkSalmon, Color.DarkSeaGreen,
+                             Color.DarkSlateBlue, Color.DarkSlateGray, Color.DarkTurquoise, Color.DarkViolet, Color.DeepPink, Color.DeepSkyBlue,
+                             Color.DimGray, Color.DodgerBlue, Color.Firebrick, Color.FloralWhite, Color.ForestGreen, Color.Fuchsia,
+                             Color.Gainsboro, Color.GhostWhite, Color.Gold, Color.Goldenrod, Color.Gray, Color.Green, Color.GreenYellow,
+                             Color.Honeydew, Color.HotPink, Color.IndianRed, Color.Indigo, Color.Ivory, Color.Khaki, Color.Lavender,
+                             Color.LavenderBlush, Color.LawnGreen, Color.LemonChiffon, Color.LightBlue, Color.LightCoral, Color.LightCyan,
+                             Color.LightGoldenrodYellow, Color.LightGray, Color.LightGreen, Color.LightPink, Color.LightSalmon,
+                             Color.LightSeaGreen, Color.LightSkyBlue, Color.LightSlateGray, Color.LightSteelBlue, Color.LightYellow, Color.Lime,
+                             Color.LimeGreen, Color.Linen, Color.Magenta, Color.Maroon, Color.MediumAquamarine, Color.MediumBlue,
+                             Color.MediumOrchid, Color.MediumPurple, Color.MediumSeaGreen, Color.MediumSlateBlue, Color.MediumSpringGreen,
+                             Color.MediumTurquoise, Color.MediumVioletRed, Color.MidnightBlue, Color.MintCream, Color.MistyRose, Color.Moccasin,
+                             Color.NavajoWhite, Color.Navy, Color.OldLace, Color.Olive, Color.OliveDrab, Color.Orange, Color.OrangeRed,
+                             Color.Orchid, Color.PaleGoldenrod, Color.PaleGreen, Color.PaleTurquoise, Color.PaleVioletRed, Color.PapayaWhip,
+                             Color.PeachPuff, Color.Peru, Color.Pink, Color.Plum, Color.PowderBlue, Color.Purple, Color.Red, Color.RosyBrown,
+                             Color.RoyalBlue, Color.SaddleBrown, Color.Salmon, Color.SandyBrown, Color.SeaGreen, Color.SeaShell, Color.Sienna,
+                             Color.Silver, Color.SkyBlue, Color.SlateBlue, Color.SlateGray, Color.Snow, Color.SpringGreen, Color.SteelBlue,
+                             Color.Tan, Color.Teal, Color.Thistle, Color.Tomato, /*Color.Transparent,*/ Color.Turquoise, Color.Violet, Color.Wheat,
+                             Color.White, Color.WhiteSmoke, Color.Yellow, Color.YellowGreen, };
 
         public static Color[] darkColors = { /*Color.AliceBlue,*/ /*Color.Aqua, Color.Aquamarine, Color.Azure, Color.Bisque,*/ Color.Black,
-                             Color.Blue, Color.BlueViolet, /*Color.Brown, Color.BurlyWood,*/ Color.CadetBlue, /*Color.Chartreuse,*/ 
-                             Color.Chocolate, /*Color.Coral,*/ /*Color.CornflowerBlue,*/ /*Color.Cornsilk,*/ Color.Crimson, Color.Cyan, Color.DarkBlue, 
-                             Color.DarkCyan, Color.DarkGoldenrod, Color.DarkGray, Color.DarkGreen, Color.DarkKhaki, Color.DarkMagenta, 
-                             Color.DarkOliveGreen, Color.DarkOrange, Color.DarkOrchid, Color.DarkRed, Color.DarkSalmon, Color.DarkSeaGreen, 
-                             Color.DarkSlateBlue, Color.DarkSlateGray, Color.DarkTurquoise, Color.DarkViolet, Color.DeepPink, Color.DeepSkyBlue, 
-                             Color.DimGray, Color.DodgerBlue, Color.Firebrick, Color.ForestGreen, Color.Fuchsia, 
-                             Color.Gainsboro, Color.Gold, Color.Goldenrod, /*Color.Gray,*/ Color.Green, /*Color.GreenYellow,*/ 
-                             Color.Honeydew, Color.HotPink, Color.IndianRed, Color.Indigo, /*Color.Khaki,*/ Color.Lavender, 
-                             /*Color.LavenderBlush,*/ Color.LawnGreen, /*Color.LemonChiffon,*/ Color.Lime, 
-                             Color.LimeGreen, /*Color.Linen,*/ Color.Magenta, Color.Maroon, Color.MediumAquamarine, Color.MediumBlue, 
-                             /*Color.MediumOrchid,*/ Color.MediumPurple, /*Color.MediumSeaGreen,*/ Color.MediumSlateBlue, Color.MediumSpringGreen, 
-                             Color.MediumTurquoise, Color.MediumVioletRed, Color.MidnightBlue, /*Color.MistyRose,*/ /*Color.Moccasin,*/ 
-                             Color.Navy, /*Color.OldLace,*/ Color.Olive, /*Color.OliveDrab,*/ Color.Orange, Color.OrangeRed, 
+                             Color.Blue, Color.BlueViolet, /*Color.Brown, Color.BurlyWood,*/ Color.CadetBlue, /*Color.Chartreuse,*/
+                             Color.Chocolate, /*Color.Coral,*/ /*Color.CornflowerBlue,*/ /*Color.Cornsilk,*/ Color.Crimson, Color.Cyan, Color.DarkBlue,
+                             Color.DarkCyan, Color.DarkGoldenrod, Color.DarkGray, Color.DarkGreen, Color.DarkKhaki, Color.DarkMagenta,
+                             Color.DarkOliveGreen, Color.DarkOrange, Color.DarkOrchid, Color.DarkRed, Color.DarkSalmon, Color.DarkSeaGreen,
+                             Color.DarkSlateBlue, Color.DarkSlateGray, Color.DarkTurquoise, Color.DarkViolet, Color.DeepPink, Color.DeepSkyBlue,
+                             Color.DimGray, Color.DodgerBlue, Color.Firebrick, Color.ForestGreen, Color.Fuchsia,
+                             Color.Gainsboro, Color.Gold, Color.Goldenrod, /*Color.Gray,*/ Color.Green, /*Color.GreenYellow,*/
+                             Color.Honeydew, Color.HotPink, Color.IndianRed, Color.Indigo, /*Color.Khaki,*/ Color.Lavender,
+                             /*Color.LavenderBlush,*/ Color.LawnGreen, /*Color.LemonChiffon,*/ Color.Lime,
+                             Color.LimeGreen, /*Color.Linen,*/ Color.Magenta, Color.Maroon, Color.MediumAquamarine, Color.MediumBlue,
+                             /*Color.MediumOrchid,*/ Color.MediumPurple, /*Color.MediumSeaGreen,*/ Color.MediumSlateBlue, Color.MediumSpringGreen,
+                             Color.MediumTurquoise, Color.MediumVioletRed, Color.MidnightBlue, /*Color.MistyRose,*/ /*Color.Moccasin,*/
+                             Color.Navy, /*Color.OldLace,*/ Color.Olive, /*Color.OliveDrab,*/ Color.Orange, Color.OrangeRed,
                              /*Color.Orchid, Color.PaleVioletRed, Color.PapayaWhip, */
-                             /*Color.PeachPuff,*/ /*Color.Peru,*/ Color.Pink, Color.Plum, /*Color.PowderBlue,*/ Color.Purple, Color.Red, Color.RosyBrown, 
-                             Color.RoyalBlue, Color.SaddleBrown, Color.Salmon, /*Color.SandyBrown,*/ Color.SeaGreen, /*Color.Sienna,*/ 
-                             /*Color.Silver,*/ Color.SkyBlue, Color.SlateBlue, /*Color.SlateGray,*/ Color.SpringGreen, Color.SteelBlue, 
-                             /*Color.Tan,*/ Color.Teal, Color.Thistle, Color.Tomato, Color.Turquoise, Color.Violet, /*Color.Wheat,*/ 
-                             /*Color.Yellow,*/ Color.YellowGreen };
+                             /*Color.PeachPuff,*/ /*Color.Peru,*/ Color.Pink, Color.Plum, /*Color.PowderBlue,*/ Color.Purple, Color.Red, Color.RosyBrown,
+                             Color.RoyalBlue, Color.SaddleBrown, Color.Salmon, /*Color.SandyBrown,*/ Color.SeaGreen, /*Color.Sienna,*/
+                             /*Color.Silver,*/ Color.SkyBlue, Color.SlateBlue, /*Color.SlateGray,*/ Color.SpringGreen, Color.SteelBlue,
+                             /*Color.Tan,*/ Color.Teal, Color.Thistle, Color.Tomato, Color.Turquoise, Color.Violet, /*Color.Wheat,*/
+                             /*Color.Yellow,*/ Color.YellowGreen, };
 
 
 
 
 
-        static double[,] lowPassKernal = { { 0.1, 0.1, 0.1 }, 
-                                           { 0.1, 0.2, 0.1 }, 
-                                           { 0.1, 0.1, 0.1 } };
+        static double[,] lowPassKernal = { { 0.1, 0.1, 0.1 },
+                                           { 0.1, 0.2, 0.1 },
+                                           { 0.1, 0.1, 0.1 }, };
 
         static double[,] highPassKernal1 = { { -1.0, -1.0, -1.0 }, { -1.0, 9.0, -1.0 }, { -1.0, -1.0, -1.0 } };
         static double[,] highPassKernal2 = { { -0.3, -0.3, -0.3, -0.3, -0.3},
-                                             { -0.3, -0.3, -0.3, -0.3, -0.3}, 
+                                             { -0.3, -0.3, -0.3, -0.3, -0.3},
                                              { -0.3, -0.3,  9.7, -0.3, -0.3},
                                              { -0.3, -0.3, -0.3, -0.3, -0.3},
-                                             { -0.3, -0.3, -0.3, -0.3, -0.3}};
+                                             { -0.3, -0.3, -0.3, -0.3, -0.3},};
 
         static double[,] vertLineKernal = { { -0.5, 1.0, -0.5 }, { -0.5, 1.0, -0.5 }, { -0.5, 1.0, -0.5 } };
         static double[,] horiLineKernal3 = { { -0.5, -0.5, -0.5 }, { 1.0, 1.0, 1.0 }, { -0.5, -0.5, -0.5 } };
@@ -120,57 +116,57 @@ namespace TowseyLibrary
         static double[,] Laplace4Kernal = { { -1.0, -1.0, -1.0 }, { -1.0, 9.0, -1.0 }, { -1.0, -1.0, -1.0 } }; //subtracts original
 
         static double[,] grid2 =          { { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
-                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5}, 
+                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
 //                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
 //                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
 //                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
 //                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
-                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5}};
+                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},};
 
         //static double[,] grid2Wave =      { { -0.5, 1.0, -1.5, 2.0, -1.5, 1.0, -0.5},
-        //                                    { -0.5, 1.0, -1.5, 2.0, -1.5, 1.0, -0.5}, 
+        //                                    { -0.5, 1.0, -1.5, 2.0, -1.5, 1.0, -0.5},
         //                                    { -0.5, 1.0, -1.5, 2.0, -1.5, 1.0, -0.5}};
         static double[,] grid3 =          { { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
-                                            { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5}, 
                                             { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
                                             { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
                                             { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
                                             { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
-                                            { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5}};
+                                            { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
+                                            { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},};
 
         static double[,] grid4 =          { { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
-                                            { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375}, 
                                             { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
                                             { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
                                             { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
                                             { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
-                                            { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375}};
+                                            { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
+                                            { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},};
 
         static double[,] grid2Wave =      { { -0.5, -0.5, -0.5 },
                                             {  1.0,  1.0,  1.0 },
-                                            { -1.5, -1.5, -1.5 }, 
-                                            {  2.0,  2.0,  2.0 }, 
-                                            { -1.5, -1.5, -1.5 }, 
+                                            { -1.5, -1.5, -1.5 },
+                                            {  2.0,  2.0,  2.0 },
+                                            { -1.5, -1.5, -1.5 },
                                             {  1.0,  1.0,  1.0 },
-                                            { -0.5, -0.5, -0.5 }};
+                                            { -0.5, -0.5, -0.5 },};
 
         static double[,] grid3Wave =      { { -0.5, -0.5, -0.5 },
                                             {  1.0,  1.0,  1.0 },
-                                            { -0.5, -0.5, -0.5 }, 
-                                            { -1.0, -1.0, -1.0 }, 
-                                            {  2.0,  2.0,  2.0 }, 
-                                            { -1.0, -1.0, -1.0 }, 
-                                            { -0.5, -0.5, -0.5 }, 
+                                            { -0.5, -0.5, -0.5 },
+                                            { -1.0, -1.0, -1.0 },
+                                            {  2.0,  2.0,  2.0 },
+                                            { -1.0, -1.0, -1.0 },
+                                            { -0.5, -0.5, -0.5 },
                                             {  1.0,  1.0,  1.0 },
-                                            { -0.5, -0.5, -0.5 }};
+                                            { -0.5, -0.5, -0.5 },};
 
         public static double[,] SobelX =         { {-1.0,  0.0,  1.0},
                                             {-2.0,  0.0,  -2.0},
-                                            {-1.0,  0.0,  1.0} };
+                                            {-1.0,  0.0,  1.0}, };
 
         public static double[,] SobelY =         { {1.0,  2.0,  1.0},
                                             {0.0,  0.0,  0.0},
-                                            {-1.0, -2.0, -1.0} };
+                                            {-1.0, -2.0, -1.0}, };
 
         public static Bitmap ReadImage2Bitmap(string fileName)
         {
@@ -566,8 +562,8 @@ namespace TowseyLibrary
             double[,] norm = MatrixTools.normalise(M);
 
             int binCount = 100;
-            double binWidth = 0.01; 
-            double min = 0.0; 
+            double binWidth = 0.01;
+            double min = 0.0;
             double max = 1.0;
             int[] histo = Histogram.Histo(M, binCount, min, max, binWidth);
 
@@ -631,7 +627,7 @@ namespace TowseyLibrary
         /// http://www.aforgenet.com/framework/features/edge_detectors_filters.html
         /// See the below link for how to set the thresholds etc
         /// http://homepages.inf.ed.ac.uk/rbf/HIPR2/canny.htm
-        /// 
+        ///
         /// </summary>
         /// <param name="bmp"></param>
         /// <returns></returns>
@@ -828,7 +824,7 @@ namespace TowseyLibrary
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            if (rows != cols) // must be square matrix 
+            if (rows != cols) // must be square matrix
             {
                 isRidge = false;
                 magnitude = 0.0;
@@ -850,8 +846,8 @@ namespace TowseyLibrary
             for (int r = centreID + 1; r < rows; r++) ridgeMagnitudes[0, 2] += rowSums[r]; //negative side magnitude
             ridgeMagnitudes[0, 0] /= (double)(centreID * cols);
             ridgeMagnitudes[0, 1] /= (double)cols;
-            ridgeMagnitudes[0, 2] /= (double)(centreID * cols); 
-            
+            ridgeMagnitudes[0, 2] /= (double)(centreID * cols);
+
             //ridge magnitude having slope=Pi/8;
             ridgeMagnitudes[1, 1] = (m[cm1, cp2] + m[centreID, cp1] + m[centreID, centreID] + m[centreID, cm1] + m[cp1, cm2]) / (double)5; //
             //positve side magnitude
@@ -908,7 +904,7 @@ namespace TowseyLibrary
             for (int i = 0; i < 7; i++)
             {
                 differences[i] = (ridgeMagnitudes[i, 1] - ridgeMagnitudes[i, 0]) + (ridgeMagnitudes[i, 1] - ridgeMagnitudes[i, 2]);
-                differences[i] /= 2; // want average of both differences because easier to select an appropiate decibel threshold for ridge magnitude. 
+                differences[i] /= 2; // want average of both differences because easier to select an appropiate decibel threshold for ridge magnitude.
             }
             int indexMin, indexMax;
             double diffMin, diffMax;
@@ -939,7 +935,7 @@ namespace TowseyLibrary
             // 0 = ridge direction = horizontal or slope = 0;
             // 1 = ridge is positive slope or pi/4
             // 2 = ridge is vertical or pi/2
-            // 3 = ridge is negative slope or 3pi/4. 
+            // 3 = ridge is negative slope or 3pi/4.
 
             double[] ridgeMagnitudes = Sobel5X5RidgeDetection(m);
 
@@ -971,11 +967,11 @@ namespace TowseyLibrary
             // 0 = ridge direction = horizontal or slope = 0;
             // 1 = ridge is positive slope or pi/4
             // 2 = ridge is vertical or pi/2
-            // 3 = ridge is negative slope or 3pi/4. 
+            // 3 = ridge is negative slope or 3pi/4.
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix 
+            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix
             {
                 return null;
             }
@@ -984,25 +980,25 @@ namespace TowseyLibrary
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         { 0.4, 0.4, 0.4, 0.4, 0.4},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
                                       };
             double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
-                                        { 0.4,-0.1,-0.1,-0.1,-0.1}
+                                        { 0.4,-0.1,-0.1,-0.1,-0.1},
                                       };
             double[,] ridgeDir2Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1}
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
                                       };
             double[,] ridgeDir3Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1, 0.4}
+                                        {-0.1,-0.1,-0.1,-0.1, 0.4},
                                       };
 
             double[] ridgeMagnitudes = new double[4];
@@ -1029,7 +1025,7 @@ namespace TowseyLibrary
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix 
+            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix
             {
                 isRidge = false;
                 magnitude = 0.0;
@@ -1041,25 +1037,25 @@ namespace TowseyLibrary
                                         {-0.3,-0.3,-0.3,-0.3,-0.3},
                                         { 1.0, 1.0, 1.0, 1.0, 1.0},
                                         {-0.3,-0.3,-0.3,-0.3,-0.3},
-                                        {-0.2,-0.2,-0.2,-0.2,-0.2}
+                                        {-0.2,-0.2,-0.2,-0.2,-0.2},
                                       };
             double[,] ridgeDir1Mask = { {-0.1,-0.2,-0.2,-0.3, 0.8},
                                         {-0.2,-0.2,-0.3, 1.0,-0.3},
                                         {-0.2,-0.3, 1.0,-0.3,-0.2},
                                         {-0.3, 1.0,-0.3,-0.2,-0.2},
-                                        { 0.8,-0.3,-0.2,-0.2,-0.1}
+                                        { 0.8,-0.3,-0.2,-0.2,-0.1},
                                       };
             double[,] ridgeDir2Mask = { {-0.2,-0.3, 1.0,-0.3,-0.2},
                                         {-0.2,-0.3, 1.0,-0.3,-0.2},
                                         {-0.2,-0.3, 1.0,-0.3,-0.2},
                                         {-0.2,-0.3, 1.0,-0.3,-0.2},
-                                        {-0.2,-0.3, 1.0,-0.3,-0.2}
+                                        {-0.2,-0.3, 1.0,-0.3,-0.2},
                                       };
             double[,] ridgeDir3Mask = { { 0.8,-0.3,-0.2,-0.2,-0.1},
                                         {-0.3, 1.0,-0.3,-0.2,-0.2},
                                         {-0.2,-0.3, 1.0,-0.3,-0.2},
                                         {-0.2,-0.2,-0.3, 1.0,-0.3},
-                                        {-0.1,-0.2,-0.2,-0.3, 0.8}
+                                        {-0.1,-0.2,-0.2,-0.3, 0.8},
                                       };
 
             double[] ridgeMagnitudes = new double[4];
@@ -1087,7 +1083,7 @@ namespace TowseyLibrary
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix 
+            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix
             {
                 isCorner = false;
                 magnitude = 0.0;
@@ -1099,49 +1095,49 @@ namespace TowseyLibrary
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4, 0.4, 0.4},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
                                       };
             double[,] ridgeDir1Mask = { { 0.4,-0.1,-0.1,-0.1, 0.4},
                                         {-0.1, 0.4,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
                                       };
             double[,] ridgeDir2Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         { 0.4, 0.4, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
                                       };
             double[,] ridgeDir3Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
-                                        { 0.4,-0.1,-0.1,-0.1,-0.1}
+                                        { 0.4,-0.1,-0.1,-0.1,-0.1},
                                       };
             double[,] ridgeDir4Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         { 0.4, 0.4, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1}
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
                                       };
             double[,] ridgeDir5Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1, 0.4,-0.1},
-                                        { 0.4,-0.1,-0.1,-0.1, 0.4}
+                                        { 0.4,-0.1,-0.1,-0.1, 0.4},
                                       };
             double[,] ridgeDir6Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4, 0.4, 0.4},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1}
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
                                       };
             double[,] ridgeDir7Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1, 0.4}
+                                        {-0.1,-0.1,-0.1,-0.1, 0.4},
                                       };
 
             double[] cornerMagnitudes = new double[8];
@@ -1509,7 +1505,7 @@ namespace TowseyLibrary
             int width = matrix.GetLength(1);
 
             // first convolve in x-dimension, i.e. along a row
-            double[,] M1 = (double[,])matrix.Clone(); 
+            double[,] M1 = (double[,])matrix.Clone();
             for (int r = edge; r < height - edge; r++)//for all rows
             {
                 for (int c = edge; c < width - edge; c++)//for all cols
@@ -1548,7 +1544,7 @@ namespace TowseyLibrary
             double gradThreshold = 1.2;
             int fWindow = 9;
             int tWindow = 9;
-            int bandCount = 16;  // 16 bands, width=512pixels, 32pixels/band 
+            int bandCount = 16;  // 16 bands, width=512pixels, 32pixels/band
             double lowerShoulder = 0.5;   //used to increase or decrease the threshold from modal value
             double upperShoulder = 0.05;
 
@@ -1907,7 +1903,7 @@ namespace TowseyLibrary
 
 
         /// <summary>
-        /// Returns a binary matrix containing high energy lines in the oriignal spectrogram 
+        /// Returns a binary matrix containing high energy lines in the oriignal spectrogram
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
@@ -2182,7 +2178,7 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static Image DrawColourChart(int width, int ht, Color[] colorArray)
         {
-            if((colorArray==null)||(colorArray.Length==0)) 
+            if((colorArray==null)||(colorArray.Length==0))
                 return null;
 
             int colourCount = colorArray.Length;
@@ -2236,7 +2232,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Normalises the matrix between zero and one. 
+        /// Normalises the matrix between zero and one.
         /// Then draws the reversed matrix and saves image to passed path.
         /// </summary>
         /// <param name="matrix">the data</param>
@@ -2248,7 +2244,7 @@ namespace TowseyLibrary
             bmp.Save(pathName);
         }
         /// <summary>
-        /// Normalises the matrix between zero and one. 
+        /// Normalises the matrix between zero and one.
         /// Then draws the reversed matrix and saves image to passed path.
         /// </summary>
         /// <param name="matrix">the data</param>
@@ -2516,11 +2512,11 @@ namespace TowseyLibrary
                 int x1 = scaleHeight + (int)(i * xTicInterval) - xOffset;
                 g.DrawLine(pen, x1, 0, x1, image.Height - 1);
             }
-            
+
             Image scaleImage = new Bitmap(image.Width, scaleHeight);
             g = Graphics.FromImage(scaleImage);
             pen = new Pen(Color.Black);
-            g.Clear(Color.LightGray);            
+            g.Clear(Color.LightGray);
             for (int i = 0; i <= ticCount; i++)
             {
                 int x1 = scaleHeight + (int)(i * xTicInterval) - xOffset;
@@ -2573,7 +2569,7 @@ namespace TowseyLibrary
             g.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
 
             if (statistics != null)
-            { 
+            {
             string[] statKeys = statistics.Keys.ToArray();
             for (int s = 0; s < statKeys.Length; s++)
             {
@@ -2842,11 +2838,11 @@ namespace TowseyLibrary
                 var fft = new FFT(windowWidth, wf);
                 fftSpectrum = fft.Invoke(signal);
             }
-            int requiredBinCount = (int)(maxHz / hzPerBin); 
+            int requiredBinCount = (int)(maxHz / hzPerBin);
             var subBandSpectrum = DataTools.Subarray(fftSpectrum, 1, requiredBinCount); // ignore DC in bin zero.
-            
+
             var endTime = startTime + TimeSpan.FromSeconds(windowWidth / (double)sr);
-             
+
             string title1 = String.Format("Bandpass filtered: tStart={0},  tEnd={1}", startTime.ToString(), endTime.ToString());
             Image image4a = ImageTools.DrawWaveform(title1, signal, signal.Length, imageHeight, scalingFactor);
 
@@ -3023,7 +3019,7 @@ namespace TowseyLibrary
                     myHsv = new Hsv { H = hue, S = saturation, V = value };
                     myRgb = myHsv.To<Rgb>();
                     colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
-                    
+
                     for (int x = 0; x < XpixelsPerCell; x++)
                     {
                         for (int y = 0; y < YpixelsPerCell; y++)
@@ -3081,7 +3077,7 @@ namespace TowseyLibrary
 
 
         /// <summary>
-        /// Stacks the passed images one on top of the other. 
+        /// Stacks the passed images one on top of the other.
         /// Assumes that all images have the same width.
         /// </summary>
         /// <param name="list"></param>
@@ -3096,7 +3092,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Stacks the passed images one on top of the other. 
+        /// Stacks the passed images one on top of the other.
         /// Assumes that all images have the same width.
         /// </summary>
         /// <param name="array"></param>
@@ -3136,7 +3132,7 @@ namespace TowseyLibrary
 
 
         /// <summary>
-        /// Stacks the passed images one on top of the other. 
+        /// Stacks the passed images one on top of the other.
         /// Assumes that all images have the same width.
         /// </summary>
         /// <param name="list"></param>
@@ -3147,7 +3143,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Stacks the passed images one on top of the other. 
+        /// Stacks the passed images one on top of the other.
         /// Assumes that all images have the same width.
         /// </summary>
         /// <param name="array"></param>
@@ -3161,7 +3157,7 @@ namespace TowseyLibrary
             {
                 compositeWidth += array[i].Width;
                 if (height < array[i].Height)
-                    height = array[i].Height; 
+                    height = array[i].Height;
             }
 
             //Bitmap compositeBmp = new Bitmap(compositeWidth, height, PixelFormat.Format24bppRgb);

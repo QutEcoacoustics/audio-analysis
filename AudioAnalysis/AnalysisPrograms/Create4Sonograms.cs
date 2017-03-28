@@ -1,26 +1,24 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
-
-    using AnalysisPrograms.Production;
-    using PowerArgs;
-    using Acoustics.Shared;
-    using System.Drawing.Imaging;
+    using System;
+    using System.Collections.Generic;
     using System.Drawing;
-   
-    
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
+    using Acoustics.Shared;
+    using AnalysisPrograms.Production;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using PowerArgs;
+    using TowseyLibrary;
+
     /// <summary>
     /// Call this class by using the activity (first command line argument) "Create4Sonograms"
     /// </summary>
@@ -108,7 +106,7 @@ namespace AnalysisPrograms
             var configDict = new Dictionary<string, string>();
             configDict["FrameLength"] = configuration[AnalysisKeys.FrameLength] ?? 512;
             int frameSize             = configuration[AnalysisKeys.FrameLength] ?? 512;
-            // #Frame Overlap as fraction: default=0.0 
+            // #Frame Overlap as fraction: default=0.0
             configDict["FrameOverlap"] = configuration[AnalysisKeys.FrameOverlap] ?? 0.0;
             double windowOverlap       = configuration[AnalysisKeys.FrameOverlap] ?? 0.0;
             // #Resample rate must be 2 X the desired Nyquist. Default is that of recording.
@@ -143,7 +141,7 @@ namespace AnalysisPrograms
             var dspOutput = DSP_Frames.ExtractEnvelopeAndFFTs(recording, frameSize, windowOverlap);
 
             // average absolute value over the minute recording
-            ////double[] avAbsolute = dspOutput.Average; 
+            ////double[] avAbsolute = dspOutput.Average;
 
             // (A) ################################## EXTRACT INDICES FROM THE SIGNAL WAVEFORM ##################################
             double[] signalEnvelope = dspOutput.Envelope;
@@ -173,8 +171,8 @@ namespace AnalysisPrograms
             double sdCount = 0.0; // number of SDs above the mean for noise removal
             NoiseProfile dBProfile = NoiseProfile.CalculateModalNoiseProfile(deciBelSpectrogram, sdCount);       // calculate noise value for each freq bin.
             //DataTools.writeBarGraph(dBProfile.NoiseMode);
-            
-            
+
+
             //deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, dBProfile.NoiseThresholds);
             //double dBThreshold = 3.0; // SPECTRAL dB THRESHOLD for smoothing background
             //deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, dBThreshold);
@@ -225,7 +223,7 @@ namespace AnalysisPrograms
             //var mti = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
             //var image = mti.GetImage();
 
-            
+
             //Image image = SpectrogramTools.Matrix2SonogramImage(deciBelSpectrogram, config);
             //Image image = SpectrogramTools.Audio2SonogramImage(FileInfo fiAudio, Dictionary<string, string> configDict);
 

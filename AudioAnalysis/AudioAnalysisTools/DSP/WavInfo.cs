@@ -38,32 +38,32 @@ namespace AudioAnalysisTools.DSP
         public short BytesPerSample { get; set; }
 
         /// <summary>
-        /// Gets or sets 
+        /// Gets or sets
         /// </summary>
         public short CompressionCode { get; set; }
 
         /// <summary>
-        /// Gets or sets 
+        /// Gets or sets
         /// </summary>
         public int BytesPerSecond { get; set; }
 
         /// <summary>
-        /// Gets or sets 
+        /// Gets or sets
         /// </summary>
         public double[] Samples { get; set; }
 
         /// <summary>
-        /// Gets or sets 
+        /// Gets or sets
         /// </summary>
         public short[][] SamplesSplit { get; set; }
 
         /// <summary>
-        /// Gets or sets 
+        /// Gets or sets
         /// </summary>
         public TimeSpan Duration { get; set; }
 
         /// <summary>
-        /// Gets or sets 
+        /// Gets or sets
         /// </summary>
         public double Epsilon
         {
@@ -179,7 +179,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="wavInfo"></param>
         /// <returns></returns>

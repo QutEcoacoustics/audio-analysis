@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
-
-
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using TowseyLibrary;
 
     /// <summary>
     /// Finds and stores info about spectral peak tracks ie whistles and chirps in the passed spectrogram.
@@ -26,10 +23,10 @@ namespace AudioAnalysisTools
         /// the fractional peak cover; i.e. fraction of frames in freq bin that are a spectral peak.
         /// </summary>
         public double[] SptSpectrum { get; private set; }
-        public double[] RhzSpectrum { get; private set; } // spectrum of horizontal ridges 
-        public double[] RvtSpectrum { get; private set; } // spectrum of vertical ridges 
-        public double[] RpsSpectrum { get; private set; } // spectrum of positive slope ridges 
-        public double[] RngSpectrum { get; private set; } // spectrum of negative slope ridges 
+        public double[] RhzSpectrum { get; private set; } // spectrum of horizontal ridges
+        public double[] RvtSpectrum { get; private set; } // spectrum of vertical ridges
+        public double[] RpsSpectrum { get; private set; } // spectrum of positive slope ridges
+        public double[] RngSpectrum { get; private set; } // spectrum of negative slope ridges
 
 
         /// <summary>
@@ -68,7 +65,7 @@ namespace AudioAnalysisTools
             // 1 = ridge direction = horizontal or slope = 0;
             // 2 = ridge is positive slope or pi/4
             // 3 = ridge is vertical or pi/2
-            // 4 = ridge is negative slope or 3pi/4. 
+            // 4 = ridge is negative slope or 3pi/4.
             //byte[,] hits = RidgeDetection.Sobel5X5RidgeDetectionExperiment(matrix, ridgeThreshold);
             byte[,] hits = RidgeDetection.Sobel5X5RidgeDetectionVersion1(matrix, ridgeThreshold);
 
@@ -80,7 +77,7 @@ namespace AudioAnalysisTools
 
             //Now aggregate hits to get ridge info
             //note that the Spectrograms were passed in flat-rotated orientation.
-            //Therefore need to assign ridge number to re-oriented values. 
+            //Therefore need to assign ridge number to re-oriented values.
             // Accumulate info for the horizontal ridges
             for (int col = 0; col < colCount; col++) // i.e. for each frequency bin
             {
@@ -132,7 +129,7 @@ namespace AudioAnalysisTools
             int colCount = dbSpectrogramData.GetLength(1);
             // calculate span = number of cells over which will take average of a feature.
             // -4 because 5x5 grid means buffer of 2 on either side
-            int spanCount = rowCount - 4; 
+            int spanCount = rowCount - 4;
 
 
             double[,] matrix = dbSpectrogramData;
@@ -146,7 +143,7 @@ namespace AudioAnalysisTools
             // 0 = ridge direction = horizontal or slope = 0;
             // 1 = ridge is positive slope or pi/4
             // 2 = ridge is vertical or pi/2
-            // 3 = ridge is negative slope or 3pi/4. 
+            // 3 = ridge is negative slope or 3pi/4.
             List<double[,]> hits = RidgeDetection.Sobel5X5RidgeDetection_Version2(matrix);
 
             //image for debugging
@@ -161,7 +158,7 @@ namespace AudioAnalysisTools
 
             //Now aggregate hits to get ridge info
             //note that the Spectrograms were passed in flat-rotated orientation.
-            //Therefore need to assign ridge number to re-oriented values. 
+            //Therefore need to assign ridge number to re-oriented values.
 
             // Accumulate info for the horizontal ridges
             var M = hits[2];
@@ -193,7 +190,7 @@ namespace AudioAnalysisTools
             {
                 sum = 0;
                 // i.e. for each row or frame
-                for (int row = 2; row < rowCount - 2; row++) 
+                for (int row = 2; row < rowCount - 2; row++)
                 {
                     sum += M[row, col];
                 }
@@ -249,14 +246,14 @@ namespace AudioAnalysisTools
                 //int cover = freqBin.Count(x => x > 0.0);
                 //if (cover < 3) continue; // i.e. not a track.
                 //spectrum[col] = cover / (double)rowCount;
-                //cummulativeFrameCount += cover;                         // accumulate track frames over all frequency bins 
+                //cummulativeFrameCount += cover;                         // accumulate track frames over all frequency bins
                 ////this.TotalTrackCount += tracksInOneBin.TrackCount;    // accumulate counts over all frequency bins
             }
             this.SptSpectrum = spectrum;
             this.TrackDensity = cummulativeFrameCount / (double)spanCount;
 
             //double avFramesPerTrack = 0.0;
-            //if (totalTrackCount > 0) 
+            //if (totalTrackCount > 0)
             //    avFramesPerTrack = cummulativeFrameCount / (double)totalTrackCount;
             //this.TotalTrackCount = totalTrackCount;
             //this.AvTrackDuration = TimeSpan.FromSeconds(avFramesPerTrack / framesPerSecond);

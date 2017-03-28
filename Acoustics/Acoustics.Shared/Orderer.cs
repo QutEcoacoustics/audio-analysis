@@ -86,7 +86,7 @@
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Orderer{TOrder,TOrderProperty}"/> class. 
+        /// Initializes a new instance of the <see cref="Orderer{TOrder,TOrderProperty}"/> class.
         /// </summary>
         /// <param name="orderExpr">
         /// The order expr.

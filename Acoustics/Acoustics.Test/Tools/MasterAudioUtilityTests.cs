@@ -29,9 +29,9 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
          * AppConfigHelper.FfprobeExe
          * AppConfigHelper.Mp3SpltExe
          * ...etc...
-         * 
+         *
          * To get test audio path:
-         * 
+         *
          */
         #region Public Methods and Operators
 
@@ -47,7 +47,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                 SampleRate = 22050,
                 Duration = TimeSpan.FromSeconds(240.031),
                 BitsPerSecond = 96000,
-                MediaType = MediaTypes.MediaTypeMp3
+                MediaType = MediaTypes.MediaTypeMp3,
             };
 
             Modify(
@@ -71,7 +71,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                 SampleRate = 22050,
                 Duration = TimeSpan.FromSeconds(240.031),
                 BitsPerSecond = 96000,
-                MediaType = MediaTypes.MediaTypeWav
+                MediaType = MediaTypes.MediaTypeWav,
             };
 
             Modify(
@@ -301,7 +301,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                 TimeSpan.FromMilliseconds(0));
         }
 
-       
+
 
         /// <summary>
         /// The test sox.

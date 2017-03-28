@@ -29,7 +29,7 @@ namespace AudioAnalysisTools.TileImage
         public int YTiles { get; set; }
 
         public double XScale { get; set; }
-        
+
         public double YScale { get; set; }
 
         public int ScaleIndex { get; private set; }

@@ -1,22 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using TowseyLibrary;
+
     public static class HarmonicAnalysis
     {
 
         /// <summary>
-        /// Returns a tuple consisting of: 
+        /// Returns a tuple consisting of:
         /// 1) an array of scores over the entire recording
         /// 2) a list of acoustic events
-        /// 3) a matrix of hits corresonding to the spectrogram. 
+        /// 3) a matrix of hits corresonding to the spectrogram.
         /// </summary>
         /// <param name="sonogram">sonogram derived from the recording</param>
         /// <param name="minHz">min bound freq band to search</param>
@@ -54,7 +53,7 @@ namespace AudioAnalysisTools
             for (int r = 0; r < rows; r++)
             {
                 var array = new double[binWidth];
-                for (int c = 0; c < binWidth; c++) array[c] = matrix[r, minBin + c]; 
+                for (int c = 0; c < binWidth; c++) array[c] = matrix[r, minBin + c];
                 var results = CountHarmonicTracks(array, expectedHarmonicCount);
                 int peakCount = results.Item2; // number of harmonic tracks i.e. the peakCount.
                 if (peakCount == 0) continue;
@@ -63,7 +62,7 @@ namespace AudioAnalysisTools
                 double delta = Math.Abs(peakCount - expectedHarmonicCount);  //Item2 = number of spectral tracks
                 // weight the score according to difference between expected and observed track count
                 double weight = 1.0;
-                if (delta > 4) weight = 4 / delta;  
+                if (delta > 4) weight = 4 / delta;
                 double score = weight * results.Item1;
                 if (score < amplitudeThreshold) continue;
 
@@ -72,7 +71,7 @@ namespace AudioAnalysisTools
                 //for (int c = 0; c < peaks.Length; c++) if(peaks[c]) { hits[r, minBin + c] = results.Item2; }  // for display purposes.
                 if (r % 2 == 0) continue; //draw hits for every second row - so can see underneath!
                 for (int c = 0; c < binWidth; c++) if (peaks[c]) { hits[r, minBin + c] = 20; c++; }  // for display purposes.
-                
+
             }// rows
 
             return Tuple.Create(harmonicScore, hits);
@@ -112,7 +111,7 @@ namespace AudioAnalysisTools
             }
 
 
-            //// If have too many peaks (local maxima), remove the lowest of them 
+            //// If have too many peaks (local maxima), remove the lowest of them
             //if (peakCount > (expectedHarmonicCount + 1))
             //{
             //    var peakValues = new double[peakCount];
@@ -131,7 +130,7 @@ namespace AudioAnalysisTools
             //    peakCount = -1;
             //    for (int i = 0; i < L; i++)
             //    {
-            //        if (peaks[i]) 
+            //        if (peaks[i])
             //        {
             //            peakCount++;
             //            peakLocations[peakCount] = i;

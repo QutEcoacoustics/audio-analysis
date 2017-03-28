@@ -135,9 +135,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
             config.SetPair(ConfigKeys.Mfcc.Key_DeltaT, "2");
             config.SetPair(ConfigKeys.Sonogram.Key_SonogramType, ConfigKeys.SonogramTypes.Spectral.ToString());
             config.SetPair(ConfigKeys.ImageSave.Key_AddGrid, false.ToString());
-            this.Initialize(config);                        
+            this.Initialize(config);
         }
-        
+
         /// <summary>
         /// CONSTRUCTOR
         /// Initialises sonogram config with key-value-pairs in the passed ConfigDictionary
@@ -181,15 +181,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.WindowSize = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
             this.WindowOverlap = config.GetDouble(ConfigKeys.Windowing.Key_WindowOverlap);
 
-            //NOISE REDUCTION PARAMETERS  
-            this.DoSnr = true; // set false if only want to 
+            //NOISE REDUCTION PARAMETERS
+            this.DoSnr = true; // set false if only want to
             string noisereduce = config.GetString(AnalysisKeys.NoiseReductionType);
             //this.NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noisereduce.ToUpperInvariant());
             this.NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noisereduce);
             //NoiseReductionParameter       = config.GetDouble(SNR.key_Snr.key_);
 
             //FREQ BAND PARAMETERS
-            this.DoFullBandwidth = false; // set true if only want to 
+            this.DoFullBandwidth = false; // set true if only want to
             this.MinFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MinFreq);
             this.MaxFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MaxFreq);
             this.MidFreqBand = this.MinFreqBand + ((this.MaxFreqBand - this.MinFreqBand) / 2);
@@ -231,8 +231,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
             if (configDict.ContainsKey(AnalysisKeys.ResampleRate))
                 this.sampleRate = ConfigDictionary.GetInt("ResampleRate", configDict);
 
-            //NOISE REDUCTION PARAMETERS  
-            this.DoSnr = true; // set false if only want to 
+            //NOISE REDUCTION PARAMETERS
+            this.DoSnr = true; // set false if only want to
             this.NoiseReductionType = NoiseReductionType.None;
             if (configDict.ContainsKey(AnalysisKeys.NoiseReductionType))
             {
@@ -242,7 +242,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             // NoiseReductionParameter = config.GetDouble(SNR.key_Snr.key_);
 
             // FREQ BAND PARAMETERS
-            this.DoFullBandwidth = true; // set true if only want to 
+            this.DoFullBandwidth = true; // set true if only want to
             // MinFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MinFreq);
             // MaxFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MaxFreq);
             // MidFreqBand = MinFreqBand + ((MaxFreqBand - MinFreqBand) / 2);
@@ -287,11 +287,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <returns>seconds</returns>
         public double GetFrameDuration(int sampleRate)
         {
-            return this.WindowSize / (double)sampleRate; 
+            return this.WindowSize / (double)sampleRate;
         }
 
         /// <summary>
-        /// returns the duration of that part of frame not overlapped with follwoing frame.  
+        /// returns the duration of that part of frame not overlapped with follwoing frame.
         /// Duration is given in seconds.
         /// Assumes that the sample rate, window size and overlap fraction are already known.
         /// </summary>
@@ -300,11 +300,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
         {
             double frameDuration = this.GetFrameDuration(this.SampleRate); // Duration of full frame or window in seconds
             double frameOffset = frameDuration * (1 - this.WindowOverlap);           // Duration of non-overlapped part of window/frame in seconds
-            return frameOffset; 
+            return frameOffset;
         }
 
         /// <summary>
-        /// returns the duration of that part of frame not overlapped with follwoing frame.  
+        /// returns the duration of that part of frame not overlapped with follwoing frame.
         /// Duration is given in seconds.
         /// Assumes window size and overlap fraction already known.
         /// </summary>

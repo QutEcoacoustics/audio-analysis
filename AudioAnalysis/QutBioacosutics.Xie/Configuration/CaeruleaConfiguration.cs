@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace QutBioacosutics.Xie.Configuration
+﻿namespace QutBioacosutics.Xie.Configuration
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     class CaeruleaConfiguration
     {
         public double AmplitudeThresholdCaerulea { get; set; }
@@ -39,13 +39,13 @@ namespace QutBioacosutics.Xie.Configuration
             RangeCaerulea = configuration.RangeCaerulea;                                // Frame---the distance in either side for selecting peaks
             DistanceCaerulea = configuration.DistanceCaerulea;                          // Frame---remove near peaks
             // Track parameters
-            BinToleranceCaerulea = configuration.BinToleranceCaerulea;                 // Bin---the fluctuation of the dominant frequency bin 
-            FrameThresholdCaerulea = configuration.FrameThresholdCaerulea;              // Frame---frame numbers of the silence    
+            BinToleranceCaerulea = configuration.BinToleranceCaerulea;                 // Bin---the fluctuation of the dominant frequency bin
+            FrameThresholdCaerulea = configuration.FrameThresholdCaerulea;              // Frame---frame numbers of the silence
             TrackDurationThresholdCaerulea = configuration.TrackDurationThresholdCaerulea;
-            TrackThresholdCaerulea = configuration.TrackThresholdCaerulea;           // Used for calculating the percent of peaks in one track    
+            TrackThresholdCaerulea = configuration.TrackThresholdCaerulea;           // Used for calculating the percent of peaks in one track
             MaximumTrackDurationCaerulea = configuration.MaximumTrackDurationCaerulea;  // Minimum duration of tracks
-            MinimumTrackDurationCaerulea = configuration.MinimumTrackDurationCaerulea;  // Maximum duration of tracks   
-            BinDifferenceCaerulea = configuration.BinDifferenceCaerulea;             // Difference between the highest and lowest bins   
+            MinimumTrackDurationCaerulea = configuration.MinimumTrackDurationCaerulea;  // Maximum duration of tracks
+            BinDifferenceCaerulea = configuration.BinDifferenceCaerulea;             // Difference between the highest and lowest bins
             // Band tracks parameters
             FrequencyLowCaerulea = configuration.FrequencyLowCaerulea;
             FrequencyHighCaerulea = configuration.FrequencyHighCaerulea;

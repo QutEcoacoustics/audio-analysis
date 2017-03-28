@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     public static class AcousticComplexityIndex
     {
         /// <summary>
@@ -41,7 +41,7 @@ namespace AudioAnalysisTools
         /// Returns an array of DIFFERENCE values used in top line of calculation of ACOUSTIC COMPLEXITY INDICES
         /// See the above method.
         /// NOTE: There is one less difference than the number of elements in the freq bin.
-        ///       When ACI is subsequently calculated, the SUM of freq bin values will be over all values 
+        ///       When ACI is subsequently calculated, the SUM of freq bin values will be over all values
         ///       but the sum of DIFFERENCES will be over one less value.
         ///       WHen ACI is calculated over a long interval i.e. one minute this is not a problem. When calculated over 0.2s, need to compensate.
         ///       To get an almost correct approx to the ACI value calculated over a long interval, we add the average DIF to the total DIFF.

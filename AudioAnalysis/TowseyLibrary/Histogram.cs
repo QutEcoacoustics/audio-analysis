@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-
-namespace TowseyLibrary
+﻿namespace TowseyLibrary
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Linq;
+    using System.Text;
+
     public static class Histogram
     {
 
@@ -29,7 +29,7 @@ namespace TowseyLibrary
             for (int i = 0; i < data.Length; i++)
             {
                 int id = (int)((data[i] - min) / binWidth);
-                if (id >= binCount) 
+                if (id >= binCount)
                     id = binCount-1;
                 else if (id < 0)
                     id = 0;
@@ -66,7 +66,7 @@ namespace TowseyLibrary
                 {
                     id = (int)((value - min) / binWidth);
                 }
-                if (id >= binCount) id = binCount - 1; 
+                if (id >= binCount) id = binCount - 1;
                 bins[id]++;
             }
 
@@ -157,7 +157,7 @@ namespace TowseyLibrary
             return histo;
         }
 
-        
+
         /// <summary>
         /// returns a fixed width histogram.
         /// Width is determined by user supplied min and max.
@@ -266,7 +266,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        ///  make histogram of integers where each bin has unit width 
+        ///  make histogram of integers where each bin has unit width
         /// </summary>
         /// <param name="data"></param>
         /// <param name="min"></param>
@@ -296,7 +296,7 @@ namespace TowseyLibrary
         {
             int binCount = 100;
             int windowCount = waveform.Length / window;
-            double[] amplitudeArray = new double[windowCount]; 
+            double[] amplitudeArray = new double[windowCount];
 
             for (int i = 0; i < windowCount; i++)
             {
@@ -391,7 +391,7 @@ namespace TowseyLibrary
             double min, max, mode, SD;
             DataTools.GetModeAndOneTailedStandardDeviation(values, DisplayHistogram, out min, out max, out mode, out SD);
 
-            int width = 100;  // pixels 
+            int width = 100;  // pixels
             int height = 100; // pixels
             int upperPercentileBin = 0;
 

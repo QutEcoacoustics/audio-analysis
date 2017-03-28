@@ -1,15 +1,13 @@
-﻿using AudioAnalysisTools.LongDurationSpectrograms;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-
-
-namespace AudioAnalysisTools.Indices
+﻿namespace AudioAnalysisTools.Indices
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.LongDurationSpectrograms;
+    using TowseyLibrary;
+
     /// <summary>
     /// This class contains methods for interconversion of files of Spectral Indices to/from a single "pivot-table" file.
     /// </summary>
@@ -33,7 +31,7 @@ namespace AudioAnalysisTools.Indices
         }
 
 
-        // use the following paths for the command line. 
+        // use the following paths for the command line.
         public class Arguments
         {
             //FileInfo indexPropertiesConfig, DirectoryInfo inputDirInfo, DirectoryInfo opDir
@@ -213,7 +211,7 @@ namespace AudioAnalysisTools.Indices
 
 
         /// <summary>
-        /// reads a single csv file in form of table and returns a dictionary of spectral indices.  
+        /// reads a single csv file in form of table and returns a dictionary of spectral indices.
         /// </summary>
         /// <param name="csvFileName"></param>
         /// <returns></returns>

@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using AudioAnalysisTools.StandardSpectrograms;
-using QutBioacosutics.Xie.Configuration;
-using TowseyLibrary;
-
-namespace QutBioacosutics.Xie.FrogIndices
+﻿namespace QutBioacosutics.Xie.FrogIndices
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using QutBioacosutics.Xie.Configuration;
+    using TowseyLibrary;
+
     class CalculateIndexForLitoriaLatopalmata
     {
         public static double[,] GetPeakHits(LatopalmataConfiguration latopalmataConfig, SpectrogramStandard spectrogramLong)
@@ -16,7 +16,7 @@ namespace QutBioacosutics.Xie.FrogIndices
                                                 latopalmataConfig.DistanceLatopalmata, latopalmataConfig.FrequencyLowLatopalmata, latopalmataConfig.FrequencyHighLatopalmata);
 
             return peakHitsLatopalmata;
-        
+
         }
 
 
@@ -32,7 +32,7 @@ namespace QutBioacosutics.Xie.FrogIndices
                                                                latopalmataConfig.MinimumTrackDurationLatopalmata, latopalmataConfig.BinDifferenceLatopalmata,
                                                                latopalmataConfig.DoSlopeLatopalmata);
 
-            // Contain harmonic structure 
+            // Contain harmonic structure
             var harmonicHitsLatopalmata = FindHarmonics.GetHarmonic(trackHitsLatopalmata.Item4, latopalmataConfig.HarmonicComponentLatopalmata,
                                                                     latopalmataConfig.HarmonicSensityLatopalmata, latopalmataConfig.HarmonicDiffrangeLatopalmata);
 
@@ -47,9 +47,9 @@ namespace QutBioacosutics.Xie.FrogIndices
         {
             public double[,] HarmonicHitsLatopalmata{ get; set; }
             public Tuple<double[], double[,], double[], double[,]> TrackHitsLatopalmata { get; set; }
-            
+
         }
-            
+
 
     }
 }

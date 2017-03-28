@@ -1,18 +1,16 @@
-﻿using AForge.Imaging.Filters;
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
-namespace Dong.Felt.Representations
+﻿namespace Dong.Felt.Representations
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Linq;
+    using System.Text;
     using Acoustics.Shared.Extensions;
-
+    using AForge.Imaging.Filters;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.StandardSpectrograms;
     using QutSensors.AudioAnalysis.AED;
+    using TowseyLibrary;
 
     class ClusterAnalysis
     {
@@ -22,7 +20,7 @@ namespace Dong.Felt.Representations
         #region Public Methods
 
         /// <summary>
-        /// SmoothRidges by elonging the ridges at particular directions. 
+        /// SmoothRidges by elonging the ridges at particular directions.
         /// </summary>
         /// <param name="ridgeMatrix"></param>
         /// <param name="step"></param>
@@ -32,7 +30,7 @@ namespace Dong.Felt.Representations
         {
             var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridgeList, rows, cols);
             var matrixRowlength = ridgeMatrix.GetLength(0);
-            var matrixColLength = ridgeMatrix.GetLength(1);           
+            var matrixColLength = ridgeMatrix.GetLength(1);
             var vradius = verticalStep / 2;
             var hradius = horizontalStep /2;
             var gaussianBlur = new GaussianBlur(sigma, GaussianBlurSize);
@@ -118,7 +116,7 @@ namespace Dong.Felt.Representations
                                 {
                                     for (var j = -gradius; j < gradius; j++)
                                     {
-                                        // check wheter need to change it. 
+                                        // check wheter need to change it.
                                         var tempMagnitude = centralMagnitude * gaussianKernal[gradius + i, gradius + j];
 
                                         if (result[r + i, c + j].RidgeMagnitude < tempMagnitude)
@@ -136,23 +134,23 @@ namespace Dong.Felt.Representations
             return result;
         }
 
-        //Step 1: do blur to connect broken/seperated poi 
+        //Step 1: do blur to connect broken/seperated poi
         /// <summary>
-        /// Gaussian Blur tries to connect broken ridges. 
+        /// Gaussian Blur tries to connect broken ridges.
         /// </summary>
         /// <param name="poiMatrix"></param>
         /// <param name="GaussianBlurSize"></param>
         /// <param name="sigma"></param>
         /// <returns></returns>
-        public static PointOfInterest[,] GaussianBlurOnPOI(PointOfInterest[,] poiMatrix, int rows, int cols, 
+        public static PointOfInterest[,] GaussianBlurOnPOI(PointOfInterest[,] poiMatrix, int rows, int cols,
             int GaussianBlurSize, double sigma)
         {
-            
+
             var gaussianBlur = new GaussianBlur(sigma, GaussianBlurSize);
             var radius = gaussianBlur.Size / 2;
-            // it has a kernal member which is an integer 2d array. 
+            // it has a kernal member which is an integer 2d array.
             var gaussianKernal = gaussianBlur.Kernel;
-            var result = new PointOfInterest[rows, cols];           
+            var result = new PointOfInterest[rows, cols];
             for (int colIndex = 0; colIndex < cols; colIndex++)
             {
                 for (int rowIndex = 0; rowIndex < rows; rowIndex++)
@@ -183,7 +181,7 @@ namespace Dong.Felt.Representations
                                 {
                                     for (var j = -radius; j < radius; j++)
                                     {
-                                        // check wheter need to change it. 
+                                        // check wheter need to change it.
                                         var tempMagnitude = centralMagnitude * gaussianKernal[radius + i, radius + j];
 
                                         if (result[r + i, c + j].RidgeMagnitude < tempMagnitude)
@@ -203,7 +201,7 @@ namespace Dong.Felt.Representations
         }
 
         /// <summary>
-        /// Cluster ridge list into a bunch of small segments which is composed of connected ridges. 
+        /// Cluster ridge list into a bunch of small segments which is composed of connected ridges.
         /// </summary>
         /// <param name="verPoiList"></param>
         /// <param name="horPoiList"></param>
@@ -229,7 +227,7 @@ namespace Dong.Felt.Representations
             {
                 for (var c = 0; c < colsCount; c++)
                 {
-                    // cluster vertical ridges into small segments                   
+                    // cluster vertical ridges into small segments
                     if (verPoiMatrix[r, c] != null && verPoiMatrix[r, c].RidgeMagnitude != 0 && verPoiMatrix[r, c].IsLocalMaximum == false)
                     {
                         var verSegmentSubList = new List<PointOfInterest>();
@@ -276,7 +274,7 @@ namespace Dong.Felt.Representations
         /// <param name="horAcousticEvents"></param>
         /// <param name="posAcousticEvents"></param>
         /// <param name="negAcousticEvents"></param>
-        public static List<List<AcousticEvent>> SeparateRidgeListToEvents(SpectrogramStandard sonogram, 
+        public static List<List<AcousticEvent>> SeparateRidgeListToEvents(SpectrogramStandard sonogram,
             PointOfInterest[,] poiList)
         {
             var dividedRidges = POISelection.POIListDivision(poiList);
@@ -285,10 +283,10 @@ namespace Dong.Felt.Representations
             var posDiaPoiList = dividedRidges[2];
             var negDiaPoiList = dividedRidges[3];
             var verAcousticEvents = new List<AcousticEvent>();
-            var horAcousticEvents = new List<AcousticEvent>();            
-            var posAcousticEvents = new List<AcousticEvent>();          
+            var horAcousticEvents = new List<AcousticEvent>();
+            var posAcousticEvents = new List<AcousticEvent>();
             var negAcousticEvents = new List<AcousticEvent>();
-            
+
             RidgeListToEvent(sonogram, verPoiList, out verAcousticEvents);
             RidgeListToEvent(sonogram, horPoiList, out horAcousticEvents);
             RidgeListToEvent(sonogram, posDiaPoiList, out posAcousticEvents);
@@ -302,21 +300,21 @@ namespace Dong.Felt.Representations
 
             return acousticEvents;
         }
-      
-        /// Xueyan's method not using AED       
-        // public static void SeperateRidgeListToEvent(SpectrogramStandard sonogram, 
+
+        /// Xueyan's method not using AED
+        // public static void SeperateRidgeListToEvent(SpectrogramStandard sonogram,
         //    List<PointOfInterest> verPoiList, List<PointOfInterest> horPoiList,
-        //    List<PointOfInterest> posDiaPoiList, List<PointOfInterest> negDiaPoiList, 
-        //    int rowsCount, int colsCount, 
+        //    List<PointOfInterest> posDiaPoiList, List<PointOfInterest> negDiaPoiList,
+        //    int rowsCount, int colsCount,
         //    out List<AcousticEvent> verAcousticEvents, out List<AcousticEvent> horAcousticEvents,
         //    out List<AcousticEvent> posAcousticEvents, out List<AcousticEvent> negAcousticEvents)
         //{
-        
+
         ////     for (var r = 0; r < rowsCount; r++)
         ////{
         ////    for (var c = 0; c < colsCount; c++)
         ////    {
-        ////        // cluster vertical ridges into small segments                   
+        ////        // cluster vertical ridges into small segments
         ////        if (verPoiMatrix[r, c] != null && verPoiMatrix[r, c].RidgeMagnitude != 0 && verPoiMatrix[r, c].IsLocalMaximum == false)
         ////        {
         ////            var verSegmentSubList = new List<PointOfInterest>();
@@ -395,10 +393,10 @@ namespace Dong.Felt.Representations
         ////        }
         ////    }
         //}
-        
+
         // aed on provided ridges
         public static void RidgeListToEvent(SpectrogramStandard sonogram,
-            List<PointOfInterest> poiList,            
+            List<PointOfInterest> poiList,
             out List<AcousticEvent> acousticEvents)
         {
             var rowsCount = sonogram.Data.GetLength(1) - 1;
@@ -421,7 +419,7 @@ namespace Dong.Felt.Representations
                                      //LargeAreaHorizontal = Default.SeparateStyle.NewVertical(new Default.SeparateParameters(5000, 10, 10, false)),
                                      //LargeAreaVeritical = Default.SeparateStyle.NewHorizontal(new Default.SeparateParameters(2000, 20, 10, false))
                                  };
-            var oblongs = AcousticEventDetection.detectEvents(aedOptions, rotateDoubleMatrix);     
+            var oblongs = AcousticEventDetection.detectEvents(aedOptions, rotateDoubleMatrix);
              //=> to call a anonymous method
             var events = oblongs.Select(
                 o =>
@@ -433,10 +431,10 @@ namespace Dong.Felt.Representations
                         sonogram.FrameDuration,
                         sonogram.FrameStep,
                         sonogram.FrameCount);
-                    e.BorderColour = Color.FromArgb(128, Color.Blue);                    
+                    e.BorderColour = Color.FromArgb(128, Color.Blue);
                     return e;
-                }).ToList();           
-            acousticEvents = events;          
+                }).ToList();
+            acousticEvents = events;
         }
 
         public static List<AcousticEvent> RemoveSmallEvents(List<AcousticEvent> acousticEvents, double areaThreshold)
@@ -455,7 +453,7 @@ namespace Dong.Felt.Representations
         public static void RidgeListToEvent(SpectrogramStandard sonogram,
             PointOfInterest[,] poiMatrix,
             out List<AcousticEvent> acousticEvents)
-        {                 
+        {
             /////call AED to group ridges into event-based on ridge
             var doubleMatrix = poiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
             var rotateDoubleMatrix = MatrixTools.MatrixRotate90Clockwise(doubleMatrix);
@@ -490,7 +488,7 @@ namespace Dong.Felt.Representations
             acousticEvents = events;
         }
 
-        // Converge the events that are too close 
+        // Converge the events that are too close
         public static List<AcousticEvent> JoinEventsToLarge(List<AcousticEvent> acousticEvents)
         {
             // Close here means the gap in time is within 3 pixels
@@ -519,17 +517,17 @@ namespace Dong.Felt.Representations
                 {
                     for (var j = 0; j < cols; j++)
                     {
-                        rowEnergy[i] += doubleEventHitMatrix[i, j]; 
+                        rowEnergy[i] += doubleEventHitMatrix[i, j];
                     }
                 }
                 //  Find the middle columns which has sparse energy
                 int offset = 5;
                 int middleRowIndex = rows / 2;
                 if ((middleRowIndex - offset) > 0 && (middleRowIndex + offset) < rows)
-                {                                        
+                {
                     // Temperal energy array [offset *2 ]
                     var potentialGapEnergy = new double[offset * 2];
-                    
+
                     for (var r = middleRowIndex - offset; r < middleRowIndex + offset; r++)
                     {
                         // Check whether there is a colEnergy lower than a threshold, 20% of the cols.
@@ -567,7 +565,7 @@ namespace Dong.Felt.Representations
                         e1.HitElements = e.HitElements;
                         e1.HitColour = Color.Black;
                         result.Add(e1);
-                        
+
                         var e2 = new AcousticEvent();
                         e2.TimeStart = 0.0;
                         e2.TimeEnd = 0.0;
@@ -587,13 +585,13 @@ namespace Dong.Felt.Representations
                 {
                     result.Add(e);
                 }
-                
+
             }
             return result;
         }
 
         /// <summary>
-        /// Group 4 types of ridge based acoustic events into one list. 
+        /// Group 4 types of ridge based acoustic events into one list.
         /// </summary>
         /// <param name="verSegmentList"></param>
         /// <param name="horSegmentList"></param>
@@ -604,7 +602,7 @@ namespace Dong.Felt.Representations
             List<AcousticEvent> posDiSegmentList, List<AcousticEvent> negDiSegmentList)
         {
             var result = new List<AcousticEvent>();
-            // Add all sublists into one poi list. 
+            // Add all sublists into one poi list.
             foreach (var v in verSegmentList)
             {
                 result.Add(v);
@@ -629,7 +627,7 @@ namespace Dong.Felt.Representations
         }
 
         /// <summary>
-        /// Group 4 types of ridge based segments into one list. 
+        /// Group 4 types of ridge based segments into one list.
         /// </summary>
         /// <param name="verSegmentList"></param>
         /// <param name="horSegmentList"></param>
@@ -677,7 +675,7 @@ namespace Dong.Felt.Representations
                 }
             }
 
-            // Add all sublists into one poi list. 
+            // Add all sublists into one poi list.
             foreach (var v in modifiedVerSegmentList)
             {
                 foreach (var v1 in v)
@@ -737,14 +735,14 @@ namespace Dong.Felt.Representations
             RegionGrow8Direction(poiMatrix[PointY, PointX + 1], poiMatrix, poiList);
             // second bottom right
             //RegionGrow8Direction(poiMatrix[PointY + 1, PointX + 1], poiMatrix, ref poiList);
-            //// third bottom 
-            //RegionGrow(poiMatrix[PointY + 1, PointX], poiMatrix, ref poiList);          
+            //// third bottom
+            //RegionGrow(poiMatrix[PointY + 1, PointX], poiMatrix, ref poiList);
             //// fourth bottom left
-            //RegionGrow8Direction(poiMatrix[PointY - 1, PointX - 1], poiMatrix, ref poiList);          
-            //// fifth left       
-            //RegionGrow8Direction(poiMatrix[PointY, PointX - 1], poiMatrix, ref poiList);           
+            //RegionGrow8Direction(poiMatrix[PointY - 1, PointX - 1], poiMatrix, ref poiList);
+            //// fifth left
+            //RegionGrow8Direction(poiMatrix[PointY, PointX - 1], poiMatrix, ref poiList);
             //// sixth top left
-            //RegionGrow8Direction(poiMatrix[PointY - 1, PointX - 1], poiMatrix, ref poiList);          
+            //RegionGrow8Direction(poiMatrix[PointY - 1, PointX - 1], poiMatrix, ref poiList);
             //// seventh top
             //RegionGrow8Direction(poiMatrix[PointY - 1, PointX], poiMatrix, ref poiList);
             //// eight top right

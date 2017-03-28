@@ -1,16 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Acoustics.Shared;
-using Acoustics.Tools;
-using Acoustics.Tools.Audio;
-using AnalysisBase;
-
 namespace AnalysisPrograms.SourcePreparers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
     using System.Reflection;
-
+    using Acoustics.Shared;
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
+    using AnalysisBase;
     using log4net;
 
     /// <summary>
@@ -42,7 +40,7 @@ namespace AnalysisPrograms.SourcePreparers
         /// The target Sample Rate Hz.
         /// </param>
         /// <returns>
-        /// The prepared file. The returned FileSegment will have the targetFile and OriginalFileDuration set - 
+        /// The prepared file. The returned FileSegment will have the targetFile and OriginalFileDuration set -
         /// these are the path to the segmented file and the duration of the segmented file.
         /// The start and end offsets will not be set.
         /// </returns>
@@ -58,7 +56,7 @@ namespace AnalysisPrograms.SourcePreparers
                 {
                     OffsetStart = startOffset,
                     OffsetEnd = endOffset,
-                    TargetSampleRate = targetSampleRateHz
+                    TargetSampleRate = targetSampleRateHz,
                 };
             var preparedFile = AudioFilePreparer.PrepareFile(
                 outputDirectory,
@@ -184,7 +182,7 @@ namespace AnalysisPrograms.SourcePreparers
                 // yield each normal segment
                 foreach (long offset in segments)
                 {
-                    yield return 
+                    yield return
                         CreateSegment(ref aggregate, offset, fileSegment, startOffset, endOffset, overlap);
                 }
 
@@ -285,7 +283,7 @@ namespace AnalysisPrograms.SourcePreparers
                         new Range<TimeSpan>
                             {
                                 Minimum = TimeSpan.FromMilliseconds(start) + startOffset,
-                                Maximum = TimeSpan.FromMilliseconds(end) + startOffset
+                                Maximum = TimeSpan.FromMilliseconds(end) + startOffset,
                             });
 
                     currentPostion = end;
@@ -333,7 +331,7 @@ namespace AnalysisPrograms.SourcePreparers
                                 {
                                     OffsetStart = offset.Minimum,
                                     OffsetEnd = offset.Maximum,
-                                    TargetSampleRate = analysisSettings.SegmentTargetSampleRate
+                                    TargetSampleRate = analysisSettings.SegmentTargetSampleRate,
                                 });
                     }
 
@@ -367,7 +365,7 @@ namespace AnalysisPrograms.SourcePreparers
         /// <param name="channelSelection"></param>
         /// <param name="mixDownToMono"></param>
         /// <returns>
-        /// The prepared file. The returned FileSegment will have the targetFile and OriginalFileDuration set - 
+        /// The prepared file. The returned FileSegment will have the targetFile and OriginalFileDuration set -
         /// these are the path to the segmented file and the duration of the segmented file.
         /// The start and end offsets will not be set.
         /// </returns>
@@ -388,7 +386,7 @@ namespace AnalysisPrograms.SourcePreparers
                     OffsetEnd = endOffset,
                     TargetSampleRate = targetSampleRateHz,
                     MixDownToMono = mixDownToMono,
-                    Channels = channelSelection
+                    Channels = channelSelection,
                 };
             var preparedFile = AudioFilePreparer.PrepareFile(
                 outputDirectory,

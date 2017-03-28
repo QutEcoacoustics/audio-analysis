@@ -1,21 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using AudioAnalysisTools;
-using System.IO;
-using TowseyLibrary;
-using AudioBase;
-using Acoustics.Tools;
-using Acoustics.Shared;
-using Dong.Felt.Configuration;
-
-namespace Dong.Felt.ResultsOutput
+﻿namespace Dong.Felt.ResultsOutput
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using Acoustics.Shared;
+    using Acoustics.Tools;
+    using AudioAnalysisTools;
+    using AudioBase;
+    using Dong.Felt.Configuration;
+    using TowseyLibrary;
+
     public class OutputResults
     {
         /// <summary>
-        /// Matching step: 1. change candidate file path into file name for doing matching, output the changed files. 
+        /// Matching step: 1. change candidate file path into file name for doing matching, output the changed files.
         /// </summary>
         /// <param name="inputDirectory"></param>
         /// <param name="groundTruthFile"></param>
@@ -57,8 +57,8 @@ namespace Dong.Felt.ResultsOutput
         }
         /// <summary>
         /// Matching step 2
-        /// Match the improved csv files with groundtruth data, and output the results into original csv files. 
-        /// The output csv files changed the score, if they found the match. 
+        /// Match the improved csv files with groundtruth data, and output the results into original csv files.
+        /// The output csv files changed the score, if they found the match.
         /// </summary>
         public static void AutomatedMatchingAnalysis(DirectoryInfo inputDirectory, string groundTruthFile)
         {
@@ -136,8 +136,8 @@ namespace Dong.Felt.ResultsOutput
         }
 
         /// <summary>
-        /// Read the similarity score at rank 1 and rank 5.  
-        /// The output csv files changed the score, if they found the match. 
+        /// Read the similarity score at rank 1 and rank 5.
+        /// The output csv files changed the score, if they found the match.
         /// </summary>
         public static void AutomatedSimilarityScoreSelection(DirectoryInfo inputDirectory, string outputFile)
         {
@@ -170,7 +170,7 @@ namespace Dong.Felt.ResultsOutput
             for (int i = 0; i < csvFileCount; i++)
             {
                 var subCandicatesList = CSVResults.CsvToSCCandidatesList(new FileInfo(csvFiles[i]));
-               
+
                 var subCandicatesCount = subCandicatesList.Count;
                 if (subCandicatesCount < n)
                 {
@@ -180,9 +180,9 @@ namespace Dong.Felt.ResultsOutput
                 {
                     if (subCandicatesList[j].Score == 1)
                     {
-                        finalOutputResult.Add(subCandicatesList[j]);                        
+                        finalOutputResult.Add(subCandicatesList[j]);
                     }
-                }                
+                }
             }
             CSVResults.SCCandidateListToCSV(new FileInfo(outputFile), finalOutputResult);
         }
@@ -193,7 +193,7 @@ namespace Dong.Felt.ResultsOutput
             var grounTruthList = CSVResults.CsvToCandidatesList(new FileInfo(groundTruthFile));
             var timeDifference = 500; // 1000 ms
             var secondToMilliSecondUnit = 1000;
-            
+
                 var subCandicatesList = CSVResults.CsvToCandidatesList(new FileInfo(csvFiles[0]));
                 var candidatesCount = subCandicatesList.Count();
                 for (var index = 0; index < candidatesCount; index++)
@@ -204,7 +204,7 @@ namespace Dong.Felt.ResultsOutput
                         var gEndTime = g.EndTime * secondToMilliSecondUnit;
                         var gStartTime = g.StartTime * secondToMilliSecondUnit;
                         if (currentCandidate.SourceFilePath == g.SourceFilePath)
-                        {                           
+                        {
                                 if ((Math.Abs(currentCandidate.StartTime  - gStartTime) < timeDifference) ||
                                    (Math.Abs(currentCandidate.EndTime - gEndTime) < timeDifference))
                                 {
@@ -232,7 +232,7 @@ namespace Dong.Felt.ResultsOutput
             var audioFileCount = audioFiles.Count();
             var sepCandidatesList = new List<List<SongScopeCandidates>>();
 
-            var candicatesList = CSVResults.CsvToSCCandidatesList(new FileInfo(csvFiles[0]));           
+            var candicatesList = CSVResults.CsvToSCCandidatesList(new FileInfo(csvFiles[0]));
             if (candicatesList.Count != 0)
                 {
                     for (int l = 0; l < audioFileCount; l++)
@@ -263,7 +263,7 @@ namespace Dong.Felt.ResultsOutput
                             CSVResults.SCCandidateListToCSV(new FileInfo(changedFileName), sepCandidatesList[index]);
                         }
                     }
-                }           
+                }
         }
 
         public static int ClassificationStatistics(DirectoryInfo inputDirectory, int N)
@@ -279,7 +279,7 @@ namespace Dong.Felt.ResultsOutput
                 if (subCandicatesList.Count >= N)
                 {
                     modifiedCount = N;
-                    
+
                 }
                 else
                 {
@@ -298,14 +298,14 @@ namespace Dong.Felt.ResultsOutput
                     }
                 }
             }
-            return count; 
+            return count;
         }
         /// <summary>
         /// To summarize the matching results by taking into inputDirectory, output the results to the output file.
-        /// Especially, the input directory include all seperated matching results for all queries. 
+        /// Especially, the input directory include all seperated matching results for all queries.
         /// </summary>
         /// <param name="inputDirectory"></param>
-        /// <param name="outputFileName"></param>       
+        /// <param name="outputFileName"></param>
         public static void MatchingResultsSummary(DirectoryInfo inputDirectory, FileInfo outputFileName)
         {
             var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);
@@ -328,7 +328,7 @@ namespace Dong.Felt.ResultsOutput
         /// <summary>
         /// It takes in all the seperated matching results, and get the statistical results.
         /// The results will be dependent on the content of matching results. If the results have top 5 matched hits, then the statistical results will be done
-        /// based on these results. 
+        /// based on these results.
         /// </summary>
         /// <param name="resultsDirectory"></param>
         /// <returns></returns>
@@ -347,7 +347,7 @@ namespace Dong.Felt.ResultsOutput
 
             for (int index = 0; index < resultsCount; index++)
             {
-                // get the query species name                
+                // get the query species name
                 var queryPathWithoutExtension = Path.GetFileNameWithoutExtension(matchedResults[index]);
                 var querySplittedName = queryPathWithoutExtension.Split('-');
                 var querySpeciesName = querySplittedName[querySplittedName.Count() - 2];
@@ -419,17 +419,17 @@ namespace Dong.Felt.ResultsOutput
                     FourthHit = hit[3],
                     FifthHit = hit[4],
                     QueryAudioName = Path.GetFileNameWithoutExtension(matchedResults[index]),
-                    MatchedAudioName = matchedHitName
+                    MatchedAudioName = matchedHitName,
                 };
                 results.Add(item);
             }
 
-            // the return value will be the position in the ranking list, and the bool value to indicate whether it hits correctly.  
+            // the return value will be the position in the ranking list, and the bool value to indicate whether it hits correctly.
             return results;
         }
 
         /// <summary>
-        /// To use this method, you have to make sure there is no file with the same name of fiOutputSegment in the specific fold. 
+        /// To use this method, you have to make sure there is no file with the same name of fiOutputSegment in the specific fold.
         /// </summary>
         /// <param name="candidate"></param>
         /// <param name="fiOutputSegment"></param>
@@ -445,7 +445,7 @@ namespace Dong.Felt.ResultsOutput
                 startTime = TimeSpan.FromMilliseconds(0);  // if startTime is 0 second
                 endTime = TimeSpan.FromMilliseconds(candidate.EndTime + 2 * buffer.TotalMilliseconds);
             }
-            // To check whether endTime is greater 60 seconds 
+            // To check whether endTime is greater 60 seconds
             if (endTime.TotalMilliseconds > 60000)
             {
                 startTime = TimeSpan.FromMilliseconds(candidate.EndTime - 2 * buffer.TotalMilliseconds);
@@ -456,7 +456,7 @@ namespace Dong.Felt.ResultsOutput
                     {
                         TargetSampleRate = sampleRate,
                         OffsetStart = startTime,
-                        OffsetEnd = endTime
+                        OffsetEnd = endTime,
                     };
 
             var result = AudioFilePreparer.PrepareFile(candidate.SourceFilePath.ToFileInfo(), fiOutputSegment, request, TempFileHelper.TempDir());

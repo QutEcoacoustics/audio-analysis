@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TowseyLibrary;
-
-namespace AudioAnalysisTools.DSP
+﻿namespace AudioAnalysisTools.DSP
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using TowseyLibrary;
+
     public class MFCCStuff
     {
 
@@ -39,7 +39,7 @@ namespace AudioAnalysisTools.DSP
             for (int i = 0; i < dct.Length; i++) dct[i] = Math.Abs(dct[i]*10);
             dct[0] = 0.0; //dct[1] = 0.0; dct[2] = 0.0; dct[3] = 0.0;
             //int maxIndex = DataTools.GetMaxIndex(dct);
-            //double max = dct[maxIndex]; 
+            //double max = dct[maxIndex];
             //DataTools.MinMax(dct, out min, out max);
             DataTools.writeBarGraph(dct);
             LoggedConsole.WriteLine("FINISHED");
@@ -55,8 +55,8 @@ namespace AudioAnalysisTools.DSP
         ///         This is due to the fact that the spectrum actually consists of 512 + 1 values, the centre value being for f=0.
         /// NOTE 4: The decibels value is a ratio. Here the ratio is implied.
         ///         dB = 10*log(amplitude ^2) but in this method adjust power to account for power of Hamming window and SR.
-        /// NOTE 5: THIS METHOD ASSUMES THAT THE LAST BIN IS THE NYQUIST FREQ BIN        
-        /// NOTE 6: THIS METHOD ASSUMES THAT THE FIRST BIN IS THE MEAN or DC FREQ BIN        
+        /// NOTE 5: THIS METHOD ASSUMES THAT THE LAST BIN IS THE NYQUIST FREQ BIN
+        ///  NOTE 6: THIS METHOD ASSUMES THAT THE FIRST BIN IS THE MEAN or DC FREQ BIN
         /// </summary>
         /// <param name="amplitudeM"> the amplitude spectra </param>
         /// <param name="windowPower">value for window power normalisation</param>
@@ -88,8 +88,8 @@ namespace AudioAnalysisTools.DSP
             }
 
             //calculate power in frequency bins - must multiply by 2 to accomodate two spectral components, ie positive and neg freq.
-            for (int j = 1; j < binCount-1; j++) 
-            {                     
+            for (int j = 1; j < binCount-1; j++)
+            {
                 for (int i = 0; i < frameCount; i++)//foreach time step or frame
                 {
                     if (amplitudeM[i, j] < epsilon)
@@ -373,7 +373,7 @@ namespace AudioAnalysisTools.DSP
                             sum += MFCCStuff.MelIntegral(bi * linBand, b * linBand, matrix[i, bi], yb);
                         }
                     }
-                  
+
                     outData[i, j] = sum / melBand; //to obtain power per mel
                 } //end of for all mel bands
             //implicit end of for all spectra or time steps
@@ -402,12 +402,12 @@ namespace AudioAnalysisTools.DSP
                 Log.WriteLine("Speech.MelFilterBank(): WARNING!!!! Freq range = zero");
                 throw new Exception("Speech.LinearFilterBank(): WARNING!!!! Freq range = zero. Check values of min & max freq.");
             }
-            
+
             double melNyquist = MFCCStuff.Mel(Nyquist);
             double minMel     = MFCCStuff.Mel(minFreq);
             double maxMel     = MFCCStuff.Mel(maxFreq);
             double melRange   = maxMel - minMel;
-            double fraction   = melRange / melNyquist; 
+            double fraction   = melRange / melNyquist;
             filterBankCount   = (int)Math.Ceiling(filterBankCount * fraction);
 
             int M = matrix.GetLength(0); //number of spectra or time steps
@@ -558,7 +558,7 @@ namespace AudioAnalysisTools.DSP
             int binCount   = spectra.GetLength(1);  //number of filters in filter bank
 
             //set up the cosine coefficients. Need one extra to compensate for DC coeff.
-            double[,] cosines = MFCCStuff.Cosines(binCount, coeffCount + 1); 
+            double[,] cosines = MFCCStuff.Cosines(binCount, coeffCount + 1);
             //following two lines write matrix of cos values for checking.
             //string fPath = @"C:\SensorNetworks\Sonograms\cosines.txt";
             //FileTools.WriteMatrix2File_Formatted(cosines, fPath, "F3");
@@ -611,10 +611,10 @@ namespace AudioAnalysisTools.DSP
             return OP;
         }
 
-        
-        
+
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="spectrumLength">Same as bin count or filter bank count ie length of spectrum = N</param>
         /// <param name="coeffCount"></param>
@@ -707,7 +707,7 @@ namespace AudioAnalysisTools.DSP
             return acousticM;
         } //AcousticVectors()
 
-        
+
         /// <summary>
         /// This method assumes that the supplied mfcc matrix DOES NOT contain dB values in column one.
         /// These are added in from the supplied dB array.
@@ -808,7 +808,7 @@ namespace AudioAnalysisTools.DSP
                     return fv;
                 }
                 for (int i = 0; i < coeffcount; i++) fv[offset + i] = M[timeID + 1, i] - M[timeID - 1, i];
-                
+
                 for (int i = offset; i < offset + coeffcount; i++)
                 {
                     fv[i] = (fv[i] + 1) / 2;   //normalise values that potentially range from -1 to +1
@@ -872,7 +872,7 @@ namespace AudioAnalysisTools.DSP
                 {
                     fv[1 + offset + i] = M[timeID + 1, i] - M[timeID - 1, i];
                 }
-                for (int i = offset; i < offset + mfccCount + 1; i++) 
+                for (int i = offset; i < offset + mfccCount + 1; i++)
                     fv[i] = (fv[i] + 1) / 2;    //normalise values that potentially range from -1 to +1
             }
 

@@ -1,6 +1,6 @@
 <!---
-Use this issue tracker to file *bugs* or feature requests with the analysis 
-programs code *only*! Please fill out the below template.
+Use this issue tracker to file *bugs* or feature requests with the audio-analysis
+code *only*! Please fill out the below template.
 
 Off topic issues will be closed immediately. 
 
@@ -11,13 +11,13 @@ https://github.com/QutBioacoustics/Ecoacoustics/blob/master/Repositories.md
 (All of the above is a comment, you can remove it)
 -->
 
-### Expected behavior
+### Expected behaviour
 
-(A one-sentance description of what should happen)
+(A one-sentence description of what should happen)
 
-### Actual behavior
+### Actual behaviour
 
-(A one-sentance description of what should happen)
+(A one-sentence description of what actually happened)
 
 ### Steps to reproduce the behaviour
 
@@ -32,4 +32,3 @@ https://github.com/QutBioacoustics/Ecoacoustics/blob/master/Repositories.md
 
 
 ### Any other details
-

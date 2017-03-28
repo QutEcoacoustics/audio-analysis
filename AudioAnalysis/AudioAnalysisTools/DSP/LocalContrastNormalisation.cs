@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using TowseyLibrary;
-
-namespace AudioAnalysisTools.DSP
+﻿namespace AudioAnalysisTools.DSP
 {
+
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using TowseyLibrary;
 
     /// <summary>
     /// Performs local contrast normalisation on a matrix of values where the matrix is assumed to be derived from an image.
@@ -17,18 +16,18 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// WARNING!!: This method implements a convolution and like all convolutions is very slow (unless it can be fully parellised);
-        ///            Consider using another noise normalisation method such as in the class NoiseRemoval_Briggs. 
-        /// 
+        ///            Consider using another noise normalisation method such as in the class NoiseRemoval_Briggs.
+        ///
         /// This method does local contrast normalisation. Typically LCN normalises by division only and is motivated by what is known
         /// to happen in the visual cortext.
-        /// Every matrix element or pixel value is divided by the (scaled) standard deviation of pixel values 
+        /// Every matrix element or pixel value is divided by the (scaled) standard deviation of pixel values
         /// in a local field centred on the pixel. Scaling affects the severity of the normalisation.
         /// There are several ways of doing LCN. That is can divide by the local sum of squares. Or can calculate the local z-score
         /// which effectively normalises by both subtraction and division.
         /// This method is based on formula given by LeCun. Python code at the bottom of this class is the actual
         /// code used by LeCun which appears to do something different.
         /// Wish I knew Python!
-        /// 
+        ///
         /// </summary>
         /// <param name="inputM"></param>
         /// <param name="fieldSize"></param>
@@ -86,17 +85,17 @@ namespace AudioAnalysisTools.DSP
             outputM = ImageTools.ContrastStretching(outputM, fractionalStretching);
             ImageTools.DrawReversedMatrix(outputM, @"C:\SensorNetworks\Output\Sonograms\TESTMATRIX3.png");
             */
-            
+
             return outputM;
         }
 
 
     }
 
-    /* 
+    /*
      * ***************************
      * BELOW IS PYTHON CODE FROM LeCun for doing Local Contrast Normalisation
-     * 
+     *
 import numpy
 import theano
 import theano.tensor as T
@@ -126,7 +125,7 @@ class PintoLCN(preprocessing.ExamplewisePreprocessor):
 
         # For each pixel, remove mean of 3x3 neighborhood
         centered_X = X - convout[:,:,4:-4,4:-4]
-        
+
         # Scale down norm of 3x3 patch if norm is bigger than 1
         sum_sqr_XX = conv.conv2d(input = centered_X**2,
                              filters = ones_patch,
@@ -179,7 +178,7 @@ class LeCunLCN(preprocessing.ExamplewisePreprocessor):
 
         # For each pixel, remove mean of 9x9 neighborhood
         centered_X = X - convout[:,:,4:-4,4:-4]
-        
+
         # Scale down norm of 9x9 patch if norm is bigger than 1
         sum_sqr_XX = conv.conv2d(input = centered_X**2,
                              filters = filters,
@@ -196,8 +195,8 @@ class LeCunLCN(preprocessing.ExamplewisePreprocessor):
         f = theano.function([denseX], new_X)
         dataset.set_design_matrix(f(x))
 
-     * 
-     * 
+     *
+     *
      * *****************************
      */
 

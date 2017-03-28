@@ -3,12 +3,12 @@
     using System;
 
     /// <summary>
-    /// "Base58 is what you get after taking Base62 [a-zA-Z0-9] and removing any character that may 
-    /// induce to error when introduced by hand: 0 (zero), O (uppercase 'o'), I (uppercase 'i'), and l (lowercase 'L'). 
+    /// "Base58 is what you get after taking Base62 [a-zA-Z0-9] and removing any character that may
+    /// induce to error when introduced by hand: 0 (zero), O (uppercase 'o'), I (uppercase 'i'), and l (lowercase 'L').
     /// This concept was introduced to the general public by Flickr".
     /// </summary>
     /// <remarks>
-    /// See http://icoloma.blogspot.com.au/2010/03/create-your-own-bitly-using-base58.html and 
+    /// See http://icoloma.blogspot.com.au/2010/03/create-your-own-bitly-using-base58.html and
     /// http://dl.dropbox.com/u/1844215/FlickrBaseEncoder.java for more.
     /// </remarks>
     public class Base58
