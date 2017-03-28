@@ -1,13 +1,15 @@
-﻿namespace AudioAnalysisTools.DSP
-{
+﻿// <copyright file="DSP_Frames.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
 
+namespace AudioAnalysisTools.DSP
+{
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     using AudioAnalysisTools.WavTools;
-    //using MathNet.Numerics;using MathNet.Numerics.Transformations;
     using TowseyLibrary;
+
+    // using MathNet.Numerics;using MathNet.Numerics.Transformations;
 
     /// <summary>
     /// digital signal processing methods
@@ -16,29 +18,41 @@
     {
         public const double Pi = Math.PI;
 
-
         public class EnvelopeAndFft
         {
+            public double Epsilon { get; set; }
+
             public double MinSignalValue { get; set; }
+
             public double MaxSignalValue { get; set; }
+
+            public double FractionOfHighEnergyFrames { get; set; }
+
+            public int FrameCount { get; set; }
+
             public double[] Envelope { get; set; }
+
             public double[] FrameEnergy { get; set; }
+
+            public double[] FrameDecibels { get; set; }
+
             public double[,] AmplitudeSpectrogram { get; set; }
+
             public double WindowPower { get; set; }
+
             public double[] Average { get; set; }
+
             public int NyquistFreq { get; set; }
+
             public double FreqBinWidth { get; set; }
+
             public int NyquistBin { get; set; }
+
             public int MaxAmplitudeCount { get; set; }
+
             public int ClipCount { get; set; }
         }
 
-        /// <summary>
-        ///             //int frameStep = (int)(frameSize * (1 - overlap));
-        /// </summary>
-        /// <param name="windowSize"></param>
-        /// <param name="windowOverlap"></param>
-        /// <returns></returns>
         public static int FrameStep(int windowSize, double windowOverlap)
         {
             int step = (int)(windowSize * (1 - windowOverlap));
@@ -52,100 +66,80 @@
         }
 
         /// <summary>
-        /// returns the start and end index of all frames in a long audio signal
+        /// Returns the start and end index of all frames in a long audio signal
         /// </summary>
         public static int[,] FrameStartEnds(int dataLength, int frameSize, int frameStep)
         {
-
             if (frameStep < 1)
+            {
                 throw new ArgumentException("Frame Step must be at least 1");
+            }
+
             if (frameStep > frameSize)
+            {
                 throw new ArgumentException("Frame Step must be <=" + frameSize);
+            }
 
             int overlap = frameSize - frameStep;
             int framecount = (dataLength - overlap) / frameStep; // this truncates residual samples
             if (framecount < 2)
             {
-                // NOTE: this exception was reenabled by Anthony because returning null makes it difficult to track down bugs
                 throw new ArgumentException("Signal must produce at least two frames!");
-                //return null;
             }
 
+            // In the matrix "frames", col 0 = start; col 1 = end
             int offset = 0;
-            int[,] frames = new int[framecount, 2]; //col 0 =start; col 1 =end
-
-            for (int i = 0; i < framecount; i++) //foreach frame
+            int[,] frames = new int[framecount, 2];
+            for (int i = 0; i < framecount; i++)
             {
-                frames[i, 0] = offset;                  //start of frame
-                frames[i, 1] = offset + frameSize - 1; //end of frame
+                frames[i, 0] = offset; // start of frame
+                frames[i, 1] = offset + frameSize - 1; // end of frame
                 offset += frameStep;
             }
+
             return frames;
         }
 
-
+        /// <summary>
+        /// Returns the signal broken into frames
+        /// This method is not called because the only reason to break a signal into frames is to do fft on the frames.
+        /// </summary>
         public static double[,] Frames(double[] data, int[,] startEnds)
         {
+            // window size = location of first frame end + 1
             int windowSize = startEnds[0, 1] + 1;
             int framecount = startEnds.GetLength(0);
             double[,] frames = new double[framecount, windowSize];
 
-            for (int i = 0; i < framecount; i++) //for each frame
+            for (int i = 0; i < framecount; i++)
             {
-                for (int j = 0; j < windowSize; j++) frames[i, j] = data[startEnds[i, 0] + j];
-            } //end matrix
+                for (int j = 0; j < windowSize; j++)
+                {
+                    frames[i, j] = data[startEnds[i, 0] + j];
+                }
+            }
+
             return frames;
         }
 
-
-        /// <summary>
-        /// Breaks a long audio signal into frames with given step
-        /// IMPORTANT: THIS METHOD PRODUCES A LARGE MEMORY-HUNGRY MATRIX.  BEST TO USE THE FrameStartEnds() METHOD.
-        /// </summary>
-        public static double[,] Frames(double[] data, int windowSize, double windowOverlap)
-        {
-            int step = (int)(windowSize * (1 - windowOverlap));
-
-            if (step < 1)
-                throw new ArgumentException("Frame Step must be at least 1");
-            if (step > windowSize)
-                throw new ArgumentException("Frame Step must be <=" + windowSize);
-
-            int overlap = windowSize - step;
-            int framecount = (data.Length - overlap) / step; //this truncates residual samples
-            if (framecount < 2) throw new ArgumentException("Sonogram width must be at least 2");
-
-            int offset = 0;
-            double[,] frames = new double[framecount, windowSize];
-
-            for (int i = 0; i < framecount; i++) //foreach frame
-            {
-                for (int j = 0; j < windowSize; j++) //foreach sample
-                    frames[i, j] = data[offset + j];
-                offset += step;
-            } //end matrix
-            return frames;
-        }
-
-        public static EnvelopeAndFft ExtractEnvelopeAndFFTs(AudioRecording recording, int frameSize, double overlap)
+        public static EnvelopeAndFft ExtractEnvelopeAndFFTs(AudioRecording recording, int frameSize, double overlap, string windowName = null)
         {
             int frameStep = (int)(frameSize * (1 - overlap));
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            return ExtractEnvelopeAndFFTs(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep);
+            return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep);
         }
 
         public static EnvelopeAndFft ExtractEnvelopeAndFFTs(AudioRecording recording, int frameSize, int frameStep)
         {
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            return ExtractEnvelopeAndFFTs(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep);
+            return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep);
         }
 
-        public static EnvelopeAndFft ExtractEnvelopeAndFFTs(double[] signal, int sampleRate, double epsilon, int frameSize, double overlap)
+        public static EnvelopeAndFft ExtractEnvelopeAndAmplSpectrogram(double[] signal, int sampleRate, double epsilon, int frameSize, double overlap)
         {
             int frameStep = (int)(frameSize * (1 - overlap));
-            return ExtractEnvelopeAndFFTs(signal, sampleRate, epsilon, frameSize, frameStep);
+            return ExtractEnvelopeAndAmplSpectrogram(signal, sampleRate, epsilon, frameSize, frameStep);
         }
-
 
         /// <summary>
         /// returns following values wrapped in class EnvelopeAndFft
@@ -159,16 +153,270 @@
         /// 8) the nyquist
         /// 9) the width of freq bin in Hz
         /// 10) the byquist bin ID
+        /// AND OTHERS
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="sampleRate"></param>
-        /// <param name="epsilon"></param>
-        /// <param name="frameSize"></param>
-        /// <param name="frameStep"></param>
-        /// <returns></returns>
-        public static EnvelopeAndFft ExtractEnvelopeAndFFTs(double[] signal, int sampleRate, double epsilon, int frameSize, int frameStep)
+        public static EnvelopeAndFft ExtractEnvelopeAndAmplSpectrogram(
+            double[] signal,
+            int sampleRate,
+            double epsilon,
+            int frameSize,
+            int frameStep,
+            string windowName = null)
         {
-            //int frameStep = (int)(frameSize * (1 - overlap));
+            // SIGNAL PRE-EMPHASIS helps with speech signals
+            // Do not use this for enviromental audio
+            //if (config.DoPreemphasis)
+            //{
+            //    signal = DSP_Filters.PreEmphasis(signal, 0.96);
+            //}
+
+            int[,] frameIDs = FrameStartEnds(signal.Length, frameSize, frameStep);
+            if (frameIDs == null)
+            {
+                return null;
+            }
+
+            int frameCount = frameIDs.GetLength(0);
+
+            double[] average = new double[frameCount];
+            double[] envelope = new double[frameCount];
+            double[] frameEnergy = new double[frameCount];
+            double[] frameDecibels = new double[frameCount];
+
+            // get SNR data
+            var snrdata = new SNR(signal, frameIDs);
+            double decibelReference = snrdata.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
+            double[] decibelsNormalised = snrdata.NormaliseDecibelArray_ZeroOne(decibelReference);
+            var fractionOfHighEnergyFrames = snrdata.FractionHighEnergyFrames(EndpointDetectionConfiguration.K2Threshold);
+
+            // set up the FFT parameters
+            if (windowName == null)
+            {
+                windowName = FFT.Key_HammingWindow;
+            }
+
+            FFT.WindowFunc w = FFT.GetWindowFunction(windowName);
+            var fft = new FFT(frameSize, w, true); // init class which calculates the MATLAB compatible .NET FFT
+            double[,] spectrogram = new double[frameCount, fft.CoeffCount]; // init amplitude sonogram
+            double minSignalValue = double.MaxValue;
+            double maxSignalValue = double.MinValue;
+
+            // cycle through the frames
+            for (int i = 0; i < frameCount; i++)
+            {
+                int start = i * frameStep;
+                int end = start + frameSize;
+
+                // get average and envelope
+                double frameDc = signal[start];
+                double total = Math.Abs(signal[start]);
+                double maxValue = total;
+                double energy = 0;
+                for (int x = start + 1; x < end; x++)
+                {
+                    if (signal[x] > maxSignalValue)
+                    {
+                        maxSignalValue = signal[x];
+                    }
+
+                    if (signal[x] < minSignalValue)
+                    {
+                        minSignalValue = signal[x];
+                    }
+
+                    frameDc += signal[x];
+
+                    // Get absolute signal average in current frame
+                    double absValue = Math.Abs(signal[x]);
+                    total += absValue;
+                    if (absValue > maxValue)
+                    {
+                        maxValue = absValue;
+                    }
+
+                    energy += (signal[x] * signal[x]);
+                }
+
+                frameDc /= frameSize;
+                average[i] = total / frameSize;
+                envelope[i] = maxValue;
+                frameEnergy[i] = energy / frameSize;
+                frameDecibels[i] = 10 * Math.Log10(energy / frameSize);
+
+                // remove DC value from signal values
+                double[] signalMinusAv = new double[frameSize];
+                for (int j = 0; j < frameSize; j++)
+                {
+                    signalMinusAv[j] = signal[start + j] - frameDc;
+                }
+
+                // generate the spectra of FFT AMPLITUDES - NOTE: f[0]=DC;  f[64]=Nyquist
+                var f1 = fft.InvokeDotNetFFT(signalMinusAv);
+
+                // Previous alternative call to do the FFT and return amplitude spectrum
+                //f1 = fft.Invoke(window);
+
+                // smooth spectrum to reduce variance
+                // In the early days (pre-2010), we used to smooth the spectra to reduce sonogram variance. This is theoretically correct.
+                // Later, we stopped this for standard sonograms but kept it for calculating acoustic indices.
+                // As of 28 March 2017, we are merging the two codes and keeping spectrum smoothing.
+                // Will need to check the effect on spectrograms.
+                int smoothingWindow = 3;
+                f1 = DataTools.filterMovingAverage(f1, smoothingWindow);
+
+                // transfer amplitude spectrum to spectrogram matrix
+                for (int j = 0; j < fft.CoeffCount; j++)
+                {
+                    spectrogram[i, j] = f1[j];
+                }
+            } // end frames
+
+            // check the envelope for clipping. Accept a clip if two consecutive frames have max value = 1,0
+            Clipping.GetClippingCount(signal, envelope, frameStep, epsilon, out int maxAmplitudeCount, out int clipCount);
+
+            // Remove the DC column ie column zero from amplitude spectrogram.
+            double[,] amplSpectrogram = MatrixTools.Submatrix(spectrogram, 0, 1, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
+
+            int nyquistFreq = sampleRate / 2;
+            double binWidth = nyquistFreq / (double)amplSpectrogram.GetLength(1);
+            int nyquistBin = amplSpectrogram.GetLength(1) - 1;
+
+            return new EnvelopeAndFft
+            {
+                Epsilon = epsilon,
+                MinSignalValue = minSignalValue,
+                MaxSignalValue = maxSignalValue,
+                ClipCount = clipCount,
+                MaxAmplitudeCount = maxAmplitudeCount,
+                FractionOfHighEnergyFrames = fractionOfHighEnergyFrames,
+                Average = average,
+                Envelope = envelope,
+                FrameCount = frameCount,
+                FrameEnergy = frameEnergy,
+                FrameDecibels = frameDecibels,
+                AmplitudeSpectrogram = amplSpectrogram,
+                WindowPower = fft.WindowPower,
+                NyquistFreq = nyquistFreq,
+                FreqBinWidth = binWidth,
+                NyquistBin = nyquistBin,
+            };
+        }
+
+        /*
+        public static double[,] MakeAmplitudeSpectrogram(double[] signal, int[,] frames, FFT.WindowFunc w, out double power)
+        {
+            // cycle through the frames
+            for (int i = 0; i < frameCount; i++)
+            {
+                int start = i * frameStep;
+                int end = start + frameSize;
+
+                // get average and envelope
+                double frameDc = signal[start];
+                double total = Math.Abs(signal[start]);
+                double maxValue = total;
+                double energy = 0;
+                for (int x = start + 1; x < end; x++)
+                {
+                    if (signal[x] > maxSignalValue)
+                    {
+                        maxSignalValue = signal[x];
+                    }
+
+                    if (signal[x] < minSignalValue)
+                    {
+                        minSignalValue = signal[x];
+                    }
+
+                    frameDc += signal[x];
+
+                    // Get absolute signal average in current frame
+                    double absValue = Math.Abs(signal[x]);
+                    total += absValue;
+                    if (absValue > maxValue)
+                    {
+                        maxValue = absValue;
+                    }
+
+                    energy += (signal[x] * signal[x]);
+                }
+
+                frameDc /= frameSize;
+                average[i] = total / frameSize;
+                envelope[i] = maxValue;
+                frameEnergy[i] = energy / frameSize;
+
+                // remove DC value from signal values
+                double[] signalMinusAv = new double[frameSize];
+                for (int j = 0; j < frameSize; j++)
+                {
+                    signalMinusAv[j] = signal[start + j] - frameDc;
+                }
+
+                // generate the spectra of FFT AMPLITUDES - NOTE: f[0]=DC;  f[64]=Nyquist
+                var f1 = fft.InvokeDotNetFFT(signalMinusAv);
+
+                ////f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
+                ////f1 = fft.Invoke(DataTools.GetRow(frames, i));          //returns fft amplitude spectrum
+
+                // smooth spectrum to reduce variance
+                f1 = DataTools.filterMovingAverage(f1, 3);
+
+                // transfer amplitude spectrum to spectrogram matrix
+                for (int j = 0; j < fft.CoeffCount; j++)
+                {
+                    spectrogram[i, j] = f1[j];
+                }
+            } // end frames
+        }
+
+        public static double[,] MakeAmplitudeSpectrogram(double[] signal, int[,] frames, FFT.WindowFunc w, out double power)
+        {
+            int frameCount = frames.GetLength(0);
+            int frameSize = frames[0, 1] + 1;
+
+            // init FFT class which calculates the MATLAB compatible .NET FFT
+            var fft = new FFT(frameSize, w, true);
+            power = fft.WindowPower; //store for later use when calculating dB
+            double[,] amplitudeSonogram = new double[frameCount, fft.CoeffCount]; //init amplitude sonogram
+            var window = new double[frameSize];
+
+            // foreach frame or time step
+            for (int i = 0; i < frameCount; i++)
+            {
+                //set up the window containing signal
+                for (int j = 0; j < frameSize; j++)
+                {
+                    window[j] = signal[frames[i, 0] + j];
+                }
+
+                var f1 = fft.InvokeDotNetFFT(window);
+
+                // Previous alternative call to do the FFT and return amplitude spectrum
+                //f1 = fft.Invoke(window);
+
+                // In the early days, we used to smooth the spectra to reduce sonogram variance. This is theoretically correct.
+                // Stopped this for standard sonograms but kept it for calculating indices.
+                // We are merging the two codes on 28March2017 cnad keeping the smoothing.
+                // Will need to check the effect on spectrograms.
+                int smoothingWindow = 3;
+                f1 = DataTools.filterMovingAverage(f1, smoothingWindow);
+
+                // transfer amplitude spectrum to a matrix
+                for (int j = 0; j < fft.CoeffCount; j++)
+                {
+                    amplitudeSonogram[i, j] = f1[j];
+                }
+            } //end of all frames
+
+            return amplitudeSonogram;
+        }
+
+        /// <summary>
+        /// Does same as the method above but returns values for octave scale spectrograms.
+        /// </summary>
+        public static EnvelopeAndFft ExtractEnvelopeAndFftForOctaveScale(double[] signal, int sampleRate, double epsilon, int frameSize, int frameStep)
+        {
             int[,] frameIDs = DSP_Frames.FrameStartEnds(signal.Length, frameSize, frameStep);
             if (frameIDs == null) return null;
             int frameCount = frameIDs.GetLength(0);
@@ -215,9 +463,8 @@
                 for (int j = 0; j < frameSize; j++)
                     signalMinusAv[j] = signal[start + j] - frameDC;
 
-                // generate the spectra of FFT AMPLITUDES - NOTE: f[0]=DC;  f[64]=Nyquist
+                // generate the spectra of FFT AMPLITUDES - NOTE: f[0]=DC;  f[64]=Nyquist  
                 var f1 = fft.InvokeDotNetFFT(signalMinusAv); // the fft
-
                 ////f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
                 ////f1 = fft.Invoke(DataTools.GetRow(frames, i));          //returns fft amplitude spectrum
 
@@ -251,107 +498,10 @@
                 WindowPower = fft.WindowPower,
                 NyquistFreq = nyquistFreq,
                 FreqBinWidth = binWidth,
-                NyquistBin = nyquistBin,
+                NyquistBin = nyquistBin
             };
         }
-
-
-        /// <summary>
-        /// Does same as the method above but returns values for octave scale spectrograms.
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="sampleRate"></param>
-        /// <param name="epsilon"></param>
-        /// <param name="frameSize"></param>
-        /// <param name="frameStep"></param>
-        /// <returns></returns>
-        //public static EnvelopeAndFft ExtractEnvelopeAndFftForOctaveScale(double[] signal, int sampleRate, double epsilon, int frameSize, int frameStep)
-        //{
-        //    int[,] frameIDs = DSP_Frames.FrameStartEnds(signal.Length, frameSize, frameStep);
-        //    if (frameIDs == null) return null;
-        //    int frameCount = frameIDs.GetLength(0);
-
-        //    double[] average = new double[frameCount];
-        //    double[] envelope = new double[frameCount];
-        //    double[] frameEnergy = new double[frameCount];
-
-        //    // set up the FFT parameters
-        //    FFT.WindowFunc w = FFT.GetWindowFunction(FFT.Key_HammingWindow);
-        //    var fft = new FFT(frameSize, w, true); // init class which calculates the MATLAB compatible .NET FFT
-        //    double[,] spectrogram = new double[frameCount, fft.CoeffCount]; // init amplitude sonogram
-        //    double minSignalValue = double.MaxValue;
-        //    double maxSignalValue = double.MinValue;
-
-        //    // cycle through the frames
-        //    for (int i = 0; i < frameCount; i++)
-        //    {
-        //        int start = i * frameStep;
-        //        int end = start + frameSize;
-
-        //        // get average and envelope
-        //        double frameDC = signal[start];
-        //        double total = Math.Abs(signal[start]);
-        //        double maxValue = total;
-        //        double energy = 0;
-        //        for (int x = start + 1; x < end; x++)
-        //        {
-        //            if (signal[x] > maxSignalValue) maxSignalValue = signal[x];
-        //            if (signal[x] < minSignalValue) minSignalValue = signal[x];
-        //            frameDC += signal[x];
-        //            double absValue = Math.Abs(signal[x]);
-        //            total += absValue; // go through current frame to get signal (absolute) average
-        //            if (absValue > maxValue) maxValue = absValue;
-        //            energy += (signal[x] * signal[x]);
-        //        }
-        //        frameDC /= frameSize;
-        //        average[i] = total / frameSize;
-        //        envelope[i] = maxValue;
-        //        frameEnergy[i] = energy / frameSize;
-
-        //        // remove DC value from signal values
-        //        double[] signalMinusAv = new double[frameSize];
-        //        for (int j = 0; j < frameSize; j++)
-        //            signalMinusAv[j] = signal[start + j] - frameDC;
-
-        //        // generate the spectra of FFT AMPLITUDES - NOTE: f[0]=DC;  f[64]=Nyquist  
-        //        var f1 = fft.InvokeDotNetFFT(signalMinusAv); // the fft
-        //        ////f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
-        //        ////f1 = fft.Invoke(DataTools.GetRow(frames, i));          //returns fft amplitude spectrum
-
-        //        f1 = DataTools.filterMovingAverage(f1, 3); //smooth spectrum to reduce variance
-        //        for (int j = 0; j < fft.CoeffCount; j++)   //foreach freq bin
-        //            spectrogram[i, j] = f1[j];             //transfer amplitude
-
-        //    } // end frames
-
-        //    // check the envelope for clipping. Accept a clip if two consecutive frames have max value = 1,0
-        //    int maxAmplitudeCount, clipCount;
-        //    Clipping.GetClippingCount(signal, envelope, frameStep, epsilon, out maxAmplitudeCount, out clipCount);
-
-        //    // Remove the DC column ie column zero from amplitude spectrogram.
-        //    double[,] amplSpectrogram = MatrixTools.Submatrix(spectrogram, 0, 1, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
-
-        //    int nyquistFreq = sampleRate / 2;
-        //    double binWidth = nyquistFreq / (double)amplSpectrogram.GetLength(1);
-        //    int nyquistBin = amplSpectrogram.GetLength(1) - 1;
-
-        //    return new EnvelopeAndFft
-        //    {
-        //        MinSignalValue = minSignalValue,
-        //        MaxSignalValue = maxSignalValue,
-        //        Average = average,
-        //        Envelope = envelope,
-        //        FrameEnergy = frameEnergy,
-        //        MaxAmplitudeCount = maxAmplitudeCount,
-        //        ClipCount = clipCount,
-        //        AmplitudeSpectrogram = amplSpectrogram,
-        //        WindowPower = fft.WindowPower,
-        //        NyquistFreq = nyquistFreq,
-        //        FreqBinWidth = binWidth,
-        //        NyquistBin = nyquistBin
-        //    };
-        //}
-
+        */
 
         public static Tuple<double[], double[], double[], double[], double[]> ExtractEnvelopeAndZeroCrossings(double[] signal, int sr, int windowSize, double overlap)
         {
@@ -360,8 +510,12 @@
             int frameCount = (length - windowSize + frameOffset) / frameOffset;
             double[] average = new double[frameCount];
             double[] envelope = new double[frameCount];
-            double[] zeroCrossings = new double[frameCount]; // count of zero crossings
-            double[] zcPeriod = new double[frameCount];      // sample count between zero crossings
+
+            // count of zero crossings
+            double[] zeroCrossings = new double[frameCount];
+
+            // sample count between zero crossings
+            double[] zcPeriod = new double[frameCount];
             double[] sdPeriod = new double[frameCount];      // standard deviation of sample count between zc.
             for (int i = 0; i < frameCount; i++)
             {
@@ -376,26 +530,40 @@
                 {
                     total += signal[x]; // go through current frame to get signal average/DC
                     double absValue = Math.Abs(signal[x]);
-                    if (absValue > maxValue) maxValue = absValue;
+                    if (absValue > maxValue)
+                    {
+                        maxValue = absValue;
+                    }
                 }
-                average[i]  = total / windowSize;
+
+                average[i] = total / windowSize;
                 envelope[i] = maxValue;
 
                 //remove the average from signal
                 double[] signalMinusAv = new double[windowSize];
                 for (int j = 0; j < windowSize; j++)
+                {
                     signalMinusAv[j] = signal[start + j] - average[i];
+                }
 
                 //get zero crossings and periods
                 int zeroCrossingCount = 0;
                 int prevLocation = 0;
                 double prevValue = signalMinusAv[0];
-                for (int j = 1; j < windowSize; j++) // go through current frame
+
+                // go through current frame
+                for (int j = 1; j < windowSize; j++)
                 {
                     //double absValue = Math.Abs(signalMinusAv[j]);
-                    if (signalMinusAv[j] * prevValue < 0.0) // ie zero crossing
+
+                    // if zero crossing
+                    if (signalMinusAv[j] * prevValue < 0.0)
                     {
-                        if (zeroCrossingCount > 0) periodList.Add(j - prevLocation); // do not want to accumulate counts prior to first ZC.
+                        if (zeroCrossingCount > 0)
+                        {
+                            periodList.Add(j - prevLocation); // do not want to accumulate counts prior to first ZC.
+                        }
+
                         zeroCrossingCount++; // count zero crossings
                         prevLocation = j;
                         prevValue = signalMinusAv[j];
@@ -410,6 +578,7 @@
                 zcPeriod[i] = av;
                 sdPeriod[i] = sd;
             }
+
             return Tuple.Create(average, envelope, zeroCrossings, zcPeriod, sdPeriod);
         }
 
@@ -418,82 +587,94 @@
         {
             int length = zeroCrossings.Length;
             var freq = new int[length];
-            for (int i = 0; i < length; i++) freq[i] = (int)(zeroCrossings[i] * sampleRate / 2 / frameWidth);
+            for (int i = 0; i < length; i++)
+            {
+                freq[i] = (int)(zeroCrossings[i] * sampleRate / 2 / frameWidth);
+            }
+
             return freq;
         }
 
         public static double[] ConvertSamples2Milliseconds(double[] sampleCounts, int sampleRate)
         {
             var tValues = new double[sampleCounts.Length];
-            for (int i = 0; i < sampleCounts.Length; i++) tValues[i] = sampleCounts[i] * 1000 / sampleRate;
+            for (int i = 0; i < sampleCounts.Length; i++)
+            {
+                tValues[i] = sampleCounts[i] * 1000 / sampleRate;
+            }
+
             return tValues;
         }
-
-
-
 
         /// <summary>
         /// returns the min and max values in each frame. Signal values range from -1 to +1.
         /// </summary>
-        /// <param name="frames"></param>
-        /// <param name="minAmp"></param>
-        /// <param name="maxAmp"></param>
         public static void SignalEnvelope(double[,] frames, out double[] minAmp, out double[] maxAmp)
         {
             int frameCount = frames.GetLength(0);
-            int n  = frames.GetLength(1);
+            int n = frames.GetLength(1);
             minAmp = new double[frameCount];
             maxAmp = new double[frameCount];
-            for (int i = 0; i < frameCount; i++) //foreach frame
+            for (int i = 0; i < frameCount; i++)
             {
-                double min =  Double.MaxValue;
+                double min = Double.MaxValue;
                 double max = -Double.MaxValue;
-                for (int j = 0; j < n; j++)  //foreach sample in frame
+
+                // foreach sample in frame
+                for (int j = 0; j < n; j++)
                 {
-                    if (min > frames[i, j]) min = frames[i, j];
+                    if (min > frames[i, j])
+                    {
+                        min = frames[i, j];
+                    }
                     else
-                    if (max < frames[i, j]) max = frames[i, j];
+                    if (max < frames[i, j])
+                    {
+                        max = frames[i, j];
+                    }
                 }
+
                 minAmp[i] = min;
                 maxAmp[i] = max;
             }
         }
 
-
         /// <summary>
         /// counts the zero crossings in each frame
         /// This info is used for determing the begin and end points for vocalisations.
         /// </summary>
-        /// <param name="frames"></param>
-        /// <returns></returns>
         public static int[] ZeroCrossings(double[,] frames)
         {
             int frameCount = frames.GetLength(0);
             int n = frames.GetLength(1);
             int[] zc = new int[frameCount];
-            for (int i = 0; i < frameCount; i++) //foreach frame
+            for (int i = 0; i < frameCount; i++)
             {
                 int count = 0;
-                for (int j = 1; j < n; j++)  //foreach sample in frame
+                for (int j = 1; j < n; j++)
                 {
                     count += Math.Abs(Math.Sign(frames[i, j]) - Math.Sign(frames[i, j - 1]));
                 }
+
                 zc[i] = count / 2;
             }
             return zc;
         }
 
-
         public static void DisplaySignal(double[] sig)
         {
-                double[] newSig = DataTools.normalise(sig);
+            double[] newSig = DataTools.normalise(sig);
 
-                foreach (double value in newSig)
+            foreach (double value in newSig)
+            {
+                int count = (int)(value * 50);
+                for (int i = 0; i < count; i++)
                 {
-                    int count = (int)(value * 50);
-                    for (int i = 0; i < count; i++) LoggedConsole.Write("=");
-                    LoggedConsole.WriteLine("=");
+                    LoggedConsole.Write("=");
                 }
+
+                LoggedConsole.WriteLine("=");
+            }
         }
 
         public static void DisplaySignal(double[] sig, bool showIndex)
@@ -502,12 +683,17 @@
 
             for (int n = 0; n < sig.Length; n++)
             {
-                if (showIndex) LoggedConsole.Write(n.ToString("D3") + "|");
+                if (showIndex)
+                {
+                    LoggedConsole.Write(n.ToString("D3") + "|");
+                }
+
                 int count = (int)(newSig[n] * 50);
                 for (int i = 0; i < count; i++)
                 {
                     LoggedConsole.Write("=");
                 }
+
                 LoggedConsole.WriteLine("=");
             }
         }
