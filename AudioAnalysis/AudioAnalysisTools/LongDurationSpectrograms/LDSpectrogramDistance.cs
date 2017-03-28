@@ -111,7 +111,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             cs1.ColorMode = colorMap;
             cs1.BackgroundFilter = backgroundFilterCoeff;
             string[] keys = colorMap.Split('-');
-            cs1.ReadCSVFiles(inputDirectory, inputFileName1.Name, keys);
+            cs1.ReadCsvFiles(inputDirectory, inputFileName1.Name, keys);
 
             // ColourSpectrogram.BlurSpectrogram(cs1);
             // cs1.DrawGreyScaleSpectrograms(opdir, opFileName1);
@@ -143,7 +143,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var cs2 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
             cs2.ColorMode = colorMap;
             cs2.BackgroundFilter = backgroundFilterCoeff;
-            cs2.ReadCSVFiles(inputDirectory, inputFileName2.Name, keys);
+            cs2.ReadCsvFiles(inputDirectory, inputFileName2.Name, keys);
 
             // cs2.DrawGreyScaleSpectrograms(opdir, opFileName2);
             cs2.DrawNegativeFalseColourSpectrogram(outputDirectory, outputFileName2);

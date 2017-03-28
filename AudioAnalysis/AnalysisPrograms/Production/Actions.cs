@@ -111,12 +111,12 @@ namespace AnalysisPrograms.Production
         #region Analyses of single, short (one minute) segments of audio
 
         [ArgDescription("Calls MultiAnalyser.Execute():  Entry point for running multiple species recognizers at same time. Only use on short recordings (< 2mins)")]
-        public MultiAnalyser.Arguments MultiAnalyserArgs { get; set; }
-        public static Action<MultiAnalyser.Arguments> MultiAnalyser()
+        public MultiAnalyser_OBSOLETE.Arguments MultiAnalyserArgs { get; set; }
+        public static Action<MultiAnalyser_OBSOLETE.Arguments> MultiAnalyser()
         {
             // IAnalyser - currently recognizes five different calls: human, crow, canetoad, machine and koala.
             // Execute() signed off: Michael Towsey 27th July 2012
-            return AnalysisPrograms.MultiAnalyser.Dev;
+            return AnalysisPrograms.MultiAnalyser_OBSOLETE.Dev;
         }
 
         [ArgDescription("The entry point for all species or event recognizers. Only to be used on short recordings (< 2 mins).")]
@@ -267,11 +267,11 @@ namespace AnalysisPrograms.Production
         }
 
         [ArgDescription("Calls Rain.Dev():  Used to recognise one minute segments of rain. Revise code if intend to use.")]
-        public Rain.Arguments RainArgs { get; set; }
-        public static Action<Rain.Arguments> Rain()
+        public Rain_OBSOLETE.Arguments RainArgs { get; set; }
+        public static Action<Rain_OBSOLETE.Arguments> Rain()
         {
             // IAnalyser - detects rain
-            return AnalysisPrograms.Rain.Dev;
+            return AnalysisPrograms.Rain_OBSOLETE.Dev;
         }
 
         [ArgDescription("Calls LewinsRail3.Dev():  Dates back to 2012. Revise code if intend to use.")]
@@ -399,12 +399,12 @@ namespace AnalysisPrograms.Production
         }
 
         [ArgDescription("DEPRACATED:  All frog recognizers should now enter through EventRecognizer.Execute() or Multirecognizer.Execute().")]
-        public CanetoadOld.Arguments CanetoadArgs { get; set; }
-        public static Action<CanetoadOld.Arguments> Canetoad()
+        public CanetoadOld_OBSOLETE.Arguments CanetoadArgs { get; set; }
+        public static Action<CanetoadOld_OBSOLETE.Arguments> Canetoad()
         {
             // IAnalyser - detects canetoad calls as acoustic events
             // Execute() signed off: Michael Towsey 27th July 2012
-            return AnalysisPrograms.CanetoadOld.Dev;
+            return AnalysisPrograms.CanetoadOld_OBSOLETE.Dev;
         }
 
         [ArgDescription("No further practical use. Used in 2014 to prepare short recordings of bird calls for analysis by Convolution Neural Networks.")]
@@ -439,11 +439,11 @@ namespace AnalysisPrograms.Production
         }
 
         [ArgDescription("DEPRACATED. Calls GratingDetection.Execute():  An attempt to find alternative to oscillation detection. NOT USEFUL any more!")]
-        public GratingDetection.Arguments GratingsArgs { get; set; }
-        public static Action<GratingDetection.Arguments> Gratings()
+        public GratingDetection_OBSOLETE.Arguments GratingsArgs { get; set; }
+        public static Action<GratingDetection_OBSOLETE.Arguments> Gratings()
         {
             // grid recognition
-            return GratingDetection.Execute;
+            return GratingDetection_OBSOLETE.Execute;
         }
 
         [ArgDescription("DEPRACATED:  Calls FeltTemplate_Create.Execute():  FIND EVENTS LIKE THIS: started by TOWSEY but unfinished.")]

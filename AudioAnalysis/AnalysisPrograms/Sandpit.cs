@@ -1,8 +1,9 @@
-﻿namespace AnalysisPrograms
+namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
     using System.Drawing;
+    using System.Drawing.Imaging;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -48,9 +49,105 @@
             Log.Verbosity = 1;
             Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
-            // concatenation of recognizer index files.
+
             if (true)
             {
+                // METHOD TO CHECK IF OCTAVE FREQ SCALE IS WORKING
+
+                /*
+                // first check it out on standard recording.
+                var recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
+                var outputPath       = @"C:\SensorNetworks\Output\OctaveFreqScale\octaveScaleSonogram.png";
+                var recording = new AudioRecording(recordingPath);
+                // default linear scale
+                //var fst = FreqScaleType.Linear; 
+                var fst = FreqScaleType.Linear125Octaves6Tones30Nyquist11025;
+                var freqScale = new FrequencyScale(fst);
+
+                // specfied linear scale
+                //int nyquist = 11025;
+                //int frameSize = 1024;
+                //var freqScale = new FrequencyScale(nyquist, frameSize, 1000);
+                */
+
+
+                /*
+                24 BIT JASCOE RECORDINGS
+                Need to convert Jascoe GBR recordings to 16 bit.
+                ffmpeg -i source_file.wav -sample_fmt s16 out_file.wav
+                e.g.
+                ". C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg\ffmpeg.exe" -i "C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56.wav" -sample_fmt s16 "C:\SensorNetworks\Output\OctaveFreqScale\JascoeMarineGBR116bit.wav"
+
+                ffmpeg binaries are in C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg
+                */
+                
+                // Now check it on Jascoe recording
+                var recordingPath = @"C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit.wav";
+                var outputPath = @"C:\SensorNetworks\Output\OctaveFreqScale\JascoeMarineGBR1.png";
+                var recording = new AudioRecording(recordingPath);
+                FreqScaleType fst = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
+                var freqScale = new FrequencyScale(fst);
+
+
+                var sonoConfig = new SonogramConfig
+                {
+                    SourceFName = recording.BaseName,
+                    NoiseReductionType = NoiseReductionType.None,
+                    //NoiseReductionType = NoiseReductionType.Standard,
+                    //NoiseReductionType = SNR.KeyToNoiseReductionType("FlattenAndTrim"),
+                    NoiseReductionParameter = 0.0
+                };
+
+                // produce an amplitude spectrogram
+                BaseSonogram sonogram;
+                if (fst == FreqScaleType.Linear)
+                {
+                    sonoConfig.WindowSize = freqScale.FinalBinCount * 2;
+                    sonoConfig.WindowOverlap = 0.2;
+                    sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+                }
+                else
+                {
+                    sonoConfig.WindowSize = freqScale.WindowSize;
+                    sonoConfig.WindowOverlap = 0.5;
+                    sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+                    //convert spectrogram to octave scale
+                    sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
+                }
+
+                // DO NOISE REDUCTION
+                double[,] dataMatrix = sonogram.Data;
+                dataMatrix = SNR.NoiseReduce_Standard(dataMatrix);
+                //double sdCount = 2.0;
+                //double dynamicRange = 40.0;
+                //dataMatrix = SNR.NoiseReduce_FixedRange(dataMatrix, dynamicRange, sdCount);
+                sonogram.Data = dataMatrix;
+                sonogram.Configuration.WindowSize = 512;
+                //sonogram.Configuration.FreqBinCount = 256;               
+
+                Image image = sonogram.GetImageFullyAnnotated("SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+                image.Save(outputPath, ImageFormat.Png);
+            }
+
+
+            if (false)
+            {
+                // All the below octave scale options are designed for a final freq scale having 256 bins
+
+                //// constants required for full octave scale when sr = 22050
+                //FreqScaleType ost = FreqScaleType.Octaves27Sr22050;
+                //// constants required for split linear-octave scale when sr = 22050
+                //FreqScaleType ost = FreqScaleType.Linear62Octaves7Tones31Nyquist11025;
+                //// constants required for full octave scale when sr = 64000
+                //FreqScaleType ost = FreqScaleType.Octaves24Nyquist32000;
+                //// constants required for split linear-octave scale when sr = 64000
+                FreqScaleType ost = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
+
+                OctaveFreqScale.TestOctaveScale(ost);
+            }
+
+            if (false)
+            { 
                 //string dirName = @"G:\SensorNetworks\OutputDataSets\GrooteCaneToad_Job120\SD Card B";
                 string dirName = @"G:\SensorNetworks\OutputDataSets\GrooteCaneToad_Job120\USBDriveViaMichael-Lin-Deb";
                 var topDir = new DirectoryInfo(dirName);
@@ -174,8 +271,6 @@
                 compositeImage.Save(debugPath);
             }
 
-
-
             // experiments with Mitchell-Aide ARBIMON segmentation algorithm
             // Three steps: (1) Flattening spectrogram by subtracting the median bin value from each freq bin.
             //              (2) Recalculate the spectrogram using local range. Trim off the 5 percentiles.
@@ -235,8 +330,6 @@
                 compositeImage.Save(debugPath);
             }
 
-
-
             if (false)
             {
                 LDSpectrogramClusters.ExtractSOMClusters2();
@@ -248,28 +341,21 @@
                 LDSpectrogramClusters.ExtractSOMClusters2();
             }
 
-
-
-            if (false)  //
+            if (false)
             {
                 CubeHelix.DrawTestImage();
-                LoggedConsole.WriteLine("FINSIHED");
             }
 
             if (false)  // construct 3Dimage of audio
             {
                 //TowseyLibrary.Matrix3D.TestMatrix3dClass();
                 LdSpectrogram3D.Main(null);
-                LoggedConsole.WriteLine("FINSIHED");
             }
 
             if (false)  // call SURF image Feature extraction
             {
                 //SURFFeatures.SURF_TEST();
                 SURFAnalysis.Main(null);
-                LoggedConsole.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(0);
             }
 
 
@@ -278,9 +364,6 @@
                 //Audio2InputForConvCNN.Main(null);
                 Audio2InputForConvCNN.ProcessMeriemsDataset();
                 //SNR.Calculate_SNR_ofXueyans_data();
-                LoggedConsole.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(0);
             }
 
             // // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
@@ -314,20 +397,13 @@
             {
                 StructureTensor.Test1StructureTensor();
                 StructureTensor.Test2StructureTensor();
-                Log.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(0);
             }
 
 
             /// used to caluclate eigen values and singular valuse
             if (false)
             {
-
                 SvdAndPca.TestEigenValues();
-                Log.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(0);
             }
 
 
@@ -335,18 +411,12 @@
             {
                 WaveletTransformContinuous.ExampleOfWavelets_1();
                 //WaveletPacketDecomposition.ExampleOfWavelets_1();
-                Log.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(0);
             }
 
 
             if (false)  // do 2D-FFT of an image.
             {
                 FFT2D.TestFFT2D();
-                Log.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(0);
             }
 
 

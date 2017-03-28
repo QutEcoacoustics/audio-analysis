@@ -25,7 +25,8 @@
     using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
-    public class Rain : IAnalyser
+    [Obsolete]
+    public class Rain_OBSOLETE : IAnalyser
     {
         public const string key_LOW_FREQ_BOUND = "LOW_FREQ_BOUND";
         public const string key_MID_FREQ_BOUND = "MID_FREQ_BOUND";
@@ -212,7 +213,7 @@
 
             //DO THE ANALYSIS
             // #############################################################################################################################################
-            IAnalyser analyser = new Rain();
+            IAnalyser analyser = new Rain_OBSOLETE();
             AnalysisResult result = analyser.Analyse(analysisSettings);
             DataTable dt = result.Data;
             //#############################################################################################################################################
@@ -340,7 +341,7 @@
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
             var signalextract = DSP_Frames.ExtractEnvelopeAndFFTs(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, windowOverlap);
             double[]  envelope    = signalextract.Envelope;
-            double[,] spectrogram = signalextract.amplitudeSpectrogram;  //amplitude spectrogram
+            double[,] spectrogram = signalextract.AmplitudeSpectrogram;  //amplitude spectrogram
             int colCount = spectrogram.GetLength(1);
 
 

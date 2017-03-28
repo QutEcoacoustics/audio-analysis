@@ -499,7 +499,66 @@ namespace AudioAnalysisTools.Indices
             return matrix;
         }
 
+/*
+        public static Dictionary<string, double[,]> ReadCsvFiles(FileInfo[] paths, string[] keys)
+        {
+            string warning = null;
 
+            Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
+            for (int i = 0; i < keys.Length; i++)
+            {
+                DateTime now1 = DateTime.Now;
+
+                // get the path containing keys[i]
+                FileInfo file = null;
+                for (int p = 0; p < paths.Length; p++)
+                {
+                    if (paths[p].Name.Contains(keys[i]))
+                    {
+                        file = paths[p];
+                        break;
+                    }
+                }
+
+                if (file.Exists)
+                {
+                    int freqBinCount;
+                    double[,] matrix = IndexMatrices.ReadSpectrogram(file, out freqBinCount);
+                    matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+                    spectrogramMatrices.Add(keys[i], matrix);
+                }
+                else
+                {
+                    if (warning == null)
+                    {
+                        warning = "\nWARNING: from method IndexMatrices.ReadCsvFiles()";
+                    }
+
+                    warning += "\n      {0} File does not exist: {1}".Format2(keys[i], file.FullName);
+                }
+
+                if (IndexMatrices.Verbose)
+                { 
+                    DateTime now2 = DateTime.Now;
+                    TimeSpan et = now2 - now1;
+                    LoggedConsole.WriteLine("Time to read spectral index file <" + keys[i] + "> = " + et.TotalSeconds + " seconds");
+                }
+            }
+
+            if (warning != null)
+            {
+                LoggedConsole.WriteLine(warning);
+            }
+
+            if (spectrogramMatrices.Count == 0)
+            {
+                LoggedConsole.WriteLine("WARNING: from method IndexMatrices.ReadCsvFiles()");
+                LoggedConsole.WriteLine("         NO FILES were read from the passed paths");
+            }
+
+            return spectrogramMatrices;
+        }
+        */
 
         /// <summary>
         /// returns dictionary of spectral indices.
@@ -537,7 +596,7 @@ namespace AudioAnalysisTools.Indices
 
             if (spectrogramMatrices.Count == 0)
             {
-                LoggedConsole.WriteLine("WARNING: from method IndexMatrices.ReadCSVFiles()");
+                LoggedConsole.WriteLine("WARNING: from method IndexMatrices.ReadCsvFiles()");
                 LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
             }
 
@@ -561,7 +620,7 @@ namespace AudioAnalysisTools.Indices
             else
             {
                 Log.Warn(
-                    "\nWARNING: from method IndexMatrices.ReadCSVFiles()"
+                    "\nWARNING: from method IndexMatrices.ReadCsvFiles()"
                     + $"\n      {indexKey} File does not exist: {file.FullName}");
                 return null;
             }

@@ -3,10 +3,13 @@
     using System;
     using System.Collections.Generic;
     using System.Drawing;
+    using System.Drawing;
+    using System.Drawing.Imaging;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using System.Text;
+    using Acoustics.Shared;
     using Acoustics.Shared;
     using AnalysisPrograms.Production;
     using AudioAnalysisTools;
@@ -155,11 +158,11 @@
             // dspOutput.FreqBinWidth
             // recording.SampleRate
 
-            double[,] amplitudeSpectrogram = dspOutput.amplitudeSpectrogram; // get amplitude spectrogram.
+            double[,] amplitudeSpectrogram = dspOutput.AmplitudeSpectrogram; // get amplitude spectrogram.
             //DataTools.WriteMinMaxOfArray(MatrixTools.Matrix2Array(amplitudeSpectrogram));
 
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput.amplitudeSpectrogram, dspOutput.WindowPower, recording.SampleRate, epsilon);
+            double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput.AmplitudeSpectrogram, dspOutput.WindowPower, recording.SampleRate, epsilon);
             //DataTools.WriteMinMaxOfArray(MatrixTools.Matrix2Array(deciBelSpectrogram));
             //deciBelSpectrogram = MatrixTools.Normalise(deciBelSpectrogram, -80, -30);
             //DataTools.WriteMinMaxOfArray(MatrixTools.Matrix2Array(deciBelSpectrogram));

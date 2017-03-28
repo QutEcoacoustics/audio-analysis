@@ -12,6 +12,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
         {
             // TO GET TO HERE audio2csv MUST BE ONLY COMMAND LINE ARGUMENT
 
+            // To draw the false-colour spectrograms you need to call activity "colourspectrogram"
+
             // DEV CONFIG OPTIONS
             //C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\App.config
 
@@ -50,9 +52,9 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string outputPath    = @"C:\SensorNetworks\Output\TsheringDema";
             //Y:\Results\2016Dec06-094005 - Tshering, Towsey.Indices, ICD=10.0, #133\Tshering\WBH_Walaytar\201505 - second deployment\Site2_Waklaytar\24Hours WBH_28032016
             // This file contains lots of heron calls.     WBH12HOURS-N_20160403_000000.wav
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\SecondDeployment\WBH12HOURS-N_20160426_000010.wav";
-            string outputPath = @"C:\SensorNetworks\Output\TsheringDema";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.ArdeaInsignis.yml";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\SecondDeployment\WBH12HOURS-N_20160426_000010.wav";
+            //string outputPath = @"C:\SensorNetworks\Output\TsheringDema";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.ArdeaInsignis.yml";
 
             //MARINE
             //string recordingPath = @"C:\SensorNetworks\WavFiles\MarineRecordings\20130318_171500.wav";
@@ -93,10 +95,17 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.ChannelIntegrity.yml";
             //string outputPath = @"C:\SensorNetworks\Output\ChannelIntegrity";
 
-            //MARINE
+            //MARINE 
+            // Georgia recordings from Cornell 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\MarineRecordings\20130318_171500.wav";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticMarine.yml";
             //string outputPath = @"C:\SensorNetworks\Output\MarineSonograms\Test1";
+
+            // Great Barrier Reef (GBR) recordings from Jasco 
+            string recordingPath = @"C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit.wav";
+            string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticMarine.yml";
+            string outputPath    = @"C:\SensorNetworks\Output\MarineJasco";
+
 
             // SERF TAGGED RECORDINGS FROM OCT 2010
             // audio2csv  "Z:\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\SERF\2013Analysis\13Oct2010"
@@ -141,6 +150,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\Canetoad\CaneToads_rural1_20.mp3";
             //string recordingPath = @"F:\SensorNetworks\WavFiles\CaneToad\CaneToad Release Call 270213-8.wav";
             //string recordingPath = @"F:\SensorNetworks\WavFiles\CaneToad\UndetectedCalls-2014\KiyomiUndetected210214-1.mp3";
+
+            // Used these to check for Paul.  January 2017.
             //string recordingPath = @"Y:\Groote\2016 March\Emerald River\CardA\Data\EMERALD_20150703_103506.wav";
             //string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.RhinellaMarina.yml";
             //string outputPath    = @"C:\SensorNetworks\Output\Frogs\Canetoad\Rural1";

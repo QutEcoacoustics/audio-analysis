@@ -338,7 +338,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var minuteOffset = TimeSpan.Zero;
             double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp1.Width;
             TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, minuteOffset, fullDuration, xInterval, nyquistFreq, 1000);
+            // init frequency scale
+            int herzInterval = 1000;
+            int frameSize = bmp1.Height;
+            var freqScale = new DSP.FrequencyScale(nyquistFreq, frameSize, herzInterval);
+
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, minuteOffset, fullDuration, xInterval, freqScale);
 
             int trackHeight = 20;
             int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
@@ -385,7 +390,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var startOffset = TimeSpan.Zero;
             double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp1.Width;
             var fullDuration = TimeSpan.FromSeconds(secondsDuration);
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, fullDuration, xInterval, nyquistFreq, 1000);
+
+            // init frequency scale
+            int herzInterval = 1000;
+            int frameSize = bmp1.Height;
+            var freqScale = new DSP.FrequencyScale(nyquistFreq, frameSize, herzInterval);
+
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, fullDuration, xInterval, freqScale);
 
             int trackHeight = 20;
             //int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
@@ -398,9 +409,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             trackHeight = compositeBmp.Height;
             Bitmap timeScale12Months = Image_Track.DrawYearScale_vertical(40, trackHeight);
-            Bitmap freqScale = DrawFreqScale_vertical(40, trackHeight, herzValue, nyquistFreq);
+            Bitmap freqScaleImage = DrawFreqScale_vertical(40, trackHeight, herzValue, nyquistFreq);
 
-            imageList = new List<Image> {timeScale12Months, compositeBmp, freqScale};
+            imageList = new List<Image> {timeScale12Months, compositeBmp, freqScaleImage };
             compositeBmp = ImageTools.CombineImagesInLine(imageList.ToArray());
 
             return compositeBmp;
@@ -765,7 +776,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         //        // reads all known files spectral indices
         //        Logger.Info("Reading spectra files from disk");
-        //        cs1.ReadCSVFiles(configuration.InputDirectoryInfo, configuration.BaseName);
+        //        cs1.ReadCsvFiles(configuration.InputDirectoryInfo, configuration.BaseName);
 
         //        if (cs1.GetCountOfSpectrogramMatrices() == 0)
         //        {

@@ -10,7 +10,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Collections.Generic;
     using System.IO;
     using Acoustics.Shared;
-    using YamlDotNet.Serialization;
 
     /// <summary>
     ///     CONFIG CLASS FOR the class LDSpectrogramRGB
@@ -44,6 +43,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         #region Public Properties
 
         /// <summary>
+        /// This parameter sets the type of freq scale. Obvious possibilities are "linear", "octave" and "mel".
+        /// Linear is the default. Mel option is not currently functional.
+        /// There are two octave options: for sr=22050 and for sr=64000 
+        /// </summary>
+        public string FreqScale { get; set; }
+
+        /// <summary>
         /// these parameters manipulate the colour map and appearance of the false-colour spectrogram
         /// </summary>
         public string ColorMap1 { get; set; }
@@ -60,7 +66,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public double? ColourGain { get; set; }
 
         /// <summary>
-        /// Value must be < 1.0. Good value is 0.75
+        /// Value must be less than 1.0. Good value is 0.75
         /// </summary>
         public double? ColourFilter { get; set; }
 

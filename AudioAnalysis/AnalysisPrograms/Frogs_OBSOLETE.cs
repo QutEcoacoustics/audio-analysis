@@ -23,6 +23,7 @@
     using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
+    [Obsolete]
     public class Frogs_OBSOLETE : IAnalyser
     {
 

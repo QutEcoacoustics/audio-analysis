@@ -29,7 +29,8 @@
     /// As of 20 June 2012 this class includes three analysers: crow, human, machine.
     /// As of 22 June 2012 this class includes five  analysers: crow, human, machine, canetoad, koala-male.
 
-    public class MultiAnalyser : IAnalyser
+    [Obsolete]
+    public class MultiAnalyser_OBSOLETE : IAnalyser
     {
         public class Arguments : AnalyserArguments
         {
@@ -42,7 +43,7 @@
         //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
         public const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
 
-        public static string[] AnalysisTitles = { Human1.AnalysisName, Crow.AnalysisName, PlanesTrainsAndAutomobiles.AnalysisName, CanetoadOld.AnalysisName, KoalaMale.AnalysisName };
+        public static string[] AnalysisTitles = { Human1.AnalysisName, Crow.AnalysisName, PlanesTrainsAndAutomobiles.AnalysisName, CanetoadOld_OBSOLETE.AnalysisName, KoalaMale.AnalysisName };
 
 
         public string DisplayName
@@ -205,7 +206,7 @@
 
             // DO THE ANALYSIS
             // #############################################################################################################################################
-            IAnalyser analyser = new MultiAnalyser();
+            IAnalyser analyser = new MultiAnalyser_OBSOLETE();
             AnalysisResult result = analyser.Analyse(analysisSettings);
             DataTable dt = result.Data;
             // #############################################################################################################################################
@@ -353,11 +354,11 @@
                 string newKey = key.Substring(9);
                 newDict.Add(newKey, configDict[key]);
             }
-            newDict.Add(AnalysisKeys.AnalysisName, CanetoadOld.AnalysisName);
+            newDict.Add(AnalysisKeys.AnalysisName, CanetoadOld_OBSOLETE.AnalysisName);
             if (frameLength != null)
                 newDict.Add(AnalysisKeys.FrameLength, frameLength);
 
-            var canetoadResults = CanetoadOld.Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset.Value, analysisSettings.AnalysisInstanceOutputDirectory);
+            var canetoadResults = CanetoadOld_OBSOLETE.Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset.Value, analysisSettings.AnalysisInstanceOutputDirectory);
             if (canetoadResults != null)
             {
                 if (sonogram == null) sonogram = canetoadResults.Sonogram;
@@ -367,7 +368,7 @@
                 {
                     foreach (AcousticEvent ae in canetoadResults.Events)
                     {
-                        ae.Name = CanetoadOld.AnalysisName;
+                        ae.Name = CanetoadOld_OBSOLETE.AnalysisName;
                         events.Add(ae);
                     }
                 }
@@ -581,7 +582,7 @@
                 {
                     if (eventScore != 0.0) koala_EventsPerUnitTime[timeUnit]++;
                 }
-                else if (eventName == CanetoadOld.AnalysisName)
+                else if (eventName == CanetoadOld_OBSOLETE.AnalysisName)
                 {
                     if (eventScore != 0.0) canetdEventsPerUnitTime[timeUnit]++;
                 }

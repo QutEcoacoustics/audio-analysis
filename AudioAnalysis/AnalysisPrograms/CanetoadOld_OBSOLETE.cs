@@ -48,7 +48,8 @@ namespace AnalysisPrograms
     ///  OLD! THIS ENTRYPOINT IS MAINTAINED FOR BACKWARDS COMPATIBILITY.
     /// See the new RhinellaMarina class.
     /// </remarks>
-    public class CanetoadOld : AbstractStrongAnalyser
+    [Obsolete]
+    public class CanetoadOld_OBSOLETE : AbstractStrongAnalyser
     {
         #region Constants
 
@@ -266,7 +267,7 @@ namespace AnalysisPrograms
 
             // DO THE ANALYSIS
             /* ############################################################################################################################################# */
-            IAnalyser2 analyser = new CanetoadOld();
+            IAnalyser2 analyser = new CanetoadOld_OBSOLETE();
             analyser.BeforeAnalyze(analysisSettings);
             AnalysisResult2 result = analyser.Analyze(analysisSettings);
             /* ############################################################################################################################################# */
