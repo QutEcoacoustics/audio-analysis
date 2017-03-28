@@ -171,12 +171,12 @@
             double avSignalEnvelope = signalEnvelope.Average();
 
             // (D) ################################## GET Amplitude Spectrogram ##################################
-            double[,] amplitudeSpectrogram = dspOutput.amplitudeSpectrogram; // get amplitude spectrogram.
+            double[,] amplitudeSpectrogram = dspOutput.AmplitudeSpectrogram; // get amplitude spectrogram.
 
             // (E) ################################## Generate deciBel spectrogram from amplitude spectrogram
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
             double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(
-                dspOutput.amplitudeSpectrogram,
+                dspOutput.AmplitudeSpectrogram,
                 dspOutput.WindowPower,
                 recording.SampleRate,
                 epsilon);

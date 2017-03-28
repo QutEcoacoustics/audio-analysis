@@ -12,6 +12,7 @@
     using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
+    [Obsolete]
     public class FrogRibit_OBSOLETE
     {
         public class Arguments : SourceConfigOutputDirArguments

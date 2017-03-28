@@ -568,6 +568,40 @@ namespace TowseyLibrary
             return op;
         }
 
+
+
+
+        /// <summary>
+        /// convert values to Decibels.
+        /// Assume that all values are positive
+        /// </summary>
+        /// <param name="m">matrix of positive power values</param>
+        /// <returns></returns>
+        public static double[,] Power2DeciBels(double[,] m, out double min, out double max)
+        {
+            min = Double.MaxValue;
+            max = -Double.MaxValue;
+
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            double[,] ret = new double[rows, cols];
+
+            for (int i = 0; i < rows; i++)
+                for (int j = 0; j < cols; j++)
+                {
+                    double dBels = 10 * Math.Log10(m[i, j]);    //convert power to decibels
+                                                                //NOTE: the decibels calculation should be a ratio. 
+                                                                // Here the ratio is implied ie relative to the power in the original normalised signal
+                                                                //        if (dBels <= min) min = dBels;
+                                                                //      else
+                                                                //    if (dBels >= max) max = dBels;
+                    ret[i, j] = dBels;
+                }
+            return ret;
+        }
+
+
+
         public static double[,] Matrix2ZScores(double[,] M, double av, double sd)
         {
             int rowCount = M.GetLength(0);
@@ -585,7 +619,12 @@ namespace TowseyLibrary
         }
 
 
-
+        /// <summary>
+        /// Squares the values in a matrix.
+        /// Primarily used when converting FFT coefficients in amplitude spectrogram to power values
+        /// </summary>
+        /// <param name="M"></param>
+        /// <returns></returns>
         public static double[,] SquareValues(double[,] M)
         {
             int rows = M.GetLength(0);
@@ -1664,36 +1703,6 @@ namespace TowseyLibrary
             }
             return sum;
         }
-
-        /// <summary>
-        /// convert values to Decibels.
-        /// Assume that all values are positive
-        /// </summary>
-        /// <param name="m">matrix of positive power values</param>
-        /// <returns></returns>
-        public static double[,] DeciBels(double[,] m, out double min, out double max)
-        {
-            min = Double.MaxValue;
-            max = -Double.MaxValue;
-
-            int rows = m.GetLength(0);
-            int cols = m.GetLength(1);
-            double[,] ret = new double[rows, cols];
-
-            for (int i = 0; i < rows; i++)
-                for (int j = 0; j < cols; j++)
-                {
-                    double dBels = 10 * Math.Log10(m[i,j]);    //convert power to decibels
-                    //NOTE: the decibels calculation should be a ratio.
-                    // Here the ratio is implied ie relative to the power in the original normalised signal
-            //        if (dBels <= min) min = dBels;
-              //      else
-                //    if (dBels >= max) max = dBels;
-                    ret[i, j] = dBels;
-                }
-            return ret;
-        }
-
 
         /// <summary>
         /// Rescales the values of a matrix so that its in and max values are those passed.

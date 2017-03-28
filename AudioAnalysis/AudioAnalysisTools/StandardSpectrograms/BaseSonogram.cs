@@ -314,6 +314,37 @@ namespace AudioAnalysisTools
             return image;
         }
 
+
+        public Image GetImageFullyAnnotated(string title, int[,] gridLineLocations)
+        {
+            Image image = this.GetImage();
+            FrequencyScale.DrawFrequencyLinesOnImage((Bitmap) image, gridLineLocations);
+
+            //var minuteOffset = TimeSpan.Zero;
+            //var xAxisTicInterval = TimeSpan.FromSeconds(1.0);
+            //var xInterval = TimeSpan.FromSeconds(10);
+            //TimeSpan xAxisPixelDuration = TimeSpan.FromTicks((long)(this.Duration.Ticks / (double)this.FrameCount));
+            //int HertzInterval = 1000;
+            //if (this.Configuration.WindowSize < 512)
+            //    HertzInterval = 2000;
+            //double secondsDuration = xAxisPixelDuration.TotalSeconds * image.Width;
+            //TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
+            //SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, fullDuration, xAxisTicInterval, this.NyquistFrequency, HertzInterval);
+
+            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(this.Duration, image.Width);
+
+            var list = new List<Image>();
+            list.Add(titleBar);
+            list.Add(timeBmp);
+            list.Add(image);
+            list.Add(timeBmp);
+
+            Image compositeImage = ImageTools.CombineImagesVertically(list);
+            return compositeImage;
+        }
+
+
         public Image GetImageFullyAnnotated(Image image, string title)
         {
 
@@ -321,14 +352,20 @@ namespace AudioAnalysisTools
             var xAxisTicInterval = TimeSpan.FromSeconds(1.0);
             var xInterval = TimeSpan.FromSeconds(10);
             TimeSpan xAxisPixelDuration = TimeSpan.FromTicks((long)(this.Duration.Ticks / (double)this.FrameCount));
-            int HertzInterval = 1000;
+
+            int hertzInterval = 1000;
             if (this.Configuration.WindowSize < 512)
             {
-                HertzInterval = 2000;
+                hertzInterval = 2000;
             }
+
             double secondsDuration = xAxisPixelDuration.TotalSeconds * image.Width;
             TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, fullDuration, xAxisTicInterval, this.NyquistFrequency, HertzInterval);
+
+            // init frequency scale
+            int frameSize = image.Height;
+            var freqScale = new DSP.FrequencyScale(this.NyquistFrequency, frameSize, hertzInterval);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, fullDuration, xAxisTicInterval, freqScale);
 
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             Bitmap timeBmp = Image_Track.DrawTimeTrack(this.Duration, image.Width);
@@ -360,9 +397,10 @@ namespace AudioAnalysisTools
                                              doHighlightSubband, this.SubBandMinHz, this.SubBandMaxHz);
             bool doMelScale = false;
             double freqBinWidth = this.FBinWidth;
+
             if (add1KHzLines)
             {
-                SpectrogramTools.Draw1kHzLines((Bitmap)image, doMelScale, maxFrequency, freqBinWidth);
+                FrequencyScale.Draw1KHzLines((Bitmap) image, doMelScale, maxFrequency, freqBinWidth);
             }
 
             return image;
@@ -453,7 +491,7 @@ namespace AudioAnalysisTools
 
             //set up the 1000kHz scale
             int herzInterval = 1000;
-            int[] vScale = SpectrogramTools.CreateLinearYaxis(herzInterval, this.NyquistFrequency, imageHeight); //calculate location of 1000Hz grid lines
+            int[] vScale = FrequencyScale.CreateLinearYaxis(herzInterval, this.NyquistFrequency, imageHeight); //calculate location of 1000Hz grid lines
             Bitmap bmp = new Bitmap(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
             for (int w = 0; w < imageWidth; w++)
             {
@@ -916,7 +954,11 @@ namespace AudioAnalysisTools
         {
             double secondsDuration = xAxisPixelDuration.TotalSeconds * image.Width;
             TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, fullDuration, xAxisTicInterval, nyquist, herzInterval);
+
+            // init frequency scale
+            int frameSize = image.Height;
+            var freqScale = new DSP.FrequencyScale(nyquist, frameSize, herzInterval);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, fullDuration, xAxisTicInterval, freqScale);
 
             int imageWidth = image.Width;
             int trackHeight = 20;

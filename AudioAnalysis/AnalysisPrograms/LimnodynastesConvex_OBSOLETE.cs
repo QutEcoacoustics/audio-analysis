@@ -38,6 +38,7 @@ namespace AnalysisPrograms
     /// So I have combined the three recognisers into one analysis.
     ///
     /// </summary>
+    [Obsolete]
     public class LimnodynastesConvex_OBSOLETE : AbstractStrongAnalyser
     {
         #region Constants

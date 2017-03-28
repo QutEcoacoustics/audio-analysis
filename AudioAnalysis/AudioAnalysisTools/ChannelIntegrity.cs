@@ -28,18 +28,15 @@
 namespace AudioAnalysisTools
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Text;
 
     using Acoustics.Tools;
     using Acoustics.Tools.Wav;
 
     using AnalysisBase.ResultBases;
 
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.WavTools;
+    using DSP;
+    using WavTools;
 
     using TowseyLibrary;
 
@@ -172,11 +169,11 @@ namespace AudioAnalysisTools
             frameStep *= 16;
 
             var dspOutputL = DSP_Frames.ExtractEnvelopeAndFFTs(channelL, sampleRate, epsilon, frameSize, frameStep);
-            var avSpectrumL = MatrixTools.GetColumnsAverages(dspOutputL.amplitudeSpectrogram);
+            var avSpectrumL = MatrixTools.GetColumnsAverages(dspOutputL.AmplitudeSpectrogram);
             //var medianSpectrumL = MatrixTools.GetColumnMedians(dspOutputL.amplitudeSpectrogram);
 
             var dspOutputR = DSP_Frames.ExtractEnvelopeAndFFTs(channelR, sampleRate, epsilon, frameSize, frameStep);
-            var avSpectrumR = MatrixTools.GetColumnsAverages(dspOutputR.amplitudeSpectrogram);
+            var avSpectrumR = MatrixTools.GetColumnsAverages(dspOutputR.AmplitudeSpectrogram);
             //var medianSpectrumR = MatrixTools.GetColumnMedians(dspOutputR.amplitudeSpectrogram);
 
             similarityIndex   = 0.0;
@@ -249,10 +246,10 @@ namespace AudioAnalysisTools
             int frameStep = 512;
 
             var dspOutputL = DSP_Frames.ExtractEnvelopeAndFFTs(channelL, sampleRate, epsilon, frameSize, frameStep);
-            var spgrmL = dspOutputL.amplitudeSpectrogram;
+            var spgrmL = dspOutputL.AmplitudeSpectrogram;
 
             var dspOutputR = DSP_Frames.ExtractEnvelopeAndFFTs(channelR, sampleRate, epsilon, frameSize, frameStep);
-            var spgrmR = dspOutputR.amplitudeSpectrogram;
+            var spgrmR = dspOutputR.AmplitudeSpectrogram;
 
             double similarityIndex = 0;
             // get spgrm dimensions - assume both spgrms have same dimensions

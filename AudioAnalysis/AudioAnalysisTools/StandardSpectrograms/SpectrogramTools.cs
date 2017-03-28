@@ -57,13 +57,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 }
 
                 Image image = null;
-                AnalysisSettings settings = new AnalysisSettings();
-                settings.AudioFile = fiAudio;
-                settings.ConfigDict = config.GetDictionary();
-                settings.ConfigFile = fiConfig;
-                settings.ImageFile = fiImage;
-                settings.AnalysisInstanceOutputDirectory = diOutputDir;
-                // want to psas SampleRate of the original file.
+                var settings = new AnalysisSettings
+                {
+                    ConfigDict = config.GetDictionary(),
+                    AudioFile = fiAudio,
+                    ConfigFile = fiConfig,
+                    ImageFile = fiImage,
+                    AnalysisInstanceOutputDirectory = diOutputDir
+                };
+                // want to pass SampleRate of the original file.
                 settings.SampleRateOfOriginalAudioFile = Int32.Parse(settings.ConfigDict[AnalysisKeys.ResampleRate]);
 
                 analyser.BeforeAnalyze(settings);
@@ -100,7 +102,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         ///
         /// </summary>
         /// <param name="fiAudio"></param>
-        /// <param name="fiConfig"></param>
+        /// <param name="configDict"></param>
         /// <returns></returns>
         public static Image Audio2SonogramImage(FileInfo fiAudio, Dictionary<string, string> configDict)
         {
@@ -122,7 +124,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             int freqReducedCount = freqBinCount / freqRedFactor;
 
             var reducedMatrix = new double[timeReducedCount, freqReducedCount];
-            int cellArea = timeRedFactor * freqRedFactor;
+            //int cellArea = timeRedFactor * freqRedFactor;
             for (int r = 0; r < timeReducedCount; r++)
                 for (int c = 0; c < freqReducedCount; c++)
                 {
@@ -189,9 +191,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         ///
         /// </summary>
-        /// <param name="fiAudio"></param>
-        /// <param name="fiConfig"></param>
-        /// <param name="fiImage"></param>
         /// <returns></returns>
         public static Image_MultiTrack Sonogram2MultiTrackImage(BaseSonogram sonogram, Dictionary<string, string> configDict)
         {
@@ -268,7 +267,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return multiTrackImage.GetImage();
         } //Sonogram2Image()
 
-
+/*
         public static Image Matrix2SonogramImage(double[,] matrix, SonogramConfig config)
         {
             bool doHighlightSubband = false;
@@ -285,7 +284,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //if (addScale) image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond)); //add time scale
             return image.GetImage();
         } //CSV2SonogramImage()
-
+*/
 
         public static Image CreateFalseColourDecibelSpectrogram(double[,] dbSpectrogramData, double[,] nrSpectrogramData, byte[,] hits)
         {
@@ -300,9 +299,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             int width = dbSpectrogramData.GetLength(0);
             int height = dbSpectrogramData.GetLength(1);
             Bitmap image = new Bitmap(width, height);
-            Color colour;
-            Hsv myHsv;
-            Rgb myRgb;
             Color[] ridgeColours = { Color.Red, Color.DarkMagenta, Color.Black, Color.LightPink };
 
             for (int y = 0; y < height; y++) //over all freq bins
@@ -316,7 +312,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     if (c1 < 0) c1 = 0;
                     else
                         if (c1 > 255) c1 = 255;
-                    colour = Color.FromArgb(c1, c1, c1);
+                    var colour = Color.FromArgb(c1, c1, c1);
 
                     if (nrSpectrogramNorm[x, y] > 0)
                     {
@@ -334,8 +330,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         double value = 1.0;
                         //double value = 0.60 + (nrSpectrogramNorm[x, y] * 0.40);
 
-                        myHsv = new Hsv { H = hue, S = saturation, V = value };
-                        myRgb = myHsv.To<Rgb>();
+                        var myHsv = new Hsv { H = hue, S = saturation, V = value };
+                        var myRgb = myHsv.To<Rgb>();
                         colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
 
 
@@ -374,7 +370,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             int width  = dbSpectrogramNorm.GetLength(0);
             int height = dbSpectrogramNorm.GetLength(1);
             Bitmap image = new Bitmap(width, height);
-            Color colour;
 
             // get red scale pallette
             var rsp = new CubeHelix("redscale");
@@ -386,19 +381,19 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                     for (int x = 0; x < width; x++) //for pixels in the line
                     {
-                        colour = rsp.GetColorFromPallette(dbSpectrogramNorm[x, y]);
+                        var colour = rsp.GetColorFromPallette(dbSpectrogramNorm[x, y]);
 
                         if (nrSpectrogramNorm[x, y] > 0.15)
                         {
                             // get colour for noise reduced portion
-                            int colourID = cch.GetColorID(nrSpectrogramNorm[x, y]);
+                            int colourId = cch.GetColorID(nrSpectrogramNorm[x, y]);
                             // superimpose ridge detection
                             if (hits[x, y] > 0)
                             {
-                                colourID +=20;
-                                if (colourID > 255) colourID = 255;
+                                colourId +=20;
+                                if (colourId > 255) colourId = 255;
                             }
-                            colour = cch.GetColorFromPallette(colourID);
+                            colour = cch.GetColorFromPallette(colourId);
                         }
                         image.SetPixel(x, height - y - 1, colour);
                     }
@@ -411,7 +406,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public static Color[] GetCyanSpectrumPalette()
         {
             int count = 256 - 1;
-            Color[] palette = new Color[256];
+            var palette = new Color[256];
             for (int i = 0; i <= count; i++)
             {
                 double value = i / (double)count;
@@ -428,16 +423,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public static Image CreateFalseColourAmplitudeSpectrogram(double[,] spectrogramData, double[,] nrSpectrogramData, byte[,] hits)
         {
-            //double min, max;
-            //MatrixTools.MinMax(spectrogramData, out min, out max);
-
             double truncateMin = 0.0;
             double truncateMax = 2.0;
             double filterCoefficient = 1.0;
             double[,] spectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(spectrogramData, truncateMin, truncateMax, filterCoefficient);
-            //truncateMin = 0.5;
-            //truncateMax = 2.0;
-            //double[,] nrSpectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(nrSpectrogramData, truncateMin, truncateMax, filterCoefficient);
 
             int width = spectrogramData.GetLength(0);
             int height = spectrogramData.GetLength(1);
@@ -498,9 +487,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             return image;
         }
-
-
-
 
 
         public static void MakeSonogramWithSox(FileInfo fiAudio, Dictionary<string, string> configDict, FileInfo output)
@@ -651,7 +637,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 varSpectrum[j] = sd * sd; // store var of the bin
                 covSpectrum[j] = sd * sd / av; //store the coefficient of variation of the bin
             }
-            return System.Tuple.Create(avgSpectrum, varSpectrum, covSpectrum);
+            return Tuple.Create(avgSpectrum, varSpectrum, covSpectrum);
         } // CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram()
 
 
@@ -659,13 +645,16 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// This method assumes P.D. Welch's method has been used to calculate a PSD.
         /// See method above: CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram()
         /// </summary>
-        /// <param name="PSD"></param>
-        /// <param name="nyquist"></param>
+        /// <param name="psd">power spectral density</param>
+        /// <param name="samplerate"></param>
+        /// <param name="lowBound"></param>
+        /// <param name="midBound"></param>
+        /// <param name="topBound"></param>
         /// <returns></returns>
-        public static double CalculateNDSI(double[] PSD, int samplerate, int lowBound, int midBound, int topBound)
+        public static double CalculateNdsi(double[] psd, int samplerate, int lowBound, int midBound, int topBound)
         {
             int nyquist = samplerate / 2;
-            int binCount = PSD.Length;
+            int binCount = psd.Length;
             double binWidth = nyquist / (double)binCount;
             // skip lower 1kHz bin;
             int countOf1kHbin = (int)Math.Floor(lowBound / binWidth);
@@ -679,25 +668,27 @@ namespace AudioAnalysisTools.StandardSpectrograms
             if (countOf1kHbin >= countOf2kHbin) countOf1kHbin = countOf2kHbin - 10;
 
             double anthropoEnergy = 0.0;
-            for (int i = countOf1kHbin; i < countOf2kHbin; i++) anthropoEnergy += PSD[i];
+            for (int i = countOf1kHbin; i < countOf2kHbin; i++) anthropoEnergy += psd[i];
             double biophonyEnergy = 0.0;
-            for (int i = countOf2kHbin; i < countOf8kHbin; i++) biophonyEnergy += PSD[i];
-            double NDSI = (biophonyEnergy - anthropoEnergy) / (biophonyEnergy + anthropoEnergy);
-            return NDSI;
+            for (int i = countOf2kHbin; i < countOf8kHbin; i++) biophonyEnergy += psd[i];
+            double ndsi = (biophonyEnergy - anthropoEnergy) / (biophonyEnergy + anthropoEnergy);
+            return ndsi;
         }
-
-
 
 
         /// <summary>
         /// Returns a HISTORGRAM OF THE DISTRIBUTION of SPECTRAL maxima.
         /// </summary>
         /// <param name="spectrogram"></param>
-        /// <param name="peakThreshold">required amplitude threshold to qualify as peak</param>
-        /// <param name="nyquistFreq"></param>
         /// <returns></returns>
         public static Tuple<int[], int[]> HistogramOfSpectralPeaks(double[,] spectrogram)
         {
+            if (spectrogram == null)
+            {
+                return null;
+                throw new ArgumentNullException(nameof(spectrogram));
+            }
+
             int frameCount = spectrogram.GetLength(0);
             int freqBinCount = spectrogram.GetLength(1);
 
@@ -716,7 +707,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             } // over all frames in dB array
 
             //DataTools.writeBarGraph(histogram);
-            return System.Tuple.Create(histogram, peakBins);
+            return Tuple.Create(histogram, peakBins);
         }
 
 
@@ -740,27 +731,27 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <param name="minHz">lower freq bound of the event</param>
         /// <param name="maxHz">upper freq bound of the event</param>
         /// <param name="doMelscale">informs whether the sonogram data is linear or mel scale</param>
-        /// <param name="Nyquist">full freq range 0-Nyquist</param>
+        /// <param name="nyquist">full freq range 0-Nyquist</param>
         /// <param name="binWidth">the frequency scale i.e. herz per bin width - assumes linear scale</param>
         /// <returns></returns>
         public static double[,] ExtractEvent(double[,] m, double start, double end, double frameOffset,
-                                             int minHz, int maxHz, bool doMelscale, int Nyquist, double binWidth)
+                                             int minHz, int maxHz, bool doMelscale, int nyquist, double binWidth)
         {
             int r1;
             int r2;
             AcousticEvent.Time2RowIDs(start, end - start, frameOffset, out r1, out r2);
             int c1;
             int c2;
-            AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, Nyquist, binWidth, out c1, out c2);
+            AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, nyquist, binWidth, out c1, out c2);
             return DataTools.Submatrix(m, r1, c1, r2, c2);
         }
 
 
-        public static double[] ExtractModalNoiseSubband(double[] modalNoise, int minHz, int maxHz, bool doMelScale, int Nyquist, double binWidth)
+        public static double[] ExtractModalNoiseSubband(double[] modalNoise, int minHz, int maxHz, bool doMelScale, int nyquist, double binWidth)
         {
             //extract subband modal noise profile
             int c1, c2;
-            AcousticEvent.Freq2BinIDs(doMelScale, minHz, maxHz, Nyquist, binWidth, out c1, out c2);
+            AcousticEvent.Freq2BinIDs(doMelScale, minHz, maxHz, nyquist, binWidth, out c1, out c2);
             int subbandCount = c2 - c1 + 1;
             var subband = new double[subbandCount];
             for (int i = 0; i < subbandCount; i++) subband[i] = modalNoise[c1 + i];
@@ -771,161 +762,45 @@ namespace AudioAnalysisTools.StandardSpectrograms
         // ### BELOW METHODS DRAW GRID LINES ON SPECTROGRAMS #####################################################################################
         // #######################################################################################################################################
 
+        /// <summary>
+        /// Only calls method to draw frequency lines but may in future want to add the times scale.
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <param name="startOffset"></param>
+        /// <param name="fullDuration"></param>
+        /// <param name="xAxisTicInterval"></param>
+        /// <param name="freqScale"></param>
+        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan startOffset, TimeSpan fullDuration, TimeSpan xAxisTicInterval, FrequencyScale freqScale)
+        {
+            FrequencyScale.DrawFrequencyLinesOnImage(bmp, freqScale);
+            // we have stopped drawing temporal gridlines on these spectrograms. Create unnecessary clutter.
+            //DrawTimeLinesOnImage(bmp, startOffset, fullDuration, xAxisTicInterval);
+        }
 
-        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan startOffset, TimeSpan fullDuration, TimeSpan xAxisTicInterval, int nyquist, int herzInterval)
+        public static void DrawTimeLinesOnImage(Bitmap bmp, TimeSpan startOffset, TimeSpan fullDuration, TimeSpan xAxisTicInterval)
         {
             int rows = bmp.Height;
-            int cols = bmp.Width;
-
-            //Graphics g = Graphics.FromImage(bmp);
-
-            // for rows draw in Y-axis line
-            // number of horizontal grid lines
-            int kHzInterval = herzInterval / 1000;
-            double Y_interval = bmp.Height / (double)(nyquist / (double)herzInterval);
-            int gridCount = (int)(rows / Y_interval);
-            for (int i = 1; i <= gridCount; i++)
+            int cols = bmp.Width;       
+            double xAxisPixelDurationInMilliseconds = fullDuration.TotalMilliseconds / cols;
+            int xInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds));
+            for (int column = 1; column < cols; column++)
             {
-                int row = (int)(i * Y_interval);
-                int rowFromBottom = rows - row;
-                for (int column = 0; column < cols - 3; column++)
+                if (column % xInterval == 0)
                 {
-                    bmp.SetPixel(column, rowFromBottom, Color.Black);
-                    column += 3;
-                    bmp.SetPixel(column, rowFromBottom, Color.White);
-                    column += 2;
-                }
-                int band = (int)(rowFromBottom / Y_interval);
-                //g.DrawString(((band * kHzInterval) + " kHz"), new Font("Thachoma", 8), Brushes.Gray, 2, row - 5);
-            }
-
-            // for columns, draw in X-axis lines
-            //double xAxisPixelDurationInMilliseconds = fullDuration.TotalMilliseconds / (double)cols;
-            //int xInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds));
-            //for (int column = 1; column < cols; column++)
-            //{
-
-            //    if (column % xInterval == 0)
-            //    {
-            //        for (int row = 0; row < rows - 1; row++)
-            //        {
-            //            bmp.SetPixel(column, row, Color.Black);
-            //            bmp.SetPixel(column, row + 1, Color.White);
-            //            row += 2;
-            //        }
-            //    }
-            //}
-        } // DrawGridLInesOnImage()
-
-
-
-        public static void Draw1kHzLines(Bitmap bmp, bool doMelScale, int nyquist, double freqBinWidth)
-        {
-            const int kHz = 1000;
-            double kHzBinWidth = kHz / freqBinWidth;
-            int width = bmp.Width;
-            int height = bmp.Height;
-
-            int bandCount = (int)Math.Floor(height / kHzBinWidth);
-            int[] gridLineLocations = new int[bandCount];
-            for (int b = 0; b < bandCount; b++)
-            {
-                gridLineLocations[b] = (int)(height - ((b + 1) * kHzBinWidth));
-            }
-
-            //get melscale locations
-            if (doMelScale)
-                gridLineLocations = SpectrogramTools.CreateMelYaxis(kHz, nyquist, height); // WARNING!!!! NEED TO REWORK THIS BUT NOW SELDOM USED
-
-            Graphics g = Graphics.FromImage(bmp);
-            //g.SmoothingMode = SmoothingMode.AntiAlias;
-            //g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            //g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-            for (int b = 0; b < bandCount; b++) //over each band
-            {
-                int y = gridLineLocations[b];
-                for (int x = 1; x < width; x++)
-                {
-                    bmp.SetPixel(x - 1, y, Color.White);
-                    bmp.SetPixel(x, y, Color.Black);
-                    x++;
-                }
-                g.DrawString(((b + 1) + " kHz"), new Font("Thachoma", 8), Brushes.Black, 2, y + 1);
-            }
-            //g.Flush();
-        }//end AddGridLines()
-
-
-        /// <summary>
-        /// currently, this method is only called when drawing a reduced sonogram.
-        /// </summary>
-        /// <param name="herzInterval"></param>
-        /// <param name="nyquistFreq"></param>
-        /// <param name="imageHt"></param>
-        /// <returns></returns>
-        public static int[] CreateLinearYaxis(int herzInterval, int nyquistFreq, int imageHt)
-        {
-            //int freqRange = this.maxFreq - this.minFreq + 1;
-            int minFreq = 0;
-            int maxFreq = nyquistFreq;
-            int freqRange = maxFreq - minFreq + 1;
-            double pixelPerHz = imageHt / (double)freqRange;
-            int[] vScale = new int[imageHt];
-            //LoggedConsole.WriteLine("freqRange=" + freqRange + " herzInterval=" + herzInterval + " imageHt=" + imageHt + " pixelPerHz=" + pixelPerHz);
-
-            for (int f = minFreq + 1; f < maxFreq; f++)
-            {
-                if (f % 1000 == 0)  //convert freq value to pixel id
-                {
-                    int hzOffset = f - minFreq;
-                    int pixelID = (int)(hzOffset * pixelPerHz) + 1;
-                    if (pixelID >= imageHt) pixelID = imageHt - 1;
-                    //LoggedConsole.WriteLine("f=" + f + " hzOffset=" + hzOffset + " pixelID=" + pixelID);
-                    vScale[pixelID] = 1;
+                    for (int row = 0; row < rows - 1; row++)
+                    {
+                        bmp.SetPixel(column, row, Color.Black);
+                        bmp.SetPixel(column, row + 1, Color.White);
+                        row += 2;
+                    }
                 }
             }
-            return vScale;
-        }
+        } 
 
 
-        /// <summary>
-        /// Use this method to generate grid lines for mel scale image
-        /// Currently this method is only called from Draw1kHzLines(Bitmap bmp, bool doMelScale, int nyquist, double freqBinWidth)
-        /// and when bool doMelScale = true;
-        /// </summary>
-        public static int[] CreateMelYaxis(int herzInterval, int nyquistFreq, int imageHt)
-        {
-            int minFreq = 0;
-            int maxFreq = nyquistFreq;
-            //int freqRange = maxFreq - minFreq + 1;
-            double minMel = DSP.MFCCStuff.Mel(minFreq);
-            int melRange = (int)(MFCCStuff.Mel(maxFreq) - minMel + 1);
-            //double pixelPerHz = imageHt / (double)freqRange;
-            double pixelPerMel = imageHt / (double)melRange;
-            int[] vScale = new int[imageHt];
-            //LoggedConsole.WriteLine("minMel=" + minMel.ToString("F1") + " melRange=" + melRange + " herzInterval=" + herzInterval + " imageHt=" + imageHt + " pixelPerMel=" + pixelPerMel);
-
-            for (int f = minFreq + 1; f < maxFreq; f++)
-            {
-                if (f % 1000 == 0)  //convert freq value to pixel id
-                {
-                    //int hzOffset  = f - this.minFreq;
-                    int melOffset = (int)(MFCCStuff.Mel(f) - minMel);
-                    int pixelID = (int)(melOffset * pixelPerMel) + 1;
-                    if (pixelID >= imageHt) pixelID = imageHt - 1;
-                    //LoggedConsole.WriteLine("f=" + f + " melOffset=" + melOffset + " pixelID=" + pixelID);
-                    vScale[pixelID] = 1;
-                }
-            }
-            return vScale;
-        }
 
         // #######################################################################################################################################
-        // ### ABOVE METHODS DRAW GRID LINES ON SPECTROGRAMS ####################################################################################
+        // ### ABOVE METHODS DRAW TIME GRID LINES ON SPECTROGRAMS ####################################################################################
         // #######################################################################################################################################
-
-
-
-
     }
 }

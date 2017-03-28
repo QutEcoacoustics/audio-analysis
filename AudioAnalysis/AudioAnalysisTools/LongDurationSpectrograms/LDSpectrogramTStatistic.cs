@@ -100,7 +100,7 @@
             cs1.ColorMode = colorMap;
             cs1.BackgroundFilter = backgroundFilterCoeff;
             string[] keys = colorMap.Split('-');
-            cs1.ReadCSVFiles(ipdir, ipFileName1.Name, keys);
+            cs1.ReadCsvFiles(ipdir, ipFileName1.Name, keys);
             string imagePath = Path.Combine(opdir.FullName, opFileName1 + ".COLNEG.png");
 
             string opFileName2 = ipFileName2.Name;
@@ -108,12 +108,12 @@
             cs2.FileName = opFileName2;
             cs2.ColorMode = colorMap;
             cs2.BackgroundFilter = backgroundFilterCoeff;
-            cs2.ReadCSVFiles(ipdir, ipFileName2.Name, keys);
+            cs2.ReadCsvFiles(ipdir, ipFileName2.Name, keys);
 
             bool allOK = true;
             int N = 30;
 
-            allOK = cs1.ReadStandardDeviationSpectrogramCSVs(ipdir, ipSdFileName1.Name);
+            allOK = cs1.ReadStandardDeviationSpectrogramCsvs(ipdir, ipSdFileName1.Name);
             if (!allOK)
             {
                 Console.WriteLine("Cannot do t-test comparison because error reading standard deviation file: {0}", ipSdFileName1.Name);
@@ -121,7 +121,7 @@
             }
             cs1.SampleCount = N;
 
-            allOK = cs2.ReadStandardDeviationSpectrogramCSVs(ipdir, ipSdFileName2.Name);
+            allOK = cs2.ReadStandardDeviationSpectrogramCsvs(ipdir, ipSdFileName2.Name);
             if (!allOK)
             {
                 Console.WriteLine("Cannot do t-test comparison because error reading standard deviation file: {0}", ipSdFileName2.Name);

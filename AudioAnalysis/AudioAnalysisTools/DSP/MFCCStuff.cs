@@ -48,33 +48,6 @@
 
 
         /// <summary>
-        /// NOTE: the decibels value is a ratio. Here the ratio is implied.
-        /// This method does not account for power of the window if one is used.
-        /// </summary>
-        /// <param name="amplitudeM"></param>
-        /// <returns></returns>
-        //public static double[,] DecibelSpectra(double[,] amplitudeM)
-        //{
-        //    int frameCount = amplitudeM.GetLength(0);
-        //    int binCount   = amplitudeM.GetLength(1);
-
-        //    double[,] spectra = new double[frameCount, binCount];
-
-        //    for (int i = 0; i < frameCount; i++)//foreach time step
-        //    {
-        //        for (int j = 0; j < binCount; j++) //foreach freq bin
-        //        {
-        //            double amplitude = amplitudeM[i, j];
-        //            //double power = amplitude * amplitude;
-        //            double power = 20 * Math.Log10(amplitude); //convert amplitude to decibels dB = 10*log(amplitude ^2)
-        //            spectra[i, j] = power;
-        //        }
-        //    } //end of all frames
-        //    return spectra;
-        //}
-
-
-        /// <summary>
         /// Converts spectral amplitudes directly to dB, normalising for window power and sample rate.
         /// NOTE 1: The window contributes power to the signal which must subsequently be removed from the spectral power.
         /// NOTE 2: Spectral power must be normaliesd for sample rate. Effectively calculate freq power per sample.
@@ -83,8 +56,9 @@
         /// NOTE 4: The decibels value is a ratio. Here the ratio is implied.
         ///         dB = 10*log(amplitude ^2) but in this method adjust power to account for power of Hamming window and SR.
         /// NOTE 5: THIS METHOD ASSUMES THAT THE LAST BIN IS THE NYQUIST FREQ BIN
+        ///  NOTE 6: THIS METHOD ASSUMES THAT THE FIRST BIN IS THE MEAN or DC FREQ BIN
         /// </summary>
-        /// <param name="amplitudeM">the amplitude spectra</param>
+        /// <param name="amplitudeM"> the amplitude spectra </param>
         /// <param name="windowPower">value for window power normalisation</param>
         /// <param name="sampleRate">to normalise for the sampling rate</param>
         /// <param name="epsilon">small value to avoid log of zero.</param>
@@ -93,9 +67,8 @@
         {
             int frameCount = amplitudeM.GetLength(0);
             int binCount = amplitudeM.GetLength(1);
-            double minDB  = 10 * Math.Log10(epsilon * epsilon     / windowPower / sampleRate);
-            double min2DB = 10 * Math.Log10(epsilon * epsilon * 2 / windowPower / sampleRate);
-            //double thresholdDB = -1;
+            double minDb  = 10 * Math.Log10(epsilon * epsilon     / windowPower / sampleRate);
+            double min2Db = 10 * Math.Log10(epsilon * epsilon * 2 / windowPower / sampleRate);
 
             double[,] spectra = new double[frameCount, binCount];
 
@@ -103,13 +76,16 @@
             for (int i = 0; i < frameCount; i++)//foreach time step or frame
             {
                 if (amplitudeM[i, 0] < epsilon)
-                    spectra[i, 0] = minDB;
-                else
-                    spectra[i, 0] = 10 * Math.Log10(amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower / sampleRate);
-                    //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower; //calculates power
-                //if (spectra[i, 0] < thresholdDB) spectra[i, 0] = minDB;
-            }
+                {
+                    spectra[i, 0] = minDb;
 
+                }
+                else
+                {
+                    spectra[i, 0] = 10 * Math.Log10(amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower / sampleRate);
+                    
+                }
+            }
 
             //calculate power in frequency bins - must multiply by 2 to accomodate two spectral components, ie positive and neg freq.
             for (int j = 1; j < binCount-1; j++)
@@ -117,50 +93,57 @@
                 for (int i = 0; i < frameCount; i++)//foreach time step or frame
                 {
                     if (amplitudeM[i, j] < epsilon)
-                        spectra[i, j] = min2DB;
+                    {
+                        spectra[i, j] = min2Db;
+
+                    }
                     else
+                    {
                         spectra[i, j] = 10 * Math.Log10(amplitudeM[i, j] * amplitudeM[i, j] *2 / windowPower / sampleRate);
-                        //spectra[i, j] = amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower; //calculates power
-                    //if (spectra[i, 0] < thresholdDB) spectra[i, 0] = minDB;
+                        
+                    }
                 }//end of all frames
             } //end of all freq bins
-
 
             //calculate power of the Nyquist freq bin - last column of matrix
             for (int i = 0; i < frameCount; i++) //foreach time step or frame
             {
                 //calculate power of the DC value
                 if (amplitudeM[i, binCount - 1] < epsilon)
-                    spectra[i, binCount - 1] = minDB;
+                {
+                    spectra[i, binCount - 1] = minDb;
+
+                }
                 else
+                {
                     spectra[i, binCount - 1] = 10 * Math.Log10(amplitudeM[i, binCount - 1] * amplitudeM[i, binCount - 1] / windowPower / sampleRate);
-                //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower; //calculates power
-                //if (spectra[i, 0] < thresholdDB) spectra[i, 0] = minDB;
+                    
+                }
             }
 
             return spectra;
         }
 
 
-        public static int[] VocalizationDetection(double[] decibels, double lowerDBThreshold, double upperDBThreshold, int k1_k2delay, int syllableGap, int minPulse, int[] zeroCrossings)
+        public static int[] VocalizationDetection(double[] decibels, double lowerDbThreshold, double upperDbThreshold, int k1_k2delay, int syllableGap, int minPulse, int[] zeroCrossings)
         {
             int L = decibels.Length;
             int[] state = new int[L];
-            int lowEnergyID = 0;
-            int hiEnergyID = -k1_k2delay; //to prevent setting early frames to state=2
+            int lowEnergyId = 0;
+            int hiEnergyId = -k1_k2delay; //to prevent setting early frames to state=2
             for (int i = 0; i < L; i++)//foreach time step
             {
-                if (decibels[i] < lowerDBThreshold)
+                if (decibels[i] < lowerDbThreshold)
                 {
-                    lowEnergyID = i;
-                    int delay = i - hiEnergyID;
+                    lowEnergyId = i;
+                    int delay = i - hiEnergyId;
                     if (delay < k1_k2delay) for (int j = 1; j < delay; j++) state[i - j] = 2;
                     state[i] = 0;
                 }
-                if (decibels[i] > upperDBThreshold)
+                if (decibels[i] > upperDbThreshold)
                 {
-                    hiEnergyID = i;
-                    int delay = i - lowEnergyID;
+                    hiEnergyId = i;
+                    int delay = i - lowEnergyId;
                     if (delay < k1_k2delay) for (int j = 1; j < delay; j++) state[i - j] = 2;
                     state[i] = 2;
                 }
@@ -227,7 +210,11 @@
         }
 
         /// <summary>
-        /// returns a Mel value for the passed Herz value
+        /// Returns a Mel value for the passed Herz value
+        /// NOTE: According to Wikipedia there is no single objective mel(ody) scale conversion.
+        /// Mel scale is based on just-noticeable difference in pitch by the ear with ascend pitch. I.E> THis is psycho-acoustic phenomenon.
+        /// 1000Hz is used as the common reference point i.e. 1000Hz = 1000Mel.  
+        /// In speech processing, typically use a linear conversion below 1000Hz.
         /// </summary>
         /// <param name="f"></param>
         /// <returns></returns>

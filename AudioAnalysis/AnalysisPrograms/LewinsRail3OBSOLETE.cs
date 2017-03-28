@@ -22,6 +22,7 @@
     using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
+    [Obsolete]
     public class LewinsRail3OBSOLETE : IAnalyser
     {
         public class Arguments : AnalyserArguments

@@ -93,14 +93,25 @@ namespace AnalysisPrograms
         /// </summary>
         public static Arguments Dev()
         {
+
             // INPUT and OUTPUT DIRECTORIES
+            //MARINE JASCO TEST
+            //var ipdir = @"C:\SensorNetworks\Output\MarineJasco\Towsey.Acoustic";
+            //var opdir = @"C:\SensorNetworks\Output\MarineJasco\Towsey.Acoustic\Images";
+
+            // INPUT and OUTPUT DIRECTORIES
+
+            //2010 Oct 13th
+            var ipdir = @"C:\SensorNetworks\Output\SERF\2014May06_100720 Indices OCT2010 SERF\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
+            var opdir = @"C:\SensorNetworks\Output\SERF\SERF_falseColourSpectrogram\SE";
+
             //2010 Oct 13th
             //string ipFileName = "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
             //string ipdir = @"C:\SensorNetworks\Output\SERF\2014May06-100720 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
             //string opdir = @"C:\SensorNetworks\Output\Test\RibbonTest";
 
-            string ipdir = @"G:\SensorNetworks\OutputDataSets\2014May06-100720 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
-            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Test_2016Sept";
+            //string ipdir = @"G:\SensorNetworks\OutputDataSets\2014May06-100720 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";            
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Test_2016Sept";
 
             //string ipFileName = "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
             //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
@@ -168,6 +179,7 @@ namespace AnalysisPrograms
                 OutputDirectory = opDir,
                 // use the default set of index properties in the AnalysisConfig directory.
                 IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
+                //IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml".ToFileInfo(),
                 SpectrogramConfigPath = fiSpectrogramConfig,
             };
             throw new NoDeveloperMethodException();
@@ -195,7 +207,12 @@ namespace AnalysisPrograms
             FileInfo indexDistributionsFile;
             ZoomCommonArguments.CheckForNeededFiles(arguments.InputDataDirectory, out indexGenerationDataFile, out indexDistributionsFile);
             var indexGenerationData = Json.Deserialise<IndexGenerationData>(indexGenerationDataFile);
-            var indexDistributionsData = IndexDistributions.Deserialize(indexDistributionsFile);
+            // spectral distribution statistics is required only when calcualting difference spectrograms.
+            Dictionary<string, IndexDistributions.SpectralStats> indexDistributionsData = null;
+            if ((indexDistributionsFile != null)&&(indexDistributionsFile.Exists))
+            {
+                indexDistributionsData = IndexDistributions.Deserialize(indexDistributionsFile);
+            }
 
             // this config can be found in IndexGenerationData. If config argument not specified, simply take it from icd file
             LdSpectrogramConfig config;
@@ -284,7 +301,7 @@ namespace AnalysisPrograms
             }
 
             // note: the spectra are oriented as per visual orientation, i.e. xAxis = time frames
-            int frameCount = spectra[keys[0]].GetLength(1);
+            //int frameCount = spectra[keys[0]].GetLength(1);
 
             var minuteOffset = TimeSpan.Zero;
             var xScale = dataScale;
@@ -313,8 +330,7 @@ namespace AnalysisPrograms
 
             foreach (string key in keys)
             {
-                Image image = cs1.DrawGreyscaleSpectrogramOfIndex(key);
-                pixelWidth = image.Width;
+                var image = cs1.DrawGreyscaleSpectrogramOfIndex(key);
 
                 int width = 70;
                 int height = image.Height;
@@ -326,7 +342,7 @@ namespace AnalysisPrograms
                 g1.DrawLine(new Pen(Color.Black), 0, 1, width, 1);//draw upper boundary
 
                 Image[] imagearray = { label, image };
-                Image labelledImage = ImageTools.CombineImagesInLine(imagearray);
+                var labelledImage = ImageTools.CombineImagesInLine(imagearray);
                 list.Add(labelledImage);
             } //foreach key
 
@@ -387,7 +403,6 @@ namespace AnalysisPrograms
             var dataScale = args.TemporalScale;
             string colourMode = "NEGATIVE";
             string colourMap = args.ColourMap1 ?? "BGN-POW-EVN";
-            bool withChrome = true;
             var cs1 = new LDSpectrogramRGB(minuteOffset, dataScale, sampleRate, frameWidth, colourMap);
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = backgroundFilter;
@@ -395,7 +410,7 @@ namespace AnalysisPrograms
             cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
             cs1.SpectrogramMatrices = spectra;
 
-            Image image1 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap, withChrome);
+            Image image1 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap);
             TimeSpan fullDuration = TimeSpan.FromSeconds(image1.Width * dataScale.TotalSeconds);
 
             string title = fileStem;
@@ -404,7 +419,7 @@ namespace AnalysisPrograms
             Bitmap timeScale = Image_Track.DrawTimeRelativeTrack(fullDuration, image1.Width, trackHeight);
 
             colourMap = args.ColourMap2 ?? "PHN-RVT-SPT";
-            Image image2 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap, withChrome);
+            Image image2 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap);
             var list = new List<Image>();
             list.Add(titleImage);
             list.Add(image1);

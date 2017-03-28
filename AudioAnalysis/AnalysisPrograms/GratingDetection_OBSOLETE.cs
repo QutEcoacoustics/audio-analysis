@@ -25,7 +25,8 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
-    public class GratingDetection
+    [Obsolete]
+    public class GratingDetection_OBSOLETE
     {
         //KEYS TO PARAMETERS IN CONFIG FILE
         public static string key_ANALYSIS_NAME = "ANALYSIS_NAME";
@@ -295,7 +296,7 @@ namespace AnalysisPrograms
             var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.WavReader.Samples, sr, epsilon, frameSize, windowOverlap);
             double[] avAbsolute = results2.Average; //average absolute value over the minute recording
             //double[] envelope = results2.Item2;
-            double[,] spectrogram = results2.amplitudeSpectrogram;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
+            double[,] spectrogram = results2.AmplitudeSpectrogram;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
             double windowPower = results2.WindowPower;
 
             //############################ NEXT LINE FOR DEBUGGING ONLY

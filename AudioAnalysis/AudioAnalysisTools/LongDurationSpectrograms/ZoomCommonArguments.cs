@@ -63,14 +63,16 @@
         /// <summary>
         /// Read in required files.
         /// We expect a valid indices output directory (the input directory in this action)
-        /// to contain a IndexDistributions.json and a IndexGenerationData.json file
+        /// to contain a SpectralIndexStatistics.json and a IndexGenerationData.json file
         /// </summary>
         /// <param name="indicesDirectory"></param>
         /// <param name="indexGenerationDataFile"></param>
         /// <param name="indexDistributionsFile"></param>
         public static void CheckForNeededFiles(DirectoryInfo indicesDirectory, out FileInfo indexGenerationDataFile, out FileInfo indexDistributionsFile)
         {
-            indexDistributionsFile = indicesDirectory.GetFiles("*" + IndexDistributions.SpectralIndexStatisticsFilenameFragment + "*").Single();
+            // NOTE: This file should not be compulsory requirement for this activity. At the most a warning could be written to say that file not found.
+            indexDistributionsFile = null;
+            //indexDistributionsFile = indicesDirectory.GetFiles("*" + IndexDistributions.SpectralIndexStatisticsFilenameFragment + "*").Single();
             indexGenerationDataFile = IndexGenerationData.FindFile(indicesDirectory);
         }
     }
