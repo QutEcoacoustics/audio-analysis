@@ -169,8 +169,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return listOfFrequencyBins;
         } // Sonogram2ListOfFreqBinArrays()
 
-
-
         public static BaseSonogram Audio2DecibelSonogram(FileInfo fiAudio, Dictionary<string, string> configDict)
         {
             AudioRecording recordingSegment = new AudioRecording(fiAudio.FullName);
@@ -179,14 +177,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return sonogram;
         }
 
-
         public static double[,] NormaliseSpectrogramMatrix(double[,] matrix, double truncateMin, double truncateMax, double backgroundFilterCoeff)
         {
             double[,] m = MatrixTools.NormaliseInZeroOne(matrix, truncateMin, truncateMax);
             m = MatrixTools.FilterBackgroundValues(m, backgroundFilterCoeff); // to de-demphasize the background small values
             return m;
         }
-
 
         /// <summary>
         ///
@@ -195,7 +191,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public static Image_MultiTrack Sonogram2MultiTrackImage(BaseSonogram sonogram, Dictionary<string, string> configDict)
         {
             bool doHighlightSubband = false;
-
 
             //check if doing a reduced sonogram
             //int timeReductionFactor = 1;
@@ -247,8 +242,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //mti.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram)); //add segmentation track
         }//Sonogram2MultiTrackImage()
 
-        public static Image Sonogram2Image(BaseSonogram sonogram, Dictionary<string, string> configDict,
-                                           double[,] hits, List<Plot> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
+        public static Image Sonogram2Image(BaseSonogram sonogram, Dictionary<string, string> configDict, double[,] hits, List<Plot> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
             Image_MultiTrack multiTrackImage = Sonogram2MultiTrackImage(sonogram, configDict);
 
@@ -266,25 +260,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             return multiTrackImage.GetImage();
         } //Sonogram2Image()
-
-/*
-        public static Image Matrix2SonogramImage(double[,] matrix, SonogramConfig config)
-        {
-            bool doHighlightSubband = false;
-            //ADD time and frequency scales
-            bool addScale = true;
-            //if (configDict.ContainsKey(Keys.ADD_TIME_SCALE)) addScale = ConfigDictionary.GetBoolean(Keys.ADD_TIME_SCALE, configDict);
-            //else
-            //    if (configDict.ContainsKey(Keys.ADD_AXES)) addScale = ConfigDictionary.GetBoolean(Keys.ADD_AXES, configDict);
-            bool add1kHzLines = addScale;
-
-            BaseSonogram sonogram = new SpectrogramStandard(config, matrix);
-            System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
-            Image_MultiTrack image = new Image_MultiTrack(img);
-            //if (addScale) image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond)); //add time scale
-            return image.GetImage();
-        } //CSV2SonogramImage()
-*/
 
         public static Image CreateFalseColourDecibelSpectrogram(double[,] dbSpectrogramData, double[,] nrSpectrogramData, byte[,] hits)
         {

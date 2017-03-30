@@ -35,7 +35,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.MaxAmplitude = sg.MaxAmplitude;
             this.SampleRate = sg.SampleRate;
             this.SigState = sg.SigState;
-            this.SnrFullband = sg.SnrFullband;
+            this.SnrData = sg.SnrData;
             this.Data = sg.Data;
             this.Make(this.Data); //converts amplitude matrix to cepstral sonogram
         }
@@ -46,21 +46,21 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.DecibelsPerFrame = sg.DecibelsPerFrame;
             this.DecibelsNormalised = sg.DecibelsNormalised;
             this.Duration = sg.Duration;
-            //this.epsilon = sg.epsilon;
             this.FrameCount = sg.FrameCount;
             this.DecibelReference = sg.DecibelReference;
             this.MaxAmplitude = sg.MaxAmplitude;
             this.SampleRate = sg.SampleRate;
             this.SigState = sg.SigState;
-            this.SnrFullband = sg.SnrFullband;
-            this.subBandMinHz = minHz;
-            this.subBandMaxHz = maxHz;
+            this.SnrData = sg.SnrData;
+            // subband highlighting no longer available
+            //this.subBandMinHz = minHz;
+            //this.subBandMaxHz = maxHz;
 
-            //double[] noise_subband = BaseSonogram.ExtractModalNoiseSubband(this.SnrFullband.ModalNoiseProfile, minHz, maxHz, sg.doMelScale,
+            //double[] noise_subband = BaseSonogram.ExtractModalNoiseSubband(this.SnrData.ModalNoiseProfile, minHz, maxHz, sg.doMelScale,
             //                                                   sonogram.Configuration.FreqBinCount, sonogram.FBinWidth);
             this.Data = SpectrogramTools.ExtractFreqSubband(sg.Data, minHz, maxHz,
                              this.Configuration.DoMelScale, sg.Configuration.FreqBinCount, sg.FBinWidth);
-            CalculateSubbandSNR(this.Data);
+            // NO LONGER DO THIS >>>>             CalculateSubbandSNR(this.Data);
             this.Make(this.Data);          //converts amplitude matrix to cepstral sonogram
         }
 
@@ -68,7 +68,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         {
             var tuple = SpectrogramCepstral.MakeCepstrogram(this.Configuration, amplitudeM, this.DecibelsNormalised, this.SampleRate);
             this.Data = tuple.Item1;
-            this.SnrFullband.ModalNoiseProfile = tuple.Item2; //store the full bandwidth modal noise profile
+            this.SnrData.ModalNoiseProfile = tuple.Item2; //store the full bandwidth modal noise profile
         }
 
         //##################################################################################################################################
@@ -192,7 +192,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             Log.WriteLine("MFCCs : doMelScale=" + doMelScale + ";  ccCount=" + ccCount + ";  includeDelta=" + includeDelta + ";  includeDoubleDelta=" + includeDoubleDelta);
 
             //CALCULATE MODAL NOISE PROFILE - USER MAY REQUIRE IT FOR NOISE REDUCTION
-            double[] modalNoise = sonogram.SnrFullband.ModalNoiseProfile;
+            double[] modalNoise = sonogram.SnrData.ModalNoiseProfile;
 
             //extract subband modal noise profile
             double[] noiseSubband = SpectrogramTools.ExtractModalNoiseSubband(modalNoise, minHz, maxHz, doMelScale,
@@ -236,7 +236,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             Log.WriteIfVerbose(" MakeAcousticVectors(matrix, decibels, includeDelta=" + includeDelta + ", includeDoubleDelta=" + includeDoubleDelta + ", deltaT=" + deltaT + ")");
             var tuple = SpectrogramCepstral.MakeCepstrogram(config, matrix, decibels, sampleRate);
             double[,] m = tuple.Item1;
-            //this.SnrFullband.ModalNoiseProfile = tuple.Item2; //store the full bandwidth modal noise profile
+            //this.SnrData.ModalNoiseProfile = tuple.Item2; //store the full bandwidth modal noise profile
 
             //initialise feature vector for template - will contain three acoustic vectors - for T-dT, T and T+dT
             int frameCount = m.GetLength(0);

@@ -1,3 +1,7 @@
+// <copyright file="Sandpit.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace AnalysisPrograms
 {
     using System;
@@ -43,92 +47,20 @@ namespace AnalysisPrograms
 
         public static void Dev(Arguments arguments)
         {
-
             //SET VERBOSITY
             var tStart = DateTime.Now;
             Log.Verbosity = 1;
             Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
-
             if (true)
             {
-                // METHOD TO CHECK IF OCTAVE FREQ SCALE IS WORKING
-
-                /*
-                // first check it out on standard recording.
-                var recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
-                var outputPath       = @"C:\SensorNetworks\Output\OctaveFreqScale\octaveScaleSonogram.png";
-                var recording = new AudioRecording(recordingPath);
-                // default linear scale
-                //var fst = FreqScaleType.Linear; 
-                var fst = FreqScaleType.Linear125Octaves6Tones30Nyquist11025;
-                var freqScale = new FrequencyScale(fst);
-
-                // specfied linear scale
-                //int nyquist = 11025;
-                //int frameSize = 1024;
-                //var freqScale = new FrequencyScale(nyquist, frameSize, 1000);
-                */
-
-
-                /*
-                24 BIT JASCOE RECORDINGS
-                Need to convert Jascoe GBR recordings to 16 bit.
-                ffmpeg -i source_file.wav -sample_fmt s16 out_file.wav
-                e.g.
-                ". C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg\ffmpeg.exe" -i "C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56.wav" -sample_fmt s16 "C:\SensorNetworks\Output\OctaveFreqScale\JascoeMarineGBR116bit.wav"
-
-                ffmpeg binaries are in C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg
-                */
-                
-                // Now check it on Jascoe recording
-                var recordingPath = @"C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit.wav";
-                var outputPath = @"C:\SensorNetworks\Output\OctaveFreqScale\JascoeMarineGBR1.png";
-                var recording = new AudioRecording(recordingPath);
-                FreqScaleType fst = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
-                var freqScale = new FrequencyScale(fst);
-
-
-                var sonoConfig = new SonogramConfig
-                {
-                    SourceFName = recording.BaseName,
-                    NoiseReductionType = NoiseReductionType.None,
-                    //NoiseReductionType = NoiseReductionType.Standard,
-                    //NoiseReductionType = SNR.KeyToNoiseReductionType("FlattenAndTrim"),
-                    NoiseReductionParameter = 0.0
-                };
-
-                // produce an amplitude spectrogram
-                BaseSonogram sonogram;
-                if (fst == FreqScaleType.Linear)
-                {
-                    sonoConfig.WindowSize = freqScale.FinalBinCount * 2;
-                    sonoConfig.WindowOverlap = 0.2;
-                    sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-                }
-                else
-                {
-                    sonoConfig.WindowSize = freqScale.WindowSize;
-                    sonoConfig.WindowOverlap = 0.5;
-                    sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
-                    //convert spectrogram to octave scale
-                    sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
-                }
-
-                // DO NOISE REDUCTION
-                double[,] dataMatrix = sonogram.Data;
-                dataMatrix = SNR.NoiseReduce_Standard(dataMatrix);
-                //double sdCount = 2.0;
-                //double dynamicRange = 40.0;
-                //dataMatrix = SNR.NoiseReduce_FixedRange(dataMatrix, dynamicRange, sdCount);
-                sonogram.Data = dataMatrix;
-                sonogram.Configuration.WindowSize = 512;
-                //sonogram.Configuration.FreqBinCount = 256;               
-
-                Image image = sonogram.GetImageFullyAnnotated("SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-                image.Save(outputPath, ImageFormat.Png);
+                // The following are test methods to confirm that the frequency scale code is working
+                // They are also good tests for the making of standard sonograms.
+                FrequencyScale.TESTMETHOD_LinearFrequencyScaleDefault();
+                FrequencyScale.TESTMETHOD_LinearFrequencyScale();
+                FrequencyScale.TESTMETHOD_OctaveFrequencyScale1();
+                //FrequencyScale.TESTMETHOD_OctaveFrequencyScale2();
             }
-
 
             if (false)
             {
@@ -141,7 +73,7 @@ namespace AnalysisPrograms
                 //// constants required for full octave scale when sr = 64000
                 //FreqScaleType ost = FreqScaleType.Octaves24Nyquist32000;
                 //// constants required for split linear-octave scale when sr = 64000
-                FreqScaleType ost = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
+                var ost = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
 
                 OctaveFreqScale.TestOctaveScale(ost);
             }
@@ -173,7 +105,6 @@ namespace AnalysisPrograms
                 AudioRecording recording = new AudioRecording(recordingPath);
                 var recordingDuration = recording.WavReader.Time;
 
-
                 const int frameSize = 1024;
                 double windowOverlap = 0.0;
                 //NoiseReductionType noiseReductionType  = NoiseReductionType.None;
@@ -188,7 +119,6 @@ namespace AnalysisPrograms
                     NoiseReductionType = noiseReductionType,
                     NoiseReductionParameter = 0.0,
                 };
-
 
                 var aedConfiguration = new Aed.AedConfiguration
                 {
@@ -245,7 +175,6 @@ namespace AnalysisPrograms
                     Image images = ImageTools.CombineImagesVertically(imageArray);
                     var opPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, "ThresholdExperiment", "png");
                     images.Save(opPath);
-
 
                     var hits = new double[sonogram.FrameCount, sonogram.Data.GetLength(1)];
 
@@ -358,7 +287,6 @@ namespace AnalysisPrograms
                 SURFAnalysis.Main(null);
             }
 
-
             if (false)  // do test of SNR calculation
             {
                 //Audio2InputForConvCNN.Main(null);
@@ -372,19 +300,15 @@ namespace AnalysisPrograms
                 ChannelIntegrity.Execute(null);
             }
 
-
-
             if (false)  // do test of new moving average method
             {
                 DataTools.TEST_FilterMovingAverage();
             }
 
-
             if (false)
             {
                 ImageTools.TestCannyEdgeDetection();
             }
-
 
             if (false)
             {
@@ -392,13 +316,11 @@ namespace AnalysisPrograms
                 HoughTransform.Test2HoughTransform();
             }
 
-
             if (false)  // used to test structure tensor code.
             {
                 StructureTensor.Test1StructureTensor();
                 StructureTensor.Test2StructureTensor();
             }
-
 
             /// used to caluclate eigen values and singular valuse
             if (false)
@@ -406,19 +328,16 @@ namespace AnalysisPrograms
                 SvdAndPca.TestEigenValues();
             }
 
-
             if (false)  // test examples of wavelets
             {
                 WaveletTransformContinuous.ExampleOfWavelets_1();
                 //WaveletPacketDecomposition.ExampleOfWavelets_1();
             }
 
-
             if (false)  // do 2D-FFT of an image.
             {
                 FFT2D.TestFFT2D();
             }
-
 
             // quickie to calculate entropy of some matrices - used for Yvonne acoustic transition matrices
             if (false)
@@ -444,9 +363,6 @@ namespace AnalysisPrograms
                 double entropy = DataTools.Entropy_normalised(v);
             } // end if (true)
 
-
-
-
             // code to merge all files of acoustic indeces derived from 24 hours of recording,
             if (false)
             {
@@ -458,7 +374,6 @@ namespace AnalysisPrograms
                 // Currently set for the recording protocol of Gianna Pavan(10 minutes every 30 minutes).
                 //LDSpectrogramStitching.StitchPartialSpectrograms();
             } // end if (true)
-
 
             // PAPUA NEW GUINEA DATA
             // concatenating csv files of spectral and summary indices
@@ -486,7 +401,6 @@ namespace AnalysisPrograms
                 string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Musiamunat_3-7-15\BAR\BAR_18\";
                 string opFileStem = "TNC_Musiamunat_20150703_BAR18";
 
-
                 DirectoryInfo[] dataDir = { new DirectoryInfo(dataPath) };
 
                 string indexPropertiesConfigPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\IndexPropertiesOLDConfig.yml";
@@ -495,9 +409,7 @@ namespace AnalysisPrograms
                 // string outputDirectory = @"C:\SensorNetworks\Output\Test\TNC";
                 var opDir = new DirectoryInfo(dataPath);
                 //LDSpectrogramStitching.ConcatenateAllIndexFiles(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
-
             }
-
 
             // testing TERNARY PLOTS using spectral indices
             if (false)
@@ -529,9 +441,6 @@ namespace AnalysisPrograms
                 Image image = TernaryPlots.DrawTernaryPlot(matrixDictionary, keys);
                 image.Save(opImage.FullName);
             }
-
-
-
 
             // testing directory search and file search
             if (false)
@@ -581,7 +490,6 @@ namespace AnalysisPrograms
                 SpectralClustering.Sandpit();
             } // end if (true)
 
-
             // experiments with false colour images - categorising/discretising the colours
             if (false)
             {
@@ -609,14 +517,11 @@ namespace AnalysisPrograms
                 //SunAndMoon.SunMoonTides[] tidalInfo = null;
                 SunAndMoon.SunMoonTides[] tidalInfo = SunAndMoon.ReadGeorgiaTidalInformation(tidalDataFile);
 
-
-
                 ConcatenateIndexFiles.ConcatenateRibbonImages(dataDirs, match, outputDirectory, opFileStem, title, tidalInfo);
             }
 
-
             // Concatenate three images for Dan Stowell.
-            if (false)  //
+            if (false)
             {
                 var imageDirectory = new DirectoryInfo(@"H:\Documents\SensorNetworks\MyPapers\2016_QMUL_SchoolMagazine");
                 string fileName1 = @"TNC_Musiamunat_20150702_BAR10__ACI-ENT-EVNCropped.png";
@@ -627,7 +532,6 @@ namespace AnalysisPrograms
                 var image3Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName3));
 
                 var imageList = new List<Image>();
-
 
                 imageList.Add(Bitmap.FromFile(image1Path.FullName));
                 imageList.Add(Bitmap.FromFile(image2Path.FullName));
@@ -640,7 +544,7 @@ namespace AnalysisPrograms
             }
 
             // Concatenate two images but add labels for EcoCongress.
-            if (false)  //
+            if (false)
             {
                 //var imageDirectory = new DirectoryInfo(@"H:\Documents\SensorNetworks\MyPapers\2016_QMUL_SchoolMagazine");
                 //string fileName1 = @"TNC_Musiamunat_20150702_BAR10__ACI-ENT-EVNCropped.png";
@@ -655,7 +559,6 @@ namespace AnalysisPrograms
                 //string fileName1 = @"NW_6905bee9_101014-0000.ACI-ENT-EVN.png";
                 //string fileName2 = @"SW_e8abdd2a_101014-0000.ACI-ENT-EVN.png";
 
-
                 var imageDirectory = new DirectoryInfo(@"C:\Users\Owner\Documents\QUT\SensorNetworks\MyPapers\2016_EcoacousticsCongress\DotPlotsInColour");
                 string fileName1 = @"colour_dot_plot_NW_13Oct.png";
                 string fileName2 = @"colour_dot_plot_SW_13Oct.png";
@@ -664,7 +567,6 @@ namespace AnalysisPrograms
 
                 var opDirectory = new DirectoryInfo(@"C:\Users\Owner\Documents\QUT\SensorNetworks\MyPapers\2016_EcoacousticsCongress");
                 var opFileName = string.Format("Comparison SERF DotPlots NWandSW 2010Oct13.png");
-
 
                 var image1Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName1));
                 var image2Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName2));
@@ -681,7 +583,6 @@ namespace AnalysisPrograms
                 Graphics g1 = Graphics.FromImage(title1);
                 g1.Clear(Color.LightGray);
                 g1.DrawString(name1, stringFont, brush, new PointF(5, 5));
-
 
                 //Graphics g = Graphics.FromImage(image1);
                 //g.DrawImage(title1, 0, 0);
@@ -703,9 +604,8 @@ namespace AnalysisPrograms
                 combinedImage.Save(Path.Combine(opDirectory.FullName, opFileName));
             }
 
-
             // Concatenate twelve images for Simon and Toby
-            if (false)  //
+            if (false)
             {
                 var imageDirectory = new DirectoryInfo(@"F:\AvailaeFolders\Griffith\Toby\20160201_FWrecordings\Site1Images");
                 var imageFiles = imageDirectory.GetFiles();
@@ -722,40 +622,26 @@ namespace AnalysisPrograms
                 combinedImage.Save(Path.Combine(imageDirectory.FullName, fileName));
             }
 
-
-
-
-
             // Concatenate images for Karl-Heinz Frommolt
-            if (false)  //
+            if (false)
             {
                 FrommoltProject.ConcatenateDays();
             }
 
-
-
-
             //HERVE GLOTIN: This is used to analyse the BIRD50 data set.
             // Combined audio2csv + zooming spectrogram task.
-            //
             if (false)
             {
                 HerveGlotinCollaboration.HiRes1();
             }
 
-
-            //}  // END combined audio2csv + zooming spectrogram task.
-
-
             //HERVE GLOTIN: This is used to analyse the BIRD50 data set.
             // To produce HIres spectrogram images
-            //
             if (false)
             {
                 HerveGlotinCollaboration.HiRes2();
 
-            }  // END
-
+            }
 
             //HERVE GLOTIN: This is used to analyse the BIRD50 data set.
             // In order to analyse the short recordings in BIRD50 dataset, need following change to code:
@@ -765,9 +651,7 @@ namespace AnalysisPrograms
             if (false)
             {
                 HerveGlotinCollaboration.HiRes3();
-
-            }  // END
-
+            }
 
             //HERVE GLOTIN: To produce HIres spectrogram images
             // This is used to analyse Herve Glotin's BIRD50 data set.
@@ -775,10 +659,7 @@ namespace AnalysisPrograms
             if (false)
             {
                 HerveGlotinCollaboration.HiRes4();
-
-            }  // END
-
-
+            }
 
             //HERVE GLOTIN
             // To produce observe feature spectra or SPECTRAL FEATURE TEMPLATES for each species
@@ -786,8 +667,7 @@ namespace AnalysisPrograms
             if (false)
             {
                 BirdClefExperiment1.Execute(null);
-            } // Herve Glotin's BIRD50 Dataset
-
+            }
 
             //FROG DATA SET
             // To produce observe feature spectra
@@ -800,7 +680,6 @@ namespace AnalysisPrograms
             //OTSU TRHESHOLDING FROM JIE XIE
             // Used to threshold spectrograms to binary.
             //  Jie uses the algorithm in his last 2016 papers.
-            //
             if (false)
             {
                 OtsuThresholder.Execute(null);
@@ -809,10 +688,7 @@ namespace AnalysisPrograms
             if (false)
             {
                 HerveGlotinCollaboration.AnalyseBOMBYXRecordingsForSpermWhaleClicks();
-
             }
-
-
 
             // To CALCULATE MUTUAL INFORMATION BETWEEN SPECIES DISTRIBUTION AND FREQUENCY INFO
             // This method calculates a seperate value of MI for each frequency bin
@@ -909,7 +785,6 @@ namespace AnalysisPrograms
                 {
                     var m = new double[speciesNumber, valueResolution];
 
-
                     for (int r = 0; r < speciesNumber; r++)
                     {
                         for (int c = 0; c < valueResolution; c++)
@@ -926,11 +801,9 @@ namespace AnalysisPrograms
                 {
                     Console.WriteLine(String.Format("Bin{0}  {1}", i, mi[i]));
                 }
+
                 FileTools.WriteArray2File(mi, miFileName);
-
             } // CALCULATE MUTUAL INFORMATION
-
-
 
             // test 3-D matrix to array
             if (false)
@@ -948,9 +821,9 @@ namespace AnalysisPrograms
                         }
                     }
                 }
+
                 double[] array = DataTools.Matrix2Array(M3d);
             }
-
 
             // test MUTUAL INFORMATION
             if (false)
@@ -962,7 +835,6 @@ namespace AnalysisPrograms
                 M[3, 0] = 8; M[3, 1] = 0; M[3, 2] = 0; M[3, 3] = 0;
                 double MI = DataTools.MutualInformation(M);
             }
-
 
             // EXPERIMENTS WITH HERVE
             // To CALCULATE MUTUAL INFORMATION BETWEEN SPECIES DISTRIBUTION AND FREQUENCY INFO
@@ -1001,7 +873,6 @@ namespace AnalysisPrograms
                 double Hspecies = DataTools.Entropy_normalised(speciesCounts);
                 Console.WriteLine("Species Entropy = " + Hspecies);
 
-
                 // set up the input data
                 int freqBinCount = 256;
                 int reducedBinCount = freqBinCount;
@@ -1026,7 +897,6 @@ namespace AnalysisPrograms
                 //int reductionFactor = 1;
                 //reducedBinCount = freqBinCount / reductionFactor;
                 //reducedBinCount = 100 + (156 / 2); // exotic style
-
 
                 // Length of the Input feature vector
                 int featureVectorLength = reducedBinCount * valueCategoryCount;
@@ -1073,7 +943,6 @@ namespace AnalysisPrograms
                     int rowCount = matrix.GetLength(0);
                     reducedBinCount = matrix.GetLength(1);
 
-
                     // calculate the conditional probabilities
                     // set up data structure to contain probability info
                     //int threshold = 0;
@@ -1092,7 +961,6 @@ namespace AnalysisPrograms
                             //    decibelDistribution[dBvalue]++;
                             //}
 
-
                             // use next six lines when variable can have >=3 discrete values
                             int valueCategory = 0;
                             for (int bound = 1; bound < bounds.Length; bound++)
@@ -1110,7 +978,6 @@ namespace AnalysisPrograms
                 //int[] array = DataTools.Matrix2Array(probSgivenF);
                 //double entropy = DataTools.Entropy_normalised(array);
                 double MI = DataTools.MutualInformation(probSgivenF);
-
 
                 Console.WriteLine(String.Format("\n\nFeature {0};  Category Count {1}", key, valueCategoryCount));
                 Console.WriteLine(String.Format("Mutual Info = {0}", MI));
@@ -1134,6 +1001,7 @@ namespace AnalysisPrograms
                         break;
                     }
                 }
+
                 Console.WriteLine(String.Format("Median occurs at {0} ", medianIndex));
 
                 //for (int i = 0; i < reducedBinCount; i++)
@@ -1141,17 +1009,11 @@ namespace AnalysisPrograms
                 //Console.WriteLine(String.Format("Bin{0}  {1}", i, mi[i]));
                 //}
                 //FileTools.WriteArray2File(mi, miFileName);
-
             } // CALCULATE MUTUAL INFORMATION
-
-
-
 
             Console.WriteLine("# Finished Sandpit Task!");
             Console.ReadLine();
             System.Environment.Exit(0);
         }
-
-
     }
 }

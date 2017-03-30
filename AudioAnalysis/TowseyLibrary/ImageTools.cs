@@ -2488,12 +2488,14 @@
                 g.DrawLine(pen, 0, y1, scaleWidth - 1, y1);
                 g.DrawLine(pen, 0, y1 - 1, scaleWidth - 1, y1 - 1);
             }
+
             g.DrawRectangle(pen, 0, 0, scaleWidth - 1, image.Height - 1);
             Image[] array = new Image[2];
             array[0] = yAxisImage;
             array[1] = image;
             return ImageTools.CombineImagesInLine(array);
         }
+
         /// <summary>
         /// assumes the y-axis has been drawn already
         /// </summary>
@@ -2504,6 +2506,7 @@
         public static Image DrawXaxisScale(Image image, int scaleHeight, double xTicInterval, int xOffset)
         {
             int ticCount = (int)((image.Width - scaleHeight) / xTicInterval);
+
             // draw gridlines on Image
             Pen pen = new Pen(Color.White);
             Graphics g = Graphics.FromImage(image);
@@ -2523,6 +2526,7 @@
                 g.DrawLine(pen, x1, 0, x1, scaleHeight-1);
                 g.DrawLine(pen, x1 + 1, 0, x1 + 1, scaleHeight - 1);
             }
+
             g.DrawRectangle(pen, 0, 0, image.Width - 1, scaleHeight - 1);
             Image[] array = new Image[2];
             array[0] = image;
@@ -3252,10 +3256,66 @@
                 }
 
                 degrees += resolutionAngle;
-            } //while loop
+            } // while loop
+
             return System.Tuple.Create(maxAngle, intensitySum);
         }// DetectLine()
 
+        /// <summary>
+        /// Returns an image of the data matrix.
+        /// Normalises the values from min->max to 0->1.
+        /// Thus the grey-scale image pixels will range from 0 to 255.
+        /// This method was originally written to draw sonograms, 
+        ///       hence the avoidance of outliers and references to freq bins.
+        /// Perhaps this method should be put back in BaseSonogram.cs.
+        /// </summary>
+        public static Image GetMatrixImage(double[,] data)
+        {
+            int width = data.GetLength(0); // Number of spectra in sonogram
+            int binCount = data.GetLength(1);
+            int binHeight = 1;
 
+            int imageHeight = binCount * binHeight; // image ht = sonogram ht
+
+            //set up min, max for normalising of sonogram values
+            int minRank = 50;
+            int maxRank = 1000;
+
+            // find min and max of matrix avoiding outliers.
+            double[] array = MatrixTools.Matrix2Array(data);
+            double minValue = DataTools.GetNthSmallestValue(array, minRank);
+            double maxValue = DataTools.GetNthLargestValue(array, maxRank);
+            double[] minmax = { minValue, maxValue };
+            double min = minmax[0];
+            double max = minmax[1];
+            double range = max - min;
+
+            Color[] grayScale = ImageTools.GrayScale();
+            var bmp = new Bitmap(width, imageHeight, PixelFormat.Format24bppRgb);
+            int yOffset = imageHeight;
+
+            // over all freq bins
+            for (int y = 0; y < binCount; y++)
+            {
+                for (int r = 0; r < binHeight; r++)
+                {
+                    //repeat this bin if pixel rows per bin>1
+                    for (int x = 0; x < width; x++)
+                    {
+                        //for pixels in the line - normalise and bound the value - use min bound, max and 255 image intensity range
+                        double value = (data[x, y] - min) / (double)range;
+                        int c = 255 - (int)Math.Floor(255.0 * value); //original version
+                        if (c < 0) c = 0;
+                        else
+                        if (c >= 256) c = 255;
+                        bmp.SetPixel(x, yOffset - 1, grayScale[c]);
+                    } //for all pixels in line
+
+                    yOffset--;
+                } //end repeats over one track
+            } //end over all freq bins
+
+            return (Image)bmp;
+        }
     } //end class
 }

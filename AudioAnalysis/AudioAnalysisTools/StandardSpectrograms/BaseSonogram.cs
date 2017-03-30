@@ -15,7 +15,6 @@ namespace AudioAnalysisTools
     using StandardSpectrograms;
     using TowseyLibrary;
     using WavTools;
-    using static DSP.DSP_Frames;
 
     /// <summary>
     /// Sonogram type.
@@ -72,39 +71,20 @@ namespace AudioAnalysisTools
 
         public double FBinWidth => this.NyquistFrequency / (double)this.Configuration.FreqBinCount;
 
-        // FreqBinCount=WindowSize/2
-
         public double FramesPerSecond => 1 / this.FrameStep;
-
-        /// <summary>
-        /// Min freq (Hz) of the required subband
-        /// </summary>
-        protected int subBandMinHz;
-
-        /// <summary>
-        /// Max freq (Hz) of the required subband
-        /// </summary>
-        protected int subBandMaxHz;
 
         public int FrameCount { get; protected set; } //Temporarily set to (int)(Duration.TotalSeconds/FrameOffset) then reset later
 
         /// <summary>
         /// Gets or sets instance of class SNR that stores info about signal energy and dB per frame
         /// </summary>
-        public SNR SnrFullband { get; set; }
+        public SNR SnrData { get; set; }
 
         /// <summary>
         /// Gets or sets decibels per signal frame
         /// </summary>
         public double[] DecibelsPerFrame { get; set; }
-        //public double[] DecibelsPerFrame { get { return this.SnrFullband.Decibels; }
-
-        public SNR SnrSubband { get; private set; }
-
-        /// <summary>
-        /// Gets or sets normalised decibels in extracted freq band
-        /// </summary>
-        public double[] DecibelsInSubband { get; protected set; }
+        // public double[] DecibelsPerFrame { get { return this.SnrData.Decibels; }
 
         public double[] DecibelsNormalised { get; set; }
 
@@ -131,8 +111,6 @@ namespace AudioAnalysisTools
         public BaseSonogram(SonogramConfig config)
         {
             this.Configuration = config;
-            this.subBandMinHz = config.MinFreqBand ?? 0;
-            this.subBandMaxHz = config.MaxFreqBand ?? this.NyquistFrequency;
         }
 
         /// <summary>
@@ -150,7 +128,6 @@ namespace AudioAnalysisTools
         {
             // As of 28 March 2017 drop capability to get subband of spectrogram.
             // can be recovered later if desired.
-            // if sono only intended for image
             //bool doExtractSubband = this.SubBandMinHz > 0 || this.SubBandMaxHz < this.NyquistFrequency;
             //if (config.DoFullBandwidth)
             //{
@@ -172,29 +149,30 @@ namespace AudioAnalysisTools
             this.MaxAmplitude = wav.CalculateMaximumAmplitude();
 
             var recording = new AudioRecording(wav);
-            EnvelopeAndFft fftdata = DSP_Frames.ExtractEnvelopeAndFFTs(
+            var fftdata = DSP_Frames.ExtractEnvelopeAndFFTs(
                 recording,
                 config.WindowSize,
                 config.WindowOverlap,
                 this.Configuration.WindowFunction);
 
             // now recover required data
-            this.Configuration.WindowPower = fftdata.WindowPower;
-            this.Data = fftdata.AmplitudeSpectrogram;
-            this.FrameCount = fftdata.FrameCount;
-            this.DecibelsPerFrame = fftdata.FrameDecibels;
-
             //epsilon is a signal dependent minimum amplitude value to prevent possible subsequent log of zero value.
             this.Configuration.epsilon = fftdata.Epsilon;
+            this.Configuration.WindowPower = fftdata.WindowPower;
+            this.FrameCount = fftdata.FrameCount;
+            this.DecibelsPerFrame = fftdata.FrameDecibels;
+            this.Data = fftdata.AmplitudeSpectrogram;
 
             // ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
+            // currently DoSnr = true by default
             if (config.DoSnr)
             {
                 if (fftdata.FractionOfHighEnergyFrames > SNR.FRACTIONAL_BOUND_FOR_MODE)
                 {
                     Log.WriteIfVerbose("\nWARNING ##############");
                     Log.WriteIfVerbose("\t################### BaseSonogram(): This is a high energy recording. Percent of high energy frames = {0:f0} > {1:f0}%",
-                                              fftdata.FractionOfHighEnergyFrames * 100, SNR.FRACTIONAL_BOUND_FOR_MODE * 100);
+                                              fftdata.FractionOfHighEnergyFrames * 100,
+                                              SNR.FRACTIONAL_BOUND_FOR_MODE * 100);
                     Log.WriteIfVerbose("\t################### Noise reduction algorithm may not work well in this instance!\n");
                 }
 
@@ -205,6 +183,7 @@ namespace AudioAnalysisTools
                 this.SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(this.DecibelsPerFrame, this.FrameStep);
             }
 
+            /* AS OF 30 MARCH 2017, NO LONGER IMPLEMENT SUB-BAND THINGS, because not being used for years.
             // EXTRACT REQUIRED FREQUENCY BAND
             if (doExtractSubband)
             {
@@ -217,6 +196,7 @@ namespace AudioAnalysisTools
                     this.FBinWidth);
                 this.CalculateSubbandSNR(this.Data);
             }
+            */
         }
 
         /// <summary>
@@ -248,11 +228,12 @@ namespace AudioAnalysisTools
             this.DecibelsNormalised = new double[this.FrameCount];
 
             this.Data = amplitudeSpectrogram;
-            this.Make(this.Data);
+            this.Make(this.Data); // Do we need this line???
         }
 
         public abstract void Make(double[,] amplitudeM);
 
+        /* AS OF 30 MARCH 2017, NO LONGER IMPLEMENT SUB-BAND THINGS, because not being used for years.
         public void CalculateSubbandSNR(double[,] subband)
         {
             this.SnrSubband = new SNR(subband); //subband is the amplitude values
@@ -265,183 +246,105 @@ namespace AudioAnalysisTools
             //RECALCULATE ENDPOINTS OF VOCALISATIONS
             SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(this.DecibelsInSubband, this.FrameStep);
         }
+        */
 
         public void SetTimeScale(TimeSpan duration)
         {
             this.Duration = duration;
         }
 
-        public void SetBinarySpectrum(byte[,] binary)
-        {
-            int rows = binary.GetLength(0);
-            int cols = binary.GetLength(1);
-            var m = new double[rows, cols];
-            for (int r = 0; r < rows; r++) 
-            {
-                for (int c = 0; c < cols; c++)
-                {
-                    m[r, c] = (double)binary[r, c];
-                }
-            }
-
-            this.Data = m;
-        }
-
         public Image GetImageFullyAnnotated(string title)
         {
             var image = this.GetImage();
-            image = this.GetImageFullyAnnotated(image, title);
+            if (image == null)
+            {
+                throw new ArgumentNullException(nameof(image));
+            }
+
+            image = this.GetImageAnnotatedWithLinearHerzScale(image, title);
             return image;
         }
 
-        public Image GetColourAmplitudeSpectrogramFullyAnnotated(string title, double[,] dbSpectrogramData, double[,] nrSpectrogramData, byte[,] hits)
+        public Image GetImageFullyAnnotated(Image image, string title, int[,] gridLineLocations)
         {
-            var image = SpectrogramTools.CreateFalseColourAmplitudeSpectrogram(dbSpectrogramData, nrSpectrogramData, hits);
-            image = this.GetImageFullyAnnotated(image, title);
-            return image;
-        }
+            if (image == null)
+            {
+                throw new ArgumentNullException(nameof(image));
+            }
 
-        public Image GetColourDecibelSpectrogramFullyAnnotated(string title, double[,] dbSpectrogramData, double[,] nrSpectrogramData, byte[,] hits)
-        {
-            var image = SpectrogramTools.CreateFalseColourDecibelSpectrogram(dbSpectrogramData, nrSpectrogramData, hits);
-            image = this.GetImageFullyAnnotated(image, title);
-            return image;
-        }
-
-
-        public Image GetImageFullyAnnotated(string title, int[,] gridLineLocations)
-        {
-            Image image = this.GetImage();
             FrequencyScale.DrawFrequencyLinesOnImage((Bitmap) image, gridLineLocations);
-
-            //var minuteOffset = TimeSpan.Zero;
-            //var xAxisTicInterval = TimeSpan.FromSeconds(1.0);
-            //var xInterval = TimeSpan.FromSeconds(10);
-            //TimeSpan xAxisPixelDuration = TimeSpan.FromTicks((long)(this.Duration.Ticks / (double)this.FrameCount));
-            //int HertzInterval = 1000;
-            //if (this.Configuration.WindowSize < 512)
-            //    HertzInterval = 2000;
-            //double secondsDuration = xAxisPixelDuration.TotalSeconds * image.Width;
-            //TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
-            //SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, fullDuration, xAxisTicInterval, this.NyquistFrequency, HertzInterval);
 
             var titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             var timeBmp = Image_Track.DrawTimeTrack(this.Duration, image.Width);
-
             var list = new List<Image> {titleBar, timeBmp, image, timeBmp};
-
             var compositeImage = ImageTools.CombineImagesVertically(list);
             return compositeImage;
         }
 
-        public Image GetImageFullyAnnotated(Image image, string title)
+        public Image GetImageAnnotatedWithLinearHerzScale(Image image, string title)
         {
-            var minuteOffset = TimeSpan.Zero;
-            var xAxisTicInterval = TimeSpan.FromSeconds(1.0);
-            var xInterval = TimeSpan.FromSeconds(10);
-            var xAxisPixelDuration = TimeSpan.FromTicks((long)(this.Duration.Ticks / (double)this.FrameCount));
-
+            // init with linear frequency scale and draw freq grid lines on image
+            // image height will be half frame size.
+            int frameSize = image.Height * 2;
             int hertzInterval = 1000;
-            if (this.Configuration.WindowSize < 512)
+            if (frameSize < 512)
             {
                 hertzInterval = 2000;
             }
 
-            double secondsDuration = xAxisPixelDuration.TotalSeconds * image.Width;
-            var fullDuration = TimeSpan.FromSeconds(secondsDuration);
-
-            // init frequency scale
-            int frameSize = image.Height;
-            var freqScale = new DSP.FrequencyScale(this.NyquistFrequency, frameSize, hertzInterval);
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, fullDuration, xAxisTicInterval, freqScale);
-
-            var titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
-            var timeBmp = Image_Track.DrawTimeTrack(this.Duration, image.Width);
-
-            var list = new List<Image> {titleBar, timeBmp, image, timeBmp};
-
-            var compositeImage = ImageTools.CombineImagesVertically(list);
+            var freqScale = new FrequencyScale(this.NyquistFrequency, frameSize, hertzInterval);
+            var compositeImage = this.GetImageFullyAnnotated(image, title, freqScale.GridLineLocations);
             return compositeImage;
         }
 
         public Image GetImage()
         {
-            return this.GetImage(1, false, false);
+            return this.GetImage(false, false);
         }
 
         public Image GetImage(bool doHighlightSubband, bool add1KHzLines)
         {
-            return this.GetImage(1, doHighlightSubband, add1KHzLines);
-        }
+            // doHighlightSubband function still working but have removed min/max bounds from user control.
+            // doHighlightSubband = true;
+            int subBandMinHz = 1000;
+            int subBandMaxHz = 9000;
 
-        public virtual Image GetImage(int binHeight, bool doHighlightSubband, bool add1KHzLines)
-        {
             int maxFrequency = this.NyquistFrequency;
-            var image = BaseSonogram.GetSonogramImage(this.Data, this.NyquistFrequency, maxFrequency, this.Configuration.DoMelScale, binHeight,
-                                             doHighlightSubband, this.subBandMinHz, this.subBandMaxHz);
-            double freqBinWidth = this.FBinWidth;
+            var image = BaseSonogram.GetSonogramImage(this.Data, this.NyquistFrequency, maxFrequency, this.Configuration.DoMelScale, 1, doHighlightSubband, subBandMinHz, subBandMaxHz);
 
             if (add1KHzLines)
             {
+                const int kHzInterval = 1000;
+
+                //int bandCount = (int)Math.Floor(binCount / kHzBinWidth);
+                int[,] gridLineLocations;
+
+                //get melscale locations
                 bool doMelScale = false;
-                FrequencyScale.Draw1KHzLines((Bitmap) image, doMelScale, maxFrequency, freqBinWidth);
+
+                // WARNING!!!! NEED TO DEBUG/REWORK THIS BUT NOW SELDOM USED
+                if (doMelScale)
+                {
+                    gridLineLocations = FrequencyScale.CreateMelYaxis(kHzInterval, this.NyquistFrequency, image.Height);                    
+                }
+                else
+                {
+                    gridLineLocations = FrequencyScale.GetLinearGridLineLocations(this.NyquistFrequency, kHzInterval, image.Height);
+                }
+
+                FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)image, gridLineLocations);
             }
 
             return image;
         }
 
-        /*
-        public StringBuilder GetSegmentationText()
-        {
-            StringBuilder sb = new StringBuilder("_LABEL_\tST_FR\tST_SEC\tEND_FR\tEND_SEC\n");
-            int prevState = 0;
-            string name = this.Configuration.CallName;
-
-            int length = this.SigState.Length;
-
-            //START
-            if (this.SigState[0] == 0) sb.Append("SILENCE\t0\t0.0000");
-            else
-                if (this.SigState[0] > 0)
-                {
-                    prevState = 1;
-                    sb.Append(name + "\t0\t0.0000");
-                }
-
-            double time = 0.0;
-            for (int i = 0; i < length; i++)
-            {
-                if ((this.SigState[i] > 0) && (prevState == 0))
-                {
-                    prevState = 1;
-                    time = i * this.FrameStep;
-                    sb.AppendLine("\t" + (i - 1) + "\t" + time.ToString("F4"));
-                    sb.Append(name + "\t" + i + "\t" + time.ToString("F4"));
-                }
-                else //come to silence
-                    if ((this.SigState[i] == 0) && (prevState > 0))
-                    {
-                        prevState = 0;
-                        time = i * this.FrameStep;
-                        sb.AppendLine("\t" + (i - 1) + "\t" + time.ToString("F4"));
-                        sb.Append("SILENCE\t" + i + "\t" + time.ToString("F4"));
-                    }
-            }
-
-            time = length * this.FrameStep;
-            sb.Append("\t" + (length - 1) + "\t" + time.ToString("F4"));
-
-            return sb;
-        }
-        */
-
-        /// <summary>
-        /// factor must be an integer. 2 mean image reduced by factor of 2; 3 reduced by factor of 3 etc.
-        /// </summary>
-        public Image GetImage_ReducedSonogram(int factor)
-        {
-            return GetImage_ReducedSonogram(factor, true);
-        }
+        ///// <summary>
+        ///// factor must be an integer. 2 mean image reduced by factor of 2; 3 reduced by factor of 3 etc.
+        ///// </summary>
+        //public Image GetImage_ReducedSonogram(int factor)
+        //{
+        //    return GetImage_ReducedSonogram(factor, true);
+        //}
 
         public Image GetImage_ReducedSonogramWithWidth(int width, bool drawGridLines)
         {
@@ -538,10 +441,8 @@ namespace AudioAnalysisTools
         public void Dispose()
         {
             this.Configuration = null;
-            this.SnrFullband = null;
-            this.SnrSubband = null;
+            this.SnrData = null;
             this.DecibelsPerFrame = null;
-            this.DecibelsInSubband = null;
             this.DecibelsNormalised = null;
             this.Data = null;
             this.SigState = null;
@@ -597,70 +498,6 @@ namespace AudioAnalysisTools
             return Tuple.Create(Mt, min, max);
         }
 
-        /// <summary>
-        /// Returns an image of the data matrix.
-        /// Normalises the values from min->max to 0->1.
-        /// Thus the grey-scale image pixels will range from 0 to 255.
-        /// </summary>
-        public static Image GetSonogramImage(double[,] data)
-        {
-            int width = data.GetLength(0); // Number of spectra in sonogram
-            int binCount = data.GetLength(1);
-            int binHeight = 1;
-
-            int imageHeight = binCount * binHeight; // image ht = sonogram ht
-
-            //set up min, max for normalising of sonogram values
-            int minRank = 50;
-            int maxRank = 1000;
-
-            double[] minmax = BaseSonogram.GetMinMaxForSonogramImage(data, minRank, maxRank);
-            double min = minmax[0];
-            double max = minmax[1];
-
-            double range = max - min;
-
-            //int minHighlightBin = (int)Math.Round((double)this.subBand_MinHz / (double)NyquistFrequency * fftBins);
-            //int maxHighlightBin = (int)Math.Round((double)this.subBand_MaxHz / (double)NyquistFrequency * fftBins);
-            //if (DoMelScale)
-            //{
-            //    double maxMel = MFCCStuff.Mel(this.NyquistFrequency);
-            //    int melRange = (int)(maxMel - 0 + 1);
-            //    double pixelPerMel = imageHeight / (double)melRange;
-            //    double minBandMel = MFCCStuff.Mel(this.subBand_MinHz);
-            //    double maxBandMel = MFCCStuff.Mel(this.subBand_MaxHz);
-            //    minHighlightBin = (int)Math.Round((double)minBandMel * pixelPerMel);
-            //    maxHighlightBin = (int)Math.Round((double)maxBandMel * pixelPerMel);
-            //}
-            Color[] grayScale = ImageTools.GrayScale();
-
-            Bitmap bmp = new Bitmap(width, imageHeight, PixelFormat.Format24bppRgb);
-            int yOffset = imageHeight;
-            for (int y = 0; y < binCount; y++) //over all freq bins
-            {
-                for (int r = 0; r < binHeight; r++) //repeat this bin if pixel rows per bin>1
-                {
-                    for (int x = 0; x < width; x++) //for pixels in the line
-                    {
-                        // normalise and bound the value - use min bound, max and 255 image intensity range
-                        double value = (data[x, y] - min) / (double)range;
-                        int c = 255 - (int)Math.Floor(255.0 * value); //original version
-                        if (c < 0) c = 0;
-                        else
-                        if (c >= 256) c = 255;
-
-                        //int g = c + 40; // green tinge used in the template scan band
-                        //if (g >= 256) g = 255;
-                        bmp.SetPixel(x, yOffset - 1, grayScale[c]);
-                    } //for all pixels in line
-
-                    yOffset--;
-                } //end repeats over one track
-            } //end over all freq bins
-
-            return (Image)bmp;
-        }
-
         public static Image GetSonogramImage(double[,] data, int nyquistFreq, int maxFrequency, bool doMelScale, int binHeight,
                                              bool doHighlightSubband, int subBandMinHz, int subBandMaxHz)
         {
@@ -679,9 +516,6 @@ namespace AudioAnalysisTools
             min = min + (range * fractionalStretching);
             max = max - (range * fractionalStretching);
             range = max - min;
-            //LoggedConsole.WriteLine("range={0}   max={1}   min={2}", range, max, min);
-            //string path2 = @"C:\SensorNetworks\Output\Sonograms\image2.png";
-            //Histogram.DrawDistributionsAndSaveImage(data, path2);
 
             //int? minHighlightFreq = this.subBand_MinHz;
             //int? maxHighlightFreq = this.subBand_MaxHz;
@@ -706,11 +540,15 @@ namespace AudioAnalysisTools
 
             var bmp = new Bitmap(width, imageHeight, PixelFormat.Format24bppRgb);
             int yOffset = imageHeight;
-            for (int y = 0; y < maxBin; y++) //over all freq bins
+
+            // for all freq bins
+            for (int y = 0; y < maxBin; y++)
             {
-                for (int r = 0; r < binHeight; r++) //repeat this bin if ceptral image
+                //repeat this bin if ceptral image
+                for (int r = 0; r < binHeight; r++)
                 {
-                    for (int x = 0; x < width; x++) //for pixels in the line
+                    // for all pixels in line
+                    for (int x = 0; x < width; x++)
                     {
                         // normalise and bound the value - use min bound, max and 255 image intensity range
                         double value = (data[x, y] - min) / (double)range;
@@ -805,20 +643,6 @@ namespace AudioAnalysisTools
             return maxFrame.Max();
         }
         */
-
-        /// <summary>
-        /// calculates the minimum and max bound values for display of sonogram.
-        /// Do not necessarily want to display sonogram normalised between min and max values.
-        /// therefore normalise according the Nth smallest and nth largest values in data matrix.
-        /// </summary>
-        static public double[] GetMinMaxForSonogramImage(double[,] data, int minRank, int maxRank)
-        {
-            double[] array = MatrixTools.Matrix2Array(data);
-            double minValue = DataTools.GetNthSmallestValue(array, minRank);
-            double maxValue = DataTools.GetNthLargestValue(array, maxRank);
-            double[] returnArray = { minValue, maxValue };
-            return returnArray;
-        }
 
         public static double[] GetAvSpectrum_LowestPercentile(double[,] matrix, int lowPercentile)
         {

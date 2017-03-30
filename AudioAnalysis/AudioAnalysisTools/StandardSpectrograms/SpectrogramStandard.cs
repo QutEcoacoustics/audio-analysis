@@ -44,7 +44,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.MaxAmplitude = sg.MaxAmplitude;
             this.SampleRate = sg.SampleRate;
             this.SigState = sg.SigState;
-            this.SnrFullband = sg.SnrFullband;
+            this.SnrData = sg.SnrData;
             this.Data = sg.Data;
             this.Make(this.Data); //converts amplitude matrix to dB spectrogram
         }
@@ -69,13 +69,14 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.DecibelsPerFrame = new double[frameCount];  // Normalised decibels per signal frame
             for (int i = 0; i < frameCount; i++) this.DecibelsPerFrame[i] = sg.DecibelsPerFrame[startFrame + i];
 
-            ////energy and dB per frame sub-band
-            this.subBandMinHz = sg.subBandMinHz; //min freq (Hz) of the required subband
-            this.subBandMaxHz = sg.subBandMaxHz; //max freq (Hz) of the required subband
-
+            /*
+            // Subband functionality no longer available. Discontinued March 2017 because not being used
+            // this.subBandMinHz = sg.subBandMinHz; //min freq (Hz) of the required subband
+            // this.subBandMaxHz = sg.subBandMaxHz; //max freq (Hz) of the required subband
             //sg.SnrSubband { get; private set; }
-            this.DecibelsInSubband = new double[frameCount];  // Normalised decibels in extracted freq band
-            for (int i = 0; i < frameCount; i++) this.DecibelsInSubband[i] = sg.DecibelsInSubband[startFrame + i];
+            //this.DecibelsInSubband = new double[frameCount];  // Normalised decibels in extracted freq band
+            //for (int i = 0; i < frameCount; i++) this.DecibelsInSubband[i] = sg.DecibelsInSubband[startFrame + i];
+            */
 
             this.DecibelReference = sg.DecibelReference; // Used to normalise the dB values for MFCCs
             this.DecibelsNormalised = new double[frameCount];
@@ -113,9 +114,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
             var tuple = SNR.NoiseReduce(m, this.Configuration.NoiseReductionType, this.Configuration.NoiseReductionParameter);
             this.Data = tuple.Item1;   // store data matrix
 
-            if (this.SnrFullband != null)
+            if (this.SnrData != null)
             {
-                this.SnrFullband.ModalNoiseProfile = tuple.Item2; // store the full bandwidth modal noise profile
+                this.SnrData.ModalNoiseProfile = tuple.Item2; // store the full bandwidth modal noise profile
             }
         }
 
