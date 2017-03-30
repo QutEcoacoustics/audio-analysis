@@ -30,7 +30,7 @@
 
             //NOISE REDUCTION
             var output = SNR.NoiseReduce(m, Configuration.NoiseReductionType, this.Configuration.NoiseReductionParameter);
-            this.SnrFullband.ModalNoiseProfile = output.Item2;
+            this.SnrData.ModalNoiseProfile = output.Item2;
             return ImageTools.SobelEdgeDetection(output.Item1);
         }
     }// end SobelEdgeSonogram : BaseSonogram

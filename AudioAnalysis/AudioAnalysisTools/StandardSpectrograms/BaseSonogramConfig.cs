@@ -169,10 +169,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// DoSnr = true;
         /// DoFullBandwidth = false;
         /// </summary>
-        /// <param name="config"></param>
+        /// <param name="config">read from file</param>
         private void Initialize(ConfigDictionary config)
         {
-            this.CallName    = config.GetString(ConfigKeys.Recording.Key_RecordingCallName);
+            if (config == null) throw new ArgumentNullException(nameof(config));
+            this.CallName = config.GetString(ConfigKeys.Recording.Key_RecordingCallName);
             this.SourceFName = config.GetString(ConfigKeys.Recording.Key_RecordingFileName);
             var duration = config.GetDoubleNullable("WAV_DURATION");
             if (duration != null) this.Duration = TimeSpan.FromSeconds(duration.Value);
@@ -203,46 +204,54 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.DeltaT = config.GetInt(ConfigKeys.Mfcc.Key_DeltaT); // Frames between acoustic vectors
 
             // for generating only spectrogram.
-
         }
 
         /// <summary>
         /// DoSnr = true;
         /// DoFullBandwidth = false;
         /// </summary>
-        /// <param name="config"></param>
+        /// <param name="configDict">Dictionary of config values</param>
         private void Initialize(Dictionary<string, string> configDict)
         {
-            this.CallName    = (string)configDict[ConfigKeys.Recording.Key_RecordingCallName];
-            this.SourceFName = (string)configDict[ConfigKeys.Recording.Key_RecordingFileName];
+            this.CallName = configDict[ConfigKeys.Recording.Key_RecordingCallName];
+            this.SourceFName = configDict[ConfigKeys.Recording.Key_RecordingFileName];
+
             // var duration = config.GetDoubleNullable("WAV_DURATION");
             // if (duration != null) Duration = TimeSpan.FromSeconds(duration.Value);
 
             //FRAMING PARAMETERS
             this.WindowSize = 512; // default value
             if (configDict.ContainsKey(AnalysisKeys.FrameLength))
+            {
                 this.WindowSize = ConfigDictionary.GetInt(AnalysisKeys.FrameLength, configDict);
+            }
 
             this.WindowOverlap = 0.0; // default value
             if (configDict.ContainsKey(AnalysisKeys.FrameOverlap))
+            {
                 this.WindowOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FrameOverlap, configDict);
+            }
 
             this.sampleRate = 0;
             if (configDict.ContainsKey(AnalysisKeys.ResampleRate))
+            {
                 this.sampleRate = ConfigDictionary.GetInt("ResampleRate", configDict);
+            }
 
             //NOISE REDUCTION PARAMETERS
+            // NoiseReductionParameter = config.GetDouble(SNR.key_Snr.key_);
             this.DoSnr = true; // set false if only want to
             this.NoiseReductionType = NoiseReductionType.None;
             if (configDict.ContainsKey(AnalysisKeys.NoiseReductionType))
             {
                 string noiseReductionType = configDict[AnalysisKeys.NoiseReductionType];
-                this.NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noiseReductionType.ToUpperInvariant());
+                // this.NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noiseReductionType.ToUpperInvariant());
+                this.NoiseReductionType = (NoiseReductionType) Enum.Parse(typeof(NoiseReductionType), noiseReductionType);
             }
-            // NoiseReductionParameter = config.GetDouble(SNR.key_Snr.key_);
 
             // FREQ BAND PARAMETERS
             this.DoFullBandwidth = true; // set true if only want to
+
             // MinFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MinFreq);
             // MaxFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MaxFreq);
             // MidFreqBand = MinFreqBand + ((MaxFreqBand - MinFreqBand) / 2);

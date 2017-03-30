@@ -37,7 +37,7 @@ namespace AudioAnalysisTools.DSP
                         scale.OctaveCount = 7;
                         octaveDivisions = 31; // tone steps within one octave. Note: piano = 12 steps per octave.
                         scale.LinearBound = 62;
-                        scale.Nyquist     = 11025;
+                        scale.Nyquist = 11025;
                     }
                     break;
                 case FreqScaleType.Linear125Octaves6Tones30Nyquist11025:
@@ -48,7 +48,7 @@ namespace AudioAnalysisTools.DSP
                         scale.OctaveCount = 6;
                         octaveDivisions = 32; // tone steps within one octave. Note: piano = 12 steps per octave.
                         scale.LinearBound = 125;
-                        scale.Nyquist     = 11025;
+                        scale.Nyquist = 11025;
                     }
                     break;
                 case FreqScaleType.Octaves24Nyquist32000:
@@ -77,7 +77,7 @@ namespace AudioAnalysisTools.DSP
                     {
                         LoggedConsole.WriteErrorLine("WARNING: UNKNOWN OCTAVE SCALE.");
                         return;
-                    }                    
+                    }
             }
 
             scale.WindowSize = frameSize; // = 2*8192   or 4*4096
@@ -87,13 +87,11 @@ namespace AudioAnalysisTools.DSP
             scale.GridLineLocations = GetGridLineLocations(fst, scale.OctaveBinBounds);
         }
 
-
-
         public static double[,] ConvertAmplitudeSpectrogramToDecibelOctaveScale(double[,] inputSpgram, FrequencyScale freqScale)
         {
-            var dataMatrix = MatrixTools.Submatrix(inputSpgram, 0, 1, inputSpgram.GetLength(0) - 1, inputSpgram.GetLength(1) - 1);
+            //var dataMatrix = MatrixTools.Submatrix(inputSpgram, 0, 1, inputSpgram.GetLength(0) - 1, inputSpgram.GetLength(1) - 1);
             //square the values to produce power spectrogram
-            dataMatrix = MatrixTools.SquareValues(dataMatrix);
+            var dataMatrix = MatrixTools.SquareValues(inputSpgram);
             //convert spectrogram to octave scale
             dataMatrix = OctaveFreqScale.ConvertLinearSpectrogramToOctaveFreqScale(dataMatrix, freqScale);
             double min, max;
@@ -196,7 +194,7 @@ namespace AudioAnalysisTools.DSP
             // init the spectrogram as a matrix of spectra
             double[,] powerSpectra = new double[frameCount, binCount];
 
-            // first square the values to calculate power.                       
+            // first square the values to calculate power.
             // Must multiply by 2 to accomodate two spectral components, ie positive and neg freq.
             for (int j = 0; j < binCount - 1; j++)
             {
@@ -306,9 +304,6 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Converts a single linear spectrum to octave scale spectrum
         /// </summary>
-        /// <param name="octaveBinBounds"></param>
-        /// <param name="linearSpectrum"></param>
-        /// <returns></returns>
         public static double[] OctaveSpectrum(int[,] octaveBinBounds, double[] linearSpectrum)
         {
             int length = octaveBinBounds.GetLength(0);
@@ -326,6 +321,7 @@ namespace AudioAnalysisTools.DSP
             int centreIndex1 = octaveBinBounds[0, 0];
             int highIndex1 = octaveBinBounds[1, 0];
             octaveSpectrum[0] = FilterbankIntegral(linearSpectrum, lowIndex1, centreIndex1, highIndex1);
+
             // now fill in the last value of the octave spectrum
             int lowIndex2 = octaveBinBounds[length - 2, 0];
             int centreIndex2 = octaveBinBounds[length - 1, 0];
@@ -337,15 +333,8 @@ namespace AudioAnalysisTools.DSP
 
 
         /// <summary>
-        /// Returns the index bounds for a split herz scale - bottom part linear, top part octave scaled. 
+        /// Returns the index bounds for a split herz scale - bottom part linear, top part octave scaled.
         /// </summary>
-        /// <param name="sr"></param>
-        /// <param name="frameSize"></param>
-        /// <param name="finalBinCount"></param>
-        /// <param name="lowerFreqBound"></param>
-        /// <param name="upperFreqBound"></param>
-        /// <param name="octaveDivisions"></param>
-        /// <returns></returns>
         public static int[,] LinearToSplitLinearOctaveScale(int sr, int frameSize, int finalBinCount, int lowerFreqBound, int upperFreqBound, int octaveDivisions)
         {
 
@@ -358,8 +347,8 @@ namespace AudioAnalysisTools.DSP
 
             double freqStep = nyquist / (double)binCount;
 
-
             int topLinearIndex = (int)Math.Round(lowerFreqBound/freqStep) + 1;
+
             // fill in the linear part of the freq scale
             for (int i = 0; i < topLinearIndex; i++)
             {
@@ -367,11 +356,8 @@ namespace AudioAnalysisTools.DSP
                 splitLinearOctaveIndexBounds[i, 1] = (int)Math.Round(linearFreqScale[i]);
             }
 
-
-
             for (int i = topLinearIndex; i < finalBinCount; i++)
             {
-
                 for (int j = 0; j < linearFreqScale.Length; j++)
                 {
                     if (linearFreqScale[j] > bandBounds[i - topLinearIndex])
@@ -384,8 +370,15 @@ namespace AudioAnalysisTools.DSP
             }
 
             // make sure last index has values
-            splitLinearOctaveIndexBounds[finalBinCount-1, 0] = linearFreqScale.Length - 1;
-            splitLinearOctaveIndexBounds[finalBinCount-1, 1] = (int)Math.Round(linearFreqScale[linearFreqScale.Length - 1]);
+            splitLinearOctaveIndexBounds[finalBinCount - 1, 0] = linearFreqScale.Length - 1;
+            splitLinearOctaveIndexBounds[finalBinCount - 1, 1] = (int)Math.Round(linearFreqScale[linearFreqScale.Length - 1]);
+
+            // A HACK!!! Make sure second last index has values if they are zero
+            if (splitLinearOctaveIndexBounds[finalBinCount - 2, 0] == 0)
+            {
+                splitLinearOctaveIndexBounds[finalBinCount - 2, 0] = linearFreqScale.Length - 1;
+                splitLinearOctaveIndexBounds[finalBinCount - 2, 1] = (int) Math.Round(linearFreqScale[linearFreqScale.Length - 1]);
+            }
 
             return splitLinearOctaveIndexBounds;
         }
@@ -393,13 +386,6 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Returns the index bounds for a full octave scale - from lowest freq set by user to top freq. 
         /// </summary>
-        /// <param name="sr"></param>
-        /// <param name="frameSize"></param>
-        /// <param name="finalBinCount"></param>
-        /// <param name="lowerFreqBound"></param>
-        /// <param name="upperFreqBound"></param>
-        /// <param name="octaveDivisions"></param>
-        /// <returns></returns>
         public static int[,] LinearToFullOctaveScale(int sr, int frameSize, int finalBinCount, int lowerFreqBound, int upperFreqBound, int octaveDivisions)
         {
 

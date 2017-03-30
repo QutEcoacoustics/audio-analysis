@@ -22,7 +22,7 @@ namespace AudioAnalysisTools
             : base(config, amplitudeData)
         {
             var frames = new double[4, 4];
-            this.SnrFullband = new SNR(frames) { Decibels = new double[amplitudeData.GetLength(0)] };
+            this.SnrData = new SNR(frames) { Decibels = new double[amplitudeData.GetLength(0)] };
         }
 
         /// <summary>

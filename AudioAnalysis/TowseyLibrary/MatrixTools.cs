@@ -259,12 +259,12 @@ namespace TowseyLibrary
         /// Assume that RowTop GT RowBottom, ColumnLeft LT ColumnRight.
         /// Row, column indices start at 0
         /// </summary>
-        /// <param name="m"></param>
+        /// <param name="m">matrix</param>
         /// <param name="r1"></param>
         /// <param name="c1"></param>
         /// <param name="r2"></param>
         /// <param name="c2"></param>
-        /// <returns></returns>
+        /// <returns>matrix to be returned</returns>
         public static T[,] Submatrix<T>(T[,] m, int r1, int c1, int r2, int c2)
         {
             int subRowCount = r2 - r1 + 1;
@@ -279,6 +279,7 @@ namespace TowseyLibrary
                     sm[i, j] = m[r1 + i, c1 + j];
                 }
             }
+
             return sm;
         }
 

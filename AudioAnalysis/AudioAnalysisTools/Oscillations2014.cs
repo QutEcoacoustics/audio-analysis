@@ -15,6 +15,7 @@
     using MathNet.Numerics.LinearAlgebra.Double;
     using MathNet.Numerics.LinearAlgebra.Generic;
     using MathNet.Numerics.LinearAlgebra.Generic.Factorization;
+    using MathNet.Numerics.NumberTheory;
     using TowseyLibrary;
 
     /// <summary>
@@ -70,8 +71,7 @@
         /// <param name="saveData"></param>
         /// <param name="saveImage"></param>
         /// <returns></returns>
-        public static double[] GenerateOscillationDataAndImages(FileInfo audioSegment, Dictionary<string, string> configDict,
-                                                                                bool saveData = false, bool saveImage = false)
+        public static double[] GenerateOscillationDataAndImages(FileInfo audioSegment, Dictionary<string, string> configDict, bool saveData = false, bool saveImage = false)
         {
             // set two oscillation detection parameters
             double sensitivity = Oscillations2014.DefaultSensitivityThreshold;
@@ -94,8 +94,13 @@
 
             AudioRecording recordingSegment = new AudioRecording(audioSegment.FullName);
             BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
-            // remove the DC bin
-            sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, sonogram.Configuration.FreqBinCount);
+            // remove the DC bin if it has not already been removed.
+            // Assume test of divisible by 2 is good enough.
+            int binCount = sonogram.Data.GetLength(1);
+            if (!binCount.IsEven())
+            {
+                sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, binCount - 1);
+            }
 
             //LoggedConsole.WriteLine("Oscillation Detection: Sample rate     = {0}", sonogram.SampleRate);
             //LoggedConsole.WriteLine("Oscillation Detection: FramesPerSecond = {0}", sonogram.FramesPerSecond);
@@ -199,10 +204,14 @@
             freqOscilMatrix = MatrixTools.MatrixRotate90Anticlockwise(freqOscilMatrix);
             int xscale = 16;
             int yscale = 16;
-            Image image = ImageTools.DrawMatrixInColour(freqOscilMatrix, xscale, yscale);
-            // a tic every 5cpsec and every 1000 Hz.
+            var image = ImageTools.DrawMatrixInColour(freqOscilMatrix, xscale, yscale);
+
+            // a tic every 5cpsec.
             double xTicInterval = (5.0 / oscillationBinWidth) * xscale;
-            double yTicInterval = (1000 / sonogram.FBinWidth) * yscale;
+
+            // a tic every 1000 Hz.
+            int herzInterval = 1000;
+            double yTicInterval = (herzInterval / sonogram.FBinWidth) * yscale;
             int xOffset = xscale / 2;
             int yOffset = yscale / 2;
             image = ImageTools.DrawXandYaxes(image, 30, xTicInterval, xOffset, yTicInterval, yOffset);
@@ -210,23 +219,11 @@
             return image;
         }
 
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="M"></param>
-        /// <param name="framesPerSecond"></param>
-        /// <param name="sampleLength"></param>
-        /// <returns></returns>
-
         public static double[,] GetFrequencyByOscillationsMatrix(double[,] M, double sensitivity, int sampleLength, string algorithmName)
         {
             int frameCount = M.GetLength(0);
             int freqBinCount = M.GetLength(1);
-            double[] freqBin;
-            double[,] freqByOscMatrix = new double[(sampleLength / 2), freqBinCount];
-            //int xcorCount = 0;
+            double[,] freqByOscMatrix = new double[ sampleLength / 2, freqBinCount];
 
             // over all frequency bins
             for (int bin = 0; bin < freqBinCount; bin++)
@@ -247,8 +244,8 @@
                     {
                         subM = MatrixTools.Submatrix(M, 0, bin - 1, frameCount - 1, bin + 1);
                     }
-                freqBin = MatrixTools.GetRowAverages(subM);
 
+                var freqBin = MatrixTools.GetRowAverages(subM);
 
                 // vector to store the oscilations vector derived from one frequency bin.
                 double[] oscillationsSpectrum = null;
@@ -259,6 +256,7 @@
                     //xcorCount += xCorrByTimeMatrix.GetLength(1);
                     oscillationsSpectrum = GetOscillationArrayUsingSvdAndFft(xCorrByTimeMatrix, sensitivity, bin);
                 }
+
                 // set true to use the Autocorrelation - FFT option.
                 if (algorithmName.Equals("Autocorr-FFT"))
                 {
@@ -276,13 +274,12 @@
                     //double[] dynamicRanges = GetVectorOfDynamicRanges(freqBin, sampleLength);
                 }
 
-
                 // transfer final oscillation vector to the Oscillations by frequency matrix.
                 MatrixTools.SetColumn(freqByOscMatrix, bin, oscillationsSpectrum);
             } // over all frequency bins
+
             return freqByOscMatrix;
         }
-
 
         /// <summary>
         /// Returns a matrix whose columns consist of autocorrelations of freq bin samples.
