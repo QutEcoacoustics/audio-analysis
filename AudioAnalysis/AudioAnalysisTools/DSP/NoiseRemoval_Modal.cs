@@ -142,11 +142,9 @@
             return noiseMode;
         }
 
-
         private static Image DrawSonogram(double[,] data, TimeSpan recordingDuration, TimeSpan xInterval, TimeSpan xAxisPixelDuration, int nyquist, int herzInterval, string title)
         {
-            //double framesPerSecond = 1000 / xAxisPixelDuration.TotalMilliseconds;
-            Image image = BaseSonogram.GetSonogramImage(data);
+            Image image = ImageTools.GetMatrixImage(data);
 
             Image titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             TimeSpan minuteOffset = TimeSpan.Zero;
@@ -154,7 +152,5 @@
             image = BaseSonogram.FrameSonogram(image, titleBar, minuteOffset, xInterval, xAxisPixelDuration, labelInterval, nyquist, herzInterval);
             return image;
         }
-
-
     }
 }
