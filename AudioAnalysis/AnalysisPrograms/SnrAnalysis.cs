@@ -216,10 +216,10 @@
 
             sb.AppendLine("\ndB NOISE SUBTRACTION");
             double noiseRange = 2.0;
-            //sb.AppendLine("Noise (estimate of mode) =" + sonogram.SnrFullband.NoiseSubtracted.ToString("F3") + " dB   (See Note 5)");
-            //double noiseSpan = sonogram.SnrFullband.NoiseRange;
+            //sb.AppendLine("Noise (estimate of mode) =" + sonogram.SnrData.NoiseSubtracted.ToString("F3") + " dB   (See Note 5)");
+            //double noiseSpan = sonogram.SnrData.NoiseRange;
             //sb.AppendLine("Noise range              =" + noiseSpan.ToString("F2") + " to +" + (noiseSpan * -1).ToString("F2") + " dB   (See Note 6)");
-            //sb.AppendLine("SNR (max frame-noise)    =" + sonogram.SnrFullband.Snr.ToString("F2") + " dB   (See Note 7)");
+            //sb.AppendLine("SNR (max frame-noise)    =" + sonogram.SnrData.Snr.ToString("F2") + " dB   (See Note 7)");
 
 
             //sb.Append("\nSEGMENTATION PARAMETERS");
@@ -301,29 +301,28 @@
             Log.WriteLine("# Finished recording:- " + arguments.Source.Name);
         }
 
-
         private static Image DrawSonogram(
             double[,] data,
             TimeSpan recordingDuration,
-            TimeSpan X_interval,
+            TimeSpan xInterval,
             TimeSpan xAxisPixelDuration,
-            int nyquist, int hzInterval)
+            int nyquist,
+            int hzInterval)
         {
-            //double framesPerSecond = 1000 / xAxisPixelDuration.TotalMilliseconds;
-            Image image = BaseSonogram.GetSonogramImage(data);
-
-            string title = String.Format("TITLE");
-            Image titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
-            TimeSpan minuteOffset = TimeSpan.Zero;
-            TimeSpan labelInterval = TimeSpan.FromSeconds(5);
+            Image image = ImageTools.GetMatrixImage(data);
+            string title = string.Format("TITLE");
+            var titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+            var minuteOffset = TimeSpan.Zero;
+            var labelInterval = TimeSpan.FromSeconds(5);
             image = BaseSonogram.FrameSonogram(
                 image,
                 titleBar,
                 minuteOffset,
-                X_interval,
+                xInterval,
                 xAxisPixelDuration,
                 labelInterval,
-                nyquist, hzInterval);
+                nyquist,
+                hzInterval);
 
             return image;
 

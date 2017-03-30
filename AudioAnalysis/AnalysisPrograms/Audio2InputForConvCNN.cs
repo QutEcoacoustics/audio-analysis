@@ -381,7 +381,7 @@ namespace AnalysisPrograms
                 // reset the frame size
                 configDict["FrameLength"] = "512";
 
-                //AudioToSonogramResult result = GenerateSpectrogramImages(file, configDict, outputDirInfo);
+                //AudioToSonogramResult result = GenerateFourSpectrogramImages(file, configDict, outputDirInfo);
                 GenerateSpectrogramImages(file, configDict, outputDirInfo);
                 fileCount++;
             } // end foreach()
@@ -648,7 +648,7 @@ namespace AnalysisPrograms
 
 
         /// <summary>
-        /// In line class used to return results from the static method Audio2InputForConvCNN.GenerateSpectrogramImages();
+        /// In line class used to return results from the static method Audio2InputForConvCNN.GenerateFourSpectrogramImages();
         /// </summary>
         public class AudioToSonogramResult
         {
@@ -767,7 +767,8 @@ namespace AnalysisPrograms
             double[,] matrix = ImageTools.WienerFilter(sonogram.Data, 3);
             byte[,] hits = RidgeDetection.Sobel5X5RidgeDetectionExperiment(matrix, ridgeThreshold);
             hits = RidgeDetection.JoinDisconnectedRidgesInMatrix(hits, matrix, ridgeThreshold);
-            image = sonogram.GetColourAmplitudeSpectrogramFullyAnnotated("AMPLITUDE SPECTROGRAM + LCN + ridge detection", spectrogramDataBeforeNoiseReduction, null, hits);
+            image = SpectrogramTools.CreateFalseColourAmplitudeSpectrogram(spectrogramDataBeforeNoiseReduction, null, hits);
+            image = sonogram.GetImageAnnotatedWithLinearHerzScale(image, "AMPLITUDE SPECTROGRAM + LCN + ridge detection");
             list.Add(image);
 
 
@@ -819,7 +820,8 @@ namespace AnalysisPrograms
             matrix = ImageTools.WienerFilter(dbSpectrogramData, 3);
             hits = RidgeDetection.Sobel5X5RidgeDetectionExperiment(matrix, ridgeThreshold);
 
-            image = sonogram.GetColourDecibelSpectrogramFullyAnnotated("DECIBEL SPECTROGRAM - Colour annotated", dbSpectrogramData, nrSpectrogramData, hits);
+            image = SpectrogramTools.CreateFalseColourDecibelSpectrogram(dbSpectrogramData, nrSpectrogramData, hits);
+            image = sonogram.GetImageAnnotatedWithLinearHerzScale(image, "DECIBEL SPECTROGRAM - Colour annotated");
             list.Add(image);
 
             // 6) COMBINE THE SPECTROGRAM IMAGES
@@ -892,7 +894,7 @@ namespace AnalysisPrograms
             var configurationDictionary = new Dictionary<string, string>((Dictionary<string, string>)configuration);
             configurationDictionary[ConfigKeys.Recording.Key_RecordingCallName] = audioFile.FullName;
             configurationDictionary[ConfigKeys.Recording.Key_RecordingFileName] = audioFile.Name;
-            var spectrogramResult = Audio2Sonogram.GenerateSpectrogramImages(
+            var spectrogramResult = Audio2Sonogram.GenerateFourSpectrogramImages(
                 audioFile,
                 configurationDictionary,
                 analysisSettings.AnalysisInstanceOutputDirectory,

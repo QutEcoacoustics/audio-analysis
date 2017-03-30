@@ -14,8 +14,7 @@ namespace AudioAnalysisTools.DSP
 
     // IMPORTANT NOTE: If you are converting Herz to Mel scale, this conversion must be done BEFORE noise reduction
 
-    public enum NoiseReductionType { None, Standard, Modal, Binary, FixedDynamicRange, Mean, Median, LowestPercentile,
-                                     BriggsPercentile, ShortRecording, FlattenAndTrim }
+    public enum NoiseReductionType { None, Standard, Modal, Binary, FixedDynamicRange, Mean, Median, LowestPercentile, BriggsPercentile, ShortRecording, FlattenAndTrim }
 
     public class SNR
     {
