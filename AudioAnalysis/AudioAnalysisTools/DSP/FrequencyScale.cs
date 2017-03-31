@@ -1,20 +1,21 @@
-﻿using System;
-using System.ComponentModel;
-using System.Drawing;
-using AudioAnalysisTools.LongDurationSpectrograms;
-using MathNet.Numerics.Distributions;
+﻿// <copyright file="FrequencyScale.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
 
 namespace AudioAnalysisTools.DSP
 {
-    using AudioAnalysisTools.StandardSpectrograms;
+    using System;
+    using System.Drawing;
     using System.Drawing.Imaging;
+    using StandardSpectrograms;
     using WavTools;
 
-    /// IMPORTANT NOTE: If you are converting Herz scale from LINEAR to OCTAVE, this conversion MUST be done BEFORE noise reduction
-    /*
-    All the below octave scale options are designed for a final freq scale having 256 bins.
-    Scale name indicates its structure.  You cannot vary the structure.
-    */
+    // IMPORTANT NOTE: If you are converting Herz scale from LINEAR to OCTAVE, this conversion MUST be done BEFORE noise reduction
+
+    /// <summary>
+    /// All the below octave scale options are designed for a final freq scale having 256 bins.
+    /// Scale name indicates its structure.You cannot vary the structure.
+    /// </summary>
     public enum FreqScaleType
     {
         Linear,
@@ -24,8 +25,6 @@ namespace AudioAnalysisTools.DSP
         Octaves24Nyquist32000,
         Linear125Octaves7Tones28Nyquist32000
     }
-
-
 
     public class FrequencyScale
     {
@@ -91,9 +90,6 @@ namespace AudioAnalysisTools.DSP
         /// CONSTRUCTOR
         /// Calling this constructor assumes a full-scale linear freq scale is required
         /// </summary>
-        /// <param name="nyquist"></param>
-        /// <param name="frameSize"></param>
-        /// <param name="herzInterval"></param>
         public FrequencyScale(int nyquist, int frameSize, int herzInterval)
         {
             this.ScaleType = FreqScaleType.Linear;
@@ -142,13 +138,9 @@ namespace AudioAnalysisTools.DSP
             }
         }
 
-
         /// <summary>
         /// T.
         /// </summary>
-        /// <param name="nyquist"></param>
-        /// <param name="herzInterval"></param>
-        /// <param name="binCount"></param>
         public static int[,] GetLinearGridLineLocations(int nyquist, int herzInterval, int binCount)
         {
             // Draw in horizontal grid lines
@@ -181,18 +173,23 @@ namespace AudioAnalysisTools.DSP
 
             for (int f = minFreq + 1; f < maxFreq; f++)
             {
-                if (f % 1000 == 0)  //convert freq value to pixel id
+                // convert freq value to pixel id
+                if (f % 1000 == 0)
                 {
                     int hzOffset = f - minFreq;
                     int pixelId = (int)(hzOffset * pixelPerHz) + 1;
-                    if (pixelId >= imageHt) pixelId = imageHt - 1;
-                    //LoggedConsole.WriteLine("f=" + f + " hzOffset=" + hzOffset + " pixelID=" + pixelID);
+                    if (pixelId >= imageHt)
+                    {
+                        pixelId = imageHt - 1;
+                    }
+
+                    // LoggedConsole.WriteLine("f=" + f + " hzOffset=" + hzOffset + " pixelID=" + pixelID);
                     vScale[pixelId] = 1;
                 }
             }
+
             return vScale;
         }
-
 
         /// <summary>
         /// THIS METHOD NEEDS TO BE DEBUGGED.  HAS NOT BEEN USED IN YEARS!
@@ -210,24 +207,30 @@ namespace AudioAnalysisTools.DSP
 
             // assume mel scale grid lines will only go up to 10 kHz.
             var vScale = new int[10, 2];
+
             //LoggedConsole.WriteLine("minMel=" + minMel.ToString("F1") + " melRange=" + melRange + " herzInterval=" + herzInterval + " imageHt=" + imageHt + " pixelPerMel=" + pixelPerMel);
 
             for (int f = minFreq + 1; f < maxFreq; f++)
             {
-                if (f % 1000 == 0)  //convert freq value to pixel id
+                // convert freq value to pixel id
+                if (f % 1000 == 0)
                 {
                     //int hzOffset  = f - this.minFreq;
                     int melOffset = (int)(MFCCStuff.Mel(f) - minMel);
                     int pixelId = (int)(melOffset * pixelPerMel) + 1;
-                    if (pixelId >= imageHt) pixelId = imageHt - 1;
+                    if (pixelId >= imageHt)
+                    {
+                        pixelId = imageHt - 1;
+                    }
+
                     //LoggedConsole.WriteLine("f=" + f + " melOffset=" + melOffset + " pixelID=" + pixelID);
                     vScale[0, 0] = pixelId;
                     vScale[0, 1] = f;
                 }
             }
+
             return vScale;
         }
-
 
         public static void DrawFrequencyLinesOnImage(Bitmap bmp, int[,] gridLineLocations)
         {
@@ -244,9 +247,10 @@ namespace AudioAnalysisTools.DSP
             int height = bmp.Height;
             int bandCount = gridLineLocations.GetLength(0);
 
-            Graphics g = Graphics.FromImage(bmp);
+            var g = Graphics.FromImage(bmp);
 
-            for (int b = 0; b < bandCount; b++) //over each band
+            // for each band
+            for (int b = 0; b < bandCount; b++)
             {
                 int y = height - gridLineLocations[b, 0];
                 if (y < 0)
@@ -263,9 +267,9 @@ namespace AudioAnalysisTools.DSP
                     x += 2;
                 }
 
-                g.DrawString((gridLineLocations[b, 1] + ""), new Font("Thachoma", 8), txtColour, 1, y);
+                g.DrawString(gridLineLocations[b, 1] + $"", new Font("Thachoma", 8), txtColour, 1, y);
             }
-        }//end AddHzGridLines()
+        } //end AddHzGridLines()
 
         public static void DrawFrequencyLinesOnImage(Bitmap bmp, FrequencyScale freqScale)
         {
@@ -282,7 +286,7 @@ namespace AudioAnalysisTools.DSP
         public static void TESTMETHOD_LinearFrequencyScaleDefault()
         {
             var recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
-            var outputPath = @"C:\SensorNetworks\Output\LewinsRail\linearScaleSonogram_default.png";
+            var outputPath = @"C:\SensorNetworks\TestResults\FrequencyScale\linearScaleSonogram_default.png";
             var recording = new AudioRecording(recordingPath);
 
             // default linear scale
@@ -317,7 +321,7 @@ namespace AudioAnalysisTools.DSP
         public static void TESTMETHOD_LinearFrequencyScale()
         {
             var recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
-            var outputPath = @"C:\SensorNetworks\Output\LewinsRail\linearScaleSonogram.png";
+            var outputPath = @"C:\SensorNetworks\TestResults\FrequencyScale\linearScaleSonogram.png";
             var recording = new AudioRecording(recordingPath);
 
             // specfied linear scale
@@ -355,7 +359,7 @@ namespace AudioAnalysisTools.DSP
         public static void TESTMETHOD_OctaveFrequencyScale1()
         {
             var recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
-            var outputPath = @"C:\SensorNetworks\Output\LewinsRail\octaveFrequencyScale1.png";
+            var outputPath = @"C:\SensorNetworks\TestResults\FrequencyScale\octaveFrequencyScale1.png";
             var recording = new AudioRecording(recordingPath);
 
             // default octave scale
@@ -395,7 +399,7 @@ namespace AudioAnalysisTools.DSP
         public static void TESTMETHOD_OctaveFrequencyScale2()
         {
             var recordingPath = @"C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit.wav";
-            var outputPath = @"C:\SensorNetworks\Output\OctaveFreqScale\JascoMarineGBR1.png";
+            var outputPath = @"C:\SensorNetworks\TestResults\FrequencyScale\JascoMarineGBR1.png";
             var recording = new AudioRecording(recordingPath);
             var fst = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
             var freqScale = new FrequencyScale(fst);
