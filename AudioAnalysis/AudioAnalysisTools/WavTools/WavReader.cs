@@ -4,6 +4,8 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
 
     [Obsolete]
     public sealed class TowseyWavReader
@@ -27,6 +29,7 @@
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="TowseyWavReader"/> class.
         /// CONSTRUCTOR 1
         /// signal passed as file name
         /// </summary>
@@ -34,22 +37,24 @@
         {
             FileInfo fi = new FileInfo(wavPath);
             this.WavFileDir = fi.DirectoryName;
-			this.WavFileName = fi.Name.Substring(0, fi.Name.Length - 4);
-            ParseData(File.ReadAllBytes(wavPath));
-            CalculateMaxValue();
+            this.WavFileName = fi.Name.Substring(0, fi.Name.Length - 4);
+            this.ParseData(File.ReadAllBytes(wavPath));
+            this.CalculateMaxValue();
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="TowseyWavReader"/> class.
         /// CONSTRUCTOR 2
         /// signal passed as an array of bytes
         /// </summary>
         public TowseyWavReader(byte[] wavData)
         {
-            ParseData(wavData);
-			CalculateMaxValue();
+            this.ParseData(wavData);
+            this.CalculateMaxValue();
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="TowseyWavReader"/> class.
         /// CONSTRUCTOR 3
         /// signal passed as an array of bytes
         /// </summary>
@@ -57,15 +62,17 @@
         {
             WavFileName = wavFName;
             ParseData(wavBytes);
-			CalculateMaxValue();
+            CalculateMaxValue();
         }
+
         /// <summary>
+        /// Initializes a new instance of the <see cref="TowseyWavReader"/> class.
         /// CONSTRUCTOR 4
         /// signal passed as an array of doubles
         /// </summary>
         /// <param name="rawData"></param>
         /// <param name="sampleRate"></param>
-		public TowseyWavReader(double[] rawData, int sampleRate, string sigName)
+        public TowseyWavReader(double[] rawData, int sampleRate, string sigName)
         {
             Samples = rawData;
             SampleRate = sampleRate;

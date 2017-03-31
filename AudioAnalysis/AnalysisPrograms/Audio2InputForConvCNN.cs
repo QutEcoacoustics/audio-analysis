@@ -894,10 +894,12 @@ namespace AnalysisPrograms
             var configurationDictionary = new Dictionary<string, string>((Dictionary<string, string>)configuration);
             configurationDictionary[ConfigKeys.Recording.Key_RecordingCallName] = audioFile.FullName;
             configurationDictionary[ConfigKeys.Recording.Key_RecordingFileName] = audioFile.Name;
+            var soxImage = new FileInfo(Path.Combine(analysisSettings.AnalysisInstanceOutputDirectory.FullName, audioFile.Name + ".SOX.png"));
+
             var spectrogramResult = Audio2Sonogram.GenerateFourSpectrogramImages(
                 audioFile,
+                soxImage,
                 configurationDictionary,
-                analysisSettings.AnalysisInstanceOutputDirectory,
                 dataOnly: analysisSettings.ImageFile == null,
                 makeSoxSonogram: false);
 

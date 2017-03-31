@@ -20,8 +20,7 @@ namespace AnalysisPrograms
 
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
-    using Acoustics.Tools;
-    using Acoustics.Tools.Audio;
+    using Acoustics.Tools.Wav;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
     using AnalysisPrograms.Production;
@@ -125,7 +124,7 @@ namespace AnalysisPrograms
                 endOffset = TimeSpan.FromMinutes(arguments.EndOffset.Value);
             }
 
-            const string title = "# MAKE A SONOGRAM FROM AUDIO RECORDING";
+            const string title = "# MAKE FOUR SONOGRAMS FROM AUDIO RECORDING";
             string date = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine(title);
             LoggedConsole.WriteLine(date);
@@ -137,63 +136,62 @@ namespace AnalysisPrograms
             DirectoryInfo output = arguments.Output;
 
             // 2. get the config dictionary
+            var configDict = GetConfigDictionary(configFile, false);
+            configDict[ConfigKeys.Recording.Key_RecordingCallName] = arguments.Source.FullName;
+            configDict[ConfigKeys.Recording.Key_RecordingFileName] = arguments.Source.Name;
+
+            // 3: GET TEMPORARY RECORDING
+            int resampleRate = Convert.ToInt32(configDict[AnalysisKeys.ResampleRate]);
+            var tempAudioSegment = WavReader.CreateTemporaryAudioFile(sourceRecording, output, resampleRate);
+
+            // 4: GET 4 sonogram images
+            string sourceName = configDict[ConfigKeys.Recording.Key_RecordingFileName];
+            sourceName = Path.GetFileNameWithoutExtension(sourceName);
+            var soxFile = new FileInfo(Path.Combine(output.FullName, sourceName + "SOX.png"));
+            var result = GenerateFourSpectrogramImages(tempAudioSegment, soxFile, configDict, dataOnly: false, makeSoxSonogram: false);
+            var outputImageFile = new FileInfo(Path.Combine(output.FullName, sourceName + ".FourSpectrograms.png"));
+            result.CompositeImage.Save(outputImageFile.FullName, ImageFormat.Png);
+
+            LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
+        }
+
+        private static Dictionary<string, string> GetConfigDictionary(FileInfo configFile, bool writeParameters)
+        {
             dynamic configuration = Yaml.Deserialise(configFile);
 
-            // below three lines are examples of retrieving info from dynamic config
-            // string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
-            // bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
-            // scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
+            // var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
+            var configDict = new Dictionary<string, string>(dictionary: (Dictionary<string, string>)configuration)
+            {
+                // below three lines are examples of retrieving info from dynamic config
+                // string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
+                // bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
+                // scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
 
-            // Resample rate must be 2 X the desired Nyquist.
-            // WARNING: Default used to be the SR of the recording. NOW DEFAULT = 22050.
-            var resampleRate = (int?)configuration[AnalysisKeys.ResampleRate] ?? AppConfigHelper.DefaultTargetSampleRate;
+                // Resample rate must be 2 X the desired Nyquist.
+                // WARNING: Default used to be the SR of the recording. NOW DEFAULT = 22050.
+                [AnalysisKeys.ResampleRate] = (string)configuration[AnalysisKeys.ResampleRate] ?? "22050",
 
-            var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
-
-            configDict[AnalysisKeys.AddAxes] = ((bool?)configuration[AnalysisKeys.AddAxes] ?? true).ToString();
-            configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true;
+                [AnalysisKeys.AddAxes] = ((bool?)configuration[AnalysisKeys.AddAxes] ?? true).ToString(),
+                [AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true
+            };
 
             // # REDUCTION FACTORS for freq and time dimensions
             // #TimeReductionFactor: 1
             // #FreqReductionFactor: 1
 
             bool makeSoxSonogram = (bool?)configuration[AnalysisKeys.MakeSoxSonogram] ?? false;
-            configDict[AnalysisKeys.SonogramTitle]   = (string)configuration[AnalysisKeys.SonogramTitle] ?? "Sonogram";
+            configDict[AnalysisKeys.SonogramTitle] = (string)configuration[AnalysisKeys.SonogramTitle] ?? "Sonogram";
             configDict[AnalysisKeys.SonogramComment] = (string)configuration[AnalysisKeys.SonogramComment] ?? "Sonogram produced using SOX";
             configDict[AnalysisKeys.SonogramColored] = (string)configuration[AnalysisKeys.SonogramColored] ?? "false";
             configDict[AnalysisKeys.SonogramQuantisation] = (string)configuration[AnalysisKeys.SonogramQuantisation] ?? "128";
-
-            configDict[ConfigKeys.Recording.Key_RecordingCallName] = arguments.Source.FullName;
-            configDict[ConfigKeys.Recording.Key_RecordingFileName] = arguments.Source.Name;
-
             configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
-            configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes]           ?? "true";
+            configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes] ?? "true";
             configDict[AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
 
-            // ####################################################################
-            // SET THE 2 PARAMETERS HERE FOR DETECTION OF OSCILLATION
-            // often need different frame size doing Oscil Detection
-            const int oscilDetection2014FrameSize = 256;
-            configDict[AnalysisKeys.OscilDetection2014FrameSize] = oscilDetection2014FrameSize.ToString();
-
-            // window width when sampling along freq bins
-            // 64 is better where many birds and fast chaning activity
-            ////int sampleLength = 64;
-
-            // 128 is better where slow moving changes to acoustic activity
-            const int sampleLength = 128;
-            configDict[AnalysisKeys.OscilDetection2014SampleLength] = sampleLength.ToString();
-
-            // use this if want only dominant oscillations
-            ////string algorithmName = "Autocorr-SVD-FFT";
-            // use this if want more detailed output - but not necessrily accurate!
-            //string algorithmName = "Autocorr-FFT";
-            // tried but not working
-            ////string algorithmName = "CwtWavelets";
-
-            const double sensitivityThreshold = 0.4;
-            configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold] = sensitivityThreshold.ToString();
-            /* #################################################################### */
+            if (!writeParameters)
+            {
+                return configDict;
+            }
 
             // print out the sonogram parameters
             LoggedConsole.WriteLine("\nPARAMETERS");
@@ -202,41 +200,16 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
             }
 
-            // 3: GET RECORDING
-            // put temp FileSegment in same directory as the required output image.
-            FileInfo tempAudioSegment = new FileInfo(Path.Combine(output.FullName, "tempWavFile.wav"));
-
-            // delete the temp audio file if it already exists.
-            if (File.Exists(tempAudioSegment.FullName))
-            {
-                File.Delete(tempAudioSegment.FullName);
-            }
-
-            // This line creates a temporary version of the source file downsampled as per entry in the config file
-            MasterAudioUtility.SegmentToWav(sourceRecording, tempAudioSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
-
-            // ###### get 4 sonogram images ##############################################################################################
-            GenerateFourSpectrogramImages(tempAudioSegment, configDict, output, dataOnly: false, makeSoxSonogram: makeSoxSonogram);
-
-            // ###### Generate the FREQUENCY x OSCILLATIONS Graphs and csv data ##########################################################
-            // This was still working as of March 2017 but comment out because not used
-            // Vertical grid lines located every 5 cycles per sec.
-            double[] oscillationsSpectrum = Oscillations2014.GenerateOscillationDataAndImages(sourceRecording, configDict, true, true);
-
-            LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
+            return configDict;
         }
 
         public static AudioToSonogramResult GenerateFourSpectrogramImages(
             FileInfo sourceRecording,
+            FileInfo path2SoxSpectrogram,
             Dictionary<string, string> configDict,
-            DirectoryInfo outputDirectory,
             bool dataOnly = false,
             bool makeSoxSonogram = false)
         {
-            string sourceName = configDict[ConfigKeys.Recording.Key_RecordingFileName];
-            sourceName = Path.GetFileNameWithoutExtension(sourceName);
-            var outputImage = new FileInfo(Path.Combine(outputDirectory.FullName, sourceName + ".png"));
-
             var result = new AudioToSonogramResult();
 
             if (dataOnly && makeSoxSonogram)
@@ -246,8 +219,8 @@ namespace AnalysisPrograms
 
             if (makeSoxSonogram)
             {
-                SpectrogramTools.MakeSonogramWithSox(sourceRecording, configDict, outputImage);
-                result.SpectrogramImage = outputImage;
+                SpectrogramTools.MakeSonogramWithSox(sourceRecording, configDict, path2SoxSpectrogram);
+                result.Path2SoxImage = path2SoxSpectrogram;
             }
             else if (dataOnly)
             {
@@ -373,12 +346,38 @@ namespace AnalysisPrograms
                 ////image3.Save(fiImage.FullName + "3", ImageFormat.Png);
 
                 // 6) COMBINE THE SPECTROGRAM IMAGES
-                Image compositeImage = ImageTools.CombineImagesVertically(list);
-                compositeImage.Save(outputImage.FullName, ImageFormat.Png);
-                result.SpectrogramImage = outputImage;
+                result.CompositeImage = ImageTools.CombineImagesVertically(list);
             }
 
             return result;
+        }
+
+        // ########################################  AUDIO2SONOGRAM TEST METHODS BELOW HERE ######################################################
+
+        public static void TESTMETHOD_DrawFourSpectrograms()
+        {
+            {
+                var sourceRecording = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav".ToFileInfo();
+                var output = @"C:\SensorNetworks\TestResults\FourSonograms".ToDirectoryInfo();
+                var configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo();
+
+                // 1. get the config dictionary
+                var configDict = GetConfigDictionary(configFile, true);
+                configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
+                configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
+
+                // 2. Create temp copy of recording
+                int resampleRate = Convert.ToInt32(configDict[AnalysisKeys.ResampleRate]);
+                var tempAudioSegment = WavReader.CreateTemporaryAudioFile(sourceRecording, output, resampleRate);
+
+                // 3. GET 4 sonogram images
+
+                var sourceName = Path.GetFileNameWithoutExtension(sourceRecording.Name);
+                var soxImage = new FileInfo(Path.Combine(output.FullName, sourceName + ".SOX.png"));
+                var result = GenerateFourSpectrogramImages(tempAudioSegment, soxImage, configDict, dataOnly: false, makeSoxSonogram: false);
+                var outputImage = new FileInfo(Path.Combine(output.FullName, sourceName + ".FourSpectrograms.png"));
+                result.CompositeImage.Save(outputImage.FullName, ImageFormat.Png);
+            }
         }
     }
 
@@ -390,7 +389,10 @@ namespace AnalysisPrograms
         public SpectrogramStandard DecibelSpectrogram { get; set; }
 
         // path to spectrogram image
-        public FileInfo SpectrogramImage { get; set; }
+        public FileInfo Path2SoxImage { get; set; }
+
+        // Four spectrogram image
+        public Image CompositeImage { get; set; }
 
         public FileInfo FreqOscillationImage { get; set; }
 
@@ -453,8 +455,8 @@ namespace AnalysisPrograms
             configurationDictionary[ConfigKeys.Recording.Key_RecordingFileName] = audioFile.Name;
             var spectrogramResult = Audio2Sonogram.GenerateFourSpectrogramImages(
                 audioFile,
+                null, // path2SoxFile
                 configurationDictionary,
-                analysisSettings.AnalysisInstanceOutputDirectory,
                 dataOnly: analysisSettings.ImageFile == null,
                 makeSoxSonogram: false);
 
@@ -463,6 +465,7 @@ namespace AnalysisPrograms
             if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResult.Events.Length))
             {
                 Debug.Assert(analysisSettings.ImageFile.Exists);
+                spectrogramResult.CompositeImage.Save(analysisSettings.ImageFile.FullName, ImageFormat.Png);
             }
 
             if (saveCsv)
@@ -507,5 +510,3 @@ namespace AnalysisPrograms
         }
     }
 }
-
-

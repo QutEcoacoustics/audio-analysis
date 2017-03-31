@@ -1,4 +1,8 @@
-﻿namespace AudioAnalysisTools
+﻿// <copyright file="Oscillations2014.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
@@ -6,17 +10,15 @@
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
-    using System.Text;
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.StandardSpectrograms;
-    using AudioAnalysisTools.WavTools;
-    using MathNet.Numerics;
-    using MathNet.Numerics.LinearAlgebra;
+    using Acoustics.Shared;
+    using Acoustics.Tools.Wav;
+    using DSP;
     using MathNet.Numerics.LinearAlgebra.Double;
     using MathNet.Numerics.LinearAlgebra.Generic;
-    using MathNet.Numerics.LinearAlgebra.Generic.Factorization;
     using MathNet.Numerics.NumberTheory;
+    using StandardSpectrograms;
     using TowseyLibrary;
+    using WavTools;
 
     /// <summary>
     /// This is the latest of three implementations to detect oscillations in a spectrogram.
@@ -54,46 +56,162 @@
         {
             //  path to spectrogram image
             public string SourceFileName { get; set; }
+
             public string AlgorithmName { get; set; }
+
             public int BinSampleLength { get; set; }
+
             public Image FreqOscillationImage { get; set; }
+
             public double[,] FreqOscillationData { get; set; }
+
             // the FreqOscillationData matrix reduced to a vector
             public double[] OscillationSpectralIndex { get; set; }
+        }
+
+        // ########################################  OSCILLATION SPECTROGRAM TEST METHOD HERE ######################################################
+
+        public static void TESTMETHOD_DrawOscillationSpectrogram()
+        {
+            {
+                var sourceRecording = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav".ToFileInfo();
+                var output = @"C:\SensorNetworks\TestResults\FourSonograms".ToDirectoryInfo();
+                var configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo();
+
+                // 1. get the config dictionary
+                var configDict = GetConfigDictionary(configFile, true);
+                configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
+                configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
+
+                // 2. Create temp copy of recording
+                //int resampleRate = Convert.ToInt32(configDict[AnalysisKeys.ResampleRate]);
+                //var tempAudioSegment = WavReader.CreateTemporaryAudioFile(sourceRecording, output, resampleRate);
+
+                // 3. Generate the FREQUENCY x OSCILLATIONS Graphs and csv data
+                // This was still working as of March 2017
+                // Vertical grid lines located every 5 cycles per sec.
+                var tuple = Oscillations2014.GenerateOscillationDataAndImages(sourceRecording, configDict, true);
+
+                // (1) Save image file of this matrix.
+                // Sample length i.e. number of frames spanned to calculate oscillations per second
+                int sampleLength = Oscillations2014.DefaultSampleLength;
+                if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SampleLength))
+                {
+                    sampleLength = int.Parse(configDict[AnalysisKeys.OscilDetection2014SampleLength]);
+                }
+
+                var sourceName = Path.GetFileNameWithoutExtension(sourceRecording.Name);
+                string fileName = sourceName + ".FreqOscilSpectrogram_" + sampleLength;
+                string pathName = Path.Combine(output.FullName, fileName);
+                string imagePath = pathName + ".png";
+                tuple.Item1.Save(imagePath, ImageFormat.Png);
+
+                // Save matrix of oscillation data stored in freqOscilMatrix1
+                bool saveData = true;
+                if (saveData)
+                {
+                    fileName = sourceName + ".FreqOscilDataMatrix_" + sampleLength;
+                    pathName = Path.Combine(output.FullName, fileName);
+                    var ficsv = new FileInfo(pathName + ".csv");
+                    Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(ficsv, tuple.Item2);
+                }
+
+                double[] oscillationsSpectrum = tuple.Item3;
+            }
+        }
+
+        private static Dictionary<string, string> GetConfigDictionary(FileInfo configFile, bool writeParameters)
+        {
+            dynamic configuration = Yaml.Deserialise(configFile);
+
+            // var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
+            var configDict = new Dictionary<string, string>(dictionary: (Dictionary<string, string>)configuration)
+            {
+                // below three lines are examples of retrieving info from dynamic config
+                // string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
+                // bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
+                // scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
+                // ####################################################################
+
+                // Resample rate must be 2 X the desired Nyquist.
+                // WARNING: Default used to be the SR of the recording. NOW DEFAULT = 22050.
+                [AnalysisKeys.ResampleRate] = (string)configuration[AnalysisKeys.ResampleRate] ?? "22050",
+
+                [AnalysisKeys.AddAxes] = ((bool?)configuration[AnalysisKeys.AddAxes] ?? true).ToString(),
+                [AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true
+            };
+
+            configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
+            configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes] ?? "true";
+
+            // SET THE 2 PARAMETERS HERE FOR DETECTION OF OSCILLATION
+            // often need different frame size doing Oscil Detection
+            const int oscilDetection2014FrameSize = 256;
+            configDict[AnalysisKeys.OscilDetection2014FrameSize] = oscilDetection2014FrameSize.ToString();
+
+            // window width when sampling along freq bins
+            // 64 is better where many birds and fast chaning activity
+            ////int sampleLength = 64;
+
+            // 128 is better where slow moving changes to acoustic activity
+            const int sampleLength = 128;
+            configDict[AnalysisKeys.OscilDetection2014SampleLength] = sampleLength.ToString();
+
+            // use this if want only dominant oscillations
+            ////string algorithmName = "Autocorr-SVD-FFT";
+            // use this if want more detailed output - but not necessrily accurate!
+            //string algorithmName = "Autocorr-FFT";
+            // tried but not working
+            ////string algorithmName = "CwtWavelets";
+
+            const double sensitivityThreshold = 0.4;
+            configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold] = sensitivityThreshold.ToString();
+            int resampleRate = Convert.ToInt32(configDict[AnalysisKeys.ResampleRate]);
+
+            if (!writeParameters)
+            {
+                return configDict;
+            }
+
+            // print out the sonogram parameters
+            LoggedConsole.WriteLine("\nPARAMETERS");
+            foreach (KeyValuePair<string, string> kvp in configDict)
+            {
+                LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
+            }
+
+            return configDict;
         }
 
 
         /// <summary>
         /// Generates the FREQUENCY x OSCILLATIONS Graphs and csv
         /// </summary>
-        /// <param name="audioSegment"></param>
-        /// <param name="configDict"></param>
-        /// <param name="saveData"></param>
-        /// <param name="saveImage"></param>
-        /// <returns></returns>
-        public static double[] GenerateOscillationDataAndImages(FileInfo audioSegment, Dictionary<string, string> configDict, bool saveData = false, bool saveImage = false)
+        public static Tuple<Image, double[,], double[]> GenerateOscillationDataAndImages(FileInfo audioSegment, Dictionary<string, string> configDict, bool saveImage = false)
         {
             // set two oscillation detection parameters
             double sensitivity = Oscillations2014.DefaultSensitivityThreshold;
             if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SensitivityThreshold))
             {
-                sensitivity = Double.Parse(configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold]);
+                sensitivity = double.Parse(configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold]);
             }
+
             // Sample length i.e. number of frames spanned to calculate oscillations per second
             int sampleLength = Oscillations2014.DefaultSampleLength;
             if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SampleLength))
             {
-                sampleLength = Int32.Parse(configDict[AnalysisKeys.OscilDetection2014SampleLength]);
+                sampleLength = int.Parse(configDict[AnalysisKeys.OscilDetection2014SampleLength]);
             }
 
             SonogramConfig sonoConfig = new SonogramConfig(configDict); // default values config
             if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014FrameSize))
             {
-                sonoConfig.WindowSize = Int32.Parse(configDict[AnalysisKeys.OscilDetection2014FrameSize]);
-            } // else leave unchanged
+                sonoConfig.WindowSize = int.Parse(configDict[AnalysisKeys.OscilDetection2014FrameSize]);
+            }
 
-            AudioRecording recordingSegment = new AudioRecording(audioSegment.FullName);
+            var recordingSegment = new AudioRecording(audioSegment.FullName);
             BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
+
             // remove the DC bin if it has not already been removed.
             // Assume test of divisible by 2 is good enough.
             int binCount = sonogram.Data.GetLength(1);
@@ -108,10 +226,10 @@
             // Do LOCAL CONRAST Normalisation first. LCN over frequency bins is better and faster than standard noise removal.
             double neighbourhoodSeconds = 0.25;
             int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * neighbourhoodSeconds);
-            double LcnContrastLevel = 0.5; // was previously 0.1
+            double lcnContrastLevel = 0.5; // was previously 0.1
             LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
             LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
-            sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhoodFrames, LcnContrastLevel);
+            sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhoodFrames, lcnContrastLevel);
 
             string algorithmName = "Autocorr-SVD-FFT";
             double[,] freqOscilMatrix1 = Oscillations2014.GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName);
@@ -119,48 +237,31 @@
             //get the max spectral index - this reduces the matrix to an array
             double[] spectralIndex = Oscillations2014.ConvertMatrix2SpectralIndex(freqOscilMatrix1);
 
-            ///DEBUGGING
+            // DEBUGGING
             // Add spectralIndex into the matrix because want to add it to image.
             // This is for debugging only and can comment this line
             //int rowCount = freqOscilMatrix1.GetLength(0);
             //MatrixTools.SetRow(freqOscilMatrix1, rowCount - 2, spectralIndex);
 
-            string opDir          = Path.GetDirectoryName(audioSegment.FullName);
-            string sourceFileName = configDict[ConfigKeys.Recording.Key_RecordingFileName];
-            //string sourceFileName = Path.GetFileNameWithoutExtension(sonogram.Configuration.SourceFName);
-            string fileName = sourceFileName + ".freqOscilMatrix_" + sampleLength;
-            string pathName = Path.Combine(opDir, fileName);
-            if (saveData)
-            {
-                // only save the data matrix from one algorithm - write as csv file.
-                FileInfo ficsv = new FileInfo(pathName + ".csv");
-                Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(ficsv, freqOscilMatrix1);
-            }
-
+            Image compositeImage = null;
             if (saveImage)
             {
                 algorithmName = "Autocorr-FFT";
                 double[,] freqOscilMatrix2 = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName);
 
-                Image image1 = GetFreqVsOscillationsImage(freqOscilMatrix1, sonogram, sampleLength);
-                Image image2 = GetFreqVsOscillationsImage(freqOscilMatrix2, sonogram, sampleLength);
-                string sourceName = Path.GetFileNameWithoutExtension(sonogram.Configuration.SourceFName);
+                var image1 = GetFreqVsOscillationsImage(freqOscilMatrix1, sonogram, sampleLength);
+                var image2 = GetFreqVsOscillationsImage(freqOscilMatrix2, sonogram, sampleLength);
 
                 var list = new List<Image>();
                 list.Add(image1);
                 list.Add(image2);
-                Image compositeImage = ImageTools.CombineImagesInLine(list.ToArray());
-
-                // write image file of this matrix.
-                string imagePath = pathName + ".png";
-                compositeImage.Save(imagePath, ImageFormat.Png);
+                compositeImage = ImageTools.CombineImagesInLine(list.ToArray());
             }
 
-            //only return the spectrum of oscillation values for accumulation into data from a multi-hour recording.
-            return spectralIndex;
+            // Return (1) composite image of oscillations, (2) data matrix from only one algorithm,
+            //     and (3) spectrum of oscillation values for accumulation into data from a multi-hour recording.
+            return Tuple.Create(compositeImage, freqOscilMatrix1, spectralIndex);
         }
-
-
 
         /// <summary>
         /// Only call this method for short recordings.
@@ -177,10 +278,11 @@
             double[,] freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName);
             Image image = GetFreqVsOscillationsImage(freqOscilMatrix, sonogram, sampleLength);
             string sourceName = Path.GetFileNameWithoutExtension(sonogram.Configuration.SourceFName);
-            //get the max spectral index
+
+            // get the max spectral index
             double[] spectralIndex = Oscillations2014.ConvertMatrix2SpectralIndex(freqOscilMatrix);
 
-            ///DEBUGGING
+            // DEBUGGING
             // Add spectralIndex into the matrix because want to add it to image.
             // This is for debugging only and can comment this line
             int rowCount = freqOscilMatrix.GetLength(0);
@@ -193,7 +295,6 @@
             result.OscillationSpectralIndex = spectralIndex;
             return result;
         }
-
 
         public static Image GetFreqVsOscillationsImage(double[,] freqOscilMatrix, BaseSonogram sonogram, int sampleLength)
         {
@@ -249,10 +350,12 @@
 
                 // vector to store the oscilations vector derived from one frequency bin.
                 double[] oscillationsSpectrum = null;
+
                 // Use the Autocorrelation - SVD - FFT option.
                 if (algorithmName.Equals("Autocorr-SVD-FFT"))
                 {
                     double[,] xCorrByTimeMatrix = Oscillations2014.GetXcorrByTimeMatrix(freqBin, sampleLength);
+
                     //xcorCount += xCorrByTimeMatrix.GetLength(1);
                     oscillationsSpectrum = GetOscillationArrayUsingSvdAndFft(xCorrByTimeMatrix, sensitivity, bin);
                 }
@@ -263,11 +366,13 @@
                     double[,] xCorrByTimeMatrix = Oscillations2014.GetXcorrByTimeMatrix(freqBin, sampleLength);
                     oscillationsSpectrum = GetOscillationArrayUsingFft(xCorrByTimeMatrix, sensitivity, bin);
                 }
+
                 // set true to use the Wavelet Transform
                 if (algorithmName.Equals("Autocorr-WPD"))
                 {
                     double[,] xCorrByTimeMatrix = Oscillations2014.GetXcorrByTimeMatrix(freqBin, sampleLength);
                     oscillationsSpectrum = GetOscillationArrayUsingWpd(xCorrByTimeMatrix, sensitivity, bin);
+
                     //WaveletTransformContinuous cwt = new WaveletTransformContinuous(freqBin, maxScale);
                     //double[,] cwtMatrix = cwt.GetScaleTimeMatrix();
                     //oscillationsSpectrum = GetOscillationArrayUsingCWT(cwtMatrix, sensitivity, bin);
@@ -285,9 +390,6 @@
         /// Returns a matrix whose columns consist of autocorrelations of freq bin samples.
         /// The columns are non-overlapping.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="sampleLength"></param>
-        /// <returns></returns>
         public static double[,] GetXcorrByTimeMatrix(double[] signal, int sampleLength)
         {
             // normalise freq bin values to z-score. This is required else get spurious results
@@ -301,14 +403,14 @@
                 int start = s * sampleLength;
                 double[] subArray = DataTools.Subarray(signal, start, sampleLength);
                 double[] autocor = AutoAndCrossCorrelation.AutoCorrelationOldJavaVersion(subArray);
+
                 //DataTools.writeBarGraph(autocor);
                 MatrixTools.SetColumn(xCorrelationsByTime, s, autocor);
             }
+
             return xCorrelationsByTime;
         }
 
-
-        /// <summary>
         /// <summary>
         /// reduces the sequence of Xcorrelation vectors to a single summary vector.
         /// Does this by:
@@ -324,9 +426,7 @@
         ///
         /// </summary>
         /// <param name="xCorrByTimeMatrix">double[,] xCorrelationsByTime = new double[sampleLength, sampleCount]; </param>
-        /// <param></param>
         /// <param name="binNumber">only used when debugging</param>
-        /// <returns></returns>
         public static double[] GetOscillationArrayUsingSvdAndFft(double[,] xCorrByTimeMatrix, double sensitivity, int binNumber)
         {
             int xCorrLength = xCorrByTimeMatrix.GetLength(0);
@@ -336,21 +436,24 @@
             // we want to compute the U and V matrices of singular vectors.
             bool computeVectors = true;
             var svd = new MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseSvd(DenseMatrix.OfArray(xCorrByTimeMatrix), computeVectors);
+
             // svd.S returns the singular values in a vector
             Vector<double> singularValues = svd.S();
+
             // get total energy in first singular values
             double energySum = 0.0;
             for (int n = 0; n < singularValues.Count; n++)
             {
-                energySum += (singularValues[n] * singularValues[n]);
+                energySum += singularValues[n] * singularValues[n];
             }
+
             // get the 90% most significant ####### THis is a significant parameter but not critical. 90% is OK
             double significanceThreshold = 0.9;
             double energy = 0.0;
             int countOfSignificantSingularValues = 0;
             for (int n = 0; n < singularValues.Count; n++)
             {
-                energy += (singularValues[n] * singularValues[n]);
+                energy += singularValues[n] * singularValues[n];
                 double fraction = energy / energySum;
                 if (fraction > significanceThreshold)
                 {
@@ -363,9 +466,9 @@
             //    Console.WriteLine("singular value = {0}", d);
             //Console.WriteLine("Freq bin:{0}  Count Of Significant SingularValues = {1}", binNumber, countOfSignificantSingularValues);
 
-
             // svd.U returns the LEFT singular vectors in matrix
             Matrix<double> UMatrix = svd.U();
+
             //Matrix<double> relevantU = UMatrix.SubMatrix(0, UMatrix.RowCount-1, 0, eigenVectorCount);
 
             //Console.WriteLine("\n\n");
@@ -382,10 +485,15 @@
             for (int e = 0; e < countOfSignificantSingularValues; e++)
             {
                 double[] autocor = UMatrix.Column(e).ToArray();
+
                 // the sign of the left singular vectors are usually negative.
                 if (autocor[0] < 0)
+                {
                     for (int i = 0; i < autocor.Length; i++)
+                    {
                         autocor[i] *= -1.0;
+                    }
+                }
 
                 //DataTools.writeBarGraph(autocor);
 
@@ -402,27 +510,42 @@
                 spectrum[0] *= 0.66;
 
                 spectrum = DataTools.SquareValues(spectrum);
+
                 // get relative power in the three bins around max.
                 double sumOfSquares = spectrum.Sum();
                 //double avPower = spectrum.Sum() / spectrum.Length;
                 int maxIndex = DataTools.GetMaxIndex(spectrum);
                 double powerAtMax = spectrum[maxIndex];
-                if (maxIndex == 0) powerAtMax += spectrum[maxIndex];
-                else               powerAtMax += spectrum[maxIndex - 1];
-                if (maxIndex >= spectrum.Length-1) powerAtMax += spectrum[maxIndex];
-                else                               powerAtMax += spectrum[maxIndex + 1];
+                if (maxIndex == 0)
+                {
+                    powerAtMax += spectrum[maxIndex];
+                }
+                else
+                {
+                    powerAtMax += spectrum[maxIndex - 1];
+                }
+
+                if (maxIndex >= spectrum.Length-1)
+                {
+                    powerAtMax += spectrum[maxIndex];
+                }
+                else
+                {
+                    powerAtMax += spectrum[maxIndex + 1];
+                }
+
                 double relativePower1 = powerAtMax / sumOfSquares;
                 //double relativePower2 = powerAtMax / avPower;
 
-                if (relativePower1 > sensitivity)
                 //if (relativePower2 > 1.0)
+                if (relativePower1 > sensitivity)
                 {
                     // check for boundary overrun
                     if (maxIndex < oscillationsVector.Length)
                     {
                         // add in a new oscillation
                         oscillationsVector[maxIndex] += powerAtMax;
-                        //oscillationsVector[maxIndex] += relativePower2;
+                        // oscillationsVector[maxIndex] += relativePower2;
                     }
                 }
             }
@@ -432,9 +555,16 @@
                 // normalise by sample count
                 //oscillationsVector[i] /= sampleCount;
                 // do log transform
-                if (oscillationsVector[i] < 1.0) oscillationsVector[i] = 0.0;
-                else oscillationsVector[i] = Math.Log10(1 + oscillationsVector[i]);
+                if (oscillationsVector[i] < 1.0)
+                {
+                    oscillationsVector[i] = 0.0;
+                }
+                else
+                {
+                    oscillationsVector[i] = Math.Log10(1 + oscillationsVector[i]);
+                }
             }
+
             return oscillationsVector;
         }
 
@@ -464,15 +594,31 @@
                 spectrum[0] *= 0.66;
 
                 spectrum = DataTools.SquareValues(spectrum);
+
                 // get relative power in the three bins around max.
                 double sumOfSquares = spectrum.Sum();
+
                 //double avPower = spectrum.Sum() / spectrum.Length;
                 int maxIndex = DataTools.GetMaxIndex(spectrum);
                 double powerAtMax = spectrum[maxIndex];
-                if (maxIndex == 0) powerAtMax += spectrum[maxIndex];
-                else powerAtMax += spectrum[maxIndex - 1];
-                if (maxIndex >= spectrum.Length - 1) powerAtMax += spectrum[maxIndex];
-                else powerAtMax += spectrum[maxIndex + 1];
+                if (maxIndex == 0)
+                {
+                    powerAtMax += spectrum[maxIndex];
+                }
+                else
+                {
+                    powerAtMax += spectrum[maxIndex - 1];
+                }
+
+                if (maxIndex >= spectrum.Length - 1)
+                {
+                    powerAtMax += spectrum[maxIndex];
+                }
+                else
+                {
+                    powerAtMax += spectrum[maxIndex + 1];
+                }
+
                 double relativePower1 = powerAtMax / sumOfSquares;
                 //double relativePower2 = powerAtMax / avPower;
 
@@ -493,13 +639,20 @@
             {
                 // normalise by sample count
                 oscillationsVector[i] /= sampleCount;
+
                 // do log transform
-                if (oscillationsVector[i] < 1.0) oscillationsVector[i] = 0.0;
-                else oscillationsVector[i] = Math.Log10(1 + oscillationsVector[i]);
+                if (oscillationsVector[i] < 1.0)
+                {
+                    oscillationsVector[i] = 0.0;
+                }
+                else
+                {
+                    oscillationsVector[i] = Math.Log10(1 + oscillationsVector[i]);
+                }
             }
+
             return oscillationsVector;
         }
-
 
         public static double[] GetOscillationArrayUsingWpd(double[,] xCorrByTimeMatrix, double sensitivity, int binNumber)
         {
@@ -526,10 +679,24 @@
                 //double avPower = spectrum.Sum() / spectrum.Length;
                 int maxIndex = DataTools.GetMaxIndex(spectrum);
                 double powerAtMax = spectrum[maxIndex];
-                if (maxIndex == 0) powerAtMax += spectrum[maxIndex];
-                else powerAtMax += spectrum[maxIndex - 1];
-                if (maxIndex >= spectrum.Length - 1) powerAtMax += spectrum[maxIndex];
-                else powerAtMax += spectrum[maxIndex + 1];
+                if (maxIndex == 0)
+                {
+                    powerAtMax += spectrum[maxIndex];
+                }
+                else
+                {
+                    powerAtMax += spectrum[maxIndex - 1];
+                }
+
+                if (maxIndex >= spectrum.Length - 1)
+                {
+                    powerAtMax += spectrum[maxIndex];
+                }
+                else
+                {
+                    powerAtMax += spectrum[maxIndex + 1];
+                }
+
                 double relativePower1 = powerAtMax / sumOfSquares;
                 //double relativePower2 = powerAtMax / avPower;
 
@@ -550,20 +717,26 @@
             {
                 // normalise by sample count
                 oscillationsVector[i] /= sampleCount;
+
                 // do log transform
-                if (oscillationsVector[i] < 1.0) oscillationsVector[i] = 0.0;
-                else oscillationsVector[i] = Math.Log10(1 + oscillationsVector[i]);
+                if (oscillationsVector[i] < 1.0)
+                {
+                    oscillationsVector[i] = 0.0;
+                }
+                else
+                {
+                    oscillationsVector[i] = Math.Log10(1 + oscillationsVector[i]);
+                }
             }
+
             return oscillationsVector;
         }
-
-
 
         public static double[] GetOscillationArrayUsingCwt(double[,] xCorrByTimeMatrix, double framesPerSecond, int binNumber)
         {
             int xCorrLength = xCorrByTimeMatrix.GetLength(0);
-            //int sampleCount = xCorrByTimeMatrix.GetLength(1);
 
+            //int sampleCount = xCorrByTimeMatrix.GetLength(1);
 
             // loop over the singular values and
             // transfer data from SVD.UMatrix to a single vector of oscilation values
@@ -572,10 +745,15 @@
             for (int e = 0; e < 10; e++)
             {
                 double[] autocor = new double[xCorrLength];
+
                 // the sign of the left singular vectors are usually negative.
                 if (autocor[0] < 0)
+                {
                     for (int i = 0; i < autocor.Length; i++)
+                    {
                         autocor[i] *= -1.0;
+                    }
+                }
 
                 //DataTools.writeBarGraph(autocor);
 
@@ -595,6 +773,7 @@
                 double avPower = spectrum.Sum() / spectrum.Length;
                 int maxIndex = DataTools.GetMaxIndex(spectrum);
                 double powerAtMax = spectrum[maxIndex];
+
                 //double relativePower1 = powerAtMax / sumOfSquares;
                 double relativePower2 = powerAtMax / avPower;
 
@@ -616,26 +795,39 @@
                 // normalise by sample count
                 //oscillationsVector[i] /= sampleCount;
                 // do log transform
-                if (oscillationsVector[i] < 1.0) oscillationsVector[i] = 0.0;
-                else oscillationsVector[i] = Math.Log10(1 + oscillationsVector[i]);
+                if (oscillationsVector[i] < 1.0)
+                {
+                    oscillationsVector[i] = 0.0;
+                }
+                else
+                {
+                    oscillationsVector[i] = Math.Log10(1 + oscillationsVector[i]);
+                }
             }
+
             return oscillationsVector;
         }
-
 
         public static void GetOscillation(double[] array, double framesPerSecond, double[,] cosines, out double oscilFreq, out double period, out double intenisty)
         {
             double[] modifiedArray = DataTools.SubtractMean(array);
             double[] dctCoeff = MFCCStuff.DCT(modifiedArray, cosines);
+
             // convert to absolute values because not interested in negative values due to phase.
             for (int i = 0; i < dctCoeff.Length; i++)
+            {
                 dctCoeff[i] = Math.Abs(dctCoeff[i]);
+            }
+
             // remove low freq oscillations from consideration
             int thresholdIndex = dctCoeff.Length / 5;
             for (int i = 0; i < thresholdIndex; i++)
+            {
                 dctCoeff[i] = 0.0;
+            }
 
             dctCoeff = DataTools.normalise2UnitLength(dctCoeff);
+
             //dct = DataTools.normalise(dctCoeff); //another option to normalise
             int indexOfMaxValue = DataTools.GetMaxIndex(dctCoeff);
 
@@ -646,57 +838,29 @@
             intenisty = dctCoeff[indexOfMaxValue];
         }
 
-
         /// <summary>
         /// Note: The columns are freq bins.
         /// </summary>
-        /// <param name="freqOscilMatrix"></param>
-        /// <returns></returns>
         public static double[] ConvertMatrix2SpectralIndex(double[,] freqOscilMatrix)
         {
             int rowCount = freqOscilMatrix.GetLength(0);
             int colCount = freqOscilMatrix.GetLength(1);
             double[] spectralIndex = new double[colCount];
+
             // miss the first N rows which have low osc rate.
             int skipCount = 1;
             for (int c = 0; c < colCount; c++)
             {
-                double  sum = 0.0;
+                double sum = 0.0;
                 for (int r = skipCount; r < rowCount; r++)
                 {
                     sum += freqOscilMatrix[r, c];
                 }
+
                 spectralIndex[c] = sum;
             }
 
             return spectralIndex;
         }
-
-/*
-        /// <summary>
-        /// Returns a vector of the amplitude range in each signal segment
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="levelNumber"></param>
-        /// <returns></returns>
-        public static double[] GetVectorOfDynamicRanges(double[] signal, int sampleLength)
-        {
-            int sampleCount = signal.Length / sampleLength;
-            double min, max;
-
-            double[] dynamicRange = new double[sampleCount];
-
-            for (int s = 0; s < sampleCount; s++)
-            {
-                int start = s * sampleLength;
-                double[] subArray = DataTools.Subarray(signal, start, sampleLength);
-                DataTools.MinMax(subArray, out min, out max);
-                dynamicRange[s] = max - min;
-            }
-            return dynamicRange;
-        }
-*/
-
-
     }
 }

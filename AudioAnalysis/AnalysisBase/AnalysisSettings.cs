@@ -186,7 +186,7 @@ namespace AnalysisBase
         public DirectoryInfo SpectrumIndicesDirectory { get; set; }
 
         /// <summary>
-        /// Gets or sets the audio file for the analysis.
+        /// Gets or sets an output image file - most likely a spectrogram
         /// Analysis implementations must not set this.
         /// </summary>
         public FileInfo ImageFile { get; set; }
