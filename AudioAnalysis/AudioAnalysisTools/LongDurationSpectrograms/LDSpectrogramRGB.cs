@@ -1032,22 +1032,24 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var bmp = new Bitmap(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
             var g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
-            // var pen = new Pen(Color.White);
             var stringFont = new Font("Arial", 9);
-            //Font stringFont = new Font("Tahoma", 9);
 
             //string text = title;
             int x = 4;
             g.DrawString(title, stringFont, Brushes.Wheat, new PointF(x, 3));
 
             var stringSize = g.MeasureString(title, stringFont);
-            x += (stringSize.ToSize().Width + 70);
+            x += stringSize.ToSize().Width + 70;
             var text = "SCALE:(time x kHz)   (c) QUT.EDU.AU";
             stringSize = g.MeasureString(text, stringFont);
             int x2 = width - stringSize.ToSize().Width - 2;
-            if (x2 > x) g.DrawString(text, stringFont, Brushes.Wheat, new PointF(x2, 3));
+            if (x2 > x)
+            {
+                g.DrawString(text, stringFont, Brushes.Wheat, new PointF(x2, 3));
+            }
 
             g.DrawLine(new Pen(Color.Gray), 0, 0, width, 0);//draw upper boundary
+
             //g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
             return bmp;
         }

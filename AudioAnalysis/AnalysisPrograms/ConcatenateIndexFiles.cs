@@ -1,8 +1,7 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="DrawLongDurationSpectrograms.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+﻿// <copyright file="ConcatenateIndexFiles.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
-// <summary>
+
 // Defines the ConcatenateIndexFiles type.
 //
 // Action code for this activity = "concatenateIndexFiles"
@@ -22,31 +21,23 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-
 namespace AnalysisPrograms
 {
     using System;
-    using System.IO;
-    using System.Linq;
-
-    using Acoustics.Shared;
-    using Acoustics.Shared.Csv;
-
-    using AnalysisPrograms.Production;
-
-    using AudioAnalysisTools.Indices;
-    using AudioAnalysisTools.LongDurationSpectrograms;
-
-    using PowerArgs;
-    using AudioAnalysisTools;
     using System.Collections.Generic;
     using System.Drawing;
+    using System.IO;
+    using System.Linq;
     using System.Reflection;
-
+    using Acoustics.Shared;
+    using Acoustics.Shared.Csv;
+    using AnalysisPrograms.Production;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.LongDurationSpectrograms;
     using log4net;
-
+    using PowerArgs;
     using TowseyLibrary;
-
 
     /// <summary>
     /// First argument on command line to call this action is "concatenateIndexFiles"
@@ -55,7 +46,6 @@ namespace AnalysisPrograms
     /// </summary>
     public static class ConcatenateIndexFiles
     {
-
         public class Arguments
         {
             [ArgDescription("One or more directories where the original csv files are located.")]
@@ -93,6 +83,7 @@ namespace AnalysisPrograms
 
             [ArgDescription("User specified file containing a list of indices and their properties.")]
             [Production.ArgExistingFile(Extension = ".yml")]
+
             public FileInfo IndexPropertiesConfig { get; set; }
 
             [ArgDescription("Config file for drawing the false colour spectrograms.")]
@@ -114,11 +105,12 @@ namespace AnalysisPrograms
 
             [ArgDescription("Default = false. For use by software manager only.")]
             internal bool DoTest { get; set; }
+
             [ArgDescription("Directory containing benchmark TEST files. For use by software manager only.")]
+
             public DirectoryInfo TestDirectory { get; set; }
 
             internal bool Verbose { get; set; }
-
         }
 
         /// <summary>
@@ -147,7 +139,6 @@ namespace AnalysisPrograms
             string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
             string colorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT;
 
-
             /*
                 // ########################## TESTING OF CONCATENATION
                 // Test data derived from ZuZZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016. THis teste set up October 2016.
@@ -175,12 +166,10 @@ namespace AnalysisPrograms
                 // ########################## END of TEST ARGUMENTS
             */
 
-
-
-
             // ########################## CONCATENATION of Kerry Mengersens Data, Puma, South America
             // The drive: work = G; home = E
             drive = "G";
+
             // top level directory
             DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\Mengersen\\NightsA\\Data"),
                                        };
@@ -194,6 +183,7 @@ namespace AnalysisPrograms
             bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
             dtoStart = new DateTimeOffset(2016, 08, 20, 0, 0, 0, TimeSpan.Zero);
             dtoEnd = new DateTimeOffset(2016, 08, 20, 0, 0, 0, TimeSpan.Zero);
+
             //dtoStart = new DateTimeOffset(2017, 01, 17, 0, 0, 0, TimeSpan.Zero);
             //dtoEnd   = new DateTimeOffset(2017, 01, 24, 02, 23, 29, TimeSpan.Zero);
             //dtoStart = new DateTimeOffset(2016, 08, 21, 0, 0, 0, TimeSpan.Zero);
@@ -205,10 +195,8 @@ namespace AnalysisPrograms
             // If not testing need to set the below. Cannot be nulls.
             doTest = false;
             string testPath = opPath;
+
             // ########################## END of Kerry Mengersens Data, Puma, South America
-
-
-
 
             /*
                         // ########################## CONCATENATION of LIZ Znidersic Recordings, Lewin's rail, Tasmania.
@@ -281,7 +269,6 @@ namespace AnalysisPrograms
             //dtoEnd   = new DateTimeOffset(2013, 03, 31, 0, 0, 0, TimeSpan.Zero);
             //string opFileStem = "CornellMarine";
             //indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml");
-
 
             // ########################## YVONNE'S RECORDINGS
             // top level directory
@@ -356,9 +343,6 @@ namespace AnalysisPrograms
             //dtoStart = new DateTimeOffset(2015, 07, 01, 0, 0, 0, TimeSpan.Zero);
             //dtoEnd = new DateTimeOffset(2015, 07, 06, 0, 0, 0, TimeSpan.Zero);
 
-
-
-
             // ########################## EDDIE GAME'S PNG RECORDINGS
             // top level directory
             //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\";
@@ -391,7 +375,6 @@ namespace AnalysisPrograms
             // However the PNG data uses an older set of index properties prior to fixing a bug!
             //FileInfo indexPropertiesConfig = new FileInfo(@"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\IndexPropertiesOLDConfig.yml");
 
-
             // ########################## GRIFFITH - SIMON/TOBY FRESH-WATER RECORDINGS
             // top level directory
             //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"F:\AvailaeFolders\Griffith\Toby\20160201_FWrecordings\Site1"),
@@ -405,11 +388,10 @@ namespace AnalysisPrograms
 
             // ########################## END of GRIFFITH - SIMON/TOBY FRESH-WATER RECORDINGS
 
-
-
-
-
-            if (!indexPropertiesConfig.Exists) LoggedConsole.WriteErrorLine("# indexPropertiesConfig FILE DOES NOT EXIST.");
+            if (!indexPropertiesConfig.Exists)
+            {
+                LoggedConsole.WriteErrorLine("# indexPropertiesConfig FILE DOES NOT EXIST.");
+            }
 
             // DISCUSS THE FOLLOWING WITH ANTHONY
             // Anthony says we would need to serialise the class. Skip this for the moment.
@@ -440,6 +422,7 @@ namespace AnalysisPrograms
                 DrawImages = drawImages,
                 Verbose = true,
                 DoTest = doTest,
+
                 // following used to add in a recognizer score track
                 EventDataDirectories = eventDirs,
                 EventFilePattern = eventFilePattern,
@@ -475,7 +458,6 @@ namespace AnalysisPrograms
             //Log.Warn("DrawImages option hard coded to be on in this version");
             //arguments.DrawImages = true;
 
-
             if (verbose)
             {
                 string date = "# DATE AND TIME: " + DateTime.Now;
@@ -502,7 +484,6 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine();
                 //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
             }
-
 
             // 1. PATTERN SEARCH FOR CORRECT SUBDIRECTORIES
             // Assumes that the required subdirectories have the given FILTER/SiteName somewhere in their path.
@@ -531,7 +512,6 @@ namespace AnalysisPrograms
 
             // Sort the files by date and return as a dictionary: sortedDictionaryOfDatesAndFiles<DateTimeOffset, FileInfo>
             var sortedDictionaryOfDatesAndFiles = FileDateHelpers.FilterFilesForDates(csvFiles, arguments.TimeSpanOffsetHint);
-
 
             // calculate new start date if passed value = null.
             DateTimeOffset? startDate = arguments.StartDate;
@@ -572,8 +552,6 @@ namespace AnalysisPrograms
             DirectoryInfo opDir = arguments.OutputDirectory;
             if (!opDir.Exists) arguments.OutputDirectory.Create();
             string opFileStem = arguments.FileStemName;
-
-
 
             // SET UP DEFAULT SITE LOCATION INFO    --  DISCUSS IWTH ANTHONY
             // The following location data is used only to draw the sunrise/sunset tracks on images.
@@ -620,12 +598,7 @@ namespace AnalysisPrograms
                         ColorMap2 = arguments.ColorMap2,
                     };
                 }
-
-
             }
-
-
-
 
             // ################################ ConcatenateEverythingYouCanLayYourHandsOn = true
             DirectoryInfo resultsDir = null;
@@ -641,7 +614,6 @@ namespace AnalysisPrograms
                 var dictionaryOfSummaryIndices = LDSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, resultsDir, indexGenerationData, opFileStem);
                 // REALITY CHECK - check for continuous zero indices or anything else that might indicate defective signal or incomplete analysis of recordings
                 List<ErroneousIndexSegments> indexErrors = ErroneousIndexSegments.DataIntegrityCheck(dictionaryOfSummaryIndices, resultsDir, arguments.FileStemName);
-
 
                 if (arguments.DrawImages)
                 {
@@ -660,7 +632,6 @@ namespace AnalysisPrograms
                     var imagePath = FilenameHelpers.AnalysisResultPath(resultsDir, opFileStem, "SummaryIndices", "png");
                     tracksImage.Save(imagePath);
                 }
-
 
                 // ###### THEN CONCATENATE THE SPECTRAL INDICES, DRAW IMAGES AND SAVE IN RESULTS DIRECTORY
                 var dictionaryOfSpectralIndices1 = LDSpectrogramStitching.ConcatenateAllSpectralIndexFiles(subDirectories, keys, indexGenerationData);
@@ -713,11 +684,6 @@ namespace AnalysisPrograms
                 return;
             } // ConcatenateEverythingYouCanLayYourHandsOn
 
-
-
-
-
-
             // ############################# CONCATENATE in 24 hour BLOCKS of DATA  ### ConcatenateEverythingYouCanLayYourHandsOn = false
             LoggedConsole.WriteLine($"# Elapsed time = {totalTimespan.TotalHours:f1} hours or {dayCount} days");
             LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
@@ -727,7 +693,7 @@ namespace AnalysisPrograms
             for (int d = 0; d < dayCount; d++)
             {
                 var thisday = dateTimeOffset.AddDays(d);
-                LoggedConsole.WriteLine($"\n\n\nCONCATENATING DAY {(d + 1)} of {dayCount}:   {thisday.ToString()}");
+                LoggedConsole.WriteLine($"\n\n\nCONCATENATING DAY { d + 1} of {dayCount}:   {thisday}");
 
                 FileInfo[] indexFiles = LDSpectrogramStitching.GetFileArrayForOneDay(sortedDictionaryOfDatesAndFiles, thisday);
                 if (indexFiles.Length == 0)
@@ -764,7 +730,6 @@ namespace AnalysisPrograms
                 // REALITY CHECK - check for zero signal and anything else that might indicate defective signal
                 List<ErroneousIndexSegments> indexErrors = ErroneousIndexSegments.DataIntegrityCheck(summaryDict, resultsDir, opFileStem1);
 
-
                 // DRAW SUMMARY INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
                 if (arguments.DrawImages)
                 {
@@ -780,6 +745,7 @@ namespace AnalysisPrograms
                 }
 
                 LoggedConsole.WriteLine($"     Completed Summary Indices");
+
                 // ##############################################################################################################
 
                 // NOW CONCATENATE SPECTRAL INDEX FILES
@@ -805,8 +771,6 @@ namespace AnalysisPrograms
                 // Calculate the index distribution statistics and write to a json file. Also save as png image
                 var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectralIndices2, resultsDir, opFileStem1);
 
-
-
                 // DRAW SPECTRAL INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
                 if (arguments.DrawImages)
                 {
@@ -826,7 +790,6 @@ namespace AnalysisPrograms
                         indexErrors,
                         ImageChrome.With);
 
-
                     if (arguments.EventDataDirectories != null)
                     {
                         var candidateFiles = IndexMatrices.GetFilesInDirectories(arguments.EventDataDirectories, arguments.EventFilePattern);
@@ -843,6 +806,7 @@ namespace AnalysisPrograms
                             //lineCount += lines.Count;
                             //Console.WriteLine($"  # events = {lines.Count}");
                         }
+
                         var indexArray = ConcatenateIndexFiles.ConvertEventsToSummaryIndices(output);
 
                         double[] normalisedScores;
@@ -862,7 +826,6 @@ namespace AnalysisPrograms
 
                 WriteSpectralIndexFiles(resultsDir, opFileStem1, analysisType, dictionaryOfSpectralIndices2);
                 LoggedConsole.WriteLine($"     Completed Spectral Indices");
-
             } // over days
 
             if (arguments.DoTest)
@@ -870,6 +833,7 @@ namespace AnalysisPrograms
                 var dto = (DateTimeOffset)arguments.StartDate;
                 var date = $"{dto.Year}{dto.Month:D2}{dto.Day:D2}";
                 var fileName = arguments.FileStemName + "_" + date;
+
                 // THis is test 2.
                 var expectedTestFile1 = new FileInfo(Path.Combine(arguments.TestDirectory.FullName, "Concat_Test2__SummaryIndexStatistics.EXPECTED.json"));
                 var expectedTestFile2 = new FileInfo(Path.Combine(arguments.TestDirectory.FullName, "Concat_Test2__SpectralIndexStatistics.EXPECTED.json"));
@@ -887,10 +851,8 @@ namespace AnalysisPrograms
             Log.Success("Complete");
         } // Execute()
 
-
         public static List<FileInfo> WriteSpectralIndexFiles(DirectoryInfo destination, string fileNameBase, string identifier, Dictionary<string, double[,]> results)
         {
-
             Log.Info("\t\tWriting spectral indices");
 
             var spectralIndexFiles = new List<FileInfo>(results.Count);
@@ -907,17 +869,10 @@ namespace AnalysisPrograms
             return spectralIndexFiles;
         }
 
-
         /// <summary>
         /// This method is designed only to read in Spectrogram ribbons for Georgia marine recordings.
         /// Used to prepare images for Aaron Rice.
         /// </summary>
-        /// <param name="dataDirs"></param>
-        /// <param name="pattern"></param>
-        /// <param name="outputDirectory"></param>
-        /// <param name="opFileStem"></param>
-        /// <param name="title"></param>
-        /// <param name="tidalInfo"></param>
         public static void ConcatenateRibbonImages(DirectoryInfo[] dataDirs, string pattern, DirectoryInfo outputDirectory,
                                                    string opFileStem, string title, SunAndMoon.SunMoonTides[] tidalInfo = null)
         {
@@ -990,15 +945,13 @@ namespace AnalysisPrograms
             finalComposite.Save(Path.Combine(outputDirectory.FullName, opFileStem + ".png"));
             Console.WriteLine($"Final compositeBmp dimensions are width {compositeBmp.Width} by height {compositeBmp.Height}");
             Console.WriteLine($"Final number of ribbons/days = {imageFiles.Length}");
-
         } //ConcatenateRibbonImages
-
 
         static void AddTidalInfo(Bitmap image, SunAndMoon.SunMoonTides[] tidalInfo, DateTimeOffset dto)
         {
             Pen yellowPen = new Pen(Brushes.Yellow);
-            Pen cyanPen   = new Pen(Brushes.Lime, 2);
-            Pen whitePen  = new Pen(Brushes.White, 2);
+            Pen cyanPen = new Pen(Brushes.Lime, 2);
+            Pen whitePen = new Pen(Brushes.White, 2);
             Graphics spgCanvas = Graphics.FromImage(image);
 
             foreach (SunAndMoon.SunMoonTides smt in tidalInfo)
@@ -1019,8 +972,6 @@ namespace AnalysisPrograms
                 }
             }
         }
-
-
 
         public static void ConcatenateAcousticEventFiles(DirectoryInfo[] dataDirs, string pattern, DirectoryInfo outputDirectory, string opFileStem)
         {
@@ -1067,10 +1018,7 @@ namespace AnalysisPrograms
 
             string imagePath = Path.Combine(outputDirectory.FullName, opFileStem + ".png");
             compositeBmp.Save(imagePath);
-
-
         } //ConcatenateAcousticEventFiles
-
 
         public static double[] ConvertEventsToSummaryIndices(List<string> events)
         {
@@ -1159,6 +1107,5 @@ namespace AnalysisPrograms
             //return indices;
             return eventsPerUnitTime;
         }
-
     }
 }
