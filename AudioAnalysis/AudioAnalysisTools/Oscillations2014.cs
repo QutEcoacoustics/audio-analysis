@@ -74,9 +74,15 @@ namespace AudioAnalysisTools
         public static void TESTMETHOD_DrawOscillationSpectrogram()
         {
             {
+                string drive = "C";
                 var sourceRecording = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav".ToFileInfo();
-                var output = @"C:\SensorNetworks\TestResults\FourSonograms".ToDirectoryInfo();
+                var output = @"C:\SensorNetworks\SoftwareTests\FourSonograms".ToDirectoryInfo();
                 var configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo();
+                var expectedResultsDir = new DirectoryInfo(Path.Combine(output.FullName, "ExpectedTestResults"));
+                if (!expectedResultsDir.Exists)
+                {
+                    expectedResultsDir.Create();
+                }
 
                 // 1. get the config dictionary
                 var configDict = GetConfigDictionary(configFile, true);
@@ -106,17 +112,30 @@ namespace AudioAnalysisTools
                 string imagePath = pathName + ".png";
                 tuple.Item1.Save(imagePath, ImageFormat.Png);
 
-                // Save matrix of oscillation data stored in freqOscilMatrix1
+                // construct output file names
+                fileName = sourceName + ".FreqOscilDataMatrix_" + sampleLength;
+                pathName = Path.Combine(output.FullName, fileName);
+                var csvFile1 = new FileInfo(pathName + ".csv");
+
+                fileName = sourceName + ".OSCSpectralIndex_" + sampleLength;
+                pathName = Path.Combine(output.FullName, fileName);
+                var csvFile2 = new FileInfo(pathName + ".csv");
                 bool saveData = true;
                 if (saveData)
                 {
-                    fileName = sourceName + ".FreqOscilDataMatrix_" + sampleLength;
-                    pathName = Path.Combine(output.FullName, fileName);
-                    var ficsv = new FileInfo(pathName + ".csv");
-                    Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(ficsv, tuple.Item2);
+                    // Save matrix of oscillation data stored in freqOscilMatrix1
+                    Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(csvFile1, tuple.Item2);
+
+                    double[] oscillationsSpectrum = tuple.Item3;
+                    Acoustics.Shared.Csv.Csv.WriteToCsv(csvFile2, oscillationsSpectrum);
                 }
 
-                double[] oscillationsSpectrum = tuple.Item3;
+                // Do my version of UNIT TESTING - This is the File Equality Test.
+                var expectedTestFile1 = new FileInfo(Path.Combine(expectedResultsDir.FullName, "OscillationSpectrogram_MatrixTest.EXPECTED.json"));
+                var expectedTestFile2 = new FileInfo(Path.Combine(expectedResultsDir.FullName, "OscillationSpectrogram_VectorTest.EXPECTED.json"));
+                TestTools.FileEqualityTest("Matrix Equality", csvFile1, expectedTestFile1);
+                TestTools.FileEqualityTest("Vector Equality", csvFile2, expectedTestFile2);
+                Console.WriteLine("\n\n");
             }
         }
 
@@ -187,7 +206,7 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Generates the FREQUENCY x OSCILLATIONS Graphs and csv
         /// </summary>
-        public static Tuple<Image, double[,], double[]> GenerateOscillationDataAndImages(FileInfo audioSegment, Dictionary<string, string> configDict, bool saveImage = false)
+        public static Tuple<Image, double[,], double[]> GenerateOscillationDataAndImages(FileInfo audioSegment, Dictionary<string, string> configDict, bool drawImage = false)
         {
             // set two oscillation detection parameters
             double sensitivity = Oscillations2014.DefaultSensitivityThreshold;
@@ -244,13 +263,13 @@ namespace AudioAnalysisTools
             //MatrixTools.SetRow(freqOscilMatrix1, rowCount - 2, spectralIndex);
 
             Image compositeImage = null;
-            if (saveImage)
+            if (drawImage)
             {
                 algorithmName = "Autocorr-FFT";
                 double[,] freqOscilMatrix2 = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName);
 
-                var image1 = GetFreqVsOscillationsImage(freqOscilMatrix1, sonogram, sampleLength);
-                var image2 = GetFreqVsOscillationsImage(freqOscilMatrix2, sonogram, sampleLength);
+                var image1 = GetFreqVsOscillationsImage(freqOscilMatrix1, sonogram.FramesPerSecond, sonogram.FBinWidth, sampleLength, algorithmName);
+                var image2 = GetFreqVsOscillationsImage(freqOscilMatrix2, sonogram.FramesPerSecond, sonogram.FBinWidth, sampleLength, algorithmName);
 
                 var list = new List<Image>();
                 list.Add(image1);
@@ -274,10 +293,10 @@ namespace AudioAnalysisTools
         public static FreqVsOscillationsResult GetFreqVsOscillationsDataAndImage(BaseSonogram sonogram, string algorithmName)
         {
             double sensitivity = Oscillations2014.DefaultSensitivityThreshold;
-            int   sampleLength = Oscillations2014.DefaultSampleLength;
+            int sampleLength = Oscillations2014.DefaultSampleLength;
             double[,] freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName);
-            Image image = GetFreqVsOscillationsImage(freqOscilMatrix, sonogram, sampleLength);
-            string sourceName = Path.GetFileNameWithoutExtension(sonogram.Configuration.SourceFName);
+            var image = GetFreqVsOscillationsImage(freqOscilMatrix, sonogram.FramesPerSecond, sonogram.FBinWidth, sampleLength, algorithmName);
+            var sourceName = Path.GetFileNameWithoutExtension(sonogram.Configuration.SourceFName);
 
             // get the max spectral index
             double[] spectralIndex = Oscillations2014.ConvertMatrix2SpectralIndex(freqOscilMatrix);
@@ -288,18 +307,20 @@ namespace AudioAnalysisTools
             int rowCount = freqOscilMatrix.GetLength(0);
             MatrixTools.SetRow(freqOscilMatrix, rowCount - 2, spectralIndex);
 
-            var result = new FreqVsOscillationsResult();
-            result.SourceFileName = sourceName;
-            result.FreqOscillationImage = image;
-            result.FreqOscillationData = freqOscilMatrix;
-            result.OscillationSpectralIndex = spectralIndex;
+            var result = new FreqVsOscillationsResult
+            {
+                SourceFileName = sourceName,
+                FreqOscillationImage = image,
+                FreqOscillationData = freqOscilMatrix,
+                OscillationSpectralIndex = spectralIndex,
+            };
             return result;
         }
 
-        public static Image GetFreqVsOscillationsImage(double[,] freqOscilMatrix, BaseSonogram sonogram, int sampleLength)
+        public static Image GetFreqVsOscillationsImage(double[,] freqOscilMatrix, double framesPerSecond, double freqBinWidth, int sampleLength, string title)
         {
             // Convert spectrum index to oscillations per second
-            double oscillationBinWidth = sonogram.FramesPerSecond / (double)sampleLength;
+            double oscillationBinWidth = framesPerSecond / (double)sampleLength;
 
             //draw an image
             freqOscilMatrix = MatrixTools.MatrixRotate90Anticlockwise(freqOscilMatrix);
@@ -308,23 +329,26 @@ namespace AudioAnalysisTools
             var image = ImageTools.DrawMatrixInColour(freqOscilMatrix, xscale, yscale);
 
             // a tic every 5cpsec.
-            double xTicInterval = (5.0 / oscillationBinWidth) * xscale;
+            double cycleInterval = 5.0;
+            double xTicInterval = (cycleInterval / oscillationBinWidth) * xscale;
 
             // a tic every 1000 Hz.
             int herzInterval = 1000;
-            double yTicInterval = (herzInterval / sonogram.FBinWidth) * yscale;
+            double yTicInterval = (herzInterval / freqBinWidth) * yscale;
             int xOffset = xscale / 2;
             int yOffset = yscale / 2;
-            image = ImageTools.DrawXandYaxes(image, 30, xTicInterval, xOffset, yTicInterval, yOffset);
-
-            return image;
+            image = ImageTools.DrawXandYaxes(image, 30, cycleInterval, xTicInterval, xOffset, herzInterval, yTicInterval, yOffset);
+            var titleBar = DrawTitleBarOfOscillationSpectrogram(title, image.Width);
+            var imageList = new List<Image> { titleBar, image };
+            Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
+            return compositeBmp;
         }
 
-        public static double[,] GetFrequencyByOscillationsMatrix(double[,] M, double sensitivity, int sampleLength, string algorithmName)
+        public static double[,] GetFrequencyByOscillationsMatrix(double[,] spectrogram, double sensitivity, int sampleLength, string algorithmName)
         {
-            int frameCount = M.GetLength(0);
-            int freqBinCount = M.GetLength(1);
-            double[,] freqByOscMatrix = new double[ sampleLength / 2, freqBinCount];
+            int frameCount = spectrogram.GetLength(0);
+            int freqBinCount = spectrogram.GetLength(1);
+            double[,] freqByOscMatrix = new double[sampleLength / 2, freqBinCount];
 
             // over all frequency bins
             for (int bin = 0; bin < freqBinCount; bin++)
@@ -332,18 +356,21 @@ namespace AudioAnalysisTools
                 //bin = 50; // for debugging
                 //Console.WriteLine("Bin = {0}", bin);
                 double[,] subM;
-                if (bin == 0) // get average of three bins
+
+                // get average of three bins
+                if (bin == 0)
                 {
-                    subM = MatrixTools.Submatrix(M, 0, 0, frameCount - 1, 2);
+                    subM = MatrixTools.Submatrix(spectrogram, 0, 0, frameCount - 1, 2);
                 }
                 else // get average of three bins
                     if (bin == freqBinCount - 1)
                     {
-                        subM = MatrixTools.Submatrix(M, 0, bin - 2, frameCount - 1, bin);
+                        subM = MatrixTools.Submatrix(spectrogram, 0, bin - 2, frameCount - 1, bin);
                     }
-                    else // get average of three bins
+                    else
                     {
-                        subM = MatrixTools.Submatrix(M, 0, bin - 1, frameCount - 1, bin + 1);
+                        // get average of three bins
+                        subM = MatrixTools.Submatrix(spectrogram, 0, bin - 1, frameCount - 1, bin + 1);
                     }
 
                 var freqBin = MatrixTools.GetRowAverages(subM);
@@ -360,14 +387,14 @@ namespace AudioAnalysisTools
                     oscillationsSpectrum = GetOscillationArrayUsingSvdAndFft(xCorrByTimeMatrix, sensitivity, bin);
                 }
 
-                // set true to use the Autocorrelation - FFT option.
+                // Use the Autocorrelation - FFT option.
                 if (algorithmName.Equals("Autocorr-FFT"))
                 {
                     double[,] xCorrByTimeMatrix = Oscillations2014.GetXcorrByTimeMatrix(freqBin, sampleLength);
                     oscillationsSpectrum = GetOscillationArrayUsingFft(xCorrByTimeMatrix, sensitivity, bin);
                 }
 
-                // set true to use the Wavelet Transform
+                // Use the Wavelet Transform
                 if (algorithmName.Equals("Autocorr-WPD"))
                 {
                     double[,] xCorrByTimeMatrix = Oscillations2014.GetXcorrByTimeMatrix(freqBin, sampleLength);
@@ -381,9 +408,35 @@ namespace AudioAnalysisTools
 
                 // transfer final oscillation vector to the Oscillations by frequency matrix.
                 MatrixTools.SetColumn(freqByOscMatrix, bin, oscillationsSpectrum);
-            } // over all frequency bins
+            } // feareach frequency bin
 
             return freqByOscMatrix;
+        }
+
+        public static Image DrawTitleBarOfOscillationSpectrogram(string title, int width)
+        {
+            string longTitle = title + " (Herz*Cycles/s)";
+
+            var bmp = new Bitmap(width, 20);
+            var g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+            var stringFont = new Font("Arial", 9);
+            int x = 4;
+            g.DrawString("OSCILLATION SPECTROGRAM", stringFont, Brushes.Wheat, new PointF(x, 3));
+
+            var stringSize = g.MeasureString(title, stringFont);
+            x += stringSize.ToSize().Width + 70;
+            stringSize = g.MeasureString(longTitle, stringFont);
+            int x2 = width - stringSize.ToSize().Width - 2;
+            if (x2 > x)
+            {
+                g.DrawString(longTitle, stringFont, Brushes.Wheat, new PointF(x2, 3));
+            }
+
+            g.DrawLine(new Pen(Color.Gray), 0, 0, width, 0);//draw upper boundary
+
+            //g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
+            return bmp;
         }
 
         /// <summary>

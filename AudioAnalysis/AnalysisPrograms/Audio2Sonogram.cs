@@ -17,7 +17,7 @@ namespace AnalysisPrograms
     using System.Drawing.Imaging;
     using System.IO;
     using System.Reflection;
-
+    using System.Text;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using Acoustics.Tools.Wav;
@@ -358,8 +358,13 @@ namespace AnalysisPrograms
         {
             {
                 var sourceRecording = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav".ToFileInfo();
-                var output = @"C:\SensorNetworks\TestResults\FourSonograms".ToDirectoryInfo();
+                var output = @"C:\SensorNetworks\SoftwareTests\FourSonograms".ToDirectoryInfo();
                 var configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo();
+                var expectedResultsDir = new DirectoryInfo(Path.Combine(output.FullName, "ExpectedTestResults"));
+                if (!expectedResultsDir.Exists)
+                {
+                    expectedResultsDir.Create();
+                }
 
                 // 1. get the config dictionary
                 var configDict = GetConfigDictionary(configFile, true);
@@ -370,13 +375,29 @@ namespace AnalysisPrograms
                 int resampleRate = Convert.ToInt32(configDict[AnalysisKeys.ResampleRate]);
                 var tempAudioSegment = WavReader.CreateTemporaryAudioFile(sourceRecording, output, resampleRate);
 
-                // 3. GET 4 sonogram images
-
+                // 3. GET composite image of 4 sonograms
                 var sourceName = Path.GetFileNameWithoutExtension(sourceRecording.Name);
                 var soxImage = new FileInfo(Path.Combine(output.FullName, sourceName + ".SOX.png"));
                 var result = GenerateFourSpectrogramImages(tempAudioSegment, soxImage, configDict, dataOnly: false, makeSoxSonogram: false);
                 var outputImage = new FileInfo(Path.Combine(output.FullName, sourceName + ".FourSpectrograms.png"));
                 result.CompositeImage.Save(outputImage.FullName, ImageFormat.Png);
+
+                // construct output file names
+                var fileName = sourceName + ".FourSpectrogramsImageInfo";
+                var pathName = Path.Combine(output.FullName, fileName);
+                var csvFile1 = new FileInfo(pathName + ".json");
+
+                // Do my version of UNIT TESTING - This is the File Equality Test.
+                // First construct a test result file containing image info
+                var sb = new StringBuilder("Width,Height\n");
+                sb.AppendLine($"{result.CompositeImage.Width},{result.CompositeImage.Height}");
+                // Acoustics.Shared.Csv.Csv.WriteToCsv(csvFile1, sb);
+                FileTools.WriteTextFile(csvFile1.FullName, sb.ToString());
+
+                // Now do the test
+                var expectedTestFile1 = new FileInfo(Path.Combine(expectedResultsDir.FullName, "FourSpectrogramsTest.EXPECTED.json"));
+                TestTools.FileEqualityTest("Matrix Equality", csvFile1, expectedTestFile1);
+                Console.WriteLine("\n\n");
             }
         }
     }

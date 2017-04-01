@@ -2432,6 +2432,7 @@
                     bmp.SetPixel(c, r, grayScale[greyId]);
                 }//end all columns
             }//end all rows
+
             return bmp;
         }
 
@@ -2456,26 +2457,33 @@
                     bmp.SetPixel(c, r, Color.FromArgb(R, G, B));
                 }//end all columns
             }//end all rows
+
             return bmp;
         }
 
-        public static Image DrawXandYaxes(Image image, int scaleWidth, double xTicInterval, int xOffset, double yTicInterval, int yOffset)
+        public static Image DrawXandYaxes(Image image, int scaleWidth, double xInterval, double xTicInterval, int xOffset, double yInterval, double yTicInterval, int yOffset)
         {
-            Image returnImage = DrawYaxisScale(image, scaleWidth, yTicInterval, yOffset);
-            returnImage = DrawXaxisScale(returnImage, scaleWidth, xTicInterval, xOffset);
+            Image returnImage = DrawYaxisScale(image, scaleWidth, yInterval, yTicInterval, yOffset);
+            returnImage = DrawXaxisScale(returnImage, scaleWidth, xInterval, xTicInterval, xOffset);
             return returnImage;
         }
 
-        public static Image DrawYaxisScale(Image image, int scaleWidth, double yTicInterval, int yOffset)
+        /// <summary>
+        /// Draws horizontal gridlines on Image
+        /// </summary>
+        public static Image DrawYaxisScale(Image image, int scaleWidth, double yInterval, double yTicInterval, int yOffset)
         {
             int ticCount = (int)(image.Height / yTicInterval);
-            // draw gridlines on Image
-            Pen pen = new Pen(Color.White);
-            Graphics g = Graphics.FromImage(image);
+            var pen = new Pen(Color.White);
+            var stringFont = new Font("Arial", 12);
+
+            var g = Graphics.FromImage(image);
             for (int i = 1; i <= ticCount; i++)
             {
                 int y1 = image.Height - (int)(i * yTicInterval) + yOffset;
                 g.DrawLine(pen, 0, y1, image.Width - 1, y1);
+                string value = Math.Round(yInterval * i).ToString();
+                g.DrawString(value, stringFont, Brushes.White, new PointF(2, y1 + 1));
             }
 
             Image yAxisImage = new Bitmap(scaleWidth, image.Height);
@@ -2499,17 +2507,12 @@
         /// <summary>
         /// assumes the y-axis has been drawn already
         /// </summary>
-        /// <param name="image"></param>
-        /// <param name="scaleHeight"></param>
-        /// <param name="yTicInterval"></param>
-        /// <returns></returns>
-        public static Image DrawXaxisScale(Image image, int scaleHeight, double xTicInterval, int xOffset)
+        public static Image DrawXaxisScale(Image image, int scaleHeight, double xInterval, double xTicInterval, int xOffset)
         {
             int ticCount = (int)((image.Width - scaleHeight) / xTicInterval);
-
-            // draw gridlines on Image
-            Pen pen = new Pen(Color.White);
-            Graphics g = Graphics.FromImage(image);
+            var pen = new Pen(Color.White);
+            var stringFont = new Font("Arial", 12);
+            var g = Graphics.FromImage(image);
             for (int i = 1; i <= ticCount; i++)
             {
                 int x1 = scaleHeight + (int)(i * xTicInterval) - xOffset;
@@ -2525,6 +2528,9 @@
                 int x1 = scaleHeight + (int)(i * xTicInterval) - xOffset;
                 g.DrawLine(pen, x1, 0, x1, scaleHeight-1);
                 g.DrawLine(pen, x1 + 1, 0, x1 + 1, scaleHeight - 1);
+
+                string value = Math.Round(xInterval * i).ToString();
+                g.DrawString(value, stringFont, Brushes.Black, new PointF(x1, 1));
             }
 
             g.DrawRectangle(pen, 0, 0, image.Width - 1, scaleHeight - 1);
