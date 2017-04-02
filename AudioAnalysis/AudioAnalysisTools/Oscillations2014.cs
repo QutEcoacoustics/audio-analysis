@@ -76,7 +76,7 @@ namespace AudioAnalysisTools
             {
                 string drive = "C";
                 var sourceRecording = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav".ToFileInfo();
-                var output = @"C:\SensorNetworks\SoftwareTests\FourSonograms".ToDirectoryInfo();
+                var output = @"C:\SensorNetworks\SoftwareTests\TestFourSonograms".ToDirectoryInfo();
                 var configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo();
                 var expectedResultsDir = new DirectoryInfo(Path.Combine(output.FullName, "ExpectedTestResults"));
                 if (!expectedResultsDir.Exists)
