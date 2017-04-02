@@ -61,8 +61,10 @@ namespace AnalysisPrograms
                 //FrequencyScale.TESTMETHOD_OctaveFrequencyScale1();
                 //FrequencyScale.TESTMETHOD_OctaveFrequencyScale2();
 
-                Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms();
-                Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
+                //Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms();
+                //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
+
+                ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFiles();
             }
 
             if (false)
