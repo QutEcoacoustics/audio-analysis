@@ -7,7 +7,9 @@ namespace AudioAnalysisTools.DSP
     using System;
     using System.Drawing;
     using System.Drawing.Imaging;
+    using System.IO;
     using StandardSpectrograms;
+    using TowseyLibrary;
     using WavTools;
 
     // IMPORTANT NOTE: If you are converting Herz scale from LINEAR to OCTAVE, this conversion MUST be done BEFORE noise reduction
@@ -286,7 +288,11 @@ namespace AudioAnalysisTools.DSP
         public static void TESTMETHOD_LinearFrequencyScaleDefault()
         {
             var recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
+            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
+            var expectedResultsDir = Path.Combine(outputDir.FullName, "ExpectedTestResults").ToDirectoryInfo();
             var outputPath = @"C:\SensorNetworks\TestResults\FrequencyScale\linearScaleSonogram_default.png";
+            var opFileStem = "BAC2_20071008";
+
             var recording = new AudioRecording(recordingPath);
 
             // default linear scale
@@ -312,6 +318,16 @@ namespace AudioAnalysisTools.DSP
 
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             image.Save(outputPath, ImageFormat.Png);
+
+            // DO FILE EQUALITY TEST
+            string testName = "testName";
+            var expectedTestFile = new FileInfo(Path.Combine(expectedResultsDir.FullName, "FrequencyDefaultScaleTest.EXPECTED.json"));
+            var resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyDefaultScaleTestResults.json"));
+            Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(resultFile, freqScale.GridLineLocations);
+            TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
+
+            LoggedConsole.WriteLine("Completed Frequency Scale test");
+            Console.WriteLine("\n\n");
         }
 
         /// <summary>

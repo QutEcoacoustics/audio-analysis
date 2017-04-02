@@ -410,9 +410,6 @@ namespace AnalysisPrograms
                     (arguments.InputDataDirectories ?? new DirectoryInfo[0]).Concat(new[] {arguments.InputDataDirectory}).ToArray();
             }
 
-            //Log.Warn("DrawImages option hard coded to be on in this version");
-            //arguments.DrawImages = true;
-
             if (verbose)
             {
                 string date = "# DATE AND TIME: " + DateTime.Now;
@@ -1048,25 +1045,26 @@ namespace AnalysisPrograms
             return eventsPerUnitTime;
         }
 
-        // ########################################  CONCATENATE INDEX FILES TEST METHOD BELOW HERE ######################################################
+        // ########################################  CONCATENATE INDEX FILES TEST METHODS BELOW HERE ######################################################
 
         /// <summary>
         /// Test data derived from ZuZZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016.
+        /// This tests concatenation when ConcatenateEverythingYouCanLayYourHandsOn = true
         /// This test was set up October 2016. The test was transfered to this separate TESTMETHOD in April 2017.
         /// </summary>
-        public static void TESTMETHOD_ConcatenateIndexFiles()
+        public static void TESTMETHOD_ConcatenateIndexFilesTest1()
         {
             // Set the drive: work = G; home = E
             string drive = "C";
 
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\"), };
+            DirectoryInfo[] dataDirs =
+            {
+                new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\"),
+            };
+
             var outputDir = @"C:\SensorNetworks\SoftwareTests\TestConcatenation".ToDirectoryInfo();
-
-            // this is a directory filter to locate only the required files
-            string testPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\ExpectedOutput\\";
             var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\TEST_SpectrogramFalseColourConfig.yml");
-
             string opFileStem = "Indonesia2016";
 
             var arguments = new Arguments
@@ -1092,65 +1090,89 @@ namespace AnalysisPrograms
                 EventFilePattern = null,
             };
 
-            // Directory containing benchmark TEST files. For use by software manager only.
-            var testDirectory = new DirectoryInfo(testPath);
+            ConcatenateIndexFiles.Execute(arguments);
 
-            // ################### TEST 1 CONCATENATION:  Do test of ConcatenateEverythingYouCanLayYourHandsOn
-            //string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test1_Output\\";
-            var dto = (DateTimeOffset)arguments.StartDate;
-            var dateString = $"{dto.Year}{dto.Month:D2}{dto.Day:D2}";
-            var fileName = opFileStem + "Concat_Test1" + dateString;
-
-            var resultsDir = new DirectoryInfo(Path.Combine(outputDir.FullName, arguments.FileStemName, dateString));
-            if (!resultsDir.Exists)
-            {
-                resultsDir.Create();
-            }
-
+            // Directory containing Benchmark TEST files. For use by software manager only.
             var expectedResultsDir = new DirectoryInfo(Path.Combine(outputDir.FullName, "ExpectedTestResults"));
             if (!expectedResultsDir.Exists)
             {
                 expectedResultsDir.Create();
             }
 
-            ConcatenateIndexFiles.Execute(arguments);
+            string testName = "test1A";
+            var expectedTestFile = new FileInfo(Path.Combine(expectedResultsDir.FullName, "Concat_Test1A_SummaryIndexStatistics.EXPECTED.json"));
+            var resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "_Test1A_SummaryIndexStatistics.json"));
+            TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
 
-            var expectedTestFile1 = new FileInfo(Path.Combine(testDirectory.FullName, "Concat_Test1__SummaryIndexStatistics.EXPECTED.json"));
-            var expectedTestFile2 = new FileInfo(Path.Combine(testDirectory.FullName, "Concat_Test1__SpectralIndexStatistics.EXPECTED.json"));
+            testName = "test1B";
+            expectedTestFile = new FileInfo(Path.Combine(expectedResultsDir.FullName, "Concat_Test1B_SummaryIndexStatistics.EXPECTED.json"));
+            resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "_Test1B_SummaryIndexStatistics.json"));
+            TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
 
-            var trialFile1 = new FileInfo(Path.Combine(resultsDir.FullName, fileName + "__SummaryIndexStatistics.json"));
-            var trialFile2 = new FileInfo(Path.Combine(resultsDir.FullName, fileName + "__SpectralIndexStatistics.json"));
-
-            string testName1 = "test1";
-            TestTools.FileEqualityTest(testName1, trialFile1, expectedTestFile1);
-            string testName2 = "test2";
-            TestTools.FileEqualityTest(testName2, trialFile2, expectedTestFile2);
-            Log.Success("Complete ConcatenateEverythingYouCanLayYourHandsOn");
+            Log.Success("Completed two concatenation tests where ConcatenateEverythingYouCanLayYourHandsOn = true");
             Console.WriteLine("\n\n");
+        }
 
-            // ############## TEST 2: Do test of CONCATENATE A 24 hour BLOCK of DATA
-            fileName = opFileStem + "Concat_Test2" + dateString;
+        /// <summary>
+        /// Test data derived from ZuZZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016.
+        /// TEST 2: Do test of CONCATENATE A 24 hour BLOCK of DATA
+        /// This test was set up October 2016. The test was transfered to this separate TESTMETHOD in April 2017.
+        /// </summary>
+        public static void TESTMETHOD_ConcatenateIndexFilesTest2()
+        {
+            // Set the drive: work = G; home = E
+            string drive = "C";
 
-            //string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test2_Output\\";
-            arguments.ConcatenateEverythingYouCanLayYourHandsOn = false; // 24 hour blocks only
-            arguments.StartDate = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
-            arguments.EndDate = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
+            // top level directory
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\"), };
+            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestConcatenation".ToDirectoryInfo();
+            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\TEST_SpectrogramFalseColourConfig.yml");
+            string opFileStem = "Indonesia2016";
+
+            var arguments = new Arguments
+            {
+                InputDataDirectories = dataDirs,
+                OutputDirectory = outputDir,
+                DirectoryFilter = "*.wav",
+                FileStemName = opFileStem,
+                StartDate = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero),
+                EndDate = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero),
+                IndexPropertiesConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Concat_TEST_IndexPropertiesConfig.yml"),
+                FalseColourSpectrogramConfig = falseColourSpgConfig,
+                ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
+                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
+                ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
+                TimeSpanOffsetHint = TimeSpan.FromHours(8),
+                SunRiseDataFile = null,
+                DrawImages = true,
+                Verbose = true,
+
+                // following used to add in a recognizer score track
+                EventDataDirectories = null,
+                EventFilePattern = null,
+            };
 
             ConcatenateIndexFiles.Execute(arguments);
 
-            expectedTestFile1 = new FileInfo(Path.Combine(testDirectory.FullName, "Concat_Test2__SummaryIndexStatistics.EXPECTED.json"));
-            expectedTestFile2 = new FileInfo(Path.Combine(testDirectory.FullName, "Concat_Test2__SpectralIndexStatistics.EXPECTED.json"));
+            // Directory containing Benchmark TEST files. For use by software manager only.
+            var expectedResultsDir = new DirectoryInfo(Path.Combine(outputDir.FullName, "ExpectedTestResults"));
+            if (!expectedResultsDir.Exists)
+            {
+                expectedResultsDir.Create();
+            }
 
-            trialFile1 = new FileInfo(Path.Combine(resultsDir.FullName, fileName + "__SummaryIndexStatistics.json"));
-            trialFile2 = new FileInfo(Path.Combine(resultsDir.FullName, fileName + "__SpectralIndexStatistics.json"));
+            string testName = "test2A";
+            var expectedTestFile = new FileInfo(Path.Combine(expectedResultsDir.FullName, "Concat_Test2A_SummaryIndexStatistics.EXPECTED.json"));
+            var resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "_Test2A_SummaryIndexStatistics.json"));
+            TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
 
-            testName1 = "test1";
-            TestTools.FileEqualityTest(testName1, trialFile1, expectedTestFile1);
-            testName2 = "test2";
-            TestTools.FileEqualityTest(testName2, trialFile2, expectedTestFile2);
+            testName = "test2B";
+            expectedTestFile = new FileInfo(Path.Combine(expectedResultsDir.FullName, "Concat_Test2B_SummaryIndexStatistics.EXPECTED.json"));
+            resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "_Test2B_SummaryIndexStatistics.json"));
+            TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
 
-            Log.Success("Completed two concatenation tests.");
-
+            Log.Success("Completed two concatenation tests where ConcatenateEverythingYouCanLayYourHandsOn = false");
+            Console.WriteLine("\n\n");
         }
     }
 }
