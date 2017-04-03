@@ -47,7 +47,6 @@ namespace AnalysisPrograms
 
         public static void Dev(Arguments arguments)
         {
-            //SET VERBOSITY
             var tStart = DateTime.Now;
             Log.Verbosity = 1;
             Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
@@ -57,16 +56,16 @@ namespace AnalysisPrograms
                 // The following are test methods to confirm that the frequency scale code is working
                 // They are also good tests for the making of standard sonograms.
                 FrequencyScale.TESTMETHOD_LinearFrequencyScaleDefault();
-                //FrequencyScale.TESTMETHOD_LinearFrequencyScale();
-                //FrequencyScale.TESTMETHOD_OctaveFrequencyScale1();
+                FrequencyScale.TESTMETHOD_LinearFrequencyScale();
+                FrequencyScale.TESTMETHOD_OctaveFrequencyScale1();
                 //FrequencyScale.TESTMETHOD_OctaveFrequencyScale2();
 
-                //Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms();
+                Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms();
                 Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
 
-                // the following two test methods have yet to be debugged as of April 2nd 2017.
-                ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest1();
-                ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest2();
+                // The following two test methods have yet to be debugged as of April 2nd 2017.
+                //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest1();
+                //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest2();
             }
 
             if (false)

@@ -16,7 +16,7 @@ namespace AudioAnalysisTools.DSP
 
     /// <summary>
     /// All the below octave scale options are designed for a final freq scale having 256 bins.
-    /// Scale name indicates its structure.You cannot vary the structure.
+    /// Scale name indicates its structure. You cannot vary the structure.
     /// </summary>
     public enum FreqScaleType
     {
@@ -290,7 +290,7 @@ namespace AudioAnalysisTools.DSP
             var recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
             var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
             var expectedResultsDir = Path.Combine(outputDir.FullName, "ExpectedTestResults").ToDirectoryInfo();
-            var outputPath = @"C:\SensorNetworks\TestResults\FrequencyScale\linearScaleSonogram_default.png";
+            var outputImagePath = Path.Combine(outputDir.FullName, "linearScaleSonogram_default.png");
             var opFileStem = "BAC2_20071008";
 
             var recording = new AudioRecording(recordingPath);
@@ -304,8 +304,9 @@ namespace AudioAnalysisTools.DSP
                 WindowSize = freqScale.FinalBinCount * 2,
                 WindowOverlap = 0.2,
                 SourceFName = recording.BaseName,
-                NoiseReductionType = NoiseReductionType.None,
+
                 //NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
             };
 
@@ -317,7 +318,7 @@ namespace AudioAnalysisTools.DSP
             sonogram.Data = dataMatrix;
 
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputPath, ImageFormat.Png);
+            image.Save(outputImagePath, ImageFormat.Png);
 
             // DO FILE EQUALITY TEST
             string testName = "testName";
@@ -326,7 +327,7 @@ namespace AudioAnalysisTools.DSP
             Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(resultFile, freqScale.GridLineLocations);
             TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
 
-            LoggedConsole.WriteLine("Completed Frequency Scale test");
+            LoggedConsole.WriteLine("Completed Default Linear Frequency Scale test");
             Console.WriteLine("\n\n");
         }
 
@@ -337,7 +338,11 @@ namespace AudioAnalysisTools.DSP
         public static void TESTMETHOD_LinearFrequencyScale()
         {
             var recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
-            var outputPath = @"C:\SensorNetworks\TestResults\FrequencyScale\linearScaleSonogram.png";
+            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
+            var expectedResultsDir = Path.Combine(outputDir.FullName, "ExpectedTestResults").ToDirectoryInfo();
+            var outputImagePath = Path.Combine(outputDir.FullName, "linearScaleSonogram.png");
+            var opFileStem = "BAC2_20071008";
+
             var recording = new AudioRecording(recordingPath);
 
             // specfied linear scale
@@ -352,8 +357,9 @@ namespace AudioAnalysisTools.DSP
                 WindowSize = freqScale.FinalBinCount * 2,
                 WindowOverlap = 0.2,
                 SourceFName = recording.BaseName,
-                NoiseReductionType = NoiseReductionType.None,
+
                 //NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
             };
 
@@ -365,7 +371,17 @@ namespace AudioAnalysisTools.DSP
             sonogram.Configuration.WindowSize = freqScale.WindowSize;
 
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputPath, ImageFormat.Png);
+            image.Save(outputImagePath, ImageFormat.Png);
+
+            // DO FILE EQUALITY TEST
+            string testName = "testName";
+            var expectedTestFile = new FileInfo(Path.Combine(expectedResultsDir.FullName, "FrequencyLinearScaleTest.EXPECTED.json"));
+            var resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyLinearScaleTestResults.json"));
+            Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(resultFile, freqScale.GridLineLocations);
+            TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
+
+            LoggedConsole.WriteLine("Completed Linear Frequency Scale test");
+            Console.WriteLine("\n\n");
         }
 
         /// <summary>
@@ -375,7 +391,11 @@ namespace AudioAnalysisTools.DSP
         public static void TESTMETHOD_OctaveFrequencyScale1()
         {
             var recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
-            var outputPath = @"C:\SensorNetworks\TestResults\FrequencyScale\octaveFrequencyScale1.png";
+            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
+            var expectedResultsDir = Path.Combine(outputDir.FullName, "ExpectedTestResults").ToDirectoryInfo();
+            var outputImagePath = Path.Combine(outputDir.FullName, "octaveFrequencyScale1.png");
+            var opFileStem = "BAC2_20071008";
+
             var recording = new AudioRecording(recordingPath);
 
             // default octave scale
@@ -401,7 +421,17 @@ namespace AudioAnalysisTools.DSP
             sonogram.Configuration.WindowSize = freqScale.WindowSize;
 
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputPath, ImageFormat.Png);
+            image.Save(outputImagePath, ImageFormat.Png);
+
+            // DO FILE EQUALITY TEST
+            string testName = "test1";
+            var expectedTestFile = new FileInfo(Path.Combine(expectedResultsDir.FullName, "FrequencyOctaveScaleTest1.EXPECTED.json"));
+            var resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyOctaveScaleTest1Results.json"));
+            Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(resultFile, freqScale.GridLineLocations);
+            TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
+
+            LoggedConsole.WriteLine("Completed Octave Frequency Scale test 1");
+            Console.WriteLine("\n\n");
         }
 
         /// <summary>
@@ -415,7 +445,11 @@ namespace AudioAnalysisTools.DSP
         public static void TESTMETHOD_OctaveFrequencyScale2()
         {
             var recordingPath = @"C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit.wav";
-            var outputPath = @"C:\SensorNetworks\TestResults\FrequencyScale\JascoMarineGBR1.png";
+            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
+            var expectedResultsDir = Path.Combine(outputDir.FullName, "ExpectedTestResults").ToDirectoryInfo();
+            var outputImagePath = Path.Combine(outputDir.FullName, "JascoMarineGBR1.png");
+            var opFileStem = "JascoMarineGBR1";
+
             var recording = new AudioRecording(recordingPath);
             var fst = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
             var freqScale = new FrequencyScale(fst);
@@ -437,7 +471,17 @@ namespace AudioAnalysisTools.DSP
             sonogram.Configuration.WindowSize = freqScale.WindowSize;
 
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputPath, ImageFormat.Png);
+            image.Save(outputImagePath, ImageFormat.Png);
+
+            // DO FILE EQUALITY TEST
+            string testName = "test2";
+            var expectedTestFile = new FileInfo(Path.Combine(expectedResultsDir.FullName, "FrequencyOctaveScaleTest2.EXPECTED.json"));
+            var resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyOctaveScaleTest2Results.json"));
+            Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(resultFile, freqScale.GridLineLocations);
+            TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
+
+            LoggedConsole.WriteLine("Completed Octave Frequency Scale test 2");
+            Console.WriteLine("\n\n");
         }
     }
 }
