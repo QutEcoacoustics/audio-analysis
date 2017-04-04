@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Drawing.Imaging;
     using System.IO;
-    using System.Text;
+    using Acoustics.Shared;
     using EcoSounds.Mvc.Tests;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.StandardSpectrograms;
@@ -14,7 +14,7 @@
     using TowseyLibrary;
 
     /// <summary>
-    /// Summary description for FrequencyScaleTests
+    /// Test methods for the various Frequency Scales
     /// </summary>
     [TestClass]
     public class FrequencyScaleTests
@@ -30,9 +30,9 @@
         private DirectoryInfo outputDirectory;
 
         /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
+        /// Gets or sets the test context which provides
+        /// information about and functionality for the current test run.
+        /// </summary>
         public TestContext TestContext
         {
             get
@@ -46,7 +46,8 @@
         }
 
         #region Additional test attributes
-        //
+
+        /*
         // You can use the following additional attributes as you write your tests:
         //
         // Use ClassInitialize to run code before running the first test in the class
@@ -64,7 +65,7 @@
         // Use TestCleanup to run code after each test has run
         // [TestCleanup()]
         // public void MyTestCleanup() { }
-        //
+        */
 
         [TestInitialize]
         public void Setup()
@@ -77,7 +78,6 @@
         {
             TestHelper.DeleteTempDir(this.outputDirectory);
         }
-
 
         #endregion
 
@@ -117,15 +117,17 @@
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             image.Save(outputImagePath, ImageFormat.Png);
 
-            // DO FILE EQUALITY TEST
-            string testName = "testName";
-            var expectedTestFile = new FileInfo(Path.Combine(expectedResultsDir.FullName, "FrequencyDefaultScaleTest.EXPECTED.json"));
-            var resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyDefaultScaleTestResults.json"));
+            // DO UNIT TESTING
+            var expectedTestFile = new FileInfo("FrequencyScale\\FrequencyDefaultScaleTest.EXPECTED.json");
+            var resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyDefaultScaleTest.ACTUAL.json"));
+            Json.Serialise(resultFile, freqScale.GridLineLocations);
 
-            Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(resultFile, freqScale.GridLineLocations);
-            TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
-
+            // Check that freqScale.GridLineLocations are correct
             TextFileEqualityTests.TextFileEqual(expectedTestFile, resultFile);
+
+            // Check that image dimensions are correct
+            Assert.AreEqual(256, image.Height);
+            Assert.AreEqual(1000, image.Width);
         }
     }
 }
