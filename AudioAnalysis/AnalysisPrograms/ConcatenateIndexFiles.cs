@@ -1064,7 +1064,7 @@ namespace AnalysisPrograms
             };
 
             var outputDir = @"C:\SensorNetworks\SoftwareTests\TestConcatenation".ToDirectoryInfo();
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\TEST_SpectrogramFalseColourConfig.yml");
+            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\TEST_SpectrogramFalseColourConfig.yml");
             string opFileStem = "Indonesia2016";
 
             var arguments = new Arguments

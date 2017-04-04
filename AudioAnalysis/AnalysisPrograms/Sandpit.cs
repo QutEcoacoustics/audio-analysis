@@ -55,13 +55,15 @@ namespace AnalysisPrograms
             {
                 // The following are test methods to confirm that the frequency scale code is working
                 // They are also good tests for the making of standard sonograms.
-                FrequencyScale.TESTMETHOD_LinearFrequencyScaleDefault();
-                FrequencyScale.TESTMETHOD_LinearFrequencyScale();
-                FrequencyScale.TESTMETHOD_OctaveFrequencyScale1();
-                //FrequencyScale.TESTMETHOD_OctaveFrequencyScale2();
+                //FrequencyScale.TESTMETHOD_LinearFrequencyScaleDefault();
+                //FrequencyScale.TESTMETHOD_LinearFrequencyScale();
+                //FrequencyScale.TESTMETHOD_OctaveFrequencyScale1();
 
-                Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms();
-                Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
+                // There is BufferedGraphics in the following test method.
+                FrequencyScale.TESTMETHOD_OctaveFrequencyScale2();
+
+                //Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms();
+                //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
 
                 // The following two test methods have yet to be debugged as of April 2nd 2017.
                 //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest1();
