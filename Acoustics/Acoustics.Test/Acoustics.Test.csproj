@@ -135,6 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArrayExtensionsTests.cs" />
+    <Compile Include="AudioAnalysisTools\DSP\FrequencyScaleTests.cs" />
     <Compile Include="AudioAnalysisTools\TilerTests.cs" />
     <Compile Include="FileDateHelpersTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -142,6 +143,7 @@
     <Compile Include="Shared\ConfigFileTests.cs" />
     <Compile Include="Shared\YamlTests.cs" />
     <Compile Include="TestHelpers.cs" />
+    <Compile Include="TestHelpers\TextFileEqualityTests.cs" />
     <Compile Include="Tools\AudioUtilityInfoTests.cs" />
     <Compile Include="Tools\AudioUtilityMp3Tests.cs" />
     <Compile Include="Tools\AudioUtilityWavpackTests.cs" />
