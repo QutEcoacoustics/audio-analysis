@@ -10,10 +10,13 @@ namespace TowseyLibrary
 
     public static class TestTools
     {
+        public const string ExpectedResultsDir = "ExpectedTestResults";
+
         public static void RecognizerScoresTest(string fileName, DirectoryInfo opDir, string testName, double[] scoreArray)
         {
             var testDir = new DirectoryInfo(opDir + $"\\UnitTest_{testName}");
-            var benchmarkDir = new DirectoryInfo(testDir + "\\ExpectedOutput");
+            var benchmarkDir = new DirectoryInfo(Path.Combine(testDir.FullName, TestTools.ExpectedResultsDir));
+
             if (!benchmarkDir.Exists)
             {
                 benchmarkDir.Create();
@@ -91,6 +94,15 @@ namespace TowseyLibrary
             if (!benchmarkFile.Exists)
             {
                 LoggedConsole.WriteWarnLine("   " + testName + ": the Benchmark File <" + benchmarkFile.Name + "> does not exist.");
+
+                // check that the benchmark directory exists - if not create it.
+                var benchmarkDir = benchmarkFile.Directory;
+                if (!benchmarkDir.Exists)
+                {
+                    LoggedConsole.WriteWarnLine("    Creating Benchmark Directory");
+                    benchmarkDir.Create();
+                }
+
                 LoggedConsole.WriteWarnLine("    Writing the Test File as a future Benchmark File");
                 File.Copy(testFile.FullName, benchmarkFile.FullName, false);
                 return;
