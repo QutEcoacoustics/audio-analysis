@@ -136,6 +136,7 @@
   <ItemGroup>
     <Compile Include="ArrayExtensionsTests.cs" />
     <Compile Include="AudioAnalysisTools\DSP\FrequencyScaleTests.cs" />
+    <Compile Include="AudioAnalysisTools\StandardSpectrograms\SonogramTests.cs" />
     <Compile Include="AudioAnalysisTools\TilerTests.cs" />
     <Compile Include="FileDateHelpersTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -212,6 +213,9 @@
     <Analyzer Include="..\..\AudioAnalysis\packages\StyleCop.Analyzers.1.1.0-beta001\analyzers\dotnet\cs\Newtonsoft.Json.dll" />
     <Analyzer Include="..\..\AudioAnalysis\packages\StyleCop.Analyzers.1.1.0-beta001\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
     <Analyzer Include="..\..\AudioAnalysis\packages\StyleCop.Analyzers.1.1.0-beta001\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="AudioAnalysisTools\Oscillations2014\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
