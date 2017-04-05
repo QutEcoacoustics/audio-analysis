@@ -278,6 +278,7 @@ namespace AudioAnalysisTools.DSP
 
         // ****************************************************************************************************************************
         // ********  BELOW ARE SET OF TEST METHODS FOR THE VARIOUS FREQUENCY SCALES
+        // ********  They should probably be deleted as they have been replaced by proper VS Unit Testing methods in DSP.FrequencyScaletests.cs.
 
         /// <summary>
         /// METHOD TO CHECK IF Default linear FREQ SCALE IS WORKING
@@ -454,14 +455,14 @@ namespace AudioAnalysisTools.DSP
 
             var sonoConfig = new SonogramConfig
             {
-                WindowSize = freqScale.FinalBinCount * 2,
+                WindowSize = freqScale.WindowSize,
                 WindowOverlap = 0.2,
                 SourceFName = recording.BaseName,
                 NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
             };
 
-            var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+            var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
             sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
 
             // DO NOISE REDUCTION

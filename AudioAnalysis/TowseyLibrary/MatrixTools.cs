@@ -569,15 +569,11 @@ namespace TowseyLibrary
             return op;
         }
 
-
-
-
         /// <summary>
         /// convert values to Decibels.
         /// Assume that all values are positive
         /// </summary>
         /// <param name="m">matrix of positive power values</param>
-        /// <returns></returns>
         public static double[,] Power2DeciBels(double[,] m, out double min, out double max)
         {
             min = Double.MaxValue;
@@ -588,34 +584,37 @@ namespace TowseyLibrary
             double[,] ret = new double[rows, cols];
 
             for (int i = 0; i < rows; i++)
+            {
                 for (int j = 0; j < cols; j++)
                 {
-                    double dBels = 10 * Math.Log10(m[i, j]);    //convert power to decibels
-                                                                //NOTE: the decibels calculation should be a ratio. 
-                                                                // Here the ratio is implied ie relative to the power in the original normalised signal
-                                                                //        if (dBels <= min) min = dBels;
-                                                                //      else
-                                                                //    if (dBels >= max) max = dBels;
+                    double dBels = 10 * Math.Log10(m[i, j]); //convert power to decibels
+
+                    //NOTE: the decibels calculation should be a ratio.
+                    // Here the ratio is implied ie relative to the power in the original normalised signal
+                    //        if (dBels <= min) min = dBels;
+                    //        else
+                    //        if (dBels >= max) max = dBels;
                     ret[i, j] = dBels;
                 }
+            }
+
             return ret;
         }
 
-
-
-        public static double[,] Matrix2ZScores(double[,] M, double av, double sd)
+        public static double[,] Matrix2ZScores(double[,] matrix, double av, double sd)
         {
-            int rowCount = M.GetLength(0);
-            int colCount = M.GetLength(1);
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
             double[,] op = new double[rowCount, colCount];
 
             for (int r = 0; r < rowCount; r++)
             {
                 for (int c = 0; c < colCount; c++)
                 {
-                    op[r, c] = (M[r, c] - av) / sd;
+                    op[r, c] = (matrix[r, c] - av) / sd;
                 }
             }
+
             return op;
         }
 

@@ -8,6 +8,11 @@ namespace TowseyLibrary
     using System.Globalization;
     using System.IO;
 
+    /// <summary>
+    /// This class was written when I was starting to do DIY Unit tests.
+    /// It should be depracated but is still being referenced.
+    /// I am now using the you-beaut Unit testing tools provided by VS.
+    /// </summary>
     public static class TestTools
     {
         public const string ExpectedResultsDir = "ExpectedTestResults";
