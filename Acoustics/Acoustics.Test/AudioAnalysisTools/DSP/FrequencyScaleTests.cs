@@ -5,7 +5,6 @@
 namespace Acoustics.Test.AudioAnalysisTools.DSP
 {
     using System;
-    using System.Collections.Generic;
     using System.Drawing.Imaging;
     using System.IO;
     using Acoustics.Shared;
@@ -16,7 +15,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
-    using TowseyLibrary;
 
     /// <summary>
     /// Test methods for the various Frequency Scales
@@ -24,31 +22,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     [TestClass]
     public class FrequencyScaleTests
     {
-        public FrequencyScaleTests()
-        {
-            //
-            // TODO: Add constructor logic here
-            //
-        }
-
-        private TestContext testContextInstance;
         private DirectoryInfo outputDirectory;
-
-        /// <summary>
-        /// Gets or sets the test context which provides
-        /// information about and functionality for the current test run.
-        /// </summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
 
         #region Additional test attributes
 
@@ -63,7 +37,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         // [ClassCleanup()]
         // public static void MyClassCleanup() { }
         //
-        // Use TestInitialize to run code before running each test 
+        // Use TestInitialize to run code before running each test
         // [TestInitialize()]
         // public void MyTestInitialize() { }
         //
@@ -93,10 +67,11 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         [TestMethod]
         public void LinearFrequencyScaleDefault()
         {
-            var recordingPath = @"BAC\BAC2_20071008-085040.wav";
+            // relative path because post-Build command transfers files to ...\\Work\GitHub\...\bin\Debug subfolder.
+            var recordingPath = @"Recordings\BAC2_20071008-085040.wav";
+            var opFileStem = "BAC2_20071008";
             var outputDir = this.outputDirectory;
-            var expectedResultsDir = Path.Combine(outputDir.FullName, "ExpectedTestResults").ToDirectoryInfo();
-            var outputImagePath = Path.Combine(outputDir.FullName, "linearScaleSonogram_default.png");
+            var outputImagePath = Path.Combine(outputDir.FullName, "DefaultLinearScaleSonogram.png");
 
             var recording = new AudioRecording(recordingPath);
 
@@ -124,23 +99,24 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             image.Save(outputImagePath, ImageFormat.Png);
 
             // DO UNIT TESTING
-            var opFileStem = "BAC2_20071008";
-
-            // Check that freqScale.OctaveBinBounds are correct
-            var expectedTestFile1 = new FileInfo("FrequencyScale\\FrequencyDefaultOctaveBinBounds.EXPECTED.json");
-            var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyDefaultOctaveBinBounds.ACTUAL.json"));
-            Json.Serialise(resultFile1, freqScale.OctaveBinBounds);
-            TextFileEqualityTests.TextFileEqual(expectedTestFile1, resultFile1);
+            var stemOfExpectedFile = opFileStem + "_DefaultLinearScaleGridLineLocations.EXPECTED.json";
+            var stemOfActualFile = opFileStem + "_DefaultLinearScaleGridLineLocations.ACTUAL.json";
 
             // Check that freqScale.GridLineLocations are correct
-            var expectedTestFile2 = new FileInfo("FrequencyScale\\FrequencyDefaultGridLineLocations.EXPECTED.json");
-            var resultFile2 = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyDefaultGridLineLocations.ACTUAL.json"));
-            Json.Serialise(resultFile2, freqScale.GridLineLocations);
-            TextFileEqualityTests.TextFileEqual(expectedTestFile2, resultFile2);
+            var expectedFile1 = new FileInfo("FrequencyScale\\" + stemOfExpectedFile);
+            if (!expectedFile1.Exists)
+            {
+                LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
+                LoggedConsole.WriteErrorLine("If ACTUAL results file is correct, move it to dir <...\\TestResources\\FrequencyScale> and change its suffix to <.EXPECTED.json>");
+            }
+
+            var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
+            Json.Serialise(resultFile1, freqScale.GridLineLocations);
+            TextFileEqualityTests.TextFileEqual(expectedFile1, resultFile1);
 
             // Check that image dimensions are correct
-            Assert.AreEqual(256, image.Height);
-            Assert.AreEqual(1000, image.Width);
+            Assert.AreEqual(310, image.Height);
+            Assert.AreEqual(3247, image.Width);
         }
 
         /// <summary>
@@ -150,10 +126,10 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         [TestMethod]
         public void LinearFrequencyScale()
         {
-            var recordingPath = @"BAC\BAC2_20071008-085040.wav";
+            var recordingPath = @"Recordings\BAC2_20071008-085040.wav";
+            var opFileStem = "BAC2_20071008";
             var outputDir = this.outputDirectory;
-            var expectedResultsDir = Path.Combine(outputDir.FullName, TestTools.ExpectedResultsDir).ToDirectoryInfo();
-            var outputImagePath = Path.Combine(outputDir.FullName, "linearScaleSonogram.png");
+            var outputImagePath = Path.Combine(outputDir.FullName, "LinearScaleSonogram.png");
 
             var recording = new AudioRecording(recordingPath);
 
@@ -184,23 +160,24 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             image.Save(outputImagePath, ImageFormat.Png);
 
             // DO FILE EQUALITY TEST
-            var opFileStem = "BAC2_20071008";
-
-            // Check that freqScale.OctaveBinBounds are correct
-            var expectedTestFile1 = new FileInfo("FrequencyScale\\FrequencyDefaultOctaveBinBounds.EXPECTED.json");
-            var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyLinearBinBounds.ACTUAL.json"));
-            Json.Serialise(resultFile1, freqScale.OctaveBinBounds);
-            TextFileEqualityTests.TextFileEqual(expectedTestFile1, resultFile1);
+            var stemOfExpectedFile = opFileStem + "_LinearScaleGridLineLocations.EXPECTED.json";
+            var stemOfActualFile = opFileStem + "_LinearScaleGridLineLocations.ACTUAL.json";
 
             // Check that freqScale.GridLineLocations are correct
-            var expectedTestFile2 = new FileInfo("FrequencyScale\\FrequencyDefaultGridLineLocations.EXPECTED.json");
-            var resultFile2 = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyGridLineLocations.ACTUAL.json"));
-            Json.Serialise(resultFile2, freqScale.GridLineLocations);
-            TextFileEqualityTests.TextFileEqual(expectedTestFile2, resultFile2);
+            var expectedFile1 = new FileInfo("FrequencyScale\\" + stemOfExpectedFile);
+            if (!expectedFile1.Exists)
+            {
+                LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
+                LoggedConsole.WriteErrorLine("If ACTUAL results file is correct, move it to dir <...\\TestResources\\FrequencyScale> and change its suffix to <.EXPECTED.json>");
+            }
+
+            var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
+            Json.Serialise(resultFile1, freqScale.GridLineLocations);
+            TextFileEqualityTests.TextFileEqual(expectedFile1, resultFile1);
 
             // Check that image dimensions are correct
-            Assert.AreEqual(256, image.Height);
-            Assert.AreEqual(1000, image.Width);
+            Assert.AreEqual(566, image.Height);
+            Assert.AreEqual(1621, image.Width);
         }
 
         /// <summary>
@@ -210,10 +187,10 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         [TestMethod]
         public void OctaveFrequencyScale1()
         {
-            var recordingPath = @"BAC\BAC2_20071008-085040.wav";
-            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
-            var expectedResultsDir = Path.Combine(outputDir.FullName, TestTools.ExpectedResultsDir).ToDirectoryInfo();
-            var outputImagePath = Path.Combine(outputDir.FullName, "octaveScaleSonogram1.png");
+            var recordingPath = @"Recordings\BAC2_20071008-085040.wav";
+            var opFileStem = "BAC2_20071008";
+            var outputDir = this.outputDirectory;
+            var outputImagePath = Path.Combine(outputDir.FullName, "Octave1ScaleSonogram.png");
 
             var recording = new AudioRecording(recordingPath);
 
@@ -232,6 +209,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             // Generate amplitude sonogram and then conver to octave scale
             var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+
+            // THIS IS THE CRITICAL LINE. COULD DO WITH SEPARATE UNIT TEST
             sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
 
             // DO NOISE REDUCTION
@@ -242,24 +221,111 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             image.Save(outputImagePath, ImageFormat.Png);
 
-            // DO FILE EQUALITY TEST
-            var opFileStem = "BAC2_20071008";
-
+            // DO FILE EQUALITY TESTS
             // Check that freqScale.OctaveBinBounds are correct
-            var expectedTestFile1 = new FileInfo("FrequencyScale\\FrequencyDefaultOctaveBinBounds.EXPECTED.json");
-            var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyDefaultOctaveBinBounds.ACTUAL.json"));
+            var stemOfExpectedFile = opFileStem + "_Octave1ScaleBinBounds.EXPECTED.json";
+            var stemOfActualFile = opFileStem + "_Octave1ScaleBinBounds.ACTUAL.json";
+            var expectedFile1 = new FileInfo("FrequencyScale\\" + stemOfExpectedFile);
+            if (!expectedFile1.Exists)
+            {
+                LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
+                LoggedConsole.WriteErrorLine("If ACTUAL results file is correct, move it to dir <...\\TestResources\\FrequencyScale> and change its suffix to <.EXPECTED.json>");
+            }
+
+            var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
             Json.Serialise(resultFile1, freqScale.OctaveBinBounds);
-            TextFileEqualityTests.TextFileEqual(expectedTestFile1, resultFile1);
+            TextFileEqualityTests.TextFileEqual(expectedFile1, resultFile1);
 
             // Check that freqScale.GridLineLocations are correct
-            var expectedTestFile2 = new FileInfo("FrequencyScale\\FrequencyDefaultGridLineLocations.EXPECTED.json");
-            var resultFile2 = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyDefaultGridLineLocations.ACTUAL.json"));
+            stemOfExpectedFile = opFileStem + "_Octave1ScaleGridLineLocations.EXPECTED.json";
+            stemOfActualFile = opFileStem + "_Octave1ScaleGridLineLocations.ACTUAL.json";
+            var expectedFile2 = new FileInfo("FrequencyScale\\" + stemOfExpectedFile);
+            if (!expectedFile2.Exists)
+            {
+                LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
+                LoggedConsole.WriteErrorLine("If ACTUAL results file is correct, move it to dir <...\\TestResources\\FrequencyScale> and change its suffix to <.EXPECTED.json>");
+            }
+
+            var resultFile2 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
             Json.Serialise(resultFile2, freqScale.GridLineLocations);
-            TextFileEqualityTests.TextFileEqual(expectedTestFile2, resultFile2);
+            TextFileEqualityTests.TextFileEqual(expectedFile2, resultFile2);
 
             // Check that image dimensions are correct
-            Assert.AreEqual(256, image.Height);
-            Assert.AreEqual(1000, image.Width);
+            Assert.AreEqual(645, image.Width);
+            Assert.AreEqual(310, image.Height);
+        }
+
+        /// <summary>
+        /// METHOD TO CHECK IF Octave FREQ SCALE IS WORKING on Jasco MArine Recording, SR = 64000
+        /// 24 BIT JASCO RECORDINGS from GBR must be converted to 16 bit.
+        /// ffmpeg -i source_file.wav -sample_fmt s16 out_file.wav
+        /// e.g. ". C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg\ffmpeg.exe" -i "C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56.wav" -sample_fmt s16 "C:\SensorNetworks\Output\OctaveFreqScale\JascoeMarineGBR116bit.wav"
+        /// ffmpeg binaries are in C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg
+        /// </summary>
+        [TestMethod]
+        public void OctaveFrequencyScale2()
+        {
+            var recordingPath = @"Recordings\MarineJasco_AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit-60sec.wav";
+            var opFileStem = "JascoMarineGBR1";
+            var outputDir = this.outputDirectory;
+            var outputImagePath = Path.Combine(outputDir.FullName, "Octave2ScaleSonogram.png");
+
+            var recording = new AudioRecording(recordingPath);
+            var fst = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
+            var freqScale = new FrequencyScale(fst);
+
+            var sonoConfig = new SonogramConfig
+            {
+                WindowSize = freqScale.WindowSize,
+                WindowOverlap = 0.2,
+                SourceFName = recording.BaseName,
+                NoiseReductionType = NoiseReductionType.None,
+                NoiseReductionParameter = 0.0,
+            };
+
+            var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
+
+            // DO NOISE REDUCTION
+            var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
+            sonogram.Data = dataMatrix;
+            sonogram.Configuration.WindowSize = freqScale.WindowSize;
+
+            var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+            image.Save(outputImagePath, ImageFormat.Png);
+
+            // DO FILE EQUALITY TESTS
+            // Check that freqScale.OctaveBinBounds are correct
+            var stemOfExpectedFile = opFileStem + "_Octave2ScaleBinBounds.EXPECTED.json";
+            var stemOfActualFile = opFileStem + "_Octave2ScaleBinBounds.ACTUAL.json";
+            var expectedFile1 = new FileInfo("FrequencyScale\\" + stemOfExpectedFile);
+            if (!expectedFile1.Exists)
+            {
+                LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
+                LoggedConsole.WriteErrorLine("If ACTUAL results file is correct, move it to dir <...\\TestResources\\FrequencyScale> and change its suffix to <.EXPECTED.json>");
+            }
+
+            var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
+            Json.Serialise(resultFile1, freqScale.OctaveBinBounds);
+            TextFileEqualityTests.TextFileEqual(expectedFile1, resultFile1);
+
+            // Check that freqScale.GridLineLocations are correct
+            stemOfExpectedFile = opFileStem + "_Octave2ScaleGridLineLocations.EXPECTED.json";
+            stemOfActualFile = opFileStem + "_Octave2ScaleGridLineLocations.ACTUAL.json";
+            var expectedFile2 = new FileInfo("FrequencyScale\\" + stemOfExpectedFile);
+            if (!expectedFile2.Exists)
+            {
+                LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
+                LoggedConsole.WriteErrorLine("If ACTUAL results file is correct, move it to dir <...\\TestResources\\FrequencyScale> and change its suffix to <.EXPECTED.json>");
+            }
+
+            var resultFile2 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
+            Json.Serialise(resultFile2, freqScale.GridLineLocations);
+            TextFileEqualityTests.TextFileEqual(expectedFile2, resultFile2);
+
+            // Check that image dimensions are correct
+            Assert.AreEqual(201, image.Width);
+            Assert.AreEqual(310, image.Height);
         }
     }
 }
