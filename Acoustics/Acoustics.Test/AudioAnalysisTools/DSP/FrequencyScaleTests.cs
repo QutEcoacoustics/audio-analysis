@@ -112,7 +112,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
             Json.Serialise(resultFile1, freqScale.GridLineLocations);
-            TextFileEqualityTests.TextFileEqual(expectedFile1, resultFile1);
+            FileEqualityHelpers.TextFileEqual(expectedFile1, resultFile1);
 
             // Check that image dimensions are correct
             Assert.AreEqual(310, image.Height);
@@ -173,7 +173,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
             Json.Serialise(resultFile1, freqScale.GridLineLocations);
-            TextFileEqualityTests.TextFileEqual(expectedFile1, resultFile1);
+            FileEqualityHelpers.TextFileEqual(expectedFile1, resultFile1);
 
             // Check that image dimensions are correct
             Assert.AreEqual(566, image.Height);
@@ -234,7 +234,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
             Json.Serialise(resultFile1, freqScale.OctaveBinBounds);
-            TextFileEqualityTests.TextFileEqual(expectedFile1, resultFile1);
+            FileEqualityHelpers.TextFileEqual(expectedFile1, resultFile1);
 
             // Check that freqScale.GridLineLocations are correct
             stemOfExpectedFile = opFileStem + "_Octave1ScaleGridLineLocations.EXPECTED.json";
@@ -248,7 +248,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             var resultFile2 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
             Json.Serialise(resultFile2, freqScale.GridLineLocations);
-            TextFileEqualityTests.TextFileEqual(expectedFile2, resultFile2);
+            FileEqualityHelpers.TextFileEqual(expectedFile2, resultFile2);
 
             // Check that image dimensions are correct
             Assert.AreEqual(645, image.Width);
@@ -307,7 +307,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
             Json.Serialise(resultFile1, freqScale.OctaveBinBounds);
-            TextFileEqualityTests.TextFileEqual(expectedFile1, resultFile1);
+            FileEqualityHelpers.TextFileEqual(expectedFile1, resultFile1);
 
             // Check that freqScale.GridLineLocations are correct
             stemOfExpectedFile = opFileStem + "_Octave2ScaleGridLineLocations.EXPECTED.json";
@@ -321,7 +321,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             var resultFile2 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
             Json.Serialise(resultFile2, freqScale.GridLineLocations);
-            TextFileEqualityTests.TextFileEqual(expectedFile2, resultFile2);
+            FileEqualityHelpers.TextFileEqual(expectedFile2, resultFile2);
 
             // Check that image dimensions are correct
             Assert.AreEqual(201, image.Width);

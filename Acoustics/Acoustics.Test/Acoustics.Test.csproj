@@ -140,11 +140,12 @@
     <Compile Include="AudioAnalysisTools\TilerTests.cs" />
     <Compile Include="FileDateHelpersTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Shared\BinaryTests.cs" />
     <Compile Include="Shared\CsvTests.cs" />
     <Compile Include="Shared\ConfigFileTests.cs" />
     <Compile Include="Shared\YamlTests.cs" />
     <Compile Include="TestHelpers.cs" />
-    <Compile Include="TestHelpers\TextFileEqualityTests.cs" />
+    <Compile Include="TestHelpers\FileEqualityHelpers.cs" />
     <Compile Include="Tools\AudioUtilityInfoTests.cs" />
     <Compile Include="Tools\AudioUtilityMp3Tests.cs" />
     <Compile Include="Tools\AudioUtilityWavpackTests.cs" />

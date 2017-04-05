@@ -210,6 +210,7 @@
   <ItemGroup>
     <Compile Include="AppConfigHelper.cs" />
     <Compile Include="Base58.cs" />
+    <Compile Include="Binary.cs" />
     <Compile Include="CalcSunTimes.cs" />
     <Compile Include="ConfigFile\ConfigFile.cs" />
     <Compile Include="ConfigFile\ConfigFileException.cs" />
