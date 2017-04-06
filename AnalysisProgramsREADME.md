@@ -148,23 +148,32 @@ Output:
 ...
 Usage: AnalysisPrograms <action> options
 
+Environment variables:
+    AP_PLAIN_LOGGING  [true|false]       Enable simpler logging - the default value is `false`
 Global options:
-    -d   -debug     [switch]        *
-    -n   -nodebug   [switch]        *
-    -l   -loglevel  [logverbosity]  *
-    -v   -verbose   [switch]        *
-    -vv  -vverbose  [switch]        *
+    -d    -debug         [switch]        *  Do not show the debug prompt AND automatically attach a debugger. Has no effect in RELEASE builds
+    -n    -nodebug       [switch]        *  Do not show the debug prompt or attach a debugger. Has no effect in RELEASE builds
+    -l    -loglevel      [logverbosity]  *  Set the logging. Valid values: None = 0, Error = 1, Warn = 2, Info = 3, Debug = 4, Trace = 5, Verbose = 6, All = 7
+    -v    -verbose       [switch]        *  Set the logging to be verbose. Equivalent to LogLevel = Debug = 4
+    -vv   -vverbose      [switch]        *  Set the logging to very verbose. Equivalent to LogLevel = Trace = 4
+    -vvv  -vvverbose     [switch]        *  Set the logging to very very verbose. Equivalent to LogLevel = ALL = 7
+    -q    -quietconsole  [switch]        *  Reduce StdOut logging to WARN and ERROR. The default is false.
 Action:
   concatenateindexfiles - Calls ConcatenateIndexFiles.Execute():  Concatenates multiple consecutive index.csv files.
-    -input  -inputdatadirectories                       [directoryinfo[]]  One or more directories where the original csv files are located.
-    -outp   -outputdirectory                            [directory]        Directory where the output is to go.
-    -di     -directoryfilter                            [string]           Filter string used to search for the required csv files - assumed to be in directory path.
-    -f      -filestemname                               [string]           File stem name for output files.
-    -sta    -startdate                                  [nullable`1]       DateTime at which concatenation begins. If null, then start with earliest available file.
-    -en     -enddate                                    [nullable`1]       DateTime at which concatenation ends. If missing|null, then will be set = today's date or last available file.
-    -ti     -timespanoffsethint                         [nullable`1]       TimeSpan offset hint required if file names do not contain time zone info. NO DEFAULT IS SET
-    -in     -indexpropertiesconfig                      [file]             User specified file containing a list of indices and their properties.
-    -con    -concatenateeverythingyoucanlayyourhandson  [switch]           Set this true when want to concatenate longer than 24-hour recordings as in case of PNG data.
+    -input   -inputdatadirectories                       [directoryinfo[]]  One or more directories where the original csv files are located.
+    -inputd  -inputdatadirectory                         [directory]        One directory where the original csv files are located. This option exists as well as a hack to get around commas in paths conflicting with PowerArgs' array parsing feature.
+    -outp    -outputdirectory                            [directory]        Directory where the output is to go.
+    -di      -directoryfilter                            [string]           Used to get the required data.csv files, which are assumed to be in a matching dir or subdirectory. E.g. use name of audio file suffix e.g.: *.wav
+    -f       -filestemname                               [string]           File stem name for output files.
+    -sta     -startdate                                  [nullable`1]       DateTimeOffset at which concatenation begins. If null, then start with earliest available file. Can parse an ISO8601 date.
+    -en      -enddate                                    [nullable`1]       DateTimeOffset at which concatenation ends. If null, then will be set = today's date available file. Can parse an ISO8601 date.
+    -ti      -timespanoffsethint                         [nullable`1]       TimeSpan offset hint required if file names do not contain time zone info. NO DEFAULT IS SET
+    -in      -indexpropertiesconfig                      [file]             User specified file containing a list of indices and their properties.
+    -fa      -falsecolourspectrogramconfig               [file]             Config file for drawing the false colour spectrograms.
+    -su      -sunrisedatafile                            [file]             User specified file containing times of sunrise & sunset for recording location. Must be format!
+    -con     -concatenateeverythingyoucanlayyourhandson  [switch]           Set true only when concatenating more than 24-hours of data into one image - e.g. PNG/data.
+    -eve     -eventdatadirectories                       [directoryinfo[]]  One or more directories where the RECOGNIZER event scores are located in csv files. This optional
+    -even    -eventfilepattern                           [string]           Used only to get Event Recognizer files.
 ```
 
 An example command: 
