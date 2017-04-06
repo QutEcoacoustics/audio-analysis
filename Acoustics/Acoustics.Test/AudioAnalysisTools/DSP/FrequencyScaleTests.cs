@@ -18,6 +18,11 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
     /// <summary>
     /// Test methods for the various Frequency Scales
+    /// Notes on TESTS: (from Anthony in email @ 05/04/2017)
+    /// (1) small tests are better
+    /// (2) simpler tests are better
+    /// (3) use an appropriate serialisation format
+    /// (4) for binary large objects(BLOBs) make sure git-lfs is tracking them
     /// </summary>
     [TestClass]
     public class FrequencyScaleTests

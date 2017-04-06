@@ -389,11 +389,13 @@ namespace AudioAnalysisTools.DSP
         /// </summary>
         public static void TESTMETHOD_OctaveFrequencyScale1()
         {
-            var recordingPath = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC\BAC2_20071008-085040.wav";
-            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
-            var expectedResultsDir = Path.Combine(outputDir.FullName, TestTools.ExpectedResultsDir).ToDirectoryInfo();
-            var outputImagePath = Path.Combine(outputDir.FullName, "octaveFrequencyScale1.png");
-            var opFileStem = "BAC2_20071008";
+            var recordingPath = @"G:\SensorNetworks\WavFiles\LewinsRail\FromLizZnidersic\Lewinsrail_TasmanIs_Tractor_SM304253_0151119_0640_1minMono.wav";
+            var outputDir = @"C:\SensorNetworks\Output\LewinsRail\LewinsRail_ThreeCallTypes".ToDirectoryInfo();
+            //var recordingPath = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC\BAC2_20071008-085040.wav";
+            //var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
+            //var expectedResultsDir = Path.Combine(outputDir.FullName, TestTools.ExpectedResultsDir).ToDirectoryInfo();
+            var outputImagePath = Path.Combine(outputDir.FullName, "octaveFrequencyScale1NoNoiseReduciton.png");
+            //var opFileStem = "Lewinsrail_TasmanIs_Tractor";
 
             var recording = new AudioRecording(recordingPath);
 
@@ -415,19 +417,19 @@ namespace AudioAnalysisTools.DSP
             sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
 
             // DO NOISE REDUCTION
-            var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
-            sonogram.Data = dataMatrix;
+            //var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
+            //sonogram.Data = dataMatrix;
             sonogram.Configuration.WindowSize = freqScale.WindowSize;
 
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             image.Save(outputImagePath, ImageFormat.Png);
 
             // DO FILE EQUALITY TEST
-            string testName = "test1";
-            var expectedTestFile = new FileInfo(Path.Combine(expectedResultsDir.FullName, "FrequencyOctaveScaleTest1.EXPECTED.json"));
-            var resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyOctaveScaleTest1Results.json"));
-            Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(resultFile, freqScale.GridLineLocations);
-            TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
+            //string testName = "test1";
+            //var expectedTestFile = new FileInfo(Path.Combine(expectedResultsDir.FullName, "FrequencyOctaveScaleTest1.EXPECTED.json"));
+            //var resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyOctaveScaleTest1Results.json"));
+            //Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(resultFile, freqScale.GridLineLocations);
+            //TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
 
             LoggedConsole.WriteLine("Completed Octave Frequency Scale test 1");
             Console.WriteLine("\n\n");
