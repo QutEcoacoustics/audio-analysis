@@ -66,12 +66,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public double? ColourGain { get; set; }
 
         /// <summary>
-        /// Value must be less than 1.0. Good value is 0.75
+        /// Gets or sets value of the colour filter.
+        /// Its value must be less than 1.0. Good value is 0.75
         /// </summary>
         public double? ColourFilter { get; set; }
 
         /// <summary>
-        /// The default is one minute spectra i.e. 60 per hour
+        /// Gets or sets the default XAxisTicInterval.
+        /// The default assumes one minute spectra i.e. 60 per hour
         /// But as of January 2015, this is not fixed. The user can adjust
         ///  the tic interval to be appropriate to the time scale of the spectrogram.
         /// </summary>
@@ -80,18 +82,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// In seconds, the horizontal spacing between vertical grid lines for the x-Axis
         /// </summary>
-        /// <param name="sampleRate"></param>
-        /// <param name="frameWidth"></param>
-        /// <returns></returns>
         public double CalculateYAxisTickInterval(double sampleRate, double frameWidth)
         {
-             // convert 1000 Hz to a freq bin interval.
-                double freqBinWidth = sampleRate / (double)frameWidth;
+                double freqBinWidth = sampleRate / frameWidth;
                 return (int)Math.Round(this.yAxisTicInterval / freqBinWidth);
         }
 
         /// <summary>
-        /// In hertz, the vertical spacing between horizontal grid lines for the y-Axis
+        /// Gets or sets YAxisTicInterval in Hertz.
+        /// The vertical spacing between horizontal grid lines for the y-Axis
         /// </summary>
         public int YAxisTicInterval
         {

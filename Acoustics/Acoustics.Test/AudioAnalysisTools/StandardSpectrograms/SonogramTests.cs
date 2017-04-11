@@ -97,7 +97,6 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
             var expected = Binary.Deserialize<double[,]>(expectedFile);
 
             CollectionAssert.AreEqual(expected, sonogram.Data);
-
         }
 
         [TestMethod]
