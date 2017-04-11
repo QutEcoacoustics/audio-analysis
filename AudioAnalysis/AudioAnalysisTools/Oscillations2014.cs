@@ -11,7 +11,6 @@ namespace AudioAnalysisTools
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
-    using Acoustics.Tools.Wav;
     using DSP;
     using MathNet.Numerics.LinearAlgebra.Double;
     using MathNet.Numerics.LinearAlgebra.Generic;
@@ -48,7 +47,6 @@ namespace AudioAnalysisTools
         public static int DefaultSampleLength = 128;
         public static double DefaultSensitivityThreshold = 0.3;
 
-
         /// <summary>
         /// In line class used to return results from the static method Oscillations2014.GetFreqVsOscillationsDataAndImage();
         /// </summary>
@@ -74,10 +72,10 @@ namespace AudioAnalysisTools
         public static void TESTMETHOD_DrawOscillationSpectrogram()
         {
             {
-                string drive = "C";
-                var sourceRecording = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC\BAC2_20071008-085040.wav".ToFileInfo();
-                var output = @"C:\SensorNetworks\SoftwareTests\TestFourSonograms".ToDirectoryInfo();
-                var configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo();
+                // string drive = "C";
+                var sourceRecording = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC2_20071008-085040.wav".ToFileInfo();
+                var output = @"C:\SensorNetworks\SoftwareTests\TestOscillationSpectrogram".ToDirectoryInfo();
+                var configFile = @"C:\SensorNetworks\SoftwareTests\TestResources\Towsey.Sonogram.yml".ToFileInfo();
                 var expectedResultsDir = new DirectoryInfo(Path.Combine(output.FullName, TestTools.ExpectedResultsDir));
                 if (!expectedResultsDir.Exists)
                 {
@@ -96,11 +94,11 @@ namespace AudioAnalysisTools
                 // 3. Generate the FREQUENCY x OSCILLATIONS Graphs and csv data
                 // This was still working as of March 2017
                 // Vertical grid lines located every 5 cycles per sec.
-                var tuple = Oscillations2014.GenerateOscillationDataAndImages(sourceRecording, configDict, true);
+                var tuple = GenerateOscillationDataAndImages(sourceRecording, configDict, true);
 
                 // (1) Save image file of this matrix.
                 // Sample length i.e. number of frames spanned to calculate oscillations per second
-                int sampleLength = Oscillations2014.DefaultSampleLength;
+                int sampleLength = DefaultSampleLength;
                 if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SampleLength))
                 {
                     sampleLength = int.Parse(configDict[AnalysisKeys.OscilDetection2014SampleLength]);
@@ -139,7 +137,7 @@ namespace AudioAnalysisTools
             }
         }
 
-        private static Dictionary<string, string> GetConfigDictionary(FileInfo configFile, bool writeParameters)
+        public static Dictionary<string, string> GetConfigDictionary(FileInfo configFile, bool writeParameters)
         {
             dynamic configuration = Yaml.Deserialise(configFile);
 
@@ -250,8 +248,8 @@ namespace AudioAnalysisTools
             LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
             sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhoodFrames, lcnContrastLevel);
 
-            string algorithmName = "Autocorr-SVD-FFT";
-            double[,] freqOscilMatrix1 = Oscillations2014.GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName);
+            string algorithmName1 = "autocorr-svd-fft";
+            double[,] freqOscilMatrix1 = Oscillations2014.GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName1);
 
             //get the max spectral index - this reduces the matrix to an array
             double[] spectralIndex = Oscillations2014.ConvertMatrix2SpectralIndex(freqOscilMatrix1);
@@ -265,11 +263,11 @@ namespace AudioAnalysisTools
             Image compositeImage = null;
             if (drawImage)
             {
-                algorithmName = "Autocorr-FFT";
-                double[,] freqOscilMatrix2 = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName);
+                string algorithmName2 = "autocorr-fft";
+                double[,] freqOscilMatrix2 = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName2);
 
-                var image1 = GetFreqVsOscillationsImage(freqOscilMatrix1, sonogram.FramesPerSecond, sonogram.FBinWidth, sampleLength, algorithmName);
-                var image2 = GetFreqVsOscillationsImage(freqOscilMatrix2, sonogram.FramesPerSecond, sonogram.FBinWidth, sampleLength, algorithmName);
+                var image1 = GetFreqVsOscillationsImage(freqOscilMatrix1, sonogram.FramesPerSecond, sonogram.FBinWidth, sampleLength, algorithmName1);
+                var image2 = GetFreqVsOscillationsImage(freqOscilMatrix2, sonogram.FramesPerSecond, sonogram.FBinWidth, sampleLength, algorithmName2);
 
                 var list = new List<Image>();
                 list.Add(image1);
@@ -292,14 +290,14 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static FreqVsOscillationsResult GetFreqVsOscillationsDataAndImage(BaseSonogram sonogram, string algorithmName)
         {
-            double sensitivity = Oscillations2014.DefaultSensitivityThreshold;
-            int sampleLength = Oscillations2014.DefaultSampleLength;
+            double sensitivity = DefaultSensitivityThreshold;
+            int sampleLength = DefaultSampleLength;
             double[,] freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName);
             var image = GetFreqVsOscillationsImage(freqOscilMatrix, sonogram.FramesPerSecond, sonogram.FBinWidth, sampleLength, algorithmName);
             var sourceName = Path.GetFileNameWithoutExtension(sonogram.Configuration.SourceFName);
 
             // get the max spectral index
-            double[] spectralIndex = Oscillations2014.ConvertMatrix2SpectralIndex(freqOscilMatrix);
+            double[] spectralIndex = ConvertMatrix2SpectralIndex(freqOscilMatrix);
 
             // DEBUGGING
             // Add spectralIndex into the matrix because want to add it to image.
@@ -317,15 +315,18 @@ namespace AudioAnalysisTools
             return result;
         }
 
-        public static Image GetFreqVsOscillationsImage(double[,] freqOscilMatrix, double framesPerSecond, double freqBinWidth, int sampleLength, string title)
+        public static Image GetFreqVsOscillationsImage(double[,] freqOscilMatrix, double framesPerSecond, double freqBinWidth, int sampleLength, string algorithmName)
         {
+            // remove the high cycles/sec end of the matrix because nothing really happens here.
+            freqOscilMatrix = MatrixTools.Submatrix(freqOscilMatrix, 0, 0, 32, freqOscilMatrix.GetLength(1) - 1);
+
             // Convert spectrum index to oscillations per second
-            double oscillationBinWidth = framesPerSecond / (double)sampleLength;
+            double oscillationBinWidth = framesPerSecond / sampleLength;
 
             //draw an image
             freqOscilMatrix = MatrixTools.MatrixRotate90Anticlockwise(freqOscilMatrix);
-            int xscale = 16;
-            int yscale = 16;
+            int xscale = 5;
+            int yscale = 5;
             var image = ImageTools.DrawMatrixInColour(freqOscilMatrix, xscale, yscale);
 
             // a tic every 5cpsec.
@@ -337,10 +338,10 @@ namespace AudioAnalysisTools
             double yTicInterval = (herzInterval / freqBinWidth) * yscale;
             int xOffset = xscale / 2;
             int yOffset = yscale / 2;
-            image = ImageTools.DrawXandYaxes(image, 30, cycleInterval, xTicInterval, xOffset, herzInterval, yTicInterval, yOffset);
-            var titleBar = DrawTitleBarOfOscillationSpectrogram(title, image.Width);
+            image = ImageTools.DrawXandYaxes(image, 18, cycleInterval, xTicInterval, xOffset, herzInterval, yTicInterval, yOffset);
+            var titleBar = DrawTitleBarOfOscillationSpectrogram(algorithmName, image.Width);
             var imageList = new List<Image> { titleBar, image };
-            Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
+            var compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
             return compositeBmp;
         }
 
@@ -379,25 +380,25 @@ namespace AudioAnalysisTools
                 double[] oscillationsSpectrum = null;
 
                 // Use the Autocorrelation - SVD - FFT option.
-                if (algorithmName.Equals("Autocorr-SVD-FFT"))
+                if (algorithmName.Equals("autocorr-svd-fft"))
                 {
-                    double[,] xCorrByTimeMatrix = Oscillations2014.GetXcorrByTimeMatrix(freqBin, sampleLength);
+                    double[,] xCorrByTimeMatrix = GetXcorrByTimeMatrix(freqBin, sampleLength);
 
                     //xcorCount += xCorrByTimeMatrix.GetLength(1);
                     oscillationsSpectrum = GetOscillationArrayUsingSvdAndFft(xCorrByTimeMatrix, sensitivity, bin);
                 }
 
                 // Use the Autocorrelation - FFT option.
-                if (algorithmName.Equals("Autocorr-FFT"))
+                if (algorithmName.Equals("autocorr-fft"))
                 {
-                    double[,] xCorrByTimeMatrix = Oscillations2014.GetXcorrByTimeMatrix(freqBin, sampleLength);
+                    double[,] xCorrByTimeMatrix = GetXcorrByTimeMatrix(freqBin, sampleLength);
                     oscillationsSpectrum = GetOscillationArrayUsingFft(xCorrByTimeMatrix, sensitivity, bin);
                 }
 
                 // Use the Wavelet Transform
                 if (algorithmName.Equals("Autocorr-WPD"))
                 {
-                    double[,] xCorrByTimeMatrix = Oscillations2014.GetXcorrByTimeMatrix(freqBin, sampleLength);
+                    double[,] xCorrByTimeMatrix = GetXcorrByTimeMatrix(freqBin, sampleLength);
                     oscillationsSpectrum = GetOscillationArrayUsingWpd(xCorrByTimeMatrix, sensitivity, bin);
 
                     //WaveletTransformContinuous cwt = new WaveletTransformContinuous(freqBin, maxScale);
@@ -413,29 +414,15 @@ namespace AudioAnalysisTools
             return freqByOscMatrix;
         }
 
-        public static Image DrawTitleBarOfOscillationSpectrogram(string title, int width)
+        public static Image DrawTitleBarOfOscillationSpectrogram(string algorithmName, int width)
         {
-            string longTitle = title + " (Herz*Cycles/s)";
+            string longTitle = "Herz * Cycles/s  (" + algorithmName + ")";
 
             var bmp = new Bitmap(width, 20);
             var g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
             var stringFont = new Font("Arial", 9);
-            int x = 4;
-            g.DrawString("OSCILLATION SPECTROGRAM", stringFont, Brushes.Wheat, new PointF(x, 3));
-
-            var stringSize = g.MeasureString(title, stringFont);
-            x += stringSize.ToSize().Width + 70;
-            stringSize = g.MeasureString(longTitle, stringFont);
-            int x2 = width - stringSize.ToSize().Width - 2;
-            if (x2 > x)
-            {
-                g.DrawString(longTitle, stringFont, Brushes.Wheat, new PointF(x2, 3));
-            }
-
-            g.DrawLine(new Pen(Color.Gray), 0, 0, width, 0);//draw upper boundary
-
-            //g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
+            g.DrawString(longTitle, stringFont, Brushes.Wheat, new PointF(3, 3));
             return bmp;
         }
 
@@ -465,25 +452,26 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// reduces the sequence of Xcorrelation vectors to a single summary vector.
-        /// Does this by:
-        /// (1) do SVD on the collection of XCORRELATION vectors
-        /// (2) select the dominant ones based on the eigen values - 90% threshold
-        ///     Typically there are 1 to 10 eigen values depending on how busy the bin is.
-        /// (3) Do an FFT on each of the returned SVD vectors to pick the dominant oscillation rate.
-        /// (4) Accumulate the oscillations in a freq by oscillation rate matrix.
-        ///     The amplitude value for the oscillation is the eigenvalue.
-        ///
-        /// NOTE: There should only be one dominant oscilation in any one freq band at one time.
-        ///       Birds with oscillating calls do call simultaneously, but this technique will only pick up the dominant call.
-        ///
+        ///  reduces the sequence of Xcorrelation vectors to a single summary vector.
+        ///  Does this by:
+        ///  (1) do SVD on the collection of XCORRELATION vectors
+        ///  (2) select the dominant ones based on the eigen values - 90% threshold
+        ///      Typically there are 1 to 10 eigen values depending on how busy the bin is.
+        ///  (3) Do an FFT on each of the returned SVD vectors to pick the dominant oscillation rate.
+        ///  (4) Accumulate the oscillations in a freq by oscillation rate matrix.
+        ///      The amplitude value for the oscillation is the eigenvalue.
+        /// #
+        ///  NOTE: There should only be one dominant oscilation in any one freq band at one time.
+        ///        Birds with oscillating calls do call simultaneously, but this technique will only pick up the dominant call.
+        /// #
         /// </summary>
         /// <param name="xCorrByTimeMatrix">double[,] xCorrelationsByTime = new double[sampleLength, sampleCount]; </param>
+        /// <param name="sensitivity">can't remember what this does</param>
         /// <param name="binNumber">only used when debugging</param>
         public static double[] GetOscillationArrayUsingSvdAndFft(double[,] xCorrByTimeMatrix, double sensitivity, int binNumber)
         {
             int xCorrLength = xCorrByTimeMatrix.GetLength(0);
-            int sampleCount = xCorrByTimeMatrix.GetLength(1);
+            //int sampleCount = xCorrByTimeMatrix.GetLength(1);
 
             // do singular value decomp on the xcorrelation vectors.
             // we want to compute the U and V matrices of singular vectors.

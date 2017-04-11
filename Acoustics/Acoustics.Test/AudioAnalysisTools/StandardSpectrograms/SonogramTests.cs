@@ -4,7 +4,6 @@
 
 namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
 {
-    using System;
     using System.IO;
     using Acoustics.Shared;
     using EcoSounds.Mvc.Tests;
@@ -13,7 +12,6 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
     using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     /// <summary>
     /// Test methods for the various standard Sonograms or Spectrograms

@@ -137,6 +137,7 @@
     <Compile Include="AnalysisPrograms\Concatenation\ConcatenationTests.cs" />
     <Compile Include="ArrayExtensionsTests.cs" />
     <Compile Include="AudioAnalysisTools\DSP\FrequencyScaleTests.cs" />
+    <Compile Include="AudioAnalysisTools\Oscillations2014\OscillationTests.cs" />
     <Compile Include="AudioAnalysisTools\StandardSpectrograms\SonogramTests.cs" />
     <Compile Include="AudioAnalysisTools\TilerTests.cs" />
     <Compile Include="FileDateHelpersTests.cs" />
@@ -220,9 +221,7 @@
     <Analyzer Include="..\..\AudioAnalysis\packages\StyleCop.Analyzers.1.1.0-beta001\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
     <Analyzer Include="..\..\AudioAnalysis\packages\StyleCop.Analyzers.1.1.0-beta001\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="AudioAnalysisTools\Oscillations2014\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /Y /S "$(SolutionDir)..\Acoustics\Acoustics.Test\TestResources\*" "$(TargetDir)"</PostBuildEvent>
