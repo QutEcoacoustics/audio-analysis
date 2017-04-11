@@ -64,8 +64,8 @@ namespace AnalysisPrograms
                 //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
 
                 // The following two test methods have yet to be debugged as of April 2nd 2017.
-                //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest1();
-                ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest2();
+                ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest1();
+                //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest2();
             }
 
             if (false)
