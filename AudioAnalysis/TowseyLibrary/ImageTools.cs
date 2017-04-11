@@ -2475,7 +2475,7 @@
         {
             int ticCount = (int)(image.Height / yTicInterval);
             var pen = new Pen(Color.White);
-            var stringFont = new Font("Arial", 12);
+            var stringFont = new Font("Arial", 10);
 
             var g = Graphics.FromImage(image);
             for (int i = 1; i <= ticCount; i++)
@@ -2511,7 +2511,7 @@
         {
             int ticCount = (int)((image.Width - scaleHeight) / xTicInterval);
             var pen = new Pen(Color.White);
-            var stringFont = new Font("Arial", 12);
+            var stringFont = new Font("Arial", 10);
             var g = Graphics.FromImage(image);
             for (int i = 1; i <= ticCount; i++)
             {
