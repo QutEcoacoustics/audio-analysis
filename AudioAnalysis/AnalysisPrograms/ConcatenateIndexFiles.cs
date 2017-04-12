@@ -597,7 +597,12 @@ namespace AnalysisPrograms
                     tracksImage.Save(imagePath);
                 }
 
-                // ###### THEN CONCATENATE THE SPECTRAL INDICES, DRAW IMAGES AND SAVE IN RESULTS DIRECTORY
+                if (verbose)
+                {
+                    LoggedConsole.WriteLine("# Finished summary indices. Now start spectral indices.");
+                }
+
+                // ###### NOW CONCATENATE THE SPECTRAL INDICES, DRAW IMAGES AND SAVE IN RESULTS DIRECTORY
                 var dictionaryOfSpectralIndices1 = LDSpectrogramStitching.ConcatenateAllSpectralIndexFiles(subDirectories, keys, indexGenerationData);
 
                 // Calculate the index distribution statistics and write to a json file. Also save as png image
@@ -693,7 +698,10 @@ namespace AnalysisPrograms
                         verbose);
                 }
 
-                LoggedConsole.WriteLine("     Completed Summary Indices");
+                if (verbose)
+                {
+                    LoggedConsole.WriteLine("# Finished summary indices. Now start spectral indices.");
+                }
 
                 // ##############################################################################################################
 

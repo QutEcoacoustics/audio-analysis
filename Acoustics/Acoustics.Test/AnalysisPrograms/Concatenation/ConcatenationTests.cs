@@ -5,12 +5,15 @@
 namespace Acoustics.Test.AnalysisPrograms.Concatenation
 {
     using System;
+    using System.Drawing.Imaging;
     using System.IO;
     using Acoustics.Shared;
     using EcoSounds.Mvc.Tests;
     using global::AnalysisPrograms;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using TestHelpers;
+    using TowseyLibrary;
 
     /// <summary>
     /// Test methods for the various Frequency Scales
@@ -69,17 +72,23 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         {
             // top level directory
             DirectoryInfo[] dataDirs = { new DirectoryInfo($"ConcatenationData\\Indonesia20160726"), };
+            var indexPropertiesConfig = new FileInfo($"Configs\\IndexPropertiesConfig.yml");
+            var outputDir = this.outputDirectory;
+
+            // make a default config file
+            var falseColourSpgConfig = new FileInfo($"ConcatTest_SpectrogramFalseColourConfig.yml");
+            ConfigsHelper.WriteDefaultFalseColourSpgmConfig(falseColourSpgConfig);
 
             var arguments = new ConcatenateIndexFiles.Arguments
             {
                 InputDataDirectories = dataDirs,
-                OutputDirectory = @"ConcatenationData\Temp".ToDirectoryInfo(),
+                OutputDirectory = outputDir,
                 DirectoryFilter = "*.wav",
                 FileStemName = "Indonesia2016",
                 StartDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
                 EndDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
-                IndexPropertiesConfig = new FileInfo($"ConcatenationData\\ConcatTest_IndexPropertiesConfig.yml"),
-                FalseColourSpectrogramConfig = new FileInfo($"ConcatenationData\\ConcatTest_SpectrogramFalseColourConfig.yml"),
+                IndexPropertiesConfig = indexPropertiesConfig,
+                FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
                 ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
                 ConcatenateEverythingYouCanLayYourHandsOn = true, // 24 hour blocks only
@@ -135,25 +144,25 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         public void ConcatenateIndexFilesTest2()
         {
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"ConcatenationData\\Indonesia20160726"), };
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"Concatenation\\Indonesia20160726"), };
+            var indexPropertiesConfig = new FileInfo($"Configs\\IndexPropertiesConfig.yml");
+            var outputDir = this.outputDirectory;
+            var outputDataDir = new DirectoryInfo(outputDir.FullName + "\\Indonesia2\\20160726");
 
-            var falseColourSpgConfig = new FileInfo($"C:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_SpectrogramFalseColourConfig.yml");
-            var indexPropertiesConfig = new FileInfo($"C:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml");
+            // make a default config file
+            var falseColourSpgConfig = new FileInfo($"ConcatTest_SpectrogramFalseColourConfig.yml");
+            ConfigsHelper.WriteDefaultFalseColourSpgmConfig(falseColourSpgConfig);
 
             var arguments = new ConcatenateIndexFiles.Arguments
             {
                 InputDataDirectories = dataDirs,
-                OutputDirectory = @"ConcatenationData\Temp".ToDirectoryInfo(),
+                OutputDirectory = outputDir,
                 DirectoryFilter = "*.wav",
-                FileStemName = "Indonesia2016",
+                FileStemName = "Test2_Indonesia",
                 StartDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
                 EndDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
-
                 IndexPropertiesConfig = indexPropertiesConfig,
-                //IndexPropertiesConfig = new FileInfo($"ConcatenationData\\ConcatTest_IndexPropertiesConfig.yml"),
-
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
-                // FalseColourSpectrogramConfig = new FileInfo($"ConcatenationData\\ConcatTest_SpectrogramFalseColourConfig.yml"),
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
                 ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
@@ -169,11 +178,34 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             ConcatenateIndexFiles.Execute(arguments);
 
+            // Do TESTS
+            // 1: Compare image files - check that image dimensions are correct
+            // Get ACTUAL IMAGE
+            string imageFileName = Path.Combine(outputDataDir.FullName, arguments.FileStemName + "__2Maps.png");
+            var fileInfo = new FileInfo(Path.Combine(outputDir.FullName, imageFileName));
+            Assert.IsTrue(fileInfo.Exists);
+
+            var actualImage = ImageTools.ReadImage2Bitmap(imageFileName);
+            Assert.AreEqual(512, actualImage.Width);
+            Assert.AreEqual(632, actualImage.Height);
+
+            // construct name of expected image file to save
+            var stem = "ConcatenationTest";
+            string imageName = stem + ".EXPECTED.png";
+            string imagePath = Path.Combine(outputDir.FullName, imageName);
             var expectedFile = new FileInfo("StandardSonograms\\BAC2_20071008_AmplSonogramData.EXPECTED.bin");
 
+            // run this once to generate expected image and data files (############ IMPORTANT: remember to move saved files OUT of bin/Debug directory!)
+            bool saveOutput = false;
+            if (saveOutput)
+            {
+                // 1: save image of oscillation spectrogram
+                //tuple.Item1.Save(imagePath, ImageFormat.Png);
+            }
+
             // run this once to generate expected test data (and remember to copy out of bin/debug!)
-            // Binary.Serialize(expectedFile, sonogram.Data);
-            var expected = Binary.Deserialize<double[,]>(expectedFile);
+                // Binary.Serialize(expectedFile, sonogram.Data);
+                //var expected = Binary.Deserialize<double[,]>(expectedFile);
 
             // CollectionAssert.AreEqual(expected, sonogram.Data);
             /*
@@ -197,6 +229,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             CollectionAssert.AreEqual(expectedDATA, DATA_MATRIX);
             */
+            Assert.Fail("in progrexss");
         }
     }
 }
