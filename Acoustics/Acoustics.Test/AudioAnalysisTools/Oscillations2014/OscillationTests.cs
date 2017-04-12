@@ -7,6 +7,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
     using System;
     using System.Drawing.Imaging;
     using System.IO;
+    using Acoustics.Shared;
     using EcoSounds.Mvc.Tests;
     using global::AudioAnalysisTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -63,8 +64,8 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
         {
             {
                 var sourceRecording = @"Recordings\BAC2_20071008-085040.wav".ToFileInfo();
-                var outputDir = @"Oscillation2014\temp".ToDirectoryInfo();
                 var configFile = @"Oscillations2014\Towsey.Sonogram.yml".ToFileInfo();
+                var outputDir = this.outputDirectory;
 
                 // 1. get the config dictionary
                 var configDict = Oscillations2014.GetConfigDictionary(configFile, true);
@@ -77,63 +78,55 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
                 // 3. Generate the FREQUENCY x OSCILLATIONS Graphs and csv data
                 var tuple = Oscillations2014.GenerateOscillationDataAndImages(sourceRecording, configDict, true);
 
-                // (1) Save image file of this matrix.
-                // Sample length i.e. number of frames spanned to calculate oscillations per second
+                // Calculate the sample length i.e. number of frames spanned to calculate oscillations per second
                 int sampleLength = Oscillations2014.DefaultSampleLength;
                 if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SampleLength))
                 {
                     sampleLength = int.Parse(configDict[AnalysisKeys.OscilDetection2014SampleLength]);
                 }
 
+                // construct name of expected image file to save
                 var sourceName = Path.GetFileNameWithoutExtension(sourceRecording.Name);
-                string fileName = sourceName + ".FreqOscilSpectrogram_" + sampleLength;
-                string pathName = Path.Combine(outputDir.FullName, fileName);
-                string imagePath = pathName + ".png";
-                tuple.Item1.Save(imagePath, ImageFormat.Png);
+                var stem = sourceName + ".FreqOscilSpectrogram_" + sampleLength;
+                string imageName = stem + ".EXPECTED.png";
+                string imagePath = Path.Combine(outputDir.FullName, imageName);
 
-                // construct output file names
-                fileName = sourceName + ".FreqOscilDataMatrix_" + sampleLength;
-                pathName = Path.Combine(outputDir.FullName, fileName);
-                var csvFile1 = new FileInfo(pathName + ".csv");
+                // construct name of expected matrix osc spectrogram to save file
+                var expectedMatrixFile = new FileInfo("Oscillations2014\\" + stem + ".EXPECTED.bin");
 
-                fileName = sourceName + ".OSCSpectralIndex_" + sampleLength;
-                pathName = Path.Combine(outputDir.FullName, fileName);
-                var csvFile2 = new FileInfo(pathName + ".csv");
+                // construct name of expected matrix osc spectrogram to save file
+                var expectedSpectrumFile = new FileInfo("Oscillations2014\\" + stem + ".OSC.EXPECTED.csv");
 
-                // Save matrix of oscillation data stored in freqOscilMatrix1
-                Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(csvFile1, tuple.Item2);
+                // run this once to generate expected image and data files (############ IMPORTANT: remember to move saved files OUT of bin/Debug directory!)
+                bool saveOutput = false;
+                if (saveOutput)
+                {
+                    // 1: save image of oscillation spectrogram
+                    tuple.Item1.Save(imagePath, ImageFormat.Png);
 
-                double[] oscillationsSpectrum = tuple.Item3;
-                Acoustics.Shared.Csv.Csv.WriteToCsv(csvFile2, oscillationsSpectrum);
+                    // 2: Save matrix of oscillation data stored in freqOscilMatrix1
+                    // Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(expectedMatrixFile.FullName, tuple.Item2);
+                    Binary.Serialize(expectedMatrixFile, tuple.Item2);
 
-                // var expectedFile = new FileInfo("StandardSonograms\\BAC2_20071008_AmplSonogramData.EXPECTED.bin");
+                    // 3: save oscillationsSpectrum OR the OSC spectral index.
+                    // Acoustics.Shared.Csv.Csv.WriteToCsv(spectralFile, tuple.Item3);
+                    Json.Serialise(expectedSpectrumFile, tuple.Item3);
+                    // Binary.Serialize(expectedSpectrumFile, tuple.Item3);
+                }
 
-                // run this once to generate expected test data (and remember to copy out of bin/debug!)
-                // Binary.Serialize(expectedFile, sonogram.Data);
-                // var expected = Binary.Deserialize<double[,]>(expectedFile);
+                // Run three tests. Have to deserialise the expected data files
+                // 1: Compare image files - check that image dimensions are correct
+                Assert.AreEqual(366, tuple.Item1.Width);
+                Assert.AreEqual(678, tuple.Item1.Height);
 
-                // CollectionAssert.AreEqual(expected, sonogram.Data);
-                /*
-                var resultFile2 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
-                Json.Serialise(resultFile2, freqScale.GridLineLocations);
-                FileEqualityHelpers.TextFileEqual(expectedFile2, resultFile2);
+                // 2. Compare matrix data
+                var expectedMatrix = Binary.Deserialize<double[,]>(expectedMatrixFile);
+                CollectionAssert.AreEqual(expectedMatrix, tuple.Item2);
 
-                // Check that image dimensions are correct
-                Assert.AreEqual(645, image.Width);
-                Assert.AreEqual(310, image.Height);
-
-
-                // DO EQUALITY TEST
-                Get a DATA_MATRIX
-                var expectedDataFile = new FileInfo("StandardSonograms\\BAC2_20071008_AmplSonogramData.EXPECTED.bin");
-
-                // run this once to generate expected test data (and remember to copy out of bin/debug!)
-                //Binary.Serialize(expectedFile, DATA_MATRIX);
-
-                var expectedDATA = Binary.Deserialize<double[,]>(expectedDataFile);
-
-                CollectionAssert.AreEqual(expectedDATA, DATA_MATRIX);
-                */
+                // 3. Compare OSC spectral index
+                // var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
+                var expectedVector = Json.Deserialise<double[]>(expectedSpectrumFile);
+                CollectionAssert.AreEqual(expectedVector, tuple.Item3);
             }
         }
     }
