@@ -157,6 +157,7 @@
     <Compile Include="EnumerableExtensionsTests.cs" />
     <Compile Include="Tools\SoxUtilityResampleTests.cs" />
     <Compile Include="Tools\WavReaderTests.cs" />
+    <Content Include="ExampleTestTemplate.cs.txt" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="TestResources\1440px.png" />
