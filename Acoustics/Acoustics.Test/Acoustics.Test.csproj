@@ -147,6 +147,7 @@
     <Compile Include="Shared\ConfigFileTests.cs" />
     <Compile Include="Shared\YamlTests.cs" />
     <Compile Include="TestHelpers.cs" />
+    <Compile Include="TestHelpers\ConfigsHelper.cs" />
     <Compile Include="TestHelpers\FileEqualityHelpers.cs" />
     <Compile Include="Tools\AudioUtilityInfoTests.cs" />
     <Compile Include="Tools\AudioUtilityMp3Tests.cs" />
