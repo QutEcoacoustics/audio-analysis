@@ -5,9 +5,7 @@
 namespace Acoustics.Test.AnalysisPrograms.Concatenation
 {
     using System;
-    using System.Drawing.Imaging;
     using System.IO;
-    using Acoustics.Shared;
     using EcoSounds.Mvc.Tests;
     using global::AnalysisPrograms;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
@@ -71,12 +69,13 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         public void ConcatenateIndexFilesTest1()
         {
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"ConcatenationData\\Indonesia20160726"), };
-            var indexPropertiesConfig = new FileInfo($"Configs\\IndexPropertiesConfig.yml");
+            DirectoryInfo[] dataDirs = { new DirectoryInfo("Concatenation\\Indonesia20160726"), };
+            var indexPropertiesConfig = new FileInfo("Configs\\IndexPropertiesConfig.yml");
             var outputDir = this.outputDirectory;
+            var dateString = "20160725";
 
             // make a default config file
-            var falseColourSpgConfig = new FileInfo($"ConcatTest_SpectrogramFalseColourConfig.yml");
+            var falseColourSpgConfig = new FileInfo("ConcatTest_SpectrogramFalseColourConfig.yml");
             ConfigsHelper.WriteDefaultFalseColourSpgmConfig(falseColourSpgConfig);
 
             var arguments = new ConcatenateIndexFiles.Arguments
@@ -84,9 +83,9 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 InputDataDirectories = dataDirs,
                 OutputDirectory = outputDir,
                 DirectoryFilter = "*.wav",
-                FileStemName = "Indonesia2016",
-                StartDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
-                EndDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
+                FileStemName = "Test1_Indonesia",
+                StartDate = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero),
+                EndDate = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero),
                 IndexPropertiesConfig = indexPropertiesConfig,
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
@@ -104,14 +103,29 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             ConcatenateIndexFiles.Execute(arguments);
 
-            var expectedFile = new FileInfo("StandardSonograms\\BAC2_20071008_AmplSonogramData.EXPECTED.bin");
+            // Do TESTS on the 2Maps image
+            // 1: Compare image files - check that image dimensions are correct
+            // Get ACTUAL IMAGE
+            var outputDataDir = new DirectoryInfo(outputDir.FullName + "\\" + arguments.FileStemName + "\\" + dateString);
 
-            // run this once to generate expected test data (and remember to copy out of bin/debug!)
-            //Binary.Serialize(expectedFile, sonogram.Data);
+            //string imageFileName = arguments.FileStemName + "_" + dateString + "__2Maps.png";
+            string imageFileName = arguments.FileStemName + "__2Maps.png";
+            var imageFileInfo = new FileInfo(Path.Combine(outputDataDir.FullName, imageFileName));
+            Assert.IsTrue(imageFileInfo.Exists);
 
-            var expected = Binary.Deserialize<double[,]>(expectedFile);
+            var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
+            Assert.AreEqual(722, actualImage.Width);
+            Assert.AreEqual(632, actualImage.Height);
 
-            //CollectionAssert.AreEqual(expected, sonogram.Data);
+            var pixel1 = actualImage.GetPixel(100, 100);
+            var pixel1Txt = pixel1.ToString();
+            string c1 = "Color [A=255, R=59, G=21, B=3]";
+            Assert.AreEqual(c1, pixel1Txt);
+
+            var pixel2 = actualImage.GetPixel(200, 200);
+            var pixel2Txt = pixel2.ToString();
+            string c2 = "Color [A=255, R=0, G=6, B=0]";
+            Assert.AreEqual(c2, pixel2Txt);
 
             /*
             var resultFile2 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
@@ -144,13 +158,13 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         public void ConcatenateIndexFilesTest2()
         {
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"Concatenation\\Indonesia20160726"), };
-            var indexPropertiesConfig = new FileInfo($"Configs\\IndexPropertiesConfig.yml");
+            DirectoryInfo[] dataDirs = { new DirectoryInfo("Concatenation\\Indonesia20160726"), };
+            var indexPropertiesConfig = new FileInfo("Configs\\IndexPropertiesConfig.yml");
             var outputDir = this.outputDirectory;
-            var outputDataDir = new DirectoryInfo(outputDir.FullName + "\\Indonesia2\\20160726");
+            var dateString = "20160726";
 
             // make a default config file
-            var falseColourSpgConfig = new FileInfo($"ConcatTest_SpectrogramFalseColourConfig.yml");
+            var falseColourSpgConfig = new FileInfo("ConcatTest_SpectrogramFalseColourConfig.yml");
             ConfigsHelper.WriteDefaultFalseColourSpgmConfig(falseColourSpgConfig);
 
             var arguments = new ConcatenateIndexFiles.Arguments
@@ -178,58 +192,71 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             ConcatenateIndexFiles.Execute(arguments);
 
-            // Do TESTS
+            // Do TESTS on the 2Maps image
             // 1: Compare image files - check that image dimensions are correct
             // Get ACTUAL IMAGE
-            string imageFileName = Path.Combine(outputDataDir.FullName, arguments.FileStemName + "__2Maps.png");
-            var fileInfo = new FileInfo(Path.Combine(outputDir.FullName, imageFileName));
-            Assert.IsTrue(fileInfo.Exists);
+            var outputDataDir = new DirectoryInfo(outputDir.FullName + "\\" + arguments.FileStemName + "\\" + dateString);
+            string imageFileName = arguments.FileStemName + "_" + dateString + "__2Maps.png";
+            var imageFileInfo = new FileInfo(Path.Combine(outputDataDir.FullName, imageFileName));
+            Assert.IsTrue(imageFileInfo.Exists);
 
-            var actualImage = ImageTools.ReadImage2Bitmap(imageFileName);
+            var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
             Assert.AreEqual(512, actualImage.Width);
             Assert.AreEqual(632, actualImage.Height);
 
-            // construct name of expected image file to save
-            var stem = "ConcatenationTest";
-            string imageName = stem + ".EXPECTED.png";
-            string imagePath = Path.Combine(outputDir.FullName, imageName);
-            var expectedFile = new FileInfo("StandardSonograms\\BAC2_20071008_AmplSonogramData.EXPECTED.bin");
+            var pixel1 = actualImage.GetPixel(100, 100);
+            var pixel1Txt = pixel1.ToString();
+            string c1 = "Color [A=255, R=15, G=13, B=14]";
+            Assert.AreEqual(c1, pixel1Txt);
 
-            // run this once to generate expected image and data files (############ IMPORTANT: remember to move saved files OUT of bin/Debug directory!)
-            bool saveOutput = false;
-            if (saveOutput)
-            {
-                // 1: save image of oscillation spectrogram
-                //tuple.Item1.Save(imagePath, ImageFormat.Png);
-            }
+            var pixel2 = actualImage.GetPixel(200, 200);
+            var pixel2Txt = pixel2.ToString();
+            string c2 = "Color [A=255, R=0, G=1, B=0]";
+            Assert.AreEqual(c2, pixel2Txt);
 
-            // run this once to generate expected test data (and remember to copy out of bin/debug!)
-                // Binary.Serialize(expectedFile, sonogram.Data);
-                //var expected = Binary.Deserialize<double[,]>(expectedFile);
-
-            // CollectionAssert.AreEqual(expected, sonogram.Data);
             /*
-            var resultFile2 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
-            Json.Serialise(resultFile2, freqScale.GridLineLocations);
-            FileEqualityHelpers.TextFileEqual(expectedFile2, resultFile2);
+// Do TESTS on one of the concatenated csv files
+// construct name of expected csv file to save
+var stem = "ConcatenationTest";
+string imageName = stem + ".EXPECTED.csv";
+string imagePath = Path.Combine(outputDir.FullName, imageName);
+var expectedFile = new FileInfo("StandardSonograms\\BAC2_20071008_AmplSonogramData.EXPECTED.bin");
 
-            // Check that image dimensions are correct
-            Assert.AreEqual(645, image.Width);
-            Assert.AreEqual(310, image.Height);
+// run this once to generate expected image and data files (############ IMPORTANT: remember to move saved files OUT of bin/Debug directory!)
+bool saveOutput = false;
+if (saveOutput)
+{
+    // 1: save image of oscillation spectrogram
+    //tuple.Item1.Save(imagePath, ImageFormat.Png);
+}
+
+// run this once to generate expected test data (and remember to copy out of bin/debug!)
+    // Binary.Serialize(expectedFile, sonogram.Data);
+    //var expected = Binary.Deserialize<double[,]>(expectedFile);
+
+// CollectionAssert.AreEqual(expected, sonogram.Data);
+var resultFile2 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
+Json.Serialise(resultFile2, freqScale.GridLineLocations);
+FileEqualityHelpers.TextFileEqual(expectedFile2, resultFile2);
+
+// Check that image dimensions are correct
+Assert.AreEqual(645, image.Width);
+Assert.AreEqual(310, image.Height);
 
 
-            // DO EQUALITY TEST
-            Get a DATA_MATRIX
-            var expectedDataFile = new FileInfo("StandardSonograms\\BAC2_20071008_AmplSonogramData.EXPECTED.bin");
+// DO EQUALITY TEST
+Get a DATA_MATRIX
+var expectedDataFile = new FileInfo("StandardSonograms\\BAC2_20071008_AmplSonogramData.EXPECTED.bin");
 
-            // run this once to generate expected test data (and remember to copy out of bin/debug!)
-            //Binary.Serialize(expectedFile, DATA_MATRIX);
+// run this once to generate expected test data (and remember to copy out of bin/debug!)
+//Binary.Serialize(expectedFile, DATA_MATRIX);
 
-            var expectedDATA = Binary.Deserialize<double[,]>(expectedDataFile);
+var expectedDATA = Binary.Deserialize<double[,]>(expectedDataFile);
 
-            CollectionAssert.AreEqual(expectedDATA, DATA_MATRIX);
-            */
-            Assert.Fail("in progrexss");
+CollectionAssert.AreEqual(expectedDATA, DATA_MATRIX);
+*/
+
+            // Assert.Fail("in progrexss");
         }
     }
 }

@@ -7,7 +7,6 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using System.Drawing;
-    using System.Drawing.Imaging;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -65,7 +64,8 @@ namespace AnalysisPrograms
 
                 // The following two test methods have yet to be debugged as of April 2nd 2017.
                 //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest1();
-                ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest2();
+                //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest2();
+                ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest3();
             }
 
             if (false)
@@ -85,125 +85,17 @@ namespace AnalysisPrograms
             }
 
             if (false)
-            { 
+            {
                 //string dirName = @"G:\SensorNetworks\OutputDataSets\GrooteCaneToad_Job120\SD Card B";
                 string dirName = @"G:\SensorNetworks\OutputDataSets\GrooteCaneToad_Job120\USBDriveViaMichael-Lin-Deb";
                 var topDir = new DirectoryInfo(dirName);
                 DirectoryInfo[] dataDirs = topDir.GetDirectories();
                 string pattern = "*__Towsey.RhinellaMarina.Events.csv";
                 DirectoryInfo outputDirectory = new DirectoryInfo(@"C:\SensorNetworks\Output\Frogs\Canetoad\ConcatGroote_Job120");
+
                 //string opFileStem = "CanetoadEvents_SiteA";
                 string opFileStem = "CanetoadEvents_USBStick";
                 ConcatenateIndexFiles.ConcatenateAcousticEventFiles(dataDirs, pattern, outputDirectory, opFileStem);
-            }
-
-            // experiments with Otsu Thresholder
-            if (false)
-            {
-                // check that Otsu thresholder is still working
-                //OtsuThresholder.Execute(null);
-                //string recordingPath = @"G:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\NW_NW273_20101013-051200-0514-1515-Brown Cuckoo-dove1.wav";
-                string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TOWERB_20110302_202900_22.LSK.F.wav";
-                //int resampleRate = 22050;
-                var outputPath = @"G:\SensorNetworks\Output\temp\AEDexperiments";
-                var outputDirectory = new DirectoryInfo(outputPath);
-                AudioRecording recording = new AudioRecording(recordingPath);
-                var recordingDuration = recording.WavReader.Time;
-
-                const int frameSize = 1024;
-                double windowOverlap = 0.0;
-                //NoiseReductionType noiseReductionType  = NoiseReductionType.None;
-                NoiseReductionType noiseReductionType = SNR.KeyToNoiseReductionType("FlattenAndTrim");
-                //NoiseReductionType noiseReductionType   = NoiseReductionType.Standard;
-                var sonoConfig = new SonogramConfig
-                {
-                    SourceFName = recording.BaseName,
-                    //set default values - ignore those set by user
-                    WindowSize = frameSize,
-                    WindowOverlap = windowOverlap,
-                    NoiseReductionType = noiseReductionType,
-                    NoiseReductionParameter = 0.0,
-                };
-
-                var aedConfiguration = new Aed.AedConfiguration
-                {
-                    //AedEventColor = Color.Red;
-                    //AedHitColor = Color.FromArgb(128, AedEventColor),
-                    // This stops AED Wiener filter and noise removal.
-                    NoiseReductionType = noiseReductionType,
-                    IntensityThreshold = 20.0,
-                    SmallAreaThreshold = 100,
-                    //BgNoiseThreshold   = 3.5
-                };
-
-                double[] thresholdLevels = { 20.0 };
-                //double[] thresholdLevels = {30.0, 25.0, 20.0, 15.0, 10.0, 5.0};
-                var imageList = new List<Image>();
-
-                foreach (double th in thresholdLevels)
-                {
-                    aedConfiguration.IntensityThreshold = th;
-                    var sonogram = (BaseSonogram) new SpectrogramStandard(sonoConfig, recording.WavReader);
-                    AcousticEvent[] events = Aed.CallAed(sonogram, aedConfiguration, TimeSpan.Zero, recordingDuration);
-                    LoggedConsole.WriteLine("AED # events: " + events.Length);
-
-                    //cluster events
-                    //var clusters = AcousticEvent.ClusterEvents(events);
-                    //AcousticEvent.AssignClusterIds(clusters);
-                    // see line 415 of AcousticEvent.cs for drawing the cluster ID into the sonogram image.
-                    var distributionImage = IndexDistributions.DrawImageOfDistribution(sonogram.Data, 300, 100, "Distribution");
-
-                    // get image of original data matrix
-                    var srcImage = ImageTools.DrawReversedMatrix(sonogram.Data);
-                    srcImage.RotateFlip(RotateFlipType.Rotate270FlipNone);
-
-                    // get image of global thresholded data matrix
-                    byte[,] opByteMatrix;
-                    double opGlobalThreshold;
-                    Image histogramImage;
-                    OtsuThresholder.GetGlobalOtsuThreshold(sonogram.Data, out opByteMatrix, out opGlobalThreshold, out histogramImage);
-                    Image opImageGlobal = OtsuThresholder.ConvertMatrixToReversedGreyScaleImage(opByteMatrix);
-                    opImageGlobal.RotateFlip(RotateFlipType.Rotate270FlipNone);
-
-                    // get image of local thresholded data matrix
-                    var normalisedMatrix = MatrixTools.NormaliseInZeroOne(sonogram.Data);
-                    OtsuThresholder.DoLocalOtsuThresholding(normalisedMatrix, out opByteMatrix);
-
-                    // debug check for min and max - make sure it worked
-                    int[] bd = DataTools.GetByteDistribution(opByteMatrix);
-
-                    //Image opImageLocal = OtsuThresholder.ConvertMatrixToGreyScaleImage(opByteMatrix);
-                    Image opImageLocal = OtsuThresholder.ConvertMatrixToReversedGreyScaleImage(opByteMatrix);
-                    opImageLocal.RotateFlip(RotateFlipType.Rotate270FlipNone);
-
-                    Image[] imageArray = { srcImage, opImageGlobal, opImageLocal };
-                    Image images = ImageTools.CombineImagesVertically(imageArray);
-                    var opPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, "ThresholdExperiment", "png");
-                    images.Save(opPath);
-
-                    var hits = new double[sonogram.FrameCount, sonogram.Data.GetLength(1)];
-
-                    // display a variety of debug score arrays
-                    double[] normalisedScores = new double[sonogram.FrameCount];
-                    double normalisedThreshold = 0.5;
-                    //DataTools.Normalise(amplitudeScores, decibelThreshold, out normalisedScores, out normalisedThreshold);
-                    var scorePlot = new Plot("Scores", normalisedScores, normalisedThreshold);
-                    var plots = new List<Plot> {scorePlot};
-                    var image = Recognizers.LitoriaBicolor.DisplayDebugImage(sonogram, events.ToList<AcousticEvent>(),
-                        plots, hits);
-
-                    //var image = Aed.DrawSonogram(sonogram, events);
-
-                    using (Graphics gr = Graphics.FromImage(image))
-                    {
-                        gr.DrawImage(distributionImage, new Point(0, 0));
-                    }
-                    imageList.Add(image);
-                }
-                var compositeImage = ImageTools.CombineImagesVertically(imageList);
-                var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, "AedExperiment", "png");
-                compositeImage.Save(debugPath);
             }
 
             // experiments with Mitchell-Aide ARBIMON segmentation algorithm
@@ -322,25 +214,28 @@ namespace AnalysisPrograms
                 HoughTransform.Test2HoughTransform();
             }
 
-            if (false)  // used to test structure tensor code.
+            // used to test structure tensor code.
+            if (false)
             {
                 StructureTensor.Test1StructureTensor();
                 StructureTensor.Test2StructureTensor();
             }
 
-            /// used to caluclate eigen values and singular valuse
+            // used to caluclate eigen values and singular valuse
             if (false)
             {
                 SvdAndPca.TestEigenValues();
             }
 
-            if (false)  // test examples of wavelets
+            // test examples of wavelets
+            if (false)
             {
+                // WaveletPacketDecomposition.ExampleOfWavelets_1();
                 WaveletTransformContinuous.ExampleOfWavelets_1();
-                //WaveletPacketDecomposition.ExampleOfWavelets_1();
             }
 
-            if (false)  // do 2D-FFT of an image.
+            // do 2D-FFT of an image.
+            if (false)
             {
                 FFT2D.TestFFT2D();
             }
@@ -381,47 +276,11 @@ namespace AnalysisPrograms
                 //LDSpectrogramStitching.StitchPartialSpectrograms();
             } // end if (true)
 
-            // PAPUA NEW GUINEA DATA
-            // concatenating csv files of spectral and summary indices
-            if (false)
-            {
-                // top level directory
-                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\";
-                //string opFileStem = "TNC_Iwarame_20150704_BAR32";
-
-                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_33\";
-                //string opFileStem = "TNC_Iwarame_20150704_BAR33";
-
-                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_35\";
-                //string opFileStem = "TNC_Iwarame_20150704_BAR35";
-
-                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_7-7-15\BAR\BAR_59\";
-                //string opFileStem = "TNC_Iwarame_20150707_BAR59";
-
-                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_9-7-15\BAR\BAR_79\";
-                //string opFileStem = "TNC_Iwarame_20150709_BAR79";
-
-                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Yavera_8-7-15\BAR\BAR_64\";
-                //string opFileStem = "TNC_Yavera_20150708_BAR64";
-
-                string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Musiamunat_3-7-15\BAR\BAR_18\";
-                string opFileStem = "TNC_Musiamunat_20150703_BAR18";
-
-                DirectoryInfo[] dataDir = { new DirectoryInfo(dataPath) };
-
-                string indexPropertiesConfigPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\IndexPropertiesOLDConfig.yml";
-                FileInfo indexPropertiesConfigFileInfo = new FileInfo(indexPropertiesConfigPath);
-
-                // string outputDirectory = @"C:\SensorNetworks\Output\Test\TNC";
-                var opDir = new DirectoryInfo(dataPath);
-                //LDSpectrogramStitching.ConcatenateAllIndexFiles(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
-            }
-
             // testing TERNARY PLOTS using spectral indices
             if (false)
             {
-                string[] keys = { "ACI", "ENT", "EVN" };
                 //string[] keys = { "BGN", "POW", "EVN"};
+                string[] keys = { "ACI", "ENT", "EVN" };
 
                 FileInfo[] indexFiles = { new FileInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP\20150622\GympieNP_20150622__"+keys[0]+".csv"),
                                           new FileInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP\20150622\GympieNP_20150622__"+keys[1]+".csv"),
@@ -442,8 +301,10 @@ namespace AnalysisPrograms
                     double min = indexProperties.NormMin;
                     double max = indexProperties.NormMax;
                     matrixDictionary[key] = MatrixTools.NormaliseInZeroOne(matrixDictionary[key], min, max);
+
                     //matrix = MatrixTools.FilterBackgroundValues(matrix, this.BackgroundFilter); // to de-demphasize the background small values
                 }
+
                 Image image = TernaryPlots.DrawTernaryPlot(matrixDictionary, keys);
                 image.Save(opImage.FullName);
             }
@@ -478,14 +339,12 @@ namespace AnalysisPrograms
                 Console.WriteLine("The number of directories is {0}.", dirList.Count);
                 foreach (string dir in dirList)
                 {
-
                     Console.WriteLine(dir);
                 }
 
                 Console.WriteLine("The number of files is {0}.", fileList.Count);
-                foreach (FileInfo file in fileList)
+                foreach (var file in fileList)
                 {
-
                     Console.WriteLine(file.FullName);
                 }
             }
@@ -918,7 +777,6 @@ namespace AnalysisPrograms
 
                 // read through all the files
                 int fileCount = filePaths.Length;
-                //fileCount = 3;
                 for (int i = 0; i < fileCount; i++)
                 {
                     //ID0001_Species01.EVN.csv
