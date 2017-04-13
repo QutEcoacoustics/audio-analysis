@@ -2,6 +2,10 @@
 
 The audio analysis source base for the QUT Bioacoustics Research Group
 
+## Build status
+
+[![Build status](https://ci.appveyor.com/api/projects/status/ntf6vtuy5wnlww37?svg=true)](https://ci.appveyor.com/project/QUTEcoacousticsResearchGroup/audio-analysis)
+
 ## Licence
 
 ALL RIGHTS ARE RESERVED.

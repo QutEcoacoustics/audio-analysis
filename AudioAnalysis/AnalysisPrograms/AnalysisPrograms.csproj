@@ -430,7 +430,8 @@
   </PropertyGroup>
   <Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.Targets" />
   <UsingTask AssemblyFile="$(MSBuildCommunityTasksLib)" TaskName="MSBuild.Community.Tasks.Git.GitCommits" />
-  <Target Name="BeforeBuild" Condition="'$(Configuration)' == 'Release' Or !Exists('Properties\AssemblyInfo.cs')">
+  <!-- Condition="'$(Configuration)' == 'Release' Or !Exists('Properties\AssemblyInfo.cs')" -->
+  <Target Name="BeforeBuild">
     <GitVersion Short="false">
       <Output TaskParameter="CommitHash" PropertyName="GitCommitHash" />
     </GitVersion>
