@@ -27,6 +27,8 @@ build:
     parallel: true
     # path to Visual Studio solution or project
     project: AudioAnalysis\AudioAnalysis2012.sln
+    # MSBuild verbosity level
+    verbosity: quiet
   
 test:
     assemblies:
