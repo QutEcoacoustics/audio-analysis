@@ -38,3 +38,4 @@
 
 *.exe     binary
 *.dll     binary
+*.zip filter=lfs diff=lfs merge=lfs -text
