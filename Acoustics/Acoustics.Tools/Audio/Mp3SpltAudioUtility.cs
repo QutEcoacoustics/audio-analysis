@@ -9,7 +9,7 @@
     using System.Text;
     using System.Text.RegularExpressions;
 
-    using Acoustics.Shared;
+    using Shared;
 
     /// <summary>
     /// Mp3 split audio utility.
@@ -318,17 +318,17 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
         /// </returns>
         public IEnumerable<SplitFileInfo> Run()
         {
-            var workingDir = CheckAndCreateWorkingDir();
+            var workingDir = this.CheckAndCreateWorkingDir();
 
-            var args = CreateArguments(workingDir);
+            var args = this.CreateArguments(workingDir);
 
-            var stdOut = RunProcess(args);
+            var stdOut = this.RunProcess(args);
 
             var files = new DirectoryInfo(workingDir).GetFiles();
 
             var cr = files.Select(f =>
             {
-                var range = ParseFileName(f);
+                var range = this.ParseFileName(f);
                 return new SplitFileInfo
                 {
                     File = f,
@@ -355,11 +355,11 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
         /// </returns>
         public string SingleSegment(string tempFilePath, long start, long end)
         {
-            var args = CreateSingleSegmentArguments(tempFilePath, start, end);
+            var args = this.CreateSingleSegmentArguments(tempFilePath, start, end);
 
             this.WorkingDirectory = new DirectoryInfo(Path.GetDirectoryName(tempFilePath));
 
-            var stdOut = RunProcess(args);
+            var stdOut = this.RunProcess(args);
 
             return tempFilePath;
         }
@@ -518,7 +518,7 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
             //splitoutput-@f-@mm@ss@h-@Mm@Ss@H
             //splitoutput-DM420003-1400m00s00-1434m59s69.mp3
 
-            var matches = fileNameMatcher.Matches(name);
+            var matches = this.fileNameMatcher.Matches(name);
 
             if (matches.Count < 1)
             {
@@ -618,7 +618,7 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
                 {
                     var tempFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.ExtMp3);
 
-                    var segmentedFile = SingleSegment(
+                    var segmentedFile = this.SingleSegment(
                         tempFile.FullName, start.HasValue ? start.Value : 0, end.HasValue ? end.Value : long.MaxValue);
 
                     byte[] bytes = File.ReadAllBytes(segmentedFile);

@@ -1,8 +1,8 @@
 ﻿namespace System.Drawing
 {
-    using System.Drawing.Imaging;
-    using System.Globalization;
-    using System.IO;
+    using Imaging;
+    using Globalization;
+    using IO;
     using System.Text.RegularExpressions;
 
     using Acoustics.Shared;

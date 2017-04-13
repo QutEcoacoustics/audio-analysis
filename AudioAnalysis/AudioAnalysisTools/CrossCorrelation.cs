@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-    using AudioAnalysisTools.DSP;
+    using DSP;
     using TowseyLibrary;
 
     public class CrossCorrelation
@@ -26,7 +26,7 @@
         //public const string key_COUNT = "count";
 
 
-         public static System.Tuple<double[,], double[,], double[,], double[]> DetectBarsUsingXcorrelation(double[,] m, int rowStep, int rowWidth, int colStep, int colWidth,
+         public static Tuple<double[,], double[,], double[,], double[]> DetectBarsUsingXcorrelation(double[,] m, int rowStep, int rowWidth, int colStep, int colWidth,
                                                                                                  double intensityThreshold, int zeroBinCount)
          {
              bool doNoiseremoval = true;
@@ -83,12 +83,14 @@
                          int minRow = rs * rowStep;
                          int maxRow = minRow + rowStep - 1;
                          for (int r = minRow; r < maxRow; r++)
-                         for (int c = minCol; c < maxCol; c++)
+                        {
+                            for (int c = minCol; c < maxCol; c++)
                          {
                              //hitsMatrix[r, c] = relativePeriod;
                              hitsMatrix[r, c] = periodicity[rs];
                          }
-                     } // if()
+                        }
+                    } // if()
                  } // for loop over numberOfRowSteps
              } // for loop over numberOfColSteps
 
@@ -105,7 +107,7 @@
         /// <param name="m"></param>
         /// <param name="amplitudeThreshold"></param>
         /// <returns></returns>
-        public static System.Tuple<double[], double[]> DetectBarsInTheRowsOfaMatrix(double[,] m, double threshold, int zeroBinCount)
+        public static Tuple<double[], double[]> DetectBarsInTheRowsOfaMatrix(double[,] m, double threshold, int zeroBinCount)
         {
             int rowCount = m.GetLength(0);
             int colCount = m.GetLength(1);
@@ -148,7 +150,7 @@
          /// <param name="m"></param>
          /// <param name="amplitudeThreshold"></param>
          /// <returns></returns>
-         public static System.Tuple<double[], double[], double[]> DetectHarmonicsInSonogramMatrix(double[,] m, double dBThreshold, int callSpan)
+         public static Tuple<double[], double[], double[]> DetectHarmonicsInSonogramMatrix(double[,] m, double dBThreshold, int callSpan)
          {
              int zeroBinCount = 3; //to remove low freq content which dominates the spectrum
              int halfspan = callSpan / 2;

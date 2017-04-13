@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="ConfigurationClasses.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="ConfigurationClasses.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defined string constants for keys in config tables
@@ -17,7 +17,7 @@ namespace AudioAnalysisTools
 
     using Acoustics.Shared;
 
-    using AudioAnalysisTools.DSP;
+    using DSP;
 
     using TowseyLibrary;
 
@@ -129,11 +129,11 @@ namespace AudioAnalysisTools
 
         public MfccConfiguration(ConfigDictionary config)
         {
-            FilterbankCount = config.GetInt(ConfigKeys.Mfcc.Key_FilterbankCount);
-            DoMelScale = config.GetBoolean(ConfigKeys.Mfcc.Key_DoMelScale);
-            CcCount = config.GetInt(ConfigKeys.Mfcc.Key_CcCount); //number of cepstral coefficients
-            IncludeDelta = config.GetBoolean(ConfigKeys.Mfcc.Key_IncludeDelta);
-            IncludeDoubleDelta = config.GetBoolean(ConfigKeys.Mfcc.Key_IncludeDoubleDelta);
+            this.FilterbankCount = config.GetInt(ConfigKeys.Mfcc.Key_FilterbankCount);
+            this.DoMelScale = config.GetBoolean(ConfigKeys.Mfcc.Key_DoMelScale);
+            this.CcCount = config.GetInt(ConfigKeys.Mfcc.Key_CcCount); //number of cepstral coefficients
+            this.IncludeDelta = config.GetBoolean(ConfigKeys.Mfcc.Key_IncludeDelta);
+            this.IncludeDoubleDelta = config.GetBoolean(ConfigKeys.Mfcc.Key_IncludeDoubleDelta);
         }
 
 		public void Save(TextWriter writer)
@@ -209,8 +209,8 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static int[] DetermineVocalisationEndpoints(double[] dbArray, double frameStep)
         {
-            var k1_k2delay = (int)(EndpointDetectionConfiguration.K1K2Latency / frameStep);    //=5  frames delay between signal reaching k1 and k2 thresholds
-            var frameGap = (int)(EndpointDetectionConfiguration.VocalGap / frameStep);  //=10 frames delay required to separate vocalisations
+            var k1_k2delay = (int)(K1K2Latency / frameStep);    //=5  frames delay between signal reaching k1 and k2 thresholds
+            var frameGap = (int)(VocalGap / frameStep);  //=10 frames delay required to separate vocalisations
             var minPulse   = (int)(MinPulseDuration / frameStep); //=2  frames is min vocal length
             //LoggedConsole.WriteLine("k1_k2delay=" + k1_k2delay + "  syllableGap=" + syllableGap + "  minPulse=" + minPulse);
             return MFCCStuff.VocalizationDetection(dbArray, K1Threshold, K2Threshold, k1_k2delay, frameGap, minPulse, null);

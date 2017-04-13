@@ -35,7 +35,7 @@ namespace FELT.Tests
         [TestMethod]
         public void TestJulianDate()
         {
-            DateTimeOffset dtn = SunCalcTest.Parse("Wed May 02 2012 12:09:00 GMT+1000");
+            DateTimeOffset dtn = Parse("Wed May 02 2012 12:09:00 GMT+1000");
             const double Expected = 2456049.589583333;
 
             double actual = SunCalc.dateToJulianDate(dtn);

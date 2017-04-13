@@ -35,20 +35,20 @@
         public FallaxConfiguration(dynamic configuration)
         {
             // Peak parameters
-            AmplitudeThresholdFallax = configuration.AmplitudeThresholdFallax;   // Decibel---the minimum amplitude value
+            this.AmplitudeThresholdFallax = configuration.AmplitudeThresholdFallax;   // Decibel---the minimum amplitude value
             //int rangeFallax = configuration.RangeFallax;                                // Frame---the distance in either side for selecting peaks
             //int distanceFallax = configuration.DistanceFallax;                          // Frame---remove near peaks
             // Track parameters
-            BinToleranceFallax = configuration.BinToleranceFallax;                 // Bin---the fluctuation of the dominant frequency bin
-            FrameThresholdFallax = configuration.FrameThresholdFallax;              // Frame---frame numbers of the silence
-            TrackDurationThresholdFallax = configuration.TrackDurationThresholdFallax;
-            TrackThresholdFallax = configuration.TrackThresholdFallax;           // Used for calculating the percent of peaks in one track
-            MaximumTrackDurationFallax = configuration.MaximumTrackDurationFallax;  // Minimum duration of tracks
-            MinimumTrackDurationFallax = configuration.MinimumTrackDurationFallax;  // Maximum duration of tracks
-            BinDifferencFallax = configuration.BinDifferenceFallax;             // Difference between the highest and lowest bins
+            this.BinToleranceFallax = configuration.BinToleranceFallax;                 // Bin---the fluctuation of the dominant frequency bin
+            this.FrameThresholdFallax = configuration.FrameThresholdFallax;              // Frame---frame numbers of the silence
+            this.TrackDurationThresholdFallax = configuration.TrackDurationThresholdFallax;
+            this.TrackThresholdFallax = configuration.TrackThresholdFallax;           // Used for calculating the percent of peaks in one track
+            this.MaximumTrackDurationFallax = configuration.MaximumTrackDurationFallax;  // Minimum duration of tracks
+            this.MinimumTrackDurationFallax = configuration.MinimumTrackDurationFallax;  // Maximum duration of tracks
+            this.BinDifferencFallax = configuration.BinDifferenceFallax;             // Difference between the highest and lowest bins
             // Band tracks parameters
-            FrequencyLowFallax = configuration.FrequencyLowFallax;
-            FrequencyHighFallax = configuration.FrequencyHighFallax;
+            this.FrequencyLowFallax = configuration.FrequencyLowFallax;
+            this.FrequencyHighFallax = configuration.FrequencyHighFallax;
             // DCT
             //int minimumOscillationNumberFallax = configuration.minimumOscillationNumberFallax;
             //int maximumOscillationNumberFallax = configuration.maximumOscillationNumberFallax;
@@ -57,7 +57,7 @@
             //double dct_DurationFallax = configuration.Dct_DurationFallax;
             //double dct_ThresholdFallax = configuration.Dct_ThresholdFallax;
 
-            DoSlopeFallax = configuration.DoSlopeFallax;
+            this.DoSlopeFallax = configuration.DoSlopeFallax;
 
         }
     }

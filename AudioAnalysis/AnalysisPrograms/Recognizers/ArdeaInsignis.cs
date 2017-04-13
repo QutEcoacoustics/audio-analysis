@@ -23,7 +23,7 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using log4net;
-    using Recognizers.Base;
+    using Base;
     using TowseyLibrary;
 
     /// <summary>

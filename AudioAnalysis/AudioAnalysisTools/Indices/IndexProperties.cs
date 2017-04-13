@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="IndexProperties.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="IndexProperties.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   This class stores the properties of a particular index.
@@ -111,7 +111,7 @@ namespace AudioAnalysisTools.Indices
         {
             // TODO: why not initialise these to null, the proper empty value?
             this.Key = "NOT SET";
-            this.Name = String.Empty;
+            this.Name = string.Empty;
             this.DataType = "double";
             this.DefaultValue = default(double);
             this.ProjectID = "NOT SET";
@@ -166,32 +166,32 @@ namespace AudioAnalysisTools.Indices
         /// <returns></returns>
         public string GetPlotAnnotation()
         {
-            if (this.Units == String.Empty)
+            if (this.Units == string.Empty)
             {
-                return String.Format(" {0} ({1:f2} .. {2:f2} {3})", this.Name, this.NormMin, this.NormMax, this.Units);
+                return string.Format(" {0} ({1:f2} .. {2:f2} {3})", this.Name, this.NormMin, this.NormMax, this.Units);
             }
 
             if (this.Units == "%")
             {
-                return String.Format(" {0} ({1:f0} .. {2:f0}{3})", this.Name, this.NormMin, this.NormMax, this.Units);
+                return string.Format(" {0} ({1:f0} .. {2:f0}{3})", this.Name, this.NormMin, this.NormMax, this.Units);
             }
 
             if (this.Units == "dB")
             {
-                return String.Format(" {0} ({1:f0} .. {2:f0} {3})", this.Name, this.NormMin, this.NormMax, this.Units);
+                return string.Format(" {0} ({1:f0} .. {2:f0} {3})", this.Name, this.NormMin, this.NormMax, this.Units);
             }
 
             if (this.Units == "ms")
             {
-                return String.Format(" {0} ({1:f0} .. {2:f0}{3})", this.Name, this.NormMin, this.NormMax, this.Units);
+                return string.Format(" {0} ({1:f0} .. {2:f0}{3})", this.Name, this.NormMin, this.NormMax, this.Units);
             }
 
             if (this.Units == "s")
             {
-                return String.Format(" {0} ({1:f1} .. {2:f1}{3})", this.Name, this.NormMin, this.NormMax, this.Units);
+                return string.Format(" {0} ({1:f1} .. {2:f1}{3})", this.Name, this.NormMin, this.NormMax, this.Units);
             }
 
-            return String.Format(" {0} ({1:f2} .. {2:f2} {3})", this.Name, this.NormMin, this.NormMax, this.Units);
+            return string.Format(" {0} ({1:f2} .. {2:f2} {3})", this.Name, this.NormMin, this.NormMax, this.Units);
         }
 
         /// <summary>
@@ -225,7 +225,7 @@ namespace AudioAnalysisTools.Indices
             {
                 double value = values[i];
 
-                if (Double.IsNaN(value))
+                if (double.IsNaN(value))
                 {
                     // expect normalised data
                     barHeight = trackHeight;

@@ -6,7 +6,7 @@
     using System.Linq;
     using System.Security.Cryptography;
     using System.Text;
-    using Acoustics.Shared.Contracts;
+    using Contracts;
 
     public static class TempFileHelper
     {

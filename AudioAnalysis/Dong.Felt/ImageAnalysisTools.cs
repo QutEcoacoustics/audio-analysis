@@ -11,9 +11,9 @@ namespace Dong.Felt
     using AudioAnalysisTools;
     using AForge.Math;
     using AudioAnalysisTools.DSP;
-    using Dong.Felt.Configuration;
-    using Dong.Felt.ResultsOutput;
-    using Dong.Felt.Representations;
+    using Configuration;
+    using ResultsOutput;
+    using Representations;
     using AForge.Imaging.Filters;
     using System.Drawing;
 
@@ -1182,9 +1182,10 @@ namespace Dong.Felt
             double[,] normM = DataTools.normalise(m);
             double[,] newMatrix = new double[mRows, mCols];//init new matrix to return
             double[] grid = new double[9]; //to represent 3x3 grid
-            double min = Double.MaxValue; double max = -Double.MaxValue;
+            double min = double.MaxValue; double max = -double.MaxValue;
 
             for (int y = 1; y < mRows - 1; y++)
+            {
                 for (int x = 1; x < mCols - 1; x++)
                 {
                     grid[a] = normM[y - 1, x - 1];
@@ -1219,6 +1220,7 @@ namespace Dong.Felt
                     if (min > gridMin) min = gridMin;
                     if (max < gridMax) max = gridMax;
                 }
+            }
 
             //double relThreshold = 0.2;
             double threshold = min + ((max - min) * relThreshold);
@@ -1259,7 +1261,7 @@ namespace Dong.Felt
                     double magnitude, direction;
                     bool isRidge = false;
 
-                    TowseyLibrary.ImageTools.Sobel5X5RidgeDetection(subMatrix, out isRidge, out magnitude, out direction);
+                    ImageTools.Sobel5X5RidgeDetection(subMatrix, out isRidge, out magnitude, out direction);
                     if (isRidge && (magnitude > magnitudeThreshold))
                     {
                         result1[row, col] = 1.0;

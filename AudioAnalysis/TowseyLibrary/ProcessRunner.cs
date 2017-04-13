@@ -41,7 +41,7 @@
         /// </summary>
         public string StandardOutput
         {
-            get { return standardOutput.ToString(); }
+            get { return this.standardOutput.ToString(); }
         }
 
         /// <summary>
@@ -49,7 +49,7 @@
         /// </summary>
         public string ErrorOutput
         {
-            get { return errorOutput.ToString(); }
+            get { return this.errorOutput.ToString(); }
         }
 
         /// <summary>
@@ -94,7 +94,7 @@
         /// </exception>
         public void Run(string arguments, string workingDirectory)
         {
-            Run(arguments, workingDirectory, true);
+            this.Run(arguments, workingDirectory, true);
         }
 
 
@@ -138,7 +138,7 @@
             {
                 if (!string.IsNullOrEmpty(e.Data))
                 {
-                    errorOutput.AppendLine(e.Data);
+                    this.errorOutput.AppendLine(e.Data);
                 }
             };
 
@@ -146,7 +146,7 @@
             {
                 if (!string.IsNullOrEmpty(e.Data))
                 {
-                    standardOutput.AppendLine(e.Data);
+                    this.standardOutput.AppendLine(e.Data);
                 }
             };
 

@@ -114,7 +114,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
             LoggedConsole.WriteLine();
 
-            DrawLDSpectrogram.DrawSpectrogramsFromSpectralIndicesJiesCopyDoNotUseAnthonyThisWholeCopyingMethodsThingIsConfusingMe(arguments.SpectrogramConfigPath, arguments.IndexPropertiesConfig);
+            DrawSpectrogramsFromSpectralIndicesJiesCopyDoNotUseAnthonyThisWholeCopyingMethodsThingIsConfusingMe(arguments.SpectrogramConfigPath, arguments.IndexPropertiesConfig);
         }
 
 
@@ -195,7 +195,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             int nyquist = cs1.SampleRate / 2;
             int hzInterval = 1000;
-            string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+            string title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
             image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, cs1, nyquist, hzInterval);
             image1.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
@@ -203,7 +203,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             //colorMap = SpectrogramConstants.RGBMap_ACI_ENT_SPT; //this has also been good
             colorMap = colorMap2;
             Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
-            title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+            title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
             image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, cs1, nyquist, hzInterval);
             image2.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));

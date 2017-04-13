@@ -27,8 +27,8 @@ public class Distribution
   int[] posDistribution;
   int[] negDistribution;
   int valueCount = 0; // number of values in Distribution
-  int minIndex   = Int32.MaxValue; // index of lowest bin containing a value
-  int maxIndex   = Int32.MinValue;
+  int minIndex   = int.MaxValue; // index of lowest bin containing a value
+  int maxIndex   = int.MinValue;
 
 
 
@@ -55,8 +55,8 @@ public class Distribution
   public Distribution(int binCount, int binWidth)
   { this.binCount   = binCount;
     this.barWidth   = binWidth;
-    posDistribution = new int[binCount];
-    negDistribution = new int[binCount];
+      this.posDistribution = new int[binCount];
+      this.negDistribution = new int[binCount];
   }
 
 
@@ -75,7 +75,7 @@ public class Distribution
     //make histogram: value=1 goes in histo at index=1, etc etc.
     for (int i=0; i<counts; i++) freq[values[i]]++;
 
-    prob = normalise(freq);  //calculate probabilities
+      this.prob = normalise(freq);  //calculate probabilities
   }
 
   /**
@@ -97,8 +97,8 @@ public class Distribution
     // regularise, smooth and normalise
     if(regularise) freq = regulariseDistribution(freq);
     //prob = freq;
-    prob = normalise(freq);
-    calculateIC();
+      this.prob = normalise(freq);
+      this.calculateIC();
   }
 
 
@@ -113,7 +113,7 @@ public class Distribution
     this.maxD = max;
     int counts = values.Length;
     this.binWidth = binWidth;
-    int size   = (int)((maxD-minD)/binWidth) + 1;
+    int size   = (int)((this.maxD- this.minD)/binWidth) + 1;
     double[] freq = new double[size];
 
     for (int i=0; i<size; i++) freq[i] = 0.0; //initialise
@@ -130,19 +130,19 @@ public class Distribution
     // regularise, smooth and normalise
     if(regularise) freq = regulariseDistribution(freq);
     //prob = freq;
-    prob = normalise(freq);
-    calculateIC();
+      this.prob = normalise(freq);
+      this.calculateIC();
   }
 
 
-  static public double[] regulariseDistribution(double[] values)
+  public static double[] regulariseDistribution(double[] values)
   {
     for (int i=0; i<values.Length; i++) values[i] += 0.01; // regularise
     return DataTools.filterMovingAverage(values,7);        //smooth
   }
 
 
-  static public double[] normalise(double[] values) // normalise
+  public static double[] normalise(double[] values) // normalise
   { int    length = values.Length;
     double[] prob = new double[length];
     double    sum = 0.0;
@@ -159,9 +159,9 @@ public class Distribution
 //    double[] gaps = {0.108, 0.192, 0.464, 0.136, 0.10};
 //    prob = gaps;
     double log2 = Math.Log(2.0);
-    expectedIC = -Math.Log(1/(double)prob.Length) /log2;  //calc expected info content
-    IC = calculateIC(prob);
-    totalIC = getSum(IC);
+      this.expectedIC = -Math.Log(1/(double)this.prob.Length) /log2;  //calc expected info content
+      this.IC = this.calculateIC(this.prob);
+      this.totalIC = getSum(this.IC);
   }
 
 
@@ -173,9 +173,9 @@ public class Distribution
    * @return
    */
   public double getProbability(int value)
-  { if(value < min) return 0.0;
-    if(value > max) return 0.0;
-    return prob[value];
+  { if(value < this.min) return 0.0;
+    if(value > this.max) return 0.0;
+    return this.prob[value];
   }
 
   /**
@@ -190,45 +190,45 @@ public class Distribution
     double sum = 0;
     for (int i=start; i<= end; i++)
     { if(i < 0) continue;
-      if(i > max) break;
-      sum += prob[i];
+      if(i > this.max) break;
+      sum += this.prob[i];
     }
     return sum;
   }
 
 
   public double getLogProbability(int value)
-  { return Math.Log(prob[value])/Math.Log(2);
+  { return Math.Log(this.prob[value])/Math.Log(2);
   }
 
 
   public double getLogProbability(int start, int end)
-  { double p = getProbability(start, end);
+  { double p = this.getProbability(start, end);
     return Math.Log(p)/Math.Log(2);
   }
 
   public double[] getProbDistribution()
   {
-    return prob;
+    return this.prob;
   }
 
   public double[] getInfoDistribution()
   {
-    return IC;
+    return this.IC;
   }
 
 
   public double getSum()
   {
     double sum = 0.0;
-    for (int i=0; i< prob.Length; i++)
+    for (int i=0; i< this.prob.Length; i++)
     {
-      sum += prob[i];
+      sum += this.prob[i];
     }
     return sum;
   }
 
-  static public double getSum(double[] values)
+  public static double getSum(double[] values)
   {
     double sum = 0.0;
     for (int i=0; i< values.Length; i++)
@@ -262,7 +262,7 @@ public class Distribution
    */
   public void writeIC()
   {
-    for (int i=0; i< IC.Length; i++) LoggedConsole.WriteLine(i+"   "+IC[i]);
+    for (int i=0; i< this.IC.Length; i++) LoggedConsole.WriteLine(i+"   "+ this.IC[i]);
   }
 
 
@@ -271,28 +271,28 @@ public class Distribution
 	 */
 	public double getExpectedIC()
 	{
-		return expectedIC;
+		return this.expectedIC;
 	}
 	/**
 	 * @return Returns the max.
 	 */
 	public int getMax()
 	{
-		return max;
+		return this.max;
 	}
 	/**
 	 * @return Returns the min.
 	 */
 	public int getMin()
 	{
-		return min;
+		return this.min;
 	}
 	/**
 	 * @return Returns the totalIC.
 	 */
 	public double getTotalIC()
 	{
-		return totalIC;
+		return this.totalIC;
 	}
 
 
@@ -302,25 +302,25 @@ public class Distribution
 
 
   public void addValue(int value)
-  { if(value < 0) addNegativeValue(value);
-    else          addPositiveValue(value);
-    valueCount ++;
+  { if(value < 0) this.addNegativeValue(value);
+    else this.addPositiveValue(value);
+      this.valueCount ++;
   }
   public void addPositiveValue(int value)
   {
-    int index = value / barWidth;
-    if(index >= binCount) index = binCount-1;
-    posDistribution[index]++;
-    if(index<minIndex) minIndex = index;
-    if(index>maxIndex) maxIndex = index;
+    int index = value / this.barWidth;
+    if(index >= this.binCount) index = this.binCount-1;
+      this.posDistribution[index]++;
+    if(index< this.minIndex) this.minIndex = index;
+    if(index> this.maxIndex) this.maxIndex = index;
   }
   public void addNegativeValue(int value)
   {
-    int index = -(value / barWidth);// make values positive for storage purposes
-    if(index >= binCount) index = binCount-1;
-    negDistribution[index]++;
-    if(index<minIndex) minIndex = index;
-    if(index>maxIndex) maxIndex = index;
+    int index = -(value / this.barWidth);// make values positive for storage purposes
+    if(index >= this.binCount) index = this.binCount-1;
+      this.negDistribution[index]++;
+    if(index< this.minIndex) this.minIndex = index;
+    if(index> this.maxIndex) this.maxIndex = index;
   }
 
 
@@ -331,47 +331,47 @@ public class Distribution
 	 */
 	public int getMaxIndex()
 	{
-		return maxIndex;
+		return this.maxIndex;
 	}
 	/**
 	 * @return Returns the minIndex.
 	 */
 	public int getMinIndex()
 	{
-		return minIndex;
+		return this.minIndex;
 	}
 	/**
 	 * @return Returns the valueCount.
 	 */
 	public int getValueCount()
 	{
-		return valueCount;
+		return this.valueCount;
 	}
   private int[] concatenatePosAndNeg()
   {
-    int[] combinedDist = new int[binCount*2];
-    for(int i=0; i<binCount; i++) // add in negative bins
+    int[] combinedDist = new int[this.binCount*2];
+    for(int i=0; i< this.binCount; i++) // add in negative bins
     {
-      combinedDist[binCount-1-i] = negDistribution[i];
+      combinedDist[this.binCount-1-i] = this.negDistribution[i];
     }
-    for(int i=0; i<binCount; i++) // add in positive bins
+    for(int i=0; i< this.binCount; i++) // add in positive bins
     {
-      combinedDist[binCount+i] = posDistribution[i];
+      combinedDist[this.binCount+i] = this.posDistribution[i];
     }
     return  combinedDist;
   }
   public int[] getDistribution()
   {
-    return concatenatePosAndNeg();
+    return this.concatenatePosAndNeg();
   }
   public double[] getNormalisedDistribution()
   {
-    int[] combinedDist = concatenatePosAndNeg();
+    int[] combinedDist = this.concatenatePosAndNeg();
     return DataTools.NormaliseArea(combinedDist);
   }
 
 
-  public static void main(String[] args)
+  public static void main(string[] args)
   {
     int max = 9;
     int[] var = {0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9};

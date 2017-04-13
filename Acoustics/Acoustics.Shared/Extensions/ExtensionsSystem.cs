@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Utilities.cs" company="MQUTeR">
-//   -
+// <copyright file="ExtensionsSystem.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the Utilities type.
@@ -9,21 +9,21 @@
 
 namespace System
 {
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.ComponentModel;
-    using System.Data;
-    using System.Data.Linq;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Linq;
-    using System.Linq.Expressions;
-    using System.Runtime.InteropServices;
-    using System.Runtime.Serialization;
-    using System.Runtime.Serialization.Formatters.Binary;
-    using System.Text;
-    using System.Text.RegularExpressions;
-    using System.Web;
+    using Collections.Generic;
+    using Collections.Specialized;
+    using ComponentModel;
+    using Data;
+    using Data.Linq;
+    using Diagnostics;
+    using IO;
+    using Linq;
+    using Linq.Expressions;
+    using Runtime.InteropServices;
+    using Runtime.Serialization;
+    using Runtime.Serialization.Formatters.Binary;
+    using Text;
+    using Text.RegularExpressions;
+    using Web;
 
     public static class ExtensionsGeneral
     {
@@ -289,7 +289,7 @@ namespace System
         {
             get
             {
-                return Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                return Path.GetDirectoryName(Reflection.Assembly.GetExecutingAssembly().Location);
             }
         }
 
@@ -455,8 +455,10 @@ namespace System
         public static void AddRange<T>(this IList<T> list, IEnumerable<T> values)
         {
             if (values != null)
+            {
                 foreach (var item in values)
                     list.Add(item);
+            }
         }
 
         /// <summary>

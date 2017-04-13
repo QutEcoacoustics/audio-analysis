@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="CycloranaNovaehollandiae.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="CycloranaNovaehollandiae.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   This is a frog recognizer based on the "ribit" or "washboard" template
@@ -28,7 +28,7 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
-    using AnalysisPrograms.Recognizers.Base;
+    using Base;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -195,7 +195,7 @@ namespace AnalysisPrograms.Recognizers
             var plots = new List<Plot> { plot };
 
 
-            WriteDebugImage(recording.BaseName, outputDirectory, sonogram, acousticEvents, plots, hits);
+            this.WriteDebugImage(recording.BaseName, outputDirectory, sonogram, acousticEvents, plots, hits);
 
             return new RecognizerResults()
             {

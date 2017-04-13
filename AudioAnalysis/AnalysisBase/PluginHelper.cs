@@ -34,7 +34,7 @@
             get
             {
                 var codebase = Assembly.GetExecutingAssembly().CodeBase;
-                var uri = new System.Uri(codebase);
+                var uri = new Uri(codebase);
                 var localPath = uri.LocalPath;
                 var directory = Path.GetDirectoryName(localPath);
 
@@ -45,7 +45,7 @@
         public void FindIAnalysisPlugins()
         {
             var pluginBaseDirs = new List<DirectoryInfo>();
-            pluginBaseDirs.Add(new DirectoryInfo(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)));
+            pluginBaseDirs.Add(new DirectoryInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)));
 
             this.Compose(pluginBaseDirs, "AnalysisPrograms.exe");
         }
@@ -54,7 +54,7 @@
         {
             var pluginBaseDirs = new List<DirectoryInfo>();
             //var pluginBaseDirs = keyValueStore.GetValueAsStrings("PluginDirectories", ",").Select(this.GetRelativeOrAbsolute).ToList();
-            pluginBaseDirs.Add(new DirectoryInfo(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)));
+            pluginBaseDirs.Add(new DirectoryInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)));
             pluginBaseDirs.Add(pluginDllDirectory);
 
             this.Compose(pluginBaseDirs, "AnalysisPrograms.exe");

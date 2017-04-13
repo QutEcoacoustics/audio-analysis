@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="AcousticEvent.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="AcousticEvent.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the AcousticEvent type.
@@ -19,8 +19,8 @@ namespace AudioAnalysisTools
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
     using AnalysisBase.ResultBases;
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.StandardSpectrograms;
+    using DSP;
+    using StandardSpectrograms;
     using CsvHelper.Configuration;
     using TowseyLibrary;
 
@@ -283,7 +283,7 @@ namespace AudioAnalysisTools
             this.FreqBinCount = binCount; //required for conversions to & from MEL scale
             this.FreqBinWidth = binWidth; //required for freq-binID conversions
 
-            if (this.Oblong == null) this.Oblong = AcousticEvent.ConvertEvent2Oblong(this);
+            if (this.Oblong == null) this.Oblong = ConvertEvent2Oblong(this);
 
         }
 
@@ -296,7 +296,7 @@ namespace AudioAnalysisTools
             //this.FreqBinCount = binCount;           //required for conversions to & from MEL scale
             this.FreqBinWidth = freqBinWidth;         //required for freq-binID conversions
 
-            if (this.Oblong == null) this.Oblong = AcousticEvent.ConvertEvent2Oblong(this);
+            if (this.Oblong == null) this.Oblong = ConvertEvent2Oblong(this);
         }
 
 
@@ -395,7 +395,7 @@ namespace AudioAnalysisTools
             {
                 foreach (var hitElement in this.HitElements)
                 {
-                    imageToReturn.SetPixel(hitElement.X, sonogramHeight - hitElement.Y, HitColour.Value);
+                    imageToReturn.SetPixel(hitElement.X, sonogramHeight - hitElement.Y, this.HitColour.Value);
                 }
             }
 
@@ -589,22 +589,22 @@ namespace AudioAnalysisTools
         {
             if (eventList.Count == 0)
             {
-                string line = String.Format("#{0}\t{1,8:f3}\t{2,6:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
+                string line = string.Format("#{0}\t{1,8:f3}\t{2,6:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
                                             "     Event Name", "Start", "End", "MinF", "MaxF", "Score1", "Score2", "SourceFile");
                 sb.AppendLine(line);
-                line = String.Format("{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
+                line = string.Format("{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
                                      "NoEvent", 0.000, 0.000, "N/A", "N/A", 0.000, 0.000, "N/A");
                 sb.AppendLine(line);
             }
             else
             {
                 AcousticEvent ae1 = eventList[0];
-                string line = String.Format("#{0}\t{1,8:f3}\t{2,6:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
+                string line = string.Format("#{0}\t{1,8:f3}\t{2,6:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
                                             "     Event Name", "Start", "End", "MinF", "MaxF", "Score", ae1.Score2Name, "SourceFile");
                 sb.AppendLine(line);
                 foreach (AcousticEvent ae in eventList)
                 {
-                    line = String.Format("{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
+                    line = string.Format("{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
                                          ae.Name, ae.TimeStart, ae.TimeEnd, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2, ae.FileName);
                     sb.AppendLine(line);
                 }
@@ -621,7 +621,7 @@ namespace AudioAnalysisTools
             StringBuilder sb = new StringBuilder();
             if (eventList.Count == 0)
             {
-                string line = String.Format(str + "\t{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
+                string line = string.Format(str + "\t{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
                                      "NoEvent", 0.000, 0.000, "N/A", "N/A", 0.000, 0.000, "N/A");
                 sb.AppendLine(line);
             }
@@ -629,7 +629,7 @@ namespace AudioAnalysisTools
             {
                 foreach (AcousticEvent ae in eventList)
                 {
-                    string line = String.Format(str + "\t{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
+                    string line = string.Format(str + "\t{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
                                          ae.Name, ae.TimeStart, ae.TimeEnd, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2, ae.FileName);
                     sb.AppendLine(line);
                 }
@@ -650,7 +650,7 @@ namespace AudioAnalysisTools
         /// <param name="minDuration">minimum duration of an event</param>
         /// <param name="maxDuration">maximum duration of an event</param>
         /// <returns></returns>
-        public static System.Tuple<List<AcousticEvent>, double, double, double, double[]> GetSegmentationEvents(SpectrogramStandard sonogram,
+        public static Tuple<List<AcousticEvent>, double, double, double, double[]> GetSegmentationEvents(SpectrogramStandard sonogram,
                             bool doSegmentation, int minHz, int maxHz, double smoothWindow, double thresholdSD, double minDuration, double maxDuration)
         {
             if (!doSegmentation)//by-pass segmentation and make entire recording just one event.
@@ -662,14 +662,14 @@ namespace AudioAnalysisTools
                 var ae = new AcousticEvent(0.0, sonogram.Duration.TotalSeconds, minHz, maxHz);
                 ae.SetTimeAndFreqScales(sonogram.FramesPerSecond, sonogram.FBinWidth);
                 segmentEvents.Add(ae);
-                return System.Tuple.Create(segmentEvents, 0.0, oneSD, dBThreshold, intensity);
+                return Tuple.Create(segmentEvents, 0.0, oneSD, dBThreshold, intensity);
             }
 
             var tuple = GetSegmentationEvents(sonogram, minHz, maxHz, smoothWindow, thresholdSD, minDuration, maxDuration);
             return tuple;
         }
 
-        public static System.Tuple<List<AcousticEvent>, double, double, double, double[]> GetSegmentationEvents(SpectrogramStandard sonogram,
+        public static Tuple<List<AcousticEvent>, double, double, double, double[]> GetSegmentationEvents(SpectrogramStandard sonogram,
                                     int minHz, int maxHz, double smoothWindow, double thresholdSD, double minDuration, double maxDuration)
         {
             int nyquist = sonogram.SampleRate / 2;
@@ -678,7 +678,7 @@ namespace AudioAnalysisTools
             double Q = tuple.Item2;      //baseline dB in the original scale
             double oneSD = tuple.Item3;  //1 SD in dB around the baseline
             double dBThreshold = thresholdSD * oneSD;
-            var segmentEvents = AcousticEvent.ConvertIntensityArray2Events(intensity, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
+            var segmentEvents = ConvertIntensityArray2Events(intensity, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
                                                            dBThreshold, minDuration, maxDuration);
             foreach (AcousticEvent ev in segmentEvents)
             {
@@ -686,7 +686,7 @@ namespace AudioAnalysisTools
                 //ev.Name = callName;
             }
 
-            return System.Tuple.Create(segmentEvents, Q, oneSD, dBThreshold, intensity);
+            return Tuple.Create(segmentEvents, Q, oneSD, dBThreshold, intensity);
         }
 
 
@@ -747,13 +747,13 @@ namespace AudioAnalysisTools
                 string file = words[0];
                 string date = words[1];
                 string time = words[2];
-                double start = Double.Parse(words[3]);
-                double end = Double.Parse(words[4]);
+                double start = double.Parse(words[3]);
+                double end = double.Parse(words[4]);
                 string tag = words[5];
-                int quality = Int32.Parse(words[6]);
-                int intensity = Int32.Parse(words[7]);
+                int quality = int.Parse(words[6]);
+                int intensity = int.Parse(words[7]);
                 count++;
-                line = String.Format("{0,3} {1,3} {2,10}{3,6:f1} ...{4,6:f1}{5,10}{6,10}\t{7}",
+                line = string.Format("{0,3} {1,3} {2,10}{3,6:f1} ...{4,6:f1}{5,10}{6,10}\t{7}",
                                         count, i, tag, start, end, intensity, quality, file);
                 //LoggedConsole.WriteLine(line);
                 sb.Append(line + "\n");
@@ -827,7 +827,7 @@ namespace AudioAnalysisTools
             string space = " ";
             int count = 0;
             List<string> resultsSourceFiles = new List<string>();
-            string header = String.Format("\nScore Category:    #{0,12}name{0,3}start{0,6}end{0,2}score1{0,2}score2{0,5}duration{0,6}source file", space);
+            string header = string.Format("\nScore Category:    #{0,12}name{0,3}start{0,6}end{0,2}score1{0,2}score2{0,5}duration{0,6}source file", space);
             LoggedConsole.WriteLine(header);
             string line = null;
             var sb = new StringBuilder(header + "\n");
@@ -837,19 +837,19 @@ namespace AudioAnalysisTools
             {
                 count++;
                 double end = ae.TimeStart + ae.Duration; //calculate end time of the result event
-                var labelledEvents = AcousticEvent.GetEventsInFile(labels, ae.FileName); //get all & only those labelled events in same file as result ae
+                var labelledEvents = GetEventsInFile(labels, ae.FileName); //get all & only those labelled events in same file as result ae
                 resultsSourceFiles.Add(ae.FileName);   //keep list of source files that the detected events come from
                 AcousticEvent overlapLabelEvent = ae.OverlapsEventInList(labelledEvents);//get overlapped labelled event
                 if (overlapLabelEvent == null)
                 {
                     fp++;
-                    line = String.Format("False POSITIVE: {0,4} {1,15} {2,6:f1} ...{3,6:f1} {4,7:f1} {5,7:f1}\t{6,10:f2}", count, ae.Name, ae.TimeStart, end, ae.Score, ae.Score2, ae.Duration);
+                    line = string.Format("False POSITIVE: {0,4} {1,15} {2,6:f1} ...{3,6:f1} {4,7:f1} {5,7:f1}\t{6,10:f2}", count, ae.Name, ae.TimeStart, end, ae.Score, ae.Score2, ae.Duration);
                 }
                 else
                 {
                     tp++;
                     overlapLabelEvent.Tag = true; //tag because later need to determine fn
-                    line = String.Format("True  POSITIVE: {0,4} {1,15} {2,6:f1} ...{3,6:f1} {4,7:f1} {5,7:f1}\t{6,10:f2}", count, ae.Name, ae.TimeStart, end, ae.Score, ae.Score2, ae.Duration);
+                    line = string.Format("True  POSITIVE: {0,4} {1,15} {2,6:f1} ...{3,6:f1} {4,7:f1} {5,7:f1}\t{6,10:f2}", count, ae.Name, ae.TimeStart, end, ae.Score, ae.Score2, ae.Duration);
                 }
                 if (previousSourceFile != ae.FileName)
                 {
@@ -884,7 +884,7 @@ namespace AudioAnalysisTools
                 if (ae.Tag == false)
                 {
                     fn++;
-                    line = String.Format("False NEGATIVE: {0,4} {5,15} {1,6:f1} ...{2,6:f1}    intensity={3}     quality={4}",
+                    line = string.Format("False NEGATIVE: {0,4} {5,15} {1,6:f1} ...{2,6:f1}    intensity={3}     quality={4}",
                                          count, ae.TimeStart, ae.TimeEnd, ae.Intensity, ae.Quality, ae.Name);
                     if (previousSourceFile != ae.FileName)
                     {
@@ -944,7 +944,7 @@ namespace AudioAnalysisTools
             string space = " ";
             int count = 0;
             List<string> resultsSourceFiles = new List<string>();
-            string header = String.Format("PREDICTED EVENTS:  #{0,12}name{0,3}start{0,6}end{0,2}score1{0,2}score2{0,5}duration{0,6}source file", space);
+            string header = string.Format("PREDICTED EVENTS:  #{0,12}name{0,3}start{0,6}end{0,2}score1{0,2}score2{0,5}duration{0,6}source file", space);
             //LoggedConsole.WriteLine(header);
             string line = null;
             var sb = new StringBuilder(header + "\n");
@@ -953,19 +953,19 @@ namespace AudioAnalysisTools
             {
                 count++;
                 double end = ae.TimeStart + ae.Duration; //calculate end time of the result event
-                var labelledEvents = AcousticEvent.GetEventsInFile(labels, ae.FileName); //get all & only those labelled events in same file as result ae
+                var labelledEvents = GetEventsInFile(labels, ae.FileName); //get all & only those labelled events in same file as result ae
                 resultsSourceFiles.Add(ae.FileName);   //keep list of source files that the detected events come from
                 AcousticEvent overlapLabelEvent = ae.OverlapsEventInList(labelledEvents);//get overlapped labelled event
                 if (overlapLabelEvent == null)
                 {
                     fp++;
-                    line = String.Format("False POSITIVE: {0,4} {1,15} {2,6:f1} ...{3,6:f1} {4,7:f1} {5,7:f1}\t{6,10:f2}", count, ae.Name, ae.TimeStart, end, ae.Score, ae.Score2, ae.Duration);
+                    line = string.Format("False POSITIVE: {0,4} {1,15} {2,6:f1} ...{3,6:f1} {4,7:f1} {5,7:f1}\t{6,10:f2}", count, ae.Name, ae.TimeStart, end, ae.Score, ae.Score2, ae.Duration);
                 }
                 else
                 {
                     tp++;
                     overlapLabelEvent.Tag = true; //tag because later need to determine fn
-                    line = String.Format("True  POSITIVE: {0,4} {1,15} {2,6:f1} ...{3,6:f1} {4,7:f1} {5,7:f1}\t{6,10:f2}", count, ae.Name, ae.TimeStart, end, ae.Score, ae.Score2, ae.Duration);
+                    line = string.Format("True  POSITIVE: {0,4} {1,15} {2,6:f1} ...{3,6:f1} {4,7:f1} {5,7:f1}\t{6,10:f2}", count, ae.Name, ae.TimeStart, end, ae.Score, ae.Score2, ae.Duration);
                 }
                 sb.Append(line + "\t" + ae.FileName + "\n");
 
@@ -983,7 +983,7 @@ namespace AudioAnalysisTools
                 if (ae.Tag == false)
                 {
                     fn++;
-                    line = String.Format("False NEGATIVE: {0,4} {5,15} {1,6:f1} ...{2,6:f1}    intensity={3}     quality={4}",
+                    line = string.Format("False NEGATIVE: {0,4} {5,15} {1,6:f1} ...{2,6:f1}    intensity={3}     quality={4}",
                                          count, ae.TimeStart, ae.TimeEnd, ae.Intensity, ae.Quality, ae.Name);
                     sb.Append(line + "\t" + ae.FileName + "\n");
                 }

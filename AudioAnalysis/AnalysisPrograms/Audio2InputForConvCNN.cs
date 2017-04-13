@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Audio2InputForConvCNN.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="Audio2InputForConvCNN.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the Audio2InputForConvCNN type.
@@ -27,7 +27,7 @@ namespace AnalysisPrograms
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
-    using AnalysisPrograms.Production;
+    using Production;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -487,7 +487,7 @@ namespace AnalysisPrograms
 
             // 2: Generate sonogram image files
             AudioToSonogramResult result = new AudioToSonogramResult();
-            result = Audio2InputForConvCNN.GenerateSpectrogramImages(tempAudioSegment, configDict, outDirectory);
+            result = GenerateSpectrogramImages(tempAudioSegment, configDict, outDirectory);
 
             // 3: GET the SNR statistics
             TimeSpan eventDuration = localEventEnd - localEventStart;
@@ -597,14 +597,14 @@ namespace AnalysisPrograms
 
                 string BothNames = commonName + "," + latinName;
 
-                if (!speciesIDs.ContainsKey(BothNames))
+                if (!this.speciesIDs.ContainsKey(BothNames))
                 {
-                    speciesIDs.Add(BothNames, value);
+                    this.speciesIDs.Add(BothNames, value);
                 }
                 else
-                if (!speciesIDs.ContainsValue(value))
+                if (!this.speciesIDs.ContainsValue(value))
                 {
-                    speciesIDs.Add(BothNames + "####", value);
+                    this.speciesIDs.Add(BothNames + "####", value);
                 }
             }
 
@@ -612,26 +612,26 @@ namespace AnalysisPrograms
             public void AddSpeciesCount(string speciesID)
             {
                 string[] parts = speciesID.Split(':');
-                if (speciesCounts.ContainsKey(parts[1]))
+                if (this.speciesCounts.ContainsKey(parts[1]))
                 {
-                    speciesCounts[parts[1]]++;
+                    this.speciesCounts[parts[1]]++;
                 }
                 else
                 {
-                    speciesCounts.Add(parts[1], 1);
+                    this.speciesCounts.Add(parts[1], 1);
                 }
 
             }
 
             public void AddSiteName(string name)
             {
-                if (siteNames.ContainsKey(name))
+                if (this.siteNames.ContainsKey(name))
                 {
-                    siteNames[name]++;
+                    this.siteNames[name]++;
                 }
                 else
                 {
-                    siteNames.Add(name, 1);
+                    this.siteNames.Add(name, 1);
                 }
 
             }

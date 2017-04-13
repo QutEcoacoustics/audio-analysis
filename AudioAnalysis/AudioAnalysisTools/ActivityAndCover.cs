@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="ActivityAndCover.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="ActivityAndCover.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   a set of indices to describe level of acoustic activity and number of acoustic events in recording.
@@ -30,13 +30,13 @@ namespace AudioAnalysisTools
         //public SummaryActivity(bool[] _activeFrames, int _activeFrameCount, double _activeAvDB, bool[] _events, double _eventCount, TimeSpan _avEventDuration)
         public SummaryActivity(bool[] _activeFrames, int _activeFrameCount, double _activeAvDB, bool[] _events, double _eventCount)
         {
-            activeFrames = _activeFrames;
-            activeFrameCount = _activeFrameCount;
-            fractionOfActiveFrames = activeFrameCount / (double)activeFrames.Length;
-            activeAvDB = _activeAvDB;
-            eventCount = _eventCount;
+            this.activeFrames = _activeFrames;
+            this.activeFrameCount = _activeFrameCount;
+            this.fractionOfActiveFrames = this.activeFrameCount / (double)this.activeFrames.Length;
+            this.activeAvDB = _activeAvDB;
+            this.eventCount = _eventCount;
             //avEventDuration = _avEventDuration;
-            eventLocations = _events;
+            this.eventLocations = _events;
         }
     }
 
@@ -47,11 +47,11 @@ namespace AudioAnalysisTools
         public double[] coverSpectrum, eventSpectrum;
         public SpectralActivity(double[] _eventSpectrum, double[] _coverSpectrum, double _lowFreqCover, double _midFreqCover, double _highFreqCover)
         {
-            eventSpectrum     = _eventSpectrum;
-            coverSpectrum     = _coverSpectrum;
-            lowFreqBandCover  = _lowFreqCover;
-            midFreqBandCover  = _midFreqCover;
-            highFreqBandCover = _highFreqCover;
+            this.eventSpectrum     = _eventSpectrum;
+            this.coverSpectrum     = _coverSpectrum;
+            this.lowFreqBandCover  = _lowFreqCover;
+            this.midFreqBandCover  = _midFreqCover;
+            this.highFreqBandCover = _highFreqCover;
         }
     }
 
@@ -88,7 +88,7 @@ namespace AudioAnalysisTools
             // get frames with activity >= threshold dB above background and count
             for (int i = 0; i < dBarray.Length; i++)
             {
-                if (dBarray[i] >= ActivityAndCover.DefaultActivityThresholdDb)
+                if (dBarray[i] >= DefaultActivityThresholdDb)
                 {
                     activeFrames[i] = true;
                     activeAvDB += dBarray[i];
@@ -161,7 +161,7 @@ namespace AudioAnalysisTools
                 double[] bin = MatrixTools.GetColumn(spectrogram, c);
 
                 // get activity and event info
-                activity = ActivityAndCover.CalculateActivity(bin, frameStepDuration, dbThreshold);
+                activity = CalculateActivity(bin, frameStepDuration, dbThreshold);
                 //bool[] a1 = activity.activeFrames;
                 //int a2 = activity.activeFrameCount;
                 coverSpectrum[c] = activity.fractionOfActiveFrames;

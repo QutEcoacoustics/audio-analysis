@@ -15,7 +15,7 @@
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using AnalysisBase;
-    using AnalysisPrograms.Production;
+    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
@@ -170,11 +170,11 @@
 
             if (tsDuration == TimeSpan.Zero) // Process entire file
             {
-                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = AnalysisTemplate.ResampleRate }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate }, analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
             else
             {
-                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = AnalysisTemplate.ResampleRate, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
 
             // Store source sample rate - may need during the analysis if have upsampled the source.
@@ -224,7 +224,7 @@
             //if ((predictedEvents != null) && (predictedEvents.Count != 0))
             if (predictedEvents != null)
             {
-                string analysisName = analysisSettings.ConfigDict[AudioAnalysisTools.AnalysisKeys.AnalysisName];
+                string analysisName = analysisSettings.ConfigDict[AnalysisKeys.AnalysisName];
                 string fName = Path.GetFileNameWithoutExtension(fiAudioF.Name);
                 foreach (AcousticEvent ev in predictedEvents)
                 {
@@ -251,7 +251,7 @@
                 if (analysisSettings.ConfigDict.ContainsKey(AnalysisKeys.IntensityThreshold))
                     scoreThreshold = ConfigDictionary.GetDouble(AnalysisKeys.IntensityThreshold, analysisSettings.ConfigDict);
                 TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of i minute
-                var indicesDT = ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
+                var indicesDT = this.ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
                 CsvTools.DataTable2CSV(indicesDT, analysisSettings.SummaryIndicesFile.FullName);
             }
             else
@@ -353,7 +353,7 @@
 
             //######################################################################
             //ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            var results = System.Tuple.Create(new double[100], new double[100]);
+            var results = Tuple.Create(new double[100], new double[100]);
             double[] scoreArray1 = results.Item1;
             double[] scoreArray2 = results.Item2;
             //######################################################################
@@ -365,7 +365,7 @@
             //iii: CONVERT SCORES TO ACOUSTIC EVENTS
             List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(scoreArray1, minHz, maxHz, sonogram.FramesPerSecond, freqBinWidth,
                                                                                          intensityThreshold, minDuration, maxDuration);
-            return System.Tuple.Create(sonogram, hits, plots, predictedEvents, tsRecordingDuration);
+            return Tuple.Create(sonogram, hits, plots, predictedEvents, tsRecordingDuration);
         }
 
         //static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
@@ -394,16 +394,16 @@
         public static DataTable WriteEvents2DataTable(List<AcousticEvent> predictedEvents)
         {
             if (predictedEvents == null) return null;
-            string[] headers = { AudioAnalysisTools.AnalysisKeys.EventCount,
-                                 AudioAnalysisTools.AnalysisKeys.EventStartMin,
-                                 AudioAnalysisTools.AnalysisKeys.EventStartSec,
-                                 AudioAnalysisTools.AnalysisKeys.EventStartAbs,
-                                 AudioAnalysisTools.AnalysisKeys.KeySegmentDuration,
-                                 AudioAnalysisTools.AnalysisKeys.EventDuration,
-                                 AudioAnalysisTools.AnalysisKeys.EventIntensity,
-                                 AudioAnalysisTools.AnalysisKeys.EventName,
-                                 AudioAnalysisTools.AnalysisKeys.EventScore,
-                                 AudioAnalysisTools.AnalysisKeys.EventNormscore,
+            string[] headers = { AnalysisKeys.EventCount,
+                                 AnalysisKeys.EventStartMin,
+                                 AnalysisKeys.EventStartSec,
+                                 AnalysisKeys.EventStartAbs,
+                                 AnalysisKeys.KeySegmentDuration,
+                                 AnalysisKeys.EventDuration,
+                                 AnalysisKeys.EventIntensity,
+                                 AnalysisKeys.EventName,
+                                 AnalysisKeys.EventScore,
+                                 AnalysisKeys.EventNormscore,
 
                                };
             //                   1                2               3              4                5              6               7              8
@@ -416,12 +416,12 @@
             foreach (var ev in predictedEvents)
             {
                 DataRow row = dataTable.NewRow();
-                row[AudioAnalysisTools.AnalysisKeys.EventStartSec] = (double)ev.TimeStart;  //EvStartSec
-                row[AudioAnalysisTools.AnalysisKeys.EventDuration] = (double)ev.Duration;   //duratio in seconds
-                row[AudioAnalysisTools.AnalysisKeys.EventIntensity] = (double)ev.kiwi_intensityScore;   //
-                row[AudioAnalysisTools.AnalysisKeys.EventName] = (string)ev.Name;   //
-                row[AudioAnalysisTools.AnalysisKeys.EventNormscore] = (double)ev.ScoreNormalised;
-                row[AudioAnalysisTools.AnalysisKeys.EventScore] = (double)ev.Score;      //Score
+                row[AnalysisKeys.EventStartSec] = (double)ev.TimeStart;  //EvStartSec
+                row[AnalysisKeys.EventDuration] = (double)ev.Duration;   //duratio in seconds
+                row[AnalysisKeys.EventIntensity] = (double)ev.kiwi_intensityScore;   //
+                row[AnalysisKeys.EventName] = (string)ev.Name;   //
+                row[AnalysisKeys.EventNormscore] = (double)ev.ScoreNormalised;
+                row[AnalysisKeys.EventScore] = (double)ev.Score;      //Score
                 dataTable.Rows.Add(row);
             }
             return dataTable;
@@ -445,14 +445,14 @@
 
             foreach (DataRow ev in dt.Rows)
             {
-                double eventStart = (double)ev[AudioAnalysisTools.AnalysisKeys.EventStartSec];
-                double eventScore = (double)ev[AudioAnalysisTools.AnalysisKeys.EventNormscore];
+                double eventStart = (double)ev[AnalysisKeys.EventStartSec];
+                double eventScore = (double)ev[AnalysisKeys.EventNormscore];
                 int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
                 eventsPerUnitTime[timeUnit]++;
                 if (eventScore > scoreThreshold) bigEvsPerUnitTime[timeUnit]++;
             }
 
-            string[] headers = { AudioAnalysisTools.AnalysisKeys.KeyStartMinute, AudioAnalysisTools.AnalysisKeys.EventTotal, ("#Ev>" + scoreThreshold) };
+            string[] headers = { AnalysisKeys.KeyStartMinute, AnalysisKeys.EventTotal, ("#Ev>" + scoreThreshold) };
             Type[] types = { typeof(int), typeof(int), typeof(int) };
             var newtable = DataTableTools.CreateTable(headers, types);
 
@@ -468,15 +468,15 @@
         {
             if (dt == null) return;
 
-            if (!dt.Columns.Contains(AnalysisKeys.KeySegmentDuration)) dt.Columns.Add(AudioAnalysisTools.AnalysisKeys.KeySegmentDuration, typeof(double));
-            if (!dt.Columns.Contains(AnalysisKeys.EventStartAbs)) dt.Columns.Add(AudioAnalysisTools.AnalysisKeys.EventStartAbs, typeof(double));
-            if (!dt.Columns.Contains(AnalysisKeys.EventStartMin)) dt.Columns.Add(AudioAnalysisTools.AnalysisKeys.EventStartMin, typeof(double));
+            if (!dt.Columns.Contains(AnalysisKeys.KeySegmentDuration)) dt.Columns.Add(AnalysisKeys.KeySegmentDuration, typeof(double));
+            if (!dt.Columns.Contains(AnalysisKeys.EventStartAbs)) dt.Columns.Add(AnalysisKeys.EventStartAbs, typeof(double));
+            if (!dt.Columns.Contains(AnalysisKeys.EventStartMin)) dt.Columns.Add(AnalysisKeys.EventStartMin, typeof(double));
             double start = segmentStartMinute.TotalSeconds;
             foreach (DataRow row in dt.Rows)
             {
-                row[AudioAnalysisTools.AnalysisKeys.KeySegmentDuration] = recordingTimeSpan.TotalSeconds;
-                row[AudioAnalysisTools.AnalysisKeys.EventStartAbs] = start + (double)row[AudioAnalysisTools.AnalysisKeys.EventStartSec];
-                row[AudioAnalysisTools.AnalysisKeys.EventStartMin] = start;
+                row[AnalysisKeys.KeySegmentDuration] = recordingTimeSpan.TotalSeconds;
+                row[AnalysisKeys.EventStartAbs] = start + (double)row[AnalysisKeys.EventStartSec];
+                row[AnalysisKeys.EventStartMin] = start;
             }
         }
 
@@ -554,7 +554,7 @@
                     SegmentMinDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
+                    SegmentTargetSampleRate = ResampleRate,
                 };
             }
         }

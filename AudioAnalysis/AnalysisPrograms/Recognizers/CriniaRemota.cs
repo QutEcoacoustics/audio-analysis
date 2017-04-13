@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="CriniaRemota.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="CriniaRemota.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   AKA: The remote froglet
@@ -20,7 +20,7 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Recognizers.Base;
+    using Base;
     using TowseyLibrary;
 
     /// <summary>
@@ -214,8 +214,8 @@ namespace AnalysisPrograms.Recognizers
 
                 var debugPlots = new List<Plot> { plot, amplPlot, diffPlot };
                 // NOTE: This DrawDebugImage() method can be over-written in this class.
-                var debugImage = RecognizerBase.DrawDebugImage(sonogram, prunedEvents, debugPlots, hits);
-                var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, SpeciesName, "png", "DebugSpectrogram");
+                var debugImage = DrawDebugImage(sonogram, prunedEvents, debugPlots, hits);
+                var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, this.SpeciesName, "png", "DebugSpectrogram");
                 debugImage.Save(debugPath);
             }
 
@@ -249,25 +249,25 @@ namespace AnalysisPrograms.Recognizers
         internal void ReadConfigFile(dynamic configuration)
         {
             // common properties
-            AnalysisName = (string)configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
-            SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
-            AbbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            this.AnalysisName = (string)configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
+            this.SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
+            this.AbbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
             // frequency band of the call
-            MinHz = (int)configuration[AnalysisKeys.MinHz];
-            MaxHz = (int)configuration[AnalysisKeys.MaxHz];
+            this.MinHz = (int)configuration[AnalysisKeys.MinHz];
+            this.MaxHz = (int)configuration[AnalysisKeys.MaxHz];
 
             // duration of DCT in seconds
-            DctDuration = (double)configuration[AnalysisKeys.DctDuration];
+            this.DctDuration = (double)configuration[AnalysisKeys.DctDuration];
             // minimum acceptable value of a DCT coefficient
-            DctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
+            this.DctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
 
             // min and max duration of event in seconds
-            MinDuration = (double)configuration[AnalysisKeys.MinDuration];
-            MaxDuration = (double)configuration[AnalysisKeys.MaxDuration];
+            this.MinDuration = (double)configuration[AnalysisKeys.MinDuration];
+            this.MaxDuration = (double)configuration[AnalysisKeys.MaxDuration];
 
 
             // min score for an acceptable event
-            EventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
+            this.EventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
         }
 
     } // Config class

@@ -7,7 +7,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using System;
     using System.IO;
     using Acoustics.Tools.Wav;
-    using AudioAnalysisTools.WavTools;
+    using WavTools;
     using DSP;
     using TowseyLibrary;
 
@@ -66,7 +66,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public override void Make(double[,] amplitudeM)
         {
-            var tuple = SpectrogramCepstral.MakeCepstrogram(this.Configuration, amplitudeM, this.DecibelsNormalised, this.SampleRate);
+            var tuple = MakeCepstrogram(this.Configuration, amplitudeM, this.DecibelsNormalised, this.SampleRate);
             this.Data = tuple.Item1;
             this.SnrData.ModalNoiseProfile = tuple.Item2; //store the full bandwidth modal noise profile
         }
@@ -131,7 +131,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             //(vi) Calculate the full range of MFCC coefficients ie including decibel and deltas, etc
             m = MFCCStuff.AcousticVectors(m, decibels, includeDelta, includeDoubleDelta);
-            var tuple2 = System.Tuple.Create(m, tuple1.Item2);
+            var tuple2 = Tuple.Create(m, tuple1.Item2);
             return tuple2; // return matrix and full bandwidth modal noise profile
         }
 
@@ -234,7 +234,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             int deltaT = config.DeltaT;
 
             Log.WriteIfVerbose(" MakeAcousticVectors(matrix, decibels, includeDelta=" + includeDelta + ", includeDoubleDelta=" + includeDoubleDelta + ", deltaT=" + deltaT + ")");
-            var tuple = SpectrogramCepstral.MakeCepstrogram(config, matrix, decibels, sampleRate);
+            var tuple = MakeCepstrogram(config, matrix, decibels, sampleRate);
             double[,] m = tuple.Item1;
             //this.SnrData.ModalNoiseProfile = tuple.Item2; //store the full bandwidth modal noise profile
 

@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="SpectrogramTools.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="SpectrogramTools.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the SpectrogramTools type.
@@ -19,8 +19,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
     using AnalysisBase;
 
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.WavTools;
+    using DSP;
+    using WavTools;
 
     using TowseyLibrary;
     using ColorMine.ColorSpaces;
@@ -66,7 +66,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     AnalysisInstanceOutputDirectory = diOutputDir
                 };
                 // want to pass SampleRate of the original file.
-                settings.SampleRateOfOriginalAudioFile = Int32.Parse(settings.ConfigDict[AnalysisKeys.ResampleRate]);
+                settings.SampleRateOfOriginalAudioFile = int.Parse(settings.ConfigDict[AnalysisKeys.ResampleRate]);
 
                 analyser.BeforeAnalyze(settings);
 
@@ -80,8 +80,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 analyser = null;
                 var configDict = config.GetDictionary();
-                BaseSonogram sonogram = SpectrogramTools.Audio2DecibelSonogram(fiAudio, configDict);
-                var mti = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
+                BaseSonogram sonogram = Audio2DecibelSonogram(fiAudio, configDict);
+                var mti = Sonogram2MultiTrackImage(sonogram, configDict);
                 var image = mti.GetImage();
 
                 if (image != null)
@@ -106,7 +106,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <returns></returns>
         public static Image Audio2SonogramImage(FileInfo fiAudio, Dictionary<string, string> configDict)
         {
-            BaseSonogram sonogram = SpectrogramTools.Audio2DecibelSonogram(fiAudio, configDict);
+            BaseSonogram sonogram = Audio2DecibelSonogram(fiAudio, configDict);
             var mti = Sonogram2MultiTrackImage(sonogram, configDict);
             var image = mti.GetImage();
             return image;
@@ -126,6 +126,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             var reducedMatrix = new double[timeReducedCount, freqReducedCount];
             //int cellArea = timeRedFactor * freqRedFactor;
             for (int r = 0; r < timeReducedCount; r++)
+            {
                 for (int c = 0; c < freqReducedCount; c++)
                 {
                     int or = r * timeRedFactor;
@@ -143,12 +144,17 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     //display the maximum in the cell
                     double max = -100000000.0;
                     for (int i = 0; i < timeRedFactor; i++)
+                    {
                         for (int j = 0; j < freqRedFactor; j++)
                         {
                             if (max < data[or + i, oc + j]) max = data[or + i, oc + j];
                         }
+                    }
+
                     reducedMatrix[r, c] = max;
                 }
+            }
+
             return reducedMatrix;
         }//end AI_DimRed
 
@@ -228,7 +234,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             bool add1kHzLines = addScale;
 
 
-            System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
+            Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
             Image_MultiTrack mti = new Image_MultiTrack(img);
             if (addScale) mti.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond)); //add time scale
             bool addSegmentationTrack = false;
@@ -266,10 +272,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
             double truncateMin = -120.0;
             double truncateMax = -30.0;
             double filterCoefficient = 1.0;
-            double[,] dbSpectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(dbSpectrogramData, truncateMin, truncateMax, filterCoefficient);
+            double[,] dbSpectrogramNorm = NormaliseSpectrogramMatrix(dbSpectrogramData, truncateMin, truncateMax, filterCoefficient);
             truncateMin = 0;
             truncateMax = 60;
-            double[,] nrSpectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(nrSpectrogramData, truncateMin, truncateMax, filterCoefficient);
+            double[,] nrSpectrogramNorm = NormaliseSpectrogramMatrix(nrSpectrogramData, truncateMin, truncateMax, filterCoefficient);
 
             int width = dbSpectrogramData.GetLength(0);
             int height = dbSpectrogramData.GetLength(1);
@@ -401,7 +407,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             double truncateMin = 0.0;
             double truncateMax = 2.0;
             double filterCoefficient = 1.0;
-            double[,] spectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(spectrogramData, truncateMin, truncateMax, filterCoefficient);
+            double[,] spectrogramNorm = NormaliseSpectrogramMatrix(spectrogramData, truncateMin, truncateMax, filterCoefficient);
 
             int width = spectrogramData.GetLength(0);
             int height = spectrogramData.GetLength(1);

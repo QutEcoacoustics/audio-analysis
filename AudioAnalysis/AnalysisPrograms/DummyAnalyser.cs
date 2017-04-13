@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="DummyAnalyser.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="DummyAnalyser.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   The purpose of this analyser is to make inter-program parallelisation easier to develop
@@ -17,7 +17,7 @@ namespace AnalysisPrograms
     using System.Threading;
     using System.Threading.Tasks;
 
-    using AnalysisPrograms.Production;
+    using Production;
 
     using log4net;
 

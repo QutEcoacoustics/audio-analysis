@@ -86,7 +86,7 @@
         /// </summary>
         public string StandardOutput
         {
-            get { return standardOutput.ToString(); }
+            get { return this.standardOutput.ToString(); }
         }
 
         /// <summary>
@@ -94,7 +94,7 @@
         /// </summary>
         public string ErrorOutput
         {
-            get { return errorOutput.ToString(); }
+            get { return this.errorOutput.ToString(); }
         }
 
         /// <summary>
@@ -138,7 +138,7 @@
 
             // run the process
             //RunAsyncOutputs(arguments, workingDirectory, 0);
-            RunTaskReaders(arguments, workingDirectory, 0);
+            this.RunTaskReaders(arguments, workingDirectory, 0);
         }
 
         private void PrepareRun(string arguments, string workingDirectory)
@@ -154,8 +154,7 @@
 
             if (this.process != null)
             {
-
-                KillProcess();
+                this.KillProcess();
 
                 this.process.Dispose();
             }
@@ -228,13 +227,13 @@
         private void RunAsyncOutputs(string arguments, string workingDirectory, int retryCount)
         {
             // prepare the Process
-            PrepareRun(arguments, workingDirectory);
+            this.PrepareRun(arguments, workingDirectory);
 
             this.process.ErrorDataReceived += (sender, e) =>
             {
                 if (!string.IsNullOrEmpty(e.Data))
                 {
-                    errorOutput.AppendLine(e.Data);
+                    this.errorOutput.AppendLine(e.Data);
                 }
             };
 
@@ -242,7 +241,7 @@
             {
                 if (!string.IsNullOrEmpty(e.Data))
                 {
-                    standardOutput.AppendLine(e.Data);
+                    this.standardOutput.AppendLine(e.Data);
                 }
             };
 
@@ -263,7 +262,7 @@
 
                     if (!processExited && this.KillProcessOnWaitTimeout)
                     {
-                        ProcessTimeout(arguments, workingDirectory, retryCount, this.RunAsyncOutputs);
+                        this.ProcessTimeout(arguments, workingDirectory, retryCount, this.RunAsyncOutputs);
                     }
                 }
                 else
@@ -272,12 +271,12 @@
                 }
             }
 
-            this.ExitCode = process.ExitCode;
+            this.ExitCode = this.process.ExitCode;
         }
 
         private void RunTaskReaders(string arguments, string workingDirectory, int retryCount)
         {
-            PrepareRun(arguments, workingDirectory);
+            this.PrepareRun(arguments, workingDirectory);
 
             this.process.Start();
 
@@ -286,8 +285,8 @@
                 if (this.WaitForExitMilliseconds > 0)
                 {
                     Task<bool> processWaiter = Task.Factory.StartNew(() => this.process.WaitForExit(this.WaitForExitMilliseconds));
-                    Task<string> outputReader = Task.Factory.StartNew((Func<object, string>)ReadStream, process.StandardOutput);
-                    Task<string> errorReader = Task.Factory.StartNew((Func<object, string>)ReadStream, process.StandardError);
+                    Task<string> outputReader = Task.Factory.StartNew((Func<object, string>)ReadStream, this.process.StandardOutput);
+                    Task<string> errorReader = Task.Factory.StartNew((Func<object, string>)ReadStream, this.process.StandardError);
 
                     processWaiter.Wait();
 
@@ -295,7 +294,7 @@
 
                     if (!processExited && this.KillProcessOnWaitTimeout)
                     {
-                        ProcessTimeout(arguments, workingDirectory, retryCount, this.RunTaskReaders);
+                        this.ProcessTimeout(arguments, workingDirectory, retryCount, this.RunTaskReaders);
                     }
                     else
                     {
@@ -303,24 +302,24 @@
                         // if waitResult == true hope those already finished or will finish fast
                         // otherwise wait for taks to complete to be able to dispose them
 
-                        this.ExitCode = process.ExitCode;
+                        this.ExitCode = this.process.ExitCode;
 
-                        standardOutput.Append(outputReader.Result);
-                        errorOutput.Append(errorReader.Result);
+                        this.standardOutput.Append(outputReader.Result);
+                        this.errorOutput.Append(errorReader.Result);
                     }
 
                 }
                 else
                 {
-                    Task processWaiter = Task.Factory.StartNew(() => process.WaitForExit());
-                    Task<string> outputReader = Task.Factory.StartNew(() => process.StandardOutput.ReadToEnd());
-                    Task<string> errorReader = Task.Factory.StartNew(() => process.StandardError.ReadToEnd());
+                    Task processWaiter = Task.Factory.StartNew(() => this.process.WaitForExit());
+                    Task<string> outputReader = Task.Factory.StartNew(() => this.process.StandardOutput.ReadToEnd());
+                    Task<string> errorReader = Task.Factory.StartNew(() => this.process.StandardError.ReadToEnd());
 
                     Task.WaitAll(processWaiter, outputReader, errorReader);
 
-                    this.ExitCode = process.ExitCode;
-                    standardOutput.Append(outputReader.Result);
-                    errorOutput.Append(errorReader.Result);
+                    this.ExitCode = this.process.ExitCode;
+                    this.standardOutput.Append(outputReader.Result);
+                    this.errorOutput.Append(errorReader.Result);
 
                 }
             }

@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="LimnodynastesConvex.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="Tinnula_TRY.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 // </summary>
@@ -22,7 +22,7 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
-    using AnalysisPrograms.Recognizers.Base;
+    using Base;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -143,7 +143,7 @@ namespace AnalysisPrograms.Recognizers
             for (int s = 0; s < rowCount; s++)
             {
                 double[] spectrum = MatrixTools.GetRow(spg, s);
-                double maxAmplitude = Double.MinValue;
+                double maxAmplitude = double.MinValue;
                 int maxId = 0;
                 // loop through bandwidth of L.onvex call and look for dominant frequency
                 for (int binID = 5; binID < binMax; binID++)
@@ -333,7 +333,7 @@ namespace AnalysisPrograms.Recognizers
             double[] eventAsVector = MatrixTools.SumColumns(eventMatrix);
             // need to reverse vector because template starts at the high freq end which is the fixed reference bin.
             eventAsVector = DataTools.reverseArray(eventAsVector);
-            double maxScore = -Double.MaxValue;
+            double maxScore = -double.MaxValue;
             foreach (double[] template in templates)
             {
                 double eventScore = DataTools.CosineSimilarity(template, eventAsVector);

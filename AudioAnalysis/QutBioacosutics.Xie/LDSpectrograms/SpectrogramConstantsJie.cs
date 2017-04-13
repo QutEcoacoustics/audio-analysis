@@ -5,7 +5,7 @@
     using System.Drawing;
     using System.Linq;
     using System.Text;
-    using AudioAnalysisTools.DSP;
+    using DSP;
     using TowseyLibrary;
 
     public static class SpectrogramConstantsJie

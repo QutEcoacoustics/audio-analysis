@@ -20,10 +20,10 @@
         public static string key_FILTER_EVENTS = "DO_FILTER_EVENTS";
 
         //HEADER KEYS
-        public static string key_EVENT_NAME = AudioAnalysisTools.AnalysisKeys.EventName;
-        public static string key_INTENSITY_SCORE = AudioAnalysisTools.AnalysisKeys.EventIntensity;
-        public static string key_EVENT_NORMSCORE = AudioAnalysisTools.AnalysisKeys.EventNormscore;
-        public static string key_SNR_SCORE = AudioAnalysisTools.AnalysisKeys.KeySnrScore;
+        public static string key_EVENT_NAME = AnalysisKeys.EventName;
+        public static string key_INTENSITY_SCORE = AnalysisKeys.EventIntensity;
+        public static string key_EVENT_NORMSCORE = AnalysisKeys.EventNormscore;
+        public static string key_SNR_SCORE = AnalysisKeys.KeySnrScore;
 
         public static string key_CHIRP_SCORE     = "ChirpScore";
         public static string key_DELTA_SCORE     = "DeltaPeriodScore";
@@ -79,7 +79,7 @@
                 if (parts[0] == "WEIGHT")
                 {
                     string[] words = parts[1].Split('=');
-                    weights.Add(words[0], Double.Parse(words[1]));
+                    weights.Add(words[0], double.Parse(words[1]));
                 }
             }
             return weights;
@@ -111,8 +111,8 @@
             {
                 string feature = rule[0];
                 string op = rule[1];
-                double value = Double.Parse(rule[2]);
-                if (feature == LSKiwiHelper.key_BANDWIDTH_SCORE)
+                double value = double.Parse(rule[2]);
+                if (feature == key_BANDWIDTH_SCORE)
                 {
                     if ((op == "LT") && (ae.kiwi_bandWidthScore < value) || ((op == "GT") && (ae.kiwi_bandWidthScore > value)))
                     {
@@ -122,7 +122,7 @@
                     }
                 }
                 else // end if key_BANDWIDTH_SCORE
-                    if ((feature == LSKiwiHelper.key_INTENSITY_SCORE))
+                    if ((feature == key_INTENSITY_SCORE))
                     {
                         if ((op == "LT") && (ae.kiwi_intensityScore < value) || ((op == "GT") && (ae.kiwi_intensityScore > value)))
                         {

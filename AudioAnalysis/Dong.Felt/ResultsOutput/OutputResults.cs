@@ -9,7 +9,7 @@
     using Acoustics.Tools;
     using AudioAnalysisTools;
     using AudioBase;
-    using Dong.Felt.Configuration;
+    using Configuration;
     using TowseyLibrary;
 
     public class OutputResults

@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="LimnodynastesConvex.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="LimnodynastesConvex.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 // </summary>
@@ -18,7 +18,7 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
-    using Recognizers.Base;
+    using Base;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -197,7 +197,7 @@ namespace AnalysisPrograms.Recognizers
             for (int s = 0; s < rowCount; s++)
             {
                 double[] spectrum = MatrixTools.GetRow(spg, s);
-                double maxAmplitude = -Double.MaxValue;
+                double maxAmplitude = -double.MaxValue;
                 int maxId = 0;
                 // loop through bandwidth of L.onvex call and look for dominant frequency
                 for (int binId = 5; binId < dominantBinMax; binId++)
@@ -285,7 +285,7 @@ namespace AnalysisPrograms.Recognizers
             var debugPlot = new Plot(this.DisplayName, scores, similarityThreshold);
             var debugPlots = new List<Plot> { debugPlot };
 
-            if (_displayDebugImage)
+            if (this._displayDebugImage)
             {
                 Image debugImage = DisplayDebugImage(sonogram, potentialEvents, debugPlots, hits);
                 var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.BaseName), this.Identifier, "png", "DebugSpectrogram"));
@@ -354,7 +354,7 @@ namespace AnalysisPrograms.Recognizers
             double[] eventAsVector = MatrixTools.SumColumns(eventMatrix);
             // need to reverse vector because template starts at the high freq end which is the fixed reference bin.
             eventAsVector = DataTools.reverseArray(eventAsVector);
-            double maxScore = -Double.MaxValue;
+            double maxScore = -double.MaxValue;
             foreach (double[] template in templates)
             {
                 double eventScore = DataTools.CosineSimilarity(template, eventAsVector);

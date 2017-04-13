@@ -9,7 +9,7 @@
     using System.Linq;
     using System.Text;
     using Acoustics.Shared;
-    using AudioAnalysisTools.Indices;
+    using Indices;
     using TowseyLibrary;
 
     /// <summary>
@@ -265,7 +265,7 @@
 
                 foreach (string key in keyArray)
                 {
-                    string name = String.Format("{0}_Species{1:d2}.{2}.csv", fileID[j], speciesLabel, key);
+                    string name = string.Format("{0}_Species{1:d2}.{2}.csv", fileID[j], speciesLabel, key);
                     FileInfo file = new FileInfo(Path.Combine(arguments.InputDataDirectory.FullName, name));
 
                     if (file.Exists)
@@ -451,12 +451,12 @@
 
                     vector = DataTools.Normalise2Probabilites(vector);
                     vector = DataTools.filterMovingAverage(vector, 3);
-                    string label = String.Format("{0} {1} ({2})", (r + 1), key, output.InstanceNumbersPerSpecies[r]);
+                    string label = string.Format("{0} {1} ({2})", (r + 1), key, output.InstanceNumbersPerSpecies[r]);
                     Image image = ImageTools.DrawGraph(label, vector, output.ReducedSpectralLength, imageHeight, scalingFactor);
                     images.Add(image);
                 }
                 Image combinedImage = ImageTools.CombineImagesVertically(images);
-                string outputFileName = String.Format("Species{0}.SpectralFeatures.png", (r + 1));
+                string outputFileName = string.Format("Species{0}.SpectralFeatures.png", (r + 1));
                 string path = Path.Combine(arguments.OutputDirectory.FullName, outputFileName);
                 combinedImage.Save(path);
 
@@ -626,7 +626,7 @@
             {
                 var colSum = MatrixTools.SumColumn(output.RankOrderMatrix, rank);
                 double acc = 100 * colSum / (double)instanceCount;
-                string str = String.Format("{0}   % Acc = {1:f2}", rank, acc);
+                string str = string.Format("{0}   % Acc = {1:f2}", rank, acc);
                 LoggedConsole.WriteLine(str);
             }
 
@@ -668,7 +668,7 @@
                 line.Append("'" + output.SpeciesID[i] + "'");
                 lines.Add(line.ToString());
             }
-            string outputFileName = String.Format("InstanceBySpecies.SimilarityScores1.csv");
+            string outputFileName = string.Format("InstanceBySpecies.SimilarityScores1.csv");
             string path = Path.Combine(arguments.OutputDirectory.FullName, outputFileName);
             FileTools.WriteTextFile(path, lines.ToArray());
 
@@ -701,7 +701,7 @@
                 line.Append("'" + output.SpeciesID[i] + "'");
                 lines.Add(line.ToString());
             }
-            outputFileName = String.Format("InstanceByFeaturesDataSet.csv");
+            outputFileName = string.Format("InstanceByFeaturesDataSet.csv");
             path = Path.Combine(arguments.OutputDirectory.FullName, outputFileName);
             FileTools.WriteTextFile(path, lines.ToArray());
 
@@ -729,7 +729,7 @@
             {
                 string[] words = lines[i].Split(',');
                 fileID[i] = words[0];
-                speciesID[i] = Int32.Parse(words[1]);
+                speciesID[i] = int.Parse(words[1]);
             }
         } // ReadGlotinsSpeciesLabelFile()
 

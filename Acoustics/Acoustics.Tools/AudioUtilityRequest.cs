@@ -4,8 +4,8 @@
     using System.Globalization;
     using System.Linq;
 
-    using Acoustics.Shared;
-    using Acoustics.Tools.Audio;
+    using Shared;
+    using Audio;
 
     /// <summary>
     /// Audio Utility request.

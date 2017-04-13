@@ -171,7 +171,7 @@
         public static Bitmap ReadImage2Bitmap(string fileName)
         {
             if (!File.Exists(fileName)) return null;
-            return (Bitmap)Bitmap.FromFile(fileName);
+            return (Bitmap)Image.FromFile(fileName);
         }
 
 
@@ -194,7 +194,7 @@
                 return;
             }
             string outputDir = imagePath.DirectoryName;
-            var process = new TowseyLibrary.ProcessRunner(paintPath);
+            var process = new ProcessRunner(paintPath);
             process.Run(imagePath.FullName, outputDir);
         }
 
@@ -233,6 +233,7 @@
 
             var matrix = new double[height, width];
             for (int r = 0; r < height; r++)
+            {
                 for (int c = 0; c < width; c++)
                 {
                     Color color = bitmap.GetPixel(c, r);
@@ -240,6 +241,8 @@
                     //if (value > 0.0) LoggedConsole.WriteLine(value);
                     matrix[r, c] = (255 - color.R) / (double)255;
                 }
+            }
+
             return matrix;
         }
 
@@ -298,7 +301,7 @@
 
 
                 default:
-                    throw new System.Exception("\nWARNING: INVALID MODE!");
+                    throw new Exception("\nWARNING: INVALID MODE!");
             }//end of switch statement
 
 
@@ -343,6 +346,7 @@
 
             //now do bulk of image
             for (int r = rNH; r < (mRows - rNH); r++)
+            {
                 for (int c = cNH; c < (mCols - cNH); c++)
                 {
                     double sum = 0.0;
@@ -355,6 +359,8 @@
                     }
                     newMatrix[r, c] = sum;// / (double)area;
                 }
+            }
+
             return newMatrix;
         }//end method Convolve()
 
@@ -390,7 +396,7 @@
 
 
                 default:
-                    throw new System.Exception("\nWARNING: INVALID MODE!");
+                    throw new Exception("\nWARNING: INVALID MODE!");
             }//end of switch statement
 
 
@@ -425,14 +431,18 @@
 
             //now do bulk of image
             for (int r = rNH; r < (mRows - rNH); r++)
+            {
                 for (int c = cNH; c < (mCols - cNH); c++)
                 {
                     double sum = 0.0;
                     for (int y = -rNH; y < rNH; y++)
+                    {
                         for (int x = -cNH; x < cNH; x++)
                         {
                             sum += (normM[r + y, c + x] * kernal[rNH + y, cNH + x]);
                         }
+                    }
+
                     sum /= (double)kRows;
                     double zScore = (sum - noiseAv) / noiseSd;
 
@@ -446,6 +456,8 @@
                     }
                     //else newMatrix[r, c] = 0.0;
                 }//end of loops
+            }
+
             return newMatrix;
         }//end method GridFilter()
 
@@ -609,11 +621,11 @@
             //string path = @"C:\SensorNetworks\Output\LewinsRail\BAC1_20071008-081607_0min.png";
             string path = @"C:\SensorNetworks\Output\LewinsRail\BAC2_20071008-085040_0min.png";
             FileInfo file = new FileInfo(path);
-            Bitmap sourceImage = ImageTools.ReadImage2Bitmap(file.FullName);
-            ImageTools.ApplyInvert(sourceImage);
+            Bitmap sourceImage = ReadImage2Bitmap(file.FullName);
+            ApplyInvert(sourceImage);
             byte lowThreshold = 0;
             byte highThreshold = 30;
-            Bitmap bmp2 = ImageTools.CannyEdgeDetection(sourceImage, lowThreshold, highThreshold);
+            Bitmap bmp2 = CannyEdgeDetection(sourceImage, lowThreshold, highThreshold);
             string path1 = @"C:\SensorNetworks\Output\LewinsRail\Canny.png";
             bmp2.Save(path1, ImageFormat.Png);
         }
@@ -678,9 +690,10 @@
             double[,] normM = DataTools.normalise(m);
             double[,] newMatrix = new double[mRows, mCols];//init new matrix to return
             double[] grid = new double[9]; //to represent 3x3 grid
-            double min = Double.MaxValue; double max = -Double.MaxValue;
+            double min = double.MaxValue; double max = -double.MaxValue;
 
             for (int y = 1; y < mRows - 1; y++)
+            {
                 for (int x = 1; x < mCols - 1; x++)
                 {
                     grid[a] = normM[y - 1, x - 1];
@@ -715,14 +728,19 @@
                     if (min > gridMin) min = gridMin;
                     if (max < gridMax) max = gridMax;
                 }
+            }
 
             //double relThreshold = 0.2;
             double threshold = min + ((max - min) * relThreshold);
 
             for (int y = 1; y < mRows - 1; y++)
+            {
                 for (int x = 1; x < mCols - 1; x++)
+                {
                     if (newMatrix[y, x] > threshold) newMatrix[y, x] = 1.0;
                     else newMatrix[y, x] = 0.0;
+                }
+            }
 
             return newMatrix;
         }
@@ -743,9 +761,10 @@
             double[,] normM = DataTools.normalise(m);
             double[,] newMatrix = new double[mRows, mCols];//init new matrix to return
             double[] grid = new double[9]; //to represent 3x3 grid
-            double min = Double.MaxValue; double max = -Double.MaxValue;
+            double min = double.MaxValue; double max = -double.MaxValue;
 
             for (int y = 1; y < mRows - 1; y++)
+            {
                 for (int x = 1; x < mCols - 1; x++)
                 {
                     grid[a] = normM[y - 1, x - 1];
@@ -791,13 +810,18 @@
                     if (min > diffMin) min = diffMin; //store minimum difference value of entire matrix
                     if (max < diffMax) max = diffMax; //store maximum difference value of entire matrix
                 }
+            }
 
             double threshold = min + (max - min) / 4; //threshold is 1/5th of range above min
 
             for (int y = 1; y < mRows - 1; y++)
+            {
                 for (int x = 1; x < mCols - 1; x++)
+                {
                     if (newMatrix[y, x] > threshold) newMatrix[y, x] = 1.0;
                     else newMatrix[y, x] = 0.0;
+                }
+            }
 
             return newMatrix;
         }
@@ -1174,10 +1198,13 @@
             int mCols = m.GetLength(1);
             double[,] newMatrix = DataTools.normalise(m);
             for (int i = 0; i < mRows; i++)
+            {
                 for (int j = 0; j < mCols; j++)
                 {
                     newMatrix[i, j] = scaleMax - newMatrix[i, j];
                 }
+            }
+
             return newMatrix;
         }
 
@@ -1200,6 +1227,7 @@
             double[,] newMatrix = (double[,])matrix.Clone();
 
             for (int i = nh; i < (M - nh); i++)
+            {
                 for (int j = nh; j < (N - nh); j++)
                 {
                     double sum = 0.0;
@@ -1208,6 +1236,7 @@
                     double v = sum / cellCount;
                     newMatrix[i, j] = v;
                 }
+            }
 
             return newMatrix;
         }
@@ -1258,6 +1287,7 @@
             }
 
             for (int r = rNH; r < (rows - rNH); r++)
+            {
                 for (int c = cNH; c < (cols - cNH); c++)
                 {
                     double sum = 0.0;
@@ -1271,6 +1301,8 @@
                     }
                     newMatrix[r, c] = sum / (double)area;
                 }
+            }
+
             return newMatrix;
         }//end method Blur()
 
@@ -1349,11 +1381,13 @@
                     //normalise existing submatrix and transfer to the output matrix, outM
                     tmpM = DataTools.normalise(tmpM);
                     for (int y = 0; y < height; y++)
+                    {
                         for (int x = 0; x < ncbbc; x++)
                         {
                             int startCol = col - ncbbc;
                             outM[y, startCol + x] = tmpM[y, x];
                         }
+                    }
 
                     //set up a new submatrix for processing
                     tmpM = new double[height, ncbbc];
@@ -1404,20 +1438,26 @@
             double[,] newMatrix = new double[M, N];
 
             for (int i = nh; i < (M - nh); i++)
+            {
                 for (int j = nh; j < (N - nh); j++)
                 {
                     int id = 0;
                     double[] values = new double[cellCount];
                     for (int x = (i - nh + 1); x < (i + nh); x++)
+                    {
                         for (int y = (j - nh + 1); y < (j + nh); y++)
                         {
                             values[id++] = matrix[x, y];
                         }
+                    }
+
                     double av; double sd;
                     NormalDist.AverageAndSD(values, out av, out sd);
                     if (sd < 0.0001) sd = 0.0001;
                     newMatrix[i, j] = (matrix[i, j] - av) / sd;
                 }
+            }
+
             return newMatrix;
         }
 
@@ -1548,7 +1588,7 @@
             double lowerShoulder = 0.5;   //used to increase or decrease the threshold from modal value
             double upperShoulder = 0.05;
 
-            double[,] blurM = ImageTools.Blur(matrix, fWindow, tWindow);
+            double[,] blurM = Blur(matrix, fWindow, tWindow);
 
             int height = blurM.GetLength(0);
             int width = blurM.GetLength(1);
@@ -1619,7 +1659,7 @@
 
             int fWindow = 7;
             int tWindow = 7;
-            double[,] blurM = ImageTools.Blur(matrix, fWindow, tWindow);
+            double[,] blurM = Blur(matrix, fWindow, tWindow);
 
             int height = matrix.GetLength(0);
             int width = matrix.GetLength(1);
@@ -1654,8 +1694,8 @@
 
         public static double[,] Shapes3(double[,] m)
         {
-            double[,] m1 = ImageTools.DetectHighEnergyRegions3(m); //detect blobs of high acoustic energy
-            double[,] m2 = ImageTools.Shapes_lines(m);
+            double[,] m1 = DetectHighEnergyRegions3(m); //detect blobs of high acoustic energy
+            double[,] m2 = Shapes_lines(m);
 
             int height = m.GetLength(0);
             int width = m.GetLength(1);
@@ -1721,8 +1761,8 @@
 
         public static ArrayList Shapes4(double[,] m)
         {
-            double[,] m1 = ImageTools.DetectHighEnergyRegions3(m); //binary matrix showing areas of high acoustic energy
-            double[,] m2 = ImageTools.Shapes_lines(m); //binary matrix showing high energy lines
+            double[,] m1 = DetectHighEnergyRegions3(m); //binary matrix showing areas of high acoustic energy
+            double[,] m2 = Shapes_lines(m); //binary matrix showing high energy lines
 
             int height = m.GetLength(0);
             int width = m.GetLength(1);
@@ -1812,12 +1852,12 @@
             //get binary matrix showing high energy regions
             int fWindow = 5;
             int tWindow = 3;
-            double[,] tmp = ImageTools.Blur(m, fWindow, tWindow);
+            double[,] tmp = Blur(m, fWindow, tWindow);
             double threshold = 0.2;
             double[,] m1 = DataTools.Threshold(tmp, threshold);
 
             //get binary matrix showing high energy lines
-            double[,] m2 = ImageTools.Convolve(tmp, Kernal.HorizontalLine5);
+            double[,] m2 = Convolve(tmp, Kernal.HorizontalLine5);
             threshold = 0.2;
             m2 = DataTools.Threshold(m2, threshold);
 
@@ -1913,9 +1953,9 @@
 
             int fWindow = 5;
             int tWindow = 3;
-            double[,] tmpM = ImageTools.Blur(matrix, fWindow, tWindow);
+            double[,] tmpM = Blur(matrix, fWindow, tWindow);
             //double[,] tmpM = ImageTools.Convolve(matrix, Kernal.HorizontalLine5);
-            tmpM = ImageTools.Convolve(tmpM, Kernal.HorizontalLine5);
+            tmpM = Convolve(tmpM, Kernal.HorizontalLine5);
             //tmpM = ImageTools.Convolve(tmpM, Kernal.HorizontalLine5);
 
             //int height = matrix.GetLength(0);
@@ -1942,9 +1982,9 @@
 
             int fWindow = 3;
             int tWindow = 3;
-            double[,] tmpM = ImageTools.Blur(matrix, fWindow, tWindow);
-            tmpM = ImageTools.Convolve(tmpM, Kernal.HorizontalLine5);
-            tmpM = ImageTools.Convolve(tmpM, Kernal.HorizontalLine5);
+            double[,] tmpM = Blur(matrix, fWindow, tWindow);
+            tmpM = Convolve(tmpM, Kernal.HorizontalLine5);
+            tmpM = Convolve(tmpM, Kernal.HorizontalLine5);
 
             int height = matrix.GetLength(0);
             int width = matrix.GetLength(1);
@@ -2096,10 +2136,13 @@
                 {
                     double sum = 0.0;
                     for (int r = -rNH; r < rNH; r++)
+                    {
                         for (int c = -cNH; c < cNH; c++)
                         {
                             sum += m[y + r, x + c];
                         }
+                    }
+
                     double cover = sum / (double)area;
 
                     if (cover >= coverThreshold)
@@ -2163,9 +2206,9 @@
             RandomNumber rn = new RandomNumber(1234567);
             for (int c = 10; c <= paletteSize; c++)
             {
-                Int32 rd = rn.GetInt(max);
-                Int32 gr = rn.GetInt(max);
-                Int32 bl = rn.GetInt(max);
+                int rd = rn.GetInt(max);
+                int gr = rn.GetInt(max);
+                int bl = rn.GetInt(max);
                 pens.Add(new Pen(Color.FromArgb(rd, gr, bl)));
             }
             return pens;
@@ -2359,7 +2402,7 @@
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    if (Double.IsNaN(matrix[r, c]))
+                    if (double.IsNaN(matrix[r, c]))
                     {
                         greyId = 128; //want NaN values in gray,
                     }
@@ -2501,7 +2544,7 @@
             Image[] array = new Image[2];
             array[0] = yAxisImage;
             array[1] = image;
-            return ImageTools.CombineImagesInLine(array);
+            return CombineImagesInLine(array);
         }
 
         /// <summary>
@@ -2537,7 +2580,7 @@
             Image[] array = new Image[2];
             array[0] = image;
             array[1] = scaleImage;
-            return ImageTools.CombineImagesVertically(array);
+            return CombineImagesVertically(array);
         }
 
 
@@ -2587,11 +2630,11 @@
                 string str = "null";
                 if (statKeys[s] == "count")
                 {
-                    str = String.Format("{0}={1:f0}", statKeys[s], statistics[statKeys[s]]);
+                    str = string.Format("{0}={1:f0}", statKeys[s], statistics[statKeys[s]]);
                 }
                 else
                 {
-                    str = String.Format("{0}={1:f3}", statKeys[s], statistics[statKeys[s]]);
+                    str = string.Format("{0}={1:f3}", statKeys[s], statistics[statKeys[s]]);
                 }
 
                 g.DrawString(str, stringFont, Brushes.Wheat, new PointF(grid2, Y));
@@ -2629,7 +2672,7 @@
             }
             double scalingFactor = 0.5 / max;
 
-            Image image = ImageTools.DrawWaveform(label, signal, signal.Length, height, scalingFactor);
+            Image image = DrawWaveform(label, signal, signal.Length, height, scalingFactor);
             return image;
         }
 
@@ -2643,7 +2686,7 @@
         public static Image DrawWaveform(string label, double[] signal, double scalingFactor)
         {
             int height = 300;
-            Image image = ImageTools.DrawWaveform(label, signal, signal.Length, height, scalingFactor);
+            Image image = DrawWaveform(label, signal, signal.Length, height, scalingFactor);
             return image;
         }
 
@@ -2712,7 +2755,7 @@
             g2.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
 
             Image[] images = { bmp2, bmp1 };
-            Image bmp = ImageTools.CombineImagesVertically(images);
+            Image bmp = CombineImagesVertically(images);
             return bmp;
         }
 
@@ -2762,7 +2805,7 @@
             g2.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
 
             Image[] images = { bmp2, bmp1 };
-            Image bmp = ImageTools.CombineImagesVertically(images);
+            Image bmp = CombineImagesVertically(images);
             return bmp;
         }
 
@@ -2813,7 +2856,7 @@
             g2.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
 
             Image[] images = { bmp2, bmp1 };
-            Image bmp = ImageTools.CombineImagesVertically(images);
+            Image bmp = CombineImagesVertically(images);
             return bmp;
         }
 
@@ -2853,11 +2896,11 @@
 
             var endTime = startTime + TimeSpan.FromSeconds(windowWidth / (double)sr);
 
-            string title1 = String.Format("Bandpass filtered: tStart={0},  tEnd={1}", startTime.ToString(), endTime.ToString());
-            Image image4a = ImageTools.DrawWaveform(title1, signal, signal.Length, imageHeight, scalingFactor);
+            string title1 = string.Format("Bandpass filtered: tStart={0},  tEnd={1}", startTime.ToString(), endTime.ToString());
+            Image image4a = DrawWaveform(title1, signal, signal.Length, imageHeight, scalingFactor);
 
-            string title2 = String.Format("FFT 1->{0}Hz.,    hz/bin={1:f1},    score={2:f3}={3:f3}+{4:f3}", maxHz, hzPerBin, scores[0], scores[1], scores[2]);
-            Image image4b = ImageTools.DrawGraph(title2, subBandSpectrum, signal.Length, imageHeight, 1);
+            string title2 = string.Format("FFT 1->{0}Hz.,    hz/bin={1:f1},    score={2:f3}={3:f3}+{4:f3}", maxHz, hzPerBin, scores[0], scores[1], scores[2]);
+            Image image4b = DrawGraph(title2, subBandSpectrum, signal.Length, imageHeight, 1);
 
             var imageList = new List<Image>();
             imageList.Add(image4a);
@@ -2876,13 +2919,13 @@
             {
                 if ((subBandSpectrum[i] > subBandSpectrum[i-1]) && (subBandSpectrum[i] > subBandSpectrum[i + 1]))
                 {
-                    string label = String.Format("{0},", i + 1);
+                    string label = string.Format("{0},", i + 1);
                     g2.DrawString(label, stringFont, Brushes.Wheat, new PointF((i * barWidth) - 3, 3));
                 }
             }
 
             imageList.Add(bmp2);
-            var image = ImageTools.CombineImagesVertically(imageList);
+            var image = CombineImagesVertically(imageList);
 
             return image;
         }
@@ -3211,7 +3254,7 @@
 
 
 
-        public static System.Tuple<int, double> DetectLine(double[,] m, int row, int col, int lineLength, double centreThreshold, int resolutionAngle)
+        public static Tuple<int, double> DetectLine(double[,] m, int row, int col, int lineLength, double centreThreshold, int resolutionAngle)
         {
             double endThreshold = centreThreshold / 2;
 
@@ -3264,7 +3307,7 @@
                 degrees += resolutionAngle;
             } // while loop
 
-            return System.Tuple.Create(maxAngle, intensitySum);
+            return Tuple.Create(maxAngle, intensitySum);
         }// DetectLine()
 
         /// <summary>
@@ -3296,7 +3339,7 @@
             double max = minmax[1];
             double range = max - min;
 
-            Color[] grayScale = ImageTools.GrayScale();
+            Color[] grayScale = GrayScale();
             var bmp = new Bitmap(width, imageHeight, PixelFormat.Format24bppRgb);
             int yOffset = imageHeight;
 

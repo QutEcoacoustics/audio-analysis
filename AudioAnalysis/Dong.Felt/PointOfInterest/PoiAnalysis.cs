@@ -24,9 +24,9 @@ namespace Dong.Felt
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Dong.Felt.Preprocessing;
-    using Dong.Felt.Representations;
-    using Dong.Felt.SpectrogramDrawing;
+    using Preprocessing;
+    using Representations;
+    using SpectrogramDrawing;
     using TowseyLibrary;
 
     // several types of points of interest (for later use)
@@ -212,7 +212,7 @@ namespace Dong.Felt
             Contract.Requires(File.Exists(wavFilePath));
 
             var recording = new AudioRecording(wavFilePath);
-            var amplitudeSpectrogram = Preprocessing.AudioPreprosessing.AudioToSpectrogram(config, wavFilePath);
+            var amplitudeSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, wavFilePath);
             var spectrogramAmplitudeMatrix = amplitudeSpectrogram.Data;
             const int MinFreq = 2000;
             const int MaxFreq = 3500;

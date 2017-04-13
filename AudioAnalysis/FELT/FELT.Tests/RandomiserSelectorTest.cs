@@ -3,7 +3,7 @@
     using System;
     using System.Diagnostics;
     using System.Linq;
-    using FELT.Selectors;
+    using Selectors;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using MQUTeR.FSharp.Shared;
 
@@ -26,11 +26,11 @@
         {
             get
             {
-                return testContextInstance;
+                return this.testContextInstance;
             }
             set
             {
-                testContextInstance = value;
+                this.testContextInstance = value;
             }
         }
 

@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="ExtensionsDateTime.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="DateTimeAndTimeSpanExtensions.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //
@@ -10,8 +10,8 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
-    using System.Collections.Generic;
-    using System.Linq;
+    using Collections.Generic;
+    using Linq;
 
     /// <summary>
     /// Extensions for the <c>DateTime</c> and <c>TimeSpan</c> structs.

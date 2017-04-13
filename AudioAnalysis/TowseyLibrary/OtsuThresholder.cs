@@ -155,22 +155,22 @@ namespace TowseyLibrary
         /// </summary>
         public OtsuThresholder()
         {
-            histData = new int[256];
+            this.histData = new int[256];
         }
 
         public int[] GetHistData()
         {
-            return histData;
+            return this.histData;
         }
 
         public int getMaxLevelValue()
         {
-            return maxLevelValue;
+            return this.maxLevelValue;
         }
 
         public int getThreshold()
         {
-            return threshold;
+            return this.threshold;
         }
 
         public int CalculateThreshold(byte[] srcData, out byte[] monoData)
@@ -235,7 +235,7 @@ namespace TowseyLibrary
 
             // Total number of pixels
             int total = srcData.Length;
-            threshold = CalculateThreshold(srcData);
+            this.threshold = this.CalculateThreshold(srcData);
 
             // Apply threshold to create binary image
             monoData = new byte[total];
@@ -244,12 +244,12 @@ namespace TowseyLibrary
                 ptr = 0;
                 while (ptr < srcData.Length)
                 {
-                    monoData[ptr] = (byte)(((0xFF & srcData[ptr]) >= threshold) ? (byte)255 : 0);
+                    monoData[ptr] = (byte)(((0xFF & srcData[ptr]) >= this.threshold) ? (byte)255 : 0);
                     ptr++;
                 }
             }
 
-            return threshold;
+            return this.threshold;
         } //doThreshold
 
         public int CalculateThreshold(byte[] srcData)
@@ -259,17 +259,17 @@ namespace TowseyLibrary
             // Clear histogram data
             // Set all values to zero
             ptr = 0;
-            while (ptr < histData.Length) histData[ptr++] = 0;
+            while (ptr < this.histData.Length) this.histData[ptr++] = 0;
 
             // Calculate histogram and find the level with the max value
             // Note: the max level value isn't required by the Otsu method
             ptr = 0;
-            maxLevelValue = 0;
+            this.maxLevelValue = 0;
             while (ptr < srcData.Length)
             {
                 int h = 0xFF & srcData[ptr];
-                histData[h]++;
-                if (histData[h] > maxLevelValue) maxLevelValue = histData[h];
+                this.histData[h]++;
+                if (this.histData[h] > this.maxLevelValue) this.maxLevelValue = this.histData[h];
                 ptr++;
             }
 
@@ -277,24 +277,24 @@ namespace TowseyLibrary
             int total = srcData.Length;
 
             float sum = 0;
-            for (int t = 0; t < 256; t++) sum += t * histData[t];
+            for (int t = 0; t < 256; t++) sum += t * this.histData[t];
 
             float sumB = 0;
             int wB = 0;
             int wF = 0;
 
             float varMax = 0;
-            threshold = 0;
+            this.threshold = 0;
 
             for (int t = 0; t < 256; t++)
             {
-                wB += histData[t];					// Weight Background
+                wB += this.histData[t];					// Weight Background
                 if (wB == 0) continue;
 
                 wF = total - wB;						// Weight Foreground
                 if (wF == 0) break;
 
-                sumB += (float)(t * histData[t]);
+                sumB += (float)(t * this.histData[t]);
 
                 float mB = sumB / wB;				// Mean Background
                 float mF = (sum - sumB) / wF;		// Mean Foreground
@@ -306,10 +306,10 @@ namespace TowseyLibrary
                 if (varBetween > varMax)
                 {
                     varMax = varBetween;
-                    threshold = t;
+                    this.threshold = t;
                 }
             }
-            return threshold;
+            return this.threshold;
         } //doThreshold
 
 

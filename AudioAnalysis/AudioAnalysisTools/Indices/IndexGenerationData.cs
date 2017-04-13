@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="IndexGenerationData.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="IndexGenerationData.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -8,7 +8,7 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
 
-    using AudioAnalysisTools.LongDurationSpectrograms;
+    using LongDurationSpectrograms;
     using System.IO;
     using System.Linq;
 
@@ -115,7 +115,7 @@ namespace AudioAnalysisTools.Indices
 
         public static IndexGenerationData GetIndexGenerationDataAndAddStartTime(DirectoryInfo directory, string fileName, TimeSpan? offsetHint = null)
         {
-            var indexGenerationData = IndexGenerationData.GetIndexGenerationData(directory);
+            var indexGenerationData = GetIndexGenerationData(directory);
 
             // Get the start time from the file name.
             // DateTimeOffset startTime = IndexMatrices.GetFileStartTime(fileName);   // ##################### CHANGE TO ANTHONY'S METHOD

@@ -5,7 +5,7 @@
     using System.IO;
     using System.Linq;
     using System.Text;
-    using AudioAnalysisTools.LongDurationSpectrograms;
+    using LongDurationSpectrograms;
     using TowseyLibrary;
 
     /// <summary>
@@ -17,7 +17,7 @@
         private static Arguments Dev()
         {
             DateTime time = DateTime.Now;
-            string datestamp = String.Format("{0}{1:d2}{2:d2}", time.Year, time.Month, time.Day);
+            string datestamp = string.Format("{0}{1:d2}{2:d2}", time.Year, time.Month, time.Day);
             return new Arguments
             {
                 IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
@@ -115,12 +115,12 @@
                 string stem = nameArray[0];
                 string date = nameArray[1];
                 string time = nameArray[2];
-                int year = Int32.Parse(date.Substring(0, 4));
-                int month = Int32.Parse(date.Substring(4, 2));
-                int day = Int32.Parse(date.Substring(6, 2));
-                int hour = Int32.Parse(time.Substring(0, 2));
-                int minute = Int32.Parse(time.Substring(2, 2));
-                int second = Int32.Parse(time.Substring(4, 2));
+                int year = int.Parse(date.Substring(0, 4));
+                int month = int.Parse(date.Substring(4, 2));
+                int day = int.Parse(date.Substring(6, 2));
+                int hour = int.Parse(time.Substring(0, 2));
+                int minute = int.Parse(time.Substring(2, 2));
+                int second = int.Parse(time.Substring(4, 2));
                 DateTime thisDate = new DateTime(year, month, day, hour, minute, second);
 
 
@@ -177,7 +177,7 @@
             }
 
             List<string> lines = new List<string>();
-            string linestart = String.Format("{0},{1}", year, thisDayOfYear);
+            string linestart = string.Format("{0},{1}", year, thisDayOfYear);
 
             //int minutesInThisMatrix = 2;
             // number of minutes = number of columns in matrix
@@ -197,7 +197,7 @@
                         double[,] matrix = dict[key];
                         // do not need more than 6 decimal places for values which will ultimately transformed to colour bytes.
                         // cuts file size from 12.2 MB to 7.4 MB
-                        string str = String.Format(",{0:F6}", matrix[bin, min]);
+                        string str = string.Format(",{0:F6}", matrix[bin, min]);
                         line.Append(str);
                     }
 

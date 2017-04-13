@@ -1,7 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="LimnodynastesConvex.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
-//  The ACTION code for this analysis is: "LimnodynastesConvex"
+// <copyright file="LimnodynastesConvex_OBSOLETE.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -20,7 +19,7 @@ namespace AnalysisPrograms
     using Acoustics.Tools;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using AnalysisPrograms.Production;
+    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -380,13 +379,13 @@ namespace AnalysisPrograms
             int sampleRate = recording.SampleRate;
             double herzPerBin = sampleRate / 2 / (double)rhzRowCount;
             double scoreThreshold = (double?)double.Parse(configDict["EventThreshold"]) ?? 3.0;
-            int minimumFrequency  = (int?)Int32.Parse(configDict["MinHz"]) ?? 850;
-            int dominantFrequency = (int?)Int32.Parse(configDict["DominantFrequency"]) ?? 1850;
+            int minimumFrequency  = (int?)int.Parse(configDict["MinHz"]) ?? 850;
+            int dominantFrequency = (int?)int.Parse(configDict["DominantFrequency"]) ?? 1850;
 
             // # The Limnodynastes call has three major peaks. The dominant peak is at 1850 or as set above.
             // # The second and third peak are at equal gaps below. DominantFreq-gap and DominantFreq-(2*gap);
             // # Set the gap in the Config file. Should typically be in range 880 to 970
-            int peakGapInHerz     = (int?)Int32.Parse(configDict["PeakGap"]) ?? 470;
+            int peakGapInHerz     = (int?)int.Parse(configDict["PeakGap"]) ?? 470;
             int F1AndF2Gap = (int)Math.Round(peakGapInHerz / herzPerBin);
             //int F1AndF2Gap = 10; // 10 = number of freq bins
             int F1AndF3Gap = 2 * F1AndF2Gap;
@@ -410,7 +409,7 @@ namespace AnalysisPrograms
             // loop through all spectra/columns of the hi-res spectrogram.
             for (int c = 1; c < rhzColCount-1; c++)
             {
-                double maxAmplitude = -Double.MaxValue;
+                double maxAmplitude = -double.MaxValue;
                 int idOfRowWithMaxAmplitude = 0;
 
                 for (int r = minRowID; r <= bottomRow; r++)
@@ -520,7 +519,7 @@ namespace AnalysisPrograms
 
                 // location of max point is uncertain, so search in neighbourhood.
                 // NOTE: sonogram.data matrix is time*freqBin
-                double maxValue = -Double.MaxValue;
+                double maxValue = -double.MaxValue;
                 int idOfTMax = framesFromStartOfSegment;
                 int idOfFMax = point.Y;
                 for (int deltaT = -4; deltaT <= 4; deltaT++)

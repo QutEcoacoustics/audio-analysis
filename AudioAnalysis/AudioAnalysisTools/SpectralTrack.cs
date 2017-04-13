@@ -11,14 +11,14 @@
     public class SpectralTrack
     {
         private int startFrame;
-        public int StartFrame { get {return startFrame;} }
+        public int StartFrame { get {return this.startFrame;} }
         private int endFrame;
-        public int EndFrame { get { return endFrame; } }
-        public int Length { get { return (endFrame - startFrame + 1); } }
+        public int EndFrame { get { return this.endFrame; } }
+        public int Length { get { return (this.endFrame - this.startFrame + 1); } }
         int bottomBin;
         int topBin;
         private double avBin;
-        public double AverageBin { get { return avBin; } }
+        public double AverageBin { get { return this.avBin; } }
         List<int> track;
         int status = 0;  // 0=closed;   1= open and active;
 
@@ -26,11 +26,11 @@
         public double[] periodicity;
         public double[] periodicityScore;
         public double avPeriodicity { get { // calculate periodicity form midpoint of the array
-            int midPoint = periodicity.Length /2;
-            double average = (periodicity[midPoint - 2] + periodicity[midPoint] + periodicity[midPoint+ 2]) / 3;
+            int midPoint = this.periodicity.Length /2;
+            double average = (this.periodicity[midPoint - 2] + this.periodicity[midPoint] + this.periodicity[midPoint+ 2]) / 3;
             return average;
         } }
-        public double avPeriodicityScore { get { return periodicityScore.Average(); } }
+        public double avPeriodicityScore { get { return this.periodicityScore.Average(); } }
 
         // scale
         public double framesPerSecond;
@@ -48,34 +48,34 @@
 
         public SpectralTrack(int _start, int _bin, double _framesPerSecond, double _herzPerBin, int _herzOffset)
         {
-            startFrame = _start;
-            endFrame   = _start;
-            bottomBin  = _bin;
-            topBin     = _bin;
-            avBin      = _bin;
-            status = 1;
-            track = new List<int>();
-            track.Add(_bin);
+            this.startFrame = _start;
+            this.endFrame   = _start;
+            this.bottomBin  = _bin;
+            this.topBin     = _bin;
+            this.avBin      = _bin;
+            this.status = 1;
+            this.track = new List<int>();
+            this.track.Add(_bin);
             TimeSpan t = TimeSpan.FromSeconds(_start / _framesPerSecond);
-            SetTimeAndFreqScales(_framesPerSecond, t, _herzPerBin, _herzOffset);
+            this.SetTimeAndFreqScales(_framesPerSecond, t, _herzPerBin, _herzOffset);
         }
 
         public void SetTimeAndFreqScales(double _framesPerSecond, TimeSpan t, double _herzPerBin, int _herzOffset)
         {
-            framesPerSecond = _framesPerSecond;
-            timeOffset      = t;
-            herzPerBin      = _herzPerBin;
-            herzOffset      = _herzOffset;
+            this.framesPerSecond = _framesPerSecond;
+            this.timeOffset      = t;
+            this.herzPerBin      = _herzPerBin;
+            this.herzOffset      = _herzOffset;
         }
 
         int FrameCountEquivalent(TimeSpan duration)
         {
-            return FrameCountEquivalent(duration, framesPerSecond);
+            return FrameCountEquivalent(duration, this.framesPerSecond);
         }
 
         int BinCount(int herz)
         {
-            return (int)Math.Round(herz / (double)herzPerBin);
+            return (int)Math.Round(herz / (double)this.herzPerBin);
         }
 
         public bool TrackTerminated(int currentFrame, TimeSpan maxGap)
@@ -94,7 +94,7 @@
 
         public TimeSpan Duration()
         {
-            double seconds = this.Length / framesPerSecond;
+            double seconds = this.Length / this.framesPerSecond;
             return TimeSpan.FromSeconds(seconds);
         }
 
@@ -108,9 +108,9 @@
 
             //can extend this track
             this.endFrame = currentFrame;
-            if (bottomBin > currentValue) bottomBin = currentValue;
+            if (this.bottomBin > currentValue) this.bottomBin = currentValue;
             else
-            if (topBin < currentValue) topBin = currentValue;
+            if (this.topBin < currentValue) this.topBin = currentValue;
             this.track.Add(currentValue);
             double av, sd;
             NormalDist.AverageAndSD(this.track.ToArray(), out av, out sd);
@@ -156,7 +156,7 @@
 
             double startSec = this.timeOffset.TotalSeconds;
             int frame1 = (int)Math.Round(startSec * sonogramFramesPerSecond);
-            for (int i = 1; i < track.Count - 1; i++)
+            for (int i = 1; i < this.track.Count - 1; i++)
             {
                 double endSec = startSec + (i * secondsPerTrackFrame);
                 int frame2 = (int)Math.Round(endSec * sonogramFramesPerSecond);
@@ -265,7 +265,7 @@
         /// <param name="threshold"></param>
         /// <param name="nhLimit"></param>
         /// <returns></returns>
-        public static System.Tuple<int[], double[,]> GetSpectralMaxima(double[] decibelsPerFrame, double[,] spectrogram, double threshold, int nhLimit)
+        public static Tuple<int[], double[,]> GetSpectralMaxima(double[] decibelsPerFrame, double[,] spectrogram, double threshold, int nhLimit)
         {
             int rowCount = spectrogram.GetLength(0);
             int colCount = spectrogram.GetLength(1);
@@ -291,7 +291,7 @@
                     }
                 }
             }
-            return System.Tuple.Create(maxFreqArray, hitsMatrix);
+            return Tuple.Create(maxFreqArray, hitsMatrix);
         } // GetSpectralMaxima()
 
 
@@ -309,8 +309,8 @@
         /// <returns>A list of spectral peak tracks</returns>
         public static List<SpectralTrack> GetSpectralPeakTracks(double[,] spectrogram, double framesPerSecond, double herzPerBin, int herzOffset, double threshold, TimeSpan minDuration, TimeSpan permittedGap, int maxFreq)
         {
-            int[] spectralPeakArray = SpectralTrack.GetSpectralMaxima(spectrogram, threshold);
-            var tracks = SpectralTrack.GetSpectralTracks(spectralPeakArray, framesPerSecond, herzPerBin, herzOffset, minDuration, permittedGap, maxFreq);
+            int[] spectralPeakArray = GetSpectralMaxima(spectrogram, threshold);
+            var tracks = GetSpectralTracks(spectralPeakArray, framesPerSecond, herzPerBin, herzOffset, minDuration, permittedGap, maxFreq);
             // WriteHistogramOftrackLengths(tracks);
             return tracks;
         }
@@ -324,7 +324,7 @@
         /// <returns></returns>
         public static List<SpectralTrack> GetSpectralTracks(int[] spectralPeakArray, double _framesPerSecond, double _herzPerBin, int _herzOffset, TimeSpan minDuration, TimeSpan permittedGap, int maxFreq)
         {
-            double binTolerance = SpectralTrack.herzTolerance / _herzPerBin;
+            double binTolerance = herzTolerance / _herzPerBin;
             var tracks = new List<SpectralTrack>();
             for (int r = 0; r < spectralPeakArray.Length - 1; r++)
             {
@@ -483,8 +483,8 @@
         private int binNumber;
         public int BinNumber
         {
-            set { binNumber = value; }
-            get { return binNumber; }
+            set { this.binNumber = value; }
+            get { return this.binNumber; }
         }
 
         private int frameCount;
@@ -494,31 +494,31 @@
         private int trackCount;
         public int TrackCount
         {
-            set { trackCount = value; }
-            get { return trackCount; }
+            set { this.trackCount = value; }
+            get { return this.trackCount; }
         }
 
         public int TracksPerSec
         {
             //set { trackCount = value; }
-            get { return trackCount; }
+            get { return this.trackCount; }
         }
 
         private int totalFrameLength;
         public int TotalFrameLength
         {
-            set { totalFrameLength = value; }
-            get { return totalFrameLength; }
+            set { this.totalFrameLength = value; }
+            get { return this.totalFrameLength; }
         }
         public double FractionOfFramesContainingTracks
         {
-            get { return totalFrameLength / frameCount; }
+            get { return this.totalFrameLength / this.frameCount; }
         }
 
         private int totalSecondsContainingTracks;
         public double FractionOfSecondsContainingTracks
         {
-            get { return totalSecondsContainingTracks / binDuration.TotalSeconds; }
+            get { return this.totalSecondsContainingTracks / this.binDuration.TotalSeconds; }
         }
 
 
@@ -530,21 +530,21 @@
         /// <param name="_framesPerSecond"></param>
         public TracksInOneFrequencyBin(int _binNumber, double[] freqBin, double _framesPerSecond)
         {
-            binNumber = _binNumber;
-            framesPerSecond = _framesPerSecond;
+            this.binNumber = _binNumber;
+            this.framesPerSecond = _framesPerSecond;
             this.frameCount = freqBin.Length;
             this.framesPerHalfSecond = (int)(this.framesPerSecond / 2);
             this.framesPerQuaterSecond = (int)(this.framesPerSecond / 4);
-            binDuration = TimeSpan.FromSeconds(freqBin.Length / framesPerSecond);
+            this.binDuration = TimeSpan.FromSeconds(freqBin.Length / this.framesPerSecond);
 
             freqBin = DataTools.filterMovingAverage(freqBin, 3); // to join up gaps of 1 - 2
-            ProcessFrequencyBinForTracks1(freqBin);
-            ProcessFrequencyBinForTracks2(freqBin);
+            this.ProcessFrequencyBinForTracks1(freqBin);
+            this.ProcessFrequencyBinForTracks2(freqBin);
         }
 
         private void ProcessFrequencyBinForTracks1(double[] freqBin)
         {
-            int framesPerSegment = (int)framesPerSecond;
+            int framesPerSegment = (int)this.framesPerSecond;
             int numberOfSeconds = this.binDuration.Seconds;
             int count = 0;
             int start = 0;
@@ -562,7 +562,7 @@
 
         public void ProcessFrequencyBinForTracks2(double[] freqBin)
         {
-            int minimumFrameLength = (int)(minimumTrackDuration.TotalSeconds * this.framesPerSecond);
+            int minimumFrameLength = (int)(this.minimumTrackDuration.TotalSeconds * this.framesPerSecond);
 
             List<int> trackLengths = new List<int>();
             bool inTrack = false;

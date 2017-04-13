@@ -76,14 +76,14 @@
             //ONLY HANDLE bit rate = 16.
             if (bitRate != 16)
             {
-                System.LoggedConsole.WriteLine("######### WARNING: CAN ONLY WRITE A BITRATE=16 SIGNAL TO FILE!");
+                LoggedConsole.WriteLine("######### WARNING: CAN ONLY WRITE A BITRATE=16 SIGNAL TO FILE!");
                 return;
             }
             //write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
             int length = signal.Length;
             var newSamples = new double[length];
             for (int i = 0; i < length; i++) newSamples[i] = signal[i] * short.MaxValue; //converts double to signed 16 bit
-            WavWriter.Write16bitWavFile(newSamples, samplesPerSecond, path);
+            Write16bitWavFile(newSamples, samplesPerSecond, path);
         }
 
         public static short[] Perfect5th(int samples, int samplesPerSecond)
@@ -164,30 +164,30 @@
                 //10 00 00 00 01 00 01 00 44 AC 00 00 88 58 01 00
                 //02 00 10 00 64 61 74 61 98 09 04 00
 
-                Byte[] header = { 82, 73, 70, 70, 22, 10, 4, 0, 87, 65, 86, 69, 102, 109, 116, 32 };
+                byte[] header = { 82, 73, 70, 70, 22, 10, 4, 0, 87, 65, 86, 69, 102, 109, 116, 32 };
                 bw.Write(header);
 
-                Byte[] header2 = { 16, 0, 0, 0, 1, 0, 1, 0, 68, 172, 0, 0, 136, 88, 1, 0 };
+                byte[] header2 = { 16, 0, 0, 0, 1, 0, 1, 0, 68, 172, 0, 0, 136, 88, 1, 0 };
                 bw.Write(header2);
 
-                Byte[] header3 = { 2, 0, 16, 0, 100, 97, 116, 97, 152, 9, 4, 0 };
+                byte[] header3 = { 2, 0, 16, 0, 100, 97, 116, 97, 152, 9, 4, 0 };
                 bw.Write(header3);
 
-                Double t_const = (1.0 / 44100.0);
-                Double t_pos = 1.0;
-                Double t_val = 0.0;
+                double t_const = (1.0 / 44100.0);
+                double t_pos = 1.0;
+                double t_val = 0.0;
                 while (c < 264734)
                 {
                     t_val = t_const * t_pos;
                     t_pos++;
 
-                    Double amp = 14468.0;
+                    double amp = 14468.0;
                     amp = amp + 0.0;
 
-                    Double freq = 440.0;
+                    double freq = 440.0;
                     freq = 440.0;
 
-                    Double sample = amp * Math.Sin(t_val * freq * 2 * Math.PI);
+                    double sample = amp * Math.Sin(t_val * freq * 2 * Math.PI);
 
                     sample = sample + amp;
                     int sample_int = (int)sample;
@@ -195,8 +195,8 @@
                     int msb = sample_int / 256;
                     int lsb = sample_int - (msb * 256);
 
-                    bw.Write((Byte)lsb);
-                    bw.Write((Byte)msb);
+                    bw.Write((byte)lsb);
+                    bw.Write((byte)msb);
                     c = c + 2;
                 }
             }

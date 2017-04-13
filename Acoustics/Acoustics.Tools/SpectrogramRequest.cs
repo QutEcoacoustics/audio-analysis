@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="SpectrogramRequest.cs" company="MQUTeR">
-//   -
+// <copyright file="SpectrogramRequest.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the SpectrogramRequest type.
@@ -11,7 +11,7 @@ namespace Acoustics.Tools
 {
     using System;
 
-    using Acoustics.Shared;
+    using Shared;
 
     /// <summary>
     /// Spectrogram Request.

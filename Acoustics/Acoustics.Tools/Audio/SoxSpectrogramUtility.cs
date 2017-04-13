@@ -5,7 +5,7 @@
     using System.Drawing;
     using System.IO;
 
-    using Acoustics.Shared;
+    using Shared;
 
     /// <summary>
     /// Spectrogram utility that uses sox.exe to generate spectrograms.

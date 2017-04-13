@@ -11,12 +11,12 @@ namespace TowseyLibrary
 
 		public RandomNumber()
 		{
-			random = new Random();
+		    this.random = new Random();
 		}
 
 		public RandomNumber(int seed)
 		{
-			random = new Random(seed);
+		    this.random = new Random(seed);
 		}
 
 		/// <summary>
@@ -24,12 +24,12 @@ namespace TowseyLibrary
 		/// </summary>
 		public double GetDouble()
 		{
-			return random.NextDouble();
+			return this.random.NextDouble();
 		}
 
 		public double GetDouble(int max)
 		{
-			return random.NextDouble() * max;
+			return this.random.NextDouble() * max;
 		}
 
 		/// <summary>
@@ -37,7 +37,7 @@ namespace TowseyLibrary
 		/// </summary>
 		public int GetInt(int max)
 		{
-			return random.Next(max);
+			return this.random.Next(max);
 		}
 
 		/// <summary>
@@ -45,7 +45,7 @@ namespace TowseyLibrary
 		/// </summary>
 		public int GetRandomPercent()
 		{
-			return 1 + (int)(99.0 * random.NextDouble());
+			return 1 + (int)(99.0 * this.random.NextDouble());
 		}
 
 		/// <summary>
@@ -175,8 +175,8 @@ namespace TowseyLibrary
             var rn = new RandomNumber(seed);
             for (int i = 0; i < trialCount; i++)
             {
-                double[] v1 = RandomNumber.GetRandomVector(dimensions, rn);
-                double[] v2 = RandomNumber.GetRandomVector(dimensions, rn);
+                double[] v1 = GetRandomVector(dimensions, rn);
+                double[] v2 = GetRandomVector(dimensions, rn);
                 distanceArray[i] = DataTools.EuclidianDistance(v1, v2);
             }
             double av, sd;

@@ -59,7 +59,7 @@
         public MainForm()
         {
             // must be here, must be first
-            InitializeComponent();
+            this.InitializeComponent();
 
             // add richtextbox to logger
             RichTextBoxAppender.SetRichTextBox(this.richTextBoxConsole, "RichTextBoxAppender");
@@ -82,7 +82,7 @@
 
 
             // init tabs
-            InitAnalyseTab();
+            this.InitAnalyseTab();
 
             this.tabControlMain.SelectTab(this.tabPageConsole);
 
@@ -254,14 +254,14 @@
                 LoggedConsole.WriteLine("#############################################");
                 LoggedConsole.WriteLine("Could not find audio file to create sonogram.");
                 LoggedConsole.WriteLine("#############################################");
-                this.tabControlMain.SelectTab(tabPageConsole);
+                this.tabControlMain.SelectTab(this.tabPageConsole);
                 return;
             }
 
             this.IsCreatingSonogramImage = true;
 
             // collect data for sonogram generation
-            var segmentbuffer = chkSonogramBuffer.Checked ? TimeSpan.FromSeconds(this.SonogramBuffer) : TimeSpan.Zero;
+            var segmentbuffer = this.chkSonogramBuffer.Checked ? TimeSpan.FromSeconds(this.SonogramBuffer) : TimeSpan.Zero;
             var annotated = this.chkAudioNavAnnotateSonogram.Checked;
             var noiseReduced = this.chkAudioNavNoiseReduce.Checked;
             var backgroundNoiseThreshold = this.helper.SonogramBackgroundThreshold;
@@ -451,7 +451,7 @@
             using (selectFilesForm)
             {
                 var dialogResult = selectFilesForm.ShowDialog();
-                if (dialogResult == System.Windows.Forms.DialogResult.OK)
+                if (dialogResult == DialogResult.OK)
                 {
                     // form checks that values are valid, don't need to check again
 
@@ -467,7 +467,7 @@
                         selectFilesForm.OutputDir,
                         this.helper.TrackNormalisedDisplay);
 
-                    ClearIndicesImage();
+                    this.ClearIndicesImage();
 
                     var bgWorker = new BackgroundWorker();
 
@@ -602,14 +602,14 @@
             // update stored values
             this.tabBrowseAudio.UpdateOffsets(segmentOffsetStart, segmentOffsetEnd, new Point(e.X, e.Y));
 
-            UpdateClickTrackImage();
+            this.UpdateClickTrackImage();
 
-            ChangeSonogramImage();
+            this.ChangeSonogramImage();
         }
 
         private void btnAudioNavRefreshSonogram_Click(object sender, EventArgs e)
         {
-            ChangeSonogramImage();
+            this.ChangeSonogramImage();
         }
 
         private void btnDisplaySimilarSegments_Click(object sender, EventArgs e)
@@ -800,7 +800,7 @@
             this.btnAanlyseRun.Enabled = false;
 
             // analysis information
-            var analyserId = AnalyserAnalysisSelected;
+            var analyserId = this.AnalyserAnalysisSelected;
             var analyser = this.helper.GetAnalyser(analyserId);
             var settings = analyser.DefaultSettings;
 
@@ -812,8 +812,8 @@
             FileInfo fiConfig = this.AnalyserConfigFile;
             Dictionary<string, string> dict = config.GetTable();
             DirectoryInfo diOutputDir = this.AnalyserOutputDir;
-            string keySegmentDuration = AudioAnalysisTools.AnalysisKeys.SegmentDuration;
-            string keySegmentOverlap = AudioAnalysisTools.AnalysisKeys.SegmentOverlap;
+            string keySegmentDuration = AnalysisKeys.SegmentDuration;
+            string keySegmentOverlap = AnalysisKeys.SegmentOverlap;
             settings.ConfigFile = fiConfig;
             settings.ConfigDict = dict;
             settings.AnalysisBaseOutputDirectory = diOutputDir;
@@ -862,7 +862,7 @@
                 Log.DebugFormat("\t{0} = {1}", kvp.Key, kvp.Value);
             }
 
-            string analysisName = analysisParams[AudioAnalysisTools.AnalysisKeys.AnalysisName];
+            string analysisName = analysisParams[AnalysisKeys.AnalysisName];
             if (analyserId != analysisName)
             {
                 Log.WarnFormat("Analysis type selected in browser ({0}) not same as that in config file ({1})", analyserId, analysisName);

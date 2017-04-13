@@ -8,7 +8,7 @@
     using System.Text;
     using System.Text.RegularExpressions;
     using Acoustics.Shared;
-    using AudioAnalysisTools.Indices;
+    using Indices;
     using TowseyLibrary;
 
     public static class FrommoltProject
@@ -38,7 +38,7 @@
             {
                 LoggedConsole.WriteLine("\n# Start date = " + startDate.ToString());
                 LoggedConsole.WriteLine("# End   date = " + endDate.ToString());
-                LoggedConsole.WriteLine(String.Format("# Elapsed time = {0:f1} hours", (dayCount * 24)));
+                LoggedConsole.WriteLine(string.Format("# Elapsed time = {0:f1} hours", (dayCount * 24)));
                 LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
                 LoggedConsole.WriteLine("# Time Zone  = " + timeSpanOffsetHint.ToString());
             }
@@ -68,7 +68,7 @@
             // loop over days
             for (int d = 0; d < dayCount; d++)
             {
-                Console.WriteLine(String.Format("Day {0} of {1} days", d, dayCount));
+                Console.WriteLine(string.Format("Day {0} of {1} days", d, dayCount));
                 var thisday = ((DateTimeOffset)startDate).AddDays(d);
                 string date = thisday.ToString(format);
 
@@ -106,14 +106,14 @@
 
             Graphics g = Graphics.FromImage(combinedImage);
             g.DrawImage(labelImage1, 0, 0);
-            string fileName = String.Format(startDay + "." + fileSuffix);
+            string fileName = string.Format(startDay + "." + fileSuffix);
             combinedImage.Save(Path.Combine(imageDirectory.FullName, fileName));
         }
 
         public static Image ConcatenateFourChannelImages(FileInfo[] imageFiles, DirectoryInfo imageDirectory, string fileSuffix, string date)
         {
             // get first image to find its dimensions
-            Image image = Bitmap.FromFile(imageFiles[0].FullName);
+            Image image = Image.FromFile(imageFiles[0].FullName);
 
             Brush brush = Brushes.White;
             Font stringFont = new Font("Tahoma", 12);
@@ -131,13 +131,13 @@
             {
                 var imageList = new List<Image>();
                 //   Monitoring_Rosin_20120329T000000 + 0200_.merged.wav.channel_0__2Maps.png;
-                string fileMatch = String.Format(@"0000+0200_.merged.wav.channel_{0}__{1}", channel, fileSuffix);
+                string fileMatch = string.Format(@"0000+0200_.merged.wav.channel_{0}__{1}", channel, fileSuffix);
 
                 foreach (FileInfo imageFile in imageFiles)
                 {
                     if (! imageFile.Name.EndsWith(fileMatch)) continue;
 
-                    image = Bitmap.FromFile(imageFile.FullName);
+                    image = Image.FromFile(imageFile.FullName);
                     imageList.Add(image);
                     imageList.Add(spacerImage);
                 }
@@ -145,7 +145,7 @@
                 imageList.Add(spacerImage);
                 Image concatImage = ImageTools.CombineImagesInLine(imageList);
                 g = Graphics.FromImage(concatImage);
-                string chn = String.Format("ch{0}", channel + 1);
+                string chn = string.Format("ch{0}", channel + 1);
                 g.DrawString(chn, stringFont, brush, new PointF(2, 40));
 
                 fourChannelList.Add(concatImage);
