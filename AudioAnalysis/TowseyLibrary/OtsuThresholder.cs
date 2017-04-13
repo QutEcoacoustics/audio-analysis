@@ -5,6 +5,7 @@ namespace TowseyLibrary
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
+    using Acoustics.Shared;
 
     /// <summary>
     /// Go to following link for info on Otsu threshold
@@ -504,9 +505,120 @@ namespace TowseyLibrary
             bd2 = null;
         }
 
+        /*
+        /// <summary>
+        /// TEST method for Otsu Thresholder
+        It does not work in this context.
+        Paste code back into SandPit.cs file. Enclose within if(true) block to get it working.
+        /// </summary>
+        public static void TESTMETHOD_OtsuThresholder()
+        {
+                // check that Otsu thresholder is still working
+                //OtsuThresholder.Execute(null);
+                //string recordingPath = @"G:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\NW_NW273_20101013-051200-0514-1515-Brown Cuckoo-dove1.wav";
+                string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TOWERB_20110302_202900_22.LSK.F.wav";
+                var outputPath = @"G:\SensorNetworks\Output\temp\AEDexperiments";
+                var outputDirectory = new DirectoryInfo(outputPath);
+                var recording = new AudioRecording(recordingPath);
+                var recordingDuration = recording.WavReader.Time;
 
+                const int frameSize = 1024;
+                double windowOverlap = 0.0;
+                //NoiseReductionType noiseReductionType  = NoiseReductionType.None;
+                var noiseReductionType = SNR.KeyToNoiseReductionType("FlattenAndTrim");
+                //NoiseReductionType noiseReductionType   = NoiseReductionType.Standard;
+                var sonoConfig = new SonogramConfig
+                {
+                    SourceFName = recording.BaseName,
+                    //set default values - ignore those set by user
+                    WindowSize = frameSize,
+                    WindowOverlap = windowOverlap,
+                    NoiseReductionType = noiseReductionType,
+                    NoiseReductionParameter = 0.0,
+                };
 
+                var aedConfiguration = new Aed.AedConfiguration
+                {
+                    //AedEventColor = Color.Red;
+                    //AedHitColor = Color.FromArgb(128, AedEventColor),
+                    // This stops AED Wiener filter and noise removal.
+                    NoiseReductionType = noiseReductionType,
+                    IntensityThreshold = 20.0,
+                    SmallAreaThreshold = 100,
+                };
 
+                double[] thresholdLevels = { 20.0 };
+                //double[] thresholdLevels = {30.0, 25.0, 20.0, 15.0, 10.0, 5.0};
+                var imageList = new List<Image>();
+
+                foreach (double th in thresholdLevels)
+                {
+                    aedConfiguration.IntensityThreshold = th;
+                    var sonogram = (BaseSonogram)new SpectrogramStandard(sonoConfig, recording.WavReader);
+                    AcousticEvent[] events = Aed.CallAed(sonogram, aedConfiguration, TimeSpan.Zero, recordingDuration);
+                    LoggedConsole.WriteLine("AED # events: " + events.Length);
+
+                    //cluster events
+                    //var clusters = AcousticEvent.ClusterEvents(events);
+                    //AcousticEvent.AssignClusterIds(clusters);
+                    // see line 415 of AcousticEvent.cs for drawing the cluster ID into the sonogram image.
+                    var distributionImage = IndexDistributions.DrawImageOfDistribution(sonogram.Data, 300, 100, "Distribution");
+
+                    // get image of original data matrix
+                    var srcImage = ImageTools.DrawReversedMatrix(sonogram.Data);
+                    srcImage.RotateFlip(RotateFlipType.Rotate270FlipNone);
+
+                    // get image of global thresholded data matrix
+                    byte[,] opByteMatrix;
+                    double opGlobalThreshold;
+                    Image histogramImage;
+                    OtsuThresholder.GetGlobalOtsuThreshold(sonogram.Data, out opByteMatrix, out opGlobalThreshold, out histogramImage);
+                    Image opImageGlobal = OtsuThresholder.ConvertMatrixToReversedGreyScaleImage(opByteMatrix);
+                    opImageGlobal.RotateFlip(RotateFlipType.Rotate270FlipNone);
+
+                    // get image of local thresholded data matrix
+                    var normalisedMatrix = MatrixTools.NormaliseInZeroOne(sonogram.Data);
+                    OtsuThresholder.DoLocalOtsuThresholding(normalisedMatrix, out opByteMatrix);
+
+                    // debug check for min and max - make sure it worked
+                    int[] bd = DataTools.GetByteDistribution(opByteMatrix);
+
+                    //Image opImageLocal = OtsuThresholder.ConvertMatrixToGreyScaleImage(opByteMatrix);
+                    Image opImageLocal = OtsuThresholder.ConvertMatrixToReversedGreyScaleImage(opByteMatrix);
+                    opImageLocal.RotateFlip(RotateFlipType.Rotate270FlipNone);
+
+                    Image[] imageArray = { srcImage, opImageGlobal, opImageLocal };
+                    Image images = ImageTools.CombineImagesVertically(imageArray);
+                    var opPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, "ThresholdExperiment", "png");
+                    images.Save(opPath);
+
+                    var hits = new double[sonogram.FrameCount, sonogram.Data.GetLength(1)];
+
+                    // display a variety of debug score arrays
+                    double[] normalisedScores = new double[sonogram.FrameCount];
+                    double normalisedThreshold = 0.5;
+                    //DataTools.Normalise(amplitudeScores, decibelThreshold, out normalisedScores, out normalisedThreshold);
+                    var scorePlot = new Plot("Scores", normalisedScores, normalisedThreshold);
+                    var plots = new List<Plot> { scorePlot };
+                    var image = Recognizers.LitoriaBicolor.DisplayDebugImage(sonogram, events.ToList<AcousticEvent>(),
+                        plots, hits);
+
+                    //var image = Aed.DrawSonogram(sonogram, events);
+
+                    using (Graphics gr = Graphics.FromImage(image))
+                    {
+                        gr.DrawImage(distributionImage, new Point(0, 0));
+                    }
+
+                    imageList.Add(image);
+                }
+
+                var compositeImage = ImageTools.CombineImagesVertically(imageList);
+                var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, "AedExperiment", "png");
+                compositeImage.Save(debugPath);
+        }
+        */
 
         /// <summary>
         /// The core of the Otsu algorithm is shown here.
