@@ -7,8 +7,8 @@
     using System.IO;
     using System.Linq;
 
-    using Acoustics.Shared;
-    using Acoustics.Tools.Wav;
+    using Shared;
+    using Wav;
     using MathNet.Numerics.Transformations;
 
     /// <summary>
@@ -757,6 +757,7 @@
             int[] histo = new int[binCount];
 
             for (int i = 0; i < rows; i++)
+            {
                 for (int j = 0; j < cols; j++)
                 {
                     int bin = (int)((data[i, j] - min) / binWidth);
@@ -764,6 +765,7 @@
                     if (bin < 0) bin = 0;
                     histo[bin]++;
                 }
+            }
 
             return histo;
         }

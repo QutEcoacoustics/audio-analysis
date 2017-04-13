@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="AcousticIndices.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="AcousticHiResIndicesPlusRecognizers.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the Acoustic type.
@@ -28,8 +28,8 @@ namespace AnalysisPrograms
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
-    using AnalysisPrograms.Production;
-    using AnalysisPrograms.Recognizers.Base;
+    using Production;
+    using Recognizers.Base;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
@@ -105,18 +105,18 @@ namespace AnalysisPrograms
 
                 if (this.TaskIsAnalyse)
                 {
-                    if (InputCsv != null)
+                    if (this.InputCsv != null)
                     {
                         throw new ValidationArgException(
                             "InputCsv should be specifiec in the " + TaskAnalyse + " action");
                     }
 
-                    if (Source == null)
+                    if (this.Source == null)
                     {
                         throw new MissingArgException("Source is required for action:" + TaskAnalyse);
                     }
 
-                    if (Output == null)
+                    if (this.Output == null)
                     {
                         throw new MissingArgException("Output is required for action:" + TaskAnalyse);
                     }
@@ -639,7 +639,7 @@ namespace AnalysisPrograms
             foreach (EventBase baseEvent in results)
             {
                 AcousticEvent ae = (AcousticEvent)baseEvent;
-                line = String.Format("{0},{1:f2},{2:f3},{3},{4},{5},{6},{7:f3},{8:f2},{9},{10},{11}",
+                line = string.Format("{0},{1:f2},{2:f3},{3},{4},{5},{6},{7:f3},{8:f2},{9},{10},{11}",
                                      ae.StartOffset, ae.TimeEnd, ae.Duration, ae.MinFreq,     ae.MaxFreq,
                                      ae.SegmentStartOffset, ae.SegmentDuration,
                                      ae.Score,       ae.Score2,  ae.Name,     ae.SpeciesName, ae.FileName);

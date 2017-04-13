@@ -16,9 +16,9 @@
     using LDSpectrograms;
     using log4net;
     using MathNet.Numerics;
-    using QutBioacosutics.Xie.Configuration;
-    using QutBioacosutics.Xie.FrogIndices;
-    using QutBioacosutics.Xie.LDSpectrograms;
+    using Configuration;
+    using FrogIndices;
+    using LDSpectrograms;
     using TowseyLibrary;
 
     public static class Main

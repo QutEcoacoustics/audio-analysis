@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-    using AudioAnalysisTools.StandardSpectrograms;
+    using StandardSpectrograms;
     using TowseyLibrary;
 
     public class RidgeDetection
@@ -414,10 +414,12 @@
             int rows = binary1.GetLength(0);
             int cols = binary1.GetLength(1);
             for (int r = 0; r < rows; r++)
+            {
                 for (int c = 0; c < cols; c++)
                 {
                     if (binary2[r, c] == 1) binary1[r, c] = 1;
                 }
+            }
 
             return binary1;
         }

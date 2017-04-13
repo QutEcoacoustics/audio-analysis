@@ -70,7 +70,7 @@
 
         protected override Expression Visit(Expression exp)
         {
-            if (exp is T && visitor != null) exp = visitor((T)exp);
+            if (exp is T && this.visitor != null) exp = this.visitor((T)exp);
 
             return base.Visit(exp);
         }

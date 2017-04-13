@@ -20,7 +20,7 @@ namespace TowseyLibrary
         public static void RecognizerScoresTest(string fileName, DirectoryInfo opDir, string testName, double[] scoreArray)
         {
             var testDir = new DirectoryInfo(opDir + $"\\UnitTest_{testName}");
-            var benchmarkDir = new DirectoryInfo(Path.Combine(testDir.FullName, TestTools.ExpectedResultsDir));
+            var benchmarkDir = new DirectoryInfo(Path.Combine(testDir.FullName, ExpectedResultsDir));
 
             if (!benchmarkDir.Exists)
             {

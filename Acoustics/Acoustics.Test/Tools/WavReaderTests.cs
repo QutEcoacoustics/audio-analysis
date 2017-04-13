@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="WavReaderTests.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="WavReaderTests.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the WavReaderTests type.
@@ -162,8 +162,8 @@ namespace Acoustics.Test.Tools
 
             for (int i = 0; i < a.Length; i++)
             {
-                Assert.AreEqual(a[i], reader.Samples[i], Double.Epsilon);
-                Assert.AreEqual(a[i], mono[i], Double.Epsilon);
+                Assert.AreEqual(a[i], reader.Samples[i], double.Epsilon);
+                Assert.AreEqual(a[i], mono[i], double.Epsilon);
             }
         }
 
@@ -187,8 +187,8 @@ namespace Acoustics.Test.Tools
 
             for (int i = 0; i < a.Length; i++)
             {
-                Assert.AreEqual(a[i], reader.Samples[i], Double.Epsilon);
-                Assert.AreEqual(a[i], mono[i], Double.Epsilon);
+                Assert.AreEqual(a[i], reader.Samples[i], double.Epsilon);
+                Assert.AreEqual(a[i], mono[i], double.Epsilon);
             }
         }
 

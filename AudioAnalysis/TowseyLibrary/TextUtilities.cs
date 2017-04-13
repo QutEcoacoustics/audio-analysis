@@ -53,7 +53,7 @@ namespace TowseyLibrary
 
         public static Dictionary<string, int> ConvertIntegerArray2NgramCount(int[] integers, int ngramValue)
         {
-            String[] array = new String[integers.Length];
+            string[] array = new string[integers.Length];
             for (int i = 0; i < integers.Length; i++)
             {
                 array[i] = integers[i].ToString();
@@ -83,7 +83,7 @@ namespace TowseyLibrary
         /// <param name="str"></param>
         /// <param name="ngramValue"></param>
         /// <returns></returns>
-        static public Dictionary<string, int> GetNgrams(string str, int ngramValue)
+        public static Dictionary<string, int> GetNgrams(string str, int ngramValue)
         {
             int N = ngramValue - 1; // length of N-gram beyond current position
             Dictionary<string, int> D = new Dictionary<string, int>();
@@ -306,7 +306,7 @@ namespace TowseyLibrary
          * @param c third value
          * @return the minimum of the three
          */
-        static public int Minimum(int a, int b, int c)
+        public static int Minimum(int a, int b, int c)
         {
             int min;
 
@@ -328,7 +328,7 @@ namespace TowseyLibrary
      * @param t the target string
      * @return the Int32 edit distance
      */
-    static public int LD(String s, String t)
+    public static int LD(string s, string t)
     {
         int[,] d;     // matrix
         int n;         // mapLength of source string
@@ -486,7 +486,7 @@ namespace TowseyLibrary
          * @param text the text to be searched
          * @return the vector of words as strings
          */
-        static public ArrayList getWordsAfter(int N, int start, String text)
+        public static ArrayList getWordsAfter(int N, int start, string text)
         {
             ArrayList v = new ArrayList();
             //int wordStart, wordEnd;
@@ -533,7 +533,7 @@ namespace TowseyLibrary
          * @param text the text to be searched
          * @return the vector of words as strings
          */
-        static public ArrayList getWordsBefore(int N, int start, String text)
+        public static ArrayList getWordsBefore(int N, int start, string text)
         {
             ArrayList v = new ArrayList();
             //int wordStart, wordEnd;
@@ -653,7 +653,7 @@ namespace TowseyLibrary
   //}
 
         //=============================================================================
-        static public String removeFirstWord(String str)
+        public static string removeFirstWord(string str)
         {
             str = str.Trim();
             int i = 0;
@@ -779,7 +779,7 @@ namespace TowseyLibrary
          * @param ch
          * @return
          */
-        static public bool StringContainsChar(String str, char ch)
+        public static bool StringContainsChar(string str, char ch)
         {
             //for (int i = 0; i < str.Length; i++)
             //{ if (str.charAt(i) == ch) return true; }
@@ -798,8 +798,8 @@ namespace TowseyLibrary
          * @param text the text to be processed
          * @return a matrix of words, BEFORE words in row1, AFTER words in row2
          */
-        static public String[,] getWordsInNeighbourhood(int N, int start, int end, String text)
-  { String[,] words = new String[2,N];
+        public static string[,] getWordsInNeighbourhood(int N, int start, int end, string text)
+  { string[,] words = new string[2,N];
     ArrayList vb = getWordsBefore(N, start, text);
     ArrayList va = getWordsAfter(N, end, text);
     //NOTE: it may happen that the size of the vectors vb and va is not equal
@@ -824,7 +824,7 @@ namespace TowseyLibrary
          * @param text
          * @return index position where the first of the N words starts.
          */
-        static public int getNeighbourhoodBefore(int N, int start, String text)
+        public static int getNeighbourhoodBefore(int N, int start, string text)
         {
             int i = start;
             int L = text.Length;
@@ -855,7 +855,7 @@ namespace TowseyLibrary
          * @param text
          * @return index position where the last of the N words ends.
          */
-        static public int getNeighbourhoodAfter(int N, int start, String text)
+        public static int getNeighbourhoodAfter(int N, int start, string text)
         {
             int i = start;
             int L = text.Length;
@@ -886,7 +886,7 @@ namespace TowseyLibrary
          * @param wordLoc - array of word bounds
          * @return - the required index into the word array
          */
-        static public int getWordIndex(int N, int[,] wordLoc)
+        public static int getWordIndex(int N, int[,] wordLoc)
         {
             int numWords = wordLoc.Length;
             int lastIndex = numWords - 1;
@@ -959,7 +959,7 @@ namespace TowseyLibrary
 
 
         //=============================================================================
-        public static void main(String[] args)
+        public static void main(string[] args)
   {
 //    LoggedConsole.WriteLine("cc="+getCharCount('c', "can you count ot crissc"));
 //    LoggedConsole.WriteLine("trim="+ trimPunctuation("'l'"));

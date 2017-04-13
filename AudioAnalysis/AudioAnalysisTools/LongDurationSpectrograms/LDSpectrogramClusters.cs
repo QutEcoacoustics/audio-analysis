@@ -6,7 +6,7 @@
     using System.IO;
     using System.Linq;
     using System.Text;
-    using AudioAnalysisTools.Indices;
+    using Indices;
     using TowseyLibrary;
 
     /// <summary>
@@ -211,7 +211,7 @@
             TimeSpan minuteOffset = TimeSpan.Zero; // assume recordings start at midnight
             double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
             string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-            string title = String.Format("SOM CLUSTERS of ACOUSTIC INDICES: recording {0}", fileStem);
+            string title = string.Format("SOM CLUSTERS of ACOUSTIC INDICES: recording {0}", fileStem);
             TimeSpan indexCalculationDuration = TimeSpan.FromSeconds(60); // seconds
             TimeSpan xTicInterval = TimeSpan.FromMinutes(60); // 60 minutes or one hour.
             int trackheight = 20;
@@ -244,7 +244,7 @@
             for (int lineNumber = 0; lineNumber < lineCount; lineNumber++)
             {
                 string[] words = lines[lineNumber].Split(',');
-                int clusterID = Int32.Parse(words[2]);
+                int clusterID = int.Parse(words[2]);
                 clusterHistogram[clusterID-1]++;
             }
             // ranks cluster counts in descending order
@@ -272,8 +272,8 @@
                     if (lineNumber == 0) clusterStartColumn = opColumn;
 
                     string[] words = lines[lineNumber].Split(',');
-                    int clusterID = Int32.Parse(words[2]) - 1; // -1 because matlab arrays start at 1.
-                    int nodeID    = Int32.Parse(words[1]) - 1;
+                    int clusterID = int.Parse(words[2]) - 1; // -1 because matlab arrays start at 1.
+                    int nodeID    = int.Parse(words[1]) - 1;
                     if ((clusterID) == sortID)
                     {
                         // get image column
@@ -351,7 +351,7 @@
             string fileStem = "NW_14Oct";
             //string fileStem = "SW_14Oct";
             string opFileName = fileStem + ".SOM27AcousticClusters.png";
-            string title = String.Format("SOM CLUSTERS of ACOUSTIC INDICES: recording {0}", fileStem);
+            string title = string.Format("SOM CLUSTERS of ACOUSTIC INDICES: recording {0}", fileStem);
 
             int clusterCount = 27;  // from Yvonne's method
             List<Pen> pens = ImageTools.GetColorPalette(clusterCount);
@@ -390,7 +390,7 @@
             // construct cluster histogram and arrays
             for (int w = 1; w < words.Length; w++)
             {
-                int clusterID = Int32.Parse(words[w]);
+                int clusterID = int.Parse(words[w]);
                 clusterHistogram[clusterID - 1]++;
                 clusterArrays[clusterID - 1].Add(w);
             }

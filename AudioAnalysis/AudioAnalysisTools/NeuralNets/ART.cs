@@ -857,7 +857,7 @@ namespace NeuralNets
             art2a.SetParameterValues(parameters[simul, 0], parameters[simul, 1], parameters[simul, 2], parameters[simul, 3]);
 
             //set up file name for simulation test results}
-            resultsFPath = ART.ARTDir+ wtsFname+ "s"+ simul.ToString("D2") +"_results.txt";
+            resultsFPath = ARTDir+ wtsFname+ "s"+ simul.ToString("D2") +"_results.txt";
 
             //init array to count committed F2 nodes
             //int[] noOfCommittedF2 = new int[ART.numberOfRepeats];
@@ -867,7 +867,7 @@ namespace NeuralNets
 
 
             //{********** DO REPEATS ***********}
-            for (int rep = 0; rep < ART.numberOfRepeats; rep++)
+            for (int rep = 0; rep < numberOfRepeats; rep++)
             {
                 LoggedConsole.WriteLine ("RUN=",simul, " rep=",rep);
 
@@ -883,7 +883,7 @@ namespace NeuralNets
                     //ScoreTrainingResults (noOfCommittedF2[rep], noClasses, F2classLabel, F2classProb);
 
 
-                    wtsFpath = ART.ARTDir + ART.wtsFname + "s" + simul + rep + ART.wtsFExt;
+                    wtsFpath = ARTDir + ART.wtsFname + "s" + simul + rep + wtsFExt;
                     //art2a.WriteWts(wtsFpath, F2classLabel, F2classProb);
                     if (DEBUG) LoggedConsole.WriteLine("wts= "+wtsFpath +"  train set= "+trnSetFpath);
                 }
@@ -913,7 +913,7 @@ namespace NeuralNets
                     noOfCommittedF2[rep] = art2a.CountCommittedF2Nodes();
                     //ScoreTrainingResults (noOfCommittedF2[rep], noClasses, F2classLabel, F2classProb);
 
-                    wtsFpath = ART.ARTDir + ART.wtsFname + "s" + simul + rep + ART.wtsFExt;
+                    wtsFpath = ARTDir + ART.wtsFname + "s" + simul + rep + wtsFExt;
 
                     //Case versionID of
                     //verART2A      : WriteWtsART2a (wtsFPath, F1SizeOfNeta, F2SizeOfNeta, F2classLabel, F2classProb);

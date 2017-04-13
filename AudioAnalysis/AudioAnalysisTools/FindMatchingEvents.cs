@@ -7,8 +7,8 @@
     using System.Linq;
     using System.Text;
     using AudioAnalysisTools;
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.StandardSpectrograms;
+    using DSP;
+    using StandardSpectrograms;
     using System.IO;
     using TowseyLibrary;
 
@@ -25,12 +25,15 @@
             var matrix = new double[height, width];
 
             for (int r = 0; r < height; r++)
+            {
                 for (int c = 0; c < width; c++)
                 {
                     Color color = bitmap.GetPixel(c, r);
                     if ((color.R < 255) && (color.G < 255) && (color.B < 255)) matrix[r, c] = 1; // init an ON CELL = +1
                     else matrix[r, c] = -1; // init OFF CELL = -1
                 }
+            }
+
             return matrix;
         }
 
@@ -42,6 +45,7 @@
             var matrix = new double[height, width];
 
             for (int r = 0; r < height; r++)
+            {
                 for (int c = 0; c < width; c++)
                 {
                     Color color = bitmap.GetPixel(c, r);
@@ -49,6 +53,8 @@
                     else if ((color.G < 255) && (color.B < 255)) matrix[r, c] = 0;
                     else matrix[r, c] = -1;
                 }
+            }
+
             return matrix;
         }
 
@@ -60,10 +66,13 @@
             int cols = lines[0].Length;
             var matrix = new char[rows, cols];
             for (int r = 0; r < rows; r++)
+            {
                 for (int c = 0; c < cols; c++)
                 {
                     matrix[r, c] = (lines[r].ToCharArray())[c];
                 }
+            }
+
             return matrix;
         }
 
@@ -82,7 +91,7 @@
         /// <param name="maxHz"></param>
         /// <param name="dBThreshold">Not used in calculation. Only used to speed up loop over the spectrogram.</param>
         /// <returns></returns>
-        public static System.Tuple<double[]> Execute_Bi_or_TrinaryMatch(double[,] template, SpectrogramStandard sonogram,
+        public static Tuple<double[]> Execute_Bi_or_TrinaryMatch(double[,] template, SpectrogramStandard sonogram,
                                                                          List<AcousticEvent> segments, int minHz, int maxHz, double dBThreshold)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
@@ -163,7 +172,7 @@
                 LoggedConsole.WriteLine("\nFINISHED SEARCHING SEGMENT FOR ACOUSTIC EVENT.");
             } // foreach (AcousticEvent av in segments)
 
-            var tuple = System.Tuple.Create(scores);
+            var tuple = Tuple.Create(scores);
             return tuple;
         }//Execute
 
@@ -180,7 +189,7 @@
         /// <param name="maxHz"></param>
         /// <param name="dBThreshold"></param>
         /// <returns></returns>
-        public static System.Tuple<double[]> Execute_Spr_Match(char[,] template, SpectrogramStandard sonogram,
+        public static Tuple<double[]> Execute_Spr_Match(char[,] template, SpectrogramStandard sonogram,
                                                                List<AcousticEvent> segments, int minHz, int maxHz, double dBThreshold)
         {
             int lineLength = 10;
@@ -262,12 +271,12 @@
                 LoggedConsole.WriteLine("\nFINISHED SEARCHING SEGMENT FOR ACOUSTIC EVENT.");
             } // foreach (AcousticEvent av in segments)
 
-            var tuple = System.Tuple.Create(scores);
+            var tuple = Tuple.Create(scores);
             return tuple;
         } //Execute_Spr_Match()
 
 
-        public static System.Tuple<double> Execute_One_Spr_Match(char[,] template, double[,] dataMatrix, double dBThreshold)
+        public static Tuple<double> Execute_One_Spr_Match(char[,] template, double[,] dataMatrix, double dBThreshold)
         {
             int lineLength = 10;
 
@@ -308,7 +317,7 @@
             //following line yields score = av of PosCells - av of NegCells.
             double similarity = (onSum / (double)positiveCount) - (offSum / (double)negativeCount);
 
-            var tuple = System.Tuple.Create(similarity);
+            var tuple = Tuple.Create(similarity);
             return tuple;
         } //Execute_One_Spr_Match()
 
@@ -335,7 +344,7 @@
         /// </summary>
         /// <param name="target"></param>
         /// <returns></returns>
-        public static System.Tuple<double[,], int, int> NormaliseBiTrinaryMatrix(double[,] target)
+        public static Tuple<double[,], int, int> NormaliseBiTrinaryMatrix(double[,] target)
         {
             int rows = target.GetLength(0);
             int cols = target.GetLength(1);
@@ -345,9 +354,11 @@
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
+                {
                     if (target[r, c] > 0) posCount++;
                     else
                     if (target[r, c] < 0) negCount++;
+                }
             }
             double ratio = posCount / (double)negCount;
             for (int r = 0; r < rows; r++)
@@ -358,7 +369,7 @@
                     else                  m[r, c] = target[r, c];
                 }
             }
-            return System.Tuple.Create(m, posCount, negCount);
+            return Tuple.Create(m, posCount, negCount);
         }
 
 
@@ -376,7 +387,7 @@
         /// <param name="maxHz"></param>
         /// <param name="minDuration"></param>
         /// <returns></returns>
-        public static System.Tuple<double[]> Execute_StewartGage(double[,] target, double dynamicRange, SpectrogramStandard sonogram,
+        public static Tuple<double[]> Execute_StewartGage(double[,] target, double dynamicRange, SpectrogramStandard sonogram,
                                     List<AcousticEvent> segments, int minHz, int maxHz, double minDuration)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
@@ -416,13 +427,13 @@
                 } // end of rows in segment
             } // foreach (AcousticEvent av in segments)
 
-            var tuple = System.Tuple.Create(scores);
+            var tuple = Tuple.Create(scores);
             return tuple;
         }//Execute
 
 
 
-        public static System.Tuple<double[]> Execute_SobelEdges(double[,] target, double dynamicRange, SpectrogramStandard sonogram,
+        public static Tuple<double[]> Execute_SobelEdges(double[,] target, double dynamicRange, SpectrogramStandard sonogram,
                                     List<AcousticEvent> segments, int minHz, int maxHz, double minDuration)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
@@ -470,13 +481,13 @@
                 for (int r = stopRow; r < endRow; r++) scores[r] = scores[stopRow - 1]; //fill in end of segment
             } //foreach (AcousticEvent av in segments)
 
-            var tuple = System.Tuple.Create(scores);
+            var tuple = Tuple.Create(scores);
             return tuple;
         }//Execute
 
 
 
-        public static System.Tuple<double[]> Execute_MFCC_XCOR(double[,] target, double dynamicRange, SpectrogramStandard sonogram,
+        public static Tuple<double[]> Execute_MFCC_XCOR(double[,] target, double dynamicRange, SpectrogramStandard sonogram,
                                     List<AcousticEvent> segments, int minHz, int maxHz, double minDuration)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
@@ -529,7 +540,7 @@
                 } //end of rows in segment
             } //foreach (AcousticEvent av in segments)
 
-            var tuple = System.Tuple.Create(scores);
+            var tuple = Tuple.Create(scores);
             return tuple;
         }//Execute
 

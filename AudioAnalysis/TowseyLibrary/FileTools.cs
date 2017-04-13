@@ -78,7 +78,7 @@ namespace TowseyLibrary
 
         public static string TimeStamp2FileName(DateTime datetime)
         {
-            string name = String.Format("{0}{1:D2}{2:D2}_{3:D2}{4:D2}", datetime.Year, datetime.Month, datetime.Day, datetime.Hour, datetime.Minute);
+            string name = string.Format("{0}{1:D2}{2:D2}_{3:D2}{4:D2}", datetime.Year, datetime.Month, datetime.Day, datetime.Hour, datetime.Minute);
             return name;
         }
 
@@ -209,7 +209,7 @@ namespace TowseyLibrary
                 {
                     //read one line at a time in string array
                     array = line.Split(',');
-                    if (Int32.Parse(array[columnID]) == value)
+                    if (int.Parse(array[columnID]) == value)
                     {
                         lines.Add(line);
                     }
@@ -343,7 +343,7 @@ namespace TowseyLibrary
             {
                 for (int i = 0; i < array.Length; i++)
                 {
-                    newList.Add(String.Format("{0}", array[i]));
+                    newList.Add(string.Format("{0}", array[i]));
                 }
                 WriteTextFile(fPath, newList);
                 return;
@@ -370,7 +370,7 @@ namespace TowseyLibrary
             double[] V = new double[count];
             for (int i = 0; i < count; i++)
             {
-                double value = Double.Parse((string)lines[i]);
+                double value = double.Parse((string)lines[i]);
                 //LoggedConsole.WriteLine("i=" + i + lines[i] + " " + value);
                 V[i] = value;
             }
@@ -387,7 +387,7 @@ namespace TowseyLibrary
         {
             var lines = ReadTextFile(fName);
             string line = (string)lines[0];
-            String[] words = line.Split(',');
+            string[] words = line.Split(',');
             int rowCount = lines.Count;
             int colCount = words.Length;
 
@@ -398,7 +398,7 @@ namespace TowseyLibrary
                 words = line.Split(',');
                 for (int j = 0; j < colCount; j++)
                 {
-                    double value = Double.Parse(words[j]);
+                    double value = double.Parse(words[j]);
                     //LoggedConsole.WriteLine("i,j=" + i + "," + j + " " + words[j] + " " + value);
                     matrix[i, j] = value;
                 }

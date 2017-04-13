@@ -61,7 +61,7 @@
         {
             this.helper = helper;
 
-            InitializeComponent();
+            this.InitializeComponent();
 
             this.comboAnalysisType.DataSource = this.helper.AnalysersAvailable.ToList();
             this.comboAnalysisType.DisplayMember = "Value";

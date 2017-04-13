@@ -83,7 +83,7 @@
         public static double[] CalculateBackgroundNoise(double[,] spectrogram)
         {
             double sdCount = 0.0;
-            NoiseProfile profile = NoiseProfile.CalculateModalNoiseProfile(spectrogram, sdCount);
+            NoiseProfile profile = CalculateModalNoiseProfile(spectrogram, sdCount);
             double[] noiseValues = DataTools.filterMovingAverage(profile.NoiseThresholds, 7);
             return noiseValues;
         }

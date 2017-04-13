@@ -7,7 +7,7 @@
     using System.IO;
     using System.Linq;
     using System.Text;
-    using AudioAnalysisTools.LongDurationSpectrograms;
+    using LongDurationSpectrograms;
     using TowseyLibrary;
 
     public static class LDSpectrogramDifference
@@ -105,15 +105,15 @@
             //deltaSp1.Save(Path.Combine(opdir.FullName, opFileName1));
 
             //Draw positive difference spectrograms in one image.
-            Image[] images = LDSpectrogramDifference.DrawPositiveDifferenceSpectrograms(cs1, cs2, colourGain);
+            Image[] images = DrawPositiveDifferenceSpectrograms(cs1, cs2, colourGain);
 
             int nyquist = cs1.SampleRate / 2;
             int herzInterval = 1000;
-            string title = String.Format("DIFFERENCE SPECTROGRAM where {0} > {1}.      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMode);
+            string title = string.Format("DIFFERENCE SPECTROGRAM where {0} > {1}.      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMode);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, images[0].Width);
             images[0] = LDSpectrogramRGB.FrameLDSpectrogram(images[0], titleBar, cs1, nyquist, herzInterval);
 
-            title = String.Format("DIFFERENCE SPECTROGRAM where {1} > {0}      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMode);
+            title = string.Format("DIFFERENCE SPECTROGRAM where {1} > {0}      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMode);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, images[1].Width);
             images[1] = LDSpectrogramRGB.FrameLDSpectrogram(images[1], titleBar, cs1, nyquist, herzInterval);
             Image combinedImage = ImageTools.CombineImagesVertically(images);

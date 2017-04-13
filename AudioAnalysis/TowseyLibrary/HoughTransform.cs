@@ -24,20 +24,20 @@
             Bitmap sourceImage = ImageTools.ReadImage2Bitmap(file.FullName);
 
             //Bitmap sourceImage = HoughTransform.CreateLargeImageWithLines();
-            sourceImage = HoughTransform.TileWiseHoughTransform(sourceImage);
+            sourceImage = TileWiseHoughTransform(sourceImage);
             string path1 = @"C:\SensorNetworks\Output\Sonograms\opMatrix.png";
             sourceImage.Save(path1, ImageFormat.Png);
         }
 
         public static void Test2HoughTransform()
         {
-            Bitmap bmp = HoughTransform.CreateToyTestImageWithLines();
+            Bitmap bmp = CreateToyTestImageWithLines();
             //int numberOfDirections = (2 * rowCount) + (2 * colCount) - 4;
             int numberOfDirections = 32;
             bool saveTranformImage = true;
-            double[,] rtMatrix = HoughTransform.DoHoughTransform(bmp, numberOfDirections, saveTranformImage);
+            double[,] rtMatrix = DoHoughTransform(bmp, numberOfDirections, saveTranformImage);
             double thresholdIntensity = 2.0;
-            Bitmap opImage = HoughTransform.ConvertRTmatrix2Image(rtMatrix, thresholdIntensity, bmp.Width);
+            Bitmap opImage = ConvertRTmatrix2Image(rtMatrix, thresholdIntensity, bmp.Width);
 
             var list = new List<HoughLine>();
             string path1 = @"C:\SensorNetworks\Output\Sonograms\opMatrix.png";
@@ -234,8 +234,8 @@
                     tile.Save(@"C:\SensorNetworks\Output\Sonograms\TestTile.png");
                     ImageTools.ApplyInvert(tile);
                     // create and apply filter to convert to indexed color format.
-                    double[,] rtMatrix = HoughTransform.DoHoughTransform(filter.Apply(tile), numberOfDirections, saveTranformImage);
-                    Bitmap tile2 = HoughTransform.AddRTmatrix2Image(rtMatrix, thresholdIntensity, tile);
+                    double[,] rtMatrix = DoHoughTransform(filter.Apply(tile), numberOfDirections, saveTranformImage);
+                    Bitmap tile2 = AddRTmatrix2Image(rtMatrix, thresholdIntensity, tile);
                     //Bitmap tile2 = HoughTransform.ConvertRTmatrix2Image(rtMatrix, thresholdIntensity, tileWidth);
                     g.DrawImage(tile2, x, y);
                     tile2.Save(@"C:\SensorNetworks\Output\Sonograms\TestTile2.png");

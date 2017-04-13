@@ -22,7 +22,7 @@
         public List<double> MFCCoefficients { get; set; }
         public MFCC()
         {
-            MFCCoefficients = new List<double>();
+            this.MFCCoefficients = new List<double>();
         }
 
         public static List<MFCC> CombineMFCCfeatures(List<CompactCandidates> comCandidates, List<MFCC> mfccs)

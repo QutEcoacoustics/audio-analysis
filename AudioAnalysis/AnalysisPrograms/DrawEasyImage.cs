@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="DrawLongDurationSpectrograms.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="DrawEasyImage.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 // <summary>
@@ -33,7 +33,7 @@ namespace AnalysisPrograms
 
     using Acoustics.Shared;
 
-    using AnalysisPrograms.Production;
+    using Production;
 
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
@@ -74,8 +74,8 @@ namespace AnalysisPrograms
             public TimeSpan? timeSpanOffsetHint = new TimeSpan(10, 0, 0);
             [ArgDescription("TimeSpan offset hint required if file names do not contain time zone info. Set default to east coast Australia")]
             public TimeSpan? TimeSpanOffsetHint {
-                get { return timeSpanOffsetHint; }
-                set { timeSpanOffsetHint = value; }
+                get { return this.timeSpanOffsetHint; }
+                set { this.timeSpanOffsetHint = value; }
             }
 
 
@@ -200,7 +200,7 @@ namespace AnalysisPrograms
             {
                 LoggedConsole.WriteLine("\n# Start date = " + startDate.ToString());
                 LoggedConsole.WriteLine("# End   date = " + endDate.ToString());
-                LoggedConsole.WriteLine(String.Format("# Elapsed time = {0:f1} hours", (dayCount * 24)));
+                LoggedConsole.WriteLine(string.Format("# Elapsed time = {0:f1} hours", (dayCount * 24)));
                 LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
                 LoggedConsole.WriteLine("# Time Zone  = " + arguments.TimeSpanOffsetHint.ToString());
             }
@@ -316,12 +316,12 @@ namespace AnalysisPrograms
                 }
 
                 // get the exact date and time
-                LoggedConsole.WriteLine(String.Format("READING DAY {0} of {1}:   {2}", (d+1), dayCount, thisday.ToString()));
+                LoggedConsole.WriteLine(string.Format("READING DAY {0} of {1}:   {2}", (d+1), dayCount, thisday.ToString()));
 
                 // CREATE DAY LEVEL OUTPUT DIRECTORY for this day
-                string dateString = String.Format("{0}{1:D2}{2:D2}", thisday.Year, thisday.Month, thisday.Day);
+                string dateString = string.Format("{0}{1:D2}{2:D2}", thisday.Year, thisday.Month, thisday.Day);
 
-                string opFileStem = String.Format("{0}_{1}", arguments.FileStemName, dateString);
+                string opFileStem = string.Format("{0}_{1}", arguments.FileStemName, dateString);
                 //var indicesFile = FilenameHelpers.AnalysisResultPath(resultsDir, opFileStem, LDSpectrogramStitching.SummaryIndicesStr, LDSpectrogramStitching.CsvFileExt);
 
                 tuple = CsvTools.ReadCSVFile(csvFiles[d].FullName);

@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="IndexDistributions.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="IndexDistributions.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the IndexDistributions type.
@@ -14,7 +14,7 @@ namespace AudioAnalysisTools.Indices
     using System.Drawing;
     using System.Linq;
     using System.Text;
-    using AudioAnalysisTools.LongDurationSpectrograms;
+    using LongDurationSpectrograms;
     using TowseyLibrary;
     using System.IO;
     using Acoustics.Shared;
@@ -56,7 +56,7 @@ namespace AudioAnalysisTools.Indices
             //}
             public double GetValueOfNthPercentile(int percentile)
             {
-                int length = Distribution.Length;
+                int length = this.Distribution.Length;
                 double threshold = percentile / (double)100;
                 double[] probs = DataTools.NormaliseArea(this.Distribution);
                 double[] cumProb = DataTools.ConvertProbabilityDistribution2CummulativeProbabilites(probs);
@@ -115,9 +115,9 @@ namespace AudioAnalysisTools.Indices
                 if (spectrogramMatrices.ContainsKey(key))
                 {
                     matrix = spectrogramMatrices[key];
-                    SpectralStats stats = GetModeAndOneTailedStandardDeviation(matrix, width, IndexDistributions.UPPER_PERCENTILE_DEFAULT);
+                    SpectralStats stats = GetModeAndOneTailedStandardDeviation(matrix, width, UPPER_PERCENTILE_DEFAULT);
                     indexDistributionStatistics.Add(key, stats); // add index statistics
-                    double value = stats.GetValueOfNthPercentile(IndexDistributions.UPPER_PERCENTILE_DEFAULT);
+                    double value = stats.GetValueOfNthPercentile(UPPER_PERCENTILE_DEFAULT);
 
                     imageList.Add(
                         ImageTools.DrawHistogram(
@@ -130,7 +130,7 @@ namespace AudioAnalysisTools.Indices
                                 { "max",  stats.Maximum },
                                 { "mode", stats.Mode },
                                 { "sd",   stats.StandardDeviation},
-                                { IndexDistributions.UPPER_PERCENTILE_LABEL,  value},
+                                { UPPER_PERCENTILE_LABEL,  value},
                                 { "count",  stats.Count},
                             },
                             width,
@@ -158,8 +158,8 @@ namespace AudioAnalysisTools.Indices
         /// <returns></returns>
         public static Image DrawImageOfDistribution(double[,] matrix, int width, int height, string label)
         {
-            SpectralStats stats = GetModeAndOneTailedStandardDeviation(matrix, width, IndexDistributions.UPPER_PERCENTILE_DEFAULT);
-            double value = stats.GetValueOfNthPercentile(IndexDistributions.UPPER_PERCENTILE_DEFAULT);
+            SpectralStats stats = GetModeAndOneTailedStandardDeviation(matrix, width, UPPER_PERCENTILE_DEFAULT);
+            double value = stats.GetValueOfNthPercentile(UPPER_PERCENTILE_DEFAULT);
 
             var image =
                 ImageTools.DrawHistogram(
@@ -172,7 +172,7 @@ namespace AudioAnalysisTools.Indices
                                 { "max",  stats.Maximum },
                                 { "mode", stats.Mode },
                                 { "sd",   stats.StandardDeviation},
-                                { IndexDistributions.UPPER_PERCENTILE_LABEL,  value},
+                                { UPPER_PERCENTILE_LABEL,  value},
                                 { "count",  stats.Count},
                     },
                     width,
@@ -198,9 +198,9 @@ namespace AudioAnalysisTools.Indices
                 if (summaryIndices.ContainsKey(key))
                 {
                     double[] array = summaryIndices[key];
-                    SpectralStats stats = GetModeAndOneTailedStandardDeviation(array, width, IndexDistributions.UPPER_PERCENTILE_DEFAULT);
+                    SpectralStats stats = GetModeAndOneTailedStandardDeviation(array, width, UPPER_PERCENTILE_DEFAULT);
                     indexDistributionStatistics.Add(key, stats); // add index statistics
-                    double value = stats.GetValueOfNthPercentile(IndexDistributions.UPPER_PERCENTILE_DEFAULT);
+                    double value = stats.GetValueOfNthPercentile(UPPER_PERCENTILE_DEFAULT);
 
                     imageList.Add(
                         ImageTools.DrawHistogram(
@@ -213,7 +213,7 @@ namespace AudioAnalysisTools.Indices
                                 { "max",  stats.Maximum },
                                 { "mode", stats.Mode },
                                 { "sd",   stats.StandardDeviation},
-                                { IndexDistributions.UPPER_PERCENTILE_LABEL,  value},
+                                { UPPER_PERCENTILE_LABEL,  value},
                                 { "count",  stats.Count},
                             },
                             width,

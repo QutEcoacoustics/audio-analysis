@@ -24,9 +24,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.Indices;
-    using AudioAnalysisTools.StandardSpectrograms;
+    using DSP;
+    using Indices;
+    using StandardSpectrograms;
     using TowseyLibrary;
 
     public static class ZoomFocusedSpectrograms
@@ -72,7 +72,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 if (image != null)
                 {
                     imageList.Add(image);
-                    string name = String.Format("{0}_FocalZoom_min{1:f1}_scale{2}.png", fileStem, focalTime.TotalMinutes, imageScales[i]);
+                    string name = string.Format("{0}_FocalZoom_min{1:f1}_scale{2}.png", fileStem, focalTime.TotalMinutes, imageScales[i]);
                     image.Save(Path.Combine(outputDirectory.FullName, name));
                 }
 
@@ -118,7 +118,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             for (int i = 0; i < compressionCount; i++)
             {
                 int factor = compressionFactor[i];
-                image = ZoomFocusedSpectrograms.DrawFrameSpectrogramAtScale(ldsConfig, indexGeneration, startTimeOfData, factor, frameData, indexData, focalTime, frameScale, imageWidth);
+                image = DrawFrameSpectrogramAtScale(ldsConfig, indexGeneration, startTimeOfData, factor, frameData, indexData, focalTime, frameScale, imageWidth);
                 if (image != null) imageList.Add(image);
             }
 
@@ -128,7 +128,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // combine the images into a stack
             Image combinedImage = ImageTools.CombineImagesVertically(imageList);
-            string fileName = String.Format("{0}_FocalZOOM_min{1:f1}.png", fileStem, focalTime.TotalMinutes);
+            string fileName = string.Format("{0}_FocalZOOM_min{1:f1}.png", fileStem, focalTime.TotalMinutes);
             combinedImage.Save(Path.Combine(outputDirectory.FullName, fileName));
         }
 
@@ -209,7 +209,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int spectrogramWidth = (int)(spectrogramDuration.Ticks / imageScale.Ticks);
 
             // get the plain unchromed spectrogram
-            Image LDSpectrogram = ZoomFocusedSpectrograms.DrawIndexSpectrogramCommon(
+            Image LDSpectrogram = DrawIndexSpectrogramCommon(
                 config,
                 indexGenerationData,
                 indexProperties,
@@ -248,8 +248,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //add chrome
             // NEXT LINE USED ONLY IF WANT ABSOLUTE TIME
             //startTime += recordingStartTime;
-            Image titleBar = ZoomFocusedSpectrograms.DrawTitleBarOfZoomSpectrogram(title, LDSpectrogram.Width);
-            LDSpectrogram = ZoomFocusedSpectrograms.FrameZoomSpectrogram(
+            Image titleBar = DrawTitleBarOfZoomSpectrogram(title, LDSpectrogram.Width);
+            LDSpectrogram = FrameZoomSpectrogram(
                 LDSpectrogram,
                 titleBar,
                 startTime,
@@ -439,7 +439,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             if (compressionFactor > 1)
                 spectralSelection = TemporalMatrix.CompressFrameSpectrograms(spectralSelection, compressionFactor);
 
-            Image spectrogramImage =  ZoomFocusedSpectrograms.DrawStandardSpectrogramInFalseColour(spectralSelection);
+            Image spectrogramImage =  DrawStandardSpectrogramInFalseColour(spectralSelection);
 
             Graphics g2 = Graphics.FromImage(spectrogramImage);
 
@@ -575,7 +575,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="dbSpectrogramData">the sonogram data (NOT noise reduced) </param>
         /// <param name="nrSpectrogramData"></param>
         /// <returns></returns>
-        public static System.Drawing.Image DrawStandardSpectrogramInFalseColour(double[,] dbSpectrogramData)
+        public static Image DrawStandardSpectrogramInFalseColour(double[,] dbSpectrogramData)
         {
             // Do NOISE REDUCTION
             double noiseReductionParameter = 2.0;
@@ -663,8 +663,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // init frequency scale
             int frameSize = bmp1.Height;
-            var freqScale = new DSP.FrequencyScale(nyquist, frameSize, herzInterval);
-            AudioAnalysisTools.StandardSpectrograms.SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, fullDuration, xAxisTicInterval, freqScale);
+            var freqScale = new FrequencyScale(nyquist, frameSize, herzInterval);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, fullDuration, xAxisTicInterval, freqScale);
             int trackHeight = 20;
 
             // put start offset into a datetime object.

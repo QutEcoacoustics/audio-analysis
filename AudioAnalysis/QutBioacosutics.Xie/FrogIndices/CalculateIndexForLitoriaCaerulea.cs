@@ -5,7 +5,7 @@
     using System.Linq;
     using System.Text;
     using AudioAnalysisTools.StandardSpectrograms;
-    using QutBioacosutics.Xie.Configuration;
+    using Configuration;
     using TowseyLibrary;
 
     class CalculateIndexForLitoriaCaerulea
@@ -21,7 +21,7 @@
         }
 
 
-        public static System.Tuple<double[], double[,], double[], double[,]> GetFrogTracks(CaeruleaConfiguration caeruleaConfig, SpectrogramStandard spectrogramLong,
+        public static Tuple<double[], double[,], double[], double[,]> GetFrogTracks(CaeruleaConfiguration caeruleaConfig, SpectrogramStandard spectrogramLong,
                                                                                                    double[,] peakHitsCaerulea)
 
         {

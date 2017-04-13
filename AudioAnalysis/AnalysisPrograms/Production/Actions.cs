@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Actions.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="Actions.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the MainEntryArguments type.
@@ -17,8 +17,8 @@ namespace AnalysisPrograms.Production
     using System.Reflection;
     using System.Text;
 
-    using AnalysisPrograms.AnalyseLongRecordings;
-    using AnalysisPrograms.Recognizers.Base;
+    using AnalyseLongRecordings;
+    using Recognizers.Base;
 
     using AudioAnalysisTools;
 
@@ -116,7 +116,7 @@ namespace AnalysisPrograms.Production
         {
             // IAnalyser - currently recognizes five different calls: human, crow, canetoad, machine and koala.
             // Execute() signed off: Michael Towsey 27th July 2012
-            return AnalysisPrograms.MultiAnalyser_OBSOLETE.Dev;
+            return MultiAnalyser_OBSOLETE.Dev;
         }
 
         [ArgDescription("The entry point for all species or event recognizers. Only to be used on short recordings (< 2 mins).")]
@@ -204,7 +204,7 @@ namespace AnalysisPrograms.Production
         {
             // IAnalyser - recognises human speech but not word recognition
             // Execute() signed off: Michael Towsey 27th July 2012
-            return AnalysisPrograms.Human1.Dev;
+            return Human1.Dev;
         }
 
         [ArgDescription("Calls LSKiwi3.Dev():  Only of use for Little Brown Kiwi recordings from New Zealand.")]
@@ -213,7 +213,7 @@ namespace AnalysisPrograms.Production
         {
             // IAnalyser - little spotted kiwi calls from Andrew @ Victoria university. Versions 1 and 2 are obsolete.
             // Execute() signed off: Michael Towsey 27th July 2012
-            return AnalysisPrograms.LSKiwi3.Dev;
+            return LSKiwi3.Dev;
         }
 
         [ArgDescription("Calls LSKiwiROC.Main():  DEPRACATED. Only used in 2012 to analyse output from LSKiwi3.Dev().")]
@@ -223,7 +223,7 @@ namespace AnalysisPrograms.Production
             // SEPARATE PROCESSING TASK FOR KIWI OUTPUT
             // little spotted kiwi calls from Andrew @ Victoria university.
             // Signed off: Michael Towsey 27th July 2012
-            return AnalysisPrograms.LSKiwiROC.Main;
+            return LSKiwiROC.Main;
         }
 
         [ArgDescription("Calls KoalaMale.Dev():  Dates back to 2012. Still current.")]
@@ -241,7 +241,7 @@ namespace AnalysisPrograms.Production
         {
             // calculates signal to noise ratio
             // Signed off:  Anthony, 25th July 2012
-            return AnalysisPrograms.SnrAnalysis.Execute;
+            return SnrAnalysis.Execute;
         }
 
         [ArgDescription("Calls OscillationRecogniser.Execute():  od = Oscillation Detection")]
@@ -256,7 +256,7 @@ namespace AnalysisPrograms.Production
         public OscillationsGeneric.Arguments oscillationsGenericArgs { get; set; }
         public static Action<OscillationsGeneric.Arguments> oscillationsGeneric()
         {
-            return AnalysisPrograms.OscillationsGeneric.Main;
+            return OscillationsGeneric.Main;
         }
 
         public Runner.Arguments ProductionArgs { get; set; }
@@ -271,7 +271,7 @@ namespace AnalysisPrograms.Production
         public static Action<Rain_OBSOLETE.Arguments> Rain()
         {
             // IAnalyser - detects rain
-            return AnalysisPrograms.Rain_OBSOLETE.Dev;
+            return Rain_OBSOLETE.Dev;
         }
 
         [ArgDescription("Calls LewinsRail3.Dev():  Dates back to 2012. Revise code if intend to use.")]
@@ -280,7 +280,7 @@ namespace AnalysisPrograms.Production
         {
             // IAnalyser - LewinsRail3 - yet to be tested on large data set but works OK on one or two available calls.
             // Execute() signed off: Michael Towsey 27th July 2012
-            return AnalysisPrograms.LewinsRail3OBSOLETE.Dev;
+            return LewinsRail3OBSOLETE.Dev;
         }
 
         [ArgDescription("Calls PlanesTrainsAndAutomobiles.Execute():  Dates back to 2013. Revise code if intend to use.")]
@@ -289,7 +289,7 @@ namespace AnalysisPrograms.Production
         {
             // IAnalyser - recognises Planes, Trains And Automobiles - works OK for planes not yet tested on train sounds
             // Execute() signed off: Michael Towsey 27th July 2012
-            return AnalysisPrograms.PlanesTrainsAndAutomobiles.Dev;
+            return PlanesTrainsAndAutomobiles.Dev;
         }
 
         public Segment.Arguments SegmentArgs { get; set; }
@@ -321,7 +321,7 @@ namespace AnalysisPrograms.Production
         public static Action<SPR_OBSOLETE.Arguments> Spr()
         {
             // syntactic pattern recognition
-            return AnalysisPrograms.SPR_OBSOLETE.Execute;
+            return SPR_OBSOLETE.Execute;
         }
 
         [ArgDescription("Calls FeltAnalysis.Dev(): Xueyan's work area.")]
@@ -364,7 +364,7 @@ namespace AnalysisPrograms.Production
         public DummyAnalyser.Arguments DummyArgs { get; set; }
         public static Action<DummyAnalyser.Arguments> Dummy()
         {
-            return AnalysisPrograms.DummyAnalyser.Execute;
+            return DummyAnalyser.Execute;
         }
 
         public FileRenamer.Arguments FileRenamerArgs { get; set; }
@@ -404,7 +404,7 @@ namespace AnalysisPrograms.Production
         {
             // IAnalyser - detects canetoad calls as acoustic events
             // Execute() signed off: Michael Towsey 27th July 2012
-            return AnalysisPrograms.CanetoadOld_OBSOLETE.Dev;
+            return CanetoadOld_OBSOLETE.Dev;
         }
 
         [ArgDescription("No further practical use. Used in 2014 to prepare short recordings of bird calls for analysis by Convolution Neural Networks.")]
@@ -419,7 +419,7 @@ namespace AnalysisPrograms.Production
         public static Action<FrogRibit_OBSOLETE.Arguments> FrogRibit()
         {
             // frog calls
-            return AnalysisPrograms.FrogRibit_OBSOLETE.Dev;
+            return FrogRibit_OBSOLETE.Dev;
         }
 
         [ArgDescription("DEPRACATED:  All frog recognizers should now enter through EventRecognizer.Execute() or Multirecognizer.Execute().")]

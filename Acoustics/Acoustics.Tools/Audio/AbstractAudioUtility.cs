@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
 
-    using Acoustics.Shared;
+    using Shared;
 
     /// <summary>
     /// Abstract audio utility that contains common functionality.

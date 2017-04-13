@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="ResultBase.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="ResultBase.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the ResultBase type.
@@ -44,7 +44,7 @@ namespace AnalysisBase.ResultBases
             set
             {
                 this.StartOffsetMinute = (int)value.TotalMinutes;
-                this.StartOffsetSecond = (Single)value.TotalSeconds;
+                this.StartOffsetSecond = (float)value.TotalSeconds;
                 this.startOffset = value;
             }
         }
@@ -62,7 +62,7 @@ namespace AnalysisBase.ResultBases
         /// This is an representation of <c>SegmentStartOffset</c>.
         /// </summary>
         [Obsolete]
-        internal Single StartOffsetSecond { get; private set; }
+        internal float StartOffsetSecond { get; private set; }
 
         /// <summary>
         /// Gets the StartOffsetMinute.

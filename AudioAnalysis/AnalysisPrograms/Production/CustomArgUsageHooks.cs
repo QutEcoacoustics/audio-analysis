@@ -44,7 +44,7 @@
         {
             if (propertyInfoOrClassType == null)
             {
-                return base.Description;
+                return this.Description;
             }
 
             MethodInfo method = null;
@@ -88,7 +88,7 @@
         {
             if (propertyType == null)
             {
-                return base.DetailedDescription;
+                return this.DetailedDescription;
             }
 
             var method = propertyType.GetMethod("AdditionalNotes", BindingFlags.Public | BindingFlags.Static);

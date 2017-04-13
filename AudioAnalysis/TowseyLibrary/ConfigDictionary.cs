@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Configuration.cs" company="MQUTeR">
-//   -
+// <copyright file="ConfigDictionary.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the Configuration type.
@@ -32,7 +32,7 @@ namespace TowseyLibrary
         /// </summary>
         public ConfigDictionary()
         {
-            dictionary = new Dictionary<string, string>();
+            this.dictionary = new Dictionary<string, string>();
         }
 
         /// <summary>
@@ -64,15 +64,15 @@ namespace TowseyLibrary
                 throw new ArgumentNullException("files", "files must be supplied and contain entries.");
             }
 
-            Source = files[files.Length - 1].FullName; // Take last file as filename
-            dictionary = new Dictionary<string, string>();
+            this.Source = files[files.Length - 1].FullName; // Take last file as filename
+            this.dictionary = new Dictionary<string, string>();
             foreach (var file in files)
             {
-                Dictionary<string, string> dict = ConfigDictionary.ReadPropertiesFile(file);
+                Dictionary<string, string> dict = ReadPropertiesFile(file);
 
                 foreach (var item in dict)
                 {
-                    dictionary[item.Key] = item.Value;
+                    this.dictionary[item.Key] = item.Value;
                     ////if (item.Key.StartsWith("VERBOSITY")) LoggedConsole.WriteLine("VERBOSITY = " + item.Value);
                 }
             }
@@ -85,16 +85,16 @@ namespace TowseyLibrary
                 return null;
             if (!Path.IsPathRooted(path))
             {
-                if (Source == null)
+                if (this.Source == null)
                     throw new InvalidOperationException("Configuration was not loaded from a file. Relative paths can not be resolved.");
-                return Path.Combine(Path.GetDirectoryName(Source), path);
+                return Path.Combine(Path.GetDirectoryName(this.Source), path);
             }
             return path;
         }
 
         public Dictionary<string, string> GetDictionary()
         {
-            return dictionary;
+            return this.dictionary;
         }
 
 
@@ -110,29 +110,29 @@ namespace TowseyLibrary
         /// </param>
         public void SetPair(string key, string value)
         {
-            if (dictionary.ContainsKey(key)) dictionary.Remove(key);
-            dictionary.Add(key, value);
+            if (this.dictionary.ContainsKey(key)) this.dictionary.Remove(key);
+            this.dictionary.Add(key, value);
         }
 
         public bool ContainsKey(string key)
         {
-            return dictionary.ContainsKey(key);
+            return this.dictionary.ContainsKey(key);
         }
 
         public Dictionary<string, string> GetTable()
         {
-            return dictionary;
+            return this.dictionary;
         }
 
         public string GetString(string key)
         {
             string value;
-            return dictionary.TryGetValue(key, out value) ? value : null;
+            return this.dictionary.TryGetValue(key, out value) ? value : null;
         }
 
         public string GetPath(string key)
         {
-            return ResolvePath(GetString(key));
+            return this.ResolvePath(this.GetString(key));
         }
 
         public int GetInt(string key)
@@ -201,13 +201,13 @@ namespace TowseyLibrary
             {
                 if (value == null) return false;
                 else
-                return Boolean.Parse(value);
+                return bool.Parse(value);
             }
-            catch (System.FormatException ex)
+            catch (FormatException ex)
             {
-                System.LoggedConsole.WriteLine("ERROR READING PROPERTIES FILE");
-                System.LoggedConsole.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
-                System.LoggedConsole.WriteLine(ex);
+                LoggedConsole.WriteLine("ERROR READING PROPERTIES FILE");
+                LoggedConsole.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
+                LoggedConsole.WriteLine(ex);
                 return false;
             }
         } //end getBoolean()
@@ -220,22 +220,22 @@ namespace TowseyLibrary
             if (! dict.ContainsKey(key))
             {
                 Log.WriteLine("ERROR READING PROPERTIES FILE");
-                System.LoggedConsole.WriteLine("DICTIONARY DOES NOT CONTAIN KEY: {0}", key);
-                return -Double.NaN;
+                LoggedConsole.WriteLine("DICTIONARY DOES NOT CONTAIN KEY: {0}", key);
+                return -double.NaN;
             }
             string value = dict[key].ToString();
-            if (value == null) return -Double.NaN;
+            if (value == null) return -double.NaN;
             try
             {
                 double d;
-                Double.TryParse(value, out d);
+                double.TryParse(value, out d);
                 return  d;
             }
             catch
             {
                 Log.WriteLine("ERROR READING PROPERTIES FILE");
-                System.LoggedConsole.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
-                return -Double.NaN;
+                LoggedConsole.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
+                return -double.NaN;
             }
         }
 
@@ -247,13 +247,13 @@ namespace TowseyLibrary
             try
             {
                 double d;
-                Double.TryParse(value, out d);
+                double.TryParse(value, out d);
                 return d;
             }
             catch
             {
                 Log.WriteLine("ERROR READING PROPERTIES FILE");
-                System.LoggedConsole.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
+                LoggedConsole.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
                 return null;
             }
         }
@@ -265,7 +265,7 @@ namespace TowseyLibrary
             //if (!table.ContainsKey(key)) return -Int32.MaxValue;
 
             //string value = this.table[key].ToString();
-            if (value == null) return -Int32.MaxValue;
+            if (value == null) return -int.MaxValue;
 
             try
             {
@@ -275,10 +275,10 @@ namespace TowseyLibrary
             catch
             {
                 Log.WriteLine("ERROR READING PROPERTIES FILE");
-                System.LoggedConsole.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
-                return Int32.MaxValue;
+                LoggedConsole.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
+                return int.MaxValue;
             }
-            return Int32.MaxValue;
+            return int.MaxValue;
         }
 
         public static int? GetIntNullable(string key, Dictionary<string, string> dict)
@@ -296,7 +296,7 @@ namespace TowseyLibrary
             catch
             {
                 Log.WriteLine("ERROR READING PROPERTIES FILE");
-                System.LoggedConsole.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
+                LoggedConsole.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
                 return null;
             }
             return null;
@@ -417,8 +417,10 @@ namespace TowseyLibrary
 
             // add relative folders in from path
             for (int x = lastCommonRoot + 1; x < fromDirectories.Length; x++)
+            {
                 if (fromDirectories[x].Length > 0)
                     relativePath.Add("..");
+            }
 
             // add to folders to path
             for (int x = lastCommonRoot + 1; x < toDirectories.Length; x++)

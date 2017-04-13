@@ -2,7 +2,7 @@
 {
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
-    using Dong.Felt.Configuration;
+    using Configuration;
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -10,7 +10,7 @@
     using System.Runtime.CompilerServices;
     using System.Text;
 
-    using Dong.Felt.Representations;
+    using Representations;
 
     using TowseyLibrary;
 
@@ -92,11 +92,11 @@
         /// </summary>
         public Query()
         {
-            maxFrequency = 0.0;
-            minFrequency = 0.0;
-            startTime = 0.0;
-            endTime = 0.0;
-            duration = endTime - startTime;
+            this.maxFrequency = 0.0;
+            this.minFrequency = 0.0;
+            this.startTime = 0.0;
+            this.endTime = 0.0;
+            this.duration = this.endTime - this.startTime;
         }
 
         /// <summary>
@@ -121,7 +121,7 @@
             this.frequencyRange = this.maxFrequency - this.minFrequency;
             this.maxNhColIndex = maxFrameIndex;
             this.maxNhRowIndex = maxFrequencyIndex;
-            GetNhProperties(neighbourhoodLength, spectrogramConfig);
+            this.GetNhProperties(neighbourhoodLength, spectrogramConfig);
         }
 
         /// <summary>
@@ -145,7 +145,7 @@
             this.frequencyRange = this.maxFrequency - this.minFrequency;
             this.maxNhColIndex = maxFrameIndex;
             this.maxNhRowIndex = maxFrequencyIndex;
-            GetNhProperties(neighbourhoodLength, spectrogramConfig);
+            this.GetNhProperties(neighbourhoodLength, spectrogramConfig);
         }
 
         public Query(double maximumFrequency, double minimumFrequency,
@@ -186,7 +186,7 @@
             // get a greater value than the parameter for enlarging the later used NH boundary- enlarge.
             var enlargedOffset = 1;
             // ceiling is try to increase the value.
-            var nhCountInRows = (int)Math.Ceiling(frequencyRange / nhFrequencyLength) + enlargedOffset;
+            var nhCountInRows = (int)Math.Ceiling(this.frequencyRange / nhFrequencyLength) + enlargedOffset;
             var nhCountInCols = (int)Math.Ceiling(this.duration / nhFrameLength) + enlargedOffset;
             /// Here is a trick. Trying to get the nearest and lowest NH frame and frequencyIndex.
             this.nhStartColIndex = (int)Math.Floor(this.startTime / nhFrameLength);

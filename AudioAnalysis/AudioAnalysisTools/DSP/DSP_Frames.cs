@@ -6,7 +6,7 @@ namespace AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
-    using AudioAnalysisTools.WavTools;
+    using WavTools;
     using TowseyLibrary;
 
     // using MathNet.Numerics;using MathNet.Numerics.Transformations;
@@ -524,7 +524,7 @@ namespace AudioAnalysisTools.DSP
                 int end = start + windowSize;
 
                 //get average and envelope
-                double maxValue = -Double.MaxValue;
+                double maxValue = -double.MaxValue;
                 double total = signal[start];
                 for (int x = start + 1; x < end; x++)
                 {
@@ -617,8 +617,8 @@ namespace AudioAnalysisTools.DSP
             maxAmp = new double[frameCount];
             for (int i = 0; i < frameCount; i++)
             {
-                double min = Double.MaxValue;
-                double max = -Double.MaxValue;
+                double min = double.MaxValue;
+                double max = -double.MaxValue;
 
                 // foreach sample in frame
                 for (int j = 0; j < n; j++)

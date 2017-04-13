@@ -44,13 +44,13 @@
         for (int i = 0; i < initialClusterCount; i++)
         {
             int id = randomIntegers[i];
-            wts.Add(trainingData[id]);
+            this.wts.Add(trainingData[id]);
             //LoggedConsole.WriteLine("Sum of wts[" + i + "]= " + wts[i].Sum());
         }//end all templates
 
         //set committed nodes = false
-        this.committedNode = new bool[OPSize];
-        for (int uNo = 0; uNo < initialClusterCount; uNo++) committedNode[uNo] = true;
+        this.committedNode = new bool[this.OPSize];
+        for (int uNo = 0; uNo < initialClusterCount; uNo++) this.committedNode[uNo] = true;
     }
 
 
@@ -68,7 +68,7 @@
 
 
 
-    public System.Tuple<int, int, int[], List<double[]>> TrainNet(List<double[]> trainingData, int maxIter, int seed, int initialWtCount)
+    public Tuple<int, int, int[], List<double[]>> TrainNet(List<double[]> trainingData, int maxIter, int seed, int initialWtCount)
     {
         int dataSetSize = trainingData.Count;
 
@@ -88,7 +88,7 @@
         {
             iterNum++;
 
-            OPwins = new int[OPSize];      //stores the number of times each OP node wins
+            OPwins = new int[this.OPSize];      //stores the number of times each OP node wins
 
             //initialise convergence criteria.  Want stable F2node allocations
             trainSetLearned = true;
@@ -100,14 +100,14 @@
             {
                 //select an input signal. Later use sigID to enable test of convergence
                 int sigID = sigNum;                                         //do signals in order
-                if (BinaryCluster.RandomiseTrnSetOrder) sigID = randomArray[sigNum];  //pick at random
+                if (RandomiseTrnSetOrder) sigID = randomArray[sigNum];  //pick at random
 
                 //{*********** PASS ONE INPUT SIGNAL THROUGH THE NETWORK ***********}
-                double[] OP = PropagateIP2OP(trainingData[sigID]);   //output = AND divided by OR of two vectors
+                double[] OP = this.PropagateIP2OP(trainingData[sigID]);   //output = AND divided by OR of two vectors
                 int index = DataTools.GetMaxIndex(OP);
                 double winningOP = OP[index];
                 //create new category if similarity OP of best matching node is too low
-                if (winningOP < this.vigilance_rho) ChangeWtsOfFirstUncommittedNode(trainingData[sigID]);
+                if (winningOP < this.vigilance_rho) this.ChangeWtsOfFirstUncommittedNode(trainingData[sigID]);
 
                 inputCategory[sigID] = index; //winning F2 node for current input
                 OPwins[index]++;
@@ -126,14 +126,14 @@
             for (int j = 0; j < this.OPSize; j++)
                 if ((this.committedNode[j]) && (OPwins[j] == 0)) this.committedNode[j] = false;
 
-            if (BinaryCluster.Verbose)
-            { LoggedConsole.WriteLine(" iter={0:D2}  committed=" + CountCommittedF2Nodes() + "\t changedCategory=" + changedCategory, iterNum);
+            if (Verbose)
+            { LoggedConsole.WriteLine(" iter={0:D2}  committed=" + this.CountCommittedF2Nodes() + "\t changedCategory=" + changedCategory, iterNum);
             }
 
             if (trainSetLearned) break;
         }  //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
 
-        return System.Tuple.Create(iterNum, CountCommittedF2Nodes(), inputCategory, this.wts);
+        return Tuple.Create(iterNum, this.CountCommittedF2Nodes(), inputCategory, this.wts);
     }  //TrainNet()
 
 
@@ -152,11 +152,11 @@
 
         for (int F2uNo = 0; F2uNo < this.OPSize; F2uNo++)  //{for all F2 nodes}
         {
-            if (committedNode[F2uNo]) //only calculate OPs of committed nodes
+            if (this.committedNode[F2uNo]) //only calculate OPs of committed nodes
             {
                 //get wts of current F2 node
                 //OP[F2uNo] = BinaryCluster.HammingSimilarity(IP, wts[F2uNo]);
-                OP[F2uNo] = BinaryCluster.AND_OR_Similarity(IP, wts[F2uNo]);
+                OP[F2uNo] = AND_OR_Similarity(IP, this.wts[F2uNo]);
             }
         }  //end for all the F2 nodes}
 
@@ -186,13 +186,13 @@
     {
         //double magnitudeOfIP = this.IPSize;   //{NOTE:- fuzzy mag of complement coded IP vector, |I| = F1size/2}
         int index = 0;
-        int noCommittedNodes = CountCommittedF2Nodes();
+        int noCommittedNodes = this.CountCommittedF2Nodes();
 
         //there are FOUR possibilities
         //1: this is the first input -  //{no committed units ie this is first signal of first iteration}
         if (noCommittedNodes == 0)
         {
-            ChangeWtsOfFirstUncommittedNode(IP);
+            this.ChangeWtsOfFirstUncommittedNode(IP);
             return index;
         }
 
@@ -200,10 +200,10 @@
         int numberOfTestedNodes = 0;
         while (!matchFound)  //repeat //{until a good match found}
         {
-            index = IndexOfMaxF2Unit(OP);  //get index of the winning F2 node i.e. the unit with maxOP.
+            index = this.IndexOfMaxF2Unit(OP);  //get index of the winning F2 node i.e. the unit with maxOP.
             //{calculate match between the weight and input vectors of the max unit.
             // match = |IP^wts|/|IP|   which is measure of degree to which the input is a fuzzy subset of the wts. }
-            double match = BinaryCluster.HammingSimilarity(IP, this.wts[index]);
+            double match = HammingSimilarity(IP, this.wts[index]);
 
             numberOfTestedNodes++;   //{count number of nodes tested}
             if (match < this.vigilance_rho)  // ie vigilance indicates a BAD match}
@@ -211,7 +211,7 @@
                 // 2:  none of the committed nodes offer a good match - therefore draft an uncommitted node
                 if (numberOfTestedNodes == noCommittedNodes)
                 {
-                    index = ChangeWtsOfFirstUncommittedNode(IP);    //{all nodes committed and no good match}
+                    index = this.ChangeWtsOfFirstUncommittedNode(IP);    //{all nodes committed and no good match}
                     return index;
                 }
                 else  // 3:  max node committed BUT poor match so RESET to another node
@@ -223,7 +223,7 @@
             else  //(match >= rho)
             // 4:  max node committed AND good match, therefore change the weights
             {
-                ChangeWtsOfCommittedNode(IP, index);
+                this.ChangeWtsOfCommittedNode(IP, index);
                 return index;
             }
 
@@ -258,12 +258,12 @@
         /// <returns></returns>
     public int ChangeWtsOfFirstUncommittedNode(double[] IP)
     {
-        int index = GetIndexOfFirstUncommittedNode();
+        int index = this.GetIndexOfFirstUncommittedNode();
         if(index == -1) return index; //all nodes committed
 
         if(index >= this.wts.Count) this.wts.Add(IP);
         else this.wts[index] = IP;
-        committedNode[index] = true;
+        this.committedNode[index] = true;
         return index;
     }
 
@@ -331,7 +331,7 @@
     /// <param name="clusterHits"></param>
     /// <param name="wtThreshold"></param>
     /// <param name="hitThreshold"></param>
-    public static System.Tuple<int[], List<double[]>> PruneClusters(List<double[]> wtVectors, int[] clusterHits, double wtThreshold, int hitThreshold)
+    public static Tuple<int[], List<double[]>> PruneClusters(List<double[]> wtVectors, int[] clusterHits, double wtThreshold, int hitThreshold)
     {
         //make two histogram of cluster sizes;
         int[] clusterSizes = new int[wtVectors.Count]; // Init histogram
@@ -359,7 +359,7 @@
             prunedClusterHits[i] = clusterMapping_old2new[clusterHits[i]];
         }
 
-        return System.Tuple.Create(prunedClusterHits, prunedClusterWeights);
+        return Tuple.Create(prunedClusterHits, prunedClusterWeights);
     } //PruneClusters()
 
 
@@ -375,7 +375,7 @@
     /// <param name="clusterHits"></param>
     /// <param name="wtThreshold"></param>
     /// <param name="hitThreshold"></param>
-    public static System.Tuple<int, int> PruneClusters2(List<double[]> wtVectors, int[] clusterHits, double wtThreshold, int hitThreshold)
+    public static Tuple<int, int> PruneClusters2(List<double[]> wtVectors, int[] clusterHits, double wtThreshold, int hitThreshold)
     {
         //make two histograms: 1) of cluster sizes; 2) and isolated hits ie when a cluster hit is different from the one before and after
         int[] clusterSizes = new int[wtVectors.Count]; //init histogram 1
@@ -423,7 +423,7 @@
 
         int percentIsolatedHitCount = 0;
         if (clusterHits.Length > 4) percentIsolatedHitCount = isolatedHitCount * 100 / (clusterHits.Length - 2);
-        return System.Tuple.Create(clusterCount_final, percentIsolatedHitCount);
+        return Tuple.Create(clusterCount_final, percentIsolatedHitCount);
     } //PruneClusters()
 
 
@@ -462,7 +462,7 @@
     }
 
 
-    public static System.Tuple<int[], List<double[]>> ClusterBinaryVectors(List<double[]> trainingData, int initialClusterCount , double vigilance)
+    public static Tuple<int[], List<double[]>> ClusterBinaryVectors(List<double[]> trainingData, int initialClusterCount , double vigilance)
     {
         int trnSetSize = trainingData.Count;
         int IPSize = trainingData[0].Length;
@@ -474,7 +474,7 @@
 
         BinaryCluster binaryCluster = new BinaryCluster(IPSize, trnSetSize); //initialise BinaryCluster class
         binaryCluster.SetParameterValues(beta, vigilance);
-        if (BinaryCluster.Verbose)
+        if (Verbose)
         {
             LoggedConsole.WriteLine("trnSetSize=" + trainingData.Count + "  IPsize=" + trainingData[0].Length + "  Vigilance=" + vigilance);
             LoggedConsole.WriteLine("\n BEGIN TRAINING");
@@ -486,12 +486,12 @@
         int[] clusterHits = output.Item3;
         var clusterWts    = output.Item4;
 
-        if (BinaryCluster.Verbose)
+        if (Verbose)
         {
             LoggedConsole.WriteLine("FINISHED TRAINING: (" + iterCount + " iterations)" + "    CommittedNodes=" + clusterCount);
         }
 
-        return System.Tuple.Create(clusterHits, clusterWts);  //keepScore;
+        return Tuple.Create(clusterHits, clusterWts);  //keepScore;
 
     } //END of ClusterBinaryVectors.
 

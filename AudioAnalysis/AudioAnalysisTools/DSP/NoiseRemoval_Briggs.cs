@@ -193,7 +193,7 @@
 
         public static double[,] BriggsNoiseFilterAndGetMask(double[,] matrix, int percentileThreshold, double binaryThreshold)
         {
-            double[,] m = NoiseRemoval_Briggs.NoiseReduction_byDivision(matrix, percentileThreshold);
+            double[,] m = NoiseReduction_byDivision(matrix, percentileThreshold);
 
             // smooth and truncate
             m = ImageTools.WienerFilter(m, 7); //Briggs uses 17
@@ -216,7 +216,7 @@
                                 TimeSpan recordingDuration, TimeSpan X_AxisInterval, TimeSpan stepDuration, int nyquist, int herzInterval)
         {
             //double[,] m = NoiseRemoval_Briggs.BriggsNoiseFilter(matrix, percentileThreshold);
-            double[,] m = NoiseRemoval_Briggs.NoiseReduction_byDivisionAndSqrRoot(matrix, percentileThreshold);
+            double[,] m = NoiseReduction_byDivisionAndSqrRoot(matrix, percentileThreshold);
 
             List<Image> images = new List<Image>();
 

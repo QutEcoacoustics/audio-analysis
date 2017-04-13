@@ -4,7 +4,7 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
-    using FELT.Classifiers;
+    using Classifiers;
     using Microsoft.FSharp.Collections;
     using Microsoft.FSharp.Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -29,11 +29,11 @@
         {
             get
             {
-                return testContextInstance;
+                return this.testContextInstance;
             }
             set
             {
-                testContextInstance = value;
+                this.testContextInstance = value;
             }
         }
 
@@ -215,7 +215,7 @@
 
             #endregion
 
-            classifier = new EuclideanClassifier(new Microsoft.FSharp.Core.FSharpOption<bool>(lazy));
+            classifier = new EuclideanClassifier(new FSharpOption<bool>(lazy));
             return trainingData;
         }
     }

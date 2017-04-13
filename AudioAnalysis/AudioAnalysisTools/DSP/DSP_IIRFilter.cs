@@ -25,7 +25,7 @@
         /// </summary>
         /// <param name="filterName"></param>
         /// <returns></returns>
-        public static System.Tuple<int, double[], double[], double> CreateFilter(string filterName)
+        public static Tuple<int, double[], double[], double> CreateFilter(string filterName)
         {
             if (filterName.StartsWith("Chebyshev_Highpass_400")) return Chebyshev_Highpass_400();
             else
@@ -36,8 +36,8 @@
             if (filterName.StartsWith("Chebyshev_Lowpass_5000")) return Chebyshev_Lowpass_5000();
             else
                 {
-                    System.LoggedConsole.WriteLine("\nWARNING! There is no filter with name: " + filterName);
-                    System.Console.ReadLine();
+                    LoggedConsole.WriteLine("\nWARNING! There is no filter with name: " + filterName);
+                    Console.ReadLine();
                 }
             return null;
         }
@@ -45,7 +45,7 @@
         /// <summary>
         /// Create a Chebyshev_Highpass filter, shoulder=400, order=9; ripple=-0.1dB; sr=22050
         /// </summary>
-        public static System.Tuple<int, double[], double[], double> Chebyshev_Highpass_400(/*no variables to pass*/)
+        public static Tuple<int, double[], double[], double> Chebyshev_Highpass_400(/*no variables to pass*/)
         {
             int order = 9;
             double[] a_coeff = new double[order+1];
@@ -73,12 +73,12 @@
 
             //double gain = 2018526051;  //gain at DC
             double gain = 1995420162;  //gain at centre
-            return System.Tuple.Create(order, a_coeff, b_coeff, gain);
+            return Tuple.Create(order, a_coeff, b_coeff, gain);
         }
         /// <summary>
         /// Create a Chebyshev_lowpass filter, shoulder=1000, order=9; ripple=-0.1dB; sr=22050
         /// </summary>
-        public static System.Tuple<int, double[], double[], double> Chebyshev_Lowpass_1000(/*no variables to pass*/)
+        public static Tuple<int, double[], double[], double> Chebyshev_Lowpass_1000(/*no variables to pass*/)
         {
             int order = 9;
             double[] a_coeff = new double[order+1];
@@ -106,12 +106,12 @@
 
             double gain = 2018526051;  //gain at DC
             //double gain = 1995420162;  //gain at centre
-            return System.Tuple.Create(order, a_coeff, b_coeff, gain);
+            return Tuple.Create(order, a_coeff, b_coeff, gain);
         }
         /// <summary>
         /// Create a Chebyshev_lowpass filter, shoulder=3000, order=9; ripple=-0.1dB; sr=22050
         /// </summary>
-        public static System.Tuple<int, double[], double[], double> Chebyshev_Lowpass_3000(/*no variables to pass*/)
+        public static Tuple<int, double[], double[], double> Chebyshev_Lowpass_3000(/*no variables to pass*/)
         {
             int order = 9;
             double[] a_coeff = new double[order+1];
@@ -139,13 +139,13 @@
 
             double gain = 145788.9707;   //gain at DC = 1.457889707e+05
             //double gain = 1.441201381e+05;  //gain at centre
-            return System.Tuple.Create(order, a_coeff, b_coeff, gain);
+            return Tuple.Create(order, a_coeff, b_coeff, gain);
         }
         /// <summary>
         /// Create a Chebyshev_lowpass filter, shoulder=5000, order=9; ripple=-0.1dB; sr=22050
         /// Shoulder located at 0.2267573696 Pi.
         /// </summary>
-        public static System.Tuple<int, double[], double[], double> Chebyshev_Lowpass_5000(/*no variables to pass*/)
+        public static Tuple<int, double[], double[], double> Chebyshev_Lowpass_5000(/*no variables to pass*/)
         {
             int order = 9;
             double[] a_coeff = new double[order + 1];
@@ -173,7 +173,7 @@
 
             double gain = 1826.066837;   //gain at DC = 1.826066837e+03
             //double gain = 1.805164023e+03;  //gain at centre
-            return System.Tuple.Create(order, a_coeff, b_coeff, gain);
+            return Tuple.Create(order, a_coeff, b_coeff, gain);
         }
 
 
@@ -259,19 +259,19 @@
             y = new double[np];
 
             int i, j;
-            y[0] = a[0] * x[0];
+            y[0] = this.a[0] * x[0];
             for (i = 1; i < size; i++)
             {
-                for (j = 0; j <= i; j++) y[i] += (a[j] * x[i - j]);
-                for (j = 1; j <= i; j++) y[i] += (b[j] * y[i - j]);
+                for (j = 0; j <= i; j++) y[i] += (this.a[j] * x[i - j]);
+                for (j = 1; j <= i; j++) y[i] += (this.b[j] * y[i - j]);
             }
             /* end of initial part */
 
             for (i = size; i < np; i++) //length of signal
             {
-                y[i] += (a[0] * x[i]);
-                for (j = 1; j < size; j++) y[i] += (a[j] * x[i - j]);
-                for (j = 1; j < size; j++) y[i] += (b[j] * y[i - j]);
+                y[i] += (this.a[0] * x[i]);
+                for (j = 1; j < size; j++) y[i] += (this.a[j] * x[i - j]);
+                for (j = 1; j < size; j++) y[i] += (this.b[j] * y[i - j]);
             }
             //adjust for gain
             //the factor of 2.30 is an approximate value to make up the difference between theoretical gain and my observed gain.
@@ -295,7 +295,7 @@
             bool doit1 = true;
             if (doit1) //test Method(parameters)
             {
-                System.LoggedConsole.WriteLine("\nTest of METHOD ApplyIIRFilter()");
+                LoggedConsole.WriteLine("\nTest of METHOD ApplyIIRFilter()");
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\FrogPond_Samford_SE_555_20101023-000000.wav";
                 //AudioRecording recording = new AudioRecording(recordingPath);
                 //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
@@ -312,7 +312,7 @@
                 string filterName = "Chebyshev_Lowpass_3000";
                 DSP_IIRFilter filter = new DSP_IIRFilter(filterName);
                 int order = filter.order;
-                System.LoggedConsole.WriteLine("\nTest " + filterName + ", order=" + order);
+                LoggedConsole.WriteLine("\nTest " + filterName + ", order=" + order);
 
                 // create impulse
                 int inputLength = 400;
@@ -332,11 +332,11 @@
                     //myGain += (y[i] * y[i]); //power
                     y[i] *= 100;
                 }
-                System.LoggedConsole.WriteLine("\nMy Gain (area under impulse response curve after DC gain removal.) = " + myGain);
+                LoggedConsole.WriteLine("\nMy Gain (area under impulse response curve after DC gain removal.) = " + myGain);
 
                 DataTools.writeBarGraph(y);
 
-                System.LoggedConsole.WriteLine("\nEnd Test");
+                LoggedConsole.WriteLine("\nEnd Test");
             }//end test Method(string fName)
 
 

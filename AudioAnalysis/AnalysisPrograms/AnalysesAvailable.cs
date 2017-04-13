@@ -8,8 +8,8 @@
     using System.Text;
     using Acoustics.Shared.Extensions;
     using AnalysisBase;
-    using AnalysisPrograms.Production;
-    using AnalysisPrograms.Recognizers.Base;
+    using Production;
+    using Recognizers.Base;
     using PowerArgs;
     using TowseyLibrary;
 

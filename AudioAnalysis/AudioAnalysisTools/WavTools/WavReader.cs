@@ -25,7 +25,7 @@
 
         public TimeSpan Time
         {
-            get { return TimeSpan.FromSeconds(((double)Samples.Length) / SampleRate); }
+            get { return TimeSpan.FromSeconds(((double)this.Samples.Length) / this.SampleRate); }
         }
 
         /// <summary>
@@ -60,9 +60,9 @@
         /// </summary>
         public TowseyWavReader(byte[] wavBytes, string wavFName)
         {
-            WavFileName = wavFName;
-            ParseData(wavBytes);
-            CalculateMaxValue();
+            this.WavFileName = wavFName;
+            this.ParseData(wavBytes);
+            this.CalculateMaxValue();
         }
 
         /// <summary>
@@ -74,13 +74,13 @@
         /// <param name="sampleRate"></param>
         public TowseyWavReader(double[] rawData, int sampleRate, string sigName)
         {
-            Samples = rawData;
-            SampleRate = sampleRate;
-            SampleCount = rawData.Length;
-            WavFileName = sigName;
-            Channels = 1;
-            BitsPerSample = 16;
-			CalculateMaxValue();
+            this.Samples = rawData;
+            this.SampleRate = sampleRate;
+            this.SampleCount = rawData.Length;
+            this.WavFileName = sigName;
+            this.Channels = 1;
+            this.BitsPerSample = 16;
+            this.CalculateMaxValue();
         }
 
         private void ParseData(byte[] data)
@@ -156,17 +156,17 @@
                 dataLength = data.Length - headerLength;
 
             this.SampleCount = dataLength / bytesPerSample;
-            this.Samples = new double[SampleCount];
+            this.Samples = new double[this.SampleCount];
 
             switch (this.BitsPerSample)
             {
                 case 8:
-					for (int i = 0, offset = headerLength; i < SampleCount; i++, offset += bytesPerSample)
-                        Samples[i] = data[offset] / 128.0;
+					for (int i = 0, offset = headerLength; i < this.SampleCount; i++, offset += bytesPerSample)
+					    this.Samples[i] = data[offset] / 128.0;
                     break;
                 case 16:
-					for (int i = 0, offset = headerLength; i < SampleCount; i++, offset += bytesPerSample)
-                        Samples[i] = BitConverter.ToInt16(data, offset) / 32768.0;
+					for (int i = 0, offset = headerLength; i < this.SampleCount; i++, offset += bytesPerSample)
+					    this.Samples[i] = BitConverter.ToInt16(data, offset) / 32768.0;
                     break;
                 default:
                     throw new NotSupportedException("Bits per sample other than 8 and 16.");
@@ -181,7 +181,7 @@
             // In end decide simply to estimate noise aftger skipping the first 10 or so frames!
 
             //this.Samples = TrimSamples(this.Samples); //trim the samples ie check that the samples do not begin or end with zeros
-            SampleCount = Samples.Length;
+            this.SampleCount = this.Samples.Length;
         }
 
         public static TowseyWavReader SineWave(double freq, double amp, double phase, TimeSpan length, int sampleRate)
@@ -242,17 +242,17 @@
         {
             if (interval <= 1) return; //do not change anything!
             Console.WriteLine("\tSUBSAMPLING the signal - interval = " + interval);
-            int L = SampleCount;
+            int L = this.SampleCount;
             int newL = L / interval; // the new length
             double[] newSamples = new double[newL];
             L = newL * interval; //want L to be exact mulitple of interval
             for (int i = 0; i < newL; i++)
             {
-                newSamples[i] = Samples[i*interval];
+                newSamples[i] = this.Samples[i*interval];
             }
-            Samples = newSamples;
-            SampleRate /= interval;
-            SampleCount = newL;
+            this.Samples = newSamples;
+            this.SampleRate /= interval;
+            this.SampleCount = newL;
         }
     }// end of class WavReader
 }

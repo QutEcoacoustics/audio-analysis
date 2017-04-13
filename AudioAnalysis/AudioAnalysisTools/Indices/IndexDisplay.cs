@@ -10,7 +10,7 @@
 
     using AnalysisBase.ResultBases;
 
-    using AudioAnalysisTools.LongDurationSpectrograms;
+    using LongDurationSpectrograms;
 
     using log4net;
 
@@ -51,7 +51,7 @@
         {
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfig);
             dictIP = InitialiseIndexProperties.GetDictionaryOfSummaryIndexProperties(dictIP);
-            return IndexDisplay.DrawImageOfSummaryIndices(
+            return DrawImageOfSummaryIndices(
                 dictIP,
                 csvFile,
                 title,
@@ -83,7 +83,7 @@
             }
 
             Dictionary<string, double[]> dictionary = CsvTools.ReadCSVFile2Dictionary(csvFile.FullName);
-            return IndexDisplay.DrawImageOfSummaryIndices(
+            return DrawImageOfSummaryIndices(
                 listOfIndexProperties,
                 dictionary,
                 titleText,
@@ -122,7 +122,7 @@
                 // to translate past keys into current keys
 
 
-            const int TrackHeight = IndexDisplay.DefaultTrackHeight;
+            const int TrackHeight = DefaultTrackHeight;
             int scaleLength = 0;
             var bitmapList = new List<Tuple<IndexProperties, Image>>(dictionaryOfSummaryIndices.Keys.Count);
 
@@ -175,7 +175,7 @@
             //set up the composite image parameters
             int X_offset = 2;
             int graphWidth = X_offset + scaleLength;
-            int imageWidth = X_offset + scaleLength + IndexDisplay.TrackEndPanelWidth;
+            int imageWidth = X_offset + scaleLength + TrackEndPanelWidth;
             TimeSpan scaleDuration = TimeSpan.FromMinutes(scaleLength);
             int imageHt = TrackHeight * (listOfBitmaps.Count + 4); //+3 for title and top and bottom time tracks
             Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, TrackHeight, titleText);
@@ -240,7 +240,7 @@
 
             int dataLength = array1.Length;
             int trackWidth = dataLength;
-            int trackHeight = IndexDisplay.DefaultTrackHeight;
+            int trackHeight = DefaultTrackHeight;
             Color[] grayScale = ImageTools.GrayScale();
 
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);

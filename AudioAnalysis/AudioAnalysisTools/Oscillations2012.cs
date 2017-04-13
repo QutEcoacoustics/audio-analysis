@@ -2,8 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.StandardSpectrograms;
+    using DSP;
+    using StandardSpectrograms;
     using TowseyLibrary;
 
     /// <summary>
@@ -54,7 +54,7 @@
         public static void Execute(SpectrogramStandard sonogram, int minHz, int maxHz,
                            double dctDuration, int minOscilFreq, int maxOscilFreq, double dctThreshold, double scoreThreshold,
                            double minDuration, double maxDuration,
-                           out double[] scores, out List<AcousticEvent> events, out Double[,] hits)
+                           out double[] scores, out List<AcousticEvent> events, out double[,] hits)
         {
             int scoreSmoothingWindow = 11; // sets a default that is good for Canetoad but not necessarily for other recognisers
 
@@ -98,8 +98,8 @@
 
             int rows = sonogram.Data.GetLength(0);
             int cols = sonogram.Data.GetLength(1);
-            Double[,] hits = new Double[rows, cols];
-            Double[,] matrix = sonogram.Data;
+            double[,] hits = new double[rows, cols];
+            double[,] matrix = sonogram.Data;
 
             double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); //set up the cosine coefficients
             //following two lines write matrix of cos values for checking.
@@ -254,12 +254,12 @@
         /// </summary>
         /// <param name="matrix">the Oscillation matrix</param>
         /// <returns></returns>
-        public static double[,] RemoveIsolatedOscillations(Double[,] matrix)
+        public static double[,] RemoveIsolatedOscillations(double[,] matrix)
         {
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             double[,] cleanMatrix = matrix;
-            const double tolerance = Double.Epsilon;
+            const double tolerance = double.Epsilon;
             for (int c = 3; c < cols - 3; c++)//traverse columns - skip DC column
             {
                 for (int r = 0; r < rows; r++)

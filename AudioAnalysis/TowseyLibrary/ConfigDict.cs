@@ -16,24 +16,24 @@
         {
             if (string.IsNullOrEmpty(keyString))
             {
-                return Double.NaN;
+                return double.NaN;
             }
 
             object value;
             if (this.TryGetValue(keyString, out value)) return (double)value;
-            else                                        return Double.NaN;
+            else                                        return double.NaN;
         }
 
         public int GetInt(string keyString)
         {
             if (string.IsNullOrEmpty(keyString))
             {
-                return Int32.MaxValue;
+                return int.MaxValue;
             }
 
             object value;
             if (this.TryGetValue(keyString, out value)) return (int)value;
-            else return Int32.MaxValue;
+            else return int.MaxValue;
         }
 
 

@@ -6,7 +6,7 @@
     using System.Linq;
     using System.Text;
     using Acoustics.Shared.Extensions;
-    using AnalysisPrograms.Production;
+    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
@@ -73,14 +73,14 @@
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
-            int minHz           = Int32.Parse(dict[key_MIN_HZ]);
-            int maxHz           = Int32.Parse(dict[key_MAX_HZ]);
-            double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
-            double smoothWindow = Double.Parse(dict[key_SMOOTH_WINDOW]);   //smoothing window (seconds) before segmentation
-            double thresholdSD  = Double.Parse(dict[key_THRESHOLD]);       //segmentation threshold in noise SD
-            double minDuration  = Double.Parse(dict[key_MIN_DURATION]);    //min duration of segment & width of smoothing window in seconds
-            double maxDuration  = Double.Parse(dict[key_MAX_DURATION]);    //max duration of segment in seconds
-            int DRAW_SONOGRAMS  = Int32.Parse(dict[key_DRAW_SONOGRAMS]);   //options to draw sonogram
+            int minHz           = int.Parse(dict[key_MIN_HZ]);
+            int maxHz           = int.Parse(dict[key_MAX_HZ]);
+            double frameOverlap = double.Parse(dict[key_FRAME_OVERLAP]);
+            double smoothWindow = double.Parse(dict[key_SMOOTH_WINDOW]);   //smoothing window (seconds) before segmentation
+            double thresholdSD  = double.Parse(dict[key_THRESHOLD]);       //segmentation threshold in noise SD
+            double minDuration  = double.Parse(dict[key_MIN_DURATION]);    //min duration of segment & width of smoothing window in seconds
+            double maxDuration  = double.Parse(dict[key_MAX_DURATION]);    //max duration of segment in seconds
+            int DRAW_SONOGRAMS  = int.Parse(dict[key_DRAW_SONOGRAMS]);   //options to draw sonogram
 
             Log.WriteIfVerbose("# Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
             Log.WriteIfVerbose("# Smoothing Window: {0}s.", smoothWindow);
@@ -119,7 +119,7 @@
             //string str = String.Format("#RecordingName\tDuration(sec)\t#Ev\tCompT(ms)\t%hiFrames\n{0}\t{1}\t{2}\t{3}\t{4}\n", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
             //StringBuilder sb = new StringBuilder(str);
             //StringBuilder sb = new StringBuilder();
-            string str = String.Format("{0}\t{1}\t{2}\t{3}", fname, sigDuration, count, pcHIF);
+            string str = string.Format("{0}\t{1}\t{2}\t{3}", fname, sigDuration, count, pcHIF);
             StringBuilder sb = AcousticEvent.WriteEvents(predictedEvents, str);
             FileTools.WriteTextFile(opPath.FullName, sb.ToString());
 
@@ -153,7 +153,7 @@
         /// <param name="minDuration">used for smoothing intensity as well as for removing short events</param>
         /// <param name="maxDuration"></param>
         /// <returns></returns>
-        public static System.Tuple<BaseSonogram, List<AcousticEvent>, double, double, double, double[]> Execute_Segmentation(FileInfo wavPath,
+        public static Tuple<BaseSonogram, List<AcousticEvent>, double, double, double, double[]> Execute_Segmentation(FileInfo wavPath,
             int minHz, int maxHz, double frameOverlap, double smoothWindow, double thresholdSD, double minDuration, double maxDuration)
         {
             //i: GET RECORDING
@@ -170,7 +170,7 @@
             Log.WriteLine("# Start event detection");
             var tuple = AcousticEvent.GetSegmentationEvents((SpectrogramStandard)sonogram, minHz, maxHz, smoothWindow,
                                                                       thresholdSD, minDuration, maxDuration);
-            var tuple2 = System.Tuple.Create(sonogram, tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5);
+            var tuple2 = Tuple.Create(sonogram, tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5);
             return tuple2;
         }//end Execute_Segmentation
 

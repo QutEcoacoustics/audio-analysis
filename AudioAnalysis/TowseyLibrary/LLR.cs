@@ -416,7 +416,7 @@
          * @param chi
          * @return
          */
-        static public double ChiSquare_DF1(double chi)
+        public static double ChiSquare_DF1(double chi)
         {
             if (chi <= 0.00016) return 0.99;
             if (chi <= 0.0039) return 0.95;
@@ -427,7 +427,7 @@
             return 0.001;
         }
 
-        static public String writeLlrMatrix(double[,] m)
+        public static string writeLlrMatrix(double[,] m)
         {
             StringBuilder sb = new StringBuilder("Matrix of log odds (LLR = ln(observed freq/expected freq)\n");
             int rows = m.GetLength(0);

@@ -183,16 +183,16 @@
                 string[] nautiSetArray = fields[5].Split(' ');
                 nautiRiseArray = nautiRiseArray[0].Split(':');
                 nautiSetArray = nautiSetArray[0].Split(':');
-                int nautiRiseMinute = (Int32.Parse(nautiRiseArray[0]) * 60) + Int32.Parse(nautiRiseArray[1]);
-                int nautiSetMinute = (Int32.Parse(nautiSetArray[0]) * 60) + Int32.Parse(nautiSetArray[1]) + 720;
+                int nautiRiseMinute = (int.Parse(nautiRiseArray[0]) * 60) + int.Parse(nautiRiseArray[1]);
+                int nautiSetMinute = (int.Parse(nautiSetArray[0]) * 60) + int.Parse(nautiSetArray[1]) + 720;
                 int nautiDayLength = nautiSetMinute - nautiRiseMinute + 1;
 
                 string[] civilRiseArray = fields[6].Split(' ');
                 string[] civilSetArray = fields[7].Split(' ');
                 civilRiseArray = civilRiseArray[0].Split(':');
                 civilSetArray = civilSetArray[0].Split(':');
-                int civilRiseMinute = (Int32.Parse(civilRiseArray[0]) * 60) + Int32.Parse(civilRiseArray[1]);
-                int civilSetMinute = (Int32.Parse(civilSetArray[0]) * 60) + Int32.Parse(civilSetArray[1]) + 720;
+                int civilRiseMinute = (int.Parse(civilRiseArray[0]) * 60) + int.Parse(civilRiseArray[1]);
+                int civilSetMinute = (int.Parse(civilSetArray[0]) * 60) + int.Parse(civilSetArray[1]) + 720;
                 int civilDayLength = civilSetMinute - civilRiseMinute + 1;
 
                 string[] sunriseArray = fields[8].Split(' ');
@@ -200,8 +200,8 @@
                 string[] sunsetArray = fields[9].Split(' ');
                 sunriseArray = sunriseArray[0].Split(':');
                 sunsetArray = sunsetArray[0].Split(':');
-                int sunriseMinute = (Int32.Parse(sunriseArray[0]) * 60) + Int32.Parse(sunriseArray[1]);
-                int sunsetMinute = (Int32.Parse(sunsetArray[0]) * 60) + Int32.Parse(sunsetArray[1]) + 720;
+                int sunriseMinute = (int.Parse(sunriseArray[0]) * 60) + int.Parse(sunriseArray[1]);
+                int sunsetMinute = (int.Parse(sunsetArray[0]) * 60) + int.Parse(sunsetArray[1]) + 720;
                 int sunDayLength = sunsetMinute - sunriseMinute + 1;
 
                 Graphics g = Graphics.FromImage(image);
@@ -237,13 +237,13 @@
                 // DayOfyear	Date	Astro start	Astro end	Naut start	Naut end	Civil start	Civil end	Sunrise	  Sunset
                 //    1	      1-Jan-13	3:24 AM	     8:19 PM	3:58 AM	     7:45 PM	4:30 AM	    7:13 PM	    4:56 AM	  6:47 PM
 
-                int dayOfYear = Int32.Parse(fields[0]);
+                int dayOfYear = int.Parse(fields[0]);
                 string[] sunriseArray = fields[6].Split(' ');
                 string[] sunsetArray = fields[7].Split(' ');
                 sunriseArray = sunriseArray[0].Split(':');
                 sunsetArray = sunsetArray[0].Split(':');
-                int sunriseMinute = (Int32.Parse(sunriseArray[0]) * 60) + Int32.Parse(sunriseArray[1]);
-                int sunsetMinute = (Int32.Parse(sunsetArray[0]) * 60) + Int32.Parse(sunsetArray[1]) + 720;
+                int sunriseMinute = (int.Parse(sunriseArray[0]) * 60) + int.Parse(sunriseArray[1]);
+                int sunsetMinute = (int.Parse(sunsetArray[0]) * 60) + int.Parse(sunsetArray[1]) + 720;
                 for (int px = 0; px < pixelStep; px++)
                 {
                     image.SetPixel(sunriseMinute, imageRow, Color.White);
@@ -269,13 +269,13 @@
         public static DateTimeOffset ParseString2DateTime(string dtString)
         {
             // assume that first eight digits constitute a date string.
-            int year = Int32.Parse(dtString.Substring(0, 4));
-            int mnth = Int32.Parse(dtString.Substring(4, 2));
-            int day = Int32.Parse(dtString.Substring(6, 2));
+            int year = int.Parse(dtString.Substring(0, 4));
+            int mnth = int.Parse(dtString.Substring(4, 2));
+            int day = int.Parse(dtString.Substring(6, 2));
             // assume skip digit and then next six digits constitute a time of day string.
-            int hour = Int32.Parse(dtString.Substring(9, 2));
-            int min = Int32.Parse(dtString.Substring(11, 2));
-            int sec = Int32.Parse(dtString.Substring(13, 2));
+            int hour = int.Parse(dtString.Substring(9, 2));
+            int min = int.Parse(dtString.Substring(11, 2));
+            int sec = int.Parse(dtString.Substring(13, 2));
 
             //?? TODO TODO TODO TODO CANNOT GET DATE TIME STIRNG TO PARSE
             DateTimeOffset dto = new DateTimeOffset(year, mnth, day, hour, min, sec, TimeSpan.Zero);
@@ -309,9 +309,9 @@
                 // 2013 - 03 - 01 Fri  6:21 PM EST   Sunset
 
                 string[] dateFields = fields[0].Split('-');
-                int year = Int32.Parse(dateFields[0]);
-                int month = Int32.Parse(dateFields[1]);
-                int day = Int32.Parse(dateFields[2]);
+                int year = int.Parse(dateFields[0]);
+                int month = int.Parse(dateFields[1]);
+                int day = int.Parse(dateFields[2]);
                 var dateTime = new DateTimeOffset(year, month, day, 0, 0, 0, TimeSpan.Zero);
 
                 tides = new SunMoonTides();
@@ -327,8 +327,8 @@
                     est  = fields[5];
                 }
                 string[] hrminFields = time.Split(':');
-                int hour = Int32.Parse(hrminFields[0]);
-                int minute = Int32.Parse(hrminFields[1]);
+                int hour = int.Parse(hrminFields[0]);
+                int minute = int.Parse(hrminFields[1]);
 
                 var dto = new DateTimeOffset(year, month, day, hour, minute, 0, TimeSpan.Zero );
                 if ((ampm == "PM") && (hour < 12)) dto = dto.AddHours(12);

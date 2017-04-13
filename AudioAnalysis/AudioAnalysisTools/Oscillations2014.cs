@@ -207,14 +207,14 @@ namespace AudioAnalysisTools
         public static Tuple<Image, double[,], double[]> GenerateOscillationDataAndImages(FileInfo audioSegment, Dictionary<string, string> configDict, bool drawImage = false)
         {
             // set two oscillation detection parameters
-            double sensitivity = Oscillations2014.DefaultSensitivityThreshold;
+            double sensitivity = DefaultSensitivityThreshold;
             if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SensitivityThreshold))
             {
                 sensitivity = double.Parse(configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold]);
             }
 
             // Sample length i.e. number of frames spanned to calculate oscillations per second
-            int sampleLength = Oscillations2014.DefaultSampleLength;
+            int sampleLength = DefaultSampleLength;
             if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SampleLength))
             {
                 sampleLength = int.Parse(configDict[AnalysisKeys.OscilDetection2014SampleLength]);
@@ -249,10 +249,10 @@ namespace AudioAnalysisTools
             sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhoodFrames, lcnContrastLevel);
 
             string algorithmName1 = "autocorr-svd-fft";
-            double[,] freqOscilMatrix1 = Oscillations2014.GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName1);
+            double[,] freqOscilMatrix1 = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName1);
 
             //get the max spectral index - this reduces the matrix to an array
-            double[] spectralIndex = Oscillations2014.ConvertMatrix2SpectralIndex(freqOscilMatrix1);
+            double[] spectralIndex = ConvertMatrix2SpectralIndex(freqOscilMatrix1);
 
             // DEBUGGING
             // Add spectralIndex into the matrix because want to add it to image.

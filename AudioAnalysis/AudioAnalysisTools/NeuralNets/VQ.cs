@@ -28,7 +28,7 @@
             this.VectorSize     = cluster.Vectors[0].Length;
             //set up random number generator for init the clusters
             int seed = 123456;
-            rn = new RandomNumber(seed);
+            this.rn = new RandomNumber(seed);
         }
 
         /// <summary>
@@ -36,15 +36,15 @@
         /// </summary>
         public void Train()
         {
-            minError = Double.MaxValue;
+            this.minError = double.MaxValue;
             for (int r = 0; r < trainingRepeats; r++ )
             {
-                InitialiseClusters_Method1();
-                double error = TrainOnce();
-                if (error < minError)
+                this.InitialiseClusters_Method1();
+                double error = this.TrainOnce();
+                if (error < this.minError)
                 {
-                    StoreMinErrorCentroids();
-                    minError = error;
+                    this.StoreMinErrorCentroids();
+                    this.minError = error;
                 }
                 Log.WriteIfVerbose(" repeat="+(r+1)+"  error="+error.ToString("F3"));
             }
@@ -57,7 +57,7 @@
         /// <returns></returns>
         public double TrainOnce()
         {
-            double previousError = Double.MaxValue;
+            double previousError = double.MaxValue;
             double error = 0.0;
             double deltaError = 0.0;
             int iter = 0;
@@ -65,14 +65,14 @@
             for (int i = 0; i < maxIterations; i++ )
             {
                 iter++;
-                error = CalculateCodebookError();
+                error = this.CalculateCodebookError();
 
                 deltaError = (previousError - error) / previousError ; //fractional error change
                 previousError = error;
                 if (deltaError < errorTol)  break;
                 if (error      < 0.0000001) break;
                 //Log.WriteIfVerbose("i" + iter + "  e=" + error + "   deltaError=" + deltaError);
-                CalculateCentroids();
+                this.CalculateCentroids();
             }
             //Log.WriteIfVerbose("deltaError=" + deltaError + " total iter=" + iter);
             return error;
@@ -82,11 +82,11 @@
         {
             this.Clusters = new Cluster[this.CodeSize];
             int vectorCount = this.initialCluster.Size;
-            for (int c = 0; c < CodeSize; c++)
+            for (int c = 0; c < this.CodeSize; c++)
             {
                 int id = this.rn.GetInt(vectorCount - 1); //pick a vector at random
                 //LoggedConsole.WriteLine("Initialise cluster " + c + " with vector " + id);
-                Clusters[c] = new Cluster(this.initialCluster.Vectors[id]);
+                this.Clusters[c] = new Cluster(this.initialCluster.Vectors[id]);
             }
         }
 
@@ -104,7 +104,7 @@
 
         public void CalculateCentroids()
         {
-            for (int i = 0; i < CodeSize; i++)
+            for (int i = 0; i < this.CodeSize; i++)
             {
                 this.Clusters[i].CalculateCentroid();
             }
@@ -113,10 +113,10 @@
 
         public void StoreMinErrorCentroids()
         {
-            this.MinErrorCentroids = new double[CodeSize][];
-            for (int i = 0; i < CodeSize; i++)
+            this.MinErrorCentroids = new double[this.CodeSize][];
+            for (int i = 0; i < this.CodeSize; i++)
             {
-                MinErrorCentroids[i] = this.Clusters[i].Centroid;
+                this.MinErrorCentroids[i] = this.Clusters[i].Centroid;
             }
         }
 
@@ -125,19 +125,19 @@
             int vectorCount = this.initialCluster.Size;
 
             //empty the clusters of their current members
-            for (int c = 0; c < CodeSize; c++) Clusters[c].ResetMembers();
+            for (int c = 0; c < this.CodeSize; c++) this.Clusters[c].ResetMembers();
 
             double error = 0.0;
             for (int v = 0; v < vectorCount; v++)
             {
-                double[] euclidDist = new double[CodeSize];
-                for (int c = 0; c < CodeSize; c++)
+                double[] euclidDist = new double[this.CodeSize];
+                for (int c = 0; c < this.CodeSize; c++)
                 {
-                    euclidDist[c] = Clusters[c].DistanceFromCentroid(initialCluster.Vectors[v]);
+                    euclidDist[c] = this.Clusters[c].DistanceFromCentroid(this.initialCluster.Vectors[v]);
                 }
                 int minID = DataTools.GetMinIndex(euclidDist);
                 error += euclidDist[minID];
-                Clusters[minID].Vectors.Add(initialCluster.Vectors[v]);
+                this.Clusters[minID].Vectors.Add(this.initialCluster.Vectors[v]);
             }
             error /= vectorCount;
             return error;
@@ -145,7 +145,7 @@
 
         public double[] Average()
         {
-            return (initialCluster.CalculateCentroid());
+            return (this.initialCluster.CalculateCentroid());
         }
 
 

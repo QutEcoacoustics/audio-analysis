@@ -11,8 +11,8 @@
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Dong.Felt.Configuration;
-    using Dong.Felt.SpectrogramDrawing;
+    using Configuration;
+    using SpectrogramDrawing;
     using TowseyLibrary;
 
     public class AudioPreprosessing
@@ -180,16 +180,16 @@
         public static void AudioToCompressedSpectrogram(SonogramConfig config, CompressSpectrogramConfig compressConfig)
         {
             var inputFilePath = @"C:\XUEYAN\PHD research work\Second experiment\Training recordings2\Grey Fantail1.wav";
-            var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, inputFilePath);
+            var spectrogram = AudioToSpectrogram(config, inputFilePath);
             if (compressConfig.TimeCompressRate != 1.0)
             {
-                spectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(spectrogram.Data, compressConfig.TimeCompressRate);
+                spectrogram.Data = CompressSpectrogramInTime(spectrogram.Data, compressConfig.TimeCompressRate);
             }
             else
             {
                 if (compressConfig.FreqCompressRate != 1.0)
                 {
-                    spectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(spectrogram.Data, compressConfig.FreqCompressRate);
+                    spectrogram.Data = CompressSpectrogramInFreq(spectrogram.Data, compressConfig.FreqCompressRate);
                 }
             }
             /// spectrogram drawing setting

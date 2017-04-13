@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="AnalyseLongRecording.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="AnalyseLongRecording.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the AnalyseLongRecording type.
@@ -23,8 +23,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using Acoustics.Tools.Audio;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using AnalysisPrograms.Production;
-    using AnalysisPrograms.SourcePreparers;
+    using Production;
+    using SourcePreparers;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using log4net;

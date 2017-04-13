@@ -5,7 +5,7 @@
     using System.Linq;
     using System.Text;
     using AudioAnalysisTools.StandardSpectrograms;
-    using QutBioacosutics.Xie.Configuration;
+    using Configuration;
     using TowseyLibrary;
 
     public static class CalculateIndexForLitoriaNasuta

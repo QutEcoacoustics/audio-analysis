@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="IndexMatrices.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="IndexMatrices.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the IndexMatrices type.
@@ -44,7 +44,7 @@ namespace AudioAnalysisTools.Indices
             {
                 if (!files[f].Exists)
                 {
-                    if (IndexMatrices.Verbose)
+                    if (Verbose)
                     {
                         LoggedConsole.WriteWarnLine("WARNING: from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(" + files[f].Extension + ") ");
                         LoggedConsole.WriteWarnLine(string.Format("   MISSING FILE: {0}", files[f].FullName));
@@ -92,7 +92,7 @@ namespace AudioAnalysisTools.Indices
 
                 if (partialRowMinutes != partialMinutes)
                 {
-                    if (IndexMatrices.Verbose)
+                    if (Verbose)
                     {
                         LoggedConsole.WriteWarnLine("WARNING from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(" + files[i].Name + ") ");
                         string str1 = $"    Mismatch in csvFile {i + 1}/{files.Length} between rows added and elapsed time according to file names.";
@@ -207,7 +207,7 @@ namespace AudioAnalysisTools.Indices
                                                                                         IndexGenerationData indexGenerationData,
                                                                                         bool verbose = false)
         {
-            IndexMatrices.Verbose = verbose;
+            Verbose = verbose;
             TimeSpan indexCalcTimeSpan = indexGenerationData.IndexCalculationDuration;
             Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
 
@@ -215,7 +215,7 @@ namespace AudioAnalysisTools.Indices
             {
                 DateTime now1 = DateTime.Now;
                 string pattern = "*__" + analysisType + "." + key + ".csv";
-                var files = IndexMatrices.GetFilesInDirectories(dirs, pattern);
+                var files = GetFilesInDirectories(dirs, pattern);
 
                 if (files.Length == 0)
                 {
@@ -223,7 +223,7 @@ namespace AudioAnalysisTools.Indices
                     continue;
                 }
 
-                List<double[,]> matrices = IndexMatrices.ConcatenateSpectralIndexFilesWithTimeCheck(files, indexCalcTimeSpan);
+                List<double[,]> matrices = ConcatenateSpectralIndexFilesWithTimeCheck(files, indexCalcTimeSpan);
                 double[,] m = MatrixTools.ConcatenateMatrixRows(matrices);
                 //Dictionary<string, double[,]> dict = spectralIndexValues.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
 
@@ -259,7 +259,7 @@ namespace AudioAnalysisTools.Indices
             {
                 if (!files[f].Exists)
                 {
-                    if (IndexMatrices.Verbose)
+                    if (Verbose)
                     {
                         LoggedConsole.WriteWarnLine("WARNING: from IndexMatrices.ConcatenateSpectralIndexFilesWithTimeCheck(" + files[f].Extension + ") ");
                         LoggedConsole.WriteWarnLine(string.Format("   MISSING FILE: {0}", files[f].FullName));
@@ -311,7 +311,7 @@ namespace AudioAnalysisTools.Indices
 
                 if (partialRowMinutes != partialMinutes)
                 {
-                    if (IndexMatrices.Verbose)
+                    if (Verbose)
                     {
                         LoggedConsole.WriteWarnLine("WARNING from IndexMatrices.ConcatenateSpectralIndexFilesWithTimeCheck(" + files[i].Name + ") ");
                         string str1 = $"    Mismatch in csvFile {i + 1}/{files.Length} between rows added and elapsed time according to file names.";
@@ -466,12 +466,12 @@ namespace AudioAnalysisTools.Indices
             string ndsiKey = "NDSI-LM";
             if (!summaryIndices.ContainsKey(ndsiKey))
             {
-                summaryIndices = IndexMatrices.AddNDSI_GageGauge(summaryIndices, ndsiKey);
+                summaryIndices = AddNDSI_GageGauge(summaryIndices, ndsiKey);
             }
             ndsiKey = "NDSI-MH";
             if (!summaryIndices.ContainsKey(ndsiKey))
             {
-                summaryIndices = IndexMatrices.AddNDSI_GageGauge(summaryIndices, ndsiKey);
+                summaryIndices = AddNDSI_GageGauge(summaryIndices, ndsiKey);
             }
 
             return summaryIndices;
@@ -746,7 +746,7 @@ namespace AudioAnalysisTools.Indices
                 if (file.Exists)
                 {
                     int binCount;
-                    double[,] matrix = IndexMatrices.ReadSpectrogram(file, out binCount);
+                    double[,] matrix = ReadSpectrogram(file, out binCount);
                     matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
                     dict.Add(keys[key], matrix);
                     freqBinCount = binCount;

@@ -6,7 +6,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
     using Acoustics.Tools.Wav;
-    using AudioAnalysisTools.DSP;
+    using DSP;
     using TowseyLibrary;
 
     public class SpectrogramStandard : BaseSonogram
@@ -29,7 +29,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.Configuration = config;
             this.FrameCount = amplitudeSpectrogram.GetLength(0);
             this.Data = amplitudeSpectrogram;
-            Make(this.Data);
+            this.Make(this.Data);
         }
 
         public SpectrogramStandard(AmplitudeSonogram sg)
@@ -102,7 +102,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             double[,] m = amplitudeM;
 
             // (i) IF REQUIRED CONVERT TO FULL BAND WIDTH MEL SCALE
-            if (Configuration.DoMelScale)// m = ApplyFilterBank(m); //following replaces next method
+            if (this.Configuration.DoMelScale)// m = ApplyFilterBank(m); //following replaces next method
             {
                 m = MFCCStuff.MelFilterBank(m, this.Configuration.FreqBinCount, this.NyquistFrequency, 0, this.NyquistFrequency); // using the Greg integral
             }

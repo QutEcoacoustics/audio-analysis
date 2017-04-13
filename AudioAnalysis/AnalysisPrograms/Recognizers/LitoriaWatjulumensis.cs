@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="LitoriaWatjulumensis.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="LitoriaWatjulumensis.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //
@@ -19,7 +19,7 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
-    using AnalysisPrograms.Recognizers.Base;
+    using Base;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -139,7 +139,7 @@ namespace AnalysisPrograms.Recognizers
 
             // old way of creating a path:
             //var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.FileName), SpeciesName, "png", "DebugSpectrogram"));
-            var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, SpeciesName, "png", "DebugSpectrogram");
+            var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, this.SpeciesName, "png", "DebugSpectrogram");
             debugImage.Save(debugPath);
 
 
@@ -185,7 +185,7 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="lwConfig"></param>
         /// <param name="returnDebugImage"></param>
         /// <returns></returns>
-        private static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, Image> Analysis(AudioRecording recording, SonogramConfig sonoConfig,
+        private static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, Image> Analysis(AudioRecording recording, SonogramConfig sonoConfig,
                                                                                                LitoriaWatjulumConfig lwConfig, bool returnDebugImage)
         {
             double intensityThreshold = lwConfig.IntensityThreshold;
@@ -345,7 +345,7 @@ namespace AnalysisPrograms.Recognizers
                 var differencePlot = new Plot("Baseline Removed", normalisedScores, normalisedThreshold);
 
                 var debugPlots = new List<Plot> { scorePlot, sumDiffPlot, differencePlot };
-                debugImage = RecognizerBase.DrawDebugImage(sonogram, confirmedEvents, debugPlots, hits);
+                debugImage = DrawDebugImage(sonogram, confirmedEvents, debugPlots, hits);
             }
 
 
@@ -395,25 +395,25 @@ namespace AnalysisPrograms.Recognizers
         internal void ReadConfigFile(dynamic configuration)
         {
             // common properties
-            AnalysisName = (string)configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
-            SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            AbbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-            UpperBandMaxHz = (int)configuration["UpperFreqBandTop"];
-            UpperBandMinHz = (int)configuration["UpperFreqBandBottom"];
-            LowerBandMaxHz = (int)configuration["LowerFreqBandTop"];
-            LowerBandMinHz = (int)configuration["LowerFreqBandBottom"];
-            DecibelThreshold = (double?)configuration[AnalysisKeys.DecibelThreshold] ?? 3.0;
+            this.AnalysisName = (string)configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
+            this.SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            this.AbbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            this.UpperBandMaxHz = (int)configuration["UpperFreqBandTop"];
+            this.UpperBandMinHz = (int)configuration["UpperFreqBandBottom"];
+            this.LowerBandMaxHz = (int)configuration["LowerFreqBandTop"];
+            this.LowerBandMinHz = (int)configuration["LowerFreqBandBottom"];
+            this.DecibelThreshold = (double?)configuration[AnalysisKeys.DecibelThreshold] ?? 3.0;
 
             // extract profiles
             bool hasProfiles = ConfigFile.HasProfiles(configuration);
             if (!hasProfiles)
             {
-                throw new ConfigFileException($"The Config file for {SpeciesName} must contain at least one valid profile.");
+                throw new ConfigFileException($"The Config file for {this.SpeciesName} must contain at least one valid profile.");
             }
-            ProfileNames = ConfigFile.GetProfileNames(configuration);
-            foreach (var name in ProfileNames)
+            this.ProfileNames = ConfigFile.GetProfileNames(configuration);
+            foreach (var name in this.ProfileNames)
             {
-                LoggedConsole.WriteLine($"The Config file for {SpeciesName}  contains the profile <{name}>.");
+                LoggedConsole.WriteLine($"The Config file for {this.SpeciesName}  contains the profile <{name}>.");
             }
 
             // dynamic profile = ConfigFile.GetProfile(configuration, "Trill");
@@ -421,37 +421,37 @@ namespace AnalysisPrograms.Recognizers
             bool success = ConfigFile.TryGetProfile(configuration, "Trill", out trillProfile);
             if (!success)
             {
-                throw new ConfigFileException($"The Config file for {SpeciesName} must contain a \"Trill\" profile.");
+                throw new ConfigFileException($"The Config file for {this.SpeciesName} must contain a \"Trill\" profile.");
             }
 
-            LoggedConsole.WriteLine($"Analyzing profile: {ProfileNames[0]}");
+            LoggedConsole.WriteLine($"Analyzing profile: {this.ProfileNames[0]}");
 
             // Periods and Oscillations
-            MinPeriod = (double)trillProfile[AnalysisKeys.MinPeriodicity]; //: 0.18
-            MaxPeriod = (double)trillProfile[AnalysisKeys.MaxPeriodicity]; //: 0.25
+            this.MinPeriod = (double)trillProfile[AnalysisKeys.MinPeriodicity]; //: 0.18
+            this.MaxPeriod = (double)trillProfile[AnalysisKeys.MaxPeriodicity]; //: 0.25
 
             // minimum duration in seconds of a trill event
-            MinDurationOfTrill = (double)trillProfile[AnalysisKeys.MinDuration]; //:3
+            this.MinDurationOfTrill = (double)trillProfile[AnalysisKeys.MinDuration]; //:3
             // maximum duration in seconds of a trill event
-            MaxDurationOfTrill = (double)trillProfile[AnalysisKeys.MaxDuration]; //: 15
+            this.MaxDurationOfTrill = (double)trillProfile[AnalysisKeys.MaxDuration]; //: 15
             //// minimum acceptable value of a DCT coefficient
-            IntensityThreshold = (double?)trillProfile[AnalysisKeys.IntensityThreshold] ?? 0.4;
+            this.IntensityThreshold = (double?)trillProfile[AnalysisKeys.IntensityThreshold] ?? 0.4;
 
             //double dctDuration = (double)configuration[AnalysisKeys.DctDuration];
             // This is the intensity threshold above
             //double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
 
-            LoggedConsole.WriteLine($"Analyzing profile: {ProfileNames[1]}");
+            LoggedConsole.WriteLine($"Analyzing profile: {this.ProfileNames[1]}");
             dynamic tinkProfile;
             success = ConfigFile.TryGetProfile(configuration, "Tink", out tinkProfile);
             if (!success)
             {
-                throw new ConfigFileException($"The Config file for {SpeciesName} must contain a \"Tink\" profile.");
+                throw new ConfigFileException($"The Config file for {this.SpeciesName} must contain a \"Tink\" profile.");
             }
-            MinDurationOfTink = (double)tinkProfile[AnalysisKeys.MinDuration]; //
+            this.MinDurationOfTink = (double)tinkProfile[AnalysisKeys.MinDuration]; //
             // maximum duration in seconds of a tink event
-            MaxDurationOfTink = (double)tinkProfile[AnalysisKeys.MaxDuration]; //
-            EventThreshold = (double?)trillProfile[AnalysisKeys.EventThreshold] ?? 0.2;
+            this.MaxDurationOfTink = (double)tinkProfile[AnalysisKeys.MaxDuration]; //
+            this.EventThreshold = (double?)trillProfile[AnalysisKeys.EventThreshold] ?? 0.2;
         }
 
     } //class LitoriaWatjulumConfig

@@ -29,7 +29,7 @@
 
         public void NormaliseData()
         {
-            data = DataTools.normalise(data);
+            this.data = DataTools.normalise(this.data);
         }
 
         public void ScaleDataArray(int newLength)
@@ -40,7 +40,7 @@
 
         public void NormaliseData(double min, double max)
         {
-            data = DataTools.NormaliseInZeroOne(data, min, max);
+            this.data = DataTools.NormaliseInZeroOne(this.data, min, max);
         }
 
         public static double[] PruneScoreArray(double[] scores, double scoreThreshold, int minDuration, int maxDuration)

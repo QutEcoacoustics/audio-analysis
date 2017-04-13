@@ -21,18 +21,18 @@ namespace TowseyLibrary
         /// <param name="data"></param>
         public NormalDist(int[] data)
         {
-            totalCount = data.Length;
+            this.totalCount = data.Length;
             double average;
             double stdev;
             AverageAndSD(data, out average, out stdev);
             this.av = average;
             this.sd = stdev;
             //convert data to doubles
-            double[] doubleData = new double[totalCount];
-            for (int i = 0; i < totalCount; i++) doubleData[i] = (double)data[i];
-            bins = get16binDistribution(doubleData, this.av, this.sd);
+            double[] doubleData = new double[this.totalCount];
+            for (int i = 0; i < this.totalCount; i++) doubleData[i] = (double)data[i];
+            this.bins = get16binDistribution(doubleData, this.av, this.sd);
 
-            DataTools.MinMax(doubleData, out min, out max);
+            DataTools.MinMax(doubleData, out this.min, out this.max);
         }
 
         /// <summary>
@@ -41,23 +41,23 @@ namespace TowseyLibrary
         /// <param name="data"></param>
         public NormalDist(double[] data)
         {
-            totalCount = data.Length;
+            this.totalCount = data.Length;
             double average;
             double stdev;
             AverageAndSD(data, out average, out stdev);
             this.av = average;
             this.sd = stdev;
-            bins = get16binDistribution(data, average, stdev);
+            this.bins = get16binDistribution(data, average, stdev);
             DataTools.MinMax(data, out this.min, out this.max);
         }
 
 
         public NormalDist(double[] data, double AV, double SD)
         {
-            totalCount = data.Length;
+            this.totalCount = data.Length;
             this.av = AV;
             this.sd = SD;
-            bins = get16binDistribution(data, av, SD);
+            this.bins = get16binDistribution(data, this.av, SD);
             DataTools.MinMax(data, out this.min, out this.max);
         }
 
@@ -74,7 +74,7 @@ namespace TowseyLibrary
          */
         public double[,] getBins()
         {
-            return bins;
+            return this.bins;
         }
 
         /**
@@ -111,7 +111,7 @@ namespace TowseyLibrary
 
             double av;
             double sd;
-            NormalDist.AverageAndSD(scores, out av, out sd);
+            AverageAndSD(scores, out av, out sd);
 
             for (int i = 0; i < length; i++)
             {
@@ -129,7 +129,7 @@ namespace TowseyLibrary
          * @param data
          * @return
          */
-        static public void AverageAndSD(int[] data, out double av, out double sd)
+        public static void AverageAndSD(int[] data, out double av, out double sd)
         {
             int N = data.Length;
             int sum = 0;
@@ -160,7 +160,7 @@ namespace TowseyLibrary
         }
 
 
-        static public void AverageAndSD(List<int> data, out double av, out double sd)
+        public static void AverageAndSD(List<int> data, out double av, out double sd)
         {
             AverageAndSD(data.ToArray(), out av, out sd);
         }
@@ -170,7 +170,7 @@ namespace TowseyLibrary
          * @param data
          * @return
          */
-        static public void AverageAndSD(double[] data, out double av, out double sd)
+        public static void AverageAndSD(double[] data, out double av, out double sd)
         {
             double var;
             AverageAndVariance(data, out av, out var);
@@ -182,7 +182,7 @@ namespace TowseyLibrary
          * @param data
          * @return
          */
-        static public void AverageAndVariance(double[] data, out double av, out double variance)
+        public static void AverageAndVariance(double[] data, out double av, out double variance)
         {
             int N = data.Length;
             double sum = 0.0;
@@ -207,7 +207,7 @@ namespace TowseyLibrary
         }
 
 
-        static public void AverageAndSD(List<double> data, out double av, out double sd)
+        public static void AverageAndSD(List<double> data, out double av, out double sd)
         {
             AverageAndSD(data.ToArray(), out av, out sd);
         }
@@ -221,8 +221,10 @@ namespace TowseyLibrary
             double[] values = new double[rows*cols];
             int id = 0;
             for (int i = 0; i < rows; i++)
+            {
                 for (int j = 0; j < cols; j++)
                     values[id++] = data[i,j];
+            }
 
             AverageAndSD(values, out av, out sd);
         }
@@ -235,7 +237,7 @@ namespace TowseyLibrary
         /// <param name="data"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        static public double[] CalculateLocalVariance(double[] data, int window)
+        public static double[] CalculateLocalVariance(double[] data, int window)
         {
             int L = data.Length;
             int halfwindow = window / 2;
@@ -245,7 +247,7 @@ namespace TowseyLibrary
             for (int i = 0; i <= (L - window); i++)
             {
                 double[] subV = DataTools.Subarray(data, i, window);
-                NormalDist.AverageAndVariance(subV, out av, out variance);
+                AverageAndVariance(subV, out av, out variance);
                 variances[i + halfwindow] = variance;
             }
             // plug up the ends
@@ -523,7 +525,7 @@ namespace TowseyLibrary
         }
 
 
-        static private int getBin(double dd, double[] bounds)
+        private static int getBin(double dd, double[] bounds)
         {
             if (dd < bounds[0]) return 0;
             else
@@ -559,12 +561,12 @@ namespace TowseyLibrary
         }
 
 
-        public String write16binDistribution()
+        public string write16binDistribution()
         {
-            return write16binDistribution(bins);
+            return write16binDistribution(this.bins);
         }
 
-        public static String write16binDistribution(double[,] bins)
+        public static string write16binDistribution(double[,] bins)
         {
             StringBuilder sb = new StringBuilder("NORMAL DISTRIBUTION (16 bins)\n");
             sb.Append("bin\tup_bnd\tmidpt\tcount\t\tfraction\tln\n");
@@ -583,14 +585,14 @@ namespace TowseyLibrary
             return sb.ToString();
         }
 
-        public String writeAllStatistics()
+        public string writeAllStatistics()
         {
             StringBuilder sb = new StringBuilder("   DISTRIBUTION STATISTICS \n");
-            sb.Append("Total count=" + totalCount + "\n");
+            sb.Append("Total count=" + this.totalCount + "\n");
             sb.Append("Average = " + DataTools.roundDouble(this.av, 5));
             sb.Append(" +/- " + DataTools.roundDouble(this.sd, 5) + "\n");
             sb.Append("Min=" + this.min + "  Max=" + this.max + "\n");
-            sb.Append(write16binDistribution());
+            sb.Append(this.write16binDistribution());
             return sb.ToString();
         }
 
@@ -666,7 +668,7 @@ namespace TowseyLibrary
         LoggedConsole.WriteLine(" =============================");
     }
 
-        public static String formatAvAndSD(double[] avsd, int places)
+        public static string formatAvAndSD(double[] avsd, int places)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append((avsd[0]).ToString("F4"));
@@ -716,7 +718,7 @@ namespace TowseyLibrary
         }
 
 
-        public static void main(String[] args)
+        public static void main(string[] args)
 	{
 
 

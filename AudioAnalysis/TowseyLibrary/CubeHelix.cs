@@ -120,7 +120,7 @@ public class CubeHelix
             for (int c = 0; c < maxPalletteSize; c++)
             {
                 double value = c / (double)maxPalletteIndex;
-                Rgb rgbColour = GetColor(value);
+                Rgb rgbColour = this.GetColor(value);
                 pallette[c] = Color.FromArgb((int)rgbColour.R, (int)rgbColour.G, (int)rgbColour.B);
             }
             this.ColourPallette = pallette;
@@ -178,7 +178,7 @@ public class CubeHelix
             int colourID = (int)Math.Floor(value * this.maxPalletteIndex);
 
             if (colourID < 0) return 0;
-            if (colourID > maxPalletteIndex) return maxPalletteIndex;
+            if (colourID > this.maxPalletteIndex) return this.maxPalletteIndex;
             return colourID;
         }
 
@@ -195,7 +195,7 @@ public class CubeHelix
 
             if (colourID < 0) { colourID = 0; }
             else
-            { if (colourID > maxPalletteIndex) colourID = maxPalletteIndex; }
+            { if (colourID > this.maxPalletteIndex) colourID = this.maxPalletteIndex; }
             return this.ColourPallette[colourID];
         }
 
@@ -247,11 +247,11 @@ public class CubeHelix
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    int colourID = (int)Math.Floor(matrix[r, c] * maxPalletteIndex);
+                    int colourID = (int)Math.Floor(matrix[r, c] * this.maxPalletteIndex);
 
                     if (colourID < 0) { colourID = 0; }
                     else
-                    { if (colourID > maxPalletteIndex) colourID = maxPalletteIndex; }
+                    { if (colourID > this.maxPalletteIndex) colourID = this.maxPalletteIndex; }
 
                     bmp.SetPixel(c, r, this.ColourPallette[colourID]);
                 }//end all columns

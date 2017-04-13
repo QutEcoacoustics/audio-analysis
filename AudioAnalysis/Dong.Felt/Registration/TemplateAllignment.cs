@@ -5,7 +5,7 @@
     using System.Linq;
     using System.Text;
     using AudioAnalysisTools.StandardSpectrograms;
-    using Dong.Felt.Representations;
+    using Representations;
 
     /// <summary>
     /// This class aims to locate matching candidates.

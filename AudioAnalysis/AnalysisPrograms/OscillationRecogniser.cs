@@ -14,7 +14,7 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Linq;
     using System.Text;
-    using AnalysisPrograms.Production;
+    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
@@ -96,18 +96,18 @@ namespace AnalysisPrograms
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
-            bool doSegmentation = Boolean.Parse(dict[key_DO_SEGMENTATION]);
-            int minHz           = Int32.Parse(dict[key_MIN_HZ]);
-            int maxHz           = Int32.Parse(dict[key_MAX_HZ]);
-            double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
-            double dctDuration  = Double.Parse(dict[key_DCT_DURATION]);       //duration of DCT in seconds
-            double dctThreshold = Double.Parse(dict[key_DCT_THRESHOLD]);      //minimum acceptable value of a DCT coefficient
-            int minOscilFreq    = Int32.Parse(dict[key_MIN_OSCIL_FREQ]);      //ignore oscillations below this threshold freq
-            int maxOscilFreq    = Int32.Parse(dict[key_MAX_OSCIL_FREQ]);      //ignore oscillations above this threshold freq
-            double minDuration  = Double.Parse(dict[key_MIN_DURATION]);       //min duration of event in seconds
-            double maxDuration  = Double.Parse(dict[key_MAX_DURATION]);       //max duration of event in seconds
-            double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);  //min score for an acceptable event
-            int DRAW_SONOGRAMS  = Int32.Parse(dict[key_DRAW_SONOGRAMS]);      //options to draw sonogram
+            bool doSegmentation = bool.Parse(dict[key_DO_SEGMENTATION]);
+            int minHz           = int.Parse(dict[key_MIN_HZ]);
+            int maxHz           = int.Parse(dict[key_MAX_HZ]);
+            double frameOverlap = double.Parse(dict[key_FRAME_OVERLAP]);
+            double dctDuration  = double.Parse(dict[key_DCT_DURATION]);       //duration of DCT in seconds
+            double dctThreshold = double.Parse(dict[key_DCT_THRESHOLD]);      //minimum acceptable value of a DCT coefficient
+            int minOscilFreq    = int.Parse(dict[key_MIN_OSCIL_FREQ]);      //ignore oscillations below this threshold freq
+            int maxOscilFreq    = int.Parse(dict[key_MAX_OSCIL_FREQ]);      //ignore oscillations above this threshold freq
+            double minDuration  = double.Parse(dict[key_MIN_DURATION]);       //min duration of event in seconds
+            double maxDuration  = double.Parse(dict[key_MAX_DURATION]);       //max duration of event in seconds
+            double eventThreshold = double.Parse(dict[key_EVENT_THRESHOLD]);  //min score for an acceptable event
+            int DRAW_SONOGRAMS  = int.Parse(dict[key_DRAW_SONOGRAMS]);      //options to draw sonogram
 
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
             Log.WriteIfVerbose("Oscill bounds: " + minOscilFreq + " - " + maxOscilFreq + " Hz");
@@ -139,7 +139,7 @@ namespace AnalysisPrograms
             string fname = arguments.Source.Name;
             int count = predictedEvents.Count;
             //string str = String.Format("#RecordingName\tDuration(sec)\t#Ev\tCompT(ms)\t%hiFrames\n{0}\t{1}\t{2}\t{3}\t{4}\n", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
-            string str = String.Format("{0}\t{1}\t{2}\t{3}\t{4}", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
+            string str = string.Format("{0}\t{1}\t{2}\t{3}\t{4}", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
             StringBuilder sb = AcousticEvent.WriteEvents(predictedEvents, str);
             FileTools.WriteTextFile(opPath, sb.ToString());
 
@@ -163,7 +163,7 @@ namespace AnalysisPrograms
 
 
 
-        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, double[], TimeSpan> Execute_ODDetect(FileInfo wavPath,
+        public static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, double[], TimeSpan> Execute_ODDetect(FileInfo wavPath,
             bool doSegmentation, int minHz, int maxHz, double frameOverlap, double dctDuration, double dctThreshold, int minOscilFreq, int maxOscilFreq,
             double eventThreshold, double minDuration, double maxDuration)
         {
@@ -194,14 +194,14 @@ namespace AnalysisPrograms
             bool normaliseDCT = true;
             List<AcousticEvent> predictedEvents;  //predefinition of results event list
             double[] scores;                      //predefinition of score array
-            Double[,] hits;                       //predefinition of hits matrix - to superimpose on sonogram image
+            double[,] hits;                       //predefinition of hits matrix - to superimpose on sonogram image
             double[] segments;                    //predefinition of segmentation of recording
             TimeSpan analysisTime;                //predefinition of Time duration taken to do analysis on this file
             Oscillations2010.Execute((SpectrogramStandard)sonogram, doSegmentation, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT,
                                          minOscilFreq, maxOscilFreq, eventThreshold, minDuration, maxDuration,
                                          out scores, out predictedEvents, out hits, out segments, out analysisTime);
 
-            return System.Tuple.Create(sonogram, hits, scores, predictedEvents, segments, analysisTime);
+            return Tuple.Create(sonogram, hits, scores, predictedEvents, segments, analysisTime);
 
         }//end CaneToadRecogniser
 

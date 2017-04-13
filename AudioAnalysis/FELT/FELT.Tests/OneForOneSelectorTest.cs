@@ -1,7 +1,7 @@
 ﻿namespace FELT.Tests
 {
     using System;
-    using FELT.Selectors;
+    using Selectors;
     using Microsoft.FSharp.Collections;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using MQUTeR.FSharp.Shared;
@@ -25,11 +25,11 @@
         {
             get
             {
-                return testContextInstance;
+                return this.testContextInstance;
             }
             set
             {
-                testContextInstance = value;
+                this.testContextInstance = value;
             }
         }
 

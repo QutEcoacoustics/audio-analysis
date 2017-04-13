@@ -5,7 +5,7 @@
     using System.IO;
     using System.Linq;
     using System.Text;
-    using AnalysisPrograms.Production;
+    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -173,7 +173,7 @@
         /// <param name="maxOscilRate">upper bound on oscillation rate</param>
         /// <param name="maxOscilScore">this is obtained from score on training data. Used to normalise osc scores</param>
         /// <returns></returns>
-        public static System.Tuple<double[], AudioRecording, double[], double[]>
+        public static Tuple<double[], AudioRecording, double[], double[]>
          FrogRibbitRecognizer(AudioRecording recording, string filterName, int midBandFreq, double windowDuration = 5.0, double windowOverlap = 0.5,
            double dctDuration = 0.5, double dctThreshold = 0.4, bool normaliseDCT = false, int minOscilRate = 11, int maxOscilRate = 17, double maxOscilScore=20.0)
         {
@@ -240,7 +240,7 @@
 
             //ix: fill in the oscillation scores
             combinedScores = Oscillations2010.FillScoreArray(combinedScores, dctDuration, framesPerSecond);
-            return System.Tuple.Create(combinedScores, filteredRecording, dBarray, tsd);
+            return Tuple.Create(combinedScores, filteredRecording, dBarray, tsd);
         }
 
 

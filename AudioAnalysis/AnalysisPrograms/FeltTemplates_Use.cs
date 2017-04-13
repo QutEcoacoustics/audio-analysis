@@ -6,7 +6,7 @@
     using System.Linq;
     using System.Text;
     using Acoustics.Shared.Extensions;
-    using AnalysisPrograms.Production;
+    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -118,7 +118,7 @@
 
             //iii: Get zip paths and the results Tuple
             List<string> zipList = FileTools.ReadTextFile(arguments.Config.FullName);
-            System.Tuple<SpectrogramStandard, List<AcousticEvent>, double[]> results = null; //set up the results Tuple
+            Tuple<SpectrogramStandard, List<AcousticEvent>, double[]> results = null; //set up the results Tuple
 
             foreach (string zipPath in zipList)
             {
@@ -173,7 +173,7 @@
                 var matchingEvents = results.Item2;
                 var scores = results.Item3;
 
-                double matchThreshold = Double.Parse(dict[FeltTemplate_Create.key_DECIBEL_THRESHOLD]);
+                double matchThreshold = double.Parse(dict[FeltTemplate_Create.key_DECIBEL_THRESHOLD]);
                 Log.WriteLine("# Finished detecting events like target: " + id);
                 Log.WriteLine("# Matching Event Count = " + matchingEvents.Count);
                 Log.WriteLine("           @ threshold = {0:f2}", matchThreshold);
@@ -187,7 +187,7 @@
                 //v: write events count to results info file.
                 double sigDuration = sonogram.Duration.TotalSeconds;
                 string fname = arguments.Source.Name;
-                string str = String.Format("{0}\t{1}\t{2}", fname, sigDuration, matchingEvents.Count);
+                string str = string.Format("{0}\t{1}\t{2}", fname, sigDuration, matchingEvents.Count);
                 StringBuilder sb = AcousticEvent.WriteEvents(matchingEvents, str);
                 FileTools.WriteTextFile("opPath", sb.ToString());
 
@@ -238,16 +238,16 @@
         /// <param name="dict"></param>
         /// <param name="templatePath"></param>
         /// <returns></returns>
-        public static System.Tuple<SpectrogramStandard, List<AcousticEvent>, double[]> FELTWithBinaryTemplate(SpectrogramStandard sonogram, Dictionary<string, string> dict, double[,] templateMatrix)
+        public static Tuple<SpectrogramStandard, List<AcousticEvent>, double[]> FELTWithBinaryTemplate(SpectrogramStandard sonogram, Dictionary<string, string> dict, double[,] templateMatrix)
         {
             //i: get parameters from dicitonary
             string callName = dict[FeltTemplate_Create.key_CALL_NAME];
-            bool doSegmentation = Boolean.Parse(dict[FeltTemplate_Create.key_DO_SEGMENTATION]);
-            double smoothWindow = Double.Parse(dict[FeltTemplate_Create.key_SMOOTH_WINDOW]);          //before segmentation
-            int minHz = Int32.Parse(dict[FeltTemplate_Create.key_MIN_HZ]);
-            int maxHz = Int32.Parse(dict[FeltTemplate_Create.key_MAX_HZ]);
-            double minDuration = Double.Parse(dict[FeltTemplate_Create.key_MIN_DURATION]);         //min duration of event in seconds
-            double dBThreshold = Double.Parse(dict[FeltTemplate_Create.key_DECIBEL_THRESHOLD]);   // = 9.0; // dB threshold
+            bool doSegmentation = bool.Parse(dict[FeltTemplate_Create.key_DO_SEGMENTATION]);
+            double smoothWindow = double.Parse(dict[FeltTemplate_Create.key_SMOOTH_WINDOW]);          //before segmentation
+            int minHz = int.Parse(dict[FeltTemplate_Create.key_MIN_HZ]);
+            int maxHz = int.Parse(dict[FeltTemplate_Create.key_MAX_HZ]);
+            double minDuration = double.Parse(dict[FeltTemplate_Create.key_MIN_DURATION]);         //min duration of event in seconds
+            double dBThreshold = double.Parse(dict[FeltTemplate_Create.key_DECIBEL_THRESHOLD]);   // = 9.0; // dB threshold
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteLine("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
 
@@ -258,7 +258,7 @@
 
             //iii: DO SEGMENTATION
             double segmentationThreshold = 2.0;     // Standard deviations above backgorund noise
-            double maxDuration = Double.MaxValue;   // Do not constrain maximum length of events.
+            double maxDuration = double.MaxValue;   // Do not constrain maximum length of events.
             var tuple1 = AcousticEvent.GetSegmentationEvents((SpectrogramStandard)sonogram, doSegmentation, minHz, maxHz, smoothWindow, segmentationThreshold, minDuration, maxDuration);
             var segmentEvents = tuple1.Item1;
 
@@ -286,7 +286,7 @@
             // Edit the events to correct the start time, duration and end of events to match the max score and length of the template.
             AdjustEventLocation(matchEvents, callName, templateDuration, sonogram.Duration.TotalSeconds);
 
-            return System.Tuple.Create(sonogram, matchEvents, scores);
+            return Tuple.Create(sonogram, matchEvents, scores);
         } // FELTWithBinaryTemplate()
 
 
@@ -298,16 +298,16 @@
         /// <param name="dict"></param>
         /// <param name="templatePath"></param>
         /// <returns></returns>
-        public static System.Tuple<SpectrogramStandard, List<AcousticEvent>, double[]> FELTWithSprTemplate(SpectrogramStandard sonogram, Dictionary<string, string> dict, char[,] templateMatrix)
+        public static Tuple<SpectrogramStandard, List<AcousticEvent>, double[]> FELTWithSprTemplate(SpectrogramStandard sonogram, Dictionary<string, string> dict, char[,] templateMatrix)
         {
             //i: get parameters from dicitonary
             string callName = dict[FeltTemplate_Create.key_CALL_NAME];
-            bool doSegmentation = Boolean.Parse(dict[FeltTemplate_Create.key_DO_SEGMENTATION]);
-            double smoothWindow = Double.Parse(dict[FeltTemplate_Create.key_SMOOTH_WINDOW]);         //before segmentation
-            int minHz = Int32.Parse(dict[FeltTemplate_Create.key_MIN_HZ]);
-            int maxHz = Int32.Parse(dict[FeltTemplate_Create.key_MAX_HZ]);
-            double minDuration = Double.Parse(dict[FeltTemplate_Create.key_MIN_DURATION]);           //min duration of event in seconds
-            double dBThreshold = Double.Parse(dict[FeltTemplate_Create.key_DECIBEL_THRESHOLD]);      // = 9.0; // dB threshold
+            bool doSegmentation = bool.Parse(dict[FeltTemplate_Create.key_DO_SEGMENTATION]);
+            double smoothWindow = double.Parse(dict[FeltTemplate_Create.key_SMOOTH_WINDOW]);         //before segmentation
+            int minHz = int.Parse(dict[FeltTemplate_Create.key_MIN_HZ]);
+            int maxHz = int.Parse(dict[FeltTemplate_Create.key_MAX_HZ]);
+            double minDuration = double.Parse(dict[FeltTemplate_Create.key_MIN_DURATION]);           //min duration of event in seconds
+            double dBThreshold = double.Parse(dict[FeltTemplate_Create.key_DECIBEL_THRESHOLD]);      // = 9.0; // dB threshold
             dBThreshold = 4.0;
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteLine("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
@@ -319,7 +319,7 @@
 
             //iii: DO SEGMENTATION
             double segmentationThreshold = 2.0;      // Standard deviations above backgorund noise
-            double maxDuration = Double.MaxValue;    // Do not constrain maximum length of events.
+            double maxDuration = double.MaxValue;    // Do not constrain maximum length of events.
             var tuple1 = AcousticEvent.GetSegmentationEvents((SpectrogramStandard)sonogram, doSegmentation, minHz, maxHz, smoothWindow, segmentationThreshold, minDuration, maxDuration);
             var segmentEvents = tuple1.Item1;
 
@@ -351,7 +351,7 @@
             // Edit the events to correct the start time, duration and end of events to match the max score and length of the template.
             AdjustEventLocation(matchEvents, callName, templateDuration, sonogram.Duration.TotalSeconds);
 
-            return System.Tuple.Create(sonogram, matchEvents, scores);
+            return Tuple.Create(sonogram, matchEvents, scores);
         } // FELTWithSprTemplate()
 
 
@@ -392,7 +392,8 @@
             double thresholdOverlap = percentOverlap / 100.0;
             int count = events.Count;
             for(int i = 0; i < count-1; i++)
-                for(int j = i+1; j < count; j++)
+            {
+                for (int j = i+1; j < count; j++)
                 {
                     if (AcousticEvent.EventFractionalOverlap(events[i], events[j]) > thresholdOverlap)
                     {
@@ -401,6 +402,7 @@
                         else                                    events[i].Name = null;
                     }
                 }
+            }
 
             List<AcousticEvent> pruned = new List<AcousticEvent>();
             foreach (AcousticEvent ae in events)

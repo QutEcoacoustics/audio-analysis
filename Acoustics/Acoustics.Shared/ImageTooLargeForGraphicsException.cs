@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="ImageTooLargeForGraphicsException.cs" company="MQUTeR">
-//   -
+// <copyright file="ImageTooLargeForGraphicsException.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -127,17 +127,17 @@ namespace Acoustics.Shared
         public override string ToString()
         {
             var sb = new StringBuilder("ImageTooLargeForGraphicsException: ");
-            if (WidthAtException.HasValue)
+            if (this.WidthAtException.HasValue)
             {
-                sb.Append(" Image Width: " + WidthAtException.Value);
+                sb.Append(" Image Width: " + this.WidthAtException.Value);
             }
-            if (HeightAtException.HasValue)
+            if (this.HeightAtException.HasValue)
             {
-                sb.Append(" Image Height: " + HeightAtException.Value);
+                sb.Append(" Image Height: " + this.HeightAtException.Value);
             }
-            if (AudioLengthAtException.HasValue)
+            if (this.AudioLengthAtException.HasValue)
             {
-                sb.Append(" Audio Length: " + AudioLengthAtException.Value + "ms");
+                sb.Append(" Audio Length: " + this.AudioLengthAtException.Value + "ms");
             }
             if (!string.IsNullOrEmpty(this.Message))
             {
@@ -160,9 +160,9 @@ namespace Acoustics.Shared
         {
             base.GetObjectData(info, context);
 
-            info.AddValue("WidthAtException", WidthAtException);
-            info.AddValue("HeightAtException", HeightAtException);
-            info.AddValue("AudioLengthAtException", AudioLengthAtException);
+            info.AddValue("WidthAtException", this.WidthAtException);
+            info.AddValue("HeightAtException", this.HeightAtException);
+            info.AddValue("AudioLengthAtException", this.AudioLengthAtException);
         }
     }
 }

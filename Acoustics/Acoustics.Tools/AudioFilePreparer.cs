@@ -4,8 +4,8 @@
     using System.Collections.Generic;
     using System.IO;
 
-    using Acoustics.Shared;
-    using Acoustics.Tools.Audio;
+    using Shared;
+    using Audio;
 
     /// <summary>
     /// The audio file preparer.

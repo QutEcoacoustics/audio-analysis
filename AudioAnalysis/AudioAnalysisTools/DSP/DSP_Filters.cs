@@ -279,7 +279,7 @@
             bool doit1 = false;
             if (doit1) //test Method(parameters)
             {
-                System.LoggedConsole.WriteLine("\nTest of METHOD)");
+                LoggedConsole.WriteLine("\nTest of METHOD)");
             }//end test Method(string fName)
 
 
@@ -287,7 +287,7 @@
             bool doit2 = true;
             if (doit2) //test Method(parameters)
             {
-                System.LoggedConsole.WriteLine("\nTest of Filter_DecayingSinusoid()");
+                LoggedConsole.WriteLine("\nTest of Filter_DecayingSinusoid()");
                 double sf = 100;
                 double tHalf = 0.2;//seconds
                 double period = 0.2; //seconds
@@ -306,7 +306,7 @@
             bool doit3 = false;
             if (doit3) //test Filter_DecayingSinusoid()
             {
-                System.LoggedConsole.WriteLine("\nTest of Filter_DecayingSinusoid()");
+                LoggedConsole.WriteLine("\nTest of Filter_DecayingSinusoid()");
                 int signalLength= 100;
                 //set up the impulse signal
                 double[] signal = new double[signalLength];

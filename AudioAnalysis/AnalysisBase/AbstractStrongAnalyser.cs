@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="AbstractStrongAnalyser.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="AbstractStrongAnalyser.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Provides sensible defaults for some of the functionality required by IAnalyser2.
@@ -13,7 +13,7 @@ namespace AnalysisBase
     using System.Collections.Generic;
     using System.IO;
 
-    using AnalysisBase.ResultBases;
+    using ResultBases;
 
     /// <summary>
     /// Provides sensible defaults for some of the functionality required by <c>IAnalyser2</c>.

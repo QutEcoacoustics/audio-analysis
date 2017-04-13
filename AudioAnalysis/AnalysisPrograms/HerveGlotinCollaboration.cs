@@ -114,12 +114,12 @@
                 FileInfo file = wavFiles[i];
                 recordingPath = file.FullName;
                 string idName = Path.GetFileNameWithoutExtension(file.FullName);
-                string name = String.Format("{0}_Species{1:d2}", idName, speciesID[i]);
+                string name = string.Format("{0}_Species{1:d2}", idName, speciesID[i]);
                 outputDir = parentDir + @"\" + learningMode + @"\" + name;
                 csvDir = parentDir + @"\" + learningMode + @"\" + name + @"\Towsey.Acoustic";
                 zoomOutputDir = outputDir;
                 Console.WriteLine("\n\n");
-                Console.WriteLine(String.Format(@">>>>{0}: File<{1}>", i, name));
+                Console.WriteLine(string.Format(@">>>>{0}: File<{1}>", i, name));
 
                 try
                 {
@@ -199,7 +199,7 @@
                     // DRAW THE VARIOUS IMAGES
                     string fileStem = fileName;
                     if (fileStemFormatString != null)
-                        fileStem = String.Format(fileStemFormatString, (i + 1)); // training images
+                        fileStem = string.Format(fileStemFormatString, (i + 1)); // training images
 
                     var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
                     {
@@ -229,10 +229,10 @@
                     foreach (string key in copyArray)
                     {
                         // ID0002__Towsey.Acoustic.BGN.csv    fileName += @"__Towsey.Acoustic.ACI.csv";
-                        string sourceFileName = String.Format(idName + "__Towsey.Acoustic." + key + ".csv");
+                        string sourceFileName = string.Format(idName + "__Towsey.Acoustic." + key + ".csv");
                         string sourcePath = Path.Combine(sourceDirectory.FullName, sourceFileName);
                         string nameOfParentDirectory = sourceDirectory.Parent.Name;
-                        string destinationFileName = String.Format(nameOfParentDirectory + "." + key + ".csv");
+                        string destinationFileName = string.Format(nameOfParentDirectory + "." + key + ".csv");
                         string destinationPath = Path.Combine(destinationDirectory, destinationFileName);
                         File.Copy(sourcePath, destinationPath, true);
                     }
@@ -241,8 +241,8 @@
                 } // try block
                 catch (Exception e)
                 {
-                    LoggedConsole.WriteErrorLine(String.Format("ERROR!!!!! RECORDING {0}   FILE {1}", i, name));
-                    LoggedConsole.WriteErrorLine(String.Format(e.ToString()));
+                    LoggedConsole.WriteErrorLine(string.Format("ERROR!!!!! RECORDING {0}   FILE {1}", i, name));
+                    LoggedConsole.WriteErrorLine(string.Format(e.ToString()));
 
                 }
 
@@ -288,7 +288,7 @@
             for (int i = 0; i < count; i++)
             {
 
-                string fileStem = String.Format(fileStemFormatString, (i + 1));
+                string fileStem = string.Format(fileStemFormatString, (i + 1));
 
                 string dataDir = directories[i].FullName + @"\Towsey.Acoustic\";
                 //string imageOutputDir = inputDir + @"\" + fileStem;
@@ -356,9 +356,9 @@
             for (int i = 0; i < count; i++)
             {
 
-                string fileStem = String.Format(fileStemFormatString, (i + 1));
+                string fileStem = string.Format(fileStemFormatString, (i + 1));
                 Console.WriteLine("\n\n");
-                Console.WriteLine(String.Format(@">>>>{0}: File<{1}>", i, fileStem));
+                Console.WriteLine(string.Format(@">>>>{0}: File<{1}>", i, fileStem));
 
 
                 string dataDir = directories[i].FullName + @"\Towsey.Acoustic\";
@@ -448,7 +448,7 @@
                 } // end for loop j
 
                 Image combinedImage = ImageTools.CombineImagesVertically(imageList, 900);
-                string outputFileName = String.Format("Species{0}.png", speciesLabel);
+                string outputFileName = string.Format("Species{0}.png", speciesLabel);
                 string imagePath = Path.Combine(imageOutputDir, outputFileName);
                 combinedImage.Save(imagePath);
 
@@ -481,7 +481,7 @@
             double[] entropy = new double[lines.Count];
             for (int i = 0; i < lines.Count; i++)
             {
-                entropy[i] = Double.Parse(lines[i]);
+                entropy[i] = double.Parse(lines[i]);
             }
 
             bool[] peaks = new bool[lines.Count];

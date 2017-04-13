@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="DrawLongDurationSpectrograms.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="DrawLongDurationSpectrograms.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the DrawLongDurationSpectrograms type.
@@ -30,7 +30,7 @@ namespace AnalysisPrograms
 
     using Acoustics.Shared;
 
-    using AnalysisPrograms.Production;
+    using Production;
 
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
@@ -351,7 +351,7 @@ namespace AnalysisPrograms
         } // method DrawGrayScaleSpectrograms()
 
 
-        public static Image DrawFalseColourSpectrograms(DrawLongDurationSpectrograms.Arguments args, string fileStem, Dictionary<string, double[,]> spectra = null)
+        public static Image DrawFalseColourSpectrograms(Arguments args, string fileStem, Dictionary<string, double[,]> spectra = null)
         {
             //DirectoryInfo inputDirectory = args.InputDataDirectory;
             FileInfo indexPropertiesConfig = args.IndexPropertiesConfig;
@@ -372,7 +372,7 @@ namespace AnalysisPrograms
             // read in index properties and create a new entry for "PHN"
             Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
 
-            DrawLongDurationSpectrograms.Arguments args = new DrawLongDurationSpectrograms.Arguments();
+            Arguments args = new Arguments();
             //args.InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.BaseName + ".csv")),
             //args.OutputDirectory = new DirectoryInfo(outputDirectory.FullName + @"/SpectrogramImages");
             args.SpectrogramConfigPath = null;
@@ -386,11 +386,11 @@ namespace AnalysisPrograms
 
 
 
-        public static Image DrawFalseColourSpectrograms(DrawLongDurationSpectrograms.Arguments args, string fileStem,
+        public static Image DrawFalseColourSpectrograms(Arguments args, string fileStem,
                                                         Dictionary<string, IndexProperties> indexProperties, Dictionary<string, double[,]> spectra = null)
         {
             // create new spectral index "PHN" if it does not exist.
-            DrawLongDurationSpectrograms.CreatePhnIndex(indexProperties, spectra);
+            CreatePhnIndex(indexProperties, spectra);
 
             // note: the spectra are oriented as per visual orientation, i.e. xAxis = time framesDictionary<string, Int16>.KeyCollection keys = AuthorList.Keys
             string[] keys = spectra.Keys.ToCommaSeparatedList().Split(',');

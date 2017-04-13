@@ -147,7 +147,7 @@
     {
 
         [ArgDescription("The source audio file to operate on")]
-        [Production.ArgExistingFile()]
+        [ArgExistingFile()]
         [ArgPosition(1)]
         [ArgRequired]
         public FileInfo Source { get; set; }
@@ -164,7 +164,7 @@
     public class SourceConfigOutputDirArguments : SourceAndConfigArguments
     {
         [ArgDescription("A directory to write output to")]
-        [Production.ArgExistingDirectory(createIfNotExists: true)]
+        [ArgExistingDirectory(createIfNotExists: true)]
         [ArgRequired]
         [ArgPosition(3)]
         public virtual DirectoryInfo Output { get; set; }
