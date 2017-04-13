@@ -8,7 +8,7 @@
     using System.Text;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
-    using AudioAnalysisTools.Indices;
+    using Indices;
 
     public class ZoomCommonArguments
     {

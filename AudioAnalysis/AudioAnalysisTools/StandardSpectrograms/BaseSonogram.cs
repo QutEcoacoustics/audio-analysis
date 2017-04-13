@@ -310,7 +310,7 @@ namespace AudioAnalysisTools
             int subBandMaxHz = 9000;
 
             int maxFrequency = this.NyquistFrequency;
-            var image = BaseSonogram.GetSonogramImage(this.Data, this.NyquistFrequency, maxFrequency, this.Configuration.DoMelScale, 1, doHighlightSubband, subBandMinHz, subBandMaxHz);
+            var image = GetSonogramImage(this.Data, this.NyquistFrequency, maxFrequency, this.Configuration.DoMelScale, 1, doHighlightSubband, subBandMinHz, subBandMaxHz);
 
             if (add1KHzLines)
             {
@@ -348,17 +348,17 @@ namespace AudioAnalysisTools
 
         public Image GetImage_ReducedSonogramWithWidth(int width, bool drawGridLines)
         {
-            var data = Data; //sonogram intensity values
+            var data = this.Data; //sonogram intensity values
             int frameCount = data.GetLength(0); // Number of spectra in sonogram
 
             int factor = frameCount / width;
 
             if (factor <= 1)
             {
-                return GetImage();
+                return this.GetImage();
             }
 
-            return GetImage_ReducedSonogram(factor, drawGridLines);
+            return this.GetImage_ReducedSonogram(factor, drawGridLines);
         }
 
         public Image GetImage_ReducedSonogram(int factor, bool drawGridLines)
@@ -384,14 +384,14 @@ namespace AudioAnalysisTools
             {
                 int start = w * subSample;
                 int end = ((w + 1) * subSample) - 1;
-                double maxE = -Double.MaxValue;
+                double maxE = -double.MaxValue;
                 int maxID = 0;
                 for (int x = start; x < end; x++)
                 {
                     // NOTE!@#$%^ This was changed from LogEnergy on 30th March 2009.
-                    if (maxE < DecibelsPerFrame[x]) 
+                    if (maxE < this.DecibelsPerFrame[x]) 
                     {
-                        maxE = DecibelsPerFrame[x];
+                        maxE = this.DecibelsPerFrame[x];
                         maxID = x;
                     }
                 }
@@ -587,8 +587,8 @@ namespace AudioAnalysisTools
             int binHeight = 1;
             int imageHeight = binCount * binHeight; // image ht = sonogram ht
 
-            double[] lowAverage = BaseSonogram.GetAvSpectrum_LowestPercentile(data, minPercentile);
-            double[] hihAverage = BaseSonogram.GetAvSpectrum_HighestPercentile(data, maxPercentile);
+            double[] lowAverage = GetAvSpectrum_LowestPercentile(data, minPercentile);
+            double[] hihAverage = GetAvSpectrum_HighestPercentile(data, maxPercentile);
             double min = lowAverage.Min();
             double max = hihAverage.Max();
 
@@ -710,14 +710,14 @@ namespace AudioAnalysisTools
 
             // init frequency scale
             int frameSize = image.Height;
-            var freqScale = new DSP.FrequencyScale(nyquist, frameSize, herzInterval);
+            var freqScale = new FrequencyScale(nyquist, frameSize, herzInterval);
             SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, fullDuration, xAxisTicInterval, freqScale);
 
             int imageWidth = image.Width;
             int trackHeight = 20;
             int imageHt = image.Height + trackHeight + trackHeight + trackHeight;
 
-            var timeBmp = BaseSonogram.DrawTimeTrack(minuteOffset, xAxisPixelDuration, xAxisTicInterval, labelInterval, imageWidth, trackHeight, "Seconds");
+            var timeBmp = DrawTimeTrack(minuteOffset, xAxisPixelDuration, xAxisTicInterval, labelInterval, imageWidth, trackHeight, "Seconds");
 
             var compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
             var gr = Graphics.FromImage(compositeBmp);

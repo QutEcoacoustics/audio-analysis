@@ -7,7 +7,7 @@
     using System.Linq;
     using System.Text;
     using Acoustics.Shared.Extensions;
-    using AnalysisPrograms.Production;
+    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -236,21 +236,21 @@
 
             // framing parameters
             //double frameOverlap      = FeltTemplates_Use.FeltFrameOverlap;   // default = 0.5
-            double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
+            double frameOverlap = double.Parse(dict[key_FRAME_OVERLAP]);
 
             //frequency band
-            int minHz = Int32.Parse(dict[key_MIN_HZ]);
-            int maxHz = Int32.Parse(dict[key_MAX_HZ]);
+            int minHz = int.Parse(dict[key_MIN_HZ]);
+            int maxHz = int.Parse(dict[key_MAX_HZ]);
 
             // oscillation OD parameters
-            double dctDuration = Double.Parse(dict[OscillationRecogniser.key_DCT_DURATION]);   // 2.0; // seconds
-            double dctThreshold = Double.Parse(dict[OscillationRecogniser.key_DCT_THRESHOLD]);  // 0.5;
-            int minOscilFreq    = Int32.Parse(dict[OscillationRecogniser.key_MIN_OSCIL_FREQ]);  // 4;
-            int maxOscilFreq    = Int32.Parse(dict[OscillationRecogniser.key_MAX_OSCIL_FREQ]);  // 5;
+            double dctDuration = double.Parse(dict[OscillationRecogniser.key_DCT_DURATION]);   // 2.0; // seconds
+            double dctThreshold = double.Parse(dict[OscillationRecogniser.key_DCT_THRESHOLD]);  // 0.5;
+            int minOscilFreq    = int.Parse(dict[OscillationRecogniser.key_MIN_OSCIL_FREQ]);  // 4;
+            int maxOscilFreq    = int.Parse(dict[OscillationRecogniser.key_MAX_OSCIL_FREQ]);  // 5;
             bool normaliseDCT = false;
 
             //double dBThreshold       = Double.Parse(dict[key_DECIBEL_THRESHOLD]);   //threshold to set MIN DECIBEL BOUND
-            int DRAW_SONOGRAMS       = Int32.Parse(dict[key_DRAW_SONOGRAMS]);       //options to draw sonogram
+            int DRAW_SONOGRAMS       = int.Parse(dict[key_DRAW_SONOGRAMS]);       //options to draw sonogram
 
             // iii initialize the sonogram config class.
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
@@ -338,7 +338,7 @@
                 if (odScores[frame] < odThreshold) continue;
 
                 // get best freq band and max score for the first rectangle.
-                double maxScore = -Double.MaxValue;
+                double maxScore = -double.MaxValue;
                 int freqBinOffset = 0;
                 for (int bin = -5; bin < 15; bin++)
                 {
@@ -374,12 +374,14 @@
         /// <returns></returns>
         public static double GetLocationScore(BaseSonogram sonogram, Oblong ob)
         {
-            double max = -Double.MaxValue;
+            double max = -double.MaxValue;
             for (int r = ob.RowTop; r < ob.RowBottom; r++)
+            {
                 for (int c = ob.ColumnLeft; c < ob.ColumnRight; c++)
                 {
                     if (sonogram.Data[r, c] > max) max = sonogram.Data[r, c];
                 }
+            }
 
             //calculate average boundary value
             int boundaryLength = 2 * (ob.RowBottom - ob.RowTop + 1 + ob.ColumnRight - ob.ColumnLeft + 1);
@@ -399,7 +401,7 @@
             Log.WriteLine("# Save image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
 
-            using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
+            using (Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
             using (Image_MultiTrack image = new Image_MultiTrack(img))
             {
                 //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);

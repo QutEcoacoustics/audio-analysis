@@ -8,7 +8,7 @@
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using AnalysisBase.ResultBases;
-    using AudioAnalysisTools.Indices;
+    using Indices;
     using TowseyLibrary;
 
     /// <summary>

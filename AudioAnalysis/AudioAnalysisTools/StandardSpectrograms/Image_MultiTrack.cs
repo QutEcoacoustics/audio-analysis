@@ -84,19 +84,19 @@
             }
         }
 
-        public void OverlayRedMatrix(Double[,] m, double maxScore)
+        public void OverlayRedMatrix(double[,] m, double maxScore)
         {
             //this.SuperimposedMatrix = m; // TODO:  This line does not work !!?? Use next line
             this.SuperimposedRedTransparency = m;
             this.superImposedMaxScore = maxScore;
         }
 
-        public void OverlayRedTransparency(Double[,] m)
+        public void OverlayRedTransparency(double[,] m)
         {
             this.SuperimposedRedTransparency = m;
         }
 
-        public void OverlayRainbowTransparency(Double[,] m)
+        public void OverlayRainbowTransparency(double[,] m)
         {
             this.SuperimposedRainbowTransparency = m;
         }

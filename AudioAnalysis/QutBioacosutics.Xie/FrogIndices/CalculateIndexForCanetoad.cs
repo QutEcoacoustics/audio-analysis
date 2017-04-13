@@ -5,7 +5,7 @@
     using System.Linq;
     using System.Text;
     using AudioAnalysisTools.StandardSpectrograms;
-    using QutBioacosutics.Xie.Configuration;
+    using Configuration;
 
     public static class CalculateIndexForCanetoad
     {
@@ -18,7 +18,7 @@
             return peakHitsCanetoad;
         }
 
-        public static System.Tuple<double[], double[,], double[], double[,]> GetFrogTracks(CanetoadConfiguration canetoadConfig, SpectrogramStandard spectrogramLong,
+        public static Tuple<double[], double[,], double[], double[,]> GetFrogTracks(CanetoadConfiguration canetoadConfig, SpectrogramStandard spectrogramLong,
                                                                                             double[,] peakHitsCanetoad)
         {
             var trackHitsCanetoad = ExtractTracks.GetTracks(spectrogramLong, peakHitsCanetoad, canetoadConfig.FrequencyLowCanetoad, canetoadConfig.FrequencyHighCanetoad,

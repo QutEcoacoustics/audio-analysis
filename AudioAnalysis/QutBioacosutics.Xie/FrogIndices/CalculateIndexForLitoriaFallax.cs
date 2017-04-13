@@ -5,7 +5,7 @@
     using System.Linq;
     using System.Text;
     using AudioAnalysisTools.StandardSpectrograms;
-    using QutBioacosutics.Xie.Configuration;
+    using Configuration;
 
     public static class CalculateIndexForLitoriaFallax
     {
@@ -16,7 +16,7 @@
             return peakHitsFallax;
         }
 
-        public static System.Tuple<double[], double[,], double[], double[,]> GetFrogTracksFallax(FallaxConfiguration fallaxConfig, SpectrogramStandard spectrogramLong, double[,] peakHitsFallax)
+        public static Tuple<double[], double[,], double[], double[,]> GetFrogTracksFallax(FallaxConfiguration fallaxConfig, SpectrogramStandard spectrogramLong, double[,] peakHitsFallax)
         {
             var trackHitsFallax = ExtractTracks.GetTracks(spectrogramLong, peakHitsFallax, fallaxConfig.FrequencyLowFallax, fallaxConfig.FrequencyHighFallax,
                                                           fallaxConfig.BinToleranceFallax, fallaxConfig.FrameThresholdFallax, fallaxConfig.TrackDurationThresholdFallax,

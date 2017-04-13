@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="LitoriaBicolor.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="LitoriaBicolor.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   AKA: The bloody canetoad
@@ -17,7 +17,7 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
-    using Recognizers.Base;
+    using Base;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -138,7 +138,7 @@ namespace AnalysisPrograms.Recognizers
 
             //#############################################################################################################################################
 
-            var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.BaseName), SpeciesName, "png", "DebugSpectrogram"));
+            var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.BaseName), this.SpeciesName, "png", "DebugSpectrogram"));
             debugImage.Save(debugPath.FullName);
 
             // Prune events here if erquired i.e. remove those below threshold score if this not already done. See other recognizers.
@@ -178,7 +178,7 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="lbConfig"></param>
         /// <param name="drawDebugImage"></param>
         /// <returns></returns>
-        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, Image> Analysis(AudioRecording recording, SonogramConfig sonoConfig,
+        public static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, Image> Analysis(AudioRecording recording, SonogramConfig sonoConfig,
                                                                                                           LitoriaBicolorConfig lbConfig, bool drawDebugImage)
         {
             double decibelThreshold = lbConfig.DecibelThreshold;   //dB
@@ -387,26 +387,26 @@ namespace AnalysisPrograms.Recognizers
         internal void ReadConfigFile(dynamic configuration)
         {
             // common properties
-            AnalysisName = (string)configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
-            SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
-            AbbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-            UpperBandMaxHz = (int)configuration["UpperFreqBandTop"];
-            UpperBandMinHz = (int)configuration["UpperFreqBandBottom"];
-            LowerBandMaxHz = (int)configuration["LowerFreqBandTop"];
-            LowerBandMinHz = (int)configuration["LowerFreqBandBottom"];
+            this.AnalysisName = (string)configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
+            this.SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
+            this.AbbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            this.UpperBandMaxHz = (int)configuration["UpperFreqBandTop"];
+            this.UpperBandMinHz = (int)configuration["UpperFreqBandBottom"];
+            this.LowerBandMaxHz = (int)configuration["LowerFreqBandTop"];
+            this.LowerBandMinHz = (int)configuration["LowerFreqBandBottom"];
 
             // Periods and Oscillations
-            MinPeriod = (double)configuration[AnalysisKeys.MinPeriodicity]; //: 0.18
-            MaxPeriod = (double)configuration[AnalysisKeys.MaxPeriodicity]; //: 0.25
+            this.MinPeriod = (double)configuration[AnalysisKeys.MinPeriodicity]; //: 0.18
+            this.MaxPeriod = (double)configuration[AnalysisKeys.MaxPeriodicity]; //: 0.25
 
             // minimum duration in seconds of an event
-            MinDuration = (double)configuration[AnalysisKeys.MinDuration]; //:3
+            this.MinDuration = (double)configuration[AnalysisKeys.MinDuration]; //:3
             // maximum duration in seconds of an event
-            MaxDuration = (double)configuration[AnalysisKeys.MaxDuration]; //: 15
+            this.MaxDuration = (double)configuration[AnalysisKeys.MaxDuration]; //: 15
             // minimum acceptable value of a DCT coefficient
-            IntensityThreshold = (double?)configuration[AnalysisKeys.IntensityThreshold] ?? 0.4;
-            DecibelThreshold = (double?)configuration[AnalysisKeys.DecibelThreshold] ?? 3.0;
-            EventThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? 0.2;
+            this.IntensityThreshold = (double?)configuration[AnalysisKeys.IntensityThreshold] ?? 0.4;
+            this.DecibelThreshold = (double?)configuration[AnalysisKeys.DecibelThreshold] ?? 3.0;
+            this.EventThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? 0.2;
         } // ReadConfigFile()
 
     } // class LitoriaBicolorConfig

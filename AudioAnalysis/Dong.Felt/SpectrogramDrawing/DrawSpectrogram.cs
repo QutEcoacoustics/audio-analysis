@@ -9,10 +9,10 @@
     using System.Text;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
-    using Dong.Felt.Configuration;
-    using Dong.Felt.Preprocessing;
-    using Dong.Felt.Representations;
-    using Dong.Felt.ResultsOutput;
+    using Configuration;
+    using Preprocessing;
+    using Representations;
+    using ResultsOutput;
 
     public class DrawSpectrogram
     {

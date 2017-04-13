@@ -5,7 +5,7 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
-    using FELT.Transformers;
+    using Transformers;
     using Microsoft.FSharp.Collections;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Minimod.PrettyPrint;
@@ -33,11 +33,11 @@
         {
             get
             {
-                return testContextInstance;
+                return this.testContextInstance;
             }
             set
             {
-                testContextInstance = value;
+                this.testContextInstance = value;
             }
         }
 

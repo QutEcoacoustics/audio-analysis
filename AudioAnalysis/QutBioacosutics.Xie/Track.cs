@@ -16,7 +16,7 @@
         {
             get
             {
-                return EndFrame - StartFrame + 1;
+                return this.EndFrame - this.StartFrame + 1;
             }
         }
 

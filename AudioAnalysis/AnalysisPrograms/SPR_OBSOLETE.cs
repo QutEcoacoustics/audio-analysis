@@ -4,7 +4,7 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using AnalysisPrograms.Production;
+    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -85,17 +85,17 @@
             double intensityThreshold = Convert.ToDouble(dict[key_SPT_INTENSITY_THRESHOLD]);
             int smallLengthThreshold  = Convert.ToInt32(dict[key_SPT_SMALL_LENGTH_THRESHOLD]);
             //WHIPBIRD PARAMETERS
-            int whistle_MinHz = Int32.Parse(dict[key_WHISTLE_MIN_HZ]);
-            int whistle_MaxHz = Int32.Parse(dict[key_WHISTLE_MAX_HZ]);
-            double optimumWhistleDuration = Double.Parse(dict[key_WHISTLE_DURATION]);   //optimum duration of whistle in seconds
-            int whip_MinHz      = (dict.ContainsKey(key_WHIP_MIN_HZ)) ? Int32.Parse(dict[key_WHIP_MIN_HZ]) : 0;
-            int whip_MaxHz      = (dict.ContainsKey(key_WHIP_MAX_HZ))   ? Int32.Parse(dict[key_WHIP_MAX_HZ])    : 0;
-            double whipDuration = (dict.ContainsKey(key_WHIP_DURATION)) ? Double.Parse(dict[key_WHIP_DURATION]) : 0.0; //duration of whip in seconds
+            int whistle_MinHz = int.Parse(dict[key_WHISTLE_MIN_HZ]);
+            int whistle_MaxHz = int.Parse(dict[key_WHISTLE_MAX_HZ]);
+            double optimumWhistleDuration = double.Parse(dict[key_WHISTLE_DURATION]);   //optimum duration of whistle in seconds
+            int whip_MinHz      = (dict.ContainsKey(key_WHIP_MIN_HZ)) ? int.Parse(dict[key_WHIP_MIN_HZ]) : 0;
+            int whip_MaxHz      = (dict.ContainsKey(key_WHIP_MAX_HZ))   ? int.Parse(dict[key_WHIP_MAX_HZ])    : 0;
+            double whipDuration = (dict.ContainsKey(key_WHIP_DURATION)) ? double.Parse(dict[key_WHIP_DURATION]) : 0.0; //duration of whip in seconds
             //CURLEW PARAMETERS
-            double minDuration = (dict.ContainsKey(key_MIN_DURATION)) ? Double.Parse(dict[key_MIN_DURATION]) : 0.0; //min duration of call in seconds
-            double maxDuration = (dict.ContainsKey(key_MAX_DURATION)) ? Double.Parse(dict[key_MAX_DURATION]) : 0.0; //duration of call in seconds
+            double minDuration = (dict.ContainsKey(key_MIN_DURATION)) ? double.Parse(dict[key_MIN_DURATION]) : 0.0; //min duration of call in seconds
+            double maxDuration = (dict.ContainsKey(key_MAX_DURATION)) ? double.Parse(dict[key_MAX_DURATION]) : 0.0; //duration of call in seconds
 
-            double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);     //min score for an acceptable event
+            double eventThreshold = double.Parse(dict[key_EVENT_THRESHOLD]);     //min score for an acceptable event
             int DRAW_SONOGRAMS = Convert.ToInt16(dict[key_DRAW_SONOGRAMS]);
 
 
@@ -243,7 +243,7 @@
             //string fname = Path.GetFileName(recordingPath);
             int count = predictedEvents.Count;
             Log.WriteIfVerbose("Number of Events: " + count);
-            string str = String.Format("{0}\t{1}\t{2}", callName, sigDuration, count);
+            string str = string.Format("{0}\t{1}\t{2}", callName, sigDuration, count);
             FileTools.WriteTextFile(opPath, AcousticEvent.WriteEvents(predictedEvents, str).ToString());
 
 
@@ -410,11 +410,13 @@
             //combine scores and extract events
             var scores = new double[rows];
             for (int i = 0; i < whipScores.Length; i++)
+            {
                 if ((whistleScores[i] > 0.3) && (whipScores[i] > 0.3))//impose score thresholds
                 {
                     scores[i] = (whistleScores[i] + whipScores[i]) / 2;
                     //if (scores[i]>0.45) LoggedConsole.WriteLine("{0}\t{1:f3}\t{2:f3}\t{3:f3}", i, whistleScores[i], whipScores[i], scores[i]);
                 }
+            }
             //scores = whipScores;
             var tuple = Tuple.Create(scores);
             return tuple;

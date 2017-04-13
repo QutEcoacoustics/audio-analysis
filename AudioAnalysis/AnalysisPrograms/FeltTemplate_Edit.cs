@@ -76,10 +76,10 @@
             Dictionary<string, string> dict = config.GetTable();
             string sourceFile           = dict[FeltTemplate_Create.key_SOURCE_RECORDING];
             string sourceDir            = dict[FeltTemplate_Create.key_SOURCE_DIRECTORY];
-            double dB_Threshold         = Double.Parse(dict[FeltTemplate_Create.key_DECIBEL_THRESHOLD]);
-            double maxTemplateIntensity = Double.Parse(dict[FeltTemplate_Create.key_TEMPLATE_MAX_INTENSITY]);
-            int neighbourhood           = Int32.Parse(dict[FeltTemplate_Create.key_DONT_CARE_NH]);   //the do not care neighbourhood
-            int lineLength              = Int32.Parse(dict[FeltTemplate_Create.key_LINE_LENGTH]);
+            double dB_Threshold         = double.Parse(dict[FeltTemplate_Create.key_DECIBEL_THRESHOLD]);
+            double maxTemplateIntensity = double.Parse(dict[FeltTemplate_Create.key_TEMPLATE_MAX_INTENSITY]);
+            int neighbourhood           = int.Parse(dict[FeltTemplate_Create.key_DONT_CARE_NH]);   //the do not care neighbourhood
+            int lineLength              = int.Parse(dict[FeltTemplate_Create.key_LINE_LENGTH]);
             double templateThreshold    = dB_Threshold / maxTemplateIntensity;
             int bitmapThreshold         = (int)(255 - (templateThreshold * 255));
 
@@ -194,6 +194,7 @@ arguments[0] = sourceDir + "\\" + sourceFile;
             var opBmp = new Bitmap(cols, rows);
 
             for (int i = 0; i < rows; i++)
+            {
                 for (int j = 0; j < cols; j++)
                 {
                     Color color = bitmap.GetPixel(j, i);
@@ -201,6 +202,8 @@ arguments[0] = sourceDir + "\\" + sourceFile;
                         opBmp.SetPixel(j, i, Color.Black);
                     else opBmp.SetPixel(j, i, Color.White);
                 }
+            }
+
             return opBmp;
         }
 
@@ -212,20 +215,24 @@ arguments[0] = sourceDir + "\\" + sourceFile;
 
             var matrix = new int[height, width];
             for (int r = 0; r < height; r++)
+            {
                 for (int c = 0; c < width; c++)
                 {
                     Color color = bitmap.GetPixel(c, r);
                     if ((color.R < 255) && (color.G < 255) && (color.B < 255)) matrix[r, c] = 1;
                 }
+            }
 
             Bitmap newBitmap = bitmap;
 
             for (int r = 0; r < height; r++)
+            {
                 for (int c = 0; c < width; c++)
                 {
                     if (matrix[r, c] == 1) continue;
                     int sum = 0;
                     for (int i = -neighbourhood; i < neighbourhood; i++)
+                    {
                         for (int j = -neighbourhood; j < neighbourhood; j++)
                         {
                             int row = r + i;
@@ -234,9 +241,12 @@ arguments[0] = sourceDir + "\\" + sourceFile;
                             if ((col < 0) || (col >= width)) continue;
                             sum += matrix[row, col];
                         }
+                    }
 
                     if (sum == 0) newBitmap.SetPixel(c, r, Color.Red);
                 }
+            }
+
             return bitmap;
         }
 
@@ -249,11 +259,14 @@ arguments[0] = sourceDir + "\\" + sourceFile;
             var matrix = new int[height, width];
 
             for (int r = 0; r < height; r++)
+            {
                 for (int c = 0; c < width; c++)
                 {
                     Color color = bitmap.GetPixel(c, r);
                     if ((color.R < 255) && (color.G < 255) && (color.B < 255)) matrix[r, c] = 1;
                 }
+            }
+
             return matrix;
         }
     }

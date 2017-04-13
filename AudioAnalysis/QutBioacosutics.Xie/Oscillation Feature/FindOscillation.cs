@@ -166,8 +166,8 @@
 
             int rows = sonogram.Data.GetLength(0);
             int cols = sonogram.Data.GetLength(1);
-            Double[,] hits = new Double[rows, cols];
-            Double[,] matrix = sonogram.Data;
+            double[,] hits = new double[rows, cols];
+            double[,] matrix = sonogram.Data;
 
             double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); //set up the cosine coefficients
             for (int c = minBin; c <= maxBin; c++)//traverse columns - skip DC column

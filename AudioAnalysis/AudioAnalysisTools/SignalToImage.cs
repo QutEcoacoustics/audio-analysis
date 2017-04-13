@@ -7,8 +7,8 @@
     using MathNet.Numerics.Transformations;
 
     using Acoustics.Tools.Wav;
-    using AudioAnalysisTools.StandardSpectrograms;
-    using AudioAnalysisTools.WavTools;
+    using StandardSpectrograms;
+    using WavTools;
 
 
     /// <summary>
@@ -776,6 +776,7 @@
             int[] histo = new int[binCount];
 
             for (int i = 0; i < rows; i++)
+            {
                 for (int j = 0; j < cols; j++)
                 {
                     int bin = (int)((data[i, j] - min) / binWidth);
@@ -783,6 +784,7 @@
                     if (bin < 0) bin = 0;
                     histo[bin]++;
                 }
+            }
 
             return histo;
         }

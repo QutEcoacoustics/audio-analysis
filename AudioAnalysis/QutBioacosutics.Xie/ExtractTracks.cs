@@ -11,7 +11,7 @@
 
     class ExtractTracks
     {
-        public static System.Tuple<double[], double[,], double[], double[,]> GetTracks(SpectrogramStandard sonogram, double[,] matrix, int minHz, int maxHz, double binToreance, int frameThreshold,
+        public static Tuple<double[], double[,], double[], double[,]> GetTracks(SpectrogramStandard sonogram, double[,] matrix, int minHz, int maxHz, double binToreance, int frameThreshold,
                                                                             int duraionThreshold, double trackThreshold, int maximumDuration, int minimumDuration, double maximumDiffBin,
                                                                             bool doSlope)
 

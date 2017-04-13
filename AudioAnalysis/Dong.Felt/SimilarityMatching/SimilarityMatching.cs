@@ -6,7 +6,7 @@
     using System.Text;
     using System.ComponentModel;
     using Representations;
-    using Dong.Felt.Features;
+    using Features;
     using System.Globalization;
 using System.IO;
 
@@ -1454,7 +1454,7 @@ using System.IO;
                 // The frequencyDifference is a problem.
                 tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
                 var duration = tempRegionList[0].Duration.TotalMilliseconds;
-                var distance = SimilarityMatching.WeightedDistanceScoreRegionRepresentation4(query, tempRegionList, weight1, weight2,
+                var distance = WeightedDistanceScoreRegionRepresentation4(query, tempRegionList, weight1, weight2,
                     weight3, weight4, weight5, weight6);
                 var item = new Candidates(distance, tempRegionList[0].FrameIndex,
                         duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,

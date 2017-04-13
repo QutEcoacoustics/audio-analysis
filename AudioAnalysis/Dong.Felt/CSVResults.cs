@@ -11,9 +11,9 @@
     using AnalysisBase;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
-    using Dong.Felt.Configuration;
-    using Dong.Felt.Features;
-    using Dong.Felt.ResultsOutput;
+    using Configuration;
+    using Features;
+    using ResultsOutput;
     using Representations;
     using TowseyLibrary;
 
@@ -109,7 +109,7 @@
         {
             var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
             var header = lines.Take(1).ToList();
-            var result = new List<Double>();
+            var result = new List<double>();
             foreach (var csvRow in lines)
             {
                 var item = 0.0;

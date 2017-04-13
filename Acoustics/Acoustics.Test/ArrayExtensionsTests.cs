@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="ArrayExtensionsTests.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="ArrayExtensionsTests.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Summary description for ArrayExtensionsTests
@@ -40,11 +40,11 @@ namespace Acoustics.Test
         {
             get
             {
-                return testContextInstance;
+                return this.testContextInstance;
             }
             set
             {
-                testContextInstance = value;
+                this.testContextInstance = value;
             }
         }
 

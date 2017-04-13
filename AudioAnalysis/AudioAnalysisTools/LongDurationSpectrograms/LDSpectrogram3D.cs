@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="LDSpectrogram3D.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="LDSpectrogram3D.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   This class generates three dimensional false-colour spectrograms of long duration audio recordings.
@@ -24,8 +24,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Reflection;
 
     using Acoustics.Shared;
-    using AudioAnalysisTools.Indices;
-    using AudioAnalysisTools.StandardSpectrograms;
+    using Indices;
+    using StandardSpectrograms;
 
     using log4net;
 
@@ -151,7 +151,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string key = KeyDayOfYear;
             int step = 1;
             int firstIndex = 71;
-            int maxSliceCount = LdSpectrogram3D.TotalDaysInYear + 1;
+            int maxSliceCount = TotalDaysInYear + 1;
             var xInterval = TimeSpan.FromMinutes(60); // one hour intervals = 60 pixels
             int rowId = 3; // FreqBin
             int colId = 2; // MinOfDay
@@ -203,11 +203,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 {
                     if (key == KeyDayOfYear)
                     {
-                        data = LdSpectrogram3D.GetDaySlice(dataTableDirInfo, year, arrayId);
+                        data = GetDaySlice(dataTableDirInfo, year, arrayId);
                     }
                     else
                     {
-                        data = LdSpectrogram3D.GetDataSlice(dataTableDirInfo, key, arrayId);
+                        data = GetDataSlice(dataTableDirInfo, key, arrayId);
                     }
                     FileTools.WriteTextFile(path, data);
                 }
@@ -222,10 +222,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 IndexProperties ipRed = dictIp[indexNames[0]];
                 IndexProperties ipGrn = dictIp[indexNames[1]];
                 IndexProperties ipBlu = dictIp[indexNames[2]];
-                Image image = LdSpectrogram3D.GetImageSlice(key, data, rowId, colId, redId, grnId, bluId, ipRed, ipGrn, ipBlu, freqBinCount);
+                Image image = GetImageSlice(key, data, rowId, colId, redId, grnId, bluId, ipRed, ipGrn, ipBlu, freqBinCount);
 
                 // 6. frame the image and save
-                image = LdSpectrogram3D.Frame3DSpectrogram(image, key, arrayId, year, colorMap, xInterval, nyquistFreq, sliceId, sunriseSetData);
+                image = Frame3DSpectrogram(image, key, arrayId, year, colorMap, xInterval, nyquistFreq, sliceId, sunriseSetData);
 
                 // 7. save the image
                 outputFileName = string.Format("{0}.png", fileStem);
@@ -243,13 +243,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             switch (key)
             {
                 case KeyFreqBin:
-                    image = new Bitmap(LdSpectrogram3D.TotalMinutesInDay, LdSpectrogram3D.TotalDaysInYear);
+                    image = new Bitmap(TotalMinutesInDay, TotalDaysInYear);
                     break;
                 case KeyDayOfYear:
-                    image = new Bitmap(LdSpectrogram3D.TotalMinutesInDay, freqBinCount);
+                    image = new Bitmap(TotalMinutesInDay, freqBinCount);
                     break;
                 case KeyMinOfDay:
-                    image = new Bitmap(LdSpectrogram3D.TotalDaysInYear, freqBinCount);
+                    image = new Bitmap(TotalDaysInYear, freqBinCount);
                     break;
             }
 
@@ -296,20 +296,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static Image Frame3DSpectrogram(Image image, string key, int value, int year, string colorMap, TimeSpan xInterval, int nyquistFreq, int unitValue, FileInfo sunriseSetData)
         {
 
-            if (key == LdSpectrogram3D.KeyDayOfYear)
+            if (key == KeyDayOfYear)
             {
                 var title = string.Format("SPECTROGRAM (hours x Herz): {0}={1}      (R-G-B={2})", key, value, colorMap, unitValue);
                 var titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
                 return FrameSliceOf3DSpectrogram_DayOfYear(image, titleBar, year, value, xInterval, unitValue, sunriseSetData, nyquistFreq);
             }
             else
-            if (key == LdSpectrogram3D.KeyFreqBin)
+            if (key == KeyFreqBin)
             {
                 var title = string.Format("SPECTROGRAM (hours x months): {0}={1}      (R-G-B={2})", key, value, colorMap, unitValue);
                 var titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
                 return FrameSliceOf3DSpectrogram_ConstantFreq(image, titleBar, xInterval, unitValue, sunriseSetData, nyquistFreq);
             } else
-            if (key == LdSpectrogram3D.KeyMinOfDay)
+            if (key == KeyMinOfDay)
             {
                 var title = string.Format("SPECTROGRAM (months x Herz): {0}={1}       (R-G-B={2})", key, value, colorMap, unitValue);
                 var titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);

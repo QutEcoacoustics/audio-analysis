@@ -24,7 +24,7 @@ namespace TowseyLibrary
         /// </summary>
         public RandomVariable()
         {
-            R = new RandomNumber();
+            this.R = new RandomNumber();
         }
 
         /// <summary>
@@ -36,14 +36,14 @@ namespace TowseyLibrary
         {
             this.mean = mean;
             this.SD = SD;
-            R = new RandomNumber();
+            this.R = new RandomNumber();
         }
 
         public RandomVariable(double mean, double SD, int seed)
         {
             this.mean = mean;
             this.SD = SD;
-            R = new RandomNumber(seed);
+            this.R = new RandomNumber(seed);
         }
 
         //public double getVar()
@@ -60,7 +60,7 @@ namespace TowseyLibrary
          */
         public double getMean()
         {
-            return mean;
+            return this.mean;
         }
         /**
          * @param mean The mean to set.
@@ -74,14 +74,14 @@ namespace TowseyLibrary
          */
         public double getSD()
         {
-            return SD;
+            return this.SD;
         }
         /**
          * @param sd The sD to set.
          */
         public void setSD(double sd)
         {
-            SD = sd;
+            this.SD = sd;
         }
     }
 

@@ -22,38 +22,38 @@
         {
             get
             {
-                return Info.ToUrlParameterString(true);
+                return this.Info.ToUrlParameterString(true);
             }
             set
             {
-                Info = value.ParseUrlParameterString();
+                this.Info = value.ParseUrlParameterString();
             }
         }
 
         public ResultProperty()
         {
-            Info = new Dictionary<string, string>();
+            this.Info = new Dictionary<string, string>();
         }
 
         public ResultProperty(string key, object value)
         {
             this.Key = key;
             this.Value = value;
-            Info = new Dictionary<string, string>();
+            this.Info = new Dictionary<string, string>();
         }
 
         public ResultProperty(string key, object value, Dictionary<string, string> info)
         {
             this.Key = key;
             this.Value = value;
-            Info = info;
+            this.Info = info;
         }
 
         public bool AddInfo(string infoKey, string infoValue)
         {
-            if (!Info.ContainsKey(infoKey.ToLowerInvariant()))
+            if (!this.Info.ContainsKey(infoKey.ToLowerInvariant()))
             {
-                Info.Add(infoKey.ToLowerInvariant(), infoValue);
+                this.Info.Add(infoKey.ToLowerInvariant(), infoValue);
                 return true;
             }
 

@@ -26,7 +26,7 @@ namespace AnalysisPrograms
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
-    using AnalysisPrograms.Production;
+    using Production;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -71,7 +71,7 @@ namespace AnalysisPrograms
         private static Arguments Dev()
         {
             DateTime time = DateTime.Now;
-            string datestamp = String.Format("{0}{1:d2}{2:d2}", time.Year, time.Month, time.Day);
+            string datestamp = string.Format("{0}{1:d2}{2:d2}", time.Year, time.Month, time.Day);
             return new Arguments
             {
                 QueryWavFile = @"Y:\XueyanDataset\Query\4. Eastern whipbird\Query1\NEJB_NE465_20101014-052000-0521000-estern whipbird.wav".ToFileInfo(),
@@ -160,7 +160,7 @@ namespace AnalysisPrograms
 
             if (!queryWavfile.Exists)
             {
-                string warning = String.Format("FILE DOES NOT EXIST >>>," + arguments.QueryWavFile.Name);
+                string warning = string.Format("FILE DOES NOT EXIST >>>," + arguments.QueryWavFile.Name);
                 LoggedConsole.WriteWarnLine(warning);
                 return;
             }
@@ -171,7 +171,7 @@ namespace AnalysisPrograms
 
             // CONSTRUCT the outputline for csv file
             //  fileName,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path
-            string line = String.Format("{0},{1},{2},{3:f2},{4:f2},{5:f2},{6:f1},{7:f3},{8:f3},{9:f3},{10}",
+            string line = string.Format("{0},{1},{2},{3:f2},{4:f2},{5:f2},{6:f1},{7:f3},{8:f3},{9:f3},{10}",
                                         record.wavFile_name, record.low_frequency_hertz, record.high_frequency_hertz,
                                         record.event_start_seconds.TotalSeconds, record.event_end_seconds.TotalSeconds,
                                         result.SnrStatistics.ExtractDuration.TotalSeconds,
@@ -222,7 +222,7 @@ namespace AnalysisPrograms
             int resampleRate = 22050;
             if (configDict.ContainsKey(AnalysisKeys.ResampleRate))
             {
-                resampleRate = Int32.Parse(configDict[AnalysisKeys.ResampleRate]);
+                resampleRate = int.Parse(configDict[AnalysisKeys.ResampleRate]);
             }
             configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
             configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
@@ -240,7 +240,7 @@ namespace AnalysisPrograms
 
             // 2: Generate sonogram image files
             AudioToSonogramResult result = new AudioToSonogramResult();
-            result = SURFAnalysis.GenerateSpectrogramImages(tempAudioSegment, configDict, opDir);
+            result = GenerateSpectrogramImages(tempAudioSegment, configDict, opDir);
 
             // 3: GET the SNR statistics
             TimeSpan eventDuration = localEventEnd - localEventStart;
@@ -285,12 +285,12 @@ namespace AnalysisPrograms
                 }
 
                 csvDataRecord.wavFile_name = fields[0];
-                csvDataRecord.low_frequency_hertz = (int)Math.Round(Double.Parse(fields[1]));
-                csvDataRecord.high_frequency_hertz = (int)Math.Round(Double.Parse(fields[2]));
+                csvDataRecord.low_frequency_hertz = (int)Math.Round(double.Parse(fields[1]));
+                csvDataRecord.high_frequency_hertz = (int)Math.Round(double.Parse(fields[2]));
 
-                csvDataRecord.event_start_seconds    = TimeSpan.FromSeconds(Double.Parse(fields[3]));
-                csvDataRecord.event_end_seconds      = TimeSpan.FromSeconds(Double.Parse(fields[4]));
-                csvDataRecord.event_duration_seconds = TimeSpan.FromSeconds(Double.Parse(fields[5]));
+                csvDataRecord.event_start_seconds    = TimeSpan.FromSeconds(double.Parse(fields[3]));
+                csvDataRecord.event_end_seconds      = TimeSpan.FromSeconds(double.Parse(fields[4]));
+                csvDataRecord.event_duration_seconds = TimeSpan.FromSeconds(double.Parse(fields[5]));
 
                 return csvDataRecord;
             }
@@ -312,7 +312,7 @@ namespace AnalysisPrograms
             public void AddSpeciesID(string speciesID, string latinInfo)
             {
                 string[] parts1 = speciesID.Split(':');
-                int value = Int32.Parse(parts1[0]);
+                int value = int.Parse(parts1[0]);
                 string commonName = parts1[1];
 
                 string[] parts2 = latinInfo.Split(':');
@@ -321,14 +321,14 @@ namespace AnalysisPrograms
 
                 string BothNames = commonName + "," + latinName;
 
-                if (!speciesIDs.ContainsKey(BothNames))
+                if (!this.speciesIDs.ContainsKey(BothNames))
                 {
-                    speciesIDs.Add(BothNames, value);
+                    this.speciesIDs.Add(BothNames, value);
                 }
                 else
-                if (!speciesIDs.ContainsValue(value))
+                if (!this.speciesIDs.ContainsValue(value))
                 {
-                    speciesIDs.Add(BothNames + "####", value);
+                    this.speciesIDs.Add(BothNames + "####", value);
                 }
             }
 
@@ -336,26 +336,26 @@ namespace AnalysisPrograms
             public void AddSpeciesCount(string speciesID)
             {
                 string[] parts = speciesID.Split(':');
-                if (speciesCounts.ContainsKey(parts[1]))
+                if (this.speciesCounts.ContainsKey(parts[1]))
                 {
-                    speciesCounts[parts[1]]++;
+                    this.speciesCounts[parts[1]]++;
                 }
                 else
                 {
-                    speciesCounts.Add(parts[1], 1);
+                    this.speciesCounts.Add(parts[1], 1);
                 }
 
             }
 
             public void AddSiteName(string name)
             {
-                if (siteNames.ContainsKey(name))
+                if (this.siteNames.ContainsKey(name))
                 {
-                    siteNames[name]++;
+                    this.siteNames[name]++;
                 }
                 else
                 {
-                    siteNames.Add(name, 1);
+                    this.siteNames.Add(name, 1);
                 }
 
             }

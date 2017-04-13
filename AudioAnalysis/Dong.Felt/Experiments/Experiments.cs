@@ -8,10 +8,10 @@
     using System.Text;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
-    using Dong.Felt.Configuration;
-    using Dong.Felt.Preprocessing;
-    using Dong.Felt.Representations;
-    using Dong.Felt.SpectrogramDrawing;
+    using Configuration;
+    using Preprocessing;
+    using Representations;
+    using SpectrogramDrawing;
     using TowseyLibrary;
 
     public class Experiment

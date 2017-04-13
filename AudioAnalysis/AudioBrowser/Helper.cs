@@ -95,7 +95,7 @@
             get
             {
                 var codebase = Assembly.GetExecutingAssembly().CodeBase;
-                var uri = new System.Uri(codebase);
+                var uri = new Uri(codebase);
                 var localPath = uri.LocalPath;
                 var directory = Path.GetDirectoryName(localPath);
 
@@ -133,16 +133,16 @@
             //Contract.Requires(file != null, "Source file must not be null.");
 
             bool saveIntermediateWavFiles = false;
-            if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.SaveIntermediateWavFiles))
-                saveIntermediateWavFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.SaveIntermediateWavFiles, settings.ConfigDict);
+            if (settings.ConfigDict.ContainsKey(AnalysisKeys.SaveIntermediateWavFiles))
+                saveIntermediateWavFiles = ConfigDictionary.GetBoolean(AnalysisKeys.SaveIntermediateWavFiles, settings.ConfigDict);
 
             bool saveIntermediateCsvFiles = false;
-            if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.SaveIntermediateWavFiles))
-                saveIntermediateCsvFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.SaveIntermediateCsvFiles, settings.ConfigDict);
+            if (settings.ConfigDict.ContainsKey(AnalysisKeys.SaveIntermediateWavFiles))
+                saveIntermediateCsvFiles = ConfigDictionary.GetBoolean(AnalysisKeys.SaveIntermediateCsvFiles, settings.ConfigDict);
 
             bool doParallelProcessing = false;
-            if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.ParallelProcessing))
-                doParallelProcessing = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.ParallelProcessing, settings.ConfigDict);
+            if (settings.ConfigDict.ContainsKey(AnalysisKeys.ParallelProcessing))
+                doParallelProcessing = ConfigDictionary.GetBoolean(AnalysisKeys.ParallelProcessing, settings.ConfigDict);
 
             bool saveSonogramImages = false;
             if (settings.ConfigDict.ContainsKey(AnalysisKeys.SaveSonogramImages))
@@ -164,7 +164,7 @@
             stopwatch.Start();
 
             //################# PROCESS THE RECORDING #####################################################################################
-            var results = analysisCoordinator.Run(audioFile, analyser, settings);
+            var results = this.analysisCoordinator.Run(audioFile, analyser, settings);
 
             if (results == null)
             {
@@ -329,7 +329,7 @@
             {
                 Log.DebugFormat("   {0}   {1}", i, headers[i]);
             }
-            ConvertTable2ARFF(fiCsvfile, dt);
+            this.ConvertTable2ARFF(fiCsvfile, dt);
 
             return error;
         } // CSV2ARFF()
@@ -403,7 +403,7 @@
             }
             catch (Exception ex)
             {
-                LoadSettingsProblem("{0} WARNING! Could not find one or more of the audio utilities. " +
+                this.LoadSettingsProblem("{0} WARNING! Could not find one or more of the audio utilities. " +
                     "You will not be able to work with the original source file. Fix the error: {1}", cross, ex);
             }
 
@@ -418,7 +418,7 @@
             }
             else
             {
-                LoadSettingsProblem("{0} WARNING! Could not find Audacity.", cross);
+                this.LoadSettingsProblem("{0} WARNING! Could not find Audacity.", cross);
 
             }
 
@@ -428,7 +428,7 @@
             }
             else
             {
-                LoadSettingsProblem("{0} WARNING! Could not find a text editor. You will not be able to edit config files.", cross);
+                this.LoadSettingsProblem("{0} WARNING! Could not find a text editor. You will not be able to edit config files.", cross);
             }
 
             // directories
@@ -444,7 +444,7 @@
             }
             else
             {
-                LoadSettingsProblem("{0} WARNING! The configuration file directory was not found: {1}.", cross, this.DefaultConfigDir);
+                this.LoadSettingsProblem("{0} WARNING! The configuration file directory was not found: {1}.", cross, this.DefaultConfigDir);
             }
 
             // DefaultSourceDir
@@ -454,7 +454,7 @@
             }
             else
             {
-                LoadSettingsProblem("{0} WARNING! The source audio directory was not found: {1}.", cross, this.DefaultSourceDir);
+                this.LoadSettingsProblem("{0} WARNING! The source audio directory was not found: {1}.", cross, this.DefaultSourceDir);
             }
 
             // DefaultOutputDir
@@ -464,7 +464,7 @@
             }
             else
             {
-                LoadSettingsProblem("{0} WARNING! The output directory was not found: {1}. ", cross, this.DefaultOutputDir);
+                this.LoadSettingsProblem("{0} WARNING! The output directory was not found: {1}. ", cross, this.DefaultOutputDir);
             }
 
             // check remaining values
@@ -491,7 +491,7 @@
             }
             catch (Exception ex)
             {
-                LoadSettingsProblem("{0} WARNING: There was a problem loading settings. Fix the error: {1}.", cross, ex);
+                this.LoadSettingsProblem("{0} WARNING: There was a problem loading settings. Fix the error: {1}.", cross, ex);
 
             } //catch
         }

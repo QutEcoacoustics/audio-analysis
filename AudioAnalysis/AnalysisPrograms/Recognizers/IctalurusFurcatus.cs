@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="IctalurusFurcatus.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="IctalurusFurcatus.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   This is a Blue Catfish recognizer (Ictalurus furcatus)
@@ -18,7 +18,7 @@ namespace AnalysisPrograms.Recognizers
     using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using AnalysisPrograms.Recognizers.Base;
+    using Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
@@ -212,7 +212,7 @@ namespace AnalysisPrograms.Recognizers
                     //double amplitudeThreshold = (percentileBin + 1) * binWidth;
                     //if (amplitudeThreshold < minAmplitudeThreshold) amplitudeThreshold = minAmplitudeThreshold;
 
-                    double[] scores1 = IctalurusFurcatus.AnalyseWaveformAtLocation(subsample, amplitudeThreshold, scoreThreshold);
+                    double[] scores1 = AnalyseWaveformAtLocation(subsample, amplitudeThreshold, scoreThreshold);
                     string title1 = $"scores={fishCall.Timehms}";
                     Image bmp1 = ImageTools.DrawGraph(title1, scores1, subsample.Length, 300, 1);
                     //bmp1.Save(path1.FullName);

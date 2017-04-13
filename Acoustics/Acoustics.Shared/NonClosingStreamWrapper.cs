@@ -34,7 +34,7 @@
         /// </summary>
         public Stream BaseStream
         {
-            get { return stream; }
+            get { return this.stream; }
         }
 
         /// <summary>
@@ -47,7 +47,7 @@
         /// </summary>
         void CheckClosed()
         {
-            if (closed)
+            if (this.closed)
             {
                 throw new InvalidOperationException("Wrapper has been closed or disposed");
             }
@@ -77,8 +77,8 @@
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count,
                                                AsyncCallback callback, object state)
         {
-            CheckClosed();
-            return stream.BeginRead(buffer, offset, count, callback, state);
+            this.CheckClosed();
+            return this.stream.BeginRead(buffer, offset, count, callback, state);
         }
 
         /// <summary>
@@ -101,8 +101,8 @@
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count,
                                                 AsyncCallback callback, object state)
         {
-            CheckClosed();
-            return stream.BeginWrite(buffer, offset, count, callback, state);
+            this.CheckClosed();
+            return this.stream.BeginWrite(buffer, offset, count, callback, state);
         }
 
         /// <summary>
@@ -110,7 +110,7 @@
         /// </summary>
         public override bool CanRead
         {
-            get { return closed ? false : stream.CanRead; }
+            get { return this.closed ? false : this.stream.CanRead; }
         }
 
         /// <summary>
@@ -118,7 +118,7 @@
         /// </summary>
         public override bool CanSeek
         {
-            get { return closed ? false : stream.CanSeek; }
+            get { return this.closed ? false : this.stream.CanSeek; }
         }
 
         /// <summary>
@@ -126,7 +126,7 @@
         /// </summary>
         public override bool CanWrite
         {
-            get { return closed ? false : stream.CanWrite; }
+            get { return this.closed ? false : this.stream.CanWrite; }
         }
 
         /// <summary>
@@ -136,11 +136,11 @@
         /// </summary>
         public override void Close()
         {
-            if (!closed)
+            if (!this.closed)
             {
-                stream.Flush();
+                this.stream.Flush();
             }
-            closed = true;
+            this.closed = true;
         }
 
         /// <summary>
@@ -167,8 +167,8 @@
         /// </returns>
         public override int EndRead(IAsyncResult asyncResult)
         {
-            CheckClosed();
-            return stream.EndRead(asyncResult);
+            this.CheckClosed();
+            return this.stream.EndRead(asyncResult);
         }
 
         /// <summary>
@@ -177,8 +177,8 @@
         /// <param name="asyncResult">A reference to the outstanding asynchronous I/O request.</param>
         public override void EndWrite(IAsyncResult asyncResult)
         {
-            CheckClosed();
-            stream.EndWrite(asyncResult);
+            this.CheckClosed();
+            this.stream.EndWrite(asyncResult);
         }
 
         /// <summary>
@@ -186,8 +186,8 @@
         /// </summary>
         public override void Flush()
         {
-            CheckClosed();
-            stream.Flush();
+            this.CheckClosed();
+            this.stream.Flush();
         }
 
         /// <summary>
@@ -206,8 +206,8 @@
         {
             get
             {
-                CheckClosed();
-                return stream.Length;
+                this.CheckClosed();
+                return this.stream.Length;
             }
         }
 
@@ -218,13 +218,13 @@
         {
             get
             {
-                CheckClosed();
-                return stream.Position;
+                this.CheckClosed();
+                return this.stream.Position;
             }
             set
             {
-                CheckClosed();
-                stream.Position = value;
+                this.CheckClosed();
+                this.stream.Position = value;
             }
         }
 
@@ -252,8 +252,8 @@
         /// </returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            CheckClosed();
-            return stream.Read(buffer, offset, count);
+            this.CheckClosed();
+            return this.stream.Read(buffer, offset, count);
         }
 
         /// <summary>
@@ -263,8 +263,8 @@
         /// <returns>The unsigned byte cast to an Int32, or -1 if at the end of the stream.</returns>
         public override int ReadByte()
         {
-            CheckClosed();
-            return stream.ReadByte();
+            this.CheckClosed();
+            return this.stream.ReadByte();
         }
 
         /// <summary>
@@ -278,8 +278,8 @@
         /// <returns>The new position within the underlying stream.</returns>
         public override long Seek(long offset, SeekOrigin origin)
         {
-            CheckClosed();
-            return stream.Seek(offset, origin);
+            this.CheckClosed();
+            return this.stream.Seek(offset, origin);
         }
 
         /// <summary>
@@ -288,8 +288,8 @@
         /// <param name="value">The desired length of the underlying stream in bytes.</param>
         public override void SetLength(long value)
         {
-            CheckClosed();
-            stream.SetLength(value);
+            this.CheckClosed();
+            this.stream.SetLength(value);
         }
 
         /// <summary>
@@ -307,8 +307,8 @@
         /// <param name="count">The number of bytes to be written to the underlying stream.</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
-            CheckClosed();
-            stream.Write(buffer, offset, count);
+            this.CheckClosed();
+            this.stream.Write(buffer, offset, count);
         }
 
         /// <summary>
@@ -318,8 +318,8 @@
         /// <param name="value">The byte to write to the stream. </param>
         public override void WriteByte(byte value)
         {
-            CheckClosed();
-            stream.WriteByte(value);
+            this.CheckClosed();
+            this.stream.WriteByte(value);
         }
         #endregion
     }

@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="ChannelIntegrity.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="ChannelIntegrity.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Purpose of this class is to determine whether one of the signal channels in a stereo recording
@@ -123,10 +123,10 @@ namespace AudioAnalysisTools
             double zeroCrossingFractionR;
             ZeroCrossingIndex(channelL, channelR, out zeroCrossingFractionL, out zeroCrossingFractionR);
 
-            Console.WriteLine(String.Format("Zero crossings: L={0:f3}   R={1:f3}", zeroCrossingFractionL, zeroCrossingFractionR));
-            Console.WriteLine(String.Format("Similarity Index: SimIndex={0:f3}   SimIndexdB={1:f3}   avBiasdB={2:f3}   medianBiasdB={3:f3}",
+            Console.WriteLine(string.Format("Zero crossings: L={0:f3}   R={1:f3}", zeroCrossingFractionL, zeroCrossingFractionR));
+            Console.WriteLine(string.Format("Similarity Index: SimIndex={0:f3}   SimIndexdB={1:f3}   avBiasdB={2:f3}   medianBiasdB={3:f3}",
                                                 similarityIndex, similarityIndexDecibel, avDecibelBias, medianDecibelBias));
-            Console.WriteLine(String.Format("dB Bias Index: low band={0:f3}   mid band={1:f3}   high band={2:f3}",
+            Console.WriteLine(string.Format("dB Bias Index: low band={0:f3}   mid band={1:f3}   high band={2:f3}",
                                                 lowDecibelBias, midDecibelBias, hiDecibelBias));
         }
 

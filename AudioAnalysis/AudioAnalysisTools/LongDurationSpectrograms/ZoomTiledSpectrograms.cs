@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright company="QutBioacoustics" file="ZoomTiledSpectrograms.cs">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="ZoomTiledSpectrograms.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace AudioAnalysisTools.LongDurationSpectrograms
@@ -18,8 +18,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
 
-    using AudioAnalysisTools.Indices;
-    using AudioAnalysisTools.TileImage;
+    using Indices;
+    using TileImage;
 
     using log4net;
 
@@ -162,7 +162,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 Log.Info("Starting scale: " + scale);
                 TimeSpan imageScale = TimeSpan.FromSeconds(scale);
-                TimeOffsetSingleLayerSuperTile[] superTiles = ZoomTiledSpectrograms.DrawSuperTilesFromIndexSpectrograms(
+                TimeOffsetSingleLayerSuperTile[] superTiles = DrawSuperTilesFromIndexSpectrograms(
                     ldsConfig,
                     indexProperties,
                     zoomConfig,
@@ -426,7 +426,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // start the loop
             for (int t = 0; t < superTileCount; t++)
             {
-                Image image = ZoomTiledSpectrograms.DrawOneScaledIndexSpectrogramTile(
+                Image image = DrawOneScaledIndexSpectrogramTile(
                     analysisConfig,
                     indexGeneration,
                     indexProperties,
@@ -665,7 +665,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 // double[,] data = frameData.CompressMatrixInTemporalDirectionByTakingMax(imageScale);
                 double[,] data = frameData.CompressMatrixInTemporalDirectionByTakingAverage(imageScale);
 
-                Image spectrogramImage = ZoomTiledSpectrograms.DrawFrameSpectrogramAtScale(
+                Image spectrogramImage = DrawFrameSpectrogramAtScale(
                     analysisConfig,
                     tilingConfig,
                     startTimeOfData,

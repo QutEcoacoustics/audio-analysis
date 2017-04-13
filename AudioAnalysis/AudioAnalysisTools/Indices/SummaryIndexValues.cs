@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="SummaryIndexValues.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="SummaryIndexValues.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace AudioAnalysisTools.Indices
@@ -142,8 +142,8 @@ namespace AudioAnalysisTools.Indices
         public SummaryIndexValues()
         {
             // serialization entry
-            BackgroundNoise = -100;
-            AvgSignalAmplitude = -100;
+            this.BackgroundNoise = -100;
+            this.AvgSignalAmplitude = -100;
         }
 
         public SummaryIndexValues(TimeSpan wavDuration, Dictionary<string, IndexProperties> indexProperties)

@@ -58,7 +58,7 @@
 
             // svd.U returns the singular vectors in matrix
             Matrix<double> UMatrix = svd.U();
-            return System.Tuple.Create(singularValues, UMatrix);
+            return Tuple.Create(singularValues, UMatrix);
         }
 
 
@@ -89,7 +89,7 @@
                 Console.WriteLine("eigen value[{0}]     {1}     Magnitude={2}", i, c.ToString(), magnitude);
             }
 
-            MathNet.Numerics.LinearAlgebra.Generic.Matrix<double> eigenvectorsComplex = eigen.EigenVectors();
+            Matrix<double> eigenvectorsComplex = eigen.EigenVectors();
             double[,] eigenvectorsReal = new double[eigenvaluesComplex.Count, matrix.GetLength(0)];
             for (int col = 0; col < eigenvectorsComplex.RowCount; col++)
             {
@@ -126,7 +126,7 @@
                                         { 3.0, -1.0 },
                                         { -1.0, 3.0 },
                                     };
-            SvdAndPca.EigenVectors(matrix1);
+            EigenVectors(matrix1);
 
 
             //double[,] matrix2 = {
@@ -140,7 +140,7 @@
                                         {0, 0},
                                         {0, 0},
                                      };
-            var tuple = SvdAndPca.SingularValueDecompositionOutput(matrix2);
+            var tuple = SingularValueDecompositionOutput(matrix2);
             Vector<double> sdValues = tuple.Item1;
             Matrix<double> UMatrix = tuple.Item2;
 
@@ -308,10 +308,10 @@
                 //                    { 1.0, -1.0 },
                 //                    {4/(double)9,  -1.0/(double)3 }
                 //                };
-                System.Tuple<double[], double[,]> result = SvdAndPca.EigenVectors(M);
+                System.Tuple<double[], double[,]> result = EigenVectors(M);
 
                 Log.WriteLine("\n\n Singlar values");
-                double[] singValues = SvdAndPca.SingularValueDecompositionVector(M);
+                double[] singValues = SingularValueDecompositionVector(M);
                 foreach (double value in singValues)
                 {
                     Console.WriteLine(value);

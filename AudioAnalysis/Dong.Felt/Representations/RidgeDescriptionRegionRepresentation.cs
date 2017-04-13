@@ -22,15 +22,15 @@ namespace Dong.Felt.Representations
             var normalizedNhRepresentationList = new List<RidgeDescriptionNeighbourhoodRepresentation>();
             if (ridgeNhRepresentationList != null)
             {
-                if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1)
+                if (featurePropertySet == FeaturePropSet1)
                 {
                     normalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties(ridgeNhRepresentationList);
                 }
-                if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet2)
+                if (featurePropertySet == FeaturePropSet2)
                 {
                     normalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties2(ridgeNhRepresentationList);
                 }
-                if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3)
+                if (featurePropertySet == FeaturePropSet3)
                 {
                     normalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties3(ridgeNhRepresentationList);
                 }

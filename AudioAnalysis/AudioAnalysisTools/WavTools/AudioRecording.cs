@@ -13,7 +13,7 @@
     using System.IO;
 
     using TowseyLibrary;
-    using AudioAnalysisTools.DSP;
+    using DSP;
     using AnalysisBase;
 
 
@@ -29,9 +29,9 @@
 		public string BaseName { get; private set; }
         public string FilePath { get; private set; }
         public byte[] Bytes { get; set; }
-        public int SampleRate    { get { if (wavReader != null) return wavReader.SampleRate;    else return -999; } }
-        public int Nyquist       { get { if (wavReader != null) return wavReader.SampleRate/2;  else return -999; } }
-        public int BitsPerSample { get { if (wavReader != null) return wavReader.BitsPerSample; else return -999; } }
+        public int SampleRate    { get { if (this.wavReader != null) return this.wavReader.SampleRate;    else return -999; } }
+        public int Nyquist       { get { if (this.wavReader != null) return this.wavReader.SampleRate/2;  else return -999; } }
+        public int BitsPerSample { get { if (this.wavReader != null) return this.wavReader.BitsPerSample; else return -999; } }
         #endregion
 
         /// <summary>
@@ -43,7 +43,7 @@
         {
             this.FilePath = "UNKNOWN";
             this.Bytes = bytes;
-            if (Bytes != null) this.wavReader = new WavReader(bytes);
+            if (this.Bytes != null) this.wavReader = new WavReader(bytes);
         }
 
         /// <summary>
@@ -68,7 +68,7 @@
             this.FilePath = name;
             this.BaseName = Path.GetFileNameWithoutExtension(name);
             this.Bytes    = bytes;
-            if (Bytes != null)
+            if (this.Bytes != null)
                 this.wavReader = new WavReader(bytes);
         }
 
@@ -130,7 +130,7 @@
         /// <returns></returns>
         public TimeSpan Duration()
         {
-            return WavReader.Time;
+            return this.WavReader.Time;
         }
 
         ///// <summary> OBSOLETE - SHOULD NEVER BE USED
@@ -172,7 +172,7 @@
         //    this.wavReader.Samples = output;
         //}
 
-        static public AudioRecording Filter_IIR(AudioRecording audio, string filterName)
+        public static AudioRecording Filter_IIR(AudioRecording audio, string filterName)
         {
             DSP_IIRFilter filter = new DSP_IIRFilter(filterName);
             double[] output;
@@ -195,7 +195,7 @@
             double[,] envelope = new double[2, length];
 
             //get the signal samples
-            var wavData = WavReader;
+            var wavData = this.WavReader;
             var data = wavData.Samples;
             int sampleCount = data.GetLength(0); // Number of samples in signal
             int subSample = sampleCount / length;
@@ -204,8 +204,8 @@
             {
                 int start = w * subSample;
                 int end = ((w + 1) * subSample) - 1;
-                double min = Double.MaxValue;
-                double max = -Double.MaxValue;
+                double min = double.MaxValue;
+                double max = -double.MaxValue;
                 for (int x = start; x < end; x++)
                 {
                     if (min > data[x]) min = data[x];
@@ -221,7 +221,7 @@
 
         public double[,] GetWaveFormDB(int length, double dBMin)
         {
-            double[,] wf = GetWaveForm(length);
+            double[,] wf = this.GetWaveForm(length);
             double[,] wfDB = new double[2, length];
             for (int w = 0; w < length; w++)
             {
@@ -239,7 +239,7 @@
 
         public Image GetWaveForm(int imageWidth, int imageHeight)
         {
-            double[,] envelope = GetWaveForm(imageWidth);
+            double[,] envelope = this.GetWaveForm(imageWidth);
             int halfHeight = imageHeight / 2;
             Color c = Color.FromArgb(10, 200, 255);
 
@@ -272,7 +272,7 @@
 
         public Image GetWaveFormDB(int imageWidth, int imageHeight, double dBMin)
         {
-            double[,] envelope = GetWaveFormDB(imageWidth, dBMin);
+            double[,] envelope = this.GetWaveFormDB(imageWidth, dBMin);
             //envelope values should all lie in [-40.0, 0.0].
             double slope = -(1 / dBMin);
             int halfHeight = imageHeight / 2;
@@ -357,7 +357,7 @@
 
         public void Dispose()
         {
-            wavReader.Dispose();
+            this.wavReader.Dispose();
         }
 
         #endregion

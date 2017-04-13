@@ -22,7 +22,7 @@
             }
 
             Console.WriteLine("Computing Autocorrelation...");
-            var q = AutoAndCrossCorrelation.GetAutoCorrelationOfSeries(x);
+            var q = GetAutoCorrelationOfSeries(x);
             File.Delete("result.txt");
             for (int i = 0; i < q.Length; i++)
             {
@@ -57,7 +57,7 @@
             double[] signal = DataTools.filterMovingAverage(signal16, smoothWindow);
             double[] pattern = DataTools.filterMovingAverage(pattern16, smoothWindow);
 
-            var spectrum = AutoAndCrossCorrelation.CrossCorr(signal, pattern);
+            var spectrum = CrossCorr(signal, pattern);
             int zeroCount = 3;
             for (int s = 1; s < zeroCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
             spectrum = DataTools.NormaliseArea(spectrum);
@@ -193,7 +193,7 @@ out double[] r)
 
         public static Tuple<double, double> DetectPeriodicityInArray(double[] array, int zeroBinCount)
         {
-            var spectrum = AutoAndCrossCorrelation.CrossCorr(array, array);
+            var spectrum = CrossCorr(array, array);
 
             spectrum = DataTools.NormaliseArea(spectrum);
 
@@ -224,7 +224,7 @@ out double[] r)
             {
                 int start = i * step;
                 double[] subarray = DataTools.Subarray(array, start, segmentLength);
-                var spectrum = AutoAndCrossCorrelation.CrossCorr(subarray, subarray);
+                var spectrum = CrossCorr(subarray, subarray);
 
                 spectrum = DataTools.NormaliseArea(spectrum);
                 double gradient = 10 / (double)zeroBinCount;
@@ -246,7 +246,7 @@ out double[] r)
 
 
 
-        public static System.Tuple<double[], double[]> DetectXcorrelationInTwoArrays(double[] array1, double[] array2, int step, int sampleLength, double minPeriod, double maxPeriod)
+        public static Tuple<double[], double[]> DetectXcorrelationInTwoArrays(double[] array1, double[] array2, int step, int sampleLength, double minPeriod, double maxPeriod)
         {
             int length = array1.Length;
             int stepCount = length / step;
@@ -259,7 +259,7 @@ out double[] r)
                 double[] lowerSubarray = DataTools.Subarray(array1, start, sampleLength);
                 double[] upperSubarray = DataTools.Subarray(array2, start, sampleLength);
                 if ((lowerSubarray.Length != sampleLength) || (upperSubarray.Length != sampleLength)) break;
-                var spectrum = AutoAndCrossCorrelation.CrossCorr(lowerSubarray, upperSubarray);
+                var spectrum = CrossCorr(lowerSubarray, upperSubarray);
                 int zeroCount = 3;
                 for (int s = 0; s < zeroCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
                 spectrum = DataTools.NormaliseArea(spectrum);
@@ -311,7 +311,7 @@ out double[] r)
             double sum = 0;
 
             for (int i = 0; i < data.Length; i++)
-                sum += System.Math.Pow((data[i] - avg), 2);
+                sum += Math.Pow((data[i] - avg), 2);
 
             return sum / len;
         }

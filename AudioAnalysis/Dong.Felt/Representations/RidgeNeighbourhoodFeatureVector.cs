@@ -157,7 +157,7 @@
         /// <param name="pointofInterest"></param>
         public RidgeNeighbourhoodFeatureVector(Point point)
         {
-            Point = point;
+            this.Point = point;
         }
 
         #endregion constructor

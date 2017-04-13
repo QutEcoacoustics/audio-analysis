@@ -17,7 +17,7 @@
     using Acoustics.Tools.Audio;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using AnalysisPrograms.Production;
+    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
@@ -394,7 +394,7 @@
             }
 
             Dictionary<string, double> dict = RainIndices.GetIndices(envelope, audioDuration, frameDuration, spectrogram, lowFreqBound, midFreqBound, binWidth);
-            return System.Tuple.Create(dict, audioDuration);
+            return Tuple.Create(dict, audioDuration);
         } //Analysis()
 
 
@@ -474,21 +474,21 @@
             }
 
             //order the table if possible
-            if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EventStartAbs))
+            if (dt.Columns.Contains(AnalysisKeys.EventStartAbs))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EventStartAbs + " ASC");
+                dt = DataTableTools.SortTable(dt, AnalysisKeys.EventStartAbs + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EventCount))
+            else if (dt.Columns.Contains(AnalysisKeys.EventCount))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EventCount + " ASC");
+                dt = DataTableTools.SortTable(dt, AnalysisKeys.EventCount + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KeyRankOrder))
+            else if (dt.Columns.Contains(AnalysisKeys.KeyRankOrder))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KeyRankOrder + " ASC");
+                dt = DataTableTools.SortTable(dt, AnalysisKeys.KeyRankOrder + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KeyStartMinute))
+            else if (dt.Columns.Contains(AnalysisKeys.KeyStartMinute))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KeyStartMinute + " ASC");
+                dt = DataTableTools.SortTable(dt, AnalysisKeys.KeyStartMinute + " ASC");
             }
 
             //this depracted now that use class indexProperties to do normalisation
@@ -503,7 +503,7 @@
             //    string colName = "WeightedIndex";
             //    DataTableTools.AddColumnOfDoubles2Table(table2Display, colName, weightedIndices);
             //}
-            return System.Tuple.Create(dt, table2Display);
+            return Tuple.Create(dt, table2Display);
         } // ProcessCsvFile()
 
         /// <summary>

@@ -5,7 +5,7 @@
     using System.IO;
     using System.Linq;
 
-    using Acoustics.Shared;
+    using Shared;
 
     /// <summary>
     /// Wave audio Stream wrapper.

@@ -1,9 +1,9 @@
 ﻿namespace System.Xml.Linq
 {
-    using System.IO;
+    using IO;
     using System.Linq;
-    using System.Text;
-    using System.Xml.Serialization;
+    using Text;
+    using Serialization;
     using System;
 
     /// <summary>
@@ -20,9 +20,9 @@
 
             private XmlTranslator()
             {
-                _xmlTextBuilder = new StringBuilder();
+                this._xmlTextBuilder = new StringBuilder();
 
-                _writer = new XmlTextWriter(new StringWriter(_xmlTextBuilder))
+                this._writer = new XmlTextWriter(new StringWriter(this._xmlTextBuilder))
                 {
                     Formatting = Formatting.Indented,
                     Indentation = 2,
@@ -32,34 +32,34 @@
             public XmlTranslator(XNode e)
                 : this()
             {
-                e.WriteTo(_writer);
+                e.WriteTo(this._writer);
             }
 
             public XmlTranslator(XmlNode e)
                 : this()
             {
-                e.WriteTo(_writer);
+                e.WriteTo(this._writer);
             }
 
             public XElement CreateXElement()
             {
-                return XElement.Load(new StringReader(_xmlTextBuilder.ToString()));
+                return XElement.Load(new StringReader(this._xmlTextBuilder.ToString()));
             }
 
             public XDocument CreateXDocument()
             {
-                return XDocument.Load(new StringReader(_xmlTextBuilder.ToString()));
+                return XDocument.Load(new StringReader(this._xmlTextBuilder.ToString()));
             }
 
             public XmlElement CreateXmlElement()
             {
-                return CreateXmlDocument().DocumentElement;
+                return this.CreateXmlDocument().DocumentElement;
             }
 
             public XmlDocument CreateXmlDocument()
             {
                 var doc = new XmlDocument();
-                doc.Load(new XmlTextReader(new StringReader(_xmlTextBuilder.ToString())));
+                doc.Load(new XmlTextReader(new StringReader(this._xmlTextBuilder.ToString())));
                 return doc;
             }
         }

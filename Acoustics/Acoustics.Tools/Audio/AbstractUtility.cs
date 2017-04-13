@@ -8,7 +8,7 @@
     using System.Linq;
     using System.Text;
 
-    using Acoustics.Shared;
+    using Shared;
 
     using log4net;
 
@@ -102,17 +102,17 @@
                 throw new ArgumentNullException("outputMimeType");
             }
 
-            if (!CheckMimeTypeExtension(source, sourceMimeType))
+            if (!this.CheckMimeTypeExtension(source, sourceMimeType))
             {
                 throw new ArgumentException(
-                    string.Format(MimeTypeExtensionErrorFormatString, sourceMimeType, source.Extension),
+                    string.Format(this.MimeTypeExtensionErrorFormatString, sourceMimeType, source.Extension),
                     "sourceMimeType");
             }
 
-            if (!CheckMimeTypeExtension(output, outputMimeType))
+            if (!this.CheckMimeTypeExtension(output, outputMimeType))
             {
                 throw new ArgumentException(
-                    string.Format(MimeTypeExtensionErrorFormatString, outputMimeType, output.Extension),
+                    string.Format(this.MimeTypeExtensionErrorFormatString, outputMimeType, output.Extension),
                     "outputMimeType");
             }
         }
@@ -141,10 +141,10 @@
                 throw new ArgumentNullException("sourceMimeType");
             }
 
-            if (!CheckMimeTypeExtension(source, sourceMimeType))
+            if (!this.CheckMimeTypeExtension(source, sourceMimeType))
             {
                 throw new ArgumentException(
-                    string.Format(MimeTypeExtensionErrorFormatString, sourceMimeType, source.Extension),
+                    string.Format(this.MimeTypeExtensionErrorFormatString, sourceMimeType, source.Extension),
                     "sourceMimeType");
             }
 
@@ -200,7 +200,7 @@
                 sbFormats.AppendFormat(InvalidFormatsAre, formats);
             }
 
-            string fileExtension = GetExtension(file);
+            string fileExtension = this.GetExtension(file);
 
             if (validMediaTypes != null)
             {

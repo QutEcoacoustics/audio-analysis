@@ -35,29 +35,29 @@
         public CaeruleaConfiguration(dynamic configuration)
         {
             // Peak parameters
-            AmplitudeThresholdCaerulea = configuration.AmplitudeThresholdCaerulea;   // Decibel---the minimum amplitude value
-            RangeCaerulea = configuration.RangeCaerulea;                                // Frame---the distance in either side for selecting peaks
-            DistanceCaerulea = configuration.DistanceCaerulea;                          // Frame---remove near peaks
+            this.AmplitudeThresholdCaerulea = configuration.AmplitudeThresholdCaerulea;   // Decibel---the minimum amplitude value
+            this.RangeCaerulea = configuration.RangeCaerulea;                                // Frame---the distance in either side for selecting peaks
+            this.DistanceCaerulea = configuration.DistanceCaerulea;                          // Frame---remove near peaks
             // Track parameters
-            BinToleranceCaerulea = configuration.BinToleranceCaerulea;                 // Bin---the fluctuation of the dominant frequency bin
-            FrameThresholdCaerulea = configuration.FrameThresholdCaerulea;              // Frame---frame numbers of the silence
-            TrackDurationThresholdCaerulea = configuration.TrackDurationThresholdCaerulea;
-            TrackThresholdCaerulea = configuration.TrackThresholdCaerulea;           // Used for calculating the percent of peaks in one track
-            MaximumTrackDurationCaerulea = configuration.MaximumTrackDurationCaerulea;  // Minimum duration of tracks
-            MinimumTrackDurationCaerulea = configuration.MinimumTrackDurationCaerulea;  // Maximum duration of tracks
-            BinDifferenceCaerulea = configuration.BinDifferenceCaerulea;             // Difference between the highest and lowest bins
+            this.BinToleranceCaerulea = configuration.BinToleranceCaerulea;                 // Bin---the fluctuation of the dominant frequency bin
+            this.FrameThresholdCaerulea = configuration.FrameThresholdCaerulea;              // Frame---frame numbers of the silence
+            this.TrackDurationThresholdCaerulea = configuration.TrackDurationThresholdCaerulea;
+            this.TrackThresholdCaerulea = configuration.TrackThresholdCaerulea;           // Used for calculating the percent of peaks in one track
+            this.MaximumTrackDurationCaerulea = configuration.MaximumTrackDurationCaerulea;  // Minimum duration of tracks
+            this.MinimumTrackDurationCaerulea = configuration.MinimumTrackDurationCaerulea;  // Maximum duration of tracks
+            this.BinDifferenceCaerulea = configuration.BinDifferenceCaerulea;             // Difference between the highest and lowest bins
             // Band tracks parameters
-            FrequencyLowCaerulea = configuration.FrequencyLowCaerulea;
-            FrequencyHighCaerulea = configuration.FrequencyHighCaerulea;
+            this.FrequencyLowCaerulea = configuration.FrequencyLowCaerulea;
+            this.FrequencyHighCaerulea = configuration.FrequencyHighCaerulea;
             // DCT
-            MinimumOscillationNumberCaerulea = configuration.minimumOscillationNumberCaerulea;
-            MaximumOscillationNumberCaerulea = configuration.maximumOscillationNumberCaerulea;
-            MinimumFrequencyCaerulea = configuration.MinimumFrequencyCaerulea;
-            MaximumFrequencyCaerulea = configuration.MaximumFrequencyCaerulea;
-            Dct_DurationCaerulea = configuration.Dct_DurationCaerulea;
-            Dct_ThresholdCaerulea = configuration.Dct_ThresholdCaerulea;
+            this.MinimumOscillationNumberCaerulea = configuration.minimumOscillationNumberCaerulea;
+            this.MaximumOscillationNumberCaerulea = configuration.maximumOscillationNumberCaerulea;
+            this.MinimumFrequencyCaerulea = configuration.MinimumFrequencyCaerulea;
+            this.MaximumFrequencyCaerulea = configuration.MaximumFrequencyCaerulea;
+            this.Dct_DurationCaerulea = configuration.Dct_DurationCaerulea;
+            this.Dct_ThresholdCaerulea = configuration.Dct_ThresholdCaerulea;
 
-            DoSlopeCaerulea = configuration.DoSlopeCaerulea;
+            this.DoSlopeCaerulea = configuration.DoSlopeCaerulea;
         } // consturctor
 
     } // Class

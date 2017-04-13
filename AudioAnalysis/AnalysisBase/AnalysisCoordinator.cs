@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="AnalysisCoordinator.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="AnalysisCoordinator.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Prepares, runs and completes analyses.
@@ -285,7 +285,7 @@ namespace AnalysisBase
                         var settingsForThisItem = (AnalysisSettings)clonedSettings.Clone();
 
                         // process item
-                        var result = ProcessItem(itemClosed, analysis, settingsForThisItem, parallelised: true);
+                        var result = this.ProcessItem(itemClosed, analysis, settingsForThisItem, parallelised: true);
                         if (result != null)
                         {
                             results[indexClosed] = result;

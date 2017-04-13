@@ -22,15 +22,15 @@
         public delegate double WindowFunc(int n, int N);
 
         private double windowPower; //power of the window
-        public double WindowPower { get { return windowPower; } private set { windowPower = value; } }
+        public double WindowPower { get { return this.windowPower; } private set { this.windowPower = value; } }
 
         private int windowSize;
-        public int WindowSize { get { return windowSize; } private set { windowSize = value; } }
+        public int WindowSize { get { return this.windowSize; } private set { this.windowSize = value; } }
         private int coeffCount;
-        public int CoeffCount { get { return coeffCount; } private set { coeffCount = value; } }
+        public int CoeffCount { get { return this.coeffCount; } private set { this.coeffCount = value; } }
 
         private double[] windowWeights;
-        public double[] WindowWeights { get { return windowWeights; } private set { windowWeights = value; } }
+        public double[] WindowWeights { get { return this.windowWeights; } private set { this.windowWeights = value; } }
 
         public FFT(int windowSize) : this(windowSize, null)
         {
@@ -70,12 +70,12 @@
 
 
 
-        public FFT(int windowSize, WindowFunc w, Boolean dotNetVersion)
+        public FFT(int windowSize, WindowFunc w, bool dotNetVersion)
         {
             if (!IsPowerOf2(windowSize)) throw new ArgumentException("WindowSize must be a power of 2.");
 
             //rft = new RealFourierTransformation();
-            rft = new RealFourierTransformation(TransformationConvention.Matlab);
+            this.rft = new RealFourierTransformation(TransformationConvention.Matlab);
 
             this.WindowSize = windowSize;
             this.CoeffCount = (windowSize / 2) + 1; //f[0]=DC;  f[256]=Nyquist
@@ -140,8 +140,8 @@
             //do the FFT
             four1(cdata);
 
-            double[] f = new double[coeffCount]; //array to contain amplitude data
-            for (int i = 0; i < coeffCount; i++) //calculate amplitude
+            double[] f = new double[this.coeffCount]; //array to contain amplitude data
+            for (int i = 0; i < this.coeffCount; i++) //calculate amplitude
                 f[i] = hypot(cdata[2 * i], cdata[2 * i + 1]);
 
             return f;
@@ -232,11 +232,11 @@
             int half = this.CoeffCount;
 
             //apply the window
-            if (WindowWeights != null) //apply the window
-                for (int i = 0; i < WindowSize; i++) data[i] = WindowWeights[i] * data[i]; //window
+            if (this.WindowWeights != null) //apply the window
+                for (int i = 0; i < this.WindowSize; i++) data[i] = this.WindowWeights[i] * data[i]; //window
 
             double[] freqReal, freqImag;
-            rft.TransformForward(data, out freqReal, out freqImag);
+            this.rft.TransformForward(data, out freqReal, out freqImag);
 
             double[] amplitude = new double[half];
             for (int i = 0; i < half; i++)
@@ -310,12 +310,12 @@
         };
         #endregion
 
-        public static FFT.WindowFunc GetWindowFunction(string name)
+        public static WindowFunc GetWindowFunction(string name)
         {
             //FFT.WindowFunc windowFnc;
-            if (name.StartsWith(Key_HammingWindow)) return FFT.Hamming;
+            if (name.StartsWith(Key_HammingWindow)) return Hamming;
             else
-            if (name.StartsWith(Key_HanningWindow)) return FFT.Hanning;
+            if (name.StartsWith(Key_HanningWindow)) return Hanning;
             else
             if (name.StartsWith(Key_NoWindow)) return null;
             else

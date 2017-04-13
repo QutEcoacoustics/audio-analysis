@@ -8,7 +8,7 @@
 
     public class Cluster
     {
-        public int Size { get { return Vectors.Count; } }
+        public int Size { get { return this.Vectors.Count; } }
         public List<double[]> Vectors { get; private set; }  //members  of the cluster
         public double[] Centroid { get; private set; }       //centroid of the cluster
 
@@ -36,19 +36,19 @@
 
         public double[] CalculateCentroid()
         {
-            int vCount = Vectors.Count;
+            int vCount = this.Vectors.Count;
             if (vCount == 0)
             {
                 return null;
                 //throw new Exception("Cluster.Centroid(): count = " + vCount);
             }
-            int featureCount = Vectors[0].Length;
+            int featureCount = this.Vectors[0].Length;
 
             //accumulate the vectors into an averaged feature vector
             double[] avVector = new double[featureCount];
             for (int i = 0; i < vCount; i++)
             {
-                for (int j = 0; j < featureCount; j++) avVector[j] += Vectors[i][j]; //sum the Vectors
+                for (int j = 0; j < featureCount; j++) avVector[j] += this.Vectors[i][j]; //sum the Vectors
             }
             for (int i = 0; i < featureCount; i++) avVector[i] = avVector[i] / (double)vCount; //average Vectors
 

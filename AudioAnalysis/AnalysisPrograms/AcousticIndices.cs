@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="AcousticIndices.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="AcousticIndices.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the Acoustic type.
@@ -26,7 +26,7 @@ namespace AnalysisPrograms
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
-    using AnalysisPrograms.Production;
+    using Production;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
@@ -101,18 +101,18 @@ namespace AnalysisPrograms
 
                 if (this.TaskIsAnalyse)
                 {
-                    if (InputCsv != null)
+                    if (this.InputCsv != null)
                     {
                         throw new ValidationArgException(
                             "InputCsv should be specifiec in the " + TaskAnalyse + " action");
                     }
 
-                    if (Source == null)
+                    if (this.Source == null)
                     {
                         throw new MissingArgException("Source is required for action:" + TaskAnalyse);
                     }
 
-                    if (Output == null)
+                    if (this.Output == null)
                     {
                         throw new MissingArgException("Output is required for action:" + TaskAnalyse);
                     }

@@ -15,9 +15,9 @@ namespace Dong.Felt
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.WavTools;
-    using Dong.Felt.Representations;
-    using Dong.Felt.Configuration;
-    using Dong.Felt.Preprocessing;
+    using Representations;
+    using Configuration;
+    using Preprocessing;
     using AForge.Imaging.Filters;
 
     public class POISelection
@@ -43,7 +43,7 @@ namespace Dong.Felt
 
         public POISelection(List<PointOfInterest> list)
         {
-            poiList = list;
+            this.poiList = list;
         }
 
         public static List<PointOfInterest> RidgeDetection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
@@ -98,9 +98,9 @@ namespace Dong.Felt
             GaussianBlur gaussianBlurConfig, string audioFilePath,
             string featurePropSet)
         {
-            var originalRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
-            var filterRidges = POISelection.RemoveFalseRidges(originalRidges, spectrogram.Data, 6, 15.0);
-            var addCompressedRidges = POISelection.AddCompressedRidges(
+            var originalRidges = RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
+            var filterRidges = RemoveFalseRidges(originalRidges, spectrogram.Data, 6, 15.0);
+            var addCompressedRidges = AddCompressedRidges(
                 config,
                 audioFilePath,
                 ridgeConfig,
@@ -120,9 +120,9 @@ namespace Dong.Felt
             RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig, string audioFilePath,
             string featurePropSet)
         {
-            var originalRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
-            var filterRidges = POISelection.RemoveFalseRidges(originalRidges, spectrogram.Data, 6, 15.0);
-            var addCompressedRidges = POISelection.AddCompressedRidges(
+            var originalRidges = RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
+            var filterRidges = RemoveFalseRidges(originalRidges, spectrogram.Data, 6, 15.0);
+            var addCompressedRidges = AddCompressedRidges(
                 config,
                 audioFilePath,
                 ridgeConfig,
@@ -593,7 +593,7 @@ namespace Dong.Felt
                         poi.Intensity = matrix[r, c];
                         poi.TimeScale = timeScale;
                         poi.HerzScale = herzScale;
-                        poiList.Add(poi);
+                        this.poiList.Add(poi);
                     }
                 }
             }  /// filter out some redundant ridges
@@ -650,13 +650,13 @@ namespace Dong.Felt
                         poi.Intensity = matrix[r, c];
                         poi.TimeScale = timeScale;
                         poi.HerzScale = herzScale;
-                        poiList.Add(poi);
+                        this.poiList.Add(poi);
                     }
                 }
             }  /// filter out some redundant ridges
         }
 
-        static public List<PointOfInterest> RemoveFalseRidges(List<PointOfInterest> poiList, double[,] spectrogramData,
+        public static List<PointOfInterest> RemoveFalseRidges(List<PointOfInterest> poiList, double[,] spectrogramData,
             int offset, double threshold)
         {
             var result = new List<PointOfInterest>();
@@ -751,13 +751,13 @@ namespace Dong.Felt
                         //ADD CONDITION CHECK-2015-01-28
                         //if (poi.Intensity > 9.0)
                         //{
-                        poiList.Add(poi);
+                        this.poiList.Add(poi);
                         //}
                     }
                 }
             }
-            var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
-            poiList = prunedPoiList;
+            var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(this.poiList, rows, cols);
+            this.poiList = prunedPoiList;
         }
 
 
@@ -830,14 +830,14 @@ namespace Dong.Felt
                         poi.Intensity = spectrogramMatrix[r, c];
                         poi.TimeScale = timeScale;
                         poi.HerzScale = herzScale;
-                        poiList.Add(poi);
+                        this.poiList.Add(poi);
                     }
                 }
             }
-            var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rows, cols);
+            var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(this.poiList, rows, cols);
             var filteredPoiMatrix = ImageAnalysisTools.RemoveIsolatedPoi(poiMatrix, 7, 3);
             var filteredPoiList = StatisticalAnalysis.TransposeMatrixToPOIlist(filteredPoiMatrix);
-            poiList = filteredPoiList;
+            this.poiList = filteredPoiList;
         }
 
         /// <summary>
@@ -1290,17 +1290,17 @@ namespace Dong.Felt
                         var neighbourPoi1 = new PointOfInterest(neighbourPoint1);
                         var neighbourPoi2 = new PointOfInterest(neighbourPoint1);
                         /// Fill the gap by adding two more neighbourhood points.
-                        FillinGaps(poi, poiList, rows, cols, matrix, out neighbourPoi1, out neighbourPoi2, secondsScale, freqBinCount);
-                        poiList.Add(poi);
-                        poiList.Add(neighbourPoi1);
-                        poiList.Add(neighbourPoi2);
+                        this.FillinGaps(poi, this.poiList, rows, cols, matrix, out neighbourPoi1, out neighbourPoi2, secondsScale, freqBinCount);
+                        this.poiList.Add(poi);
+                        this.poiList.Add(neighbourPoi1);
+                        this.poiList.Add(neighbourPoi2);
                     }
                 }
             }
             /// filter out some redundant ridges
-            var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
+            var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(this.poiList, rows, cols);
             var prunedPoiList1 = ImageAnalysisTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
-            poiList = prunedPoiList1;
+            this.poiList = prunedPoiList1;
         }
 
         /// <summary>
@@ -1356,10 +1356,10 @@ namespace Dong.Felt
                         var neighbourPoi1 = new PointOfInterest(neighbourPoint1);
                         var neighbourPoi2 = new PointOfInterest(neighbourPoint1);
                         /// Fill the gap by adding two more neighbourhood points.
-                        FillinGaps(poi, poiList, rows, cols, matrix, out neighbourPoi1, out neighbourPoi2, secondsScale, freqBinCount);
-                        poiList.Add(poi);
-                        poiList.Add(neighbourPoi1);
-                        poiList.Add(neighbourPoi2);
+                        this.FillinGaps(poi, this.poiList, rows, cols, matrix, out neighbourPoi1, out neighbourPoi2, secondsScale, freqBinCount);
+                        this.poiList.Add(poi);
+                        this.poiList.Add(neighbourPoi1);
+                        this.poiList.Add(neighbourPoi2);
                     }
                 }
             }
@@ -1384,26 +1384,26 @@ namespace Dong.Felt
             var poiListLength = pointOfInterestList.Count;
             if (poiListLength != 0)
             {
-                if (poiList[poiListLength - 1].TimeLocation == poi.TimeLocation && poiList[poiListLength - 1].Herz == poi.Herz)
+                if (this.poiList[poiListLength - 1].TimeLocation == poi.TimeLocation && this.poiList[poiListLength - 1].Herz == poi.Herz)
                 {
                     // Finish the copy work.
-                    if (poi.RidgeMagnitude > poiList[poiListLength - 1].RidgeMagnitude)
+                    if (poi.RidgeMagnitude > this.poiList[poiListLength - 1].RidgeMagnitude)
                     {
-                        CallPoiCopy(poi, out neighbourPoi1, out neighbourPoi2, colsMax, rowsMax, matrix, secondsScale, freqBinCount);
+                        this.CallPoiCopy(poi, out neighbourPoi1, out neighbourPoi2, colsMax, rowsMax, matrix, secondsScale, freqBinCount);
                     }
                     else
                     {
-                        CallPoiCopy(poiList[poiListLength - 1], out neighbourPoi1, out neighbourPoi2, colsMax, rowsMax, matrix, secondsScale, freqBinCount);
+                        this.CallPoiCopy(this.poiList[poiListLength - 1], out neighbourPoi1, out neighbourPoi2, colsMax, rowsMax, matrix, secondsScale, freqBinCount);
                     }
                 }
                 else
                 {
-                    CallPoiCopy(poi, out neighbourPoi1, out neighbourPoi2, colsMax, rowsMax, matrix, secondsScale, freqBinCount);
+                    this.CallPoiCopy(poi, out neighbourPoi1, out neighbourPoi2, colsMax, rowsMax, matrix, secondsScale, freqBinCount);
                 }
             }
             else
             {
-                CallPoiCopy(poi, out neighbourPoi1, out neighbourPoi2, colsMax, rowsMax, matrix, secondsScale, freqBinCount);
+                this.CallPoiCopy(poi, out neighbourPoi1, out neighbourPoi2, colsMax, rowsMax, matrix, secondsScale, freqBinCount);
             }
         }
 
@@ -1420,8 +1420,8 @@ namespace Dong.Felt
             {
                 if (col + 1 < colsMax && col - 1 > colsMin)
                 {
-                    neighbourPoi1 = PoiCopy(poi, col - 1, row, matrix, secondsScale, freqBinCount);
-                    neighbourPoi2 = PoiCopy(poi, col + 1, row, matrix, secondsScale, freqBinCount);
+                    neighbourPoi1 = this.PoiCopy(poi, col - 1, row, matrix, secondsScale, freqBinCount);
+                    neighbourPoi2 = this.PoiCopy(poi, col + 1, row, matrix, secondsScale, freqBinCount);
 
                 }
             }
@@ -1429,8 +1429,8 @@ namespace Dong.Felt
             {
                 if (col + 1 < colsMax && col - 1 > colsMin && row + 1 < rowsMax && row - 1 > rowsMin)
                 {
-                    neighbourPoi1 = PoiCopy(poi, col - 1, row + 1, matrix, secondsScale, freqBinCount);
-                    neighbourPoi2 = PoiCopy(poi, col + 1, row - 1, matrix, secondsScale, freqBinCount);
+                    neighbourPoi1 = this.PoiCopy(poi, col - 1, row + 1, matrix, secondsScale, freqBinCount);
+                    neighbourPoi2 = this.PoiCopy(poi, col + 1, row - 1, matrix, secondsScale, freqBinCount);
 
                 }
             }
@@ -1438,16 +1438,16 @@ namespace Dong.Felt
             {
                 if (row + 1 < rowsMax && row - 1 > rowsMin)
                 {
-                    neighbourPoi1 = PoiCopy(poi, col, row - 1, matrix, secondsScale, freqBinCount);
-                    neighbourPoi2 = PoiCopy(poi, col, row + 1, matrix, secondsScale, freqBinCount);
+                    neighbourPoi1 = this.PoiCopy(poi, col, row - 1, matrix, secondsScale, freqBinCount);
+                    neighbourPoi2 = this.PoiCopy(poi, col, row + 1, matrix, secondsScale, freqBinCount);
                 }
             }
             if (poi.OrientationCategory == (int)Direction.NorthWest)
             {
                 if (col + 1 < colsMax && col - 1 > colsMin && row + 1 < rowsMax && row - 1 > rowsMin)
                 {
-                    neighbourPoi1 = PoiCopy(poi, col - 1, row - 1, matrix, secondsScale, freqBinCount);
-                    neighbourPoi2 = PoiCopy(poi, col + 1, row + 1, matrix, secondsScale, freqBinCount);
+                    neighbourPoi1 = this.PoiCopy(poi, col - 1, row - 1, matrix, secondsScale, freqBinCount);
+                    neighbourPoi2 = this.PoiCopy(poi, col + 1, row + 1, matrix, secondsScale, freqBinCount);
 
                 }
             }
@@ -1568,15 +1568,15 @@ namespace Dong.Felt
             var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
             double herzScale = spectrogram.FBinWidth;
             double freqBinCount = spectrogram.Configuration.FreqBinCount;
-            var matrix = SpectrogramIntensityToArray(spectrogram);
+            var matrix = this.SpectrogramIntensityToArray(spectrogram);
             var rowsCount = matrix.GetLength(0);
             var colsCount = matrix.GetLength(1);
 
             var pointsOfInterest = new POISelection(new List<PointOfInterest>());
             pointsOfInterest.SelectRidgesFromMatrix(matrix, ridgeLength, magnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
-            poiList = pointsOfInterest.poiList;
-            RowsCount = rowsCount;
-            ColsCount = colsCount;
+            this.poiList = pointsOfInterest.poiList;
+            this.RowsCount = rowsCount;
+            this.ColsCount = colsCount;
         }
 
         public double[,] SpectrogramIntensityToArray(SpectrogramStandard spectrogram)
@@ -1596,20 +1596,20 @@ namespace Dong.Felt
 
             var rows = spectrogram.Data.GetLength(1);
             var cols = spectrogram.Data.GetLength(0);
-            var ridgesFromUnCompressedSpec = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
+            var ridgesFromUnCompressedSpec = RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
             var timeCompressedRidges = new List<PointOfInterest>();
             if (copyTSpectrogram.Data != null)
             {
-                timeCompressedRidges = POISelection.RidgePoiSelection(copyTSpectrogram, ridgeConfig, featurePropSet);
+                timeCompressedRidges = RidgePoiSelection(copyTSpectrogram, ridgeConfig, featurePropSet);
             }
             var freqCompressedRidges = new List<PointOfInterest>();
             if (copyFSpectrogram.Data != null)
             {
-                freqCompressedRidges = POISelection.RidgePoiSelection(copyFSpectrogram, ridgeConfig, featurePropSet);
+                freqCompressedRidges = RidgePoiSelection(copyFSpectrogram, ridgeConfig, featurePropSet);
             }
-            var improvedRidges = POISelection.AddResizeRidgesInTime(ridgesFromUnCompressedSpec, spectrogram,
+            var improvedRidges = AddResizeRidgesInTime(ridgesFromUnCompressedSpec, spectrogram,
                 timeCompressedRidges, compressConfig.TimeCompressRate, rows, cols);
-            improvedRidges = POISelection.AddResizeRidgesInFreq(improvedRidges, spectrogram,
+            improvedRidges = AddResizeRidgesInFreq(improvedRidges, spectrogram,
                 freqCompressedRidges, compressConfig.FreqCompressRate, rows, cols);
             return improvedRidges;
         }
@@ -1632,7 +1632,7 @@ namespace Dong.Felt
             var timeCompressedRidges = new List<PointOfInterest>();
             if (compressConfig.TimeCompressRate != 1.0)
             {
-                timeCompressedRidges = POISelection.RidgePoiSelection(copyTSpectrogram, ridgeConfig, featurePropSet);
+                timeCompressedRidges = RidgePoiSelection(copyTSpectrogram, ridgeConfig, featurePropSet);
             }
             foreach (var r in timeCompressedRidges)
             {
@@ -1646,7 +1646,7 @@ namespace Dong.Felt
             var freqCompressedRidges = new List<PointOfInterest>();
             if (compressConfig.FreqCompressRate != 1.0)
             {
-                freqCompressedRidges = POISelection.RidgePoiSelection(copyFSpectrogram, ridgeConfig, featurePropSet);
+                freqCompressedRidges = RidgePoiSelection(copyFSpectrogram, ridgeConfig, featurePropSet);
             }
             foreach (var f in freqCompressedRidges)
             {
@@ -1655,9 +1655,9 @@ namespace Dong.Felt
                     horiFreqCompressedRidges.Add(f);
                 }
             }
-            var improvedRidges = POISelection.AddResizeRidgesInTime2(originalPoiList, spectrogram,
+            var improvedRidges = AddResizeRidgesInTime2(originalPoiList, spectrogram,
                 verticalTimeCompressedRidges, compressConfig.TimeCompressRate, rows, cols);
-            improvedRidges = POISelection.AddResizeRidgesInFreq2(improvedRidges, spectrogram,
+            improvedRidges = AddResizeRidgesInFreq2(improvedRidges, spectrogram,
                 horiFreqCompressedRidges, compressConfig.FreqCompressRate, rows, cols);
             return improvedRidges;
         }

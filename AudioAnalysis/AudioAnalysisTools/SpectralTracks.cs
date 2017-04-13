@@ -42,7 +42,7 @@
         {
             double framesStepsPerSecond = 1 / frameStepTimeSpan.TotalSeconds;
             double peakThreshold = 6.0; //dB
-            GetPeakTracksSpectrum(dBSpectrogram, peakThreshold);
+            this.GetPeakTracksSpectrum(dBSpectrogram, peakThreshold);
 
             // this method was written just before leaving for Toulon to work with Herve Glotin.
             // It was change while in Toulon to the following line which does not require a threshold.

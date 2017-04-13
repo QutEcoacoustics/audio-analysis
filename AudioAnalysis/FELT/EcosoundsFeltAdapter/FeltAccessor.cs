@@ -157,7 +157,7 @@ namespace EcosoundsFeltAdapter
         /// <returns>
         /// The search.
         /// </returns>
-        public System.Collections.Generic.SortedDictionary<int, string> Search(Dictionary<string, Value> values, int limit)
+        public SortedDictionary<int, string> Search(Dictionary<string, Value> values, int limit)
         {
             Contract.Requires(limit > 0);
 
@@ -191,9 +191,9 @@ namespace EcosoundsFeltAdapter
                     Tuple.Create(Tuple.Create(key, hdrs[key]), Tuple.Create(key, new[] { values[key] })));
             }
 
-            var testHdrs = new FSharpMap<string, DataType>(items.Select(Microsoft.FSharp.Core.Operators.Fst));
+            var testHdrs = new FSharpMap<string, DataType>(items.Select(Operators.Fst));
             var testInstances =
-                new FSharpMap<string, Value[]>(items.Select(Microsoft.FSharp.Core.Operators.Snd));
+                new FSharpMap<string, Value[]>(items.Select(Operators.Snd));
             Data d = new Data(MQUTeR.FSharp.Shared.DataSet.Test, testHdrs, testInstances, "UnknownWebsiteTag", new[] { string.Empty });
 
             // z-score processing

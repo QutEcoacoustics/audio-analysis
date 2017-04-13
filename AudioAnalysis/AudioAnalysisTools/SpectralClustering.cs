@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="SpectralClustering.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="SpectralClustering.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the SpectralClustering type.
@@ -34,12 +34,12 @@ namespace AudioAnalysisTools
             public double intensityThreshold, rowSumThreshold;
             public ClusteringParameters(int _lowBinBound, int spectrogramHeight, double _intensityThreshold, double _rowSumThreshold)
             {
-                lowBinBound   = _lowBinBound;
-                highBinOffset = 5;  // to avoid edge effects at top of spectrogram
-                upperBinBound = spectrogramHeight - highBinOffset;
-                intensityThreshold = _intensityThreshold;
-                rowSumThreshold    = _rowSumThreshold;
-                reductionFactor    = 3;
+                this.lowBinBound   = _lowBinBound;
+                this.highBinOffset = 5;  // to avoid edge effects at top of spectrogram
+                this.upperBinBound = spectrogramHeight - this.highBinOffset;
+                this.intensityThreshold = _intensityThreshold;
+                this.rowSumThreshold    = _rowSumThreshold;
+                this.reductionFactor    = 3;
             }
         }
 
@@ -54,13 +54,13 @@ namespace AudioAnalysisTools
             public TrainingDataInfo(double[,] _trainingDataAsSpectrogram, List<double[]> _trainingData, bool[] _SelectedFrames,
                                     int _lowBinBound, int _highBinBound, double _intensityThreshold, int _reductionFactor)
             {
-                trainingDataAsSpectrogram = _trainingDataAsSpectrogram;
-                trainingData = _trainingData;
-                selectedFrames = _SelectedFrames;
-                lowBinBound = _lowBinBound;
-                highBinBound = _highBinBound;
-                intensityThreshold = _intensityThreshold;
-                reductionFactor = _reductionFactor;
+                this.trainingDataAsSpectrogram = _trainingDataAsSpectrogram;
+                this.trainingData = _trainingData;
+                this.selectedFrames = _SelectedFrames;
+                this.lowBinBound = _lowBinBound;
+                this.highBinBound = _highBinBound;
+                this.intensityThreshold = _intensityThreshold;
+                this.reductionFactor = _reductionFactor;
             }
         }
 
@@ -77,20 +77,20 @@ namespace AudioAnalysisTools
             public ClusterInfo(List<double[]> _PrunedClusterWts, double _av2, bool[] _SelectedFrames, double[] _clusterSpectrum,
                                int[] _clusterHits2, int _triGramUniqueCount, double _triGramRepeatRate)
             {
-                clusterCount = 0;
+                this.clusterCount = 0;
                 if (_PrunedClusterWts != null)
                 {
-                    clusterCount = _PrunedClusterWts.Count;
+                    this.clusterCount = _PrunedClusterWts.Count;
                     if (_PrunedClusterWts[0] == null)
-                        clusterCount = _PrunedClusterWts.Count - 1; // because a null at the zero position implies not belonging to a cluster.
+                        this.clusterCount = _PrunedClusterWts.Count - 1; // because a null at the zero position implies not belonging to a cluster.
                 }
-                av2 = _av2;
-                selectedFrames     = _SelectedFrames;
-                prunedClusterWts   = _PrunedClusterWts;
-                clusterSpectrum    = _clusterSpectrum;
-                clusterHits2       = _clusterHits2;
-                triGramUniqueCount = _triGramUniqueCount;
-                triGramRepeatRate  = _triGramRepeatRate;
+                this.av2 = _av2;
+                this.selectedFrames     = _SelectedFrames;
+                this.prunedClusterWts   = _PrunedClusterWts;
+                this.clusterSpectrum    = _clusterSpectrum;
+                this.clusterHits2       = _clusterHits2;
+                this.triGramUniqueCount = _triGramUniqueCount;
+                this.triGramRepeatRate  = _triGramRepeatRate;
             }
         }
 
@@ -103,7 +103,7 @@ namespace AudioAnalysisTools
         /// <param name="binaryThreshold"></param>
         /// <param name="rowSumThreshold"></param>
         /// <returns></returns>
-        public static TrainingDataInfo GetTrainingDataForClustering(double[,] spectrogram, SpectralClustering.ClusteringParameters cp)
+        public static TrainingDataInfo GetTrainingDataForClustering(double[,] spectrogram, ClusteringParameters cp)
         {
             //double binaryThreshold, double rowSumThreshold
             int frameCount = spectrogram.GetLength(0);
@@ -155,7 +155,7 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static ClusterInfo ClusterAnalysis(List<double[]> trainingData, double wtThreshold, int hitThreshold, bool[] selectedFrames)
         {
-            BinaryCluster.Verbose = SpectralClustering.Verbose;
+            BinaryCluster.Verbose = Verbose;
 
             int frameCount = selectedFrames.Length;
 
@@ -174,7 +174,7 @@ namespace AudioAnalysisTools
             List<double[]> prunedClusterWts = tuple_output2.Item2;
             double[] clusterSpectrum = BinaryCluster.GetClusterSpectrum(clusterWts);
 
-            if (SpectralClustering.Verbose)
+            if (Verbose)
             {
                 BinaryCluster.DisplayClusterWeights(prunedClusterWts, clusterHits1);
                 LoggedConsole.WriteLine(" Pruned cluster count = {0}", prunedClusterWts.Count);
@@ -346,7 +346,7 @@ namespace AudioAnalysisTools
             int binCount = clusters[maxIndex] + 1;
             double binWidth;
             int[] histo = Histogram.Histo(clusters, binCount, out binWidth, out min, out max);
-            if (SpectralClustering.Verbose)
+            if (Verbose)
             {
                 LoggedConsole.WriteLine("Sum = " + histo.Sum());
                 DataTools.writeArray(histo);
@@ -392,7 +392,7 @@ namespace AudioAnalysisTools
                 //image.AddTrack(Image_Track.GetScoreTrack(DataTools.Bool2Binary(clusterInfo.selectedFrames),0.0, 1.0, 0.0));
                 int[] clusterHits = new int[sonogram.FrameCount]; // array of zeroes
                 if (clusterInfo.clusterHits2 != null) clusterHits = clusterInfo.clusterHits2;
-                string label = String.Format(clusterInfo.clusterCount + " Clusters");
+                string label = string.Format(clusterInfo.clusterCount + " Clusters");
                 Plot scores = new Plot(label, DataTools.normalise(clusterHits), 0.0); // location of cluster hits
                 image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
                 int excludeBins = 10;
@@ -456,15 +456,15 @@ namespace AudioAnalysisTools
             int upperBinBound = spectrogramData.GetLength(1) - 5;
             double binaryThreshold = 0.07; // for deriving binary spectrogram. An amplitude threshold of 0.03 = -30 dB. A threhold of 0.05 = -26dB.
             double rowSumThreshold = 2.0;  // ACTIVITY THRESHOLD - require activity in at least N bins to include for training
-            var parameters = new SpectralClustering.ClusteringParameters(lowBinBound, spectrogramData.GetLength(1), binaryThreshold, rowSumThreshold);
+            var parameters = new ClusteringParameters(lowBinBound, spectrogramData.GetLength(1), binaryThreshold, rowSumThreshold);
 
-            SpectralClustering.TrainingDataInfo data = SpectralClustering.GetTrainingDataForClustering(spectrogramData, parameters);
+            TrainingDataInfo data = GetTrainingDataForClustering(spectrogramData, parameters);
             Image image = DrawSonogram(spectrogram, null, list, eventThreshold, data.trainingDataAsSpectrogram);
             image.Save(imagePath, ImageFormat.Png);
             FileInfo fiImage = new FileInfo(imagePath);
             if (fiImage.Exists)
             {
-                TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(imageViewer);
+                ProcessRunner process = new ProcessRunner(imageViewer);
                 process.Run(imagePath, outputDir);
             }
 
@@ -478,18 +478,18 @@ namespace AudioAnalysisTools
                 // pruning parameters
                 double wtThreshold = rowSumThreshold; // used to remove wt vectors whose sum of wts <= threshold
                 int hitThreshold = 4;                 // used to remove wt vectors which have fewer than the threshold hits
-                SpectralClustering.ClusterInfo clusterInfo = SpectralClustering.ClusterAnalysis(data.trainingData, wtThreshold, hitThreshold, data.selectedFrames);
+                ClusterInfo clusterInfo = ClusterAnalysis(data.trainingData, wtThreshold, hitThreshold, data.selectedFrames);
                 Console.WriteLine("Cluster Count=" + clusterInfo.clusterCount);
                 //spectrogramData = SpectralClustering.SuperImposeHitsOnSpectrogram(spectrogramData, lowBinBound, clusterInfo.trainingDataAsSpectrogram);
                 //spectrogramData = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
                 //ImageTools.DrawMatrix(spectrogramData, imagePath);
 
-                image = SpectralClustering.DrawClusterSpectrogram(spectrogram, clusterInfo, data);
+                image = DrawClusterSpectrogram(spectrogram, clusterInfo, data);
                 image.Save(imagePath, ImageFormat.Png);
                 fiImage = new FileInfo(imagePath);
                 if (fiImage.Exists)
                 {
-                    TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(imageViewer);
+                    ProcessRunner process = new ProcessRunner(imageViewer);
                     process.Run(imagePath, outputDir);
                 }
             }

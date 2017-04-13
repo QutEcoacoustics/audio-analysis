@@ -13,18 +13,18 @@
     using System.Drawing.Imaging;
     using log4net;
     using Representations;
-    using Dong.Felt.Features;
-    using Dong.Felt.Configuration;
-    using Dong.Felt.SpectrogramDrawing;
-    using Dong.Felt.Preprocessing;
-    using Dong.Felt.ResultsOutput;
+    using Features;
+    using Configuration;
+    using SpectrogramDrawing;
+    using Preprocessing;
+    using ResultsOutput;
     using System.Reflection;
     using System.Runtime.InteropServices;
 
     using AForge.Imaging.Filters;
-    using Dong.Felt.Experiments;
+    using Experiments;
     using QutSensors.AudioAnalysis.AED;
-    using Dong.Felt.Registration;
+    using Registration;
 
     public class DongSandpit
     {

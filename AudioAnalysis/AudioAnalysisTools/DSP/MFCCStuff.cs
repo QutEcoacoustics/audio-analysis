@@ -13,7 +13,7 @@
             int DCTLength = 32;
             int coeffCount = 32;
 
-            double[,] cosines = MFCCStuff.Cosines(DCTLength, coeffCount + 1); //set up the cosine coefficients
+            double[,] cosines = Cosines(DCTLength, coeffCount + 1); //set up the cosine coefficients
 
             var array = new double[DCTLength];
 
@@ -35,7 +35,7 @@
             DataTools.writeBarGraph(array);
 
 
-            double[] dct = MFCCStuff.DCT(array, cosines);
+            double[] dct = DCT(array, cosines);
             for (int i = 0; i < dct.Length; i++) dct[i] = Math.Abs(dct[i]*10);
             dct[0] = 0.0; //dct[1] = 0.0; dct[2] = 0.0; dct[3] = 0.0;
             //int maxIndex = DataTools.GetMaxIndex(dct);
@@ -275,6 +275,7 @@
             //LoggedConsole.WriteLine(" NCount=" + N + " filterCount=" + filterBankCount + " freqRange=" + freqRange + " ipBand=" + ipBand.ToString("F1") + " opBand=" + opBand.ToString("F1"));
 
             for (int i = 0; i < M; i++) //for all spectra or time steps
+            {
                 for (int j = 0; j < filterBankCount; j++) //for all output bands in the frequency range
                 {
                     // find top and bottom input bin id's corresponding to the output interval
@@ -289,26 +290,27 @@
 
                     if (ipAint > 0)
                     {
-                        double ya = MFCCStuff.LinearInterpolate((double)(ipAint - 1), (double)ipAint, matrix[i, ipAint - 1], matrix[i, ipAint], ipA);
-                        sum += MFCCStuff.LinearIntegral(ipA * ipBand, ipAint * ipBand, ya, matrix[i, ipAint]);
+                        double ya = LinearInterpolate((double)(ipAint - 1), (double)ipAint, matrix[i, ipAint - 1], matrix[i, ipAint], ipA);
+                        sum += LinearIntegral(ipA * ipBand, ipAint * ipBand, ya, matrix[i, ipAint]);
                     }
 
                     for (int k = ipAint; k < ipBint; k++)
                     {
                         if ((k + 1) >= N) break;  //to prevent out of range index
-                        sum += MFCCStuff.LinearIntegral(k * ipBand, (k + 1) * ipBand, matrix[i, k], matrix[i, k + 1]);
+                        sum += LinearIntegral(k * ipBand, (k + 1) * ipBand, matrix[i, k], matrix[i, k + 1]);
                     }
 
                     if (ipBint < N)
                     {
-                        double yb = MFCCStuff.LinearInterpolate((double)ipBint, (double)(ipBint + 1), matrix[i, ipBint], matrix[i, ipBint + 1], ipB);
-                        sum += MFCCStuff.LinearIntegral(ipBint * ipBand, ipB * ipBand, matrix[i, ipBint], yb);
+                        double yb = LinearInterpolate((double)ipBint, (double)(ipBint + 1), matrix[i, ipBint], matrix[i, ipBint + 1], ipB);
+                        sum += LinearIntegral(ipBint * ipBand, ipB * ipBand, matrix[i, ipBint], yb);
                     }
 
                     double width = ipB - ipA;
                     outData[i, j] = sum / width; //to obtain power per Hz
                     if (outData[i, j] < 0.0001) outData[i, j] = 0.0001;
                 } //end of for all freq bands
+            }
             //implicit end of for all spectra or time steps
 
             return outData;
@@ -334,14 +336,15 @@
             int N = matrix.GetLength(1); //number of Hz bands = 2^N +1
             double[,] outData = new double[M, filterBankCount];
             double linBand = Nyquist / (double)N;
-            double melBand = MFCCStuff.Mel(Nyquist) / (double)filterBankCount;  //width of mel band
+            double melBand = Mel(Nyquist) / (double)filterBankCount;  //width of mel band
             //LoggedConsole.WriteLine(" linBand=" + linBand + " melBand=" + melBand);
 
             for (int i = 0; i < M; i++) //for all spectra or time steps
+            {
                 for (int j = 0; j < filterBankCount; j++) //for all mel bands
                 {
-                    double a = MFCCStuff.InverseMel(j * melBand) / linBand;       //location of lower f in Hz bin units
-                    double b = MFCCStuff.InverseMel((j + 1) * melBand) / linBand; //location of upper f in Hz bin units
+                    double a = InverseMel(j * melBand) / linBand;       //location of lower f in Hz bin units
+                    double b = InverseMel((j + 1) * melBand) / linBand; //location of upper f in Hz bin units
                     int ai = (int)Math.Ceiling(a);
                     int bi = (int)Math.Floor(b);
 
@@ -351,31 +354,32 @@
                     {
                         ai = (int)Math.Floor(a);
                         bi = (int)Math.Ceiling(b);
-                        double ya = MFCCStuff.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], a);
-                        double yb = MFCCStuff.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], b);
-                        sum = MFCCStuff.MelIntegral(a * linBand, b * linBand, ya, yb);
+                        double ya = LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], a);
+                        double yb = LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], b);
+                        sum = MelIntegral(a * linBand, b * linBand, ya, yb);
                     }
                     else
                     {
                         if (ai > 0)
                         {
-                            double ya = MFCCStuff.LinearInterpolate((double)(ai - 1), (double)ai, matrix[i, ai - 1], matrix[i, ai], a);
-                            sum += MFCCStuff.MelIntegral(a * linBand, ai * linBand, ya, matrix[i, ai]);
+                            double ya = LinearInterpolate((double)(ai - 1), (double)ai, matrix[i, ai - 1], matrix[i, ai], a);
+                            sum += MelIntegral(a * linBand, ai * linBand, ya, matrix[i, ai]);
                         }
                         for (int k = ai; k < bi; k++)
                         {
                             if ((k + 1) >= N) break;//to prevent out of range index with Koala recording
-                            sum += MFCCStuff.MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
+                            sum += MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
                         }
                         if (bi < N)
                         {
-                            double yb = MFCCStuff.LinearInterpolate((double)bi, (double)(bi + 1), matrix[i, bi], matrix[i, bi + 1], b);
-                            sum += MFCCStuff.MelIntegral(bi * linBand, b * linBand, matrix[i, bi], yb);
+                            double yb = LinearInterpolate((double)bi, (double)(bi + 1), matrix[i, bi], matrix[i, bi + 1], b);
+                            sum += MelIntegral(bi * linBand, b * linBand, matrix[i, bi], yb);
                         }
                     }
 
                     outData[i, j] = sum / melBand; //to obtain power per mel
                 } //end of for all mel bands
+            }
             //implicit end of for all spectra or time steps
 
             return outData;
@@ -403,9 +407,9 @@
                 throw new Exception("Speech.LinearFilterBank(): WARNING!!!! Freq range = zero. Check values of min & max freq.");
             }
 
-            double melNyquist = MFCCStuff.Mel(Nyquist);
-            double minMel     = MFCCStuff.Mel(minFreq);
-            double maxMel     = MFCCStuff.Mel(maxFreq);
+            double melNyquist = Mel(Nyquist);
+            double minMel     = Mel(minFreq);
+            double maxMel     = Mel(maxFreq);
             double melRange   = maxMel - minMel;
             double fraction   = melRange / melNyquist;
             filterBankCount   = (int)Math.Ceiling(filterBankCount * fraction);
@@ -419,13 +423,14 @@
             //LoggedConsole.WriteLine(" filterCount=" + filterBankCount + " melRange=" + melRange.ToString("F1") + " melBand=" + melBand.ToString("F3"));
 
             for (int i = 0; i < M; i++) //for all spectra or time steps
+            {
                 for (int j = 0; j < filterBankCount; j++) //for all mel bands in the frequency range
                 {
                     // find top and bottom freq bin id's corresponding to the mel interval
                     double melA = (j * melBand) + minMel;
                     double melB = ((j + 1) * melBand) + minMel;
-                    double ipA = (MFCCStuff.InverseMel(melA) - minFreq) / linBand;   //location of lower f in Hz bin units
-                    double ipB = (MFCCStuff.InverseMel(melB) - minFreq) / linBand;   //location of upper f in Hz bin units
+                    double ipA = (InverseMel(melA) - minFreq) / linBand;   //location of lower f in Hz bin units
+                    double ipB = (InverseMel(melB) - minFreq) / linBand;   //location of upper f in Hz bin units
                     int ai = (int)Math.Ceiling(ipA);
                     int bi = (int)Math.Floor(ipB);
                     //if (i < 2) LoggedConsole.WriteLine("i="+i+" j="+j+": a=" + a.ToString("F1") + " b=" + b.ToString("F1") + " ai=" + ai + " bi=" + bi);
@@ -435,27 +440,27 @@
                     {
                         ai = (int)Math.Floor(ipA);
                         bi = (int)Math.Ceiling(ipB);
-                        double ya = MFCCStuff.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], ipA);
-                        double yb = MFCCStuff.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], ipB);
-                        sum = MFCCStuff.MelIntegral(ipA * linBand, ipB * linBand, ya, yb);
+                        double ya = LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], ipA);
+                        double yb = LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], ipB);
+                        sum = MelIntegral(ipA * linBand, ipB * linBand, ya, yb);
                     }
                     else
                     {
                         if (ai > 0)
                         {
-                            double ya = MFCCStuff.LinearInterpolate((double)(ai - 1), (double)ai, matrix[i, ai - 1], matrix[i, ai], ipA);
-                            sum += MFCCStuff.MelIntegral(ipA * linBand, ai * linBand, ya, matrix[i, ai]);
+                            double ya = LinearInterpolate((double)(ai - 1), (double)ai, matrix[i, ai - 1], matrix[i, ai], ipA);
+                            sum += MelIntegral(ipA * linBand, ai * linBand, ya, matrix[i, ai]);
                         }
                         for (int k = ai; k < bi; k++)
                         {
                             //if ((k + 1) >= N) LoggedConsole.WriteLine("k=" + k + "  N=" + N);
                             if ((k + 1) > N) break;//to prevent out of range index
-                            sum += MFCCStuff.MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
+                            sum += MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
                         }
                         if (bi < (N-1))
                         {
-                            double yb = MFCCStuff.LinearInterpolate((double)bi, (double)(bi + 1), matrix[i, bi], matrix[i, bi + 1], ipB);
-                            sum += MFCCStuff.MelIntegral(bi * linBand, ipB * linBand, matrix[i, bi], yb);
+                            double yb = LinearInterpolate((double)bi, (double)(bi + 1), matrix[i, bi], matrix[i, bi + 1], ipB);
+                            sum += MelIntegral(bi * linBand, ipB * linBand, matrix[i, bi], yb);
                         }
                     }
 
@@ -464,6 +469,7 @@
                     //double width = melBi - melAi;
                     outData[i, j] = sum / melBand; //to obtain power per mel
                 } //end of for all mel bands
+            }
             //implicit end of for all spectra or time steps
 
             return outData;
@@ -558,7 +564,7 @@
             int binCount   = spectra.GetLength(1);  //number of filters in filter bank
 
             //set up the cosine coefficients. Need one extra to compensate for DC coeff.
-            double[,] cosines = MFCCStuff.Cosines(binCount, coeffCount + 1);
+            double[,] cosines = Cosines(binCount, coeffCount + 1);
             //following two lines write matrix of cos values for checking.
             //string fPath = @"C:\SensorNetworks\Sonograms\cosines.txt";
             //FileTools.WriteMatrix2File_Formatted(cosines, fPath, "F3");

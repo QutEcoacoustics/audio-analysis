@@ -576,8 +576,8 @@ namespace TowseyLibrary
         /// <param name="m">matrix of positive power values</param>
         public static double[,] Power2DeciBels(double[,] m, out double min, out double max)
         {
-            min = Double.MaxValue;
-            max = -Double.MaxValue;
+            min = double.MaxValue;
+            max = -double.MaxValue;
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
@@ -632,10 +632,13 @@ namespace TowseyLibrary
             double[,] newM = new double[rows, cols];
 
             for (int i = 0; i < rows; i++)
+            {
                 for (int j = 0; j < cols; j++)
                 {
                     newM[i, j] = M[i, j] * M[i, j];
                 }
+            }
+
             return newM;
         }
 
@@ -646,11 +649,14 @@ namespace TowseyLibrary
             double[,] newM = new double[rows, cols];
 
             for (int i = 0; i < rows; i++)
+            {
                 for (int j = 0; j < cols; j++)
                 {
                     if (M[i, j] <= 0.0) newM[i, j] = 0.0;
                     else                newM[i, j] = Math.Log(1 + M[i, j]);
                 }
+            }
+
             return newM;
         }
 
@@ -661,10 +667,13 @@ namespace TowseyLibrary
             double[,] newM = new double[rows, cols];
 
             for (int i = 0; i < rows; i++)
+            {
                 for (int j = 0; j < cols; j++)
                 {
                     newM[i, j] = Math.Sqrt(M[i, j]);
                 }
+            }
+
             return newM;
         }
 
@@ -682,7 +691,7 @@ namespace TowseyLibrary
         public static double[,] FilterBackgroundValues(double[,] M, double filterCoeff)
         {
             if (filterCoeff >= 1.0) return M;
-            if (filterCoeff <= 0.1) return MatrixTools.SquareValues(M);
+            if (filterCoeff <= 0.1) return SquareValues(M);
 
             double param = 1 / (double)filterCoeff;
             int rows = M.GetLength(0);
@@ -714,12 +723,15 @@ namespace TowseyLibrary
             double[,] newM = new double[rows,cols];
 
             for (int i = 0; i < rows; i++)
+            {
                 for (int j = 0; j < cols; j++)
                 {
                     if (M[i, j] <= min) newM[i, j] = min;
                     else if (M[i,j] >= max) newM[i,j] = max;
                     else newM[i,j] = M[i,j];
                 }
+            }
+
             return newM;
         }
 
@@ -841,6 +853,7 @@ namespace TowseyLibrary
             int N = matrix.GetLength(1); //height
             double range = max - min;
             for (int i = 0; i < M; i++)
+            {
                 for (int j = 0; j < N; j++)
                 {   //normalise power for given min and max
                     int k = (int)Math.Floor(n * (matrix[i, j] - min) / range);//normalise
@@ -848,6 +861,7 @@ namespace TowseyLibrary
                     if (k >= n) k = n - 1;
                     bins[k]++;
                 }
+            }
 
             int minThres = (int)Math.Floor(minPercentile * M * N);
             minCut = min;
@@ -951,11 +965,14 @@ namespace TowseyLibrary
 
       double[,] newMatrix = (double[,])m1.Clone();
       for (int i = 0; i < m1Rows; i++)
-          for (int j = 0; j < m1Cols; j++)
+            {
+                for (int j = 0; j < m1Cols; j++)
           {
               newMatrix[i, j] = m1[i, j] + m2[i, j];
           }
-      return newMatrix;
+            }
+
+            return newMatrix;
   }
 
   /// <summary>
@@ -1029,11 +1046,14 @@ namespace TowseyLibrary
 
       double[,] newMatrix = (double[,])m1.Clone();
       for (int i = 0; i < m1Rows; i++)
-          for (int j = 0; j < m1Cols; j++)
+            {
+                for (int j = 0; j < m1Cols; j++)
           {
               newMatrix[i, j] = m1[i, j] - m2[i, j];
           }
-      return newMatrix;
+            }
+
+            return newMatrix;
   }
 
 
@@ -1079,7 +1099,7 @@ namespace TowseyLibrary
       {
           for (int c = 0; c < m1Cols; c++)
           {
-              newMatrix[m1Rows + r, c] = Double.NaN;
+              newMatrix[m1Rows + r, c] = double.NaN;
           }
       }
       return newMatrix;
@@ -1092,11 +1112,14 @@ namespace TowseyLibrary
 
         double[,] newMatrix = new double[rows, cols];
         for (int r = 0; r < rows; r++)
-            for (int c = 0; c < cols; c++)
+            {
+                for (int c = 0; c < cols; c++)
             {
                 newMatrix[r, c] = 1 - m[r, c];
             }
-        return newMatrix;
+            }
+
+            return newMatrix;
     }
 
         public static byte[] GetColumn(byte[,] m, int colID)
@@ -1214,7 +1237,7 @@ namespace TowseyLibrary
             for (int j = 0; j < cols; j++)
             {
 
-                double[] column = MatrixTools.GetColumn(m, j);
+                double[] column = GetColumn(m, j);
                 System.Tuple<int[], double[]> tuple = DataTools.SortArray(column);
                 colMedians[j] = tuple.Item2[rows/2];
             }
@@ -1261,7 +1284,7 @@ namespace TowseyLibrary
   {
       int rows = m.GetLength(0);
       int cols = m.GetLength(1);
-      if (rows != cols) return Double.NaN;
+      if (rows != cols) return double.NaN;
       double sum = 0.0;
       for (int r = 0; r < rows; r++)
       {
@@ -1275,7 +1298,7 @@ namespace TowseyLibrary
       int cols = m.GetLength(1);
       if (rows != cols)
       {
-          sum = Double.NaN;
+          sum = double.NaN;
           count = 0;
           return;
       }
@@ -1296,7 +1319,7 @@ namespace TowseyLibrary
       int cols = m.GetLength(1);
       if (rows != cols)
       {
-          sum = Double.NaN;
+          sum = double.NaN;
           count = 0;
           return;
       }
@@ -1315,9 +1338,9 @@ namespace TowseyLibrary
   {
       int count;
       double sum;
-      MatrixTools.SumTriangleAbovePositiveDiagonal(m, out sum, out count);
+      SumTriangleAbovePositiveDiagonal(m, out sum, out count);
       upperAv = sum / (double)count;
-      MatrixTools.SumTriangleBelowPositiveDiagonal(m, out sum, out count);
+      SumTriangleBelowPositiveDiagonal(m, out sum, out count);
       lowerAv = sum / (double)count;
   }
 
@@ -1325,7 +1348,7 @@ namespace TowseyLibrary
   {
       int rows = m.GetLength(0);
       int cols = m.GetLength(1);
-      if (rows != cols) return Double.NaN;
+      if (rows != cols) return double.NaN;
       double sum = 0.0;
       for (int r = 0; r < rows; r++)
       {
@@ -1339,7 +1362,7 @@ namespace TowseyLibrary
       int cols = m.GetLength(1);
       if (rows != cols)
       {
-          sum = Double.NaN;
+          sum = double.NaN;
           count = 0;
           return;
       }
@@ -1360,7 +1383,7 @@ namespace TowseyLibrary
       int cols = m.GetLength(1);
       if (rows != cols)
       {
-          sum = Double.NaN;
+          sum = double.NaN;
           count = 0;
           return;
       }
@@ -1379,9 +1402,9 @@ namespace TowseyLibrary
   {
       int count;
       double sum;
-      MatrixTools.SumTriangleAboveNegativeDiagonal(m, out sum, out count);
+      SumTriangleAboveNegativeDiagonal(m, out sum, out count);
       upperAv = sum / (double)count;
-      MatrixTools.SumTriangleBelowNegativeDiagonal(m, out sum, out count);
+      SumTriangleBelowNegativeDiagonal(m, out sum, out count);
       lowerAv = sum / (double)count;
   }
 
@@ -1392,8 +1415,8 @@ namespace TowseyLibrary
 		/// </summary>
 		public static double[,] normalise(double[,] m)
 		{
-			double min = Double.MaxValue;
-			double max = -Double.MaxValue;
+			double min = double.MaxValue;
+			double max = -double.MaxValue;
 
 			int rows = m.GetLength(0);
 			int cols = m.GetLength(1);
@@ -1435,8 +1458,11 @@ namespace TowseyLibrary
             int cols = m.GetLength(1);
             var ret = new char[cols, rows];
             for (int r = 0; r < rows; r++)
+            {
                 for (int c = 0; c < cols; c++)
                     ret[c, r] = m[rows-r, c];
+            }
+
             return ret;
         }
 
@@ -1453,8 +1479,11 @@ namespace TowseyLibrary
             int cols = m.GetLength(1);
             var ret = new double[rows, cols];
             for (int r = 0; r < rows; r++)
+            {
                 for (int c = 0; c < cols; c++)
                     ret[r, c] = m[rows - r - 1, cols - c - 1];
+            }
+
             return ret;
         }
         /// <summary>
@@ -1469,8 +1498,11 @@ namespace TowseyLibrary
             int cols = m.GetLength(1);
             var ret = new double[cols, rows];
             for (int r = 0; r < rows; r++)
+            {
                 for (int c = 0; c < cols; c++)
                     ret[c, r] = m[rows - r - 1, c];
+            }
+
             return ret;
         }
         public static byte[,] MatrixRotate90Clockwise(byte[,] m)
@@ -1479,8 +1511,11 @@ namespace TowseyLibrary
             int cols = m.GetLength(1);
             var ret = new byte[cols, rows];
             for (int r = 0; r < rows; r++)
+            {
                 for (int c = 0; c < cols; c++)
                     ret[c, r] = m[rows - r - 1, c];
+            }
+
             return ret;
         }
         /// Rotates a matrix 90 degrees clockwise.
@@ -1494,8 +1529,11 @@ namespace TowseyLibrary
             int cols = m.GetLength(1);
             var ret = new int[cols, rows];
             for (int r = 0; r < rows; r++)
+            {
                 for (int c = 0; c < cols; c++)
                     ret[c, r] = m[rows - r - 1, c];
+            }
+
             return ret;
         }
         /// <summary>
@@ -1512,8 +1550,11 @@ namespace TowseyLibrary
             int cols = m.GetLength(1);
             var ret = new double[cols, rows];
             for (int r = 0; r < rows; r++)
+            {
                 for (int c = 0; c < cols; c++)
                     ret[c, r] = m[r, cols -1-c];
+            }
+
             return ret;
         }
 
@@ -1529,10 +1570,13 @@ namespace TowseyLibrary
             double[,] Mt = new double[cols, rows];
 
             for (int r = 0; r < rows; r++)
+            {
                 for (int c = 0; c < cols; c++)
                 {
                     Mt[c, r] = M[r, c];
                 }
+            }
+
             return Mt;
         }
 
@@ -1549,8 +1593,11 @@ namespace TowseyLibrary
             int cols = m.GetLength(1);
             var ret = new char[cols, rows];
             for (int r = 0; r < rows; r++)
+            {
                 for (int c = 0; c < cols; c++)
                     ret[c, r] = m[r, c];
+            }
+
             return ret;
         }
 
@@ -1566,10 +1613,13 @@ namespace TowseyLibrary
             byte[,] Mt = new byte[cols, rows];
 
             for (int r = 0; r < rows; r++)
+            {
                 for (int c = 0; c < cols; c++)
                 {
                     Mt[c, r] = M[r, c];
                 }
+            }
+
             return Mt;
         }
 
@@ -1663,8 +1713,8 @@ namespace TowseyLibrary
             int cols1 = m1.GetLength(1);
             int rows2 = m2.GetLength(0);
             int cols2 = m2.GetLength(1);
-            if (rows1 != rows2) throw new System.Exception("Matrices have unequal row numbers.");
-            if (cols1 != cols2) throw new System.Exception("Matrices have unequal column numbers.");
+            if (rows1 != rows2) throw new Exception("Matrices have unequal row numbers.");
+            if (cols1 != cols2) throw new Exception("Matrices have unequal column numbers.");
 
             //calculate euclidian distance
             double sum = 0.0;
@@ -1693,8 +1743,8 @@ namespace TowseyLibrary
             int cols1 = m1.GetLength(1);
             int rows2 = m2.GetLength(0);
             int cols2 = m2.GetLength(1);
-            if (rows1 != rows2) throw new System.Exception("Matrices have unequal row numbers.");
-            if (cols1 != cols2) throw new System.Exception("Matrices have unequal column numbers.");
+            if (rows1 != rows2) throw new Exception("Matrices have unequal row numbers.");
+            if (cols1 != cols2) throw new Exception("Matrices have unequal column numbers.");
             double sum = 0.0;
             for (int i = 0; i < rows1; i++)
             {
@@ -1714,13 +1764,14 @@ namespace TowseyLibrary
         public static double[,] RescaleMatrixBetweenMinAndMax(double[,] m, double normMin, double normMax)
         {
             //m = normalise(m);
-            double min = Double.MaxValue;
-            double max = -Double.MaxValue;
+            double min = double.MaxValue;
+            double max = -double.MaxValue;
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
             double[,] ret = new double[rows, cols];
             for (int i = 0; i < rows; i++)
+            {
                 for (int j = 0; j < cols; j++)
                 {
                     if (m[i, j] > max)
@@ -1728,16 +1779,20 @@ namespace TowseyLibrary
                     if (m[i, j] < min)
                         min = m[i, j];
                 }
+            }
+
             double range = max - min;
             double normRange = normMax - normMin;
             //LoggedConsole.WriteLine("range ="+ range+"  normRange="+normRange);
 
             for (int i = 0; i < rows; i++)
+            {
                 for (int j = 0; j < cols; j++)
                 {
                     double norm01 = (m[i, j] - min) / range;
                     ret[i, j] = normMin + (norm01 * normRange);
                 }
+            }
 
             return (ret);
         }
@@ -1873,9 +1928,10 @@ namespace TowseyLibrary
             for (int i = 1; i < cols-1; i++) m[rows-1, i] = edge;
 
             //find min and max
-            double min = Double.MaxValue;
-            double max = -Double.MaxValue;
+            double min = double.MaxValue;
+            double max = -double.MaxValue;
             for (int i = 0; i < rows; i++)
+            {
                 for (int j = 0; j < cols; j++)
                 {
                     if (m[i, j] > max)
@@ -1883,6 +1939,7 @@ namespace TowseyLibrary
                     if (m[i, j] < min)
                         min = m[i, j];
                 }
+            }
 
             double range = max - min;
             double normRange = normMax - normMin;
@@ -1890,11 +1947,13 @@ namespace TowseyLibrary
 
             double[,] ret = new double[rows, cols];
             for (int i = 0; i < rows; i++)
+            {
                 for (int j = 0; j < cols; j++)
                 {
                     double norm01 = (m[i, j] - min) / range;
                     ret[i, j] = normMin + (norm01 * normRange);
                 }
+            }
 
             return (ret);
         }
@@ -1906,31 +1965,34 @@ namespace TowseyLibrary
         /// <summary>
         /// returns the min and max values in a matrix of doubles
         /// </summary>
-        static public void MinMax(double[,] data, out double min, out double max)
+        public static void MinMax(double[,] data, out double min, out double max)
         {
             int rows = data.GetLength(0);
             int cols = data.GetLength(1);
             min = data[0, 0];
             max = data[0, 0];
             for (int i = 1; i < rows; i++)
-            for (int j = 1; j < cols; j++)
+            {
+                for (int j = 1; j < cols; j++)
             {
                 if (data[i,j] < min)
                     min = data[i,j];
 				else if (data[i,j] > max)
                     max = data[i,j];
             }//end double loop
+            }
         }
         /// <summary>
         /// returns the min and max values in a matrix
         /// </summary>
-        static public void MinMax(int[,] data, out int min, out int max)
+        public static void MinMax(int[,] data, out int min, out int max)
         {
             int rows = data.GetLength(0);
             int cols = data.GetLength(1);
             min = data[0, 0];
             max = data[0, 0];
             for (int i = 1; i < rows; i++)
+            {
                 for (int j = 1; j < cols; j++)
                 {
                     if (data[i, j] < min)
@@ -1938,6 +2000,7 @@ namespace TowseyLibrary
                     else if (data[i, j] > max)
                         max = data[i, j];
                 }//end double loop
+            }
         }
 
   //=============================================================================
@@ -1968,7 +2031,7 @@ namespace TowseyLibrary
             {
                 var row = DataTools.GetRow(matrix, r);
                 row = DataTools.filterMovingAverage(row, window);
-                MatrixTools.SetRow(smoothMatrix, r, row);
+                SetRow(smoothMatrix, r, row);
             }
             return smoothMatrix;
         }
@@ -2101,7 +2164,7 @@ namespace TowseyLibrary
         {
             int rowCount = M.GetLength(0);
             int colCount = M.GetLength(1);
-            double max = -Double.MaxValue;
+            double max = -double.MaxValue;
 
             for (int r = 0; r < rowCount; r++)
             {
@@ -2129,7 +2192,7 @@ namespace TowseyLibrary
 
             for (int r = 0; r < rowCount; r++)
             {
-                max = -Double.MaxValue;
+                max = -double.MaxValue;
                 for (int c = 0; c < colCount; c++)
                 {
                     if (M[r, c] > max)

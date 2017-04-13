@@ -251,9 +251,9 @@
                                 {10.0, 0.0,},
                                 };
 
-            var structureTensorMatrix = StructureTensor.CalculateStructureTensor(image);
+            var structureTensorMatrix = CalculateStructureTensor(image);
 
-            StructureTensor.StructureTensorResult result = StructureTensor.GetStructureTensorInfo(image, structureTensorMatrix);
+            StructureTensorResult result = GetStructureTensorInfo(image, structureTensorMatrix);
         }
 
         /// <summary>
@@ -270,7 +270,7 @@
                                     {0.1, 0.1, 0.1, 10.0, 0.1, 0.1, 0.1 },
                                     {0.1, 0.1, 0.1, 10.2, 0.1, 0.1, 0.1 },
                                   };
-                StructureTensor.RidgeTensorResult result = StructureTensor.RidgeDetection_VerticalDirection(image);
+                RidgeTensorResult result = RidgeDetection_VerticalDirection(image);
             }
 
 

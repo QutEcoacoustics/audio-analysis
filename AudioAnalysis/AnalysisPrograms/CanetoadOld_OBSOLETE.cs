@@ -1,7 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Canetoad.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
-//  The ACTION code for this analysis is: "Canetoad"
+// <copyright file="CanetoadOld_OBSOLETE.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -21,9 +20,9 @@ namespace AnalysisPrograms
     using Acoustics.Tools;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using AnalysisPrograms.Production;
-    using AnalysisPrograms.Recognizers;
-    using AnalysisPrograms.Recognizers.Base;
+    using Production;
+    using Recognizers;
+    using Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;

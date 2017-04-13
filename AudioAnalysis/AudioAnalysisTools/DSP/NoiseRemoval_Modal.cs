@@ -17,7 +17,7 @@
         {
             double sdCount = -0.5; // number of SDs above the mean for noise removal
             NoiseReductionType nrt = NoiseReductionType.Modal;
-            System.Tuple<double[,], double[]> tuple = SNR.NoiseReduce(deciBelSpectrogram, nrt, sdCount);
+            Tuple<double[,], double[]> tuple = SNR.NoiseReduce(deciBelSpectrogram, nrt, sdCount);
 
             double[,] noiseReducedSpectrogram1 = tuple.Item1;  //
             double[] noiseProfile = tuple.Item2;  // smoothed modal profile
@@ -138,7 +138,7 @@
             double[] dBarray = SNR.Signal2Decibels(signalEnvelope);
             double noiseMode, noiseSd;
             double min_DB, max_DB;
-            NoiseRemovalModal.CalculateNoise_LamelsAlgorithm(dBarray, out min_DB, out max_DB, out noiseMode, out noiseSd);
+            CalculateNoise_LamelsAlgorithm(dBarray, out min_DB, out max_DB, out noiseMode, out noiseSd);
             return noiseMode;
         }
 
