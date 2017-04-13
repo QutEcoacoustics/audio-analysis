@@ -1233,5 +1233,58 @@ namespace AnalysisPrograms
             Log.Success("Completed concatenation test where ConcatenateEverythingYouCanLayYourHandsOn = false");
             Console.WriteLine("\n\n");
         }
+
+        /// <summary>
+        /// Test data derived from ZuZZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016.
+        /// This tests concatenation when ConcatenateEverythingYouCanLayYourHandsOn = true
+        /// This test was set up to work with a reduced data set that will be used for UNIT TESTING, 13th April 2017.
+        /// </summary>
+        public static void TESTMETHOD_ConcatenateIndexFilesTest4()
+        {
+            // Set the drive: work = G; home = E
+            string drive = "C";
+
+            // top level directory
+            DirectoryInfo[] dataDirs =
+            {
+                new DirectoryInfo($"{drive}:\\Work\\GitHub\\audio-analysis\\Acoustics\\Acoustics.Test\\TestResources\\Concatenation\\Indonesia20160726"),
+            };
+
+            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestConcatenation\Test4_Output".ToDirectoryInfo();
+            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_SpectrogramFalseColourConfig.yml");
+
+            var arguments = new Arguments
+            {
+                InputDataDirectories = dataDirs,
+                OutputDirectory = outputDir,
+                DirectoryFilter = "*.wav",
+                FileStemName = "Indonesia2016",
+
+                // NOTE: When (ConcatenateEverythingYouCanLayYourHandsOn = true), the start and end dates are ignored.
+                // However they must be either null or parsible.
+                StartDate = new DateTimeOffset(2016, 07, 27, 0, 0, 0, TimeSpan.Zero),
+                EndDate = new DateTimeOffset(2016, 07, 22, 0, 0, 0, TimeSpan.Zero),
+
+                IndexPropertiesConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml"),
+                FalseColourSpectrogramConfig = falseColourSpgConfig,
+                ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
+                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
+                ConcatenateEverythingYouCanLayYourHandsOn = true,
+                TimeSpanOffsetHint = TimeSpan.FromHours(8),
+                SunRiseDataFile = null,
+                DrawImages = true,
+                Verbose = true,
+
+                // following used to add in a recognizer score track
+                EventDataDirectories = null,
+                EventFilePattern = null,
+            };
+
+            Execute(arguments);
+
+            Log.Success("Completed Concatenation Test 4 where ConcatenateEverythingYouCanLayYourHandsOn = true");
+            Console.WriteLine("\n\n");
+        }
+
     }
 }

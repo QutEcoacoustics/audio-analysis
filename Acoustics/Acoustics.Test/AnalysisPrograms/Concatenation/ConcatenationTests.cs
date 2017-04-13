@@ -68,10 +68,14 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         [TestMethod]
         public void ConcatenateIndexFilesTest1()
         {
-            // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo("Concatenation\\Indonesia20160726"), };
-            var indexPropertiesConfig = new FileInfo("Configs\\IndexPropertiesConfig.yml");
             var outputDir = this.outputDirectory;
+            var zippedDataFile = new FileInfo("Concatenation\\Indonesia20160726.zip");
+            ZipUnzip.UnZip(outputDir.FullName, zippedDataFile.FullName, true);
+
+            // top level directory
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo("Concatenation\\Indonesia20160726"), };
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(outputDir.FullName + "\\Indonesia20160726"), };
+            var indexPropertiesConfig = new FileInfo("Configs\\IndexPropertiesConfig.yml");
             var dateString = "20160725";
 
             // make a default config file
@@ -108,7 +112,6 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             // Get ACTUAL IMAGE
             var outputDataDir = new DirectoryInfo(outputDir.FullName + "\\" + arguments.FileStemName + "\\" + dateString);
 
-            //string imageFileName = arguments.FileStemName + "_" + dateString + "__2Maps.png";
             string imageFileName = arguments.FileStemName + "__2Maps.png";
             var imageFileInfo = new FileInfo(Path.Combine(outputDataDir.FullName, imageFileName));
             Assert.IsTrue(imageFileInfo.Exists);

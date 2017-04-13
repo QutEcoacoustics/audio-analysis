@@ -65,7 +65,8 @@ namespace AnalysisPrograms
                 // The following two test methods have yet to be debugged as of April 2nd 2017.
                 //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest1();
                 //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest2();
-                ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest3();
+                //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest3();
+                ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest4();
             }
 
             if (false)
