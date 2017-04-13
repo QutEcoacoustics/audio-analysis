@@ -1,0 +1,33 @@
+# overwrite the default version scheme - we have our own set in MsBuild
+version: '{build}'
+
+image: Visual Studio 2017
+
+cache:
+  - packages -> **\packages.config
+  - Acoustics\Acoustics.Test\TestResources
+
+matrix:
+  fast_finish: true
+  
+platform:
+    - Any CPU
+
+configuration:
+    - Debug
+    - Release
+
+build:
+    # enable MSBuild parallel builds
+    parallel: true
+    # path to Visual Studio solution or project
+    project: AudioAnalysis\AudioAnalysis2012.sln
+  
+test:
+    assemblies:
+        only:
+            #- "C:\Work\Github\audio-analysis\Acoustics\Acoustics.Test\bin\Debug\Acoustics.Test.dll"
+            #- "C:\Work\Github\audio-analysis\AudioAnalysis\Analysis.Test\bin\Debug\Acoustics.Test.dll"
+            #- "C:\Work\Github\audio-analysis\AudioAnalysis\AED\Test\bin\Debug\Test.dll"
+            - '**\*.tests.dll'
+
