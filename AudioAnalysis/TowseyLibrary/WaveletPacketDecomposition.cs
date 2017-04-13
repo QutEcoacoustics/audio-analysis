@@ -32,7 +32,7 @@
             }
             this.NumberOfLevels = DataTools.PowerOf2Exponent(signal.Length);
 
-            this.listOfBinVectors = WaveletPacketDecomposition.GetTreeOfBinVectors(signal);
+            this.listOfBinVectors = GetTreeOfBinVectors(signal);
         }
 
 
@@ -118,7 +118,7 @@
                 this.sequenceNumber = (int)Math.Pow(2, (_levelNumber - 1)) - 1 + _binNumber;
                 this.signal      = _signal;
                 this.binLength = 0;
-                if (_signal != null) binLength = _signal.Length;
+                if (_signal != null) this.binLength = _signal.Length;
                 this.energy = 0.0;
                 if (_signal != null) this.energy = this.CalculateEnergy();
             }
@@ -126,11 +126,11 @@
             private double CalculateEnergy()
             {
                 double E = 0.0;
-                for (int i = 0; i < signal.Length; i++)
+                for (int i = 0; i < this.signal.Length; i++)
                 {
-                    E += (signal[i] * signal[i]);
+                    E += (this.signal[i] * this.signal[i]);
                 }
-                return E / (double)signal.Length;
+                return E / (double)this.signal.Length;
             }
 
             private int CalculateBinNumberOfApproxChild()
@@ -162,7 +162,7 @@
 
             list.Add(sigBin);
             // call recursive method to construct tree
-            WaveletPacketDecomposition.GetTreeOfBinVectors(list, sigBin);
+            GetTreeOfBinVectors(list, sigBin);
             return list;
         }
 
@@ -200,9 +200,9 @@
             bv.childDetail = detailBin;
 
             list.Add(approxBin);
-            WaveletPacketDecomposition.GetTreeOfBinVectors(list, approxBin);
+            GetTreeOfBinVectors(list, approxBin);
             list.Add(detailBin);
-            WaveletPacketDecomposition.GetTreeOfBinVectors(list, detailBin);
+            GetTreeOfBinVectors(list, detailBin);
             return list;
         }
 
@@ -233,7 +233,7 @@
             // accumulate the WPD spectra into a frequency bin by oscillations per second matrix.
 
             //double[,] matrix = Wavelets.GetWPDSpectralSequence(signal, wpdLevelNumber);
-            double[,] matrix = WaveletPacketDecomposition.GetWPDEnergySequence(signal, wpdLevelNumber);
+            double[,] matrix = GetWPDEnergySequence(signal, wpdLevelNumber);
 
             double[] V = MatrixTools.GetRowAverages(matrix);
 

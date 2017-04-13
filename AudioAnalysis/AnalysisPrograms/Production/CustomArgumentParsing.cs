@@ -38,14 +38,14 @@
         {
             if (Directory.Exists(arg))
             {
-                if (!shouldExist)
+                if (!this.shouldExist)
                 {
                     throw new ValidationArgException("The specified directory ({0}) for argument {1} exists and should not".Format2(arg, name));
                 }
             }
             else
             {
-                if (createIfNotExists)
+                if (this.createIfNotExists)
                 {
                     Directory.CreateDirectory(arg);
                 }
@@ -101,18 +101,18 @@
         {
             if (File.Exists(arg))
             {
-                if (!shouldExist)
+                if (!this.shouldExist)
                 {
                     throw new ValidationArgException("The specified file ({0}) for argument {1} exists and should not".Format2(arg, name));
                 }
             }
             else
             {
-                if (createIfNotExists)
+                if (this.createIfNotExists)
                 {
                     File.Create(arg);
                 }
-                else if (!shouldExist)
+                else if (!this.shouldExist)
                 {
                     // no op
                 }
@@ -228,12 +228,12 @@
 
         public ArgOneOfThese(params string[] validItems)
         {
-            ValidItems = validItems;
+            this.ValidItems = validItems;
         }
 
         public override void Validate(string name, ref string arg)
         {
-            if (ValidItems == null || ValidItems.Length == 0)
+            if (this.ValidItems == null || this.ValidItems.Length == 0)
             {
                 return;
             }
@@ -243,7 +243,7 @@
 
             if (matches != 1)
             {
-                var valids = "{" + ValidItems.Aggregate("", (seed, current) => seed + ", " + current) + "}";
+                var valids = "{" + this.ValidItems.Aggregate("", (seed, current) => seed + ", " + current) + "}";
                 throw new ValidationArgException(
                     this.ExceptionMessage
                     + "Supplied value {1} for argument {0} not match any of the allowed values: ".Format2(

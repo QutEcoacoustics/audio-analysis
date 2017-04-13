@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------------------------------------------------
-// <copyright file="SuperTilingConfig.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="SuperTilingConfig.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the SuperTilingConfig type.
@@ -11,7 +11,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
 
-    using AudioAnalysisTools.Indices;
+    using Indices;
 
     public class SuperTilingConfig : IIndexPropertyReferenceConfiguration
     {

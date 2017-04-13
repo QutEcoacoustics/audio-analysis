@@ -12,9 +12,9 @@
     using System.Drawing;
     using AudioAnalysisTools.StandardSpectrograms;
     using TowseyLibrary;
-    using Dong.Felt.Configuration;
-    using Dong.Felt.Preprocessing;
-    using Dong.Felt.SpectrogramDrawing;
+    using Configuration;
+    using Preprocessing;
+    using SpectrogramDrawing;
 
     public class StructureTensorAnalysis
     {
@@ -149,7 +149,7 @@
                     var poiList = new List<PointOfInterest>();
                     double eventThreshold = 0.5; // dummy variable - not used
                     //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
-                    poiList = StructureTensorAnalysis.ExtractPOIFromStructureTensor(spectrogram, neighbourhoodSize, threshold);
+                    poiList = ExtractPOIFromStructureTensor(spectrogram, neighbourhoodSize, threshold);
                     var spectrogramData = DrawSpectrogram.ShowPOIOnSpectrogram(spectrogram, poiList, spectrogram.Data.GetLength(0),
                         spectrogram.Data.GetLength(1));
                     spectrogram.Data = spectrogramData;

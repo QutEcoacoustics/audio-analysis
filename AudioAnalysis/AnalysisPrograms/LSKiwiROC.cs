@@ -8,7 +8,7 @@
     using System.Linq;
     using System.Text;
     using Acoustics.Shared;
-    using AnalysisPrograms.Production;
+    using Production;
     using AudioAnalysisTools;
     using PowerArgs;
     using TowseyLibrary;
@@ -191,7 +191,7 @@
                     if ((trueStart >= (myStartSecAbs - 10)) && (trueStart <= (myStartSecAbs + 20)) && (predictedSex == trueSex)) //myStart is close to trueStart AND same sex THERFORE TRUE POSTIIVE
                     {
                         isTP = true;
-                        trueEvent["Begin Time (s)"] = Double.NaN; //mark so that will not use again
+                        trueEvent["Begin Time (s)"] = double.NaN; //mark so that will not use again
                         opRow[header_Quality] = trueEvent[header_Quality];
                         opRow[header_trueSex] = trueEvent["Sex"];
                         opRow[header_Harmonics] = trueEvent[header_Harmonics];
@@ -215,7 +215,7 @@
             foreach (DataRow trueEvent in dtGroundTruth.Rows)
             {
                 double trueStart = (double)trueEvent["Begin Time (s)"];
-                if (!Double.IsNaN(trueStart))
+                if (!double.IsNaN(trueStart))
                 {
                     DataRow row = dtOutput.NewRow();
                     row[AnalysisKeys.EventStartAbs] = trueStart;
@@ -261,7 +261,7 @@
             {
                 string feature = rule[0];
                 string op = rule[1];
-                double value = Double.Parse(rule[2]);
+                double value = double.Parse(rule[2]);
                 if ((feature == LSKiwiHelper.key_BANDWIDTH_SCORE) && (op == "LT") && ((double)acousticEvent[LSKiwiHelper.key_BANDWIDTH_SCORE] < value)) return null;
                 else
                     if ((feature == LSKiwiHelper.key_INTENSITY_SCORE) && (op == "LT") && ((double)acousticEvent[LSKiwiHelper.key_INTENSITY_SCORE] > value)) return null;
@@ -363,21 +363,21 @@
 
             var nameContent = new List<string>();
             nameContent.Add("|   THESE ARE THE CLASS NAMES FOR Little Spotted Kiwi Classification.");
-            nameContent.Add(String.Format("{0},  {1}", class1Name, class2Name));
+            nameContent.Add(string.Format("{0},  {1}", class1Name, class2Name));
             //nameContent.Add(String.Format("{0},  {1},  {2}", class1Name, class2Name, class3Name));
             nameContent.Add("|   THESE ARE THE ATTRIBUTE NAMES FOR Little Spotted Kiwi Classification.");
-            nameContent.Add(String.Format("{0}: ignore", AnalysisKeys.EventStartAbs));
-            nameContent.Add(String.Format("{0}: ignore", AnalysisKeys.EventStartMin));
-            nameContent.Add(String.Format("{0}: ignore", AnalysisKeys.EventStartSec));
-            nameContent.Add(String.Format("{0}: ignore", "Quality"));
-            nameContent.Add(String.Format("{0}: continuous", LSKiwiHelper.key_INTENSITY_SCORE));
-            nameContent.Add(String.Format("{0}: continuous", LSKiwiHelper.key_GRID_SCORE));
-            nameContent.Add(String.Format("{0}: continuous", LSKiwiHelper.key_DELTA_SCORE));
-            nameContent.Add(String.Format("{0}: continuous", LSKiwiHelper.key_CHIRP_SCORE));
-            nameContent.Add(String.Format("{0}: continuous", LSKiwiHelper.key_PEAKS_SNR_SCORE));
-            nameContent.Add(String.Format("{0}: continuous", LSKiwiHelper.key_BANDWIDTH_SCORE));
-            nameContent.Add(String.Format("{0}: continuous", LSKiwiHelper.key_COMBO_SCORE));
-            nameContent.Add(String.Format("{0}: continuous", LSKiwiHelper.key_EVENT_NORMSCORE));
+            nameContent.Add(string.Format("{0}: ignore", AnalysisKeys.EventStartAbs));
+            nameContent.Add(string.Format("{0}: ignore", AnalysisKeys.EventStartMin));
+            nameContent.Add(string.Format("{0}: ignore", AnalysisKeys.EventStartSec));
+            nameContent.Add(string.Format("{0}: ignore", "Quality"));
+            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_INTENSITY_SCORE));
+            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_GRID_SCORE));
+            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_DELTA_SCORE));
+            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_CHIRP_SCORE));
+            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_PEAKS_SNR_SCORE));
+            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_BANDWIDTH_SCORE));
+            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_COMBO_SCORE));
+            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_EVENT_NORMSCORE));
             FileTools.WriteTextFile(namesFilePath, nameContent);
 
 
@@ -412,7 +412,7 @@
                     name = class1Name;
                 else name = class2Name;
 
-                string line = String.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}", startSecAbs, startMin, startSec, quality, intensityScore, gridScore, deltScore, chrpScore, peakSnrScore, bandWidthScore, comboScore, normScore, name);
+                string line = string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}", startSecAbs, startMin, startSec, quality, intensityScore, gridScore, deltScore, chrpScore, peakSnrScore, bandWidthScore, comboScore, normScore, name);
                 dataContent.Add(line);
             }
             FileTools.WriteTextFile(dataFilePath, dataContent);

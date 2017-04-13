@@ -101,8 +101,10 @@
             int cols = m.GetLength(1);
             var zero = new double[rows, cols+colsNumber];
             for (int r = 0; r < rows; r++)
+            {
                 for (int c = 0; c < cols; c++)
                     zero[r, c] = m[r, c];
+            }
 
             for (int r = 0; r < rows; r++)
             {
@@ -131,8 +133,8 @@
         {
             var result = 0.0;
 
-            var qPoiMatrix = StatisticalAnalysis.GetRelativePoint(q.PointsOfInterest, c.Left, c.Bottom);
-            var cPoiMatrix = StatisticalAnalysis.GetRelativePoint(c.PointsOfInterest, c.Left, c.Bottom);
+            var qPoiMatrix = GetRelativePoint(q.PointsOfInterest, c.Left, c.Bottom);
+            var cPoiMatrix = GetRelativePoint(c.PointsOfInterest, c.Left, c.Bottom);
 
             var andCount = 0;
             var orCount = 0;
@@ -350,7 +352,7 @@
             }
             for (int i = 0; i < regionRepresentationList.Count; i += regionCountInBlock)
             {
-                var tempResult = StatisticalAnalysis.SubRegionFromRegionList(regionRepresentationList, i, regionCountInBlock);
+                var tempResult = SubRegionFromRegionList(regionRepresentationList, i, regionCountInBlock);
                 var temp = new List<RegionRepresentation>();
                 foreach (var t in tempResult)
                 {
@@ -1587,9 +1589,9 @@
             {
                 if (numBits > 1)
                 {
-                    GrayCode(numBits - 1);
+                    this.GrayCode(numBits - 1);
                 }
-                char[] mirroredBits = Reverse(initialBits);
+                char[] mirroredBits = this.Reverse(initialBits);
                 initialBits.Concat(mirroredBits);
                 // for the first n bits, append 0
                 char[] prefix1 = new char[1] { '0' };

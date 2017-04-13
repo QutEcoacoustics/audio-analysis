@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="SetPointConverter.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="ISetPointConverter.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the ISetPointConverter type.
@@ -14,7 +14,7 @@ namespace Acoustics.Shared.Csv
     using System.Drawing;
     using System.Linq;
     using System.Text;
-    using Acoustics.Shared.Contracts;
+    using Contracts;
     using CsvHelper.TypeConversion;
 
     public class CsvSetPointConverter : ITypeConverter

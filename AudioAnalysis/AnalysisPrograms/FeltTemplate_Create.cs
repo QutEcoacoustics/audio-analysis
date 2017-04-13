@@ -7,7 +7,7 @@
     using System.Linq;
     using System.Text;
     using Acoustics.Shared.Extensions;
-    using AnalysisPrograms.Production;
+    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -139,12 +139,12 @@
             //Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
             double frameOverlap      = FeltTemplates_Use.FeltFrameOverlap;   // Double.Parse(dict[key_FRAME_OVERLAP]);
-            double eventStart        = Double.Parse(dict[key_EVENT_START]);
-            double eventEnd          = Double.Parse(dict[key_EVENT_END]);
-            int minHz                = Int32.Parse(dict[key_MIN_HZ]);
-            int maxHz                = Int32.Parse(dict[key_MAX_HZ]);
-            double dBThreshold       = Double.Parse(dict[key_DECIBEL_THRESHOLD]);   //threshold to set MIN DECIBEL BOUND
-            int DRAW_SONOGRAMS       = Int32.Parse(dict[key_DRAW_SONOGRAMS]);       //options to draw sonogram
+            double eventStart        = double.Parse(dict[key_EVENT_START]);
+            double eventEnd          = double.Parse(dict[key_EVENT_END]);
+            int minHz                = int.Parse(dict[key_MIN_HZ]);
+            int maxHz                = int.Parse(dict[key_MAX_HZ]);
+            double dBThreshold       = double.Parse(dict[key_DECIBEL_THRESHOLD]);   //threshold to set MIN DECIBEL BOUND
+            int DRAW_SONOGRAMS       = int.Parse(dict[key_DRAW_SONOGRAMS]);       //options to draw sonogram
 
             // iii: Extract the event as TEMPLATE
             // #############################################################################################################################################
@@ -187,7 +187,7 @@
         }
 
 
-        public static System.Tuple<BaseSonogram, AcousticEvent, double[,], double[], double[,]> Execute_Extraction(AudioRecording recording,
+        public static Tuple<BaseSonogram, AcousticEvent, double[,], double[], double[,]> Execute_Extraction(AudioRecording recording,
             double eventStart, double eventEnd, int minHz, int maxHz, double frameOverlap, double backgroundThreshold)
         {
             //ii: MAKE SONOGRAM
@@ -227,7 +227,7 @@
             double[,] targetMinusNoise = SpectrogramTools.ExtractEvent(sonogram.Data, eventStart, eventEnd, sonogram.FrameStep,
                                                          minHz, maxHz, false, sonogram.NyquistFrequency, sonogram.FBinWidth);
 
-            return System.Tuple.Create(sonogram, ae, target, noiseSubband, targetMinusNoise);
+            return Tuple.Create(sonogram, ae, target, noiseSubband, targetMinusNoise);
         }//end Execute_Extraction()
 
 
@@ -237,7 +237,7 @@
             Log.WriteLine("# Start to draw image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
 
-            using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
+            using (Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
             using (Image_MultiTrack image = new Image_MultiTrack(img))
             {
                 //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
@@ -279,8 +279,8 @@
             list.Add("#Time:      " + dict[key_EVENT_START] + " to " + dict[key_EVENT_END] + " seconds.");
             list.Add("MIN_HZ=" + dict[key_MIN_HZ]);
             list.Add("MAX_HZ=" + dict[key_MAX_HZ]);
-            list.Add(String.Format("#Intensity: {0:f2} to {1:f2} dB.", Double.Parse(dict[key_TEMPLATE_MIN_INTENSITY]), Double.Parse(dict[key_TEMPLATE_MAX_INTENSITY])));
-            list.Add(String.Format("TEMPLATE_MAX_INTENSITY={0}\n", dict[key_TEMPLATE_MAX_INTENSITY]));
+            list.Add(string.Format("#Intensity: {0:f2} to {1:f2} dB.", double.Parse(dict[key_TEMPLATE_MIN_INTENSITY]), double.Parse(dict[key_TEMPLATE_MAX_INTENSITY])));
+            list.Add(string.Format("TEMPLATE_MAX_INTENSITY={0}\n", dict[key_TEMPLATE_MAX_INTENSITY]));
 
             list.Add("\n#DECIBEL THRESHOLD FOR EXTRACTING template FROM SPECTROGRAM - dB above background noise");
             list.Add("DECIBEL_THRESHOLD="+ dict[key_DECIBEL_THRESHOLD]); //threshold to set MIN DECIBEL BOUND

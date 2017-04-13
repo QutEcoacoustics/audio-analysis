@@ -10,8 +10,8 @@
     using Acoustics.Shared.Extensions;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
-    using Dong.Felt.Configuration;
-    using Dong.Felt.Representations;
+    using Configuration;
+    using Representations;
     using TowseyLibrary;
 
     public class EventBasedRepresentation : AcousticEvent

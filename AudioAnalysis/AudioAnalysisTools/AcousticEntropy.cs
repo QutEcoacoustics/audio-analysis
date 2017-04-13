@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="AcousticEntropy.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="AcousticEntropy.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the AcousticEntropy type.
@@ -11,7 +11,7 @@ namespace AudioAnalysisTools
 {
     using System;
 
-    using AudioAnalysisTools.StandardSpectrograms;
+    using StandardSpectrograms;
 
     using TowseyLibrary;
 
@@ -93,7 +93,7 @@ namespace AudioAnalysisTools
             var midBandSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, upperBinBound - 1);
             var tuple_AmplitudePeaks = SpectrogramTools.HistogramOfSpectralPeaks(midBandSpectrogram);
             double entropyOfPeakFreqDistr = DataTools.Entropy_normalised(tuple_AmplitudePeaks.Item1);
-            if (Double.IsNaN(entropyOfPeakFreqDistr)) entropyOfPeakFreqDistr = 1.0;
+            if (double.IsNaN(entropyOfPeakFreqDistr)) entropyOfPeakFreqDistr = 1.0;
             return entropyOfPeakFreqDistr;
         } // CalculateEntropyOfSpectralPeaks()
 

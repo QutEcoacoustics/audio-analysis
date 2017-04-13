@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Range.cs" company="MQUTeR">
-//   -
+// <copyright file="Range.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Range of Min-Max.
@@ -103,7 +103,7 @@ namespace Acoustics.Shared
             // If parameter cannot be cast return false.
             var p = obj as Range<T>;
 
-            return (object)p != null && Equals(p);
+            return (object)p != null && this.Equals(p);
         }
 
         /// <summary>

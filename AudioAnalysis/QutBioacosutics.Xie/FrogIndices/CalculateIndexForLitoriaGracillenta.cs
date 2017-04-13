@@ -5,7 +5,7 @@
     using System.Linq;
     using System.Text;
     using AudioAnalysisTools.StandardSpectrograms;
-    using QutBioacosutics.Xie.Configuration;
+    using Configuration;
 
     class CalculateIndexForLitoriaGracillenta
     {
@@ -18,7 +18,7 @@
             return peakHitsGracillenta;
         }
 
-        public static System.Tuple<double[], double[,], double[], double[,]> GetFrogTracksGracillenta(GracillentaConfiguration gracillentaConfig, SpectrogramStandard spectrogramLong,
+        public static Tuple<double[], double[,], double[], double[,]> GetFrogTracksGracillenta(GracillentaConfiguration gracillentaConfig, SpectrogramStandard spectrogramLong,
                                                                                                         double[,] peakHitsGracillenta)
         {
             var trackHitsGracillenta = ExtractTracks.GetTracks(spectrogramLong, peakHitsGracillenta, gracillentaConfig.FrequencyLowGracillenta, gracillentaConfig.FrequencyHighGracillenta,

@@ -5,7 +5,7 @@
     using System.Linq;
     using System.Text;
     using AudioAnalysisTools.DSP;
-    using Dong.Felt.Representations;
+    using Representations;
     using TowseyLibrary;
 
     public class Feature
@@ -48,7 +48,7 @@
 
             double[] v2 = DataTools.Matrix2Array(spectra);
             v2 = DataTools.normalise2UnitLength(v2);
-            MFCC = v2;
+            this.MFCC = v2;
         }
 
 

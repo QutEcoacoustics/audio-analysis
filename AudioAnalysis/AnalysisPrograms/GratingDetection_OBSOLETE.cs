@@ -18,7 +18,7 @@ namespace AnalysisPrograms
     using Acoustics.Shared;
     using Acoustics.Shared.Extensions;
     using Acoustics.Tools.Audio;
-    using AnalysisPrograms.Production;
+    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -77,7 +77,7 @@ namespace AnalysisPrograms
         private const  int    EVENT_COL_NUMBER = 6;
         private static Type[] EVENT_COL_TYPES = new Type[EVENT_COL_NUMBER];
         private static string[] EVENT_HEADERS = new string[EVENT_COL_NUMBER];
-        private static System.Tuple<string[], Type[]> GetTableHeadersAndTypesForEvents()
+        private static Tuple<string[], Type[]> GetTableHeadersAndTypesForEvents()
         {
             EVENT_HEADERS[0] = key_START_ABS;        EVENT_COL_TYPES[0] = typeof(int);
             EVENT_HEADERS[1] = key_START_MIN;        EVENT_COL_TYPES[1] = typeof(int);
@@ -91,7 +91,7 @@ namespace AnalysisPrograms
         private const int INDICES_COL_NUMBER = 7;
         private static Type[] INDICES_COL_TYPES = new Type[INDICES_COL_NUMBER];
         private static string[] INDICES_HEADERS = new string[INDICES_COL_NUMBER];
-        private static System.Tuple<string[], Type[]> GetTableHeadersAndTypesForIndices()
+        private static Tuple<string[], Type[]> GetTableHeadersAndTypesForIndices()
         {
             INDICES_HEADERS[0] = key_COUNT;      INDICES_COL_TYPES[0] = typeof(int);
             INDICES_HEADERS[1] = key_START_ABS;  INDICES_COL_TYPES[1] = typeof(int);
@@ -196,7 +196,7 @@ namespace AnalysisPrograms
             var recordingTimeSpan = results.Item5;
 
 
-            double segmentDuration = Double.Parse(configDict[key_SEGMENT_DURATION]);
+            double segmentDuration = double.Parse(configDict[key_SEGMENT_DURATION]);
             double segmentStartMinute = segmentDuration * iter;
             DataTable dataTable = null;
 
@@ -222,7 +222,7 @@ namespace AnalysisPrograms
 
 
             //draw images of sonograms
-            int DRAW_SONOGRAMS = Int32.Parse(configDict[key_DRAW_SONOGRAMS]);         // options to draw sonogram
+            int DRAW_SONOGRAMS = int.Parse(configDict[key_DRAW_SONOGRAMS]);         // options to draw sonogram
             bool saveSonogram = false;
             if ((DRAW_SONOGRAMS == 2) || ((DRAW_SONOGRAMS == 1) && (predictedEvents.Count > 0))) saveSonogram = true;
             if (saveSonogram)
@@ -238,7 +238,7 @@ namespace AnalysisPrograms
 
         public static Image AnalysisReturnsSonogram(int iter, FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir)
         {
-            double segmentDuration = Double.Parse(configDict[key_SEGMENT_DURATION]);
+            double segmentDuration = double.Parse(configDict[key_SEGMENT_DURATION]);
             double segmentStartMinute = segmentDuration * iter;
             string newFileNameWithoutExtention = Path.GetFileNameWithoutExtension(fiSegmentOfSourceFile.FullName) + "_" + (int)segmentStartMinute + "min";
             string opFileName = newFileNameWithoutExtention + ".wav";
@@ -266,14 +266,14 @@ namespace AnalysisPrograms
         /// </summary>
         /// <param name="config"></param>
         /// <param name="segmentAudioFile"></param>
-        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, TimeSpan>
+        public static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, TimeSpan>
                                         Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir, string opFileName)
         {
             //set default values
             int bandWidth = 500; //detect bars in bands of this width.
             int frameSize = 1024;
             double windowOverlap = 0.0;
-            double intensityThreshold = Double.Parse(configDict[key_INTENSITY_THRESHOLD]);
+            double intensityThreshold = double.Parse(configDict[key_INTENSITY_THRESHOLD]);
             //intensityThreshold = 0.01;
 
             AudioRecording recording = AudioRecording.GetAudioRecording(fiSegmentOfSourceFile, RESAMPLE_RATE, diOutputDir.FullName, opFileName);
@@ -333,18 +333,19 @@ namespace AnalysisPrograms
 
                 Oblong o = new Oblong(minRow, minCol, maxRow, maxCol);
                 var ae = new AcousticEvent(o, results2.NyquistFreq, frameSize, frameDuration, frameOffset, frameCount);
-                ae.Name = String.Format("p={0:f0}", periodicity);
+                ae.Name = string.Format("p={0:f0}", periodicity);
                 ae.Score = item[key_SCORE];
                 ae.ScoreNormalised = item[key_SCORE] / 0.5;
                 acousticEvents.Add(ae);
 
                 //display event on the hits matrix
                 for (int r = minRow; r < maxRow; r++)
+                {
                     for (int c = minCol; c < maxCol; c++)
                     {
                         hitsMatrix[r, c] = periodicity;
                     }
-
+                }
             } //foreach
 
             //set up the songogram to return. Use the existing amplitude sonogram
@@ -359,11 +360,11 @@ namespace AnalysisPrograms
             }
             sonogram.DecibelsNormalised = DataTools.normalise(sonogram.DecibelsNormalised);
 
-            return System.Tuple.Create(sonogram, hitsMatrix, amplitudeArray, acousticEvents, tsRecordingtDuration);
+            return Tuple.Create(sonogram, hitsMatrix, amplitudeArray, acousticEvents, tsRecordingtDuration);
         } //Analysis()
 
 
-        public static System.Tuple<List<Dictionary<string, double>>, double[]> DetectGratingEvents(double[,] matrix, int colStep, double intensityThreshold)
+        public static Tuple<List<Dictionary<string, double>>, double[]> DetectGratingEvents(double[,] matrix, int colStep, double intensityThreshold)
         {
             bool doNoiseremoval = true;
             int minPeriod = 2;    //both period values must be even numbers
@@ -411,7 +412,7 @@ namespace AnalysisPrograms
                 if (b == 3) array2return = amplitudeArray; //returned for debugging purposes only
             } //for loop over bands of columns
 
-            return System.Tuple.Create(events2return, array2return);
+            return Tuple.Create(events2return, array2return);
         }//end DetectGratingEvents()
 
 
@@ -480,14 +481,14 @@ namespace AnalysisPrograms
 
             foreach (DataRow ev in dt.Rows)
             {
-                double eventStart = (double)ev[AudioAnalysisTools.AnalysisKeys.EventStartSec];
-                double eventScore = (double)ev[AudioAnalysisTools.AnalysisKeys.EventNormscore];
+                double eventStart = (double)ev[AnalysisKeys.EventStartSec];
+                double eventScore = (double)ev[AnalysisKeys.EventNormscore];
                 int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
                 eventsPerUnitTime[timeUnit]++;
                 if (eventScore > scoreThreshold) bigEvsPerUnitTime[timeUnit]++;
             }
 
-            string[] headers = { AudioAnalysisTools.AnalysisKeys.KeyStartMinute, AudioAnalysisTools.AnalysisKeys.EventTotal, ("#Ev>" + scoreThreshold) };
+            string[] headers = { AnalysisKeys.KeyStartMinute, AnalysisKeys.EventTotal, ("#Ev>" + scoreThreshold) };
             Type[] types = { typeof(int), typeof(int), typeof(int) };
             var newtable = DataTableTools.CreateTable(headers, types);
 

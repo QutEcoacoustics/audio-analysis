@@ -16,15 +16,15 @@
 
         public Validation AddException(Exception ex)
         {
-            lock (exceptions)
-                exceptions.Add(ex);
+            lock (this.exceptions)
+                this.exceptions.Add(ex);
 
             return this;
         }
 
         public Validation()
         {
-            exceptions = new List<Exception>(1); // optimize for only having 1 exception
+            this.exceptions = new List<Exception>(1); // optimize for only having 1 exception
         }
     }
 
@@ -102,9 +102,9 @@
         {
             var sb = new StringBuilder("MultiException: " + Environment.NewLine);
 
-            if (InnerExceptions.Count() > 0)
+            if (this.InnerExceptions.Count() > 0)
             {
-                foreach (var ie in InnerExceptions.Where(ie => ie != null))
+                foreach (var ie in this.InnerExceptions.Where(ie => ie != null))
                 {
                     sb.AppendLine("---> " + ie);
                 }

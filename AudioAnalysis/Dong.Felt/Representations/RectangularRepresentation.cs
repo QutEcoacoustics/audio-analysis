@@ -62,10 +62,10 @@ namespace Dong.Felt
         /// <param name="duration"></param>
         public RectangularRepresentation(double minFrequency, double maxFrequency, double startTime, double duration)
         {
-            MaxFrequency = maxFrequency;
-            MinFrequency = minFrequency;
-            StartTime = startTime;
-            Duration = duration;
+            this.MaxFrequency = maxFrequency;
+            this.MinFrequency = minFrequency;
+            this.StartTime = startTime;
+            this.Duration = duration;
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace Dong.Felt
                             var subMatrix = StatisticalAnalysis.Submatrix(Matrix, startRowIndexInSlice, startColIndexInSlice, endRowIndexInSlice, endColIndexInSlice);
                             var centroidRowIndexInSlice = startRowIndexInSlice + halfRowNeighbourhood;
                             var centroidColIndexInSlice = startColIndexInSlice + halfColNeighbourhood;
-                            var partialFeatureVector = RectangularRepresentation.SliceRidgeRepresentation(subMatrix, centroidRowIndexInSlice, centroidColIndexInSlice);
+                            var partialFeatureVector = SliceRidgeRepresentation(subMatrix, centroidRowIndexInSlice, centroidColIndexInSlice);
                             //    var subMatrix1 = StatisticalAnalysis.Submatrix(Matrix, startRowIndexInSlice, startRowIndexInSlice + numberOfRowSlices * sizeofNeighbourhood, startColIndexInSlice, startColIndexInSlice + numberOfRowSlices * sizeofNeighbourhood);
                             //    var centroid = GetCentroid(subMatrix1);
 
@@ -219,8 +219,8 @@ namespace Dong.Felt
                                     var subMatrix = StatisticalAnalysis.Submatrix(Matrix, startRowIndexInSlice, startColIndexInSlice, endRowIndexInSlice, endColIndexInSlice);
                                     var centroidRowIndexInSlice = startRowIndexInSlice + halfRowNeighbourhood;
                                     var centroidColIndexInSlice = startColIndexInSlice + halfColNeighbourhood;
-                                    var partialFeatureVector = RectangularRepresentation.SliceRidgeRepresentation(subMatrix, centroidRowIndexInSlice, centroidColIndexInSlice);
-                                    var slopeValue = RectangularRepresentation.SliceMainSlopeRepresentation(partialFeatureVector);
+                                    var partialFeatureVector = SliceRidgeRepresentation(subMatrix, centroidRowIndexInSlice, centroidColIndexInSlice);
+                                    var slopeValue = SliceMainSlopeRepresentation(partialFeatureVector);
 
                                     result[listCount - 1].Add(new RidgeNeighbourhoodFeatureVector(new Point(centroidRowIndexInSlice, centroidColIndexInSlice))
                                     {
@@ -549,7 +549,7 @@ namespace Dong.Felt
                     if (StatisticalAnalysis.checkBoundary(row + sizeofNeighbourhood, col + sizeofNeighbourhood, rowsCount, colsCount))
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(Matrix, row, col, row + sizeofNeighbourhood, col + sizeofNeighbourhood);
-                        var partialFeatureVector = RectangularRepresentation.SliceRidgeRepresentation(subMatrix, row + halfRowNeighbourhood, col + halfColNeighbourhood);
+                        var partialFeatureVector = SliceRidgeRepresentation(subMatrix, row + halfRowNeighbourhood, col + halfColNeighbourhood);
                         var startRowIndex = MinRowIndex - halfExtendedFrequencyRange;
                         var startColIndex = MinColIndex - halfExtendedTimeRange;
                         result.Add(new RidgeNeighbourhoodFeatureVector(new Point(row + halfRowNeighbourhood, col + halfColNeighbourhood))
@@ -614,8 +614,8 @@ namespace Dong.Felt
                     if (StatisticalAnalysis.checkBoundary(row + sizeofNeighbourhood, col + sizeofNeighbourhood, rowsCount, colsCount))
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(Matrix, row, col, row + sizeofNeighbourhood, col + sizeofNeighbourhood);
-                        var partialFeatureVector = RectangularRepresentation.SliceRidgeRepresentation(subMatrix, row + halfRowNeighbourhood, col + halfColNeighbourhood);
-                        var slopeValue = RectangularRepresentation.SliceMainSlopeRepresentation(partialFeatureVector);
+                        var partialFeatureVector = SliceRidgeRepresentation(subMatrix, row + halfRowNeighbourhood, col + halfColNeighbourhood);
+                        var slopeValue = SliceMainSlopeRepresentation(partialFeatureVector);
                         var startRowIndex = MinRowIndex - halfExtendedFrequencyRange;
                         var startColIndex = MinColIndex - halfExtendedTimeRange;
                         result.Add(new RidgeNeighbourhoodFeatureVector(new Point(row + halfRowNeighbourhood, col + halfColNeighbourhood))

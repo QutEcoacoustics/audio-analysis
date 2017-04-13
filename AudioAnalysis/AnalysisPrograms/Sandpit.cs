@@ -398,13 +398,13 @@ namespace AnalysisPrograms
 
                 var imageList = new List<Image>();
 
-                imageList.Add(Bitmap.FromFile(image1Path.FullName));
-                imageList.Add(Bitmap.FromFile(image2Path.FullName));
-                imageList.Add(Bitmap.FromFile(image3Path.FullName));
+                imageList.Add(Image.FromFile(image1Path.FullName));
+                imageList.Add(Image.FromFile(image2Path.FullName));
+                imageList.Add(Image.FromFile(image3Path.FullName));
 
                 Image combinedImage = ImageTools.CombineImagesVertically(imageList);
 
-                string fileName = String.Format("ThreeLongDurationSpectrograms.png");
+                string fileName = string.Format("ThreeLongDurationSpectrograms.png");
                 combinedImage.Save(Path.Combine(imageDirectory.FullName, fileName));
             }
 
@@ -462,7 +462,7 @@ namespace AnalysisPrograms
                 //imageList.Add(title1);
                 imageList.Add(image1);
                 //imageList.Add(title2);
-                imageList.Add(Bitmap.FromFile(image2Path.FullName));
+                imageList.Add(Image.FromFile(image2Path.FullName));
 
                 //Image combinedImage = ImageTools.CombineImagesVertically(imageList);
                 Image combinedImage = ImageTools.CombineImagesInLine(imageList);
@@ -478,12 +478,12 @@ namespace AnalysisPrograms
 
                 foreach (FileInfo file in imageFiles)
                 {
-                    imageList.Add(Bitmap.FromFile(file.FullName));
+                    imageList.Add(Image.FromFile(file.FullName));
                 }
 
                 Image combinedImage = ImageTools.CombineImagesInLine(imageList);
 
-                string fileName = String.Format("Site1.png");
+                string fileName = string.Format("Site1.png");
                 combinedImage.Save(Path.Combine(imageDirectory.FullName, fileName));
             }
 
@@ -582,7 +582,7 @@ namespace AnalysisPrograms
                 for (int i = 0; i < speciesNumber; i++)
                 {
                     string[] words = lines[i].Split(',');
-                    speciesCounts[i] = Int32.Parse(words[1]);
+                    speciesCounts[i] = int.Parse(words[1]);
                 }
                 double Hspecies = DataTools.Entropy_normalised(speciesCounts);
                 Console.WriteLine("Species Entropy = " + Hspecies);
@@ -608,7 +608,7 @@ namespace AnalysisPrograms
                     char[] delimiters = { '.', 's' };
                     string fileName = filePaths[i].Name;
                     string[] parts = fileName.Split(delimiters);
-                    int speciesId = Int32.Parse(parts[1]);
+                    int speciesId = int.Parse(parts[1]);
                     double[,] matrix = null;
                     if (filePaths[i].Exists)
                     {
@@ -664,7 +664,7 @@ namespace AnalysisPrograms
 
                 for (int i = 0; i < reducedBinCount; i++)
                 {
-                    Console.WriteLine(String.Format("Bin{0}  {1}", i, mi[i]));
+                    Console.WriteLine(string.Format("Bin{0}  {1}", i, mi[i]));
                 }
 
                 FileTools.WriteArray2File(mi, miFileName);
@@ -733,7 +733,7 @@ namespace AnalysisPrograms
                 for (int i = 0; i < speciesNumber; i++)
                 {
                     string[] words = lines[i].Split(',');
-                    speciesCounts[i] = Int32.Parse(words[1]);
+                    speciesCounts[i] = int.Parse(words[1]);
                 }
                 double Hspecies = DataTools.Entropy_normalised(speciesCounts);
                 Console.WriteLine("Species Entropy = " + Hspecies);
@@ -783,7 +783,7 @@ namespace AnalysisPrograms
                     char[] delimiters = { '.', 's' };
                     string fileName = filePaths[i].Name;
                     string[] parts = fileName.Split(delimiters);
-                    int speciesID = Int32.Parse(parts[1]);
+                    int speciesID = int.Parse(parts[1]);
                     //Console.WriteLine("Species ID = " + speciesID);
                     // show user something is happening
                     Console.Write(".");
@@ -843,15 +843,15 @@ namespace AnalysisPrograms
                 //double entropy = DataTools.Entropy_normalised(array);
                 double MI = DataTools.MutualInformation(probSgivenF);
 
-                Console.WriteLine(String.Format("\n\nFeature {0};  Category Count {1}", key, valueCategoryCount));
-                Console.WriteLine(String.Format("Mutual Info = {0}", MI));
+                Console.WriteLine(string.Format("\n\nFeature {0};  Category Count {1}", key, valueCategoryCount));
+                Console.WriteLine(string.Format("Mutual Info = {0}", MI));
 
                 //for (int i = 0; i < decibelDistribution.Length; i++)
                 //{
                 //    Console.WriteLine(String.Format("dB{0}  {1}", i, decibelDistribution[i]));
                 //}
                 double sum = decibelDistribution.Sum();
-                Console.WriteLine(String.Format("Dist sum = {0}", sum));
+                Console.WriteLine(string.Format("Dist sum = {0}", sum));
 
                 double threshold = sum / 2;
                 double median = 0;
@@ -866,7 +866,7 @@ namespace AnalysisPrograms
                     }
                 }
 
-                Console.WriteLine(String.Format("Median occurs at {0} ", medianIndex));
+                Console.WriteLine(string.Format("Median occurs at {0} ", medianIndex));
 
                 //for (int i = 0; i < reducedBinCount; i++)
                 //{
@@ -877,7 +877,7 @@ namespace AnalysisPrograms
 
             Console.WriteLine("# Finished Sandpit Task!");
             Console.ReadLine();
-            System.Environment.Exit(0);
+            Environment.Exit(0);
         }
     }
 }

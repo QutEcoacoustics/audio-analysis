@@ -5,7 +5,7 @@
     using System.Linq;
     using System.Text;
     using Acoustics.Tools.Wav;
-    using AudioAnalysisTools.DSP;
+    using DSP;
     using TowseyLibrary;
 
     public class SpectrogramSobelEdge : BaseSonogram
@@ -20,7 +20,7 @@
 
         public override void Make(double[,] amplitudeM)
         {
-            Data = SobelEdgegram(amplitudeM);
+            this.Data = this.SobelEdgegram(amplitudeM);
         }
 
         double[,] SobelEdgegram(double[,] matrix)
@@ -29,7 +29,7 @@
             //double[,] m = Speech.DecibelSpectra(matrix);
 
             //NOISE REDUCTION
-            var output = SNR.NoiseReduce(m, Configuration.NoiseReductionType, this.Configuration.NoiseReductionParameter);
+            var output = SNR.NoiseReduce(m, this.Configuration.NoiseReductionType, this.Configuration.NoiseReductionParameter);
             this.SnrData.ModalNoiseProfile = output.Item2;
             return ImageTools.SobelEdgeDetection(output.Item1);
         }

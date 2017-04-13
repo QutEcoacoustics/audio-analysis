@@ -8,9 +8,9 @@ namespace Dong.Felt
     using System.Text;
     using Representations;
     using System.IO;
-    using Dong.Felt.Configuration;
-    using Dong.Felt.Features;
-    using Dong.Felt.Registration;
+    using Configuration;
+    using Features;
+    using Registration;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools;
     using TowseyLibrary;
@@ -486,7 +486,7 @@ namespace Dong.Felt
             }
             if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet2)
             {
-                result = Indexing.WeightedEuclideanDistCalculation2(query, candidates,
+                result = WeightedEuclideanDistCalculation2(query, candidates,
                 weight1, weight2, weight3, weight4);
             }
             if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3 ||
@@ -508,7 +508,7 @@ namespace Dong.Felt
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20)
             {
                 //candidateDistanceList = Indexing.Feature5EuclideanDist(queryRepresentation, candidatesList);
-                result = Indexing.Feature5EuclideanDist2(query, candidates,
+                result = Feature5EuclideanDist2(query, candidates,
                     weight1, weight2, featurePropSet, compressConfig);
             }
             return result;
@@ -521,12 +521,12 @@ namespace Dong.Felt
             var result = new List<Candidates>();
             if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1)
             {
-                result = Indexing.WeightedEuclideanDistance(query, candidates,
+                result = WeightedEuclideanDistance(query, candidates,
                     weight1, weight2);
             }
             if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet2)
             {
-                result = Indexing.WeightedEuclideanDistCalculation2(query, candidates,
+                result = WeightedEuclideanDistCalculation2(query, candidates,
                 weight1, weight2, weight3, weight4);
             }
             if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3 ||
@@ -549,7 +549,7 @@ namespace Dong.Felt
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet21 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet22)
             {
-                result = Indexing.Feature5EuclideanDist2(query, candidates,
+                result = Feature5EuclideanDist2(query, candidates,
                     weight1, weight2, featurePropSet);
             }
             return result;

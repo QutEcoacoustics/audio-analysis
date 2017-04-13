@@ -10,7 +10,7 @@
     using System.Text;
     using Acoustics.Shared.Contracts;
     using Acoustics.Tools.Audio;
-    using AnalysisPrograms.Production;
+    using Production;
     using log4net;
     using PowerArgs;
 
@@ -32,7 +32,7 @@
             }
 
             [ArgDescription("Csv file containing audio file information.")]
-            [Production.ArgValidPathName]
+            [ArgValidPathName]
             [ArgPosition(1)]
             [ArgRequired]
             public FileInfo OutputFile { get; set; }
@@ -200,7 +200,7 @@
             {
                 SHA256Managed sha = new SHA256Managed();
                 byte[] checksum = sha.ComputeHash(stream);
-                return BitConverter.ToString(checksum).Replace("-", String.Empty).ToLowerInvariant();
+                return BitConverter.ToString(checksum).Replace("-", string.Empty).ToLowerInvariant();
             }
         }
 

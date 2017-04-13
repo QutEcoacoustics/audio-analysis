@@ -39,16 +39,16 @@
     {
         this.F1Size = F1Size;
         this.F2Size = F2Size;
-        InitialiseArrays();
+        this.InitialiseArrays();
     }
 
     public void InitialiseArrays()
     {
-        Zj = new double[F2Size, F1Size];
+        this.Zj = new double[this.F2Size, this.F1Size];
 
         //Initialise Uncommitted array := true
-        uncommittedJ = new bool[F2Size];
-        for (int uNo = 0; uNo < F2Size; uNo++) uncommittedJ[uNo] = true;
+        this.uncommittedJ = new bool[this.F2Size];
+        for (int uNo = 0; uNo < this.F2Size; uNo++) this.uncommittedJ[uNo] = true;
     }
 
 
@@ -130,7 +130,7 @@
         int randSeed = 123 * repNum;
         int[] randomArray = RandomizeNumberOrder(dataSetSize);   //randomize order of trn set
         int[] SkippedBecauseFull = new int[ART.numberOfRepeats]; // : array[1..MaxRepeatNo] of word;{for training only}
-        prevCategory = new int[dataSetSize]; //stores the winning F2 node for each input signal
+        this.prevCategory = new int[dataSetSize]; //stores the winning F2 node for each input signal
 
 
         //{********* GO THROUGH THE TRAINING SET for 1 to MAX ITERATIONS *********}
@@ -144,8 +144,8 @@
             SkippedBecauseFull[repNum] = 0;
 
             //F2ScoreMatrix = new int[F2size, noClasses]; //keeps record of all F2 node classification results
-            inputCategory = new int[dataSetSize]; //stores the winning F2 node for each input signal
-            F2Wins = new int[dataSetSize]; //stores the number of times each F2 node wins
+            this.inputCategory = new int[dataSetSize]; //stores the winning F2 node for each input signal
+            this.F2Wins = new int[dataSetSize]; //stores the number of times each F2 node wins
 
             //initialise convergence criteria.
             // For ARTMAP want train set learned but for other ART versions want stable F2node allocations
@@ -165,15 +165,15 @@
 
 
                 //{*************** GET INPUT, PRE-PROCESS and TRANSFER TO F0 of ART net ********}
-                double[] rawIP = GetOneIPVector(sigID, dataArray);
+                double[] rawIP = this.GetOneIPVector(sigID, dataArray);
                 double[] IP = NormaliseVector(rawIP);
-                IP = NormaliseVector(ContrastEnhance(IP));
+                IP = NormaliseVector(this.ContrastEnhance(IP));
 
                 //{*********** NOW PASS ONE INPUT SIGNAL THROUGH THE NETWORK ***********}
-                double[] OP = PropagateIPToF2(IP);
+                double[] OP = this.PropagateIPToF2(IP);
 
                 // change wts depending on prediction
-                int index = ChangeWts(IP, OP);
+                int index = this.ChangeWts(IP, OP);
                 if (index == -1)//{index = -1 if F2 full}
                 {
                     SkippedBecauseFull[repNum]++;
@@ -182,10 +182,10 @@
                 }
                 else
                 {
-                    inputCategory[sigID] = index; //winning F2 node for current input
-                    F2Wins[index]++;
+                    this.inputCategory[sigID] = index; //winning F2 node for current input
+                    this.F2Wins[index]++;
                     //{test if training set is learned ie each signal is classified to the same F2 node as previous iteration}
-                    if (inputCategory[sigID] != prevCategory[sigID])
+                    if (this.inputCategory[sigID] != this.prevCategory[sigID])
                     {
                         trainSetLearned = false;
                         changedCategory++;
@@ -198,14 +198,14 @@
                 //F2ScoreMatrix[index, target]++;          //{# in class going to F2node}
 
 
-                iterToConv[repNum] = iterNum;
+                this.iterToConv[repNum] = iterNum;
 
             } //end for loop (sigNum < DataSetSize)
 
-            for (int x = 0; x < dataSetSize; x++) prevCategory[x] = inputCategory[x];
+            for (int x = 0; x < dataSetSize; x++) this.prevCategory[x] = this.inputCategory[x];
             //remove committed F2 nodes that are not having wins
-            for (int j = 0; j < this.F2Size; j++) if ((!this.uncommittedJ[j]) && (F2Wins[j] == 0)) this.uncommittedJ[j] = true;
-            if (ART.DEBUG) LoggedConsole.WriteLine(" rep" + (repNum + 1) + " iter=" + iterNum + " committed=" + CountCommittedF2Nodes() + " changedCategory=" + changedCategory);
+            for (int j = 0; j < this.F2Size; j++) if ((!this.uncommittedJ[j]) && (this.F2Wins[j] == 0)) this.uncommittedJ[j] = true;
+            if (ART.DEBUG) LoggedConsole.WriteLine(" rep" + (repNum + 1) + " iter=" + iterNum + " committed=" + this.CountCommittedF2Nodes() + " changedCategory=" + changedCategory);
             //Console.ReadLine();
 
             if (trainSetLearned)
@@ -372,14 +372,14 @@
         for (int F2uNo = 0; F2uNo < this.F2Size; F2uNo++)  //{for all F2 nodes}
         {
             //calculate the output of each unit = IPj * WTj}
-            if (uncommittedJ[F2uNo])
+            if (this.uncommittedJ[F2uNo])
             {
                 OPj = uncommittedOP;
             }
             else  //OP of   committed unit j}
             {
                 OPj = 0.0;
-                for (int F1uNo = 0; F1uNo < this.F1Size; F1uNo++) OPj += (IP[F1uNo] * Zj[F2uNo, F1uNo]);
+                for (int F1uNo = 0; F1uNo < this.F1Size; F1uNo++) OPj += (IP[F1uNo] * this.Zj[F2uNo, F1uNo]);
             }
             OP[F2uNo] = OPj;
         }  //end for all the F2 nodes}
@@ -409,12 +409,15 @@
         int length = this.uncommittedJ.Length;
         int id = -1;
         for (int i = 0; i < length; i++)
-            if (this.uncommittedJ[i])
+            {
+                if (this.uncommittedJ[i])
             {
                 id = i;
                 break;
             }
-        return id;
+            }
+
+            return id;
     }
 
     /// <summary>
@@ -424,16 +427,16 @@
     /// <param name="index"></param>
     public int ChangeWts(double[] IP, double[] OP)
     {
-        int index = IndexOfMaxF2Unit(OP);  //get index of the winning F2 node i.e. the unit with maxOP.
+        int index = this.IndexOfMaxF2Unit(OP);  //get index of the winning F2 node i.e. the unit with maxOP.
 
         //there are three possibilities
         // 1:  max node committed BUT poor match so RESET to another node
         if ((! this.uncommittedJ[index])&&(OP[index] < this.rhoStar))
         {
             //if (ART.DEBUG) LoggedConsole.WriteLine("ChangeWts():- max node="+index+ " is committed. Reset because Tj < rho*");
-            int newIndex = IndexOfFirstUncommittedNode();
+            int newIndex = this.IndexOfFirstUncommittedNode();
             if (newIndex < 0) return newIndex;    //all nodes committed
-            for (int F1uNo = 0; F1uNo < F1Size; F1uNo++) Zj[newIndex, F1uNo] = IP[F1uNo];
+            for (int F1uNo = 0; F1uNo < this.F1Size; F1uNo++) this.Zj[newIndex, F1uNo] = IP[F1uNo];
             this.uncommittedJ[newIndex] = false;
             return newIndex;
         }
@@ -442,16 +445,16 @@
         if ((! this.uncommittedJ[index])&&(OP[index] >= this.rhoStar))
         {
             //if (ART.DEBUG) LoggedConsole.WriteLine("ChangeWts():- max node "+ index+ " is committed and Tj >=rho*");
-            CalculateWtsForCommittedNodes(IP, index);
+            this.CalculateWtsForCommittedNodes(IP, index);
             return index;
         }
 
         // 3:  max node  is uncommitted - change wts of uncommitted node
 
-        if (uncommittedJ[index])
+        if (this.uncommittedJ[index])
         {
             //if (ART.DEBUG) LoggedConsole.WriteLine("ChangeWts():- max node"+ index+ " is uncommitted");
-            for (int F1uNo = 0; F1uNo < F1Size; F1uNo++) Zj[index, F1uNo] = IP[F1uNo];
+            for (int F1uNo = 0; F1uNo < this.F1Size; F1uNo++) this.Zj[index, F1uNo] = IP[F1uNo];
             this.uncommittedJ[index] = false;
             return index;
         }
@@ -466,18 +469,18 @@
 
         for (int uNo = 0; uNo < this.F1Size; uNo++)
         {
-            if (Zj[index, uNo] > this.theta) PHAY[uNo] = ip[uNo]; //IPneta
+            if (this.Zj[index, uNo] > this.theta) PHAY[uNo] = ip[uNo]; //IPneta
             else                             PHAY[uNo] = 0;
         }
         PHAY = NormaliseVector(PHAY);
 
         // if beta = 1 then fast learning
         // if beta = 0 then  no  learning ie the leader algorithm
-        for (int uNo = 0; uNo < F1Size; uNo++)
-            PHAY[uNo] = (this.beta * PHAY[uNo]) + ((1 - this.beta) * Zj[index, uNo]);
+        for (int uNo = 0; uNo < this.F1Size; uNo++)
+            PHAY[uNo] = (this.beta * PHAY[uNo]) + ((1 - this.beta) * this.Zj[index, uNo]);
 
         PHAY = NormaliseVector(PHAY);
-        for (int uNo = 0; uNo < F1Size; uNo++) Zj[index, uNo] = PHAY[uNo];
+        for (int uNo = 0; uNo < this.F1Size; uNo++) this.Zj[index, uNo] = PHAY[uNo];
     }//end method
 
 
@@ -497,9 +500,13 @@
     public double[] ContrastEnhance(double[] data)
     {
         double[] op = new double[data.Length];
-        for (int i = 0; i < data.Length; i++) if (data[i] < this.theta) op[i] = 0.0;
+        for (int i = 0; i < data.Length; i++)
+            {
+                if (data[i] < this.theta) op[i] = 0.0;
                                               else                      op[i] = data[i];
-        return op;
+            }
+
+            return op;
     }
 
     //method assumes that uncommitted node = true and committed node = false}

@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="RhinellaMarina.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="RhinellaMarina.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   AKA: The bloody canetoad
@@ -19,7 +19,7 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
-    using Recognizers.Base;
+    using Base;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -211,10 +211,12 @@ namespace AnalysisPrograms.Recognizers
 
             // do a recognizer test.
             if (false)
-            if (MainEntry.InDEBUG)
+            {
+                if (MainEntry.InDEBUG)
             {
                 RecognizerTest(scores, new FileInfo(recording.FilePath));
                 RecognizerTest(prunedEvents, new FileInfo(recording.FilePath));
+            }
             }
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
@@ -260,7 +262,7 @@ namespace AnalysisPrograms.Recognizers
                     string str = scoreArray[i].ToString();
                     if (!scoreLines[i].Equals(str))
                     {
-                        Log.Warn(String.Format("Line {0}: {1} NOT= benchmark <{2}>", i, str, scoreLines[i]));
+                        Log.Warn(string.Format("Line {0}: {1} NOT= benchmark <{2}>", i, str, scoreLines[i]));
                         allOK = false;
                     }
                 }
@@ -322,7 +324,7 @@ namespace AnalysisPrograms.Recognizers
                 {
                     if (!testEventLines[i].Equals(newEventLines[i]))
                     {
-                        Log.Warn(String.Format("Line {0}: {1} NOT= benchmark <{2}>", i, testEventLines[i], newEventLines[i]));
+                        Log.Warn(string.Format("Line {0}: {1} NOT= benchmark <{2}>", i, testEventLines[i], newEventLines[i]));
                         AOK = false;
                     }
                 }

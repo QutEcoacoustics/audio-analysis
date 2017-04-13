@@ -291,22 +291,22 @@
             var config = ConfigDictionary.ReadPropertiesFile(configFile.FullName);
 
             //Set following key/value pairs from radio buttons.
-            SetConfigValue(config, AudioAnalysisTools.AnalysisKeys.AnnotateSonogram, annotated.ToString().ToLowerInvariant());
-            SetConfigValue(config, AudioAnalysisTools.AnalysisKeys.NoiseDoReduction, noiseReduced.ToString().ToLowerInvariant());
+            this.SetConfigValue(config, AnalysisKeys.AnnotateSonogram, annotated.ToString().ToLowerInvariant());
+            this.SetConfigValue(config, AnalysisKeys.NoiseDoReduction, noiseReduced.ToString().ToLowerInvariant());
 
             //If any of following config key/value pairs are missing, then add in the defaults.
-            if (!config.ContainsKey(AudioAnalysisTools.AnalysisKeys.FrameLength))
+            if (!config.ContainsKey(AnalysisKeys.FrameLength))
             {
                 var defaultFrameLength = 1024; // do not want long spectrogram
-                SetConfigValue(config, AudioAnalysisTools.AnalysisKeys.FrameLength, defaultFrameLength.ToString().ToLowerInvariant());
+                this.SetConfigValue(config, AnalysisKeys.FrameLength, defaultFrameLength.ToString().ToLowerInvariant());
             }
 
-            if (!config.ContainsKey(AudioAnalysisTools.AnalysisKeys.NoiseBgThreshold))
+            if (!config.ContainsKey(AnalysisKeys.NoiseBgThreshold))
             {
-                SetConfigValue(config, AudioAnalysisTools.AnalysisKeys.NoiseBgThreshold, defaultBackgroundNoiseThreshold.ToString().ToLowerInvariant());
+                this.SetConfigValue(config, AnalysisKeys.NoiseBgThreshold, defaultBackgroundNoiseThreshold.ToString().ToLowerInvariant());
             }
 
-            config[AudioAnalysisTools.AnalysisKeys.AnalysisName] = analysisId;
+            config[AnalysisKeys.AnalysisName] = analysisId;
             var fiTempConfig = TempFileHelper.NewTempFile(outputDir, configFileExt);
             ConfigDictionary.WriteConfgurationFile(config, fiTempConfig);
 
@@ -489,7 +489,7 @@
 
             // process the CSV file
             // HACK: using only one varient of process csv file, this is probbably broken
-            var output = TabBrowseAudio.ProcessCsvFile(csvFile, configFile);
+            var output = ProcessCsvFile(csvFile, configFile);
             DataTable dtRaw = output.Item1;
             DataTable dt2Display = output.Item2;
 
@@ -500,7 +500,7 @@
 
             if (!File.Exists(this.IndicesImageFile.FullName))
             {
-                Bitmap tracksImage = TabBrowseAudio.ConstructVisualIndexImage(dt2Display, imageTitle);
+                Bitmap tracksImage = ConstructVisualIndexImage(dt2Display, imageTitle);
                 tracksImage.Save(this.IndicesImageFile.FullName);
                 this.IndicesImage = tracksImage;
             }
@@ -554,7 +554,7 @@
         {
             int minInHour = 60;
             int currentCursorX = (int)offsetStart.TotalMinutes;
-            string timeStr = String.Format("{0:d2}{1:d2}h", (currentCursorX / minInHour), (currentCursorX % minInHour));
+            string timeStr = string.Format("{0:d2}{1:d2}h", (currentCursorX / minInHour), (currentCursorX % minInHour));
 
             var segmentFileName = Path.GetFileNameWithoutExtension(audioFile.FullName) + "_" + timeStr + ".wav";
 
@@ -630,25 +630,25 @@
             }
 
             //order the table if possible
-            if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EventStartAbs))
+            if (dt.Columns.Contains(AnalysisKeys.EventStartAbs))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EventStartAbs + " ASC");
+                dt = DataTableTools.SortTable(dt, AnalysisKeys.EventStartAbs + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EventCount))
+            else if (dt.Columns.Contains(AnalysisKeys.EventCount))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EventCount + " ASC");
+                dt = DataTableTools.SortTable(dt, AnalysisKeys.EventCount + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KeyRankOrder))
+            else if (dt.Columns.Contains(AnalysisKeys.KeyRankOrder))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KeyRankOrder + " ASC");
+                dt = DataTableTools.SortTable(dt, AnalysisKeys.KeyRankOrder + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KeyStartMinute))
+            else if (dt.Columns.Contains(AnalysisKeys.KeyStartMinute))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KeyStartMinute + " ASC");
+                dt = DataTableTools.SortTable(dt, AnalysisKeys.KeyStartMinute + " ASC");
             }
 
             //table2Display = NormaliseColumnsOfDataTable(table2Display);
-            return System.Tuple.Create(dt, table2Display);
+            return Tuple.Create(dt, table2Display);
         } // ProcessCsvFile()
 
         /// <summary>
@@ -668,7 +668,7 @@
             List<string> headers = (from DataColumn col in dt.Columns select col.ColumnName).ToList();
             List<double[]> values = DataTableTools.ListOfColumnValues(dt);
 
-            Bitmap tracksImage = TabBrowseAudio.ConstructImageOfIndexTracks(headers, values, title, order);
+            Bitmap tracksImage = ConstructImageOfIndexTracks(headers, values, title, order);
             return tracksImage;
         }
 

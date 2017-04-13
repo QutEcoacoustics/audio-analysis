@@ -15,7 +15,7 @@
 
         public static double GetMedian(double[] v)
         {
-            System.Tuple<int[], double[]> tuple = DataTools.SortArray(v);
+            Tuple<int[], double[]> tuple = DataTools.SortArray(v);
             double median = tuple.Item2[v.Length / 2];
             return median;
         }
@@ -64,7 +64,7 @@
         }
 
 
-        public static String tStatisticAndSignificance(double m1, double sd1, int count1,
+        public static string tStatisticAndSignificance(double m1, double sd1, int count1,
                                         double m2, double sd2, int count2)
         {
             double t = tStatistic(m1, sd1, count1, m2, sd2, count2);
@@ -201,7 +201,7 @@
 
         public static Tuple<int[], int[]> RandomSamplingUsingProbabilityDistribution(int distributionlength, int sampleCount, int seed)
         {
-            double[] distribution = Statistics.CreateInverseProbabilityDistribution(distributionlength);
+            double[] distribution = CreateInverseProbabilityDistribution(distributionlength);
             //double[] distribution = Statistics.CreateQuadraticProbabilityDistribution(distributionlength);
             // double sum = distribution.Sum();
             // Console.WriteLine("post-sum = {0:f3}", sum);
@@ -223,7 +223,7 @@
             return Tuple.Create(samples, sortedSamples);
         }
 
-        public static void main(String[] args)
+        public static void main(string[] args)
         {
 
             /*

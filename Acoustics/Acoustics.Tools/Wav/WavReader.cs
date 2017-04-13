@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="WavReader.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="WavReader.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Wave Reader.
@@ -12,7 +12,7 @@ namespace Acoustics.Tools.Wav
     using System;
     using System.IO;
     using System.Linq;
-    using Acoustics.Shared.Contracts;
+    using Shared.Contracts;
     using Audio;
 
     /// <summary>
@@ -45,7 +45,7 @@ namespace Acoustics.Tools.Wav
         /// </param>
         public WavReader(byte[] wavData)
         {
-            ParseData(wavData);
+            this.ParseData(wavData);
             long ticks = (long)(this.samples.Length / (double)this.SampleRate * 10000000);
             this.Time = new TimeSpan(ticks);
         }
@@ -236,7 +236,7 @@ namespace Acoustics.Tools.Wav
                 newSamples[i] = this.samples[i * interval];
             this.samples = null;
             this.samples = newSamples;
-            SampleRate /= interval;
+            this.SampleRate /= interval;
         }
 
         /// <summary>

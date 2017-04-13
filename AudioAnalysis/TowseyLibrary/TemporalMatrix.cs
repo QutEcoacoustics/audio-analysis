@@ -23,16 +23,16 @@
         {
             if ((temporalDirection.Equals("rows")) || (temporalDirection.Equals("columns")))
             {
-                TemporalDirection = temporalDirection;
+                this.TemporalDirection = temporalDirection;
             } else
             {
-                TemporalDirection = null;
+                this.TemporalDirection = null;
                 LoggedConsole.WriteErrorLine("temporalDirection can have only one of two values: <rows> or <columns>. ");
                 throw new Exception();
             }
 
-            DataScale = dataScale;
-            Matrix = m;
+            this.DataScale = dataScale;
+            this.Matrix = m;
         }
 
         public TimeSpan DataDuration()
@@ -70,7 +70,7 @@
         public double[,] GetDataBlock(TimeSpan startTime, TimeSpan blockDuration)
         {
             int frameCount = (int)(blockDuration.Ticks / this.DataScale.Ticks);
-            return GetDataBlock(startTime, frameCount);
+            return this.GetDataBlock(startTime, frameCount);
         }
 
         public double[,] GetDataBlock(TimeSpan startTime, int frameCount)

@@ -365,17 +365,17 @@
 
             if (result.RawData.ContainsKey(keySampleRate))
             {
-                result.SampleRate = ParseIntStringWithException(result.RawData[keySampleRate], "sox.samplerate");
+                result.SampleRate = this.ParseIntStringWithException(result.RawData[keySampleRate], "sox.samplerate");
             }
 
             if (result.RawData.ContainsKey(keyChannels))
             {
-                result.ChannelCount = ParseIntStringWithException(result.RawData[keyChannels], "sox.channels");
+                result.ChannelCount = this.ParseIntStringWithException(result.RawData[keyChannels], "sox.channels");
             }
 
             if (result.RawData.ContainsKey(keyPrecision))
             {
-                result.BitsPerSample = ParseIntStringWithException(result.RawData[keyPrecision].Replace("-bit", string.Empty).Trim(), "sox.precision");
+                result.BitsPerSample = this.ParseIntStringWithException(result.RawData[keyPrecision].Replace("-bit", string.Empty).Trim(), "sox.precision");
                 if (result.BitsPerSample < 1)
                 {
                     result.BitsPerSample = null;

@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Dong.Felt.Main.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="Dong.Felt.Main.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   The felt analysis.
@@ -22,7 +22,7 @@ namespace AnalysisPrograms
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
-    using AnalysisPrograms.Production;
+    using Production;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -166,7 +166,7 @@ namespace AnalysisPrograms
         /// </returns>
         /// <exception cref="NotImplementedException">
         /// </exception>
-        public Tuple<System.Data.DataTable, System.Data.DataTable> ProcessCsvFile(System.IO.FileInfo fiCsvFile, System.IO.FileInfo fiConfigFile)
+        public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
         {
             throw new NotImplementedException();
         }
@@ -191,7 +191,7 @@ namespace AnalysisPrograms
         /// </returns>
         /// <exception cref="NotImplementedException">
         /// </exception>
-        public System.Data.DataTable ConvertEvents2Indices(System.Data.DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
+        public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
         {
             throw new NotImplementedException();
         }
@@ -202,7 +202,7 @@ namespace AnalysisPrograms
         {
 
             [ArgDescription("The source directory to analyse")]
-            [AnalysisPrograms.Production.ArgExistingDirectory()]
+            [Production.ArgExistingDirectory()]
             public DirectoryInfo Input { get; set; }
 
             [ArgDescription("The set of feature properties to use to represent a feature")]
@@ -210,12 +210,12 @@ namespace AnalysisPrograms
             public string FeaturePropertySet { get; set; }
 
             [ArgDescription("The path to the config file")]
-            [AnalysisPrograms.Production.ArgExistingFile()]
+            [Production.ArgExistingFile()]
             [ArgRequired]
             public FileInfo Config { get; set; }
 
             [ArgDescription("The ouput directory")]
-            [AnalysisPrograms.Production.ArgExistingDirectory()]
+            [Production.ArgExistingDirectory()]
             public DirectoryInfo Output { get; set; }
 
             [ArgDescription("The directory to store temporary files")]

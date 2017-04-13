@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="RainIndices.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="RainIndices.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the RainIndices type.
@@ -15,8 +15,8 @@ namespace AudioAnalysisTools.Indices
     using System.Linq;
     using System.Text;
 
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.StandardSpectrograms;
+    using DSP;
+    using StandardSpectrograms;
 
     using TowseyLibrary;
 
@@ -41,17 +41,17 @@ namespace AudioAnalysisTools.Indices
                             double _entropyAmp, double _hiFreqCover, double _midFreqCover, double _lowFreqCover,
                             double _entropyOfAvSpectrum, double _ACI)
             {
-                snr = _snr;
-                bgNoise = _bgNoise;
-                activity = _activity;
-                spikes = _spikes;
-                avSig_dB = _avSig_dB;
-                temporalEntropy = _entropyAmp;
-                hiFreqCover = _hiFreqCover;
-                midFreqCover = _midFreqCover;
-                lowFreqCover = _lowFreqCover;
-                spectralEntropy = _entropyOfAvSpectrum;
-                ACI = _ACI;
+                this.snr = _snr;
+                this.bgNoise = _bgNoise;
+                this.activity = _activity;
+                this.spikes = _spikes;
+                this.avSig_dB = _avSig_dB;
+                this.temporalEntropy = _entropyAmp;
+                this.hiFreqCover = _hiFreqCover;
+                this.midFreqCover = _midFreqCover;
+                this.lowFreqCover = _lowFreqCover;
+                this.spectralEntropy = _entropyOfAvSpectrum;
+                this.ACI = _ACI;
             }
         } //struct Indices
 
@@ -95,12 +95,12 @@ namespace AudioAnalysisTools.Indices
                 double[,] chunkSpectro = DataTools.Submatrix(spectrogram, start, 1, end, nyquistBin - 1);
 
                 RainStruct rainIndices = Get10SecondIndices(chunkSignal, chunkSpectro, lowFreqBound, midFreqBound, frameStepDuration, binWidth);
-                string classification = RainIndices.ConvertAcousticIndices2Classifcations(rainIndices);
+                string classification = ConvertAcousticIndices2Classifcations(rainIndices);
                 classifications[i] = classification;
 
                 //write indices and classification info to console
                 string separator = ",";
-                string line = String.Format("{1:d2}{0} {2:d2}{0} {3:f1}{0} {4:f1}{0} {5:f1}{0} {6:f2}{0} {7:f3}{0} {8:f2}{0} {9:f2}{0} {10:f2}{0} {11:f2}{0} {12:f2}{0} {13:f2}{0} {14}", separator,
+                string line = string.Format("{1:d2}{0} {2:d2}{0} {3:f1}{0} {4:f1}{0} {5:f1}{0} {6:f2}{0} {7:f3}{0} {8:f2}{0} {9:f2}{0} {10:f2}{0} {11:f2}{0} {12:f2}{0} {13:f2}{0} {14}", separator,
                                       startSecond, (startSecond + chunkDuration),
                                       rainIndices.avSig_dB, rainIndices.bgNoise, rainIndices.snr,
                                       rainIndices.activity, rainIndices.spikes, rainIndices.ACI,
@@ -145,7 +145,7 @@ namespace AudioAnalysisTools.Indices
             int activeFrameCount = DataTools.CountTrues(activeFrames);
 
             double spikeThreshold = 0.05;
-            double spikeIndex = RainIndices.CalculateSpikeIndex(signal, spikeThreshold);
+            double spikeIndex = CalculateSpikeIndex(signal, spikeThreshold);
             //Console.WriteLine("spikeIndex=" + spikeIndex);
             //DataTools.writeBarGraph(signal);
 

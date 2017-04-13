@@ -304,7 +304,7 @@
                 double result;
                 if (double.TryParse(value.ToString(), out result)) return result;
             }
-            return Double.NaN;
+            return double.NaN;
         }
 
         public static double[] Column2ArrayOfDouble(DataTable dt, string colName)
@@ -399,22 +399,22 @@
         public static DataTable NormaliseColumnValues(DataTable dt)
         {
             if (dt == null) return null;
-            List<double[]> columns = DataTableTools.ListOfColumnValues(dt);
+            List<double[]> columns = ListOfColumnValues(dt);
             List<double[]> newColumns = new List<double[]>();
             for (int i = 0; i < columns.Count; i++)
             {
                 double[] processedColumn = DataTools.normalise(columns[i]); //normalise all values in [0,1]
                 newColumns.Add(processedColumn);
             }
-            string[] headers = DataTableTools.GetColumnNames(dt);
-            Type[] types = DataTableTools.GetColumnTypes(dt);
+            string[] headers = GetColumnNames(dt);
+            Type[] types = GetColumnTypes(dt);
             for (int i = 0; i < columns.Count; i++)
             {
                 if (types[i] == typeof(int))   types[i] = typeof(double);
                 else
-                if (types[i] == typeof(Int32)) types[i] = typeof(double);
+                if (types[i] == typeof(int)) types[i] = typeof(double);
             }
-            var processedtable = DataTableTools.CreateTable(headers, types, newColumns);
+            var processedtable = CreateTable(headers, types, newColumns);
             return processedtable;
         }
         /// <summary>
@@ -425,12 +425,12 @@
         public static DataTable NormaliseColumnValues(DataTable dt, double[] minValue, double[] maxValue)
         {
             if (dt == null) return null;
-            string[] headers = DataTableTools.GetColumnNames(dt);
-            List<double[]> columns = DataTableTools.ListOfColumnValues(dt);
+            string[] headers = GetColumnNames(dt);
+            List<double[]> columns = ListOfColumnValues(dt);
             List<double[]> newColumns = NormaliseColumnValues(columns, minValue, maxValue);
-            Type[] types = DataTableTools.GetColumnTypes(dt);
+            Type[] types = GetColumnTypes(dt);
             for (int i = 0; i < columns.Count; i++) types[i] = typeof(double);
-            var processedtable = DataTableTools.CreateTable(headers, types, newColumns);
+            var processedtable = CreateTable(headers, types, newColumns);
             return processedtable;
         }
 
@@ -472,7 +472,7 @@
        public static void WriteTable2Console(DataTable dt)
        {
            if (dt == null) return;
-           string[] headers = DataTableTools.GetColumnNames(dt);
+           string[] headers = GetColumnNames(dt);
            foreach(string name in headers) LoggedConsole.Write(" {0,-10}", name);
            LoggedConsole.WriteLine();
             var rows = dt.Rows;
@@ -486,7 +486,7 @@
        public static void WriteTable2ConsoleInLongLayout(DataTable dt)
        {
            if (dt == null) return;
-           string[] headers = DataTableTools.GetColumnNames(dt);
+           string[] headers = GetColumnNames(dt);
            Console.WriteLine("===========================================");
            foreach (DataRow row in dt.Rows)
            {

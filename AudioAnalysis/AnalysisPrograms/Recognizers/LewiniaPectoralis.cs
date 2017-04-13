@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="LewiniaPectoralis.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="LewiniaPectoralis.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   AKA: The Lewin's Rail
@@ -18,7 +18,7 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
-    using Recognizers.Base;
+    using Base;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -150,7 +150,7 @@ namespace AnalysisPrograms.Recognizers
 
                 //#############################################################################################################################################
                 //DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-                var results = Analysis(recording, sonoConfig, recognizerConfig, ReturnDebugImage);
+                var results = Analysis(recording, sonoConfig, recognizerConfig, this.ReturnDebugImage);
                 //######################################################################
 
                 if (results == null) return null; //nothing to process
@@ -414,9 +414,9 @@ namespace AnalysisPrograms.Recognizers
         public void ReadConfigFile(dynamic configuration, string profileName)
         {
             // common properties
-            AnalysisName = (string)configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
-            SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
-            AbbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            this.AnalysisName = (string)configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
+            this.SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
+            this.AbbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             // KEYS TO PARAMETERS IN CONFIG FILE
             const string keyUpperfreqbandTop = "UpperFreqBandTop";
@@ -429,30 +429,30 @@ namespace AnalysisPrograms.Recognizers
             bool success = ConfigFile.TryGetProfile(configuration, profileName, out profile);
             if (!success)
             {
-                throw new InvalidOperationException($"The Config file for {SpeciesName} must contain a valid {profileName} profile.");
+                throw new InvalidOperationException($"The Config file for {this.SpeciesName} must contain a valid {profileName} profile.");
             }
 
             // extract parameters
-            UpperBandMaxHz = (int)profile[keyUpperfreqbandTop];
-            UpperBandMinHz = (int)profile[keyUpperfreqbandBtm];
-            LowerBandMaxHz = (int)profile[keyLowerfreqbandTop];
-            LowerBandMinHz = (int)profile[keyLowerfreqbandBtm];
+            this.UpperBandMaxHz = (int)profile[keyUpperfreqbandTop];
+            this.UpperBandMinHz = (int)profile[keyUpperfreqbandBtm];
+            this.LowerBandMaxHz = (int)profile[keyLowerfreqbandTop];
+            this.LowerBandMinHz = (int)profile[keyLowerfreqbandBtm];
             //double dctDuration = (double)profile[AnalysisKeys.DctDuration];
             // This is the intensity threshold above
             //double dctThreshold = (double)profile[AnalysisKeys.DctThreshold];
 
             // Periods and Oscillations
-            MinPeriod = (double)profile[AnalysisKeys.MinPeriodicity]; //: 0.18
-            MaxPeriod = (double)profile[AnalysisKeys.MaxPeriodicity]; //: 0.25
+            this.MinPeriod = (double)profile[AnalysisKeys.MinPeriodicity]; //: 0.18
+            this.MaxPeriod = (double)profile[AnalysisKeys.MaxPeriodicity]; //: 0.25
 
             // minimum duration in seconds of a trill event
-            MinDuration = (double)profile[AnalysisKeys.MinDuration]; //:3
+            this.MinDuration = (double)profile[AnalysisKeys.MinDuration]; //:3
             // maximum duration in seconds of a trill event
-            MaxDuration = (double)profile[AnalysisKeys.MaxDuration]; //: 15
-            DecibelThreshold = (double?)profile[AnalysisKeys.DecibelThreshold] ?? 3.0;
+            this.MaxDuration = (double)profile[AnalysisKeys.MaxDuration]; //: 15
+            this.DecibelThreshold = (double?)profile[AnalysisKeys.DecibelThreshold] ?? 3.0;
             //// minimum acceptable value of a DCT coefficient
-            IntensityThreshold = (double?)profile[AnalysisKeys.IntensityThreshold] ?? 0.4;
-            EventThreshold = (double?)profile[AnalysisKeys.EventThreshold] ?? 0.2;
+            this.IntensityThreshold = (double?)profile[AnalysisKeys.IntensityThreshold] ?? 0.4;
+            this.EventThreshold = (double?)profile[AnalysisKeys.EventThreshold] ?? 0.2;
         } // ReadConfigFile()
     } // class
 

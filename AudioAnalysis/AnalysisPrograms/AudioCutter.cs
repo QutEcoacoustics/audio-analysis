@@ -9,8 +9,8 @@
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using AnalysisBase;
-    using AnalysisPrograms.Production;
-    using AnalysisPrograms.SourcePreparers;
+    using Production;
+    using SourcePreparers;
     using PowerArgs;
 
     public class AudioCutter

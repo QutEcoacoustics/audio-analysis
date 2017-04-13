@@ -5,9 +5,9 @@
     using System.Drawing;
 
     using log4net;
-    using log4net.Core;
-    using log4net.Appender;
-    using log4net.Util;
+    using Core;
+    using Appender;
+    using Util;
 
     /// <summary>
     /// Appends logging events to a RichTextBox
@@ -108,12 +108,12 @@
         {
             set
             {
-                if (!object.ReferenceEquals(value, _richtextBox))
+                if (!ReferenceEquals(value, this._richtextBox))
                 {
-                    if (_containerForm != null)
+                    if (this._containerForm != null)
                     {
-                        _containerForm.FormClosed -= new FormClosedEventHandler(containerForm_FormClosed);
-                        _containerForm = null;
+                        this._containerForm.FormClosed -= new FormClosedEventHandler(this.containerForm_FormClosed);
+                        this._containerForm = null;
                     }
 
                     if (value != null)
@@ -121,16 +121,16 @@
                         value.ReadOnly = true;
                         value.HideSelection = false;
 
-                        _containerForm = value.FindForm();
-                        _containerForm.FormClosed += new FormClosedEventHandler(containerForm_FormClosed);
+                        this._containerForm = value.FindForm();
+                        this._containerForm.FormClosed += new FormClosedEventHandler(this.containerForm_FormClosed);
                     }
 
-                    _richtextBox = value;
+                    this._richtextBox = value;
                 }
             }
             get
             {
-                return _richtextBox;
+                return this._richtextBox;
             }
         }
 
@@ -146,7 +146,7 @@
         /// </remarks>
         public void AddMapping(LevelTextStyle mapping)
         {
-            _levelMapping.Add(mapping);
+            this._levelMapping.Add(mapping);
         }
 
         /// <summary>
@@ -154,12 +154,12 @@
         /// </summary>
         public int MaxBufferLength
         {
-            get { return _maxTextLength; }
+            get { return this._maxTextLength; }
             set
             {
                 if (value > 0)
                 {
-                    _maxTextLength = value;
+                    this._maxTextLength = value;
                 }
             }
         }
@@ -179,7 +179,7 @@
         public override void ActivateOptions()
         {
             base.ActivateOptions();
-            _levelMapping.ActivateOptions();
+            this._levelMapping.ActivateOptions();
         }
 
         /// <summary>
@@ -199,17 +199,17 @@
         /// </remarks>
         protected override void Append(LoggingEvent LoggingEvent)
         {
-            if (_richtextBox != null)
+            if (this._richtextBox != null)
             {
-                if (_richtextBox.InvokeRequired)
+                if (this._richtextBox.InvokeRequired)
                 {
-                    _richtextBox.Invoke(
-                            new UpdateControlDelegate(UpdateControl),
+                    this._richtextBox.Invoke(
+                            new UpdateControlDelegate(this.UpdateControl),
                             new object[] { LoggingEvent });
                 }
                 else
                 {
-                    UpdateControl(LoggingEvent);
+                    this.UpdateControl(LoggingEvent);
                 }
             }
         }
@@ -231,41 +231,41 @@
         {
             // There may be performance issues if the buffer gets too long
             // So periodically clear the buffer
-            if (_richtextBox.TextLength > _maxTextLength)
+            if (this._richtextBox.TextLength > this._maxTextLength)
             {
-                _richtextBox.Clear();
-                _richtextBox.AppendText(string.Format("(earlier messages cleared because log length exceeded maximum of {0})\n\n", _maxTextLength));
+                this._richtextBox.Clear();
+                this._richtextBox.AppendText(string.Format("(earlier messages cleared because log length exceeded maximum of {0})\n\n", this._maxTextLength));
             }
 
             // look for a style mapping
-            LevelTextStyle selectedStyle = _levelMapping.Lookup(loggingEvent.Level) as LevelTextStyle;
+            LevelTextStyle selectedStyle = this._levelMapping.Lookup(loggingEvent.Level) as LevelTextStyle;
             if (selectedStyle != null)
             {
                 // set the colors of the text about to be appended
-                _richtextBox.SelectionBackColor = selectedStyle.BackColor;
-                _richtextBox.SelectionColor = selectedStyle.TextColor;
+                this._richtextBox.SelectionBackColor = selectedStyle.BackColor;
+                this._richtextBox.SelectionColor = selectedStyle.TextColor;
 
                 // alter selection font as much as necessary
                 // missing settings are replaced by the font settings on the control
                 if (selectedStyle.Font != null)
                 {
                     // set Font Family, size and styles
-                    _richtextBox.SelectionFont = selectedStyle.Font;
+                    this._richtextBox.SelectionFont = selectedStyle.Font;
                 }
-                else if (selectedStyle.PointSize > 0 && _richtextBox.Font.SizeInPoints != selectedStyle.PointSize)
+                else if (selectedStyle.PointSize > 0 && this._richtextBox.Font.SizeInPoints != selectedStyle.PointSize)
                 {
                     // use control's font family, set size and styles
-                    float size = selectedStyle.PointSize > 0.0f ? selectedStyle.PointSize : _richtextBox.Font.SizeInPoints;
-                    _richtextBox.SelectionFont = new Font(_richtextBox.Font.FontFamily.Name, size, selectedStyle.FontStyle);
+                    float size = selectedStyle.PointSize > 0.0f ? selectedStyle.PointSize : this._richtextBox.Font.SizeInPoints;
+                    this._richtextBox.SelectionFont = new Font(this._richtextBox.Font.FontFamily.Name, size, selectedStyle.FontStyle);
                 }
-                else if (_richtextBox.Font.Style != selectedStyle.FontStyle)
+                else if (this._richtextBox.Font.Style != selectedStyle.FontStyle)
                 {
                     // use control's font family and size, set styles
-                    _richtextBox.SelectionFont = new Font(_richtextBox.Font, selectedStyle.FontStyle);
+                    this._richtextBox.SelectionFont = new Font(this._richtextBox.Font, selectedStyle.FontStyle);
                 }
             }
 
-            _richtextBox.AppendText(RenderLoggingEvent(loggingEvent));
+            this._richtextBox.AppendText(this.RenderLoggingEvent(loggingEvent));
         }
 
         /// <summary>
@@ -275,7 +275,7 @@
         /// <param name="e"></param>
         private void containerForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            RichTextBox = null;
+            this.RichTextBox = null;
         }
 
         /// <summary>
@@ -284,10 +284,10 @@
         protected override void OnClose()
         {
             base.OnClose();
-            if (_containerForm != null)
+            if (this._containerForm != null)
             {
-                _containerForm.FormClosed -= new FormClosedEventHandler(containerForm_FormClosed);
-                _containerForm = null;
+                this._containerForm.FormClosed -= new FormClosedEventHandler(this.containerForm_FormClosed);
+                this._containerForm = null;
             }
         }
 
@@ -406,8 +406,8 @@
             /// </summary>
             public string TextColorName
             {
-                get { return _textColorName; }
-                set { _textColorName = value; }
+                get { return this._textColorName; }
+                set { this._textColorName = value; }
             }
 
             /// <summary>
@@ -415,8 +415,8 @@
             /// </summary>
             public string BackColorName
             {
-                get { return _backColorName; }
-                set { _backColorName = value; }
+                get { return this._backColorName; }
+                set { this._backColorName = value; }
             }
 
             /// <summary>
@@ -424,8 +424,8 @@
             /// </summary>
             public string FontFamilyName
             {
-                get { return _fontFamilyName; }
-                set { _fontFamilyName = value; }
+                get { return this._fontFamilyName; }
+                set { this._fontFamilyName = value; }
             }
 
             /// <summary>
@@ -433,8 +433,8 @@
             /// </summary>
             public bool Bold
             {
-                get { return _bold; }
-                set { _bold = value; }
+                get { return this._bold; }
+                set { this._bold = value; }
             }
 
             /// <summary>
@@ -442,8 +442,8 @@
             /// </summary>
             public bool Italic
             {
-                get { return _italic; }
-                set { _italic = value; }
+                get { return this._italic; }
+                set { this._italic = value; }
             }
 
             /// <summary>
@@ -451,8 +451,8 @@
             /// </summary>
             public float PointSize
             {
-                get { return _pointSize; }
-                set { _pointSize = value; }
+                get { return this._pointSize; }
+                set { this._pointSize = value; }
             }
 
             /// <summary>
@@ -462,43 +462,43 @@
             public override void ActivateOptions()
             {
                 base.ActivateOptions();
-                _textColor = Color.FromName(_textColorName);
-                _backColor = Color.FromName(_backColorName);
-                if (_bold) _fontStyle |= FontStyle.Bold;
-                if (_italic) _fontStyle |= FontStyle.Italic;
+                this._textColor = Color.FromName(this._textColorName);
+                this._backColor = Color.FromName(this._backColorName);
+                if (this._bold) this._fontStyle |= FontStyle.Bold;
+                if (this._italic) this._fontStyle |= FontStyle.Italic;
 
-                if (_fontFamilyName != null)
+                if (this._fontFamilyName != null)
                 {
-                    float size = _pointSize > 0.0f ? _pointSize : 8.25f;
+                    float size = this._pointSize > 0.0f ? this._pointSize : 8.25f;
                     try
                     {
-                        _font = new Font(_fontFamilyName, size, _fontStyle);
+                        this._font = new Font(this._fontFamilyName, size, this._fontStyle);
                     }
                     catch (Exception)
                     {
-                        _font = null;
+                        this._font = null;
                     }
                 }
             }
 
             internal Color TextColor
             {
-                get { return _textColor; }
+                get { return this._textColor; }
             }
 
             internal Color BackColor
             {
-                get { return _backColor; }
+                get { return this._backColor; }
             }
 
             internal FontStyle FontStyle
             {
-                get { return _fontStyle; }
+                get { return this._fontStyle; }
             }
 
             internal Font Font
             {
-                get { return _font; }
+                get { return this._font; }
             }
         }
 

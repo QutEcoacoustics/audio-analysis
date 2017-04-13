@@ -421,7 +421,7 @@ SELECT TOP 1000 b.boundid,b.audioreadingid,l.text,b.starttimeoffsetMs, b.endtime
                 // remove everything before (and including) a question mark
                 if (query.Contains("?"))
                 {
-                    query = query.Remove(0, query.IndexOf("?", System.StringComparison.Ordinal));
+                    query = query.Remove(0, query.IndexOf("?", StringComparison.Ordinal));
                 }
 
                 var items = query.Split('&').Select(i => i.Split('='));

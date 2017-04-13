@@ -23,7 +23,7 @@
 
         public Bitmap DrawErrorPatch(int height, bool textInVerticalOrientation)
         {
-            int width = EndPosition - StartPosition + 1;
+            int width = this.EndPosition - this.StartPosition + 1;
             var bmp = new Bitmap(width, height);
             int fontVerticalPosition = (height/2) - 7;
             var g = Graphics.FromImage(bmp);
@@ -85,7 +85,7 @@
                         allOK = false;
                         error = new ErroneousIndexSegments();
                         error.StartPosition = i;
-                        error.ErrorDescription = ErroneousIndexSegments.ErrorZeroSignal;
+                        error.ErrorDescription = ErrorZeroSignal;
                     }
                 }
                 else
@@ -144,7 +144,7 @@
             // write info to file
             if (errors.Count != 0)
             {
-                string path = FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, ErroneousIndexSegments.ErroneousIndexSegmentsFilenameFragment, "json");
+                string path = FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, ErroneousIndexSegmentsFilenameFragment, "json");
                 Yaml.Serialise<List<ErroneousIndexSegments>>(new FileInfo(path), errors);
             }
 

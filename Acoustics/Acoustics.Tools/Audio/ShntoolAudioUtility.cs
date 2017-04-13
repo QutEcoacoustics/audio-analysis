@@ -8,7 +8,7 @@
     using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
-    using Acoustics.Shared;
+    using Shared;
 
     /// <summary>
     /// Shntool audio Utility wrapper.
@@ -149,17 +149,17 @@
 
                 if (line.StartsWith(Channels))
                 {
-                    result.ChannelCount = ParseIntStringWithException(line.Replace(Channels, string.Empty).Trim(), "shntool.channels");
+                    result.ChannelCount = this.ParseIntStringWithException(line.Replace(Channels, string.Empty).Trim(), "shntool.channels");
                 }
 
                 if (line.StartsWith(BitsPerSample))
                 {
-                    result.BitsPerSample = ParseIntStringWithException(line.Replace(BitsPerSample, string.Empty).Trim(), "shntool.bitspersample");
+                    result.BitsPerSample = this.ParseIntStringWithException(line.Replace(BitsPerSample, string.Empty).Trim(), "shntool.bitspersample");
                 }
 
                 if (line.StartsWith(SamplePerSecond))
                 {
-                    result.SampleRate = ParseIntStringWithException(line.Replace(SamplePerSecond, string.Empty).Trim(), "shntool.samplespersecond");
+                    result.SampleRate = this.ParseIntStringWithException(line.Replace(SamplePerSecond, string.Empty).Trim(), "shntool.samplespersecond");
                 }
 
                 if (line.StartsWith(FileName))
@@ -170,12 +170,12 @@
                 if (line.StartsWith(BitsPerSecond))
                 {
                     // convert bytes to bits
-                    result.BitsPerSecond = ParseIntStringWithException(line.Replace(BitsPerSecond, string.Empty).Trim(), "shntool.BitsPerSecond") * 8;
+                    result.BitsPerSecond = this.ParseIntStringWithException(line.Replace(BitsPerSecond, string.Empty).Trim(), "shntool.BitsPerSecond") * 8;
                 }
 
                 if (line.StartsWith(WavDataSize))
                 {
-                    wavDataSizeBytes = ParseLongStringWithException(
+                    wavDataSizeBytes = this.ParseLongStringWithException(
                         line.Replace(WavDataSize, string.Empty).Replace("bytes", string.Empty).Trim(),
                         "shntool.DataSize").Value;
                 }

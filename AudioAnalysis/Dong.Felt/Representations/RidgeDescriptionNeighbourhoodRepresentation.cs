@@ -8,8 +8,8 @@
     using System.Text;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
-    using Dong.Felt.Configuration;
-    using Dong.Felt.Preprocessing;
+    using Configuration;
+    using Preprocessing;
     using TowseyLibrary;
 
     public class RidgeDescriptionNeighbourhoodRepresentation
@@ -308,7 +308,7 @@
 
         public RidgeDescriptionNeighbourhoodRepresentation(List<Point> pointList)
         {
-            PointList = pointList;
+            this.PointList = pointList;
         }
 
         /// <summary>
@@ -368,8 +368,8 @@
 
             var ridgeNeighbourhoodFeatureVector = RectangularRepresentation.SliceRidgeRepresentation(neighbourhood, pointX, pointY);
             var ridgeDominantOrientationRepresentation = RectangularRepresentation.SliceMainSlopeRepresentation(ridgeNeighbourhoodFeatureVector);
-            dominantOrientationType = ridgeDominantOrientationRepresentation.Item1;
-            dominantPOICount = ridgeDominantOrientationRepresentation.Item2;
+            this.dominantOrientationType = ridgeDominantOrientationRepresentation.Item1;
+            this.dominantPOICount = ridgeDominantOrientationRepresentation.Item2;
 
             int maximumRowIndex = neighbourhood.GetLength(0);
             int maximumColIndex = neighbourhood.GetLength(1);
@@ -380,21 +380,21 @@
                 {
                     if (neighbourhood[rowIndex, colIndex] != null)
                     {
-                        if (neighbourhood[rowIndex, colIndex].OrientationCategory == dominantOrientationType)
+                        if (neighbourhood[rowIndex, colIndex].OrientationCategory == this.dominantOrientationType)
                         {
-                            dominantMagnitudeSum += neighbourhood[rowIndex, colIndex].RidgeMagnitude;
+                            this.dominantMagnitudeSum += neighbourhood[rowIndex, colIndex].RidgeMagnitude;
                         }
                     }
                 }
             }
-            score = StatisticalAnalysis.NormaliseNeighbourhoodScore(neighbourhood, neighbourhoodLength);
+            this.score = StatisticalAnalysis.NormaliseNeighbourhoodScore(neighbourhood, neighbourhoodLength);
             // baseclass properties
-            FrameIndex = (int)(pointY * timeScale);
-            FrequencyIndex = (int)(pointX * frequencyScale);
-            WidthPx = ridgeNeighbourhoodFeatureVector.neighbourhoodWidth;
-            HeightPx = ridgeNeighbourhoodFeatureVector.neighbourhoodHeight;
-            Duration = TimeSpan.FromMilliseconds(neighbourhood.GetLength(1) * timeScale);
-            FrequencyRange = neighbourhood.GetLength(0) * frequencyScale;
+            this.FrameIndex = (int)(pointY * timeScale);
+            this.FrequencyIndex = (int)(pointX * frequencyScale);
+            this.WidthPx = ridgeNeighbourhoodFeatureVector.neighbourhoodWidth;
+            this.HeightPx = ridgeNeighbourhoodFeatureVector.neighbourhoodHeight;
+            this.Duration = TimeSpan.FromMilliseconds(neighbourhood.GetLength(1) * timeScale);
+            this.FrequencyRange = neighbourhood.GetLength(0) * frequencyScale;
         }
 
         /// <summary>
@@ -443,10 +443,10 @@
                 }
             }
 
-            FrameIndex = (int)(col * timeScale);
-            FrequencyIndex = (int)(row * frequencyScale);
-            Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
-            FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
+            this.FrameIndex = (int)(col * timeScale);
+            this.FrequencyIndex = (int)(row * frequencyScale);
+            this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
+            this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
         }
 
         public static void AudioNeighbourhoodRepresentation(DirectoryInfo audioFileDirectory, SonogramConfig config, RidgeDetectionConfiguration ridgeConfig,
@@ -470,7 +470,7 @@
                 var queryRidges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
                 var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line.
                 var cols = spectrogram.Data.GetLength(0);
-                var ridgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(queryRidges, rows, cols,
+                var ridgeNhRepresentationList = FromAudioFilePointOfInterestList(queryRidges, rows, cols,
                 neighbourhoodLength, featurePropSet, spectrogramConfig, compressConfig);
                 //var normalizedNhRepresentationList = RidgeDescriptionRegionRepresentation.NomalizeNhRidgeProperties
                 //(ridgeNhRepresentationList, featurePropSet);
@@ -520,7 +520,7 @@
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
-            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+            this.GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
             var sumPOICount = (double)(EastBin + NorthEastBin + NorthBin + NorthWestBin);
             var maxPOICount = 2.0 * pointsOfInterest.GetLength(0);
@@ -642,7 +642,7 @@
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
-            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+            this.GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
             var sumPOICount = (double)(EastBin + NorthEastBin + NorthBin + NorthWestBin);
             var maxPOICount = 2.0 * pointsOfInterest.GetLength(0);
@@ -762,7 +762,7 @@
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
-            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+            this.GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
             var sumPOIMagnitude = (double)(EastBin + NorthEastBin + NorthBin + NorthWestBin);
 
@@ -895,7 +895,7 @@
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
-            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+            this.GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
             var sumPOICount = (double)(Bin0 + Bin1 + Bin2 + Bin3 + Bin4 + Bin5 + Bin6 + Bin7);
             var maxPOICount = 2.0 * pointsOfInterest.GetLength(0);
@@ -992,7 +992,7 @@
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
-            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+            this.GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
             var sumPOICount = (double)(Bin0 + Bin1 + Bin2 + Bin3 + Bin4 + Bin5 + Bin6 + Bin7);
             var maxPOICount = 3.0 * pointsOfInterest.GetLength(0);
@@ -1132,7 +1132,7 @@
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
-            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+            this.GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
             this.POIMagnitudeSum = (double)(Bin0 + Bin1 + Bin2 + Bin3 + Bin4 + Bin5 + Bin6 + Bin7);
             var maxPOICount = 3.0 * pointsOfInterest.GetLength(0);
@@ -1272,7 +1272,7 @@
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
-            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+            this.GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
             this.POIMagnitudeSum = (double)(Bin0 + Bin1 + Bin2 + Bin3 + Bin4 + Bin5 + Bin6 + Bin7);
             var maxPOICount = 4.0 * pointsOfInterest.GetLength(0);
@@ -1330,7 +1330,7 @@
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
-            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+            this.GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
             if (sumPOICount == 0)
             {
@@ -1403,7 +1403,7 @@
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
-            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+            this.GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
             for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
             {
                 for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(0); colIndex++)
@@ -1485,7 +1485,7 @@
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
-            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+            this.GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
             this.POICount = Bin0 + Bin1 + Bin2 + Bin3 + Bin4 + Bin5 + Bin6 + Bin7;
             var maxPOICount = 4.0 * pointsOfInterest.GetLength(0);
             //var maxPOIMagnitude = 20.0 * pointsOfInterest.GetLength(0);
@@ -1560,7 +1560,7 @@
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
-            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+            this.GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
             this.POICount = Bin0 + Bin1 + Bin2 + Bin3;
             var maxPOICount = 4.0 * pointsOfInterest.GetLength(0);
             if (this.POICount == 0)
@@ -1625,7 +1625,7 @@
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
-            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+            this.GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
             this.POIMagnitudeSum = (double)(Bin0 + Bin1 + Bin2 + Bin3);
             var maxPOICount = 4.0 * pointsOfInterest.GetLength(0);
@@ -1684,7 +1684,7 @@
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
-            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+            this.GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
             var sumPOICount = (double)(EastBin + NorthEastBin + NorthBin + NorthWestBin);
             var maxPOICount = 2.0 * pointsOfInterest.GetLength(0);
@@ -1743,7 +1743,7 @@
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
-            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+            this.GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
             var sumPOICount = (double)(EastBin + NorthEastBin + NorthBin + NorthWestBin);
             var maxPOICount = 2.0 * pointsOfInterest.GetLength(0);
@@ -1883,7 +1883,7 @@
             var maxFrequency = spectrogramConfig.NyquistFrequency;
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
-            FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
+            this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
             this.neighbourhoodSize = poiMatrixLength;
             var hLineOfBestfit = 100.0;
             var vLineOfBestfit = 100.0;
@@ -1897,7 +1897,7 @@
             }
             this.HLineOfBestfitMeasure = hLineOfBestfit;
             this.VLineOfBestfitMeasure = vLineOfBestfit;
-            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+            this.GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
         }
 
         /// <summary>
@@ -1973,11 +1973,11 @@
             var maxFrequency = spectrogramConfig.NyquistFrequency;
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
-            FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
+            this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
             this.POICount = pointsCount;
             this.neighbourhoodSize = poiMatrixLength;
             this.LineOfBestfitMeasure = PointOfInterestAnalysis.MeasureLineOfBestfit(pointsOfInterest, slope, yIntersect);
-            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+            this.GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
         }
 
         /// <summary>
@@ -2019,10 +2019,10 @@
             var poiCountThreshold = (int)neighbourhoodLength * neighbourhoodLength * proportionParameter;
             this.magnitude = magnitude;
             this.orientation = direction;
-            FrameIndex = col * timeScale;
-            FrequencyIndex = row * frequencyScale;
-            Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(0) * timeScale);
-            FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
+            this.FrameIndex = col * timeScale;
+            this.FrequencyIndex = row * frequencyScale;
+            this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(0) * timeScale);
+            this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
         }
 
         /// <summary>
@@ -2088,36 +2088,36 @@
             for (var c = 0; c < listLength; c++)
             {
                 var item = new RidgeDescriptionNeighbourhoodRepresentation();
-                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4 ||
-                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet21 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet22
+                if (featurePropSet == FeaturePropSet3 ||
+                 featurePropSet == FeaturePropSet4 ||
+                    featurePropSet == FeaturePropSet5 ||
+                 featurePropSet == FeaturePropSet9 ||
+                 featurePropSet == FeaturePropSet10 ||
+                 featurePropSet == FeaturePropSet11 ||
+                 featurePropSet == FeaturePropSet12 ||
+                 featurePropSet == FeaturePropSet13 ||
+                 featurePropSet == FeaturePropSet16 ||
+                 featurePropSet == FeaturePropSet17 ||
+                 featurePropSet == FeaturePropSet18 ||
+                 featurePropSet == FeaturePropSet19 ||
+                 featurePropSet == FeaturePropSet20 ||
+                 featurePropSet == FeaturePropSet21 ||
+                 featurePropSet == FeaturePropSet22
                     )
                 {
                     item = ridgeNhRrepresentation[c];
                 }
-                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet14 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet15)
+                if (featurePropSet == FeaturePropSet6 ||
+                 featurePropSet == FeaturePropSet8 ||
+                 featurePropSet == FeaturePropSet14 ||
+                 featurePropSet == FeaturePropSet15)
                 {
                     item = gradientNhRepresentation[c];
                 }
-                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||
-                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13 ||
-                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
-                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17)
+                if (featurePropSet == FeaturePropSet12 ||
+                    featurePropSet == FeaturePropSet13 ||
+                    featurePropSet == FeaturePropSet16 ||
+                featurePropSet == FeaturePropSet17)
                 {
                     item = gradientNhRepresentation[c];
                     item.ColumnEnergyEntropy = ridgeNhRrepresentation[c].ColumnEnergyEntropy;
@@ -2142,44 +2142,44 @@
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + neighbourhoodLength, col + neighbourhoodLength);
                         var ridgeNeighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1
-                            || featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet2)
+                        if (featurePropertySet == FeaturePropSet1
+                            || featurePropertySet == FeaturePropSet2)
                         {
                             ridgeNeighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3)
+                        if (featurePropertySet == FeaturePropSet3)
                         {
                             ridgeNeighbourhoodRepresentation.SplittedBestLineFitNhRepresentation(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5)
+                        if (featurePropertySet == FeaturePropSet5)
                         {
                             //ridgeNeighbourhoodRepresentation.FeatureSet5Representation2(subMatrix, row, col, spectrogramConfig);
                             ridgeNeighbourhoodRepresentation.FeatureSet5Representation(subMatrix, row, col, spectrogramConfig, compressConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11)
+                        if (featurePropertySet == FeaturePropSet11)
                         {
                             // This one is similar to featureSet5, but based on POI Magnitude.
                             ridgeNeighbourhoodRepresentation.FeatureSet11Representation(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
+                        if (featurePropertySet == FeaturePropSet18)
                         {
                             // This one is similar to featureSet5, but give more directions.
                             ridgeNeighbourhoodRepresentation.FeatureSet5Representation2(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6 ||
-                            featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12)
+                        if (featurePropertySet == FeaturePropSet6 ||
+                            featurePropertySet == FeaturePropSet12)
                         {
                             ridgeNeighbourhoodRepresentation.FeatureSet6Representation(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8)
+                        if (featurePropertySet == FeaturePropSet8)
                         {
                             ridgeNeighbourhoodRepresentation.FeatureSet8Representation(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9)
+                        if (featurePropertySet == FeaturePropSet9)
                         {
                             ridgeNeighbourhoodRepresentation.FeatureSet9Representation(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10)
+                        if (featurePropertySet == FeaturePropSet10)
                         {
                             var instance = new RidgeDescriptionNeighbourhoodRepresentation(new List<Point>());
                             instance.FeatureSet10Representation(subMatrix, row, col, spectrogramConfig);
@@ -2217,55 +2217,55 @@
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + neighbourhoodLength, col + neighbourhoodLength);
                         var ridgeNeighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1
-                            || featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet2)
+                        if (featurePropertySet == FeaturePropSet1
+                            || featurePropertySet == FeaturePropSet2)
                         {
                             ridgeNeighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3)
+                        if (featurePropertySet == FeaturePropSet3)
                         {
                             //ridgeNeighbourhoodRepresentation.SplittedBestLineFitNhRepresentation(subMatrix, row, col, spectrogramConfig);
                             // 4 directional ridges magnitude based
                             ridgeNeighbourhoodRepresentation.FeatureSet3Representation(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4)
+                        if (featurePropertySet == FeaturePropSet4)
                         {
                             // 4 directional ridges count based
                             ridgeNeighbourhoodRepresentation.FeatureSet4Representation(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5)
+                        if (featurePropertySet == FeaturePropSet5)
                         {
                             ridgeNeighbourhoodRepresentation.FeatureSet5Representation(subMatrix, row, col,
                                 spectrogramConfig, compressConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9 ||
-                            featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||
-                            featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13 ||
-                            featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
-                            featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17)
+                        if (featurePropertySet == FeaturePropSet9 ||
+                            featurePropertySet == FeaturePropSet12 ||
+                            featurePropertySet == FeaturePropSet13 ||
+                            featurePropertySet == FeaturePropSet16 ||
+                            featurePropertySet == FeaturePropSet17)
                         {
                             ridgeNeighbourhoodRepresentation.FeatureSet9Representation(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11)
+                        if (featurePropertySet == FeaturePropSet11)
                         {
                             // This one is similar to featureSet5, but based on POI Magnitude.
                             ridgeNeighbourhoodRepresentation.FeatureSet11Representation(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
+                        if (featurePropertySet == FeaturePropSet18)
 
                         {
                             // This one is similar to featureSet5, but give more directions.
                             ridgeNeighbourhoodRepresentation.FeatureSet5Representation2(subMatrix, row, col, spectrogramConfig);
                         }
-                       if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19)
+                       if (featurePropertySet == FeaturePropSet19)
                        {
                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation3(subMatrix, row, col, spectrogramConfig);
                        }
-                       if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20)
+                       if (featurePropertySet == FeaturePropSet20)
                        {
                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation4(subMatrix, row, col, spectrogramConfig);
                        }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10)
+                        if (featurePropertySet == FeaturePropSet10)
                         {
                             var instance = new RidgeDescriptionNeighbourhoodRepresentation(new List<Point>());
                             instance.FeatureSet10Representation(subMatrix, row, col, spectrogramConfig);
@@ -2303,56 +2303,56 @@
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + neighbourhoodLength, col + neighbourhoodLength);
                         var ridgeNeighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1
-                            || featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet2)
+                        if (featurePropertySet == FeaturePropSet1
+                            || featurePropertySet == FeaturePropSet2)
                         {
                             ridgeNeighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3)
+                        if (featurePropertySet == FeaturePropSet3)
                         {
                             //ridgeNeighbourhoodRepresentation.SplittedBestLineFitNhRepresentation(subMatrix, row, col, spectrogramConfig);
                             // 4 directional ridges magnitude based
                             ridgeNeighbourhoodRepresentation.FeatureSet3Representation(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4)
+                        if (featurePropertySet == FeaturePropSet4)
                         {
                             // 4 directional ridges count based
                             ridgeNeighbourhoodRepresentation.FeatureSet4Representation(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
-                            featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet21 ||
-                            featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet22)
+                        if (featurePropertySet == FeaturePropSet5 ||
+                            featurePropertySet == FeaturePropSet21 ||
+                            featurePropertySet == FeaturePropSet22)
                         {
                             ridgeNeighbourhoodRepresentation.FeatureSet5Representation(subMatrix, row, col,
                                 spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9 ||
-                            featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||
-                            featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13 ||
-                            featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
-                            featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17)
+                        if (featurePropertySet == FeaturePropSet9 ||
+                            featurePropertySet == FeaturePropSet12 ||
+                            featurePropertySet == FeaturePropSet13 ||
+                            featurePropertySet == FeaturePropSet16 ||
+                            featurePropertySet == FeaturePropSet17)
                         {
                             ridgeNeighbourhoodRepresentation.FeatureSet9Representation(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11)
+                        if (featurePropertySet == FeaturePropSet11)
                         {
                             // This one is similar to featureSet5, but based on POI Magnitude.
                             ridgeNeighbourhoodRepresentation.FeatureSet11Representation(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
+                        if (featurePropertySet == FeaturePropSet18)
                         {
                             // This one is similar to featureSet5, but give more directions.
                             ridgeNeighbourhoodRepresentation.FeatureSet5Representation2(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19)
+                        if (featurePropertySet == FeaturePropSet19)
                         {
                             ridgeNeighbourhoodRepresentation.FeatureSet5Representation3(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20)
+                        if (featurePropertySet == FeaturePropSet20)
                         {
                             ridgeNeighbourhoodRepresentation.FeatureSet5Representation4(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10)
+                        if (featurePropertySet == FeaturePropSet10)
                         {
                             var instance = new RidgeDescriptionNeighbourhoodRepresentation(new List<Point>());
                             instance.FeatureSet10Representation(subMatrix, row, col, spectrogramConfig);
@@ -2381,25 +2381,25 @@
                         {
                             var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + neighbourhoodLength, col + neighbourhoodLength);
                             var ridgeNeighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                            if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6 ||
-                                featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12)
+                            if (featurePropertySet == FeaturePropSet6 ||
+                                featurePropertySet == FeaturePropSet12)
                             {
                                 // this one is used for HoG 8 poi count based.
                                 ridgeNeighbourhoodRepresentation.FeatureSet6Representation(subMatrix, row, col, spectrogramConfig);
                             }
-                            if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8 ||
-                                featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13)
+                            if (featurePropertySet == FeaturePropSet8 ||
+                                featurePropertySet == FeaturePropSet13)
                             {
                                 //This one is used for HoG 8 magnitude based.
                                 ridgeNeighbourhoodRepresentation.FeatureSet8Representation(subMatrix, row, col, spectrogramConfig);
                             }
-                            if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet14 ||
-                                featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16)
+                            if (featurePropertySet == FeaturePropSet14 ||
+                                featurePropertySet == FeaturePropSet16)
                             {
                                 ridgeNeighbourhoodRepresentation.FeatureSet14Representation(subMatrix, row, col, spectrogramConfig);
                             }
-                            if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet15 ||
-                                featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17)
+                            if (featurePropertySet == FeaturePropSet15 ||
+                                featurePropertySet == FeaturePropSet17)
                             {
                                 ridgeNeighbourhoodRepresentation.FeatureSet15Representation(subMatrix, row, col, spectrogramConfig);
                             }

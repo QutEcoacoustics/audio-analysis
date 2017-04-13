@@ -34,20 +34,20 @@
         public GracillentaConfiguration(dynamic configuration)
         {
             // Peak parameters
-            AmplitudeThresholdGracillenta = configuration.AmplitudeThresholdGracillenta;
+            this.AmplitudeThresholdGracillenta = configuration.AmplitudeThresholdGracillenta;
             //RangeGracillenta = rangeGracillenta,
             //DistanceGracillenta = distanceGracillenta,
             // Track parameters
-            BinToleranceGracillenta = configuration.BinToleranceGracillenta;
-            FrameThresholdGracillenta = configuration.FrameThresholdGracillenta;
-            TrackDurationThresholdGracillenta = configuration.TrackDurationThresholdGracillenta;
-            TrackThresholdGracillenta = configuration.TrackThresholdGracillenta;
-            MaximumTrackDurationGracillenta = configuration.MaximumTrackDurationGracillenta;
-            MinimumTrackDurationGracillenta = configuration.MinimumTrackDurationGracillenta;
-            BinDifferenceGracillenta = configuration.BinDifferenceGracillenta;
+            this.BinToleranceGracillenta = configuration.BinToleranceGracillenta;
+            this.FrameThresholdGracillenta = configuration.FrameThresholdGracillenta;
+            this.TrackDurationThresholdGracillenta = configuration.TrackDurationThresholdGracillenta;
+            this.TrackThresholdGracillenta = configuration.TrackThresholdGracillenta;
+            this.MaximumTrackDurationGracillenta = configuration.MaximumTrackDurationGracillenta;
+            this.MinimumTrackDurationGracillenta = configuration.MinimumTrackDurationGracillenta;
+            this.BinDifferenceGracillenta = configuration.BinDifferenceGracillenta;
             // Band tracks parameters
-            FrequencyLowGracillenta = configuration.FrequencyLowGracillenta;
-            FrequencyHighGracillenta = configuration.FrequencyHighGracillenta;
+            this.FrequencyLowGracillenta = configuration.FrequencyLowGracillenta;
+            this.FrequencyHighGracillenta = configuration.FrequencyHighGracillenta;
             // DCT
             //MinimumOscillationNumberGracillenta = minimumOscillationNumberGracillenta,
             //MaximumOscillationNumberGracillenta = maximumOscillationNumberGracillenta,
@@ -56,7 +56,7 @@
             //Dct_DurationGracillenta = dct_DurationGracillenta,
             //Dct_ThresholdGracillenta = dct_ThresholdGracillenta,
 
-            DoSlopeGracillenta = configuration.DoSlopeGracillenta;
+            this.DoSlopeGracillenta = configuration.DoSlopeGracillenta;
         }
 
     } //Class

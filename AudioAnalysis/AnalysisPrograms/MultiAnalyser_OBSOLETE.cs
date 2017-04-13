@@ -16,7 +16,7 @@
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using AnalysisBase;
-    using AnalysisPrograms.Production;
+    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using TowseyLibrary;
@@ -445,7 +445,7 @@
             {
                 double scoreThreshold = 0.1;
                 TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of i minute
-                var indicesDT = ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
+                var indicesDT = this.ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
                 CsvTools.DataTable2CSV(indicesDT, analysisSettings.SummaryIndicesFile.FullName);
             }
 
@@ -480,11 +480,13 @@
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             if (scores != null)
+            {
                 for (int i = 0; i < scores.Count; i++)
                 {
                     scores[i].ScaleDataArray(sonogram.FrameCount);
                     image.AddTrack(Image_Track.GetNamedScoreTrack(scores[i].data, 0.0, 1.0, scores[i].threshold, scores[i].title));
                 }
+            }
             //if (hits != null) image.OverlayRedTransparency(hits);
             if (hits != null) image.OverlayRainbowTransparency(hits);
             if ((predictedEvents != null) && (predictedEvents.Count > 0))
@@ -502,16 +504,16 @@
                 return null;
             }
 
-            string[] headers = { AudioAnalysisTools.AnalysisKeys.EventCount,
-                                 AudioAnalysisTools.AnalysisKeys.EventStartMin,
-                                 AudioAnalysisTools.AnalysisKeys.EventStartSec,
-                                 AudioAnalysisTools.AnalysisKeys.EventStartAbs,
-                                 AudioAnalysisTools.AnalysisKeys.KeySegmentDuration,
-                                 AudioAnalysisTools.AnalysisKeys.EventDuration,
+            string[] headers = { AnalysisKeys.EventCount,
+                                 AnalysisKeys.EventStartMin,
+                                 AnalysisKeys.EventStartSec,
+                                 AnalysisKeys.EventStartAbs,
+                                 AnalysisKeys.KeySegmentDuration,
+                                 AnalysisKeys.EventDuration,
                                  //AudioAnalysisTools.Keys.EVENT_INTENSITY,
-                                 AudioAnalysisTools.AnalysisKeys.EventName,
-                                 AudioAnalysisTools.AnalysisKeys.EventScore,
-                                 AudioAnalysisTools.AnalysisKeys.EventNormscore,
+                                 AnalysisKeys.EventName,
+                                 AnalysisKeys.EventScore,
+                                 AnalysisKeys.EventNormscore,
 
                                };
             //                   1                2               3              4                5              6               7              8
@@ -526,12 +528,12 @@
             foreach (var ev in predictedEvents)
             {
                 DataRow row = dataTable.NewRow();
-                row[AudioAnalysisTools.AnalysisKeys.EventStartSec] = (double)ev.TimeStart;  //EvStartSec
-                row[AudioAnalysisTools.AnalysisKeys.EventStartAbs] = (double)ev.TimeStart;  //EvStartAbs - OVER-WRITE LATER
-                row[AudioAnalysisTools.AnalysisKeys.EventDuration] = (double)ev.Duration;   //duratio in seconds
-                row[AudioAnalysisTools.AnalysisKeys.EventName] = (string)ev.Name;   //
-                row[AudioAnalysisTools.AnalysisKeys.EventNormscore] = (double)ev.ScoreNormalised;
-                row[AudioAnalysisTools.AnalysisKeys.EventScore] = (double)ev.Score;      //Score
+                row[AnalysisKeys.EventStartSec] = (double)ev.TimeStart;  //EvStartSec
+                row[AnalysisKeys.EventStartAbs] = (double)ev.TimeStart;  //EvStartAbs - OVER-WRITE LATER
+                row[AnalysisKeys.EventDuration] = (double)ev.Duration;   //duratio in seconds
+                row[AnalysisKeys.EventName] = (string)ev.Name;   //
+                row[AnalysisKeys.EventNormscore] = (double)ev.ScoreNormalised;
+                row[AnalysisKeys.EventScore] = (double)ev.Score;      //Score
                 dataTable.Rows.Add(row);
             }
             return dataTable;
@@ -561,11 +563,11 @@
 
             foreach (DataRow ev in dt.Rows)
             {
-                double eventStart = (double)ev[AudioAnalysisTools.AnalysisKeys.EventStartAbs];
-                double eventScore = (double)ev[AudioAnalysisTools.AnalysisKeys.EventNormscore];
+                double eventStart = (double)ev[AnalysisKeys.EventStartAbs];
+                double eventScore = (double)ev[AnalysisKeys.EventNormscore];
                 int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
 
-                string eventName = (string)ev[AudioAnalysisTools.AnalysisKeys.EventName];
+                string eventName = (string)ev[AnalysisKeys.EventName];
                 if (eventName == Human1.AnalysisName)
                 {
                     if (eventScore != 0.0) human_EventsPerUnitTime[timeUnit]++;
@@ -588,7 +590,7 @@
                 }
             }
 
-            string[] headers = { AudioAnalysisTools.AnalysisKeys.KeyStartMinute, "HumanEvents", "CrowEvents", "MachineEvents", "KoalaEvents", "CanetoadEvents" };
+            string[] headers = { AnalysisKeys.KeyStartMinute, "HumanEvents", "CrowEvents", "MachineEvents", "KoalaEvents", "CanetoadEvents" };
             Type[] types = { typeof(int), typeof(int), typeof(int), typeof(int), typeof(int), typeof(int) };
             var newtable = DataTableTools.CreateTable(headers, types);
 
@@ -605,17 +607,17 @@
         {
             if (dt == null) return;
 
-            if (!dt.Columns.Contains(AnalysisKeys.KeySegmentDuration)) dt.Columns.Add(AudioAnalysisTools.AnalysisKeys.KeySegmentDuration, typeof(double));
-            if (!dt.Columns.Contains(AnalysisKeys.EventStartAbs)) dt.Columns.Add(AudioAnalysisTools.AnalysisKeys.EventStartAbs, typeof(double));
-            if (!dt.Columns.Contains(AnalysisKeys.EventStartMin)) dt.Columns.Add(AudioAnalysisTools.AnalysisKeys.EventStartMin, typeof(double));
+            if (!dt.Columns.Contains(AnalysisKeys.KeySegmentDuration)) dt.Columns.Add(AnalysisKeys.KeySegmentDuration, typeof(double));
+            if (!dt.Columns.Contains(AnalysisKeys.EventStartAbs)) dt.Columns.Add(AnalysisKeys.EventStartAbs, typeof(double));
+            if (!dt.Columns.Contains(AnalysisKeys.EventStartMin)) dt.Columns.Add(AnalysisKeys.EventStartMin, typeof(double));
             double start = segmentStartMinute.TotalSeconds;
             int count = 0;
             foreach (DataRow row in dt.Rows)
             {
-                row[AudioAnalysisTools.AnalysisKeys.EventCount] = (double)(count++);
-                row[AudioAnalysisTools.AnalysisKeys.KeySegmentDuration] = (double)recordingTimeSpan.TotalSeconds;
-                row[AudioAnalysisTools.AnalysisKeys.EventStartAbs] = start + (double)row[AudioAnalysisTools.AnalysisKeys.EventStartSec];
-                row[AudioAnalysisTools.AnalysisKeys.EventStartMin] = (double)start;
+                row[AnalysisKeys.EventCount] = (double)(count++);
+                row[AnalysisKeys.KeySegmentDuration] = (double)recordingTimeSpan.TotalSeconds;
+                row[AnalysisKeys.EventStartAbs] = start + (double)row[AnalysisKeys.EventStartSec];
+                row[AnalysisKeys.EventStartMin] = (double)start;
             }
         } //AddContext2Table()
 

@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="OscillationsGeneric.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="OscillationsGeneric.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the oscillationsGeneric activity.
@@ -28,7 +28,7 @@ namespace AnalysisPrograms
     using Acoustics.Tools.Audio;
 
     using AnalysisBase;
-    using AnalysisPrograms.Production;
+    using Production;
     //using AnalysisRunner;
 
     using AudioAnalysisTools;
@@ -232,7 +232,7 @@ namespace AnalysisPrograms
                 Oscillations2014.DefaultSensitivityThreshold = double.Parse(configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold]);
 
             if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SampleLength))
-                Oscillations2014.DefaultSampleLength = Int32.Parse(configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold]);
+                Oscillations2014.DefaultSampleLength = int.Parse(configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold]);
 
             var list1 = new List<Image>();
             //var result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-FFT");

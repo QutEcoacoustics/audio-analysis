@@ -1,19 +1,19 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="ExtensionsString.cs" company="QUT">
-// TODO: Update copyright text.
+// <copyright file="ExtensionsString.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // -----------------------------------------------------------------------
 
 namespace System
 {
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Drawing;
-    using System.Globalization;
-    using System.Text;
-    using System.Text.RegularExpressions;
-    using System.Linq;
-    using System.Web;
+    using Collections.Generic;
+    using Diagnostics;
+    using Drawing;
+    using Globalization;
+    using Text;
+    using Text.RegularExpressions;
+    using Linq;
+    using Web;
 
     public static class ExtensionsString
     {

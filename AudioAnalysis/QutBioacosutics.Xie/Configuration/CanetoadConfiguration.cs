@@ -36,29 +36,29 @@
         {
             //***************************Canetoad*****************************//
             // Peak parameters
-            AmplitudeThresholdCanetoad = configuration.AmplitudeThresholdCanetoad;   // Decibel---the minimum amplitude value,
+            this.AmplitudeThresholdCanetoad = configuration.AmplitudeThresholdCanetoad;   // Decibel---the minimum amplitude value,
             //RangeCanetoad = rangeCanetoad,
             //DistanceCanetoad = distanceCanetoad,
             // Track parameters
-            BinToleranceCanetoad = configuration.BinToleranceCanetoad;
-            FrameThresholdCanetoad = configuration.FrameThresholdCanetoad;
-            TrackDurationThresholdCanetoad = configuration.TrackDurationThresholdCanetoad;
-            TrackThresholdCanetoad = configuration.TrackThresholdCanetoad;
-            MaximumTrackDurationCanetoad = configuration.MaximumTrackDurationCanetoad;
-            MinimumTrackDurationCanetoad = configuration.MinimumTrackDurationCanetoad;
-            BinDifferenceCanetoad = configuration.BinDifferenceCanetoad;
+            this.BinToleranceCanetoad = configuration.BinToleranceCanetoad;
+            this.FrameThresholdCanetoad = configuration.FrameThresholdCanetoad;
+            this.TrackDurationThresholdCanetoad = configuration.TrackDurationThresholdCanetoad;
+            this.TrackThresholdCanetoad = configuration.TrackThresholdCanetoad;
+            this.MaximumTrackDurationCanetoad = configuration.MaximumTrackDurationCanetoad;
+            this.MinimumTrackDurationCanetoad = configuration.MinimumTrackDurationCanetoad;
+            this.BinDifferenceCanetoad = configuration.BinDifferenceCanetoad;
             // Band tracks parameters
-            FrequencyLowCanetoad = configuration.FrequencyLowCanetoad;
-            FrequencyHighCanetoad = configuration.FrequencyHighCanetoad;
+            this.FrequencyLowCanetoad = configuration.FrequencyLowCanetoad;
+            this.FrequencyHighCanetoad = configuration.FrequencyHighCanetoad;
             // DCT
-            MinimumOscillationNumberCanetoad = configuration.MinimumOscillationNumberCanetoad;
-            MaximumOscillationNumberCanetoad = configuration.MaximumOscillationNumberCanetoad;
-            MinimumFrequencyCanetoad = configuration.MinimumFrequencyCanetoad;
-            MaximumFrequencyCanetoad = configuration.MaximumFrequencyCanetoad;
-            Dct_DurationCanetoad = configuration.Dct_DurationCanetoad;
-            Dct_ThresholdCanetoad = configuration.Dct_ThresholdCanetoad;
+            this.MinimumOscillationNumberCanetoad = configuration.MinimumOscillationNumberCanetoad;
+            this.MaximumOscillationNumberCanetoad = configuration.MaximumOscillationNumberCanetoad;
+            this.MinimumFrequencyCanetoad = configuration.MinimumFrequencyCanetoad;
+            this.MaximumFrequencyCanetoad = configuration.MaximumFrequencyCanetoad;
+            this.Dct_DurationCanetoad = configuration.Dct_DurationCanetoad;
+            this.Dct_ThresholdCanetoad = configuration.Dct_ThresholdCanetoad;
 
-            DoSlopeCanetoad = configuration.DoSlopeCanetoad;
+            this.DoSlopeCanetoad = configuration.DoSlopeCanetoad;
         } // consturctor
 
     } //class

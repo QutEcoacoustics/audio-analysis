@@ -16,41 +16,41 @@
 
         public Matrix3D(int _Xdim, int _Ydim, int _Zdim)
         {
-            Xdim = _Xdim;
-            Ydim = _Ydim;
-            Zdim = _Zdim;
+            this.Xdim = _Xdim;
+            this.Ydim = _Ydim;
+            this.Zdim = _Zdim;
 
-            array3D = new float[_Xdim, _Ydim, _Zdim];
+            this.array3D = new float[_Xdim, _Ydim, _Zdim];
         }
 
         public Matrix3D(string Xname, int _Xdim, string Yname, int _Ydim, string Zname, int _Zdim)
         {
-            dimNames[0] = Xname;
-            dimNames[1] = Yname;
-            dimNames[2] = Zname;
+            this.dimNames[0] = Xname;
+            this.dimNames[1] = Yname;
+            this.dimNames[2] = Zname;
 
-            Xdim = _Xdim;
-            Ydim = _Ydim;
-            Zdim = _Zdim;
+            this.Xdim = _Xdim;
+            this.Ydim = _Ydim;
+            this.Zdim = _Zdim;
 
-            array3D = new float[_Xdim, _Ydim, _Zdim];
+            this.array3D = new float[_Xdim, _Ydim, _Zdim];
         }
 
         public void SetValue(int X, int Y, int Z, float value)
         {
-            array3D[X, Y, Z] = value;
+            this.array3D[X, Y, Z] = value;
         }
         public void SetValue(int X, int Y, int Z, double value)
         {
-            array3D[X, Y, Z] = (float)value;
+            this.array3D[X, Y, Z] = (float)value;
         }
         public void SetValue(int X, int Y, int Z, int value)
         {
-            array3D[X, Y, Z] = (float)value;
+            this.array3D[X, Y, Z] = (float)value;
         }
         public float GetValue(int X, int Y, int Z)
         {
-            return array3D[X, Y, Z];
+            return this.array3D[X, Y, Z];
         }
 
         // get and set arrays in the X dimension
@@ -58,17 +58,17 @@
         {
             if (arrayID != 'X') return null;
 
-            float[] array = new float[Xdim];
-            for (int X = 0; X < Xdim; X++)
-                array[X] = array3D[X, Y, Z];
+            float[] array = new float[this.Xdim];
+            for (int X = 0; X < this.Xdim; X++)
+                array[X] = this.array3D[X, Y, Z];
             return array;
         }
         public void SetArray(float[] array, int Y, int Z)
         {
-            if (array.Length != Xdim) return;
+            if (array.Length != this.Xdim) return;
 
-            for (int X = 0; X < Xdim; X++)
-                array3D[X, Y, Z] = array[X];
+            for (int X = 0; X < this.Xdim; X++)
+                this.array3D[X, Y, Z] = array[X];
         }
 
 
@@ -77,17 +77,17 @@
         {
             if (arrayID != 'Y') return null;
 
-            float[] array = new float[Ydim];
-            for (int Y = 0; Y < Ydim; Y++)
-                array[Y] = array3D[X, Y, Z];
+            float[] array = new float[this.Ydim];
+            for (int Y = 0; Y < this.Ydim; Y++)
+                array[Y] = this.array3D[X, Y, Z];
             return array;
         }
         public void SetArray(int X, float[] array, int Z)
         {
-            if (array.Length != Ydim) return;
+            if (array.Length != this.Ydim) return;
 
-            for (int Y = 0; Y < Ydim; Y++)
-                array3D[X, Y, Z] = array[Y];
+            for (int Y = 0; Y < this.Ydim; Y++)
+                this.array3D[X, Y, Z] = array[Y];
         }
 
 
@@ -96,17 +96,17 @@
         {
             if (arrayID != 'Z') return null;
 
-            float[] array = new float[Zdim];
-            for (int Z = 0; Z < Zdim; Z++)
-                array[Z] = array3D[X, Y, Z];
+            float[] array = new float[this.Zdim];
+            for (int Z = 0; Z < this.Zdim; Z++)
+                array[Z] = this.array3D[X, Y, Z];
             return array;
         }
         public void SetArray(int X, int Y, float[] array)
         {
-            if (array.Length != Zdim) return;
+            if (array.Length != this.Zdim) return;
 
-            for (int Z = 0; Z < Zdim; Z++)
-                array3D[X, Y, Z] = array[Z];
+            for (int Z = 0; Z < this.Zdim; Z++)
+                this.array3D[X, Y, Z] = array[Z];
         }
 
 
@@ -115,40 +115,40 @@
         public float[,] GetMatrix(string dimName, int index)
         {
             float[,] matrix;
-            if (dimName == dimNames[0]) // X dimension
+            if (dimName == this.dimNames[0]) // X dimension
             {
-                matrix = new float[Ydim, Zdim];
-                for (int Y = 0; Y < Ydim; Y++)
+                matrix = new float[this.Ydim, this.Zdim];
+                for (int Y = 0; Y < this.Ydim; Y++)
                 {
-                    for (int Z = 0; Z < Zdim; Z++)
+                    for (int Z = 0; Z < this.Zdim; Z++)
                     {
-                        matrix[Y, Z] = array3D[index, Y, Z];
+                        matrix[Y, Z] = this.array3D[index, Y, Z];
                     }
                 }
                 return matrix;
             }
             else
-                if (dimName == dimNames[1]) // Y dimension
+                if (dimName == this.dimNames[1]) // Y dimension
                 {
-                matrix = new float[Xdim, Zdim];
-                for (int X = 0; X < Xdim; X++)
+                matrix = new float[this.Xdim, this.Zdim];
+                for (int X = 0; X < this.Xdim; X++)
                 {
-                    for (int Z = 0; Z < Zdim; Z++)
+                    for (int Z = 0; Z < this.Zdim; Z++)
                     {
-                        matrix[X, Z] = array3D[X, index, Z];
+                        matrix[X, Z] = this.array3D[X, index, Z];
                     }
                 }
                 return matrix;
             }
             else
-                    if (dimName == dimNames[2]) // Z dimension
+                    if (dimName == this.dimNames[2]) // Z dimension
                     {
-                    matrix = new float[Xdim, Ydim];
-                    for (int X = 0; X < Xdim; X++)
+                    matrix = new float[this.Xdim, this.Ydim];
+                    for (int X = 0; X < this.Xdim; X++)
                     {
-                        for (int Y = 0; Y < Ydim; Y++)
+                        for (int Y = 0; Y < this.Ydim; Y++)
                         {
-                            matrix[X, Y] = array3D[X, Y, index];
+                            matrix[X, Y] = this.array3D[X, Y, index];
                         }
                     }
                     return matrix;
@@ -157,35 +157,35 @@
         }
         public void SetMatrix(string dimName, int index, float[,] matrix)
         {
-            if (dimName == dimNames[0]) // X dimension
+            if (dimName == this.dimNames[0]) // X dimension
             {
-                for (int Y = 0; Y < Ydim; Y++)
+                for (int Y = 0; Y < this.Ydim; Y++)
                 {
-                    for (int Z = 0; Z < Zdim; Z++)
+                    for (int Z = 0; Z < this.Zdim; Z++)
                     {
-                        array3D[index, Y, Z] = matrix[Y, Z];
+                        this.array3D[index, Y, Z] = matrix[Y, Z];
                     }
                 }
             }
             else
-                if (dimName == dimNames[1]) // Y dimension
+                if (dimName == this.dimNames[1]) // Y dimension
                 {
-                    for (int X = 0; X < Xdim; X++)
+                    for (int X = 0; X < this.Xdim; X++)
                     {
-                        for (int Z = 0; Z < Zdim; Z++)
+                        for (int Z = 0; Z < this.Zdim; Z++)
                         {
-                            array3D[X, index, Z] = matrix[X, Z];
+                            this.array3D[X, index, Z] = matrix[X, Z];
                         }
                     }
                 }
                 else
-                    if (dimName == dimNames[2]) // Z dimension
+                    if (dimName == this.dimNames[2]) // Z dimension
                     {
-                        for (int X = 0; X < Xdim; X++)
+                        for (int X = 0; X < this.Xdim; X++)
                         {
-                            for (int Y = 0; Y < Ydim; Y++)
+                            for (int Y = 0; Y < this.Ydim; Y++)
                             {
-                                array3D[X, Y, index] = matrix[X, Y];
+                                this.array3D[X, Y, index] = matrix[X, Y];
                             }
                         }
                     }

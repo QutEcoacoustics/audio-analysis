@@ -23,7 +23,7 @@
          /// <returns></returns>
          public static DataTable ReadCSVToTable(string filePath, bool isFirstRowHeader, Type[] types)
          {
-             string[] csvRows = System.IO.File.ReadAllLines(filePath);
+             string[] csvRows = File.ReadAllLines(filePath);
              var dt = new DataTable();
              if (isFirstRowHeader)
              {
@@ -57,7 +57,7 @@
         /// <returns></returns>
          public static DataTable ReadCSVToTable(string filePath, bool isFirstRowHeader)
          {
-             string[] csvRows = System.IO.File.ReadAllLines(filePath);
+             string[] csvRows = File.ReadAllLines(filePath);
              if (csvRows.Length == 0) return null;
              //convert rows 1-300 toList of strings so can deduce their types.
              var listOfStringArrays = ConvertCSVRowsToListOfStringArrays(csvRows, 1, 300);
@@ -121,27 +121,27 @@
             return listOfStringArrays;
         }
 
-        public static Object[] MakeItemArray(string[] fields, Type[] types)
+        public static object[] MakeItemArray(string[] fields, Type[] types)
         {
             int length = fields.Length;
-            Object[] output = new Object[length];
+            object[] output = new object[length];
             for (int i = 0; i < length; i++)
             {
                 if ((fields[i] == null) || (fields[i] == "")) output[i] = null;
                 else
                 if (types[i] == typeof(int))
                 {
-                    output[i] = Int32.Parse(fields[i]);
+                    output[i] = int.Parse(fields[i]);
                 }
                 else
                 if (types[i] == typeof(double))
                 {
-                    output[i] = Double.Parse(fields[i]);
+                    output[i] = double.Parse(fields[i]);
                 }
                 else
                 if (types[i] == typeof(bool))
                 {
-                    output[i] = Boolean.Parse(fields[i]);
+                    output[i] = bool.Parse(fields[i]);
                 }
                 else
                 output[i] = fields[i];
@@ -253,7 +253,7 @@
         /// </summary>
         /// <param name="csvFileName"></param>
         /// <returns></returns>
-        public static System.Tuple<List<string>, List<double[]>> ReadCSVFile(string csvFileName)
+        public static Tuple<List<string>, List<double[]>> ReadCSVFile(string csvFileName)
         {
             var lines = FileTools.ReadTextFile(csvFileName);
 
@@ -281,7 +281,7 @@
                 for (int c = 0; c < columnCount; c++)
                 {
                     double value = 0.0;
-                    if (Double.TryParse(words[c], out value))
+                    if (double.TryParse(words[c], out value))
                     {
                         values[c][r - 1] = value;
                     }
@@ -292,7 +292,7 @@
                 }
             }
 
-            return System.Tuple.Create(headers, values);
+            return Tuple.Create(headers, values);
         }
 
 
@@ -313,7 +313,7 @@
                     var values = new double[words.Length - firstIndex];
                     for (int c = firstIndex; c < words.Length; c++)
                     {
-                        values[c - firstIndex] = Double.Parse(words[c]);
+                        values[c - firstIndex] = double.Parse(words[c]);
                     }
                     list.Add(values);
                 }//end while
@@ -389,7 +389,7 @@
 
         public static double[,] ReadCSVFile2Matrix(string csvFileName)
         {
-            Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvFileName);
+            Tuple<List<string>, List<double[]>> tuple = ReadCSVFile(csvFileName);
             List<double[]> columns = tuple.Item2;
             int rows = columns[0].Length;
             int cols = columns.Count;

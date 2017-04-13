@@ -4,8 +4,8 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.StandardSpectrograms;
+    using DSP;
+    using StandardSpectrograms;
     using TowseyLibrary;
 
     public static class Oscillations2010
@@ -33,7 +33,7 @@
         public static void Execute(SpectrogramStandard sonogram, bool doSegmentation, int minHz, int maxHz,
                                    double dctDuration, double dctThreshold, bool normaliseDCT, int minOscilFreq, int maxOscilFreq,
                                    double scoreThreshold, double minDuration, double maxDuration,
-                                   out double[] scores, out List<AcousticEvent> events, out Double[,] hits, out double[] intensity,
+                                   out double[] scores, out List<AcousticEvent> events, out double[,] hits, out double[] intensity,
                                    out TimeSpan totalTime)
         {
             DateTime startTime1 = DateTime.Now;
@@ -43,7 +43,7 @@
             double smoothWindow = 1 / (double)minOscilFreq; //window = max oscillation period
             Log.WriteLine(" Segmentation smoothing window = {0:f2} seconds", smoothWindow);
             double thresholdSD = 0.1;       //Set threshold to 1/5th of a standard deviation of the background noise.
-            maxDuration = Double.MaxValue;  //Do not constrain maximum length of events.
+            maxDuration = double.MaxValue;  //Do not constrain maximum length of events.
 
             var tuple = AcousticEvent.GetSegmentationEvents(sonogram, doSegmentation, minHz, maxHz, smoothWindow, thresholdSD, minDuration, maxDuration);
             var segmentEvents = tuple.Item1;
@@ -136,7 +136,7 @@
         /// <param name="maxOscilFreq"></param>
         /// <param name="events"></param>
         /// <returns></returns>
-        public static Double[,] DetectOscillationsInSonogram(SpectrogramStandard sonogram, int minHz, int maxHz, double dctDuration, double dctThreshold,
+        public static double[,] DetectOscillationsInSonogram(SpectrogramStandard sonogram, int minHz, int maxHz, double dctDuration, double dctThreshold,
                                                     bool normaliseDCT, double minOscilFreq, double maxOscilFreq, List<AcousticEvent> events)
         {
             if (events == null) return null;
@@ -150,7 +150,7 @@
 
             int rows = sonogram.Data.GetLength(0);
             int cols = sonogram.Data.GetLength(1);
-            Double[,] hits = new Double[rows, cols];
+            double[,] hits = new double[rows, cols];
 
             double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); //set up the cosine coefficients
             //following two lines write matrix of cos values for checking.
@@ -230,10 +230,10 @@
         /// Calls the above method but converts integer oscillations rate to doubles
         /// </summary>
         /// <returns></returns>
-        public static Double[,] DetectOscillationsInSonogram(SpectrogramStandard sonogram, int minHz, int maxHz, double dctDuration, double dctThreshold,
+        public static double[,] DetectOscillationsInSonogram(SpectrogramStandard sonogram, int minHz, int maxHz, double dctDuration, double dctThreshold,
                                                            bool normaliseDCT, int minOscilFreq, int maxOscilFreq, List<AcousticEvent> events)
         {
-            Double[,] hits = DetectOscillationsInSonogram(sonogram, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT, (double)minOscilFreq, (double)maxOscilFreq, events);
+            double[,] hits = DetectOscillationsInSonogram(sonogram, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT, (double)minOscilFreq, (double)maxOscilFreq, events);
             return hits;
         }
 
@@ -331,7 +331,7 @@
             if (maxIndex > dctLength) maxIndex = dctLength; //safety check in case of future changes to code.
 
             int length = scoreArray.Length;
-            double[] hits = new Double[length];
+            double[] hits = new double[length];
 
             double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); //set up the cosine coefficients
             //following two lines write matrix of cos values for checking.
@@ -399,11 +399,11 @@
         /// </summary>
         /// <param name="matrix">the Oscillation matrix</param>
         /// <returns></returns>
-        public static Double[,] RemoveIsolatedOscillations(Double[,] matrix)
+        public static double[,] RemoveIsolatedOscillations(double[,] matrix)
         {
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
-            Double[,] cleanMatrix = matrix;
+            double[,] cleanMatrix = matrix;
 
             for (int c = 3; c < cols - 3; c++)//traverse columns - skip DC column
             {

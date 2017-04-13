@@ -336,7 +336,7 @@
                     " Expected: " + expectedException,
                     " Actual: " + thrownException.GetType());
 
-            Assert.IsFalse(String.IsNullOrWhiteSpace(expectedExceptionPartialString), "Parameter 'expectedExceptionPartialString' was null, empty or white space.");
+            Assert.IsFalse(string.IsNullOrWhiteSpace(expectedExceptionPartialString), "Parameter 'expectedExceptionPartialString' was null, empty or white space.");
 
             Assert.IsTrue(
                 thrownException.ToString().Contains(expectedExceptionPartialString),
@@ -545,12 +545,12 @@
                 Assert.Fail("BitsPerSecond");
             }
 
-            Assert.IsTrue(!String.IsNullOrWhiteSpace(expected.MediaType));
+            Assert.IsTrue(!string.IsNullOrWhiteSpace(expected.MediaType));
             Assert.IsTrue(expected.ChannelCount.HasValue);
             Assert.IsTrue(expected.Duration.HasValue);
             Assert.IsTrue(expected.SampleRate.HasValue);
 
-            Assert.IsTrue(!String.IsNullOrWhiteSpace(actual.MediaType));
+            Assert.IsTrue(!string.IsNullOrWhiteSpace(actual.MediaType));
             Assert.IsTrue(actual.ChannelCount.HasValue);
             Assert.IsTrue(actual.Duration.HasValue);
             Assert.IsTrue(actual.SampleRate.HasValue);
@@ -563,7 +563,7 @@
 
         public static FileInfo GetAudioFile(string filename)
         {
-            var source = TestHelper.GetTestAudioFile(filename);
+            var source = GetTestAudioFile(filename);
             return source;
         }
 
@@ -680,11 +680,11 @@
         public ConsoleRedirector()
         {
             this._originalConsoleOutput = Console.Out;
-            Console.SetOut(_consoleOutput);
+            Console.SetOut(this._consoleOutput);
         }
         public void Dispose()
         {
-            Console.SetOut(_originalConsoleOutput);
+            Console.SetOut(this._originalConsoleOutput);
             LoggedConsole.Write(this.ToString());
             this._consoleOutput.Dispose();
         }

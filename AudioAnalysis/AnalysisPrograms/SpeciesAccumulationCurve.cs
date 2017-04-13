@@ -7,7 +7,7 @@
     using System.IO;
     using System.Linq;
     using Acoustics.Shared.Extensions;
-    using AnalysisPrograms.Production;
+    using Production;
     using AudioAnalysisTools;
     using PowerArgs;
     using TowseyLibrary;
@@ -264,7 +264,7 @@
                     int count = 0;
                     for (int i = 0; i < row.Length; i++) count += row[i];
                     speciesCount += count;
-                    string line = String.Format("sample {0}:\t min:{1:d3}\t count={2}\t total={3}", sampleNumber, maxRow, count, speciesCount);
+                    string line = string.Format("sample {0}:\t min:{1:d3}\t count={2}\t total={3}", sampleNumber, maxRow, count, speciesCount);
                     text.Add(line);
                     LoggedConsole.WriteLine(line);
 
@@ -502,9 +502,9 @@
             {
                 List<string> text = FileTools.ReadTextFile(opPath.FullName);  //read results file
                 string[] lastLine = text[text.Count - 1].Split(','); // read and split the last line
-                if (!lastLine[0].Equals("count")) Int32.TryParse(lastLine[0], out fileCount);
+                if (!lastLine[0].Equals("count")) int.TryParse(lastLine[0], out fileCount);
                 fileCount++;
-                if (!lastLine[1].Equals("minutes")) Double.TryParse(lastLine[1], out elapsedTime);
+                if (!lastLine[1].Equals("minutes")) double.TryParse(lastLine[1], out elapsedTime);
             }
 
             //LoggedConsole.WriteLine("\n\n");
@@ -880,7 +880,7 @@
         }
 
 
-        public static System.Tuple<List<string>, List<string>, byte[,]> READ_CALL_OCCURENCE_CSV_DATA(string occurenceFile)
+        public static Tuple<List<string>, List<string>, byte[,]> READ_CALL_OCCURENCE_CSV_DATA(string occurenceFile)
         {
             int startColumn = 3;
             int ignoreLastNColumns = 2;
@@ -896,7 +896,7 @@
                 line = text[i].Split(',');                    // read and split the line
                 for (int j = startColumn; j <= endColumn; j++)
                 {
-                    if (Int32.Parse(line[j]) >= 1)
+                    if (int.Parse(line[j]) >= 1)
                     {
                         callMatrix[i - 1, j - startColumn] = 1;
                     }

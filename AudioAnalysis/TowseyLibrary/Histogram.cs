@@ -58,7 +58,7 @@
             {
                 double value = data[i];
                 int id = 0;
-                if (Double.IsNaN(value))
+                if (double.IsNaN(value))
                 {
                     NaN_COUNT ++;
                 }
@@ -72,7 +72,7 @@
 
             if (NaN_COUNT > 0)
             {
-                string msg = String.Format("#### WARNING from Histogram.Histo():  {0}/{1} values were NaN", NaN_COUNT, data.Length);
+                string msg = string.Format("#### WARNING from Histogram.Histo():  {0}/{1} values were NaN", NaN_COUNT, data.Length);
                 LoggedConsole.WriteErrorLine(msg);
             }
             return bins;
@@ -91,6 +91,7 @@
             binWidth = (max - min) / binCount;
 
             for (int i = 0; i < rows; i++)
+            {
                 for (int j = 0; j < cols; j++)
                 {
                     int bin = (int)((data[i, j] - min) / binWidth);
@@ -98,6 +99,7 @@
                     if (bin < 0) bin = 0;
                     histo[bin]++;
                 }
+            }
 
             return histo;
         }
@@ -139,13 +141,14 @@
             return Histo(data, binCount, min, max, binWidth);
         }
 
-        static public int[] Histo(double[,] data, int binCount, double min, double max, double binWidth)
+        public static int[] Histo(double[,] data, int binCount, double min, double max, double binWidth)
         {
             int rows = data.GetLength(0);
             int cols = data.GetLength(1);
             int[] histo = new int[binCount];
 
             for (int i = 0; i < rows; i++)
+            {
                 for (int j = 0; j < cols; j++)
                 {
                     int bin = (int)((data[i, j] - min) / binWidth);
@@ -153,6 +156,7 @@
                     if (bin < 0) bin = 0;
                     histo[bin]++;
                 }
+            }
 
             return histo;
         }
@@ -219,11 +223,11 @@
         /// <param name="min"></param>
         /// <param name="max"></param>
         /// <returns></returns>
-        static public int[] Histo(int[] data)
+        public static int[] Histo(int[] data)
         {
             int length = data.Length;
-            int min = Int32.MaxValue;
-            int max = -Int32.MaxValue;
+            int min = int.MaxValue;
+            int max = -int.MaxValue;
             DataTools.MinMax(data, out min, out max);
 
             int[] histo = new int[max+1];
@@ -246,12 +250,12 @@
         /// <param name="min"></param>
         /// <param name="max"></param>
         /// <returns></returns>
-        static public int[] Histo(int[] data, int binCount, out double binWidth, out int min, out int max)
+        public static int[] Histo(int[] data, int binCount, out double binWidth, out int min, out int max)
         {
             int length = data.Length;
             int[] histo = new int[binCount];
-            min = Int32.MaxValue;
-            max = -Int32.MaxValue;
+            min = int.MaxValue;
+            max = -int.MaxValue;
             DataTools.MinMax(data, out min, out max);
             binWidth = (max - min + 1) / (double)binCount;
 
@@ -272,11 +276,11 @@
         /// <param name="min"></param>
         /// <param name="max"></param>
         /// <returns></returns>
-        static public int[] Histo(int[] data, out int min, out int max)
+        public static int[] Histo(int[] data, out int min, out int max)
         {
             int length = data.Length;
-            min = Int32.MaxValue;
-            max = -Int32.MaxValue;
+            min = int.MaxValue;
+            max = -int.MaxValue;
             DataTools.MinMax(data, out min, out max);
             int binCount = max - min + 1;
             int[] histo = new int[binCount];
@@ -292,7 +296,7 @@
 
 
 
-        static public void GetHistogramOfWaveAmplitudes(double[] waveform, int window, out int[] histogramOfAmplitudes, out double minAmplitude, out double maxAmplitude, out double binWidth)
+        public static void GetHistogramOfWaveAmplitudes(double[] waveform, int window, out int[] histogramOfAmplitudes, out double minAmplitude, out double maxAmplitude, out double binWidth)
         {
             int binCount = 100;
             int windowCount = waveform.Length / window;
@@ -315,7 +319,7 @@
         /// <param name="histogram"></param>
         /// <param name="percentile"></param>
         /// <returns></returns>
-        static public int GetPercentileBin(int[] histogram, int percentile)
+        public static int GetPercentileBin(int[] histogram, int percentile)
         {
             if (percentile > 99) throw new Exception("percentile must be < 100");
             double percentAsfraction = percentile/(double)100;
@@ -330,13 +334,14 @@
         }
 
 
-        static public int[] Histo_addition(double[,] data, int[] histo, double min, double max, double binWidth)
+        public static int[] Histo_addition(double[,] data, int[] histo, double min, double max, double binWidth)
         {
             int rows = data.GetLength(0);
             int cols = data.GetLength(1);
             int binCount = histo.Length;
 
             for (int i = 0; i < rows; i++)
+            {
                 for (int j = 0; j < cols; j++)
                 {
                     int bin = (int)((data[i, j] - min) / binWidth);
@@ -344,11 +349,12 @@
                     if (bin < 0) bin = 0;
                     histo[bin]++;
                 }
+            }
 
             return histo;
         }
 
-        static public void writeConciseHistogram(int[] data)
+        public static void writeConciseHistogram(int[] data)
         {
             int min;
             int max;
@@ -363,7 +369,7 @@
             LoggedConsole.WriteLine();
         }
 
-        static public void writeConcise2DHistogram(int[,] array, int max)
+        public static void writeConcise2DHistogram(int[,] array, int max)
         {
             int[,] matrix = new int[max, max];
             for (int i = 0; i < array.Length; i++)
@@ -396,7 +402,7 @@
             int upperPercentileBin = 0;
 
             string title = "wpd";
-            int[] histogram = Histogram.Histo(matrix, width);
+            int[] histogram = Histo(matrix, width);
             Image image = ImageTools.DrawHistogram(title, histogram, upperPercentileBin,
                         new Dictionary<string, double>()
                             {

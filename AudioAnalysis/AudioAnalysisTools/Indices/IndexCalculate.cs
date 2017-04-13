@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="IndexCalculate.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="IndexCalculate.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the AcousticFeatures type.
@@ -141,7 +141,7 @@ namespace AudioAnalysisTools.Indices
             var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
 
             // get frame parameters for the analysis
-            int frameSize = (int?)config[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
+            int frameSize = (int?)config[AnalysisKeys.FrameLength] ?? DefaultWindowSize;
             int frameStep = frameSize; // this default = zero overlap
             //WARNING: DO NOT USE Frame Overlap when calculating acoustic indices.
             //          It yields ACI, BGN, AVG and EVN results that are significantly different from the default.
@@ -154,8 +154,8 @@ namespace AudioAnalysisTools.Indices
             // get frequency parameters for the analysis
             int freqBinCount = frameSize / 2;
             double freqBinWidth = recording.Nyquist / (double)freqBinCount;
-            int lowFreqBound = (int?)config[AnalysisKeys.LowFreqBound] ?? IndexCalculate.DefaultLowFreqBound;
-            int midFreqBound = (int?)config[AnalysisKeys.MidFreqBound] ?? IndexCalculate.DefaultMidFreqBound;
+            int lowFreqBound = (int?)config[AnalysisKeys.LowFreqBound] ?? DefaultLowFreqBound;
+            int midFreqBound = (int?)config[AnalysisKeys.MidFreqBound] ?? DefaultMidFreqBound;
             //int hihFreqBound = (int?)config[AnalysisKeys.HighFreqBound] ?? IndexCalculate.DefaultHighFreqBound;
 
             // get TimeSpans and durations

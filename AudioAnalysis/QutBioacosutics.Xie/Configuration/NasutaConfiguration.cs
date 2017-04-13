@@ -39,33 +39,33 @@
         public NasutaConfiguration(dynamic configuration)
         {
             // Peak parameters
-            AmplitudeThresholdNasuta = configuration.AmplitudeThresholdNasuta;   // Decibel---the minimum amplitude value
-            RangeNasuta = configuration.RangeNasuta;                                // Frame---the distance in either side for selecting peaks
-            DistanceNasuta = configuration.DistanceNasuta;                          // Frame---remove near peaks
+            this.AmplitudeThresholdNasuta = configuration.AmplitudeThresholdNasuta;   // Decibel---the minimum amplitude value
+            this.RangeNasuta = configuration.RangeNasuta;                                // Frame---the distance in either side for selecting peaks
+            this.DistanceNasuta = configuration.DistanceNasuta;                          // Frame---remove near peaks
             // Track parameters
-            BinToleranceNasuta = configuration.BinToleranceNasuta;                 // Bin---the fluctuation of the dominant frequency bin
-            FrameThresholdNasuta = configuration.FrameThresholdNasuta;              // Frame---frame numbers of the silence
-            TrackDurationThresholdNasuta = configuration.TrackDurationThresholdNasuta;
-            TrackThresholdNasuta = configuration.TrackThresholdNasuta;           // Used for calculating the percent of peaks in one track
-            MaximumTrackDurationNasuta = configuration.MaximumTrackDurationNasuta;  // Minimum duration of tracks
-            MinimumTrackDurationNasuta = configuration.MinimumTrackDurationNasuta;  // Maximum duration of tracks
-            BinDifferenceNasuta = configuration.BinDifferenceNasuta;             // Difference between the highest and lowest bins
+            this.BinToleranceNasuta = configuration.BinToleranceNasuta;                 // Bin---the fluctuation of the dominant frequency bin
+            this.FrameThresholdNasuta = configuration.FrameThresholdNasuta;              // Frame---frame numbers of the silence
+            this.TrackDurationThresholdNasuta = configuration.TrackDurationThresholdNasuta;
+            this.TrackThresholdNasuta = configuration.TrackThresholdNasuta;           // Used for calculating the percent of peaks in one track
+            this.MaximumTrackDurationNasuta = configuration.MaximumTrackDurationNasuta;  // Minimum duration of tracks
+            this.MinimumTrackDurationNasuta = configuration.MinimumTrackDurationNasuta;  // Maximum duration of tracks
+            this.BinDifferenceNasuta = configuration.BinDifferenceNasuta;             // Difference between the highest and lowest bins
             // Band tracks parameters
-            FrequencyLowNasuta = configuration.FrequencyLowNasuta;
-            FrequencyHighNasuta = configuration.FrequencyHighNasuta;
+            this.FrequencyLowNasuta = configuration.FrequencyLowNasuta;
+            this.FrequencyHighNasuta = configuration.FrequencyHighNasuta;
             // DCT
-            MinimumOscillationNumberNasuta = configuration.minimumOscillationNumberNasuta;
-            MaximumOscillationNumberNasuta = configuration.maximumOscillationNumberNasuta;
-            MinimumFrequencyNasuta = configuration.MinimumFrequencyNasuta;
-            MaximumFrequencyNasuta = configuration.MaximumFrequencyNasuta;
-            Dct_DurationNasuta = configuration.Dct_DurationNasuta;
-            Dct_ThresholdNasuta = configuration.Dct_ThresholdNasuta;
+            this.MinimumOscillationNumberNasuta = configuration.minimumOscillationNumberNasuta;
+            this.MaximumOscillationNumberNasuta = configuration.maximumOscillationNumberNasuta;
+            this.MinimumFrequencyNasuta = configuration.MinimumFrequencyNasuta;
+            this.MaximumFrequencyNasuta = configuration.MaximumFrequencyNasuta;
+            this.Dct_DurationNasuta = configuration.Dct_DurationNasuta;
+            this.Dct_ThresholdNasuta = configuration.Dct_ThresholdNasuta;
 
-            DoSlopeNasuta = configuration.DoSlopeNasuta;
+            this.DoSlopeNasuta = configuration.DoSlopeNasuta;
 
-            HarmonicComponentNasuta = configuration.HarmonicComponentNasuta;
-            HarmonicSensityNasuta = configuration.HarmonicSensityNasuta;
-            HarmonicDiffrangeNasuta = configuration.HarmonicDiffrangeNasuta;
+            this.HarmonicComponentNasuta = configuration.HarmonicComponentNasuta;
+            this.HarmonicSensityNasuta = configuration.HarmonicSensityNasuta;
+            this.HarmonicDiffrangeNasuta = configuration.HarmonicDiffrangeNasuta;
         } // consturctor
 
     } // class

@@ -4,8 +4,8 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.StandardSpectrograms;
+    using DSP;
+    using StandardSpectrograms;
     using TowseyLibrary;
 
     public static class HarmonicAnalysis
@@ -24,7 +24,7 @@
         /// <param name="amplitudeThreshold">ignore harmonics with an amplitude less than this minimum dB</param>
         /// <param name="minDuration">look for events of this duration</param>
         /// <param name="maxDuration">look for events of this duration</param>
-        public static System.Tuple<double[], double[,]> Execute(SpectrogramStandard sonogram, int minHz, int maxHz, int harmonicCount, double amplitudeThreshold)
+        public static Tuple<double[], double[,]> Execute(SpectrogramStandard sonogram, int minHz, int maxHz, int harmonicCount, double amplitudeThreshold)
         {
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
@@ -39,14 +39,14 @@
         }//end method
 
 
-        public static System.Tuple<double[], double[,]> CountHarmonicTracks(Double[,] matrix, int minBin, int maxBin, int hzWidth, int expectedHarmonicCount, double amplitudeThreshold)
+        public static Tuple<double[], double[,]> CountHarmonicTracks(double[,] matrix, int minBin, int maxBin, int hzWidth, int expectedHarmonicCount, double amplitudeThreshold)
         {
             int binWidth = maxBin - minBin + 1;
             // int expectedPeriod = binWidth / expectedHarmonicCount;
 
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
-            Double[,] hits = new Double[rows, cols];
+            double[,] hits = new double[rows, cols];
             double[] harmonicScore = new double[rows];
             int[]    harmonicCount = new int[rows];
 
@@ -169,7 +169,7 @@
         /// <param name="minHarmonicPeriod"></param>
         /// <param name="amplitudeThreshold"></param>
         /// <returns></returns>
-        public static System.Tuple<double[], double[,]> DetectHarmonicsUsingFormantGap(Double[,] matrix, int minBin, int maxBin, int hzWidth,
+        public static Tuple<double[], double[,]> DetectHarmonicsUsingFormantGap(double[,] matrix, int minBin, int maxBin, int hzWidth,
             int minPeriod, int maxPeriod,  int minHarmonicPeriod, double amplitudeThreshold)
         {
             int binBand = maxBin - minBin + 1; // DCT spans N freq bins
@@ -181,7 +181,7 @@
 
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
-            Double[,] hits = new Double[rows, cols];
+            double[,] hits = new double[rows, cols];
             double[] periodScore = new double[rows];
             double[] periodicity = new double[rows];
 
@@ -227,7 +227,7 @@
         /// <param name="maxPeriod"></param>
         /// <param name="dctThreshold"></param>
         /// <returns></returns>
-        public static Double[,] DetectHarmonicsUsingDCT(Double[,] matrix, int minBin, int maxBin, int hzWidth, bool normaliseDCT, int minPeriod, int maxPeriod, double dctThreshold)
+        public static double[,] DetectHarmonicsUsingDCT(double[,] matrix, int minBin, int maxBin, int hzWidth, bool normaliseDCT, int minPeriod, int maxPeriod, double dctThreshold)
         {
             int dctLength = maxBin - minBin + 1; //DCT spans N freq bins
 
@@ -238,7 +238,7 @@
 
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
-            Double[,] hits = new Double[rows, cols];
+            double[,] hits = new double[rows, cols];
 
             double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); //set up the cosine coefficients
 

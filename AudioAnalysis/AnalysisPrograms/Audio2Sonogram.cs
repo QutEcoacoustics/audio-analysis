@@ -23,7 +23,7 @@ namespace AnalysisPrograms
     using Acoustics.Tools.Wav;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using AnalysisPrograms.Production;
+    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;

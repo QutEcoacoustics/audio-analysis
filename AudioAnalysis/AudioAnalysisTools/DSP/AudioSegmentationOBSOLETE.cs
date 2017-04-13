@@ -6,8 +6,8 @@
     using System.IO;
     using System.Linq;
     using System.Text;
-    using AudioAnalysisTools.StandardSpectrograms;
-    using AudioAnalysisTools.WavTools;
+    using StandardSpectrograms;
+    using WavTools;
     using TowseyLibrary;
 
     /// <summary>

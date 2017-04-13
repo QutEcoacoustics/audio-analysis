@@ -5,7 +5,7 @@ namespace Dong.Felt.Representations
     using System;
     using System.Collections.Generic;
     using System.Drawing;
-    using Dong.Felt.Features;
+    using Features;
     using System.IO;
     using System.Linq;
     using System.Runtime.CompilerServices;

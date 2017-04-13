@@ -8,7 +8,7 @@
     using System.Text;
     using System.Text.RegularExpressions;
 
-    using Acoustics.Shared;
+    using Shared;
 
     /// <summary>
     /// Audio utility implemented using wav(un)pack.
@@ -293,17 +293,17 @@
 
             if (result.RawData.ContainsKey(KeySampleRate))
             {
-                result.SampleRate = ParseIntStringWithException(result.RawData[KeySampleRate], "wavPack.SampleRate");
+                result.SampleRate = this.ParseIntStringWithException(result.RawData[KeySampleRate], "wavPack.SampleRate");
             }
 
             if (result.RawData.ContainsKey(KeyChannels))
             {
-                result.ChannelCount = ParseIntStringWithException(result.RawData[KeyChannels].Replace("(mono)", string.Empty).Trim(), "wavPack.Channels");
+                result.ChannelCount = this.ParseIntStringWithException(result.RawData[KeyChannels].Replace("(mono)", string.Empty).Trim(), "wavPack.Channels");
             }
 
             if (result.RawData.ContainsKey(KeyPrecision))
             {
-                result.BitsPerSample = ParseIntStringWithException(result.RawData[KeyPrecision].Replace("-bit", string.Empty).Trim(), "wavPack.Precision");
+                result.BitsPerSample = this.ParseIntStringWithException(result.RawData[KeyPrecision].Replace("-bit", string.Empty).Trim(), "wavPack.Precision");
             }
 
             result.MediaType = MediaTypes.MediaTypeWavpack;

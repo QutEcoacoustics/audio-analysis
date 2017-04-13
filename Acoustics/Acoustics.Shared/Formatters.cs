@@ -14,7 +14,7 @@
 
         public TimeSpanFormatter()
         {
-            _formatParser = new Regex("d{1,2}|h{1,2}|m{1,2}|s{1,2}|f{1,7}", RegexOptions.Compiled);
+            this._formatParser = new Regex("d{1,2}|h{1,2}|m{1,2}|s{1,2}|f{1,7}", RegexOptions.Compiled);
         }
 
         public object GetFormat(Type formatType)

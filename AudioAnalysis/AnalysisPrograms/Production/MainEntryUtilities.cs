@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="MainEntryUtilities.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="MainEntryUtilities.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the MainEntry type.
@@ -30,7 +30,7 @@ namespace AnalysisPrograms
 #if DEBUG
     using Acoustics.Shared.Debugging;
 #endif
-    using AnalysisPrograms.Production;
+    using Production;
     using log4net;
     using PowerArgs;
 
@@ -41,7 +41,7 @@ namespace AnalysisPrograms
         // http://stackoverflow.com/questions/1600962/displaying-the-build-date?lq=1
         private static DateTime RetrieveLinkerTimestamp()
         {
-            string filePath = System.Reflection.Assembly.GetCallingAssembly().Location;
+            string filePath = Assembly.GetCallingAssembly().Location;
             const int peHeaderOffset = 60;
             const int linkerTimestampOffset = 8;
             byte[] b = new byte[2048];
@@ -57,8 +57,8 @@ namespace AnalysisPrograms
                 s?.Close();
             }
 
-            int i = System.BitConverter.ToInt32(b, peHeaderOffset);
-            int secondsSince1970 = System.BitConverter.ToInt32(b, i + linkerTimestampOffset);
+            int i = BitConverter.ToInt32(b, peHeaderOffset);
+            int secondsSince1970 = BitConverter.ToInt32(b, i + linkerTimestampOffset);
             DateTime dt = new DateTime(1970, 1, 1, 0, 0, 0);
             dt = dt.AddSeconds(secondsSince1970);
             dt = dt.AddHours(TimeZone.CurrentTimeZone.GetUtcOffset(dt).Hours);
@@ -299,9 +299,9 @@ namespace AnalysisPrograms
                 {
                     action = (ex as ArgException).Action;
                 }
-                else if (PowerArgs.ArgException.LastAction.IsNotWhitespace())
+                else if (ArgException.LastAction.IsNotWhitespace())
                 {
-                    action = PowerArgs.ArgException.LastAction;
+                    action = ArgException.LastAction;
                 }
 
                 if (ex is MissingArgException && ex.Message.Contains("action"))
@@ -439,7 +439,7 @@ namespace AnalysisPrograms
         {
             bool isTrue;
             var simpleLogging = bool.TryParse(Environment.GetEnvironmentVariable(ApPlainLogging), out isTrue) && isTrue;
-            var repository = (log4net.Repository.Hierarchy.Hierarchy) LogManager.GetRepository();
+            var repository = (Hierarchy) LogManager.GetRepository();
             var root = repository.Root;
             var cleanLogger = (Logger) repository.GetLogger("CleanLogger");
 
@@ -487,7 +487,7 @@ namespace AnalysisPrograms
                     throw new ArgumentOutOfRangeException();
             }
 
-            var repository = (log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository();
+            var repository = (Hierarchy)LogManager.GetRepository();
             repository.Root.Level = modifiedLevel;
             repository.Threshold = modifiedLevel;
 

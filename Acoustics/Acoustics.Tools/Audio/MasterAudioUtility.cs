@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="MasterAudioUtility.cs" company="MQUTeR">
-//   -
+// <copyright file="MasterAudioUtility.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Combined audio utility that makes use of the most appropriate audio utility for the task.
@@ -14,7 +14,7 @@ namespace Acoustics.Tools.Audio
     using System.Globalization;
     using System.IO;
 
-    using Acoustics.Shared;
+    using Shared;
 
     /// <summary>
     /// Combined audio utility that makes use of the most appropriate audio utility for the task.

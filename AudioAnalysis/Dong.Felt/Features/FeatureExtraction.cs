@@ -5,7 +5,7 @@
     using System.Globalization;
     using System.Linq;
     using System.Text;
-    using Dong.Felt.Representations;
+    using Representations;
 
     public class FeatureExtraction
     {

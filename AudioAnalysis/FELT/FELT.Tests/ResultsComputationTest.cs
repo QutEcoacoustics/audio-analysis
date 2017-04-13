@@ -4,8 +4,8 @@
     using System.Diagnostics;
     using System.IO;
     using System.Reflection;
-    using FELT.Classifiers;
-    using FELT.Results;
+    using Classifiers;
+    using Results;
     using Microsoft.FSharp.Collections;
     using Microsoft.FSharp.Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -30,11 +30,11 @@
         {
             get
             {
-                return testContextInstance;
+                return this.testContextInstance;
             }
             set
             {
-                testContextInstance = value;
+                this.testContextInstance = value;
             }
         }
 

@@ -9,7 +9,7 @@
     using System.Text;
     using System.Text.RegularExpressions;
 
-    using Acoustics.Shared;
+    using Shared;
 
     /// <summary>
     /// Audio utility implemented using ffmpeg.
@@ -306,29 +306,29 @@
 
             if (result.RawData.ContainsKey(keyBitRate))
             {
-                result.BitsPerSecond = ParseIntStringWithException(result.RawData[keyBitRate], "ffmpeg.bitrate", new string[] { NotApplicable });
+                result.BitsPerSecond = this.ParseIntStringWithException(result.RawData[keyBitRate], "ffmpeg.bitrate", new string[] { NotApplicable });
             }
 
             if (result.RawData.ContainsKey(keySampleRate))
             {
-                result.SampleRate = ParseIntStringWithException(result.RawData[keySampleRate], "ffmpeg.samplerate", new string[] { NotApplicable });
+                result.SampleRate = this.ParseIntStringWithException(result.RawData[keySampleRate], "ffmpeg.samplerate", new string[] { NotApplicable });
             }
 
             if (result.RawData.ContainsKey(keyChannels))
             {
-                result.ChannelCount = ParseIntStringWithException(result.RawData[keyChannels], "ffmpeg.channels", new string[] { NotApplicable });
+                result.ChannelCount = this.ParseIntStringWithException(result.RawData[keyChannels], "ffmpeg.channels", new string[] { NotApplicable });
             }
 
             if (result.RawData.ContainsKey(keyBitsPerSample))
             {
-                result.BitsPerSample = ParseIntStringWithException(result.RawData[keyBitsPerSample], "ffmpeg.bitspersample", new string[] { NotApplicable });
+                result.BitsPerSample = this.ParseIntStringWithException(result.RawData[keyBitsPerSample], "ffmpeg.bitspersample", new string[] { NotApplicable });
                 if (result.BitsPerSample < 1)
                 {
                     result.BitsPerSample = null;
                 }
             }
 
-            result.MediaType = GetMediaType(result.RawData, source.Extension);
+            result.MediaType = this.GetMediaType(result.RawData, source.Extension);
             //FfmpegFormatToMediaType(result.RawData, source.Extension);
 
             return result;

@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="HighResolutionAcousticIndices.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="HighResolutionAcousticIndices.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 //   Defines the HighResolutionAcousticIndices type.
@@ -191,7 +191,7 @@ namespace AnalysisPrograms
                 //string csvDir = arguments.CsvDirectory;
                 //string zoomOutputDir = outputDir;
                 Console.WriteLine("\n\n");
-                Console.WriteLine(String.Format(@">>>>{0}: File<{1}>", i, name));
+                Console.WriteLine(string.Format(@">>>>{0}: File<{1}>", i, name));
 
                 try
                 {
@@ -295,8 +295,8 @@ namespace AnalysisPrograms
                 } // try block
                 catch (Exception e)
                 {
-                    LoggedConsole.WriteErrorLine(String.Format("ERROR!!!!! RECORDING {0}   FILE {1}", i, name));
-                    LoggedConsole.WriteErrorLine(String.Format(e.ToString()));
+                    LoggedConsole.WriteErrorLine(string.Format("ERROR!!!!! RECORDING {0}   FILE {1}", i, name));
+                    LoggedConsole.WriteErrorLine(string.Format(e.ToString()));
 
                 }
 
