@@ -5,7 +5,7 @@ image: Visual Studio 2017
 
 cache:
   - packages -> **\packages.config
-  - Acoustics\Acoustics.Test\TestResources
+  - 'Acoustics\Acoustics.Test\TestResources'
 
 matrix:
   fast_finish: true
@@ -16,6 +16,10 @@ platform:
 configuration:
     - Debug
     - Release
+
+# Restore packages
+before_build:
+    - nuget restore
 
 build:
     # enable MSBuild parallel builds
