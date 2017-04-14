@@ -476,9 +476,7 @@ namespace AnalysisPrograms
                 }
             }
 
-            var dateTimeOffset = (DateTimeOffset)startDate;
-            var totalTimespan = (DateTimeOffset)endDate - dateTimeOffset;
-            int dayCount = totalTimespan.Days + 1; // assume last day has full 24 hours of recording available.
+            var startDateTimeOffset = (DateTimeOffset)startDate;
 
             if (verbose)
             {
@@ -563,7 +561,18 @@ namespace AnalysisPrograms
             DirectoryInfo resultsDir;
             if (arguments.ConcatenateEverythingYouCanLayYourHandsOn)
             {
-                string dateString = $"{dateTimeOffset.Year}{dateTimeOffset.Month:D2}{dateTimeOffset.Day:D2}";
+                var totalTimespan = (DateTimeOffset)endDate - (DateTimeOffset)startDate;
+                if (verbose)
+                {
+                    LoggedConsole.WriteLine("# Total duration of available recording = " + totalTimespan.ToString());
+                }
+
+                if (totalTimespan > TimeSpan.FromDays(3))
+                {
+                    LoggedConsole.WriteErrorLine("# WARNING: You are attempting to concatenate MORE THAN three days of recording!!!!");
+                }
+
+                string dateString = $"{startDateTimeOffset.Year}{startDateTimeOffset.Month:D2}{startDateTimeOffset.Day:D2}";
                 resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, arguments.FileStemName, dateString));
                 if (!resultsDir.Exists)
                 {
@@ -634,13 +643,19 @@ namespace AnalysisPrograms
             // ################################ ConcatenateEverythingYouCanLayYourHandsOn = false
             // ################################ That is, CONCATENATE DATA in BLOCKS of 24 hours
 
-            //LoggedConsole.WriteLine($"# Elapsed time = {totalTimespan.TotalHours:f1} hours or {dayCount} days");
+            var startDateOffset = (DateTimeOffset)startDateTimeOffset.Date;
+            var endOffset = ((DateTimeOffset)endDate).Date;
+            int dayCount = (endOffset - startDateOffset).Days + 1;
             LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
+            /* Previously used the following line BUT the assumption proved to be a bug, not a feature.
+            // int dayCount = timespan.Days + 1; // This assumes that the last day has full 24 hours of recording available.
+            // LoggedConsole.WriteLine($"# Elapsed time = {totalTimespan.TotalHours:f1} hours or {dayCount} days");
+            */
 
             // loop over days
             for (int d = 0; d < dayCount; d++)
             {
-                var thisday = dateTimeOffset.AddDays(d);
+                var thisday = startDateOffset.AddDays(d);
                 LoggedConsole.WriteLine($"\n\n\nCONCATENATING DAY { d + 1} of {dayCount}:   {thisday}");
 
                 FileInfo[] indexFiles = LDSpectrogramStitching.GetFileArrayForOneDay(sortedDictionaryOfDatesAndFiles, thisday);

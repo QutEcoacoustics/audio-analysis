@@ -73,7 +73,6 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             ZipUnzip.UnZip(outputDir.FullName, zippedDataFile.FullName, true);
 
             // top level directory
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo("Concatenation\\Indonesia20160726"), };
             DirectoryInfo[] dataDirs = { new DirectoryInfo(outputDir.FullName + "\\Indonesia20160726"), };
             var indexPropertiesConfig = new FileInfo("Configs\\IndexPropertiesConfig.yml");
             var dateString = "20160725";
@@ -108,10 +107,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             ConcatenateIndexFiles.Execute(arguments);
 
             // Do TESTS on the 2Maps image
-            // 1: Compare image files - check that image dimensions are correct
-            // Get ACTUAL IMAGE
+            // Compare image files - check that image dimensions are correct
             var outputDataDir = new DirectoryInfo(outputDir.FullName + "\\" + arguments.FileStemName + "\\" + dateString);
-
             string imageFileName = arguments.FileStemName + "__2Maps.png";
             var imageFileInfo = new FileInfo(Path.Combine(outputDataDir.FullName, imageFileName));
             Assert.IsTrue(imageFileInfo.Exists);
@@ -122,48 +119,29 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             var pixel1 = actualImage.GetPixel(100, 100);
             var pixel1Txt = pixel1.ToString();
-            string c1 = "Color [A=255, R=59, G=21, B=3]";
+            string c1 = "Color [A=255, R=211, G=211, B=211]";
             Assert.AreEqual(c1, pixel1Txt);
 
-            var pixel2 = actualImage.GetPixel(200, 200);
+            var pixel2 = actualImage.GetPixel(200, 100);
             var pixel2Txt = pixel2.ToString();
-            string c2 = "Color [A=255, R=0, G=6, B=0]";
+            string c2 = "Color [A=255, R=54, G=28, B=7]";
             Assert.AreEqual(c2, pixel2Txt);
-
-            /*
-            var resultFile2 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
-            Json.Serialise(resultFile2, freqScale.GridLineLocations);
-            FileEqualityHelpers.TextFileEqual(expectedFile2, resultFile2);
-
-            // Check that image dimensions are correct
-            Assert.AreEqual(645, image.Width);
-            Assert.AreEqual(310, image.Height);
-
-
-            // DO EQUALITY TEST
-            Get a DATA_MATRIX
-            var expectedDataFile = new FileInfo("StandardSonograms\\BAC2_20071008_AmplSonogramData.EXPECTED.bin");
-
-            // run this once to generate expected test data (and remember to copy out of bin/debug!)
-            //Binary.Serialize(expectedFile, DATA_MATRIX);
-
-            var expectedDATA = Binary.Deserialize<double[,]>(expectedDataFile);
-
-            CollectionAssert.AreEqual(expectedDATA, DATA_MATRIX);
-            */
         }
 
         /// <summary>
         /// METHOD TO CHECK Concatenation of spectral and summary index files when ConcatenateEverythingYouCanLayYourHandsOn = false
-        /// that is, concatenate in 24 hour blocks only
+        /// that is, concatenate in 24 hour blocks only. In this test we concatenate only 26/07/2016
         /// </summary>
         [TestMethod]
         public void ConcatenateIndexFilesTest2()
         {
-            // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo("Concatenation\\Indonesia20160726"), };
-            var indexPropertiesConfig = new FileInfo("Configs\\IndexPropertiesConfig.yml");
             var outputDir = this.outputDirectory;
+            var zippedDataFile = new FileInfo("Concatenation\\Indonesia20160726.zip");
+            ZipUnzip.UnZip(outputDir.FullName, zippedDataFile.FullName, true);
+
+            // top level directory
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(outputDir.FullName + "\\Indonesia20160726"), };
+            var indexPropertiesConfig = new FileInfo("Configs\\IndexPropertiesConfig.yml");
             var dateString = "20160726";
 
             // make a default config file
@@ -196,8 +174,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             ConcatenateIndexFiles.Execute(arguments);
 
             // Do TESTS on the 2Maps image
-            // 1: Compare image files - check that image dimensions are correct
-            // Get ACTUAL IMAGE
+            // Compare image files - check that image dimensions are correct
             var outputDataDir = new DirectoryInfo(outputDir.FullName + "\\" + arguments.FileStemName + "\\" + dateString);
             string imageFileName = arguments.FileStemName + "_" + dateString + "__2Maps.png";
             var imageFileInfo = new FileInfo(Path.Combine(outputDataDir.FullName, imageFileName));
@@ -209,57 +186,106 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             var pixel1 = actualImage.GetPixel(100, 100);
             var pixel1Txt = pixel1.ToString();
-            string c1 = "Color [A=255, R=15, G=13, B=14]";
+            string c1 = "Color [A=255, R=32, G=24, B=14]";
             Assert.AreEqual(c1, pixel1Txt);
 
-            var pixel2 = actualImage.GetPixel(200, 200);
+            var pixel2 = actualImage.GetPixel(100, 160);
             var pixel2Txt = pixel2.ToString();
-            string c2 = "Color [A=255, R=0, G=1, B=0]";
+            string c2 = "Color [A=255, R=0, G=22, B=30]";
             Assert.AreEqual(c2, pixel2Txt);
 
-            /*
-// Do TESTS on one of the concatenated csv files
-// construct name of expected csv file to save
-var stem = "ConcatenationTest";
-string imageName = stem + ".EXPECTED.csv";
-string imagePath = Path.Combine(outputDir.FullName, imageName);
-var expectedFile = new FileInfo("StandardSonograms\\BAC2_20071008_AmplSonogramData.EXPECTED.bin");
+            // Assert.Fail("Test construction in progrexss");
+        }
 
-// run this once to generate expected image and data files (############ IMPORTANT: remember to move saved files OUT of bin/Debug directory!)
-bool saveOutput = false;
-if (saveOutput)
-{
-    // 1: save image of oscillation spectrogram
-    //tuple.Item1.Save(imagePath, ImageFormat.Png);
-}
+        /// <summary>
+        /// METHOD TO CHECK Concatenation of spectral and summary index files when ConcatenateEverythingYouCanLayYourHandsOn = false
+        /// that is, concatenate in 24 hour blocks only.
+        /// This test is same as TEST2 above escept that the start and end date have been set to null.
+        /// Start and end dates will be set to first and last by default and all available data will be concatentated in 24 hour blocks.
+        /// In the case of this dataset, the two partial days of data will be concatenated separately.
+        /// </summary>
+        [TestMethod]
+        public void ConcatenateIndexFilesTest3()
+        {
+            var outputDir = this.outputDirectory;
+            var zippedDataFile = new FileInfo("Concatenation\\Indonesia20160726.zip");
+            ZipUnzip.UnZip(outputDir.FullName, zippedDataFile.FullName, true);
 
-// run this once to generate expected test data (and remember to copy out of bin/debug!)
-    // Binary.Serialize(expectedFile, sonogram.Data);
-    //var expected = Binary.Deserialize<double[,]>(expectedFile);
+            // top level directory
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(outputDir.FullName + "\\Indonesia20160726"), };
+            var indexPropertiesConfig = new FileInfo("Configs\\IndexPropertiesConfig.yml");
 
-// CollectionAssert.AreEqual(expected, sonogram.Data);
-var resultFile2 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
-Json.Serialise(resultFile2, freqScale.GridLineLocations);
-FileEqualityHelpers.TextFileEqual(expectedFile2, resultFile2);
+            // make a default config file
+            var falseColourSpgConfig = new FileInfo("ConcatTest_SpectrogramFalseColourConfig.yml");
+            ConfigsHelper.WriteDefaultFalseColourSpgmConfig(falseColourSpgConfig);
 
-// Check that image dimensions are correct
-Assert.AreEqual(645, image.Width);
-Assert.AreEqual(310, image.Height);
+            var arguments = new ConcatenateIndexFiles.Arguments
+            {
+                InputDataDirectories = dataDirs,
+                OutputDirectory = outputDir,
+                DirectoryFilter = "*.wav",
+                FileStemName = "Test3_Indonesia",
+                StartDate = null,
+                EndDate = null,
+                IndexPropertiesConfig = indexPropertiesConfig,
+                FalseColourSpectrogramConfig = falseColourSpgConfig,
+                ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
+                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
+                ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
+                TimeSpanOffsetHint = TimeSpan.FromHours(8),
+                SunRiseDataFile = null,
+                DrawImages = true,
+                Verbose = true,
 
+                // following two lines can be used to add in a recognizer score track
+                EventDataDirectories = null,
+                EventFilePattern = null,
+            };
 
-// DO EQUALITY TEST
-Get a DATA_MATRIX
-var expectedDataFile = new FileInfo("StandardSonograms\\BAC2_20071008_AmplSonogramData.EXPECTED.bin");
+            ConcatenateIndexFiles.Execute(arguments);
 
-// run this once to generate expected test data (and remember to copy out of bin/debug!)
-//Binary.Serialize(expectedFile, DATA_MATRIX);
+            // There should be two sets of output images one for each partial day.
+            // IMAGE 1: Compare image files - check that image exists and dimensions are correct
+            var dateString1 = "20160725";
+            var outputDataDir1 = new DirectoryInfo(outputDir.FullName + "\\" + arguments.FileStemName + "\\" + dateString1);
+            string image1FileName = arguments.FileStemName + "_" + dateString1 + "__2Maps.png";
+            var image1FileInfo = new FileInfo(Path.Combine(outputDataDir1.FullName, image1FileName));
+            Assert.IsTrue(image1FileInfo.Exists);
 
-var expectedDATA = Binary.Deserialize<double[,]>(expectedDataFile);
+            var actualImage1 = ImageTools.ReadImage2Bitmap(image1FileInfo.FullName);
+            Assert.AreEqual(210, actualImage1.Width);
+            Assert.AreEqual(632, actualImage1.Height);
 
-CollectionAssert.AreEqual(expectedDATA, DATA_MATRIX);
-*/
+            var pixel1 = actualImage1.GetPixel(100, 100);
+            var pixel1Txt = pixel1.ToString();
+            string c1 = "Color [A=255, R=211, G=211, B=211]";
+            Assert.AreEqual(c1, pixel1Txt);
 
-            // Assert.Fail("in progrexss");
+            var pixel2 = actualImage1.GetPixel(50, 50);
+            var pixel2Txt = pixel2.ToString();
+            string c2 = "Color [A=255, R=86, G=27, B=6]";
+            Assert.AreEqual(c2, pixel2Txt);
+
+            // IMAGE 2: Compare image files - check that image exists and dimensions are correct
+            var dateString2 = "20160726";
+            var outputDataDir2 = new DirectoryInfo(outputDir.FullName + "\\" + arguments.FileStemName + "\\" + dateString2);
+            string image2FileName = arguments.FileStemName + "_" + dateString2 + "__2Maps.png";
+            var image2FileInfo = new FileInfo(Path.Combine(outputDataDir2.FullName, image2FileName));
+            Assert.IsTrue(image2FileInfo.Exists);
+
+            var actualImage2 = ImageTools.ReadImage2Bitmap(image2FileInfo.FullName);
+            Assert.AreEqual(512, actualImage2.Width);
+            Assert.AreEqual(632, actualImage2.Height);
+
+            pixel1 = actualImage2.GetPixel(50, 124);
+            pixel1Txt = pixel1.ToString();
+            c1 = "Color [A=255, R=70, G=37, B=203]";
+            Assert.AreEqual(c1, pixel1Txt);
+
+            pixel2 = actualImage2.GetPixel(460, 600);
+            pixel2Txt = pixel2.ToString();
+            c2 = "Color [A=255, R=255, G=0, B=0]";
+            Assert.AreEqual(c2, pixel2Txt);
         }
     }
 }
