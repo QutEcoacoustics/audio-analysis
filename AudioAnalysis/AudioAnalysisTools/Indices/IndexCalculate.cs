@@ -223,7 +223,7 @@ namespace AudioAnalysisTools.Indices
             }
 
             // EXTRACT ENVELOPE and SPECTROGRAM FROM SUBSEGMENT
-            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFFTs(subsegmentRecording, frameSize, frameStep);
+            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(subsegmentRecording, frameSize, frameStep);
             if (octaveScale)
             {
                 dspOutput1.AmplitudeSpectrogram = OctaveFreqScale.AmplitudeSpectra(dspOutput1.AmplitudeSpectrogram,
@@ -233,7 +233,7 @@ namespace AudioAnalysisTools.Indices
 
 
             // ################################## EXTRACT ENVELOPE and SPECTROGRAM FROM BACKGROUND NOISE SUBSEGMENT
-            var dspOutput2 = DSP_Frames.ExtractEnvelopeAndFFTs(bgnRecording, frameSize, frameStep);
+            var dspOutput2 = DSP_Frames.ExtractEnvelopeAndFfts(bgnRecording, frameSize, frameStep);
             if (octaveScale)
             {
                 dspOutput2.AmplitudeSpectrogram = OctaveFreqScale.AmplitudeSpectra(dspOutput2.AmplitudeSpectrogram,
@@ -663,7 +663,7 @@ namespace AudioAnalysisTools.Indices
             int ridgeBuffer = frameSize * bufferFrameCount;
             AudioRecording ridgeRecording = GetRecordingSubsegment(recording, sampleStart, sampleEnd, ridgeBuffer);
             int frameStep = frameSize;
-            var dspOutput = DSP_Frames.ExtractEnvelopeAndFFTs(ridgeRecording, frameSize, frameStep);
+            var dspOutput = DSP_Frames.ExtractEnvelopeAndFfts(ridgeRecording, frameSize, frameStep);
 
             // Generate the ridge SUBSEGMENT deciBel spectrogram from the SUBSEGMENT amplitude spectrogram
             // i: generate the SUBSEGMENT deciBel spectrogram from the SUBSEGMENT amplitude spectrogram
