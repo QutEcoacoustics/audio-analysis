@@ -144,7 +144,7 @@ namespace AudioAnalysisTools
             this.MaxAmplitude = wav.CalculateMaximumAmplitude();
 
             var recording = new AudioRecording(wav);
-            var fftdata = DSP_Frames.ExtractEnvelopeAndFFTs(
+            var fftdata = DSP_Frames.ExtractEnvelopeAndFfts(
                 recording,
                 config.WindowSize,
                 config.WindowOverlap,

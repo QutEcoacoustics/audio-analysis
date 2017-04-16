@@ -160,7 +160,7 @@
 
 
             // (B) ################################## EXTRACT ENVELOPE and SPECTROGRAM ##################################
-            var dspOutput = DSP_Frames.ExtractEnvelopeAndFFTs(
+            var dspOutput = DSP_Frames.ExtractEnvelopeAndFfts(
                 recording,
                 sonoConfig.WindowSize,
                 sonoConfig.WindowOverlap);

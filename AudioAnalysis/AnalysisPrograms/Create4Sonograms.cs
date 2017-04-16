@@ -138,7 +138,7 @@
             TimeSpan wavDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
 
             // EXTRACT ENVELOPE and SPECTROGRAM
-            var dspOutput = DSP_Frames.ExtractEnvelopeAndFFTs(recording, frameSize, windowOverlap);
+            var dspOutput = DSP_Frames.ExtractEnvelopeAndFfts(recording, frameSize, windowOverlap);
 
             // average absolute value over the minute recording
             ////double[] avAbsolute = dspOutput.Average;
