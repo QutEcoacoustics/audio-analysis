@@ -59,7 +59,7 @@ namespace Acoustics.Test
             double windowOverlap = 0.0;
             var windowFunction = WindowFunctions.HAMMING.ToString();
 
-            var fftdata = DSP_Frames.ExtractEnvelopeAndFFTs(
+            var fftdata = DSP_Frames.ExtractEnvelopeAndFfts(
                 recording,
                 windowSize,
                 windowOverlap,
@@ -77,30 +77,67 @@ namespace Acoustics.Test
 
             // The below info is only used when calculating spectral and summary indices
             // energy level information
-            int y = fftdata.ClipCount;
-            int e = fftdata.MaxAmplitudeCount;
-            double f = fftdata.MaxSignalValue;
-            double g = fftdata.MinSignalValue;
+            int clipCount = fftdata.ClipCount;
+            int maxAmpCount = fftdata.MaxAmplitudeCount;
+            double maxSig = fftdata.MaxSignalValue;
+            double minSig = fftdata.MinSignalValue;
 
-            // array info
-            var b = fftdata.Average;
-            var a = fftdata.Envelope;
-            var c = fftdata.FrameEnergy;
-            var decibelsPerFrame = fftdata.FrameDecibels;
+            // envelope info
+            var avArray = fftdata.Average;
+            var envelope = fftdata.Envelope;
+            var frameEnergy = fftdata.FrameEnergy;
+            var frameDecibels = fftdata.FrameDecibels;
 
             // freq scale info
-            var h = fftdata.NyquistBin;
-            var i = fftdata.NyquistFreq;
-            var d = fftdata.FreqBinWidth;
+            var nyquistBin = fftdata.NyquistBin;
+            var nyquistFreq = fftdata.NyquistFreq;
+            var freqBinWidth = fftdata.FreqBinWidth;
 
-            Assert.AreEqual(0, 0);
-            Assert.AreEqual(0.1, 0.1, double.Epsilon);
+            // DO THE TESTS
+            int expectedSR = 22050;
+            Assert.AreEqual(expectedSR, sr);
+            Assert.AreEqual("00:01:00.2450000", duration.ToString());
+            Assert.AreEqual(2594, frameCount);
+            Assert.AreEqual(0.880878951426369, fractionOfHighEnergyFrames, 0.000000001);
+            int expectedBitsPerSample = 16;
+            double expectedEpsilon = Math.Pow(0.5, expectedBitsPerSample - 1);
+            Assert.AreEqual(expectedEpsilon, epislon);
+            double expectedWindowPower = 203.0778;
+            Assert.AreEqual(expectedWindowPower, windowPower, 0.0001);
 
-            CollectionAssert.AreEqual(new[] { 1, 2, 3 }, new[] { 1, 2, 3 });
-            CollectionAssert.AreEquivalent(new[] { 1, 2, 3 }, new[] { 3, 2, 1 });
+            // Test sonogram data matrix by comparing the vector of column sums.
+            double[] columnSums = MatrixTools.SumColumns(amplSpectrogram);
 
-            FileEqualityHelpers.TextFileEqual(new FileInfo("data.txt"), new FileInfo("data.txt"));
-            FileEqualityHelpers.FileEqual(new FileInfo("data.bin"), new FileInfo("data.bin"));
+            // first write to here and move binary file to resources folder.
+            // var sumFile = new FileInfo(this.outputDirectory + @"\BAC2_20071008-085040_DataColumnSums.bin");
+            // Binary.Serialize(sumFile, columnSums);
+            var sumFile = new FileInfo(@"EnvelopeAndFft\BAC2_20071008-085040_DataColumnSums.bin");
+            var expectedColSums = Binary.Deserialize<double[]>(sumFile);
+            CollectionAssert.AreEqual(expectedColSums, columnSums);
+
+            // energy level information
+            Assert.AreEqual(0, clipCount);
+            Assert.AreEqual(0, maxAmpCount);
+            Assert.AreEqual(-0.250434888760033, minSig, 0.000001);
+            Assert.AreEqual(0.255165257728813, maxSig, 0.000001);
+
+            // array info
+            // TODO TODO  need to get these tests working
+            CollectionAssert.AreEqual(new[] { 1, 2, 3 }, avArray);
+            CollectionAssert.AreEqual(new[] { 1, 2, 3 }, envelope);
+            CollectionAssert.AreEqual(new[] { 1, 2, 3 }, frameEnergy);
+            CollectionAssert.AreEqual(new[] { 1, 2, 3 }, frameDecibels);
+
+            // freq info
+            Assert.AreEqual(255, nyquistBin);
+            Assert.AreEqual(11025, nyquistFreq);
+            Assert.AreEqual(43.0664, freqBinWidth, 0.00001);
+
+            // CollectionAssert.AreEqual(new[] { 1, 2, 3 }, new[] { 1, 2, 3 });
+            // CollectionAssert.AreEquivalent(new[] { 1, 2, 3 }, new[] { 3, 2, 1 });
+
+            // FileEqualityHelpers.TextFileEqual(new FileInfo("data.txt"), new FileInfo("data.txt"));
+            // FileEqualityHelpers.FileEqual(new FileInfo("data.bin"), new FileInfo("data.bin"));
 
             // output initial data
             // var actualData = new[] { 1, 2, 3 };
