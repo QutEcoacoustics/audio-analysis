@@ -20,7 +20,11 @@ namespace AudioAnalysisTools.DSP
 
         public class EnvelopeAndFft
         {
+            public int SampleRate { get; set; }
+
             public double Epsilon { get; set; }
+
+            public TimeSpan Duration { get; set; }
 
             public double MinSignalValue { get; set; }
 
@@ -122,27 +126,29 @@ namespace AudioAnalysisTools.DSP
             return frames;
         }
 
-        public static EnvelopeAndFft ExtractEnvelopeAndFFTs(AudioRecording recording, int frameSize, double overlap, string windowName = null)
+        public static EnvelopeAndFft ExtractEnvelopeAndFfts(AudioRecording recording, int frameSize, double overlap, string windowName = null)
         {
             int frameStep = (int)(frameSize * (1 - overlap));
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep);
+            return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep, windowName);
         }
 
-        public static EnvelopeAndFft ExtractEnvelopeAndFFTs(AudioRecording recording, int frameSize, int frameStep)
+        public static EnvelopeAndFft ExtractEnvelopeAndFfts(AudioRecording recording, int frameSize, int frameStep)
         {
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep);
+            string windowName = FFT.Key_HammingWindow;
+            return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep, windowName);
         }
 
         public static EnvelopeAndFft ExtractEnvelopeAndAmplSpectrogram(double[] signal, int sampleRate, double epsilon, int frameSize, double overlap)
         {
             int frameStep = (int)(frameSize * (1 - overlap));
-            return ExtractEnvelopeAndAmplSpectrogram(signal, sampleRate, epsilon, frameSize, frameStep);
+            string windowName = FFT.Key_HammingWindow;
+            return ExtractEnvelopeAndAmplSpectrogram(signal, sampleRate, epsilon, frameSize, frameStep, windowName);
         }
 
         /// <summary>
-        /// returns following values wrapped in class EnvelopeAndFft
+        /// Returns the following 18 values encapsulated in class EnvelopeAndFft
         /// 1) the minimum and maximum signal values
         /// 2) the average of absolute amplitudes for each frame
         /// 3) the signal envelope as vector. i.e. the maximum of absolute amplitudes for each frame.
@@ -154,6 +160,9 @@ namespace AudioAnalysisTools.DSP
         /// 9) the width of freq bin in Hz
         /// 10) the byquist bin ID
         /// AND OTHERS
+        /// The returned info is used by Sonogram classes to draw sonograms and by Spectral Indices classes to calculate Spectral indices.
+        /// Less than half the info is used to draw sonograms but it is difficult to disentangle calculation of all the info without
+        /// reverting back to the old days when we used two classes and making sure they remain in synch.
         /// </summary>
         public static EnvelopeAndFft ExtractEnvelopeAndAmplSpectrogram(
             double[] signal,
@@ -173,7 +182,7 @@ namespace AudioAnalysisTools.DSP
             int[,] frameIDs = FrameStartEnds(signal.Length, frameSize, frameStep);
             if (frameIDs == null)
             {
-                return null;
+                throw new NullReferenceException("Thrown in EnvelopeAndFft.ExtractEnvelopeAndAmplSpectrogram(): int matrix, frameIDs, cannot be null.");
             }
 
             int frameCount = frameIDs.GetLength(0);
@@ -185,9 +194,10 @@ namespace AudioAnalysisTools.DSP
 
             // get SNR data
             var snrdata = new SNR(signal, frameIDs);
-            double decibelReference = snrdata.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
-            double[] decibelsNormalised = snrdata.NormaliseDecibelArray_ZeroOne(decibelReference);
             var fractionOfHighEnergyFrames = snrdata.FractionHighEnergyFrames(EndpointDetectionConfiguration.K2Threshold);
+
+            // double[] decibelsNormalised = snrdata.NormaliseDecibelArray_ZeroOne(decibelReference);
+            // double decibelReference = snrdata.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
 
             // set up the FFT parameters
             if (windowName == null)
@@ -201,14 +211,14 @@ namespace AudioAnalysisTools.DSP
             double minSignalValue = double.MaxValue;
             double maxSignalValue = double.MinValue;
 
-            // cycle through the frames
+            // for all frames
             for (int i = 0; i < frameCount; i++)
             {
                 int start = i * frameStep;
                 int end = start + frameSize;
 
                 // get average and envelope
-                double frameDc = signal[start];
+                double frameSum = signal[start];
                 double total = Math.Abs(signal[start]);
                 double maxValue = total;
                 double energy = 0;
@@ -224,7 +234,7 @@ namespace AudioAnalysisTools.DSP
                         minSignalValue = signal[x];
                     }
 
-                    frameDc += signal[x];
+                    frameSum += signal[x];
 
                     // Get absolute signal average in current frame
                     double absValue = Math.Abs(signal[x]);
@@ -234,14 +244,14 @@ namespace AudioAnalysisTools.DSP
                         maxValue = absValue;
                     }
 
-                    energy += (signal[x] * signal[x]);
+                    energy += signal[x] * signal[x];
                 }
 
-                frameDc /= frameSize;
+                double frameDc = frameSum / frameSize;
                 average[i] = total / frameSize;
                 envelope[i] = maxValue;
                 frameEnergy[i] = energy / frameSize;
-                frameDecibels[i] = 10 * Math.Log10(energy / frameSize);
+                frameDecibels[i] = 10 * Math.Log10(frameEnergy[i]);
 
                 // remove DC value from signal values
                 double[] signalMinusAv = new double[frameSize];
@@ -256,8 +266,8 @@ namespace AudioAnalysisTools.DSP
                 // Previous alternative call to do the FFT and return amplitude spectrum
                 //f1 = fft.Invoke(window);
 
-                // smooth spectrum to reduce variance
-                // In the early days (pre-2010), we used to smooth the spectra to reduce sonogram variance. This is theoretically correct.
+                // Smooth spectrum to reduce variance
+                // In the early days (pre-2010), we used to smooth the spectra to reduce sonogram variance. This is statistically correct thing to do.
                 // Later, we stopped this for standard sonograms but kept it for calculating acoustic indices.
                 // As of 28 March 2017, we are merging the two codes and keeping spectrum smoothing.
                 // Will need to check the effect on spectrograms.
@@ -271,11 +281,11 @@ namespace AudioAnalysisTools.DSP
                 }
             } // end frames
 
-            // check the envelope for clipping. Accept a clip if two consecutive frames have max value = 1,0
-            Clipping.GetClippingCount(signal, envelope, frameStep, epsilon, out int maxAmplitudeCount, out int clipCount);
-
             // Remove the DC column ie column zero from amplitude spectrogram.
             double[,] amplSpectrogram = MatrixTools.Submatrix(spectrogram, 0, 1, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
+
+            // check the envelope for clipping. Accept a clip if two consecutive frames have max value = 1,0
+            Clipping.GetClippingCount(signal, envelope, frameStep, epsilon, out int maxAmplitudeCount, out int clipCount);
 
             int nyquistFreq = sampleRate / 2;
             double binWidth = nyquistFreq / (double)amplSpectrogram.GetLength(1);
@@ -283,26 +293,38 @@ namespace AudioAnalysisTools.DSP
 
             return new EnvelopeAndFft
             {
+                // The following data is required when constructing sonograms
+                Duration = TimeSpan.FromSeconds((double)signal.Length / sampleRate),
                 Epsilon = epsilon,
-                MinSignalValue = minSignalValue,
-                MaxSignalValue = maxSignalValue,
+                SampleRate = sampleRate,
+                FrameCount = frameCount,
+                FractionOfHighEnergyFrames = fractionOfHighEnergyFrames,
+                WindowPower = fft.WindowPower,
+                AmplitudeSpectrogram = amplSpectrogram,
+
+                // The below 11 variables are only used when calculating spectral and summary indices
+                // energy level information
                 ClipCount = clipCount,
                 MaxAmplitudeCount = maxAmplitudeCount,
-                FractionOfHighEnergyFrames = fractionOfHighEnergyFrames,
+                MinSignalValue = minSignalValue,
+                MaxSignalValue = maxSignalValue,
+
+                // envelope info
                 Average = average,
                 Envelope = envelope,
-                FrameCount = frameCount,
                 FrameEnergy = frameEnergy,
                 FrameDecibels = frameDecibels,
-                AmplitudeSpectrogram = amplSpectrogram,
-                WindowPower = fft.WindowPower,
+
+                // freq scale info
                 NyquistFreq = nyquistFreq,
-                FreqBinWidth = binWidth,
                 NyquistBin = nyquistBin,
+                FreqBinWidth = binWidth,
             };
         }
 
         /*
+         * BELOW ARE THE TWO CLASSES ONCE USED TO MAKE SPECTROGRAMS for Sonograms and for Spectral INdices. Have merged to codes in method above.
+         * In fact they only differed in smoothing of the spectra. See note in above method.
         public static double[,] MakeAmplitudeSpectrogram(double[] signal, int[,] frames, FFT.WindowFunc w, out double power)
         {
             // cycle through the frames
@@ -463,7 +485,7 @@ namespace AudioAnalysisTools.DSP
                 for (int j = 0; j < frameSize; j++)
                     signalMinusAv[j] = signal[start + j] - frameDC;
 
-                // generate the spectra of FFT AMPLITUDES - NOTE: f[0]=DC;  f[64]=Nyquist  
+                // generate the spectra of FFT AMPLITUDES - NOTE: f[0]=DC;  f[64]=Nyquist
                 var f1 = fft.InvokeDotNetFFT(signalMinusAv); // the fft
                 ////f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
                 ////f1 = fft.Invoke(DataTools.GetRow(frames, i));          //returns fft amplitude spectrum
@@ -582,7 +604,6 @@ namespace AudioAnalysisTools.DSP
             return Tuple.Create(average, envelope, zeroCrossings, zcPeriod, sdPeriod);
         }
 
-
         public static int[] ConvertZeroCrossings2Hz(double[] zeroCrossings, int frameWidth, int sampleRate)
         {
             int length = zeroCrossings.Length;
@@ -658,6 +679,7 @@ namespace AudioAnalysisTools.DSP
 
                 zc[i] = count / 2;
             }
+
             return zc;
         }
 
