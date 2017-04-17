@@ -6,13 +6,9 @@ namespace Acoustics.Test
 {
     using System;
     using System.IO;
-    using System.Linq;
     using Acoustics.Shared;
-    using Acoustics.Shared.Csv;
     using EcoSounds.Mvc.Tests;
-    using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
-    using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
@@ -32,11 +28,6 @@ namespace Acoustics.Test
     {
         private DirectoryInfo outputDirectory;
 
-        public EnvelopeAndFftTests()
-        {
-            // setup logic here
-        }
-
         [TestInitialize]
         public void Setup()
         {
@@ -49,8 +40,13 @@ namespace Acoustics.Test
             TestHelper.DeleteTempDir(this.outputDirectory);
         }
 
+        /// <summary>
+        /// Test the output from EnvelopeAndFft.
+        /// Only test those variables that are used to construct sonograms
+        /// The remaining output variables are tested in TestEnvelopeAndFft2().
+        /// </summary>
         [TestMethod]
-        public void TestEnvelopeAndFft()
+        public void TestEnvelopeAndFft1()
         {
             var recording = new AudioRecording(@"Recordings\BAC2_20071008-085040.wav");
             int windowSize = 512;
@@ -76,6 +72,7 @@ namespace Acoustics.Test
             var amplSpectrogram = fftdata.AmplitudeSpectrogram;
 
             // The below info is only used when calculating spectral and summary indices
+            /*
             // energy level information
             int clipCount = fftdata.ClipCount;
             int maxAmpCount = fftdata.MaxAmplitudeCount;
@@ -92,6 +89,7 @@ namespace Acoustics.Test
             var nyquistBin = fftdata.NyquistBin;
             var nyquistFreq = fftdata.NyquistFreq;
             var freqBinWidth = fftdata.FreqBinWidth;
+            */
 
             // DO THE TESTS
             int expectedSR = 22050;
@@ -114,19 +112,92 @@ namespace Acoustics.Test
             var sumFile = new FileInfo(@"EnvelopeAndFft\BAC2_20071008-085040_DataColumnSums.bin");
             var expectedColSums = Binary.Deserialize<double[]>(sumFile);
             CollectionAssert.AreEqual(expectedColSums, columnSums);
+        }
 
+        /// <summary>
+        /// Test the output from EnvelopeAndFft.
+        /// Only test those variables that are used to calculate spectral and summary indices
+        /// The other output variables are tested in TestEnvelopeAndFft1().
+        /// </summary>
+        [TestMethod]
+        public void TestEnvelopeAndFft2()
+        {
+            var recording = new AudioRecording(@"Recordings\BAC2_20071008-085040.wav");
+            int windowSize = 512;
+
+            // window overlap is used only for sonograms. It is not used when calculating acoustic indices.
+            double windowOverlap = 0.0;
+            var windowFunction = WindowFunctions.HAMMING.ToString();
+
+            var fftdata = DSP_Frames.ExtractEnvelopeAndFfts(
+                recording,
+                windowSize,
+                windowOverlap,
+                windowFunction);
+
+            // Now recover the data
+
+            /*
+            // The following data is required when constructing sonograms
+            var duration = recording.WavReader.Time;
+            var sr = recording.SampleRate;
+            var frameCount = fftdata.FrameCount;
+            var fractionOfHighEnergyFrames = fftdata.FractionOfHighEnergyFrames;
+            var epislon = fftdata.Epsilon;
+            var windowPower = fftdata.WindowPower;
+            var amplSpectrogram = fftdata.AmplitudeSpectrogram;
+            */
+
+            // The below info is only used when calculating spectral and summary indices
+            // energy level information
+            int clipCount = fftdata.ClipCount;
+            int maxAmpCount = fftdata.MaxAmplitudeCount;
+            double maxSig = fftdata.MaxSignalValue;
+            double minSig = fftdata.MinSignalValue;
+
+            // envelope info
+            var avArray = fftdata.Average;
+            var envelope = fftdata.Envelope;
+            var frameEnergy = fftdata.FrameEnergy;
+            var frameDecibels = fftdata.FrameDecibels;
+
+            // freq scale info
+            var nyquistBin = fftdata.NyquistBin;
+            var nyquistFreq = fftdata.NyquistFreq;
+            var freqBinWidth = fftdata.FreqBinWidth;
+
+            // DO THE TESTS of clipping and signal level info
             // energy level information
             Assert.AreEqual(0, clipCount);
             Assert.AreEqual(0, maxAmpCount);
             Assert.AreEqual(-0.250434888760033, minSig, 0.000001);
             Assert.AreEqual(0.255165257728813, maxSig, 0.000001);
 
-            // array info
-            // TODO TODO  need to get these tests working
-            CollectionAssert.AreEqual(new[] { 1, 2, 3 }, avArray);
-            CollectionAssert.AreEqual(new[] { 1, 2, 3 }, envelope);
-            CollectionAssert.AreEqual(new[] { 1, 2, 3 }, frameEnergy);
-            CollectionAssert.AreEqual(new[] { 1, 2, 3 }, frameDecibels);
+            // DO THE TESTS of energy array info
+            // first write to here and move binary file to resources folder.
+            // var averageArrayFile = new FileInfo(this.outputDirectory + @"\BAC2_20071008-085040_AvSigArray.bin");
+            // Binary.Serialize(averageArrayFile, avArray);
+            var averageFile = new FileInfo(@"EnvelopeAndFft\BAC2_20071008-085040_AvSigArray.bin");
+            var expectedAvArray = Binary.Deserialize<double[]>(averageFile);
+            CollectionAssert.AreEqual(expectedAvArray, avArray);
+
+            // var envelopeArrayFile = new FileInfo(this.outputDirectory + @"\BAC2_20071008-085040_EnvelopeArray.bin");
+            // Binary.Serialize(envelopeArrayFile, envelope);
+            var envelopeFile = new FileInfo(@"EnvelopeAndFft\BAC2_20071008-085040_EnvelopeArray.bin");
+            var expectedEnvelope = Binary.Deserialize<double[]>(envelopeFile);
+            CollectionAssert.AreEqual(expectedEnvelope, envelope);
+
+            // var frameEnergyArrayFile = new FileInfo(this.outputDirectory + @"\BAC2_20071008-085040_FrameEnergyArray.bin");
+            // Binary.Serialize(frameEnergyArrayFile, frameEnergy);
+            var frameEnergyFile = new FileInfo(@"EnvelopeAndFft\BAC2_20071008-085040_FrameEnergyArray.bin");
+            var expectedFrameEnergy = Binary.Deserialize<double[]>(frameEnergyFile);
+            CollectionAssert.AreEqual(expectedFrameEnergy, frameEnergy);
+
+            var frameDecibelsArrayFile = new FileInfo(this.outputDirectory + @"\BAC2_20071008-085040_FrameDecibelsArray.bin");
+            Binary.Serialize(frameDecibelsArrayFile, frameDecibels);
+            var frameDecibelsFile = new FileInfo(@"EnvelopeAndFft\BAC2_20071008-085040_FrameDecibelsArray.bin");
+            var expectedFrameDecibels = Binary.Deserialize<double[]>(frameDecibelsFile);
+            CollectionAssert.AreEqual(expectedFrameDecibels, frameDecibels);
 
             // freq info
             Assert.AreEqual(255, nyquistBin);
