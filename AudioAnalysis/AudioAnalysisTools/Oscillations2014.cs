@@ -73,9 +73,9 @@ namespace AudioAnalysisTools
         {
             {
                 // string drive = "C";
-                var sourceRecording = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC2_20071008-085040.wav".ToFileInfo();
+                var sourceRecording = @"C:\Work\GitHub\audio-analysis\Acoustics\Acoustics.Test\TestResources\Recordings\BAC2_20071008-085040.wav".ToFileInfo();
                 var output = @"C:\SensorNetworks\SoftwareTests\TestOscillationSpectrogram".ToDirectoryInfo();
-                var configFile = @"C:\SensorNetworks\SoftwareTests\TestResources\Towsey.Sonogram.yml".ToFileInfo();
+                var configFile = @"C:\Work\GitHub\audio-analysis\Acoustics\Acoustics.Test\TestResources\Oscillations2014\Towsey.Sonogram.yml".ToFileInfo();
                 var expectedResultsDir = new DirectoryInfo(Path.Combine(output.FullName, TestTools.ExpectedResultsDir));
                 if (!expectedResultsDir.Exists)
                 {
@@ -155,7 +155,7 @@ namespace AudioAnalysisTools
                 [AnalysisKeys.ResampleRate] = (string)configuration[AnalysisKeys.ResampleRate] ?? "22050",
 
                 [AnalysisKeys.AddAxes] = ((bool?)configuration[AnalysisKeys.AddAxes] ?? true).ToString(),
-                [AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true
+                [AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true,
             };
 
             configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
@@ -199,7 +199,6 @@ namespace AudioAnalysisTools
 
             return configDict;
         }
-
 
         /// <summary>
         /// Generates the FREQUENCY x OSCILLATIONS Graphs and csv
@@ -252,13 +251,7 @@ namespace AudioAnalysisTools
             double[,] freqOscilMatrix1 = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName1);
 
             //get the max spectral index - this reduces the matrix to an array
-            double[] spectralIndex = ConvertMatrix2SpectralIndex(freqOscilMatrix1);
-
-            // DEBUGGING
-            // Add spectralIndex into the matrix because want to add it to image.
-            // This is for debugging only and can comment this line
-            //int rowCount = freqOscilMatrix1.GetLength(0);
-            //MatrixTools.SetRow(freqOscilMatrix1, rowCount - 2, spectralIndex);
+            double[] spectralIndex1 = ConvertMatrix2SpectralIndexBySummingFreqColumns(freqOscilMatrix1);
 
             Image compositeImage = null;
             if (drawImage)
@@ -269,15 +262,26 @@ namespace AudioAnalysisTools
                 var image1 = GetFreqVsOscillationsImage(freqOscilMatrix1, sonogram.FramesPerSecond, sonogram.FBinWidth, sampleLength, algorithmName1);
                 var image2 = GetFreqVsOscillationsImage(freqOscilMatrix2, sonogram.FramesPerSecond, sonogram.FBinWidth, sampleLength, algorithmName2);
 
+                double[] spectralIndex2 = ConvertMatrix2SpectralIndexBySummingFreqColumns(freqOscilMatrix2);
+
+                // DEBUGGING: Add spectralIndex into the image to check spectral index.
+                // This is for debugging and can comment these lines
+                // However, does not appear to be working - vector images not making sense.
+                // More debugging work required.
+                // var image3 = ImageTools.DrawVectorInColour(DataTools.reverseArray(spectralIndex1), cellWidth: 5);
+                // var image4 = ImageTools.DrawVectorInColour(DataTools.reverseArray(spectralIndex2), cellWidth: 5);
+
                 var list = new List<Image>();
                 list.Add(image1);
+                // list.Add(image3);
                 list.Add(image2);
+                // list.Add(image4);
                 compositeImage = ImageTools.CombineImagesInLine(list.ToArray());
             }
 
             // Return (1) composite image of oscillations, (2) data matrix from only one algorithm,
             //     and (3) spectrum of oscillation values for accumulation into data from a multi-hour recording.
-            return Tuple.Create(compositeImage, freqOscilMatrix1, spectralIndex);
+            return Tuple.Create(compositeImage, freqOscilMatrix1, spectralIndex1);
         }
 
         /// <summary>
@@ -297,7 +301,7 @@ namespace AudioAnalysisTools
             var sourceName = Path.GetFileNameWithoutExtension(sonogram.Configuration.SourceFName);
 
             // get the max spectral index
-            double[] spectralIndex = ConvertMatrix2SpectralIndex(freqOscilMatrix);
+            double[] spectralIndex = ConvertMatrix2SpectralIndexBySummingFreqColumns(freqOscilMatrix);
 
             // DEBUGGING
             // Add spectralIndex into the matrix because want to add it to image.
@@ -882,13 +886,13 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Note: The columns are freq bins.
         /// </summary>
-        public static double[] ConvertMatrix2SpectralIndex(double[,] freqOscilMatrix)
+        public static double[] ConvertMatrix2SpectralIndexBySummingFreqColumns(double[,] freqOscilMatrix)
         {
             int rowCount = freqOscilMatrix.GetLength(0);
             int colCount = freqOscilMatrix.GetLength(1);
             double[] spectralIndex = new double[colCount];
 
-            // miss the first N rows which have low osc rate.
+            // skip the first N rows which have a low osc rate.
             int skipCount = 1;
             for (int c = 0; c < colCount; c++)
             {
