@@ -1,6 +1,9 @@
-﻿namespace TowseyLibrary
-{
+﻿// <copyright file="ImageTools.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
 
+namespace TowseyLibrary
+{
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -8,90 +11,102 @@
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
-    using System.Text;
     using AForge.Imaging.Filters;
     using ColorMine.ColorSpaces;
-    //using MathNet.Numerics.LinearAlgebra;using MathNet.Numerics.LinearAlgebra.Double;
     using MathNet.Numerics.LinearAlgebra.Generic;
 
     public enum Kernal
     {
-        LowPass, HighPass1, HighPass2, VerticalLine, HorizontalLine3, HorizontalLine5,
-        DiagLine1, DiagLine2,
-        gaussianBlur5,
-        Grid2, Grid3, Grid4, Grid2Wave, Grid3Wave, //grid filters
-        Laplace1, Laplace2, Laplace3, Laplace4, ERRONEOUS,
-        SobelX, SobelY
+        LowPass,
+        HighPass1,
+        HighPass2,
+        VerticalLine,
+        HorizontalLine3,
+        HorizontalLine5,
+        DiagLine1,
+        DiagLine2,
+        GaussianBlur5,
+        Grid2,
+        Grid3,
+        Grid4,
+        Grid2Wave,
+        Grid3Wave, //grid filters
+        Laplace1,
+        Laplace2,
+        Laplace3,
+        Laplace4,
+        Erroneous,
+        SobelX,
+        SobelY
     }
-
 
     public class ImageTools
     {
-        const string paintPath = @"C:\Windows\system32\mspaint.exe";
+        private const string PaintPath = @"C:\Windows\system32\mspaint.exe";
 
         // this is a list of predefined colors in the Color class.
-        public static string[] colorNames ={"AliceBlue","AntiqueWhite","Aqua","Aquamarine","Azure","Beige","Bisque","Black","BlanchedAlmond","Blue","BlueViolet",
-                            "Brown","BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue","Cornsilk","Crimson","Cyan",
-                            "DarkBlue", "DarkCyan","DarkGoldenrod","DarkGray","DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","DarkOrange",
-                            "DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray","DarkTurquoise","DarkViolet",
-                            "DeepPink","DeepSkyBlue","DimGray","DodgerBlue","Firebrick","FloralWhite","ForestGreen","Fuchsia","Gainsboro",
-                            "GhostWhite","Gold","Goldenrod","Gray","Green","GreenYellow","Honeydew","HotPink","IndianRed","Indigo","Ivory","Khaki",
-                            "Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue","LightCoral","LightCyan","LightGoldenrodYellow",
-                            "LightGray","LightGreen","LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray","LightSteelBlue",
-                            "LightYellow","Lime","LimeGreen","Linen","Magenta","Maroon","MediumAquamarine","MediumBlue","MediumOrchid",
-                            "MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen","MediumTurquoise","MediumVioletRed",
-                            "MidnightBlue","MintCream","MistyRose","Moccasin","NavajoWhite","Navy","OldLace","Olive","OliveDrab","Orange",
-                            "OrangeRed","Orchid","PaleGoldenrod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru",
-                            "Pink","Plum","PowderBlue","Purple","Red","RosyBrown","RoyalBlue","SaddleBrown","Salmon","SandyBrown","SeaGreen",
-                            "SeaShell","Sienna","Silver","SkyBlue","SlateBlue","SlateGray","Snow","SpringGreen","SteelBlue","Tan","Teal",
-                            "Thistle","Tomato",/*"Transparent",*/"Turquoise","Violet","Wheat","White","WhiteSmoke","Yellow","YellowGreen",};
-        public static Color[] colors = { Color.AliceBlue, Color.AntiqueWhite, Color.Aqua, Color.Aquamarine, Color.Azure, Color.Beige, Color.Bisque, Color.Black,
-                             Color.BlanchedAlmond, Color.Blue, Color.BlueViolet, Color.Brown, Color.BurlyWood, Color.CadetBlue, Color.Chartreuse,
-                             Color.Chocolate, Color.Coral, Color.CornflowerBlue, Color.Cornsilk, Color.Crimson, Color.Cyan, Color.DarkBlue,
-                             Color.DarkCyan, Color.DarkGoldenrod, Color.DarkGray, Color.DarkGreen, Color.DarkKhaki, Color.DarkMagenta,
-                             Color.DarkOliveGreen, Color.DarkOrange, Color.DarkOrchid, Color.DarkRed, Color.DarkSalmon, Color.DarkSeaGreen,
-                             Color.DarkSlateBlue, Color.DarkSlateGray, Color.DarkTurquoise, Color.DarkViolet, Color.DeepPink, Color.DeepSkyBlue,
-                             Color.DimGray, Color.DodgerBlue, Color.Firebrick, Color.FloralWhite, Color.ForestGreen, Color.Fuchsia,
-                             Color.Gainsboro, Color.GhostWhite, Color.Gold, Color.Goldenrod, Color.Gray, Color.Green, Color.GreenYellow,
-                             Color.Honeydew, Color.HotPink, Color.IndianRed, Color.Indigo, Color.Ivory, Color.Khaki, Color.Lavender,
-                             Color.LavenderBlush, Color.LawnGreen, Color.LemonChiffon, Color.LightBlue, Color.LightCoral, Color.LightCyan,
-                             Color.LightGoldenrodYellow, Color.LightGray, Color.LightGreen, Color.LightPink, Color.LightSalmon,
-                             Color.LightSeaGreen, Color.LightSkyBlue, Color.LightSlateGray, Color.LightSteelBlue, Color.LightYellow, Color.Lime,
-                             Color.LimeGreen, Color.Linen, Color.Magenta, Color.Maroon, Color.MediumAquamarine, Color.MediumBlue,
-                             Color.MediumOrchid, Color.MediumPurple, Color.MediumSeaGreen, Color.MediumSlateBlue, Color.MediumSpringGreen,
-                             Color.MediumTurquoise, Color.MediumVioletRed, Color.MidnightBlue, Color.MintCream, Color.MistyRose, Color.Moccasin,
-                             Color.NavajoWhite, Color.Navy, Color.OldLace, Color.Olive, Color.OliveDrab, Color.Orange, Color.OrangeRed,
-                             Color.Orchid, Color.PaleGoldenrod, Color.PaleGreen, Color.PaleTurquoise, Color.PaleVioletRed, Color.PapayaWhip,
-                             Color.PeachPuff, Color.Peru, Color.Pink, Color.Plum, Color.PowderBlue, Color.Purple, Color.Red, Color.RosyBrown,
-                             Color.RoyalBlue, Color.SaddleBrown, Color.Salmon, Color.SandyBrown, Color.SeaGreen, Color.SeaShell, Color.Sienna,
-                             Color.Silver, Color.SkyBlue, Color.SlateBlue, Color.SlateGray, Color.Snow, Color.SpringGreen, Color.SteelBlue,
-                             Color.Tan, Color.Teal, Color.Thistle, Color.Tomato, /*Color.Transparent,*/ Color.Turquoise, Color.Violet, Color.Wheat,
-                             Color.White, Color.WhiteSmoke, Color.Yellow, Color.YellowGreen, };
+        private static string[] ColorNames = new[] {"AliceBlue", "AntiqueWhite", "Aqua", "Aquamarine", "Azure", "Beige", "Bisque", "Black", "BlanchedAlmond", "Blue", "BlueViolet",
+            "Brown", "BurlyWood", "CadetBlue", "Chartreuse", "Chocolate", "Coral", "CornflowerBlue", "Cornsilk", "Crimson", "Cyan",
+            "DarkBlue", "DarkCyan", "DarkGoldenrod", "DarkGray", "DarkGreen", "DarkKhaki", "DarkMagenta", "DarkOliveGreen", "DarkOrange",
+            "DarkOrchid", "DarkRed", "DarkSalmon", "DarkSeaGreen", "DarkSlateBlue", "DarkSlateGray", "DarkTurquoise", "DarkViolet",
+            "DeepPink", "DeepSkyBlue", "DimGray", "DodgerBlue", "Firebrick", "FloralWhite", "ForestGreen", "Fuchsia", "Gainsboro",
+            "GhostWhite", "Gold", "Goldenrod", "Gray", "Green", "GreenYellow", "Honeydew", "HotPink", "IndianRed", "Indigo", "Ivory", "Khaki",
+            "Lavender", "LavenderBlush", "LawnGreen", "LemonChiffon", "LightBlue", "LightCoral", "LightCyan", "LightGoldenrodYellow",
+            "LightGray", "LightGreen", "LightPink", "LightSalmon", "LightSeaGreen", "LightSkyBlue", "LightSlateGray", "LightSteelBlue",
+            "LightYellow", "Lime", "LimeGreen", "Linen", "Magenta", "Maroon", "MediumAquamarine", "MediumBlue", "MediumOrchid",
+            "MediumPurple", "MediumSeaGreen", "MediumSlateBlue", "MediumSpringGreen", "MediumTurquoise", "MediumVioletRed",
+            "MidnightBlue", "MintCream", "MistyRose", "Moccasin", "NavajoWhite", "Navy", "OldLace", "Olive", "OliveDrab", "Orange",
+            "OrangeRed", "Orchid", "PaleGoldenrod", "PaleGreen", "PaleTurquoise", "PaleVioletRed", "PapayaWhip", "PeachPuff", "Peru",
+            "Pink", "Plum", "PowderBlue", "Purple", "Red", "RosyBrown", "RoyalBlue", "SaddleBrown", "Salmon", "SandyBrown", "SeaGreen",
+            "SeaShell", "Sienna", "Silver", "SkyBlue", "SlateBlue", "SlateGray", "Snow", "SpringGreen", "SteelBlue", "Tan", "Teal",
+            "Thistle", "Tomato", /*"Transparent",*/"Turquoise", "Violet", "Wheat", "White", "WhiteSmoke", "Yellow", "YellowGreen"};
 
-        public static Color[] darkColors = { /*Color.AliceBlue,*/ /*Color.Aqua, Color.Aquamarine, Color.Azure, Color.Bisque,*/ Color.Black,
-                             Color.Blue, Color.BlueViolet, /*Color.Brown, Color.BurlyWood,*/ Color.CadetBlue, /*Color.Chartreuse,*/
-                             Color.Chocolate, /*Color.Coral,*/ /*Color.CornflowerBlue,*/ /*Color.Cornsilk,*/ Color.Crimson, Color.Cyan, Color.DarkBlue,
-                             Color.DarkCyan, Color.DarkGoldenrod, Color.DarkGray, Color.DarkGreen, Color.DarkKhaki, Color.DarkMagenta,
-                             Color.DarkOliveGreen, Color.DarkOrange, Color.DarkOrchid, Color.DarkRed, Color.DarkSalmon, Color.DarkSeaGreen,
-                             Color.DarkSlateBlue, Color.DarkSlateGray, Color.DarkTurquoise, Color.DarkViolet, Color.DeepPink, Color.DeepSkyBlue,
-                             Color.DimGray, Color.DodgerBlue, Color.Firebrick, Color.ForestGreen, Color.Fuchsia,
-                             Color.Gainsboro, Color.Gold, Color.Goldenrod, /*Color.Gray,*/ Color.Green, /*Color.GreenYellow,*/
-                             Color.Honeydew, Color.HotPink, Color.IndianRed, Color.Indigo, /*Color.Khaki,*/ Color.Lavender,
+        public static Color[] Colors =
+        {
+            Color.AliceBlue, Color.AntiqueWhite, Color.Aqua, Color.Aquamarine, Color.Azure, Color.Beige, Color.Bisque, Color.Black,
+            Color.BlanchedAlmond, Color.Blue, Color.BlueViolet, Color.Brown, Color.BurlyWood, Color.CadetBlue, Color.Chartreuse,
+            Color.Chocolate, Color.Coral, Color.CornflowerBlue, Color.Cornsilk, Color.Crimson, Color.Cyan, Color.DarkBlue,
+            Color.DarkCyan, Color.DarkGoldenrod, Color.DarkGray, Color.DarkGreen, Color.DarkKhaki, Color.DarkMagenta,
+            Color.DarkOliveGreen, Color.DarkOrange, Color.DarkOrchid, Color.DarkRed, Color.DarkSalmon, Color.DarkSeaGreen,
+            Color.DarkSlateBlue, Color.DarkSlateGray, Color.DarkTurquoise, Color.DarkViolet, Color.DeepPink, Color.DeepSkyBlue,
+            Color.DimGray, Color.DodgerBlue, Color.Firebrick, Color.FloralWhite, Color.ForestGreen, Color.Fuchsia,
+            Color.Gainsboro, Color.GhostWhite, Color.Gold, Color.Goldenrod, Color.Gray, Color.Green, Color.GreenYellow,
+            Color.Honeydew, Color.HotPink, Color.IndianRed, Color.Indigo, Color.Ivory, Color.Khaki, Color.Lavender,
+            Color.LavenderBlush, Color.LawnGreen, Color.LemonChiffon, Color.LightBlue, Color.LightCoral, Color.LightCyan,
+            Color.LightGoldenrodYellow, Color.LightGray, Color.LightGreen, Color.LightPink, Color.LightSalmon,
+            Color.LightSeaGreen, Color.LightSkyBlue, Color.LightSlateGray, Color.LightSteelBlue, Color.LightYellow, Color.Lime,
+            Color.LimeGreen, Color.Linen, Color.Magenta, Color.Maroon, Color.MediumAquamarine, Color.MediumBlue,
+            Color.MediumOrchid, Color.MediumPurple, Color.MediumSeaGreen, Color.MediumSlateBlue, Color.MediumSpringGreen,
+            Color.MediumTurquoise, Color.MediumVioletRed, Color.MidnightBlue, Color.MintCream, Color.MistyRose, Color.Moccasin,
+            Color.NavajoWhite, Color.Navy, Color.OldLace, Color.Olive, Color.OliveDrab, Color.Orange, Color.OrangeRed,
+            Color.Orchid, Color.PaleGoldenrod, Color.PaleGreen, Color.PaleTurquoise, Color.PaleVioletRed, Color.PapayaWhip,
+            Color.PeachPuff, Color.Peru, Color.Pink, Color.Plum, Color.PowderBlue, Color.Purple, Color.Red, Color.RosyBrown,
+            Color.RoyalBlue, Color.SaddleBrown, Color.Salmon, Color.SandyBrown, Color.SeaGreen, Color.SeaShell, Color.Sienna,
+            Color.Silver, Color.SkyBlue, Color.SlateBlue, Color.SlateGray, Color.Snow, Color.SpringGreen, Color.SteelBlue,
+            Color.Tan, Color.Teal, Color.Thistle, Color.Tomato, /*Color.Transparent,*/ Color.Turquoise, Color.Violet, Color.Wheat,
+            Color.White, Color.WhiteSmoke, Color.Yellow, Color.YellowGreen, };
+
+        public static Color[] DarkColors =
+        { /*Color.AliceBlue,*/ /*Color.Aqua, Color.Aquamarine, Color.Azure, Color.Bisque,*/
+            Color.Black, Color.Blue, Color.BlueViolet, /*Color.Brown, Color.BurlyWood,*/ Color.CadetBlue, /*Color.Chartreuse,*/
+            Color.Chocolate, /*Color.Coral,*/ /*Color.CornflowerBlue,*/ /*Color.Cornsilk,*/ Color.Crimson, Color.Cyan, Color.DarkBlue,
+            Color.DarkCyan, Color.DarkGoldenrod, Color.DarkGray, Color.DarkGreen, Color.DarkKhaki, Color.DarkMagenta,
+            Color.DarkOliveGreen, Color.DarkOrange, Color.DarkOrchid, Color.DarkRed, Color.DarkSalmon, Color.DarkSeaGreen,
+            Color.DarkSlateBlue, Color.DarkSlateGray, Color.DarkTurquoise, Color.DarkViolet, Color.DeepPink, Color.DeepSkyBlue,
+            Color.DimGray, Color.DodgerBlue, Color.Firebrick, Color.ForestGreen, Color.Fuchsia,
+            Color.Gainsboro, Color.Gold, Color.Goldenrod, /*Color.Gray,*/ Color.Green, /*Color.GreenYellow,*/
+            Color.Honeydew, Color.HotPink, Color.IndianRed, Color.Indigo, /*Color.Khaki,*/ Color.Lavender,
                              /*Color.LavenderBlush,*/ Color.LawnGreen, /*Color.LemonChiffon,*/ Color.Lime,
-                             Color.LimeGreen, /*Color.Linen,*/ Color.Magenta, Color.Maroon, Color.MediumAquamarine, Color.MediumBlue,
+            Color.LimeGreen, /*Color.Linen,*/ Color.Magenta, Color.Maroon, Color.MediumAquamarine, Color.MediumBlue,
                              /*Color.MediumOrchid,*/ Color.MediumPurple, /*Color.MediumSeaGreen,*/ Color.MediumSlateBlue, Color.MediumSpringGreen,
-                             Color.MediumTurquoise, Color.MediumVioletRed, Color.MidnightBlue, /*Color.MistyRose,*/ /*Color.Moccasin,*/
-                             Color.Navy, /*Color.OldLace,*/ Color.Olive, /*Color.OliveDrab,*/ Color.Orange, Color.OrangeRed,
+            Color.MediumTurquoise, Color.MediumVioletRed, Color.MidnightBlue, /*Color.MistyRose,*/ /*Color.Moccasin,*/
+            Color.Navy, /*Color.OldLace,*/ Color.Olive, /*Color.OliveDrab,*/ Color.Orange, Color.OrangeRed,
                              /*Color.Orchid, Color.PaleVioletRed, Color.PapayaWhip, */
                              /*Color.PeachPuff,*/ /*Color.Peru,*/ Color.Pink, Color.Plum, /*Color.PowderBlue,*/ Color.Purple, Color.Red, Color.RosyBrown,
-                             Color.RoyalBlue, Color.SaddleBrown, Color.Salmon, /*Color.SandyBrown,*/ Color.SeaGreen, /*Color.Sienna,*/
+            Color.RoyalBlue, Color.SaddleBrown, Color.Salmon, /*Color.SandyBrown,*/ Color.SeaGreen, /*Color.Sienna,*/
                              /*Color.Silver,*/ Color.SkyBlue, Color.SlateBlue, /*Color.SlateGray,*/ Color.SpringGreen, Color.SteelBlue,
                              /*Color.Tan,*/ Color.Teal, Color.Thistle, Color.Tomato, Color.Turquoise, Color.Violet, /*Color.Wheat,*/
                              /*Color.Yellow,*/ Color.YellowGreen, };
-
-
-
-
 
         static double[,] lowPassKernal = { { 0.1, 0.1, 0.1 },
                                            { 0.1, 0.2, 0.1 },
@@ -102,7 +117,7 @@
                                              { -0.3, -0.3, -0.3, -0.3, -0.3},
                                              { -0.3, -0.3,  9.7, -0.3, -0.3},
                                              { -0.3, -0.3, -0.3, -0.3, -0.3},
-                                             { -0.3, -0.3, -0.3, -0.3, -0.3},};
+                                             { -0.3, -0.3, -0.3, -0.3, -0.3}, };
 
         static double[,] vertLineKernal = { { -0.5, 1.0, -0.5 }, { -0.5, 1.0, -0.5 }, { -0.5, 1.0, -0.5 } };
         static double[,] horiLineKernal3 = { { -0.5, -0.5, -0.5 }, { 1.0, 1.0, 1.0 }, { -0.5, -0.5, -0.5 } };
@@ -121,7 +136,7 @@
 //                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
 //                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
 //                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
-                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},};
+                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5}, };
 
         //static double[,] grid2Wave =      { { -0.5, 1.0, -1.5, 2.0, -1.5, 1.0, -0.5},
         //                                    { -0.5, 1.0, -1.5, 2.0, -1.5, 1.0, -0.5},
@@ -132,7 +147,7 @@
                                             { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
                                             { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
                                             { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
-                                            { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},};
+                                            { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5}, };
 
         static double[,] grid4 =          { { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
                                             { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
@@ -140,7 +155,7 @@
                                             { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
                                             { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
                                             { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
-                                            { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},};
+                                            { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375}, };
 
         static double[,] grid2Wave =      { { -0.5, -0.5, -0.5 },
                                             {  1.0,  1.0,  1.0 },
@@ -148,7 +163,7 @@
                                             {  2.0,  2.0,  2.0 },
                                             { -1.5, -1.5, -1.5 },
                                             {  1.0,  1.0,  1.0 },
-                                            { -0.5, -0.5, -0.5 },};
+                                            { -0.5, -0.5, -0.5 }, };
 
         static double[,] grid3Wave =      { { -0.5, -0.5, -0.5 },
                                             {  1.0,  1.0,  1.0 },
@@ -158,7 +173,7 @@
                                             { -1.0, -1.0, -1.0 },
                                             { -0.5, -0.5, -0.5 },
                                             {  1.0,  1.0,  1.0 },
-                                            { -0.5, -0.5, -0.5 },};
+                                            { -0.5, -0.5, -0.5 }, };
 
         public static double[,] SobelX =         { {-1.0,  0.0,  1.0},
                                             {-2.0,  0.0,  -2.0},
@@ -170,10 +185,13 @@
 
         public static Bitmap ReadImage2Bitmap(string fileName)
         {
-            if (!File.Exists(fileName)) return null;
+            if (!File.Exists(fileName))
+            {
+                return null;
+            }
+
             return (Bitmap)Image.FromFile(fileName);
         }
-
 
         public static void WriteBitmap2File(Bitmap binaryBmp, string opPath)
         {
@@ -187,14 +205,15 @@
 
         public static void DisplayImageWithPaint(FileInfo imagePath)
         {
-            FileInfo exe = new FileInfo(paintPath);
+            FileInfo exe = new FileInfo(PaintPath);
             if (!exe.Exists)
             {
                 LoggedConsole.WriteLine("CANNOT DISPLAY IMAGE. PAINT.EXE DOES NOT EXIST: <" + imagePath + ">");
                 return;
             }
+
             string outputDir = imagePath.DirectoryName;
-            var process = new ProcessRunner(paintPath);
+            var process = new ProcessRunner(PaintPath);
             process.Run(imagePath.FullName, outputDir);
         }
 
@@ -217,6 +236,7 @@
                     returnImage.SetPixel(x, y, Color.FromArgb((int)A, (int)R, (int)G, (int)B));
                 }
             }
+
             return returnImage;
         }
 
@@ -224,8 +244,6 @@
         /// reads the intensity of a grey scale image into a matrix of double.
         /// Assumes gray scale is 0-255 and that color.R = color.G = color.B.
         /// </summary>
-        /// <param name="bitmap"></param>
-        /// <returns></returns>
         public static double[,] GreyScaleImage2Matrix(Bitmap bitmap)
         {
             int height = bitmap.Height; //height
@@ -254,10 +272,10 @@
                 {
                     graphics.CopyFromScreen(position, new Point(0, 0), new Size(1, 1));
                 }
+
                 return bitmap.GetPixel(0, 0);
             }
         } //GetPixel(Point position)
-
 
         public static double[,] Convolve(double[,] matrix, Kernal name)
         {
@@ -299,11 +317,9 @@
                     LoggedConsole.WriteLine("Applied Laplace4 Kernal");
                     break;
 
-
                 default:
                     throw new Exception("\nWARNING: INVALID MODE!");
             }//end of switch statement
-
 
             int mRows = matrix.GetLength(0);
             int mCols = matrix.GetLength(1);
@@ -312,12 +328,15 @@
             int rNH = kRows / 2;
             int cNH = kCols / 2;
 
-            if ((rNH <= 0) && (cNH <= 0)) return matrix; //no operation required
+            if ((rNH <= 0) && (cNH <= 0))
+            {
+                return matrix; //no operation required
+            }
 
             //int area = ((2 * cNH) + 1) * ((2 * rNH) + 1);//area of rectangular neighbourhood
 
             //double[,] newMatrix = (double[,])matrix.Clone();
-            double[,] newMatrix = new double[mRows, mCols];//init new matrix to return
+            double[,] newMatrix = new double[mRows, mCols]; //init new matrix to return
 
             // fix up the edges first
             for (int r = 0; r < mRows; r++)
@@ -326,11 +345,13 @@
                 {
                     newMatrix[r, c] = matrix[r, c];
                 }
+
                 for (int c = (mCols - cNH); c < mCols; c++)
                 {
                     newMatrix[r, c] = matrix[r, c];
                 }
             }
+
             // fix up other edges
             for (int c = 0; c < mCols; c++)
             {
@@ -338,7 +359,8 @@
                 {
                     newMatrix[r, c] = matrix[r, c];
                 }
-                for (int r = (mRows - rNH); r < mRows; r++)
+
+                for (int r = mRows - rNH; r < mRows; r++)
                 {
                     newMatrix[r, c] = matrix[r, c];
                 }
@@ -354,17 +376,16 @@
                     {
                         for (int x = -cNH; x < cNH; x++)
                         {
-                            sum += (matrix[r + y, c + x] * kernal[rNH - y, cNH - x]);
+                            sum += matrix[r + y, c + x] * kernal[rNH - y, cNH - x];
                         }
                     }
-                    newMatrix[r, c] = sum;// / (double)area;
+
+                    newMatrix[r, c] = sum; // / (double)area;
                 }
             }
 
             return newMatrix;
         }//end method Convolve()
-
-
 
         public static double[,] GridFilter(double[,] m, Kernal name)
         {
@@ -394,11 +415,9 @@
                     LoggedConsole.WriteLine("Applied Grid Wave Kernal 3");
                     break;
 
-
                 default:
                     throw new Exception("\nWARNING: INVALID MODE!");
             }//end of switch statement
-
 
             int mRows = m.GetLength(0);
             int mCols = m.GetLength(1);
@@ -406,7 +425,10 @@
             int kCols = kernal.GetLength(1);
             int rNH = kRows / 2;
             int cNH = kCols / 2;
-            if ((rNH <= 0) && (cNH <= 0)) return m; //no operation required
+            if ((rNH <= 0) && (cNH <= 0))
+            {
+                return m; //no operation required
+            }
             //int area = ((2 * cNH) + 1) * ((2 * rNH) + 1);//area of rectangular neighbourhood
 
             double[,] normM = DataTools.normalise(m);
@@ -419,15 +441,19 @@
                 for (int i = 0; i < kRows; i++)
                 {
                     for (int j = 0; j < kCols; j++)
+                    {
                         sum += noise[i, j] * kernal[i, j];
+                    }
                 }
+
                 noiseScores[n] = sum / (double)kRows;
             }
+
             double noiseAv; double noiseSd;
             NormalDist.AverageAndSD(noiseScores, out noiseAv, out noiseSd);
             LoggedConsole.WriteLine("noiseAv=" + noiseAv + "   noiseSd=" + noiseSd);
 
-            double[,] newMatrix = new double[mRows, mCols];//init new matrix to return
+            double[,] newMatrix = new double[mRows, mCols]; //init new matrix to return
 
             //now do bulk of image
             for (int r = rNH; r < (mRows - rNH); r++)
@@ -446,21 +472,23 @@
                     sum /= (double)kRows;
                     double zScore = (sum - noiseAv) / noiseSd;
 
-
                     if (zScore >= thresholdZScore)
                     {
                         newMatrix[r, c] = 1.0;
-                        for (int n = -rNH; n < rNH; n++) newMatrix[r + n, c] = 1.0;
+                        for (int n = -rNH; n < rNH; n++)
+                        {
+                            newMatrix[r + n, c] = 1.0;
+                        }
                         //newMatrix[r, c] = zScore;
                         //newMatrix[r + 1, c] = zScore;
                     }
+
                     //else newMatrix[r, c] = 0.0;
                 }//end of loops
             }
 
             return newMatrix;
         }//end method GridFilter()
-
 
         /// <summary>
         /// Returns a small matrix of pixels chosen randomly from the passed matrix, m.
@@ -483,11 +511,13 @@
                 int randomRow = rn.GetInt(mHeight - kRows);
                 int randomCol = rn.GetInt(mWidth - kCols);
                 for (int c = 0; c < kCols; c++)
+                {
                     noise[r, c] = m[randomRow, randomCol + c];
+                }
             }
+
             return noise;
         } //end getNoise()
-
 
         public static double[,] WienerFilter(double[,] matrix)
         {
@@ -525,12 +555,28 @@
                     int count = 0;
                     for (int i = r - rNH; i <= (r + rNH); i++)
                     {
-                        if (i < 0) continue;
-                        if (i >= rows) continue;
+                        if (i < 0)
+                        {
+                            continue;
+                        }
+
+                        if (i >= rows)
+                        {
+                            continue;
+                        }
+
                         for (int j = c - cNH; j <= (c + cNH); j++)
                         {
-                            if (j < 0) continue;
-                            if (j >= cols) continue;
+                            if (j < 0)
+                            {
+                                continue;
+                            }
+
+                            if (j >= cols)
+                            {
+                                continue;
+                            }
+
                             X += matrix[i, j];
                             Xe2 += (matrix[i, j] * matrix[i, j]);
                             count++;
@@ -538,23 +584,31 @@
                             //Console.ReadLine();
                         }
                     }
+
                     //LoggedConsole.WriteLine("End NH count="+count);
                     //calculate variance of the neighbourhood
                     double mean = X / count;
                     double variance = (Xe2 / count) - (mean * mean);
                     double numerator = variance - colVar;
-                    if (numerator < 0.0) numerator = 0.0;
+                    if (numerator < 0.0)
+                    {
+                        numerator = 0.0;
+                    }
+
                     double denominator = variance;
-                    if (colVar > denominator) denominator = colVar;
+                    if (colVar > denominator)
+                    {
+                        denominator = colVar;
+                    }
+
                     double ratio = numerator / denominator;
                     outM[r, c] = mean + (ratio * (matrix[r, c] - mean));
-
-
 
                     // LoggedConsole.WriteLine((outM[r, c]).ToString("F1") + "   " + (matrix[r, c]).ToString("F1"));
                     // Console.ReadLine();
                 }
             }
+
             return outM;
         }
 
@@ -596,7 +650,7 @@
 
             // get high side stretching bound
             int topSideCount = 0;
-            for (int i = binCount-1; i >= 0; i--)
+            for (int i = binCount - 1; i >= 0; i--)
             {
                 topSideCount += histo[i];
                 if (topSideCount > thresholdCount)
@@ -629,8 +683,6 @@
             string path1 = @"C:\SensorNetworks\Output\LewinsRail\Canny.png";
             bmp2.Save(path1, ImageFormat.Png);
         }
-
-
 
         /// <summary>
         /// The below method is derived from the following site
@@ -666,14 +718,12 @@
             return edge;
         }
 
-
-
-
         public static double[,] SobelEdgeDetection(double[,] m)
         {
             double relThreshold = 0.2;
             return SobelEdgeDetection(m, relThreshold);
         }
+
         /// <summary>
         /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
         /// which includes C code.
@@ -688,7 +738,7 @@
             int mRows = m.GetLength(0);
             int mCols = m.GetLength(1);
             double[,] normM = DataTools.normalise(m);
-            double[,] newMatrix = new double[mRows, mCols];//init new matrix to return
+            double[,] newMatrix = new double[mRows, mCols]; //init new matrix to return
             double[] grid = new double[9]; //to represent 3x3 grid
             double min = double.MaxValue; double max = -double.MaxValue;
 
@@ -725,8 +775,15 @@
                     DataTools.MinMax(differences, out gridMin, out gridMax);
 
                     newMatrix[y, x] = gridMax;
-                    if (min > gridMin) min = gridMin;
-                    if (max < gridMax) max = gridMax;
+                    if (min > gridMin)
+                    {
+                        min = gridMin;
+                    }
+
+                    if (max < gridMax)
+                    {
+                        max = gridMax;
+                    }
                 }
             }
 
@@ -737,8 +794,14 @@
             {
                 for (int x = 1; x < mCols - 1; x++)
                 {
-                    if (newMatrix[y, x] > threshold) newMatrix[y, x] = 1.0;
-                    else newMatrix[y, x] = 0.0;
+                    if (newMatrix[y, x] > threshold)
+                    {
+                        newMatrix[y, x] = 1.0;
+                    }
+                    else
+                    {
+                        newMatrix[y, x] = 0.0;
+                    }
                 }
             }
 
@@ -759,7 +822,7 @@
             int mRows = m.GetLength(0);
             int mCols = m.GetLength(1);
             double[,] normM = DataTools.normalise(m);
-            double[,] newMatrix = new double[mRows, mCols];//init new matrix to return
+            double[,] newMatrix = new double[mRows, mCols]; //init new matrix to return
             double[] grid = new double[9]; //to represent 3x3 grid
             double min = double.MaxValue; double max = -double.MaxValue;
 
@@ -781,34 +844,51 @@
                     double DivideAEI_avAbove = (grid[b] + grid[c] + grid[f]) / (double)3;
                     //differences[0] = Math.Abs(DivideAEI_avAbove - DivideAEI_avBelow);
                     differences[0] = (grid[e] - DivideAEI_avAbove) + (grid[e] - DivideAEI_avBelow);
-                    if (differences[0] < 0.0) differences[0] = 0.0;
+                    if (differences[0] < 0.0)
+                    {
+                        differences[0] = 0.0;
+                    }
 
                     double DivideBEH_avBelow = (grid[a] + grid[d] + grid[g]) / (double)3;
                     double DivideBEH_avAbove = (grid[c] + grid[f] + grid[i]) / (double)3;
                     //differences[1] = Math.Abs(DivideBEH_avAbove - DivideBEH_avBelow);
                     differences[1] = (grid[e] - DivideBEH_avBelow) + (grid[e] - DivideBEH_avAbove);
-                    if (differences[1] < 0.0) differences[1] = 0.0;
+                    if (differences[1] < 0.0)
+                    {
+                        differences[1] = 0.0;
+                    }
 
                     double DivideCEG_avBelow = (grid[f] + grid[h] + grid[i]) / (double)3;
                     double DivideCEG_avAbove = (grid[a] + grid[b] + grid[d]) / (double)3;
                     //differences[2] = Math.Abs(DivideCEG_avAbove - DivideCEG_avBelow);
                     differences[2] = (grid[e] - DivideCEG_avBelow) + (grid[e] - DivideCEG_avAbove);
-                    if (differences[2] < 0.0) differences[2] = 0.0;
+                    if (differences[2] < 0.0)
+                    {
+                        differences[2] = 0.0;
+                    }
 
                     double DivideDEF_avBelow = (grid[g] + grid[h] + grid[i]) / (double)3;
                     double DivideDEF_avAbove = (grid[a] + grid[b] + grid[c]) / (double)3;
                     //differences[3] = Math.Abs(DivideDEF_avAbove - DivideDEF_avBelow);
                     differences[3] = (grid[e] - DivideDEF_avBelow) + (grid[e] - DivideDEF_avAbove);
-                    if (differences[3] < 0.0) differences[3] = 0.0;
-
-
+                    if (differences[3] < 0.0)
+                    {
+                        differences[3] = 0.0;
+                    }
 
                     double diffMin; double diffMax;
                     DataTools.MinMax(differences, out diffMin, out diffMax);
 
                     newMatrix[y, x] = diffMax;
-                    if (min > diffMin) min = diffMin; //store minimum difference value of entire matrix
-                    if (max < diffMax) max = diffMax; //store maximum difference value of entire matrix
+                    if (min > diffMin)
+                    {
+                        min = diffMin; //store minimum difference value of entire matrix
+                    }
+
+                    if (max < diffMax)
+                    {
+                        max = diffMax; //store maximum difference value of entire matrix
+                    }
                 }
             }
 
@@ -818,8 +898,14 @@
             {
                 for (int x = 1; x < mCols - 1; x++)
                 {
-                    if (newMatrix[y, x] > threshold) newMatrix[y, x] = 1.0;
-                    else newMatrix[y, x] = 0.0;
+                    if (newMatrix[y, x] > threshold)
+                    {
+                        newMatrix[y, x] = 1.0;
+                    }
+                    else
+                    {
+                        newMatrix[y, x] = 0.0;
+                    }
                 }
             }
 
@@ -866,8 +952,16 @@
             //ridge magnitude having slope=0;
             double[] rowSums = MatrixTools.SumRows(m);
             ridgeMagnitudes[0, 1] = rowSums[centreID];
-            for (int r = 0; r < centreID; r++)        ridgeMagnitudes[0, 0] += rowSums[r]; //positve  side magnitude
-            for (int r = centreID + 1; r < rows; r++) ridgeMagnitudes[0, 2] += rowSums[r]; //negative side magnitude
+            for (int r = 0; r < centreID; r++)
+            {
+                ridgeMagnitudes[0, 0] += rowSums[r]; //positve  side magnitude
+            }
+
+            for (int r = centreID + 1; r < rows; r++)
+            {
+                ridgeMagnitudes[0, 2] += rowSums[r]; //negative side magnitude
+            }
+
             ridgeMagnitudes[0, 0] /= (double)(centreID * cols);
             ridgeMagnitudes[0, 1] /= (double)cols;
             ridgeMagnitudes[0, 2] /= (double)(centreID * cols);
@@ -896,8 +990,16 @@
             //ridge magnitude having slope=4Pi/8;
             double[] colSums = MatrixTools.SumColumns(m);
             ridgeMagnitudes[4, 1] = colSums[centreID];
-            for (int c = 0; c < centreID; c++)        ridgeMagnitudes[4, 0] += colSums[c]; //positve  side magnitude
-            for (int c = centreID + 1; c < rows; c++) ridgeMagnitudes[4, 2] += colSums[c]; //negative side magnitude
+            for (int c = 0; c < centreID; c++)
+            {
+                ridgeMagnitudes[4, 0] += colSums[c]; //positve  side magnitude
+            }
+
+            for (int c = centreID + 1; c < rows; c++)
+            {
+                ridgeMagnitudes[4, 2] += colSums[c]; //negative side magnitude
+            }
+
             ridgeMagnitudes[4, 0] /= (double)(centreID * cols);
             ridgeMagnitudes[4, 1] /= (double)cols;
             ridgeMagnitudes[4, 2] /= (double)(centreID * cols);
@@ -923,24 +1025,23 @@
             //negative side magnitude
             ridgeMagnitudes[7, 2] = (m[cm2, cm2] + m[cm2, cm1] + m[cm2, centreID] + m[cm2, cp1] + m[cm2, cp2] + m[cm1, centreID] + m[cm1, cp1] + m[cm1, cp2] + m[centreID, cp1] + m[centreID, cp2]) / (double)10; //
 
-
             double[] differences = new double[7]; // difference for each direction
             for (int i = 0; i < 7; i++)
             {
                 differences[i] = (ridgeMagnitudes[i, 1] - ridgeMagnitudes[i, 0]) + (ridgeMagnitudes[i, 1] - ridgeMagnitudes[i, 2]);
                 differences[i] /= 2; // want average of both differences because easier to select an appropiate decibel threshold for ridge magnitude.
             }
+
             int indexMin, indexMax;
             double diffMin, diffMax;
             DataTools.MinMax(differences, out indexMin, out indexMax, out diffMin, out diffMax);
-
 
             //double threshold = min + (max - min) / 4; //threshold is 1/5th of range above min
             double threshold = 0; // dB
             isRidge = ((ridgeMagnitudes[indexMax, 1] > (ridgeMagnitudes[indexMax, 0] + threshold))
                     && (ridgeMagnitudes[indexMax, 1] > (ridgeMagnitudes[indexMax, 2] + threshold)));
             magnitude = diffMax;
-            direction = indexMax * Math.PI / (double) 8;
+            direction = indexMax * Math.PI / (double)8;
         }
 
         /// <summary>
@@ -963,7 +1064,6 @@
 
             double[] ridgeMagnitudes = Sobel5X5RidgeDetection(m);
 
-
             if (ridgeMagnitudes == null) // something gone wrong
             {
                 isRidge = false;
@@ -978,7 +1078,7 @@
 
             double threshold = 0; // dB
             isRidge = (ridgeMagnitudes[indexMax] > threshold);
-            magnitude = diffMax/2;
+            magnitude = diffMax / 2;
             //direction = indexMax * Math.PI / (double)4;
             direction = indexMax;
         }
@@ -1000,29 +1100,29 @@
                 return null;
             }
 
-            double[,] ridgeDir0Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+            double[,] ridgeDir0Mask = { {-0.1, -0.1, -0.1, -0.1, -0.1},
+                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
                                         { 0.4, 0.4, 0.4, 0.4, 0.4},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
+                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
                                       };
-            double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
-                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
-                                        { 0.4,-0.1,-0.1,-0.1,-0.1},
+            double[,] ridgeDir1Mask = { {-0.1, -0.1, -0.1, -0.1, 0.4},
+                                        {-0.1, -0.1, -0.1, 0.4, -0.1},
+                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
+                                        {-0.1, 0.4, -0.1, -0.1, -0.1},
+                                        { 0.4, -0.1, -0.1, -0.1, -0.1},
                                       };
-            double[,] ridgeDir2Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+            double[,] ridgeDir2Mask = { {-0.1, -0.1, 0.4, -0.1, -0.1},
+                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
+                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
+                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
+                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
                                       };
-            double[,] ridgeDir3Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1, 0.4},
+            double[,] ridgeDir3Mask = { { 0.4, -0.1, -0.1, -0.1, -0.1},
+                                        {-0.1, 0.4, -0.1, -0.1, -0.1},
+                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
+                                        {-0.1, -0.1, -0.1, 0.4, -0.1},
+                                        {-0.1, -0.1, -0.1, -0.1, 0.4},
                                       };
 
             double[] ridgeMagnitudes = new double[4];
@@ -1057,29 +1157,29 @@
                 return;
             }
 
-            double[,] ridgeDir0Mask = { {-0.2,-0.2,-0.2,-0.2,-0.2},
-                                        {-0.3,-0.3,-0.3,-0.3,-0.3},
+            double[,] ridgeDir0Mask = { {-0.2, -0.2, -0.2, -0.2, -0.2},
+                                        {-0.3, -0.3, -0.3, -0.3, -0.3},
                                         { 1.0, 1.0, 1.0, 1.0, 1.0},
-                                        {-0.3,-0.3,-0.3,-0.3,-0.3},
-                                        {-0.2,-0.2,-0.2,-0.2,-0.2},
+                                        {-0.3, -0.3, -0.3, -0.3, -0.3},
+                                        {-0.2, -0.2, -0.2, -0.2, -0.2},
                                       };
-            double[,] ridgeDir1Mask = { {-0.1,-0.2,-0.2,-0.3, 0.8},
-                                        {-0.2,-0.2,-0.3, 1.0,-0.3},
-                                        {-0.2,-0.3, 1.0,-0.3,-0.2},
-                                        {-0.3, 1.0,-0.3,-0.2,-0.2},
-                                        { 0.8,-0.3,-0.2,-0.2,-0.1},
+            double[,] ridgeDir1Mask = { {-0.1, -0.2, -0.2, -0.3, 0.8},
+                                        {-0.2, -0.2, -0.3, 1.0, -0.3},
+                                        {-0.2, -0.3, 1.0, -0.3, -0.2},
+                                        {-0.3, 1.0, -0.3, -0.2, -0.2},
+                                        { 0.8, -0.3, -0.2, -0.2, -0.1},
                                       };
-            double[,] ridgeDir2Mask = { {-0.2,-0.3, 1.0,-0.3,-0.2},
-                                        {-0.2,-0.3, 1.0,-0.3,-0.2},
-                                        {-0.2,-0.3, 1.0,-0.3,-0.2},
-                                        {-0.2,-0.3, 1.0,-0.3,-0.2},
-                                        {-0.2,-0.3, 1.0,-0.3,-0.2},
+            double[,] ridgeDir2Mask = { {-0.2, -0.3, 1.0, -0.3, -0.2},
+                                        {-0.2, -0.3, 1.0, -0.3, -0.2},
+                                        {-0.2, -0.3, 1.0, -0.3, -0.2},
+                                        {-0.2, -0.3, 1.0, -0.3, -0.2},
+                                        {-0.2, -0.3, 1.0, -0.3, -0.2},
                                       };
-            double[,] ridgeDir3Mask = { { 0.8,-0.3,-0.2,-0.2,-0.1},
-                                        {-0.3, 1.0,-0.3,-0.2,-0.2},
-                                        {-0.2,-0.3, 1.0,-0.3,-0.2},
-                                        {-0.2,-0.2,-0.3, 1.0,-0.3},
-                                        {-0.1,-0.2,-0.2,-0.3, 0.8},
+            double[,] ridgeDir3Mask = { { 0.8, -0.3, -0.2, -0.2, -0.1},
+                                        {-0.3, 1.0, -0.3, -0.2, -0.2},
+                                        {-0.2, -0.3, 1.0, -0.3, -0.2},
+                                        {-0.2, -0.2, -0.3, 1.0, -0.3},
+                                        {-0.1, -0.2, -0.2, -0.3, 0.8},
                                       };
 
             double[] ridgeMagnitudes = new double[4];
@@ -1115,53 +1215,53 @@
                 return;
             }
 
-            double[,] ridgeDir0Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4, 0.4, 0.4},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+            double[,] ridgeDir0Mask = { {-0.1, -0.1, 0.4, -0.1, -0.1},
+                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
+                                        {-0.1, -0.1, 0.4, 0.4, 0.4},
+                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
+                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
                                       };
-            double[,] ridgeDir1Mask = { { 0.4,-0.1,-0.1,-0.1, 0.4},
-                                        {-0.1, 0.4,-0.1, 0.4,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+            double[,] ridgeDir1Mask = { { 0.4, -0.1, -0.1, -0.1, 0.4},
+                                        {-0.1, 0.4, -0.1, 0.4, -0.1},
+                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
+                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
+                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
                                       };
-            double[,] ridgeDir2Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        { 0.4, 0.4, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+            double[,] ridgeDir2Mask = { {-0.1, -0.1, 0.4, -0.1, -0.1},
+                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
+                                        { 0.4, 0.4, 0.4, -0.1, -0.1},
+                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
+                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
                                       };
-            double[,] ridgeDir3Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
-                                        { 0.4,-0.1,-0.1,-0.1,-0.1},
+            double[,] ridgeDir3Mask = { { 0.4, -0.1, -0.1, -0.1, -0.1},
+                                        {-0.1, 0.4, -0.1, -0.1, -0.1},
+                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
+                                        {-0.1, 0.4, -0.1, -0.1, -0.1},
+                                        { 0.4, -0.1, -0.1, -0.1, -0.1},
                                       };
-            double[,] ridgeDir4Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        { 0.4, 0.4, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+            double[,] ridgeDir4Mask = { {-0.1, -0.1, -0.1, -0.1, -0.1},
+                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
+                                        { 0.4, 0.4, 0.4, -0.1, -0.1},
+                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
+                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
                                       };
-            double[,] ridgeDir5Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1, 0.4,-0.1, 0.4,-0.1},
-                                        { 0.4,-0.1,-0.1,-0.1, 0.4},
+            double[,] ridgeDir5Mask = { {-0.1, -0.1, -0.1, -0.1, -0.1},
+                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
+                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
+                                        {-0.1, 0.4, -0.1, 0.4, -0.1},
+                                        { 0.4, -0.1, -0.1, -0.1, 0.4},
                                       };
-            double[,] ridgeDir6Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4, 0.4, 0.4},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+            double[,] ridgeDir6Mask = { {-0.1, -0.1, -0.1, -0.1, -0.1},
+                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
+                                        {-0.1, -0.1, 0.4, 0.4, 0.4},
+                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
+                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
                                       };
-            double[,] ridgeDir7Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
-                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1, 0.4},
+            double[,] ridgeDir7Mask = { {-0.1, -0.1, -0.1, -0.1, 0.4},
+                                        {-0.1, -0.1, -0.1, 0.4, -0.1},
+                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
+                                        {-0.1, -0.1, -0.1, 0.4, -0.1},
+                                        {-0.1, -0.1, -0.1, -0.1, 0.4},
                                       };
 
             double[] cornerMagnitudes = new double[8];
@@ -1183,8 +1283,6 @@
             magnitude = diffMax / 2;
             direction = indexMax * Math.PI / (double)8;
         }
-
-
 
         /// <summary>
         /// Reverses a 256 grey scale image
@@ -1208,7 +1306,6 @@
             return newMatrix;
         }
 
-
         /// <summary>
         /// blurs an image using a square neighbourhood
         /// </summary>
@@ -1217,7 +1314,10 @@
         /// <returns></returns>
         public static double[,] Blur(double[,] matrix, int nh)
         {
-            if (nh <= 0) return matrix; //no blurring required
+            if (nh <= 0)
+            {
+                return matrix; //no blurring required
+            }
 
             int M = matrix.GetLength(0);
             int N = matrix.GetLength(1);
@@ -1232,7 +1332,13 @@
                 {
                     double sum = 0.0;
                     for (int x = i - nh; x < (i + nh); x++)
-                        for (int y = j - nh; y < (j + nh); y++) sum += matrix[x, y];
+                    {
+                        for (int y = j - nh; y < (j + nh); y++)
+                        {
+                            sum += matrix[x, y];
+                        }
+                    }
+
                     double v = sum / cellCount;
                     newMatrix[i, j] = v;
                 }
@@ -1251,15 +1357,18 @@
         /// <returns></returns>
         public static double[,] Blur(double[,] matrix, int cWindow, int rWindow)
         {
-            if ((cWindow <= 1) && (rWindow <= 1)) return matrix; //no blurring required
+            if ((cWindow <= 1) && (rWindow <= 1))
+            {
+                return matrix; //no blurring required
+            }
 
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             int cNH = cWindow / 2;
             int rNH = rWindow / 2;
             //LoggedConsole.WriteLine("cNH=" + cNH + ", rNH" + rNH);
-            int area = ((2 * cNH) + 1) * ((2 * rNH) + 1);//area of rectangular neighbourhood
-            double[,] newMatrix = new double[rows, cols];//init new matrix to return
+            int area = ((2 * cNH) + 1) * ((2 * rNH) + 1); //area of rectangular neighbourhood
+            double[,] newMatrix = new double[rows, cols]; //init new matrix to return
 
             // fix up the edges first
             for (int r = 0; r < rows; r++)
@@ -1268,11 +1377,13 @@
                 {
                     newMatrix[r, c] = matrix[r, c];
                 }
+
                 for (int c = (cols - cNH); c < cols; c++)
                 {
                     newMatrix[r, c] = matrix[r, c];
                 }
             }
+
             // fix up other edges
             for (int c = 0; c < cols; c++)
             {
@@ -1280,6 +1391,7 @@
                 {
                     newMatrix[r, c] = matrix[r, c];
                 }
+
                 for (int r = (rows - rNH); r < rows; r++)
                 {
                     newMatrix[r, c] = matrix[r, c];
@@ -1299,15 +1411,13 @@
                             sum += matrix[y, x];
                         }
                     }
+
                     newMatrix[r, c] = sum / (double)area;
                 }
             }
 
             return newMatrix;
         }//end method Blur()
-
-
-
 
         // ###################################################################################################################################
 
@@ -1336,20 +1446,27 @@
             int clipCount = (int)(upperCut * count);
             int i = binCount - 1;
             int sum = 0;
-            while ((sum < clipCount) && (i > 0)) sum += powerHisto[i--];
+            while ((sum < clipCount) && (i > 0))
+            {
+                sum += powerHisto[i--];
+            }
+
             upperThreshold = min + (i * binWidth);
 
             //calculate threshold for lower percentile
             clipCount = (int)(lowerCut * count);
             int j = 0;
             sum = 0;
-            while ((sum < clipCount) && (j < binCount)) sum += powerHisto[j++];
+            while ((sum < clipCount) && (j < binCount))
+            {
+                sum += powerHisto[j++];
+            }
+
             lowerThreshold = min + (j * binWidth);
 
             //DataTools.writeBarGraph(powerHisto);
             //LoggedConsole.WriteLine("LowerThreshold=" + lowerThreshold + "  UpperThreshold=" + upperThreshold);
         }
-
 
         public static double[,] TrimPercentiles(double[,] matrix)
         {
@@ -1394,9 +1511,17 @@
 
                     //construct new threshold submatrix to recalculate the current threshold
                     int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
-                    if (start < 0) start = 0;
+                    if (start < 0)
+                    {
+                        start = 0;
+                    }
+
                     int stop = col + halfWidth;
-                    if (stop >= width) stop = width - 1;
+                    if (stop >= width)
+                    {
+                        stop = width - 1;
+                    }
+
                     thresholdSubatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
                     PercentileThresholds(thresholdSubatrix, lowerPercentile, upperPercentile, out lowerThreshold, out upperThreshold);
                 }
@@ -1404,8 +1529,15 @@
                 for (int y = 0; y < height; y++)
                 {
                     tmpM[y, tmpCol] = matrix[y, col];
-                    if (tmpM[y, tmpCol] > upperThreshold) tmpM[y, tmpCol] = upperThreshold;
-                    if (tmpM[y, tmpCol] < lowerThreshold) tmpM[y, tmpCol] = lowerThreshold;
+                    if (tmpM[y, tmpCol] > upperThreshold)
+                    {
+                        tmpM[y, tmpCol] = upperThreshold;
+                    }
+
+                    if (tmpM[y, tmpCol] < lowerThreshold)
+                    {
+                        tmpM[y, tmpCol] = lowerThreshold;
+                    }
                     //outM[y, col] = matrix[y, col] - upperThreshold;
                     //if (outM[y, col] < upperThreshold) outM[y, col] = upperThreshold;
 
@@ -1413,11 +1545,11 @@
                     //else M[y, col] = 1.0;
                 }
             }//for all cols
+
             return outM;
         }// end of TrimPercentiles()
 
         // ###################################################################################################################################
-
 
         /// <summary>
         /// Calculates the local signal to noise ratio in the neighbourhood of side=window
@@ -1453,14 +1585,17 @@
 
                     double av; double sd;
                     NormalDist.AverageAndSD(values, out av, out sd);
-                    if (sd < 0.0001) sd = 0.0001;
+                    if (sd < 0.0001)
+                    {
+                        sd = 0.0001;
+                    }
+
                     newMatrix[i, j] = (matrix[i, j] - av) / sd;
                 }
             }
 
             return newMatrix;
         }
-
 
         public static double[,] Signal2NoiseRatio_BandWise(double[,] matrix)
         {
@@ -1475,26 +1610,37 @@
             for (int col = 0; col < width; col++)//for all cols
             {
                 int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
-                if (start < 0) start = 0;
+                if (start < 0)
+                {
+                    start = 0;
+                }
+
                 int stop = col + halfWidth;
-                if (stop >= width) stop = width - 1;
+                if (stop >= width)
+                {
+                    stop = width - 1;
+                }
 
                 if ((col % 8 == 0) && (!(col == 0)))
+                {
                     subMatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
+                }
 
                 double av; double sd;
                 NormalDist.AverageAndSD(subMatrix, out av, out sd);
-                if (sd < 0.0001) sd = 0.0001;  //to prevent division by zero
+                if (sd < 0.0001)
+                {
+                    sd = 0.0001;  //to prevent division by zero
+                }
 
                 for (int y = 0; y < height; y++)
                 {
                     M[y, col] = (matrix[y, col] - av) / sd;
                 }
             }//for all cols
+
             return M;
         }// end of SubtractAverage()
-
-
 
         public static double[,] SubtractAverage_BandWise(double[,] matrix)
         {
@@ -1509,12 +1655,22 @@
             for (int col = 0; col < width; col++)//for all cols
             {
                 int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
-                if (start < 0) start = 0;
+                if (start < 0)
+                {
+                    start = 0;
+                }
+
                 int stop = col + halfWidth;
-                if (stop >= width) stop = width - 1;
+                if (stop >= width)
+                {
+                    stop = width - 1;
+                }
 
                 if ((col % 8 == 0) && (!(col == 0)))
+                {
                     subMatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
+                }
+
                 double av; double sd;
                 NormalDist.AverageAndSD(subMatrix, out av, out sd);
                 //LoggedConsole.WriteLine(0 + "," + start + "," + (height - 1) + "," + stop + "   Threshold " + b + "=" + threshold);
@@ -1524,9 +1680,9 @@
                     M[y, col] = matrix[y, col] - av;
                 }//for all rows
             }//for all cols
+
             return M;
         }// end of SubtractAverage()
-
 
         /// <summary>
         /// Returns matrix after convolving with Gaussian blur.
@@ -1551,7 +1707,11 @@
                 for (int c = edge; c < width - edge; c++)//for all cols
                 {
                     double sum = 0.0;
-                    for (int i = 0; i < bf.Length; i++) sum += (bf[i] * matrix[r, c - backtrack + i]);
+                    for (int i = 0; i < bf.Length; i++)
+                    {
+                        sum += (bf[i] * matrix[r, c - backtrack + i]);
+                    }
+
                     M1[r, c] = sum;
                 }//for all cols
             }//for all rows
@@ -1563,15 +1723,17 @@
                 for (int c = edge; c < width - edge; c++)//for all cols
                 {
                     double sum = 0.0;
-                    for (int i = 0; i < bf.Length; i++) sum += (bf[i] * M1[r - backtrack + i, c]);
+                    for (int i = 0; i < bf.Length; i++)
+                    {
+                        sum += (bf[i] * M1[r - backtrack + i, c]);
+                    }
+
                     M2[r, c] = sum;
                 }//for all cols
             }//for all rows
 
             return M2;
         }// end of Shapes_lines()
-
-
 
         /// <summary>
         /// Detect high intensity / high energy regions in an image using blurring
@@ -1596,21 +1758,34 @@
 
             double[,] M = new double[height, width];
 
-            for (int x = 0; x < width; x++) M[0, x] = 0.0; //patch in first  time step with zero gradient
-            for (int x = 0; x < width; x++) M[1, x] = 0.0; //patch in second time step with zero gradient
+            for (int x = 0; x < width; x++)
+            {
+                M[0, x] = 0.0; //patch in first  time step with zero gradient
+            }
+
+            for (int x = 0; x < width; x++)
+            {
+                M[1, x] = 0.0; //patch in second time step with zero gradient
+            }
 
             for (int b = 0; b < bandCount; b++)//for all bands
             {
                 int start = (int)((b - 1) * bandWidth);   //extend range of submatrix below b for smoother changes
-                if (start < 0) start = 0;
+                if (start < 0)
+                {
+                    start = 0;
+                }
+
                 int stop = (int)((b + 2) * bandWidth);
-                if (stop >= width) stop = width - 1;
+                if (stop >= width)
+                {
+                    stop = width - 1;
+                }
 
                 double[,] subMatrix = DataTools.Submatrix(blurM, 0, start, height - 1, stop);
                 double lowerThreshold; double upperThreshold;
                 PercentileThresholds(subMatrix, lowerShoulder, upperShoulder, out lowerThreshold, out upperThreshold);
                 //LoggedConsole.WriteLine(0 + "," + start + "," + (height - 1) + "," + stop + "   Threshold " + b + "=" + threshold);
-
 
                 for (int x = start; x < stop; x++)
                 {
@@ -1618,18 +1793,33 @@
                     for (int y = 2; y < height - 1; y++)
                     {
 
-                        double grad1 = blurM[y, x] - blurM[y - 1, x];//calculate one step gradient
-                        double grad2 = blurM[y + 1, x] - blurM[y - 1, x];//calculate two step gradient
+                        double grad1 = blurM[y, x] - blurM[y - 1, x]; //calculate one step gradient
+                        double grad2 = blurM[y + 1, x] - blurM[y - 1, x]; //calculate two step gradient
 
-                        if (blurM[y, x] < upperThreshold) state = 0;
+                        if (blurM[y, x] < upperThreshold)
+                        {
+                            state = 0;
+                        }
                         else
-                            if (grad1 < -gradThreshold) state = 0;    // local decrease
-                            else
-                                if (grad1 > gradThreshold) state = 1;     // local increase
-                                else
-                                    if (grad2 < -gradThreshold) state = 0;    // local decrease
-                                    else
-                                        if (grad2 > gradThreshold) state = 1;     // local increase
+                            if (grad1 < -gradThreshold)
+                        {
+                            state = 0;    // local decrease
+                        }
+                        else
+                                if (grad1 > gradThreshold)
+                        {
+                            state = 1;     // local increase
+                        }
+                        else
+                                    if (grad2 < -gradThreshold)
+                        {
+                            state = 0;    // local decrease
+                        }
+                        else
+                                        if (grad2 > gradThreshold)
+                        {
+                            state = 1;     // local increase
+                        }
 
                         M[y, x] = (double)state;
                     }
@@ -1641,8 +1831,6 @@
             M = Shapes_RemoveSmall(M, minRowWidth, minColWidth);
             return M;
         }// end of DetectHighEnergyRegions1()
-
-
 
         /// <summary>
         /// Detect high intensity / high energy regions in an image using blurring
@@ -1672,9 +1860,16 @@
             for (int col = 0; col < width; col++)//for all cols
             {
                 int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
-                if (start < 0) start = 0;
+                if (start < 0)
+                {
+                    start = 0;
+                }
+
                 int stop = col + halfWidth;
-                if (stop >= width) stop = width - 1;
+                if (stop >= width)
+                {
+                    stop = width - 1;
+                }
 
                 if ((col % 8 == 0) && (!(col == 0)))
                 {
@@ -1684,13 +1879,19 @@
 
                 for (int y = 0; y < height; y++)
                 {
-                    if (blurM[y, col] < upperThreshold) M[y, col] = 0.0;
-                    else M[y, col] = 1.0;
+                    if (blurM[y, col] < upperThreshold)
+                    {
+                        M[y, col] = 0.0;
+                    }
+                    else
+                    {
+                        M[y, col] = 1.0;
+                    }
                 }
             }//for all cols
+
             return M;
         }// end of Shapes2()
-
 
         public static double[,] Shapes3(double[,] m)
         {
@@ -1705,20 +1906,36 @@
             {
                 for (int x = 0; x < width; x++)
                 {
-                    if (m2[y, x] == 0.0) continue; //nothing here
-                    if (tmpM[y, x] == 1.0) continue; //already have something here
+                    if (m2[y, x] == 0.0)
+                    {
+                        continue; //nothing here
+                    }
+
+                    if (tmpM[y, x] == 1.0)
+                    {
+                        continue; //already have something here
+                    }
 
                     int colWidth; //colWidth of object
                     Oblong.ColumnWidth(m2, x, y, out colWidth);
                     int x2 = x + colWidth;
-                    for (int j = x; j < x2; j++) tmpM[y, j] = 1.0;
+                    for (int j = x; j < x2; j++)
+                    {
+                        tmpM[y, j] = 1.0;
+                    }
 
                     //find distance to nearest object in hi frequency direction
                     // and join the two if within threshold distance
                     int thresholdDistance = 15;
                     int dist = 1;
                     while (((x2 + dist) < width) && (m2[y, x2 + dist] == 0)) { dist++; }
-                    if (((x2 + dist) < width) && (dist < thresholdDistance)) for (int d = 0; d < dist; d++) tmpM[y, x2 + d] = 1.0;
+                    if (((x2 + dist) < width) && (dist < thresholdDistance))
+                    {
+                        for (int d = 0; d < dist; d++)
+                        {
+                            tmpM[y, x2 + d] = 1.0;
+                        }
+                    }
                 }
             }
 
@@ -1728,8 +1945,15 @@
             {
                 for (int x = 0; x < width; x++)
                 {
-                    if (tmpM[y, x] == 0.0) continue; //nothing here
-                    if (outM[y, x] == 1.0) continue; //already have something here
+                    if (tmpM[y, x] == 0.0)
+                    {
+                        continue; //nothing here
+                    }
+
+                    if (outM[y, x] == 1.0)
+                    {
+                        continue; //already have something here
+                    }
 
                     //int rowWidth; //rowWidth of object
                     //Shape.Row_Width(m2, x, y, out rowWidth);
@@ -1746,7 +1970,14 @@
                             break;
                         }
                     }//end of ascertaining if line overlapsHighEnergy
-                    if (overlapsHighEnergy) for (int j = x; j < x2; j++) outM[y, j] = 1.0;
+
+                    if (overlapsHighEnergy)
+                    {
+                        for (int j = x; j < x2; j++)
+                        {
+                            outM[y, j] = 1.0;
+                        }
+                    }
                 }
             }
 
@@ -1756,8 +1987,6 @@
             outM = Shapes_RemoveSmallUnattached(outM, minRowWidth, minColWidth);
             return outM;
         }
-
-
 
         public static ArrayList Shapes4(double[,] m)
         {
@@ -1774,21 +2003,38 @@
             {
                 for (int x = 0; x < width; x++) //transfer values to tmpM
                 {
-                    if (m2[y, x] == 0.0) continue; //nothing here
-                    if (tmpM[y, x] == 1.0) continue; //already have something here
+                    if (m2[y, x] == 0.0)
+                    {
+                        continue; //nothing here
+                    }
+
+                    if (tmpM[y, x] == 1.0)
+                    {
+                        continue; //already have something here
+                    }
 
                     int colWidth; //colWidth of object
                     Oblong.ColumnWidth(m2, x, y, out colWidth);
                     int x2 = x + colWidth - 1;
-                    for (int j = x; j < x2; j++) tmpM[y, j] = 1.0;
+                    for (int j = x; j < x2; j++)
+                    {
+                        tmpM[y, j] = 1.0;
+                    }
 
                     //find distance to nearest object in hi frequency direction
                     // and join the two if within threshold distance
                     int thresholdDistance = 10;
                     int dist = 1;
                     while (((x2 + dist) < width) && (m2[y, x2 + dist] == 0)) { dist++; }
-                    if (((x2 + dist) < width) && (dist < thresholdDistance)) for (int d = 0; d < dist; d++) tmpM[y, x2 + d] = 1.0;
+                    if (((x2 + dist) < width) && (dist < thresholdDistance))
+                    {
+                        for (int d = 0; d < dist; d++)
+                        {
+                            tmpM[y, x2 + d] = 1.0;
+                        }
+                    }
                 }
+
                 y++; //only even rows
             }
 
@@ -1799,8 +2045,15 @@
             {
                 for (int x = 0; x < width; x++)
                 {
-                    if (tmpM[y, x] == 0.0) continue; //nothing here
-                    if (outM[y, x] == 1.0) continue; //already have something here
+                    if (tmpM[y, x] == 0.0)
+                    {
+                        continue; //nothing here
+                    }
+
+                    if (outM[y, x] == 1.0)
+                    {
+                        continue; //already have something here
+                    }
 
                     int colWidth; //colWidth of object
                     Oblong.ColumnWidth(tmpM, x, y, out colWidth);
@@ -1816,14 +2069,30 @@
                             break;
                         }
                     }//end of ascertaining if line overlapsHighEnergy
+
                     if (overlapsHighEnergy)
                     {
                         shapes.Add(new Oblong(y, x, y + 1, x2));
                         objectCount++;
-                        for (int j = x; j < x2; j++) outM[y, j] = 1.0;
-                        for (int j = x; j < x2; j++) tmpM[y, j] = 0.0;
-                        for (int j = x; j < x2; j++) outM[y + 1, j] = 1.0;
-                        for (int j = x; j < x2; j++) tmpM[y + 1, j] = 0.0;
+                        for (int j = x; j < x2; j++)
+                        {
+                            outM[y, j] = 1.0;
+                        }
+
+                        for (int j = x; j < x2; j++)
+                        {
+                            tmpM[y, j] = 0.0;
+                        }
+
+                        for (int j = x; j < x2; j++)
+                        {
+                            outM[y + 1, j] = 1.0;
+                        }
+
+                        for (int j = x; j < x2; j++)
+                        {
+                            tmpM[y + 1, j] = 0.0;
+                        }
                     }
                 }//end cols
             }//end rows
@@ -1845,8 +2114,6 @@
         /// <summary>
         /// Returns an ArrayList of rectabgular shapes that represent acoustic events / syllables in the sonogram.
         /// </summary>
-        /// <param name="m"></param>
-        /// <returns></returns>
         public static ArrayList Shapes5(double[,] m)
         {
             //get binary matrix showing high energy regions
@@ -1861,7 +2128,6 @@
             threshold = 0.2;
             m2 = DataTools.Threshold(m2, threshold);
 
-
             //prepare to extract acoustic events or shapes
             int height = m.GetLength(0);
             int width = m.GetLength(1);
@@ -1872,21 +2138,38 @@
             {
                 for (int x = 0; x < width; x++) //transfer values to tmpM
                 {
-                    if (m2[y, x] == 0.0) continue; //nothing here
-                    if (tmpM[y, x] == 1.0) continue; //already have something here
+                    if (m2[y, x] == 0.0)
+                    {
+                        continue; //nothing here
+                    }
+
+                    if (tmpM[y, x] == 1.0)
+                    {
+                        continue; //already have something here
+                    }
 
                     int colWidth; //colWidth of object
                     Oblong.ColumnWidth(m2, x, y, out colWidth);
                     int x2 = x + colWidth - 1;
-                    for (int j = x; j < x2; j++) tmpM[y, j] = 1.0;
+                    for (int j = x; j < x2; j++)
+                    {
+                        tmpM[y, j] = 1.0;
+                    }
 
                     //find distance to nearest object in hi frequency direction
                     // and join the two if within threshold distance
                     int thresholdDistance = 10;
                     int dist = 1;
                     while (((x2 + dist) < width) && (m2[y, x2 + dist] == 0)) { dist++; }
-                    if (((x2 + dist) < width) && (dist < thresholdDistance)) for (int d = 0; d < dist; d++) tmpM[y, x2 + d] = 1.0;
+                    if (((x2 + dist) < width) && (dist < thresholdDistance))
+                    {
+                        for (int d = 0; d < dist; d++)
+                        {
+                            tmpM[y, x2 + d] = 1.0;
+                        }
+                    }
                 }
+
                 y++; //only even rows
             }
 
@@ -1897,8 +2180,15 @@
             {
                 for (int x = 0; x < width; x++)
                 {
-                    if (tmpM[y, x] == 0.0) continue; //nothing here
-                    if (outM[y, x] == 1.0) continue; //already have something here
+                    if (tmpM[y, x] == 0.0)
+                    {
+                        continue; //nothing here
+                    }
+
+                    if (outM[y, x] == 1.0)
+                    {
+                        continue; //already have something here
+                    }
 
                     int colWidth; //colWidth of object
                     Oblong.ColumnWidth(tmpM, x, y, out colWidth);
@@ -1914,14 +2204,30 @@
                             break;
                         }
                     }//end of ascertaining if line overlapsHighEnergy
+
                     if (overlapsHighEnergy)
                     {
                         shapes.Add(new Oblong(y, x, y + 1, x2));
                         objectCount++;
-                        for (int j = x; j < x2; j++) outM[y, j] = 1.0;
-                        for (int j = x; j < x2; j++) tmpM[y, j] = 0.0;
-                        for (int j = x; j < x2; j++) outM[y + 1, j] = 1.0;
-                        for (int j = x; j < x2; j++) tmpM[y + 1, j] = 0.0;
+                        for (int j = x; j < x2; j++)
+                        {
+                            outM[y, j] = 1.0;
+                        }
+
+                        for (int j = x; j < x2; j++)
+                        {
+                            tmpM[y, j] = 0.0;
+                        }
+
+                        for (int j = x; j < x2; j++)
+                        {
+                            outM[y + 1, j] = 1.0;
+                        }
+
+                        for (int j = x; j < x2; j++)
+                        {
+                            tmpM[y + 1, j] = 0.0;
+                        }
                     }
                 }//end cols
             }//end rows
@@ -1940,13 +2246,9 @@
             return shapes;
         }
 
-
-
         /// <summary>
         /// Returns a binary matrix containing high energy lines in the oriignal spectrogram
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
         public static double[,] Shapes_lines(double[,] matrix)
         {
             double threshold = 0.3;
@@ -1964,8 +2266,6 @@
             double[,] M = DataTools.Threshold(tmpM, threshold);
             return M;
         }// end of Shapes_lines()
-
-
 
         /// <summary>
         /// Returns a binary matrix containing high energy lines in the original spectrogram
@@ -1991,15 +2291,23 @@
             double[,] M = new double[height, width];
 
             double[,] subMatrix = DataTools.Submatrix(tmpM, 0, 0, height - 1, bandWidth);
-            double lowerThreshold; double upperThreshold;
+            double lowerThreshold;
+            double upperThreshold;
             PercentileThresholds(subMatrix, lowerShoulder, upperShoulder, out lowerThreshold, out upperThreshold);
 
-            for (int col = 2; col < width; col++)//for all cols
+            for (int col = 2; col < width; col++) // for all cols
             {
-                int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
-                if (start < 0) start = 0;
+                int start = col - halfWidth; //extend range of submatrix below col for smoother changes
+                if (start < 0)
+                {
+                    start = 0;
+                }
+
                 int stop = col + halfWidth;
-                if (stop >= width) stop = width - 1;
+                if (stop >= width)
+                {
+                    stop = width - 1;
+                }
 
                 if ((col % 8 == 0) && (!(col == 0)))
                 {
@@ -2013,21 +2321,29 @@
                     if (tmpM[y, col] > upperThreshold)
                     {
                         M[y, col] = 1;
-                        if (evenRow) M[y + 1, col] = 1;
-                        else M[y - 1, col] = 1;
+                        if (evenRow)
+                        {
+                            M[y + 1, col] = 1;
+                        }
+                        else
+                        {
+                            M[y - 1, col] = 1;
+                        }
+
                         //fill in gaps
-                        if ((M[y, col - 2] == 1.0) && (M[y, col - 1] == 0.0)) M[y, col - 1] = 1;
+                        if ((M[y, col - 2] == 1.0) && (M[y, col - 1] == 0.0))
+                        {
+                            M[y, col - 1] = 1;
+                        }
                     }
                 }
             }//for all cols
+
             int minRowWidth = 2;
             int minColWidth = 5;
             M = Shapes_RemoveSmall(M, minRowWidth, minColWidth);
             return M;
         }// end of Shapes_lines()
-
-
-
 
         public static double[,] Shapes_RemoveSmall(double[,] m, int minRowWidth, int minColWidth)
         {
@@ -2039,15 +2355,21 @@
             {
                 for (int y = 1; y < height - 1; y++)
                 {
-                    if (m[y, x] == 0.0) continue; //nothing here
-                    if (M[y, x] == 1.0) continue; //already have something here
+                    if (m[y, x] == 0.0)
+                    {
+                        continue; //nothing here
+                    }
+
+                    if (M[y, x] == 1.0)
+                    {
+                        continue; //already have something here
+                    }
 
                     int rowWidth; //rowWidth of object
                     Oblong.Row_Width(m, x, y, out rowWidth);
                     int colWidth; //colWidth of object
                     Oblong.ColumnWidth(m, x, y, out colWidth);
-                    bool sizeOK = false;
-                    if ((rowWidth >= minRowWidth) && (colWidth >= minColWidth)) sizeOK = true;
+                    bool sizeOK = (rowWidth >= minRowWidth) && (colWidth >= minColWidth);
 
                     if (sizeOK)
                     {
@@ -2059,14 +2381,15 @@
                             }
                         }
                     }
+
                     y += (rowWidth - 1);
                 }//end y loop
             }//end x loop
+
             //M = m;
 
             return M;
         }
-
 
         public static double[,] Shapes_RemoveSmallUnattached(double[,] m, int minRowWidth, int minColWidth)
         {
@@ -2078,15 +2401,25 @@
             {
                 for (int y = 1; y < height - 3; y++)
                 {
-                    if (m[y, x] == 0.0) continue; //nothing here
-                    if (M[y, x] == 1.0) continue; //already have something here
+                    if (m[y, x] == 0.0)
+                    {
+                        continue; //nothing here
+                    }
+
+                    if (M[y, x] == 1.0)
+                    {
+                        continue; //already have something here
+                    }
 
                     int rowWidth; //rowWidth of object
                     Oblong.Row_Width(m, x, y, out rowWidth);
                     int colWidth; //colWidth of object
                     Oblong.ColumnWidth(m, x, y, out colWidth);
                     bool sizeOK = false;
-                    if ((rowWidth >= minRowWidth) && (colWidth >= minColWidth)) sizeOK = true;
+                    if ((rowWidth >= minRowWidth) && (colWidth >= minColWidth))
+                    {
+                        sizeOK = true;
+                    }
 
                     //now check if object is unattached to other object
                     bool attachedOK = false;
@@ -2113,6 +2446,7 @@
                     }
                 }//end y loop
             }//end x loop
+
             //M = m;
 
             return M;
@@ -2159,26 +2493,20 @@
             return m;
         }
 
-
-
         /// <summary>
         /// returns a palette of a variety of coluor.
         /// Used for displaying clusters identified by colour.
         /// </summary>
-        /// <param name="paletteSize"></param>
-        /// <returns></returns>
         public static List<Pen> GetRedGradientPalette()
         {
             var pens = new List<Pen>();
             for (int c = 0; c < 256; c++)
             {
-
                 pens.Add(new Pen(Color.FromArgb(255, c, c)));
             }
+
             return pens;
         }
-
-
 
         /// <summary>
         /// returns a palette of a variety of coluor.
@@ -2203,7 +2531,7 @@
 
             //now add random coloured pens
             int max = 255;
-            RandomNumber rn = new RandomNumber(1234567);
+            var rn = new RandomNumber(1234567);
             for (int c = 10; c <= paletteSize; c++)
             {
                 int rd = rn.GetInt(max);
@@ -2211,28 +2539,36 @@
                 int bl = rn.GetInt(max);
                 pens.Add(new Pen(Color.FromArgb(rd, gr, bl)));
             }
+
             return pens;
         }
 
         /// <summary>
         /// Returns an image of an array of the passed colour patches.
         /// </summary>
-        /// <param name="ht"></param>
-        /// <returns></returns>
         public static Image DrawColourChart(int width, int ht, Color[] colorArray)
         {
-            if((colorArray==null)||(colorArray.Length==0))
+            if ((colorArray == null) || (colorArray.Length == 0))
+            {
                 return null;
+            }
 
             int colourCount = colorArray.Length;
             int patchWidth = width / colourCount;
             int maxPathWidth = (int)(ht / 1.5);
             if (patchWidth > maxPathWidth) patchWidth = maxPathWidth;
-            else if (width < 3) width = 3;
+            else if (width < 3)
+            {
+                width = 3;
+            }
+
             Bitmap colorScale = new Bitmap(colourCount * patchWidth, ht);
             Graphics gr = Graphics.FromImage(colorScale);
             int offset = width + 1;
-            if (width < 5) offset = width;
+            if (width < 5)
+            {
+                offset = width;
+            }
 
             Bitmap colorBmp = new Bitmap(width - 1, ht);
             Graphics gr2 = Graphics.FromImage(colorBmp);
@@ -2250,18 +2586,22 @@
                 x += patchWidth;
                 gr.DrawImage(colorBmp, x, 0); //dra
             }
+
             return (Image)colorScale;
         }
 
         /// <summary>
         /// returns a colour array of 256 gray scale values
         /// </summary>
-        /// <returns></returns>
         public static Color[] GrayScale()
         {
             int max = 256;
             Color[] grayScale = new Color[256];
-            for (int c = 0; c < max; c++) grayScale[c] = Color.FromArgb(c, c, c);
+            for (int c = 0; c < max; c++)
+            {
+                grayScale[c] = Color.FromArgb(c, c, c);
+            }
+
             return grayScale;
         }
 
@@ -2270,7 +2610,10 @@
             int max = 256;
             Color[] greenScale = new Color[256];
             for (int c = 0; c < max; c++)
+            {
                 greenScale[c] = Color.FromArgb(0, c, 0);
+            }
+
             return greenScale;
         }
 
@@ -2279,19 +2622,18 @@
         /// Then draws the reversed matrix and saves image to passed path.
         /// </summary>
         /// <param name="matrix">the data</param>
-        /// <param name="pathName"></param>
         public static void DrawReversedMDNMatrix(Matrix<double> matrix, string pathName)
         {
             double[,] matrix1 = matrix.ToArray();
             Image bmp = DrawReversedMatrix(matrix1);
             bmp.Save(pathName);
         }
+
         /// <summary>
         /// Normalises the matrix between zero and one.
         /// Then draws the reversed matrix and saves image to passed path.
         /// </summary>
         /// <param name="matrix">the data</param>
-        /// <param name="pathName"></param>
         public static void DrawReversedMatrix(double[,] matrix, string pathName)
         {
             Image bmp = DrawReversedMatrix(matrix);
@@ -2311,9 +2653,9 @@
                     matrix[r, c] = (double)mb[r, c];
                 }
             }
-                    return matrix;
-        }
 
+            return matrix;
+        }
 
         public static void DrawMatrix(byte[,] mBytes, string pathName)
         {
@@ -2325,8 +2667,7 @@
         /// <summary>
         /// Draws matrix and save image
         /// </summary>
-        /// <param name="matrix">the data</param>
-        /// <param name="pathName"></param>
+        /// <param name="vector">the data</param>
         public static void DrawMatrix(double[] vector, string pathName)
         {
             double[,] matrix = new double[1, vector.Length];
@@ -2334,9 +2675,11 @@
             {
                 matrix[0, i] = vector[i];
             }
+
             Image bmp = DrawNormalisedMatrix(matrix);
             bmp.Save(pathName);
         }
+
         /// <summary>
         /// Draws matrix and save image
         /// </summary>
@@ -2347,6 +2690,7 @@
             Image bmp = DrawNormalisedMatrix(matrix);
             bmp.Save(pathName);
         }
+
         public static void DrawMatrix(double[,] matrix, double lowerBound, double upperBound, string pathName)
         {
             Image bmp = DrawNormalisedMatrix(matrix, lowerBound, upperBound);
@@ -2364,7 +2708,6 @@
             return DrawMatrixWithoutNormalisation(norm);
         }
 
-
         public static Image DrawNormalisedMatrix(double[,] matrix, double lowerBound, double upperBound)
         {
             double[,] norm = DataTools.NormaliseInZeroOne(matrix, lowerBound, upperBound);
@@ -2375,7 +2718,6 @@
         /// Draws matrix after first normalising the data
         /// </summary>
         /// <param name="matrix">the data</param>
-        /// <param name="pathName"></param>
         public static Image DrawReversedMatrix(double[,] matrix)
         {
             double[,] norm = DataTools.normalise(matrix);
@@ -2411,14 +2753,19 @@
                         greyId = (int)Math.Floor(matrix[r, c] * 255);
                         if (greyId < 0) { greyId = 0; }
                         else
-                        { if (greyId > 255) greyId = 255; }
+                        { if (greyId > 255)
+                            {
+                                greyId = 255;
+                            }
+                        }
 
                         greyId = 255 - greyId; // reverse image - want high values in black, low values in white
                     }
 
                     bmp.SetPixel(c, r, grayScale[greyId]);
                 }//end all columns
-            }//end all rows
+            }
+
             return bmp;
         }
 
@@ -2427,7 +2774,6 @@
         /// Assume some form of normalisation already done.
         /// </summary>
         /// <param name="matrix">the data</param>
-        /// <param name="pathName"></param>
         public static Image DrawMatrixWithoutNormalisation(double[,] matrix)
         {
             int rows = matrix.GetLength(0); //number of rows
@@ -2445,11 +2791,16 @@
 
                     if (greyId < 0) { greyId = 0; }
                     else
-                    { if (greyId > 255) greyId = 255; }
+                    { if (greyId > 255)
+                        {
+                            greyId = 255;
+                        }
+                    }
 
                     bmp.SetPixel(c, r, grayScale[greyId]);
                 }//end all columns
-            }//end all rows
+            }
+
             return bmp;
         }
 
@@ -2470,11 +2821,15 @@
 
                     if (greyId < 0) { greyId = 0; }
                     else
-                    { if (greyId > 255) greyId = 255; }
+                    { if (greyId > 255)
+                        {
+                            greyId = 255;
+                        }
+                    }
 
                     bmp.SetPixel(c, r, grayScale[greyId]);
-                }//end all columns
-            }//end all rows
+                } //end all columns
+            } //end all rows
 
             return bmp;
         }
@@ -2491,11 +2846,23 @@
                 for (int c = 0; c < cols; c++)
                 {
                     int R = (int)Math.Floor(matrixR[r, c] * 255);
-                    if (R < 0) { R = 0; } else { if (R > 255) R = 255; }
+                    if (R < 0) { R = 0; } else { if (R > 255)
+                        {
+                            R = 255;
+                        }
+                    }
                     int G = (int)Math.Floor(matrixG[r, c] * 255);
-                    if (G < 0) { G = 0; } else { if (G > 255) G = 255; }
+                    if (G < 0) { G = 0; } else { if (G > 255)
+                        {
+                            G = 255;
+                        }
+                    }
                     int B = (int)Math.Floor(matrixB[r, c] * 255);
-                    if (B < 0) { B = 0; } else { if (B > 255) B = 255; }
+                    if (B < 0) { B = 0; } else { if (B > 255)
+                        {
+                            B = 255;
+                        }
+                    }
 
                     bmp.SetPixel(c, r, Color.FromArgb(R, G, B));
                 }//end all columns
@@ -2569,7 +2936,7 @@
             for (int i = 0; i <= ticCount; i++)
             {
                 int x1 = scaleHeight + (int)(i * xTicInterval) - xOffset;
-                g.DrawLine(pen, x1, 0, x1, scaleHeight-1);
+                g.DrawLine(pen, x1, 0, x1, scaleHeight - 1);
                 g.DrawLine(pen, x1 + 1, 0, x1 + 1, scaleHeight - 1);
 
                 string value = Math.Round(xInterval * i).ToString();
@@ -2582,7 +2949,6 @@
             array[1] = scaleImage;
             return CombineImagesVertically(array);
         }
-
 
         public static Image DrawHistogram(string label, int[] histogram, int upperPercentileBin, Dictionary<string, double> statistics, int imageWidth, int height)
         {
@@ -2647,16 +3013,13 @@
                 int Y = (int)Math.Ceiling((histogram[b] * height * 2 / (double)sum));
                 g.FillRectangle(brush, X, height - Y - 1, barWidth, Y);
             }
+
             return bmp;
         }
-
 
         /// <summary>
         /// This method places startTime in the centre of the waveform image and then cuts out buffer on either side.
         /// </summary>
-        /// <param name="label"></param>
-        /// <param name="signal"></param>
-        /// <returns></returns>
         public static Image DrawWaveform(string label, double[] signal)
         {
             int height = 300;
@@ -2670,8 +3033,8 @@
                     max = absValue;
                 }
             }
-            double scalingFactor = 0.5 / max;
 
+            double scalingFactor = 0.5 / max;
             Image image = DrawWaveform(label, signal, signal.Length, height, scalingFactor);
             return image;
         }
@@ -2679,10 +3042,6 @@
         /// <summary>
         /// This method places startTime in the centre of the waveform image and then cuts out buffer on either side.
         /// </summary>
-        /// <param name="label"></param>
-        /// <param name="signal"></param>
-        /// <param name="scalingFactor"></param>
-        /// <returns></returns>
         public static Image DrawWaveform(string label, double[] signal, double scalingFactor)
         {
             int height = 300;
@@ -2690,17 +3049,9 @@
             return image;
         }
 
-
-
         /// <summary>
         /// Asumes signal is between -1 and +1.
         /// </summary>
-        /// <param name="label"></param>
-        /// <param name="signal"></param>
-        /// <param name="imageWidth"></param>
-        /// <param name="height"></param>
-        /// <param name="scalingFactor"></param>
-        /// <returns></returns>
         public static Image DrawWaveform(string label, double[] signal, int imageWidth, int height, double scalingFactor)
         {
             //double sum = histogram.Sum();
@@ -2744,10 +3095,9 @@
                 int X = b * barWidth;
                 int Y = Yzero - (int)Math.Ceiling(signal[b] * height * scalingFactor);
                 //g.FillRectangle(brush, X, Yzero - Y - 1, barWidth, Y);
-                g1.DrawLine(pen2, X, previousY, X+1, Y);
+                g1.DrawLine(pen2, X, previousY, X + 1, Y);
                 previousY = Y;
             }
-
 
             Bitmap bmp2 = new Bitmap(imageWidth, 20, PixelFormat.Format24bppRgb);
             Graphics g2 = Graphics.FromImage(bmp2);
@@ -2762,10 +3112,6 @@
         /// <summary>
         /// Assumes passed data has been normalised in 0,1.
         /// </summary>
-        /// <param name="label"></param>
-        /// <param name="normalisedData"></param>
-        /// <param name="imageHeight"></param>
-        /// <returns></returns>
         public static Image DrawGraph(string label, double[] normalisedData, int imageHeight)
         {
             int imageWidth = normalisedData.Length;
@@ -2826,9 +3172,8 @@
 
             int maxBin = 0;
             DataTools.getMaxIndex(histogram, out maxBin);
-            double maxValue = histogram[maxBin];
-            //double[] normalArray = DataTools.NormaliseArea()
 
+            //double maxValue = histogram[maxBin];
             Bitmap bmp1 = new Bitmap(imageWidth, height, PixelFormat.Format24bppRgb);
             Graphics g1 = Graphics.FromImage(bmp1);
             g1.Clear(Color.Black);
@@ -2838,7 +3183,9 @@
                 int grid = imageWidth * i / 10;
                 g1.DrawLine(pen3, grid, height - 1, grid, 0);
             }
+
             g1.DrawLine(pen1, 0, height - 1, imageWidth, height - 1);
+
             // draw mode bin and upper percentile bound
             //g.DrawLine(pen4, modeBin, height - 1, modeBin, 0);
             //g.DrawLine(pen4, upperBound, height - 1, upperBound, 0);
@@ -2860,14 +3207,11 @@
             return bmp;
         }
 
-
-
         public static Image DrawWaveAndFft(double[] signal, int sr, TimeSpan startTime, double[] fftSpectrum, int maxHz, double[] scores)
         {
-
             int imageHeight = 300;
-
             double max = -2.0;
+
             for (int i = 0; i < signal.Length; i++)
             {
                 double absValue = Math.Abs(signal[i]);
@@ -2876,11 +3220,11 @@
                     max = absValue;
                 }
             }
+
             double scalingFactor = 0.5 / max;
 
-
             // now process neighbourhood of each max
-            int nyquist = sr/2;
+            int nyquist = sr / 2;
             int windowWidth = signal.Length;
             int binCount = windowWidth / 2;
             double hzPerBin = nyquist / (double)binCount;
@@ -2891,6 +3235,7 @@
                 var fft = new FFT(windowWidth, wf);
                 fftSpectrum = fft.Invoke(signal);
             }
+
             int requiredBinCount = (int)(maxHz / hzPerBin);
             var subBandSpectrum = DataTools.Subarray(fftSpectrum, 1, requiredBinCount); // ignore DC in bin zero.
 
@@ -2906,7 +3251,6 @@
             imageList.Add(image4a);
             imageList.Add(image4b);
 
-
             Pen pen1 = new Pen(Color.Wheat);
             SolidBrush brush = new SolidBrush(Color.Red);
             Font stringFont = new Font("Arial", 9);
@@ -2915,9 +3259,9 @@
             g2.DrawLine(pen1, 0, 0, signal.Length, 0);
             g2.DrawLine(pen1, 0, bmp2.Height - 1, signal.Length, bmp2.Height - 1);
             int barWidth = signal.Length / subBandSpectrum.Length;
-            for (int i=1; i< subBandSpectrum.Length-1; i++)
+            for (int i = 1; i < subBandSpectrum.Length - 1; i++)
             {
-                if ((subBandSpectrum[i] > subBandSpectrum[i-1]) && (subBandSpectrum[i] > subBandSpectrum[i + 1]))
+                if ((subBandSpectrum[i] > subBandSpectrum[i - 1]) && (subBandSpectrum[i] > subBandSpectrum[i + 1]))
                 {
                     string label = string.Format("{0},", i + 1);
                     g2.DrawString(label, stringFont, Brushes.Wheat, new PointF((i * barWidth) - 3, 3));
@@ -2930,16 +3274,10 @@
             return image;
         }
 
-
-
-
-
-
         /// <summary>
         /// Draws matrix but automatically determines the scale to fit 1000x1000 pixel image.
         /// </summary>
         /// <param name="matrix">the data</param>
-        /// <param name="pathName"></param>
         public static void DrawMatrix(double[,] matrix, string pathName, bool doScale)
         {
             int rows = matrix.GetLength(0); //number of rows
@@ -2955,17 +3293,23 @@
                 maxXpixels = 2500;
                 YpixelsPerCell = maxYpixels / rows;
                 XpixelsPerCell = maxXpixels / cols;
-                if (YpixelsPerCell == 0) YpixelsPerCell = 1;
-                if (XpixelsPerCell == 0) XpixelsPerCell = 1;
+                if (YpixelsPerCell == 0)
+                {
+                    YpixelsPerCell = 1;
+                }
+
+                if (XpixelsPerCell == 0)
+                {
+                    XpixelsPerCell = 1;
+                }
             }
 
             int Ypixels = YpixelsPerCell * rows;
             int Xpixels = XpixelsPerCell * cols;
-            //LoggedConsole.WriteLine("Xpixels=" + Xpixels + "  Ypixels=" + Ypixels);
-            //LoggedConsole.WriteLine("cellXpixels=" + cellXpixels + "  cellYpixels=" + cellYpixels);
+            // LoggedConsole.WriteLine("Xpixels=" + Xpixels + "  Ypixels=" + Ypixels);
+            // LoggedConsole.WriteLine("cellXpixels=" + cellXpixels + "  cellYpixels=" + cellYpixels);
 
             Color[] grayScale = GrayScale();
-
 
             Bitmap bmp = new Bitmap(Xpixels, Ypixels, PixelFormat.Format24bppRgb);
 
@@ -2974,12 +3318,16 @@
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    //double val = norm[r, c];
                     int greyId = (int)Math.Floor(norm[r, c] * 255);
-                    if (greyId < 0) greyId = 0;
-                    int xOffset = (XpixelsPerCell * c);
-                    int yOffset = (YpixelsPerCell * r);
-                    //LoggedConsole.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
+                    if (greyId < 0)
+                    {
+                        greyId = 0;
+                    }
+
+                    int xOffset = XpixelsPerCell * c;
+                    int yOffset = YpixelsPerCell * r;
+
+                    // LoggedConsole.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
 
                     for (int x = 0; x < XpixelsPerCell; x++)
                     {
@@ -2992,10 +3340,8 @@
                 }//end all columns
             }//end all rows
 
-
             bmp.Save(pathName);
         }
-
 
         public static void DrawMatrixInColour(double[,] matrix, string pathName, bool doScale)
         {
@@ -3007,81 +3353,112 @@
         /// Draws colour matrix but automatically determines the scale to fit 1000x1000 pixel image.
         /// </summary>
         /// <param name="matrix">the data</param>
-        /// <param name="pathName"></param>
         public static Image DrawMatrixInColour(double[,] matrix, bool doScale)
         {
             int xscale = 10;
             int yscale = 5;
             return DrawMatrixInColour(matrix, xscale, yscale);
         }
-        public static Image DrawMatrixInColour(double[,] matrix, int xscale, int yscale)
+
+        public static Image DrawVectorInColour(double[] vector, int cellWidth)
         {
-            Hsv myHsv;
-            Rgb myRgb;
-            Color colour;
+            double[] norm = DataTools.normalise(vector);
+
             int bottomColour = 1;     // to avoid using the reds
             int topColour = 250;      // to avoid using the magentas
             int hueRange = topColour - bottomColour;
 
-            int rows = matrix.GetLength(0); //number of rows
-            int cols = matrix.GetLength(1); //number
+            int rows = vector.Length;
+            int cols = 1;
+            int yPixelCount = cellWidth * rows;
+            int xPixelCount = cellWidth;
+            Bitmap bmp = new Bitmap(xPixelCount, yPixelCount, PixelFormat.Format24bppRgb);
 
-            int maxYpixels = rows;
-            int maxXpixels = cols;
-            int YpixelsPerCell = yscale;
-            int XpixelsPerCell = xscale;
-            //if (doScale)
-            //{
-            //    maxYpixels = 1000;
-            //    maxXpixels = 2500;
-            //    YpixelsPerCell = maxYpixels / rows;
-            //    XpixelsPerCell = maxXpixels / cols;
-            //    if (YpixelsPerCell == 0) YpixelsPerCell = 1;
-            //    if (XpixelsPerCell == 0) XpixelsPerCell = 1;
-            //}
-
-            int Ypixels = YpixelsPerCell * rows;
-            int Xpixels = XpixelsPerCell * cols;
-            //LoggedConsole.WriteLine("Xpixels=" + Xpixels + "  Ypixels=" + Ypixels);
-            //LoggedConsole.WriteLine("cellXpixels=" + cellXpixels + "  cellYpixels=" + cellYpixels);
-
-            double[,] norm = DataTools.normalise(matrix);
-
-            Bitmap bmp = new Bitmap(Xpixels, Ypixels, PixelFormat.Format24bppRgb);
+            // Can comment next two lines if want black
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Gray);
 
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    int xOffset = (XpixelsPerCell * c);
-                    int yOffset = (YpixelsPerCell * r);
-                    //LoggedConsole.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
+                    int xOffset = cellWidth * c;
+                    int yOffset = cellWidth * r;
 
                     // use HSV colour space
-                    //int hue = bottomColour + (int)Math.Floor(hueRange * norm[r, c]);
-                    int hue = topColour - (int)Math.Floor(hueRange * norm[r, c]);
+                    int hue = topColour - (int)Math.Floor(hueRange * norm[r]);
 
+                    // double saturation = 0.75 + (norm[r, c] * 0.25);
+                    // double saturation = norm[r, c] * 0.5;
+                    // double saturation = (1 - norm[r, c]) * 0.5;
                     double saturation = 1.0;
-                    //double saturation = 0.75 + (norm[r, c] * 0.25);
-                    //double saturation = norm[r, c] * 0.5;
-                    //double saturation = (1 - norm[r, c]) * 0.5;
+                    var myHsv = new Hsv { H = hue, S = saturation, V = 1.0 };
+                    var myRgb = myHsv.To<Rgb>();
 
-                    double value = 1.0;
-                    //double value = 0.60 + (norm[r, c] * 0.40);
-
-                    myHsv = new Hsv { H = hue, S = saturation, V = value };
-                    myRgb = myHsv.To<Rgb>();
-                    colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
-
-                    for (int x = 0; x < XpixelsPerCell; x++)
+                    // use black as background zero colour rather than blue
+                    if (myRgb.B < 255.0)
                     {
-                        for (int y = 0; y < YpixelsPerCell; y++)
+                        var colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B / 3);
+                        for (int x = 0; x < cellWidth; x++)
                         {
-                            bmp.SetPixel(xOffset + x, yOffset + y, colour);
+                            for (int y = 0; y < cellWidth; y++)
+                            {
+                                bmp.SetPixel(xOffset + x, yOffset + y, colour);
+                            }
                         }
                     }
-                }//end all columns
-            }//end all rows
+                } //end all columns
+            } //end all rows
+
+            return bmp;
+        }
+
+        public static Image DrawMatrixInColour(double[,] matrix, int xPixelsPerCell, int yPixelsPerCell)
+        {
+            double[,] norm = DataTools.normalise(matrix);
+
+            int bottomColour = 1;     // to avoid using the reds
+            int topColour = 250;      // to avoid using the magentas
+            int hueRange = topColour - bottomColour;
+
+            int rows = matrix.GetLength(0); //number of rows
+            int cols = matrix.GetLength(1);
+            int yPixelCount = yPixelsPerCell * rows;
+            int xPixelCount = xPixelsPerCell * cols;
+            Bitmap bmp = new Bitmap(xPixelCount, yPixelCount, PixelFormat.Format24bppRgb);
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    int xOffset = xPixelsPerCell * c;
+                    int yOffset = yPixelsPerCell * r;
+
+                    // use HSV colour space
+                    // int hue = bottomColour + (int)Math.Floor(hueRange * norm[r, c]);
+                    int hue = topColour - (int)Math.Floor(hueRange * norm[r, c]);
+
+                    // double saturation = 0.75 + (norm[r, c] * 0.25);
+                    // double saturation = norm[r, c] * 0.5;
+                    // double saturation = (1 - norm[r, c]) * 0.5;
+                    double saturation = 1.0;
+                    var myHsv = new Hsv { H = hue, S = saturation, V = 1.0 };
+                    var myRgb = myHsv.To<Rgb>();
+
+                    // use black as background zero colour rather than blue
+                    if (myRgb.B < 255.0)
+                    {
+                        var colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B / 3);
+                        for (int x = 0; x < xPixelsPerCell; x++)
+                        {
+                            for (int y = 0; y < yPixelsPerCell; y++)
+                            {
+                                bmp.SetPixel(xOffset + x, yOffset + y, colour);
+                            }
+                        }
+                    }
+                } //end all columns
+            } //end all rows
 
             return bmp;
         }
@@ -3092,7 +3469,6 @@
         /// <param name="matrix">the data</param>
         /// <param name="cellXpixels">X axis scale - pixels per cell</param>
         /// <param name="cellYpixels">Y axis scale - pixels per cell</param>
-        /// <param name="pathName"></param>
         public static void DrawMatrix(double[,] matrix, int cellXpixels, int cellYpixels, string pathName)
         {
             int rows = matrix.GetLength(0); //number of rows
@@ -3124,10 +3500,8 @@
                 }//end all columns
             }//end all rows
 
-
             bmp.Save(pathName);
         }
-
 
         /// <summary>
         /// Stacks the passed images one on top of the other.
@@ -3139,6 +3513,7 @@
         {
             return CombineImagesVertically(list.ToArray());
         }
+
         public static Image CombineImagesVertically(List<Image> list, int maxWidth)
         {
             return CombineImagesVertically(list.ToArray(), maxWidth);
@@ -3162,6 +3537,7 @@
                 {
                     continue;
                 }
+
                 compositeHeight += array[i].Height;
             }
 
@@ -3177,12 +3553,13 @@
                 {
                     continue;
                 }
+
                 gr.DrawImage(array[i], 0, yOffset); //draw in the top image
                 yOffset += array[i].Height;
             }
+
             return (Image)compositeBmp;
         }
-
 
         /// <summary>
         /// Stacks the passed images one on top of the other.
@@ -3210,7 +3587,9 @@
             {
                 compositeWidth += array[i].Width;
                 if (height < array[i].Height)
+                {
                     height = array[i].Height;
+                }
             }
 
             //Bitmap compositeBmp = new Bitmap(compositeWidth, height, PixelFormat.Format24bppRgb);
@@ -3236,8 +3615,6 @@
             return (Image)compositeBmp;
         }
 
-
-
         //public static void METHOD(string[] titleArray, int imageWidth, int imageHeight)
         //{
         //    // now make images
@@ -3252,13 +3629,14 @@
         //    Image combinedImage = ImageTools.CombineImagesVertically(images);
         //}
 
-
-
         public static Tuple<int, double> DetectLine(double[,] m, int row, int col, int lineLength, double centreThreshold, int resolutionAngle)
         {
             double endThreshold = centreThreshold / 2;
 
-            if (m[row, col] < centreThreshold) return null; //to not proceed if current pixel is low intensity
+            if (m[row, col] < centreThreshold)
+            {
+                return null; //to not proceed if current pixel is low intensity
+            }
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
@@ -3296,7 +3674,9 @@
 
                 double sum = 0.0;
                 for (int j = 0; j < lineLength; j++)
+                {
                     sum += m[row + (int)(cosAngle * j), col + (int)(sinAngle * j)];
+                }
 
                 if (sum > intensitySum)
                 {
@@ -3354,9 +3734,16 @@
                         //for pixels in the line - normalise and bound the value - use min bound, max and 255 image intensity range
                         double value = (data[x, y] - min) / (double)range;
                         int c = 255 - (int)Math.Floor(255.0 * value); //original version
-                        if (c < 0) c = 0;
+                        if (c < 0)
+                        {
+                            c = 0;
+                        }
                         else
-                        if (c >= 256) c = 255;
+                        if (c >= 256)
+                        {
+                            c = 255;
+                        }
+
                         bmp.SetPixel(x, yOffset - 1, grayScale[c]);
                     } //for all pixels in line
 
