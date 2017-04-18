@@ -8,6 +8,7 @@ namespace AudioAnalysisTools
     using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
@@ -118,8 +119,7 @@ namespace AudioAnalysisTools
                 fileName = sourceName + ".OSCSpectralIndex_" + sampleLength;
                 pathName = Path.Combine(output.FullName, fileName);
                 var csvFile2 = new FileInfo(pathName + ".csv");
-                bool saveData = true;
-                if (saveData)
+                if (true)
                 {
                     // Save matrix of oscillation data stored in freqOscilMatrix1
                     Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(csvFile1, tuple.Item2);
@@ -129,8 +129,8 @@ namespace AudioAnalysisTools
                 }
 
                 // Do my version of UNIT TESTING - This is the File Equality Test.
-                var expectedTestFile1 = new FileInfo(Path.Combine(expectedResultsDir.FullName, "OscillationSpectrogram_MatrixTest.EXPECTED.json"));
-                var expectedTestFile2 = new FileInfo(Path.Combine(expectedResultsDir.FullName, "OscillationSpectrogram_VectorTest.EXPECTED.json"));
+                var expectedTestFile1 = new FileInfo(Path.Combine(expectedResultsDir.FullName, "OscillationSpectrogram_MatrixTest.EXPECTED.csv"));
+                var expectedTestFile2 = new FileInfo(Path.Combine(expectedResultsDir.FullName, "OscillationSpectrogram_VectorTest.EXPECTED.csv"));
                 TestTools.FileEqualityTest("Matrix Equality", csvFile1, expectedTestFile1);
                 TestTools.FileEqualityTest("Vector Equality", csvFile2, expectedTestFile2);
                 Console.WriteLine("\n\n");
@@ -182,8 +182,9 @@ namespace AudioAnalysisTools
             ////string algorithmName = "CwtWavelets";
 
             const double sensitivityThreshold = 0.4;
-            configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold] = sensitivityThreshold.ToString();
-            int resampleRate = Convert.ToInt32(configDict[AnalysisKeys.ResampleRate]);
+            configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold] = sensitivityThreshold.ToString(CultureInfo.CurrentCulture);
+
+            // int resampleRate = Convert.ToInt32(configDict[AnalysisKeys.ResampleRate]);
 
             if (!writeParameters)
             {
@@ -251,32 +252,16 @@ namespace AudioAnalysisTools
             double[,] freqOscilMatrix1 = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName1);
 
             //get the max spectral index - this reduces the matrix to an array
-            double[] spectralIndex1 = ConvertMatrix2SpectralIndexBySummingFreqColumns(freqOscilMatrix1);
+            double[] spectralIndex1 = ConvertMatrix2SpectralIndexBySummingFreqColumns(freqOscilMatrix1, 0);
 
             Image compositeImage = null;
             if (drawImage)
             {
                 string algorithmName2 = "autocorr-fft";
                 double[,] freqOscilMatrix2 = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName2);
-
                 var image1 = GetFreqVsOscillationsImage(freqOscilMatrix1, sonogram.FramesPerSecond, sonogram.FBinWidth, sampleLength, algorithmName1);
                 var image2 = GetFreqVsOscillationsImage(freqOscilMatrix2, sonogram.FramesPerSecond, sonogram.FBinWidth, sampleLength, algorithmName2);
-
-                double[] spectralIndex2 = ConvertMatrix2SpectralIndexBySummingFreqColumns(freqOscilMatrix2);
-
-                // DEBUGGING: Add spectralIndex into the image to check spectral index.
-                // This is for debugging and can comment these lines
-                // However, does not appear to be working - vector images not making sense.
-                // More debugging work required.
-                // var image3 = ImageTools.DrawVectorInColour(DataTools.reverseArray(spectralIndex1), cellWidth: 5);
-                // var image4 = ImageTools.DrawVectorInColour(DataTools.reverseArray(spectralIndex2), cellWidth: 5);
-
-                var list = new List<Image>();
-                list.Add(image1);
-                // list.Add(image3);
-                list.Add(image2);
-                // list.Add(image4);
-                compositeImage = ImageTools.CombineImagesInLine(list.ToArray());
+                compositeImage = ImageTools.CombineImagesInLine(new[] { image1, image2 });
             }
 
             // Return (1) composite image of oscillations, (2) data matrix from only one algorithm,
@@ -287,11 +272,8 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Only call this method for short recordings.
         /// If accumulating data for long recordings then call the method for long recordings - i.e.
-        /// double[] spectralIndex = GenerateOscillationDataAndImages(FileInfo audioSegment, Dictionary<string, string> configDict, false, false);
+        /// double[] spectralIndex = GenerateOscillationDataAndImages(FileInfo audioSegment, Dictionary configDict, false, false);
         /// </summary>
-        /// <param name="sonogram"></param>
-        /// <param name="algorithmName"></param>
-        /// <returns></returns>
         public static FreqVsOscillationsResult GetFreqVsOscillationsDataAndImage(BaseSonogram sonogram, string algorithmName)
         {
             double sensitivity = DefaultSensitivityThreshold;
@@ -300,8 +282,9 @@ namespace AudioAnalysisTools
             var image = GetFreqVsOscillationsImage(freqOscilMatrix, sonogram.FramesPerSecond, sonogram.FBinWidth, sampleLength, algorithmName);
             var sourceName = Path.GetFileNameWithoutExtension(sonogram.Configuration.SourceFName);
 
-            // get the max spectral index
-            double[] spectralIndex = ConvertMatrix2SpectralIndexBySummingFreqColumns(freqOscilMatrix);
+            // get the OSC spectral index
+            // var spectralIndex = ConvertMatrix2SpectralIndexBySummingFreqColumns(freqOscilMatrix, skipNRows: 1);
+            var spectralIndex = MatrixTools.GetMaximumColumnValues(freqOscilMatrix);
 
             // DEBUGGING
             // Add spectralIndex into the matrix because want to add it to image.
@@ -322,7 +305,11 @@ namespace AudioAnalysisTools
         public static Image GetFreqVsOscillationsImage(double[,] freqOscilMatrix, double framesPerSecond, double freqBinWidth, int sampleLength, string algorithmName)
         {
             // remove the high cycles/sec end of the matrix because nothing really happens here.
-            freqOscilMatrix = MatrixTools.Submatrix(freqOscilMatrix, 0, 0, 32, freqOscilMatrix.GetLength(1) - 1);
+            freqOscilMatrix = MatrixTools.Submatrix(freqOscilMatrix, 0, 0, 30, freqOscilMatrix.GetLength(1) - 1);
+
+            // get the OSC spectral index
+            // double[] spectralIndex = ConvertMatrix2SpectralIndexBySummingFreqColumns(freqOscilMatrix, skipNrows: 0);
+            var spectralIndex = MatrixTools.GetMaximumColumnValues(freqOscilMatrix);
 
             // Convert spectrum index to oscillations per second
             double oscillationBinWidth = framesPerSecond / sampleLength;
@@ -331,7 +318,11 @@ namespace AudioAnalysisTools
             freqOscilMatrix = MatrixTools.MatrixRotate90Anticlockwise(freqOscilMatrix);
             int xscale = 5;
             int yscale = 5;
-            var image = ImageTools.DrawMatrixInColour(freqOscilMatrix, xscale, yscale);
+            var image1 = ImageTools.DrawMatrixInColour(freqOscilMatrix, xPixelsPerCell: xscale, yPixelsPerCell: yscale);
+
+            var image2 = ImageTools.DrawVectorInColour(DataTools.reverseArray(spectralIndex), cellWidth: xscale);
+
+            var image = ImageTools.CombineImagesInLine(new[] { image1, image2 });
 
             // a tic every 5cpsec.
             double cycleInterval = 5.0;
@@ -475,21 +466,20 @@ namespace AudioAnalysisTools
         public static double[] GetOscillationArrayUsingSvdAndFft(double[,] xCorrByTimeMatrix, double sensitivity, int binNumber)
         {
             int xCorrLength = xCorrByTimeMatrix.GetLength(0);
-            //int sampleCount = xCorrByTimeMatrix.GetLength(1);
+            // int sampleCount = xCorrByTimeMatrix.GetLength(1);
 
             // do singular value decomp on the xcorrelation vectors.
             // we want to compute the U and V matrices of singular vectors.
-            bool computeVectors = true;
-            var svd = new MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseSvd(DenseMatrix.OfArray(xCorrByTimeMatrix), computeVectors);
+            var svd = new MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseSvd(DenseMatrix.OfArray(xCorrByTimeMatrix), computeVectors: true);
 
             // svd.S returns the singular values in a vector
             Vector<double> singularValues = svd.S();
 
             // get total energy in first singular values
             double energySum = 0.0;
-            for (int n = 0; n < singularValues.Count; n++)
+            foreach (double v in singularValues)
             {
-                energySum += singularValues[n] * singularValues[n];
+                energySum += v * v;
             }
 
             // get the 90% most significant ####### THis is a significant parameter but not critical. 90% is OK
@@ -512,7 +502,7 @@ namespace AudioAnalysisTools
             //Console.WriteLine("Freq bin:{0}  Count Of Significant SingularValues = {1}", binNumber, countOfSignificantSingularValues);
 
             // svd.U returns the LEFT singular vectors in matrix
-            Matrix<double> UMatrix = svd.U();
+            Matrix<double> uMatrix = svd.U();
 
             //Matrix<double> relevantU = UMatrix.SubMatrix(0, UMatrix.RowCount-1, 0, eigenVectorCount);
 
@@ -529,7 +519,7 @@ namespace AudioAnalysisTools
 
             for (int e = 0; e < countOfSignificantSingularValues; e++)
             {
-                double[] autocor = UMatrix.Column(e).ToArray();
+                double[] autocor = uMatrix.Column(e).ToArray();
 
                 // the sign of the left singular vectors are usually negative.
                 if (autocor[0] < 0)
@@ -886,25 +876,30 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Note: The columns are freq bins.
         /// </summary>
-        public static double[] ConvertMatrix2SpectralIndexBySummingFreqColumns(double[,] freqOscilMatrix)
+        /// <param name="freqOscilMatrix">rows = osc/sec; columns = freq bins</param>
+        /// <param name="skipNrows">skip the first N rows which have a low osc rate and dominate the output</param>
+        /// <returns>a vector of osc rates in each freq bin</returns>
+        public static double[] ConvertMatrix2SpectralIndexBySummingFreqColumns(double[,] freqOscilMatrix, int skipNrows)
         {
             int rowCount = freqOscilMatrix.GetLength(0);
             int colCount = freqOscilMatrix.GetLength(1);
             double[] spectralIndex = new double[colCount];
-
-            // skip the first N rows which have a low osc rate.
-            int skipCount = 1;
             for (int c = 0; c < colCount; c++)
             {
                 double sum = 0.0;
-                for (int r = skipCount; r < rowCount; r++)
+                for (int r = skipNrows; r < rowCount; r++)
                 {
-                    sum += freqOscilMatrix[r, c];
+                    if (freqOscilMatrix[r, c] > 0.1)
+                    {
+                        sum += freqOscilMatrix[r, c];
+                    }
                 }
 
                 spectralIndex[c] = sum;
             }
 
+            // debug to check vector in right orientation
+            // spectralIndex = MatrixTools.GetRow(freqOscilMatrix, 0);
             return spectralIndex;
         }
     }

@@ -95,11 +95,11 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
                 var expectedMatrixFile = new FileInfo("Oscillations2014\\" + stem + ".EXPECTED.bin");
 
                 // construct name of expected matrix osc spectrogram to save file
-                var expectedSpectrumFile = new FileInfo("Oscillations2014\\" + stem + ".OSC.EXPECTED.csv");
+                var expectedSpectrumFile = new FileInfo("Oscillations2014\\" + stem + ".OSC.EXPECTED.bin");
 
-                // run this once to generate expected image and data files (############ IMPORTANT: remember to move saved files OUT of bin/Debug directory!)
-                bool saveOutput = false;
-                if (saveOutput)
+                // Run this once to generate expected image and data files (############ IMPORTANT: remember to move saved files OUT of bin/Debug directory!)
+                // SAVE THE OUTPUT if true
+                if (false)
                 {
                     // 1: save image of oscillation spectrogram
                     tuple.Item1.Save(imagePath, ImageFormat.Png);
@@ -110,13 +110,13 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
 
                     // 3: save oscillationsSpectrum OR the OSC spectral index.
                     // Acoustics.Shared.Csv.Csv.WriteToCsv(spectralFile, tuple.Item3);
-                    Json.Serialise(expectedSpectrumFile, tuple.Item3);
-                    // Binary.Serialize(expectedSpectrumFile, tuple.Item3);
+                    // Json.Serialise(expectedSpectrumFile, tuple.Item3);
+                    Binary.Serialize(expectedSpectrumFile, tuple.Item3);
                 }
 
                 // Run three tests. Have to deserialise the expected data files
                 // 1: Compare image files - check that image dimensions are correct
-                Assert.AreEqual(366, tuple.Item1.Width);
+                Assert.AreEqual(356, tuple.Item1.Width);
                 Assert.AreEqual(678, tuple.Item1.Height);
 
                 // 2. Compare matrix data
@@ -124,8 +124,8 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
                 CollectionAssert.AreEqual(expectedMatrix, tuple.Item2);
 
                 // 3. Compare OSC spectral index
-                // var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-                var expectedVector = Json.Deserialise<double[]>(expectedSpectrumFile);
+                // var expectedVector = Json.Deserialise<double[]>(expectedSpectrumFile);
+                var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
                 CollectionAssert.AreEqual(expectedVector, tuple.Item3);
             }
         }
