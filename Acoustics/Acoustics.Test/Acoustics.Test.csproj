@@ -138,6 +138,7 @@
     <Compile Include="ArrayExtensionsTests.cs" />
     <Compile Include="AudioAnalysisTools\DSP\EnvelopeAndFftTests.cs" />
     <Compile Include="AudioAnalysisTools\DSP\FrequencyScaleTests.cs" />
+    <Compile Include="AudioAnalysisTools\Indices\IndexCalculateTest.cs" />
     <Compile Include="AudioAnalysisTools\Oscillations2014\OscillationTests.cs" />
     <Compile Include="AudioAnalysisTools\StandardSpectrograms\SonogramTests.cs" />
     <Compile Include="AudioAnalysisTools\TilerTests.cs" />
