@@ -15,13 +15,11 @@ namespace AudioAnalysisTools.Indices
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
     using DSP;
-    using StandardSpectrograms;
-    using WavTools;
     using log4net;
+    using StandardSpectrograms;
     using TowseyLibrary;
-
+    using WavTools;
 
     /// <summary>
     /// Core class that calculates indices.
@@ -46,15 +44,14 @@ namespace AudioAnalysisTools.Indices
 
         private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        //private static bool warned = false;
-
+        /*
         /// <summary>
         /// a set of parameters derived from ini file.
         /// </summary>
         [Obsolete]
         public class Parameters
         {
-            public int FrameLength { get; set;}
+            public int FrameLength { get; set; }
 
             public int ResampleRate { get; set; }
 
@@ -86,35 +83,23 @@ namespace AudioAnalysisTools.Indices
                 // DRAW_SONOGRAMS  = _DRAW_SONOGRAMS; // av length of clusters > 1 frame.
                 // reportFormat    = _fileFormat;
             }
-        }
+        } */
 
         /// <summary>
         /// Extracts summary and spectral acoustic indices from the entire segment of the passed recording or a subsegment of it.
         /// </summary>
-        /// <param name="recording">
-        /// an audio recording
-        /// </param>
+        /// <param name="recording"> an audio recording </param>
         /// <param name="subsegmentOffsetTimeSpan">
         /// The start time of the required subsegment relative to start of SOURCE audio recording.
-        ///     i.e. SegmentStartOffset + time duration from Segment start to subsegment start.
-        /// </param>
-        /// <param name="indexCalculationDuration">
-        /// </param>
-        /// <param name="bgNoiseNeighborhood">
-        /// </param>
-        /// <param name="indicesPropertiesConfig">
-        /// </param>
-        /// <param name="sampleRateOfOriginalAudioFile">
-        /// </param>
-        /// <param name="segmentStartOffset">
-        /// </param>
-        /// <param name="configuration">
-        /// </param>
-        /// <param name="returnSonogramInfo">
-        /// </param>
-        /// <returns>
-        /// An IndexCalculateResult
-        /// </returns>
+        ///     i.e. SegmentStartOffset + time duration from Segment start to subsegment start. </param>
+        /// <param name="indexCalculationDuration">Time span over which acoustic indices are calculated. Default = 60 seconds.</param>
+        /// <param name="bgNoiseNeighborhood">A buffer added to either side of recording segment to allow more useful calculation of BGN. </param>
+        /// <param name="indicesPropertiesConfig">file containing info about index value distributions. Used when drawing false-colour spectrograms. </param>
+        /// <param name="sampleRateOfOriginalAudioFile"> That is, prior to being resample to the default of 22050.</param>
+        /// <param name="segmentStartOffset"> Time elapsed between start of recording and start of this recording segment. </param>
+        /// <param name="configuration"> dynamic variable containing info about the configuration for index calculation</param>
+        /// <param name="returnSonogramInfo"> boolean with default value = false </param>
+        /// <returns> An IndexCalculateResult </returns>
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Reviewed. Suppression is OK here.")]
         public static IndexCalculateResult Analysis(
             AudioRecording recording,
@@ -127,11 +112,11 @@ namespace AudioAnalysisTools.Indices
             dynamic configuration,
             bool returnSonogramInfo = true)
         {
-            string recordingFileName = recording.BaseName;
-            double epsilon   = Math.Pow(0.5, recording.BitsPerSample - 1);
+            // returnSonogramInfo = false; // TEMPORARY ################################
+            double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
             int signalLength = recording.WavReader.GetChannel(0).Length;
-            int sampleRate   = recording.WavReader.SampleRate;
-            TimeSpan recordingSegmentDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
+            int sampleRate = recording.WavReader.SampleRate;
+            var recordingSegmentDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
 
             var config = configuration;
             var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
@@ -143,19 +128,21 @@ namespace AudioAnalysisTools.Indices
             // get frame parameters for the analysis
             int frameSize = (int?)config[AnalysisKeys.FrameLength] ?? DefaultWindowSize;
             int frameStep = frameSize; // this default = zero overlap
+
             //WARNING: DO NOT USE Frame Overlap when calculating acoustic indices.
             //          It yields ACI, BGN, AVG and EVN results that are significantly different from the default.
             //          I have not had time to check if the difference is meaningful. Best to avoid.
             //double windowOverlap = 0.0;
 
             double frameStepDuration = frameStep / (double)sampleRate; // fraction of a second
-            TimeSpan frameStepTimeSpan = TimeSpan.FromTicks((long)(frameStepDuration * TimeSpan.TicksPerSecond));
+            var frameStepTimeSpan = TimeSpan.FromTicks((long)(frameStepDuration * TimeSpan.TicksPerSecond));
 
             // get frequency parameters for the analysis
             int freqBinCount = frameSize / 2;
             double freqBinWidth = recording.Nyquist / (double)freqBinCount;
             int lowFreqBound = (int?)config[AnalysisKeys.LowFreqBound] ?? DefaultLowFreqBound;
             int midFreqBound = (int?)config[AnalysisKeys.MidFreqBound] ?? DefaultMidFreqBound;
+
             //int hihFreqBound = (int?)config[AnalysisKeys.HighFreqBound] ?? IndexCalculate.DefaultHighFreqBound;
 
             // get TimeSpans and durations
@@ -167,31 +154,32 @@ namespace AudioAnalysisTools.Indices
             double segmentOffset = ts.TotalSeconds;
             double localOffsetInSeconds = subsegmentOffset - segmentOffset;
             ts = bgNoiseNeighborhood;
-            double BGNoiseNeighbourhood = ts.TotalSeconds;
+            double bgNoiseNeighbourhood = ts.TotalSeconds;
 
             // Linear or Octave frequency scale?
             bool octaveScale = (bool?)config["OctaveFreqScale"] ?? false;
 
             // calculate start and end samples of the subsegment and noise segment
             int sampleStart = (int)(localOffsetInSeconds * sampleRate);
+
             //calculate the number of samples in the exact subsegment duration
             int subsegmentSampleCount = (int)(subsegmentSecondsDuration * sampleRate);
+
             //calculate the exact number of frames in the exact subsegment duration
             double frameCount = subsegmentSampleCount / (double)frameStep;
+
             //In order not to lose the last fracional frame, round up the frame number
             // and get the exact number of samples in the integer number of frames.
             subsegmentSampleCount = (int)Math.Ceiling(frameCount) * frameStep;
-            int sampleEnd   = sampleStart + subsegmentSampleCount - 1;
+            int sampleEnd = sampleStart + subsegmentSampleCount - 1;
 
             // GET the SUBSEGMENT FOR NOISE calculation.
             // Set the duration of SUBSEGMENT used to calculate BACKGROUND NOISE = total segment duration if its length >= 60 seconds
             // If the index calculation duration is much shorter than 1 minute, then need to calculate
             // BGN noise from a longer length of recording - i.e. add noiseBuffer either side. Typical noiseBuffer value = 5 seconds
             // If the index calculation duration = 60 seconds, then caluclate BGN from the full 60 seconds of recording.
-            int noiseBuffer    = (int)(BGNoiseNeighbourhood * sampleRate);
+            int noiseBuffer = (int)(bgNoiseNeighbourhood * sampleRate);
             AudioRecording bgnRecording = GetRecordingSubsegment(recording, sampleStart, sampleEnd, noiseBuffer);
-
-
 
             // minimum samples needed to calculate data
             // this value was chosen somewhat arbitrarily
@@ -226,30 +214,32 @@ namespace AudioAnalysisTools.Indices
             var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(subsegmentRecording, frameSize, frameStep);
             if (octaveScale)
             {
-                dspOutput1.AmplitudeSpectrogram = OctaveFreqScale.AmplitudeSpectra(dspOutput1.AmplitudeSpectrogram,
-                                                                                   dspOutput1.WindowPower, sampleRate, epsilon, freqScale);
+                dspOutput1.AmplitudeSpectrogram = OctaveFreqScale.AmplitudeSpectra(
+                    dspOutput1.AmplitudeSpectrogram,
+                    dspOutput1.WindowPower,
+                    sampleRate,
+                    epsilon,
+                    freqScale);
                 dspOutput1.NyquistBin = dspOutput1.AmplitudeSpectrogram.GetLength(1) - 1; // ASSUMPTION!!! Nyquist is in top Octave bin - not necessarily true!!
             }
-
 
             // ################################## EXTRACT ENVELOPE and SPECTROGRAM FROM BACKGROUND NOISE SUBSEGMENT
             var dspOutput2 = DSP_Frames.ExtractEnvelopeAndFfts(bgnRecording, frameSize, frameStep);
             if (octaveScale)
             {
-                dspOutput2.AmplitudeSpectrogram = OctaveFreqScale.AmplitudeSpectra(dspOutput2.AmplitudeSpectrogram,
-                                                                                   dspOutput2.WindowPower, sampleRate, epsilon, freqScale);
+                dspOutput2.AmplitudeSpectrogram = OctaveFreqScale.AmplitudeSpectra(dspOutput2.AmplitudeSpectrogram, dspOutput2.WindowPower, sampleRate, epsilon, freqScale);
                 dspOutput2.NyquistBin = dspOutput2.AmplitudeSpectrogram.GetLength(1) - 1; // ASSUMPTION!!! Nyquist is in top Octave bin - not necessarily true!!
             }
 
             // i. convert signal to dB and subtract background noise. Noise SDs to calculate threshold = ZERO by default
             double signalBgn = NoiseRemovalModal.CalculateBackgroundNoise(dspOutput2.Envelope);
+
             // ii.: calculate the noise profile from the amplitude sepctrogram
             double[] spectralAmplitudeBgn = NoiseProfile.CalculateBackgroundNoise(dspOutput2.AmplitudeSpectrogram);
+
             // iii: generate deciBel spectrogram and calculate the dB noise profile
             double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput2.AmplitudeSpectrogram, dspOutput2.WindowPower, sampleRate, epsilon);
             double[] spectralDecibelBgn = NoiseProfile.CalculateBackgroundNoise(deciBelSpectrogram);
-
-
 
             // ################################## BEGIN CALCULATION OF INDICES ##################################
 
@@ -267,9 +257,8 @@ namespace AudioAnalysisTools.Indices
             // (A) ################################## EXTRACT SUMMARY INDICES FROM THE SIGNAL WAVEFORM ##################################
             // average absolute value over the minute recording
             // double[] avAbsolute = dspOutput1.Average;
-            double[] signalEnvelope  = dspOutput1.Envelope;
+            double[] signalEnvelope = dspOutput1.Envelope;
             double avgSignalEnvelope = signalEnvelope.Average();
-
 
             // average high ampl rate per second
             summaryIndices.HighAmplitudeIndex = dspOutput1.MaxAmplitudeCount / subsegmentSecondsDuration;
@@ -288,7 +277,7 @@ namespace AudioAnalysisTools.Indices
 
             // i: FRAME ENERGIES - convert signal to decibels and subtract background noise.
             double[] dBSignal = SNR.Signal2Decibels(dspOutput1.Envelope);
-            double[] dBArray  = SNR.SubtractAndTruncate2Zero(dBSignal, signalBgn);
+            double[] dBArray = SNR.SubtractAndTruncate2Zero(dBSignal, signalBgn);
 
             // 10 times log of amplitude squared
             summaryIndices.AvgSignalAmplitude = 20 * Math.Log10(avgSignalEnvelope);
@@ -320,13 +309,12 @@ namespace AudioAnalysisTools.Indices
 
             // Note that the spectrogram has had the DC bin removed. i.e. has only 256 columns.
             double[,] amplitudeSpectrogram = dspOutput1.AmplitudeSpectrogram; // get amplitude spectrogram.
-            int nyquistBin = dspOutput1.NyquistBin;
 
             // (A2) ################## CALCULATE  NDSI (Normalised difference soundscape Index) FROM THE AMPLITUDE SPECTROGRAM #################
             var tuple3 = SpectrogramTools.CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram(amplitudeSpectrogram);
+
             // get item 1 which the Power Spectral Density.
             summaryIndices.NDSI = SpectrogramTools.CalculateNdsi(tuple3.Item1, sampleRate, 1000, 2000, 8000);
-
 
             // (B) ################################## EXTRACT SPECTRAL INDICES FROM THE AMPLITUDE SPECTROGRAM ##################################
 
@@ -335,8 +323,10 @@ namespace AudioAnalysisTools.Indices
 
             // calculate bin id of boundary between low & mid frequency bands. This is to avoid low freq bins that likely contain anthropogenic noise.
             int lowerBinBound = (int)Math.Ceiling(lowFreqBound / dspOutput1.FreqBinWidth);
+
             // calculate bin id of upper boundary of bird-band. Also avoids high freq artefacts due to mp3.
             int upperBinBound = (int)Math.Ceiling(midFreqBound / dspOutput1.FreqBinWidth);
+
             // calculate number of freq bins in the reduced bird-band.
             //int reducedFreqBinCount = amplitudeSpectrogram.GetLength(1) - lowerBinBound;
             int midBandBinCount = upperBinBound - lowerBinBound + 1;
@@ -353,18 +343,16 @@ namespace AudioAnalysisTools.Indices
                 midBandBinCount = upperBinBound - lowerBinBound + 1;
             }
 
-
             // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this will be less than SR/2.
             // original sample rate can be anything 11.0-44.1 kHz.
             int originalNyquistFreq = sampleRateOfOriginalAudioFile / 2;
+
             // i.e. upsampling has been done
             if (dspOutput1.NyquistFreq > originalNyquistFreq)
             {
                 dspOutput1.NyquistFreq = originalNyquistFreq;
-                dspOutput1.NyquistBin  = (int)Math.Floor(originalNyquistFreq / dspOutput1.FreqBinWidth); // note that binwidth does not change
+                dspOutput1.NyquistBin = (int)Math.Floor(originalNyquistFreq / dspOutput1.FreqBinWidth); // note that binwidth does not change
             }
-
-
 
             // ii: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
             spectralIndices.DIF = AcousticComplexityIndex.SumOfAmplitudeDifferences(amplitudeSpectrogram);
@@ -385,48 +373,47 @@ namespace AudioAnalysisTools.Indices
 
             spectralIndices.ENT = temporalEntropySpectrum;
 
-
             // iv: remove background noise from the amplitude spectrogram
             amplitudeSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(amplitudeSpectrogram, spectralAmplitudeBgn);
             double nhAmplThreshold = 0.015; // AMPLITUDE THRESHOLD for smoothing background
+
             // Assuming a background noise ranges around -40dB, this value corresponds to approximately 6dB above backgorund.
             amplitudeSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(amplitudeSpectrogram, nhAmplThreshold);
             ////ImageTools.DrawMatrix(spectrogramData, @"C:\SensorNetworks\WavFiles\Crows\image.png", false);
             ////DataTools.writeBarGraph(modalValues);
 
-
             // v: ENTROPY OF AVERAGE SPECTRUM & VARIANCE SPECTRUM - at this point the spectrogram is a noise reduced amplitude spectrogram
             var tuple = AcousticEntropy.CalculateSpectralEntropies(amplitudeSpectrogram, lowerBinBound, midBandBinCount);
+
             // ENTROPY of spectral averages - Reverse the values i.e. calculate 1-Hs and 1-Hv, and 1-Hcov for energy concentration
             summaryIndices.EntropyOfAverageSpectrum = 1 - tuple.Item1;
+
             // ENTROPY of spectrum of Variance values
             summaryIndices.EntropyOfVarianceSpectrum = 1 - tuple.Item2;
+
             // ENTROPY of spectrum of Coefficient of Variation values
             summaryIndices.EntropyOfCoVSpectrum = 1 - tuple.Item3;
-
-
 
             // vi: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.
             //     First extract High band SPECTROGRAM which is now noise reduced
             double entropyOfPeaksSpectrum = AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, upperBinBound);
             summaryIndices.EntropyOfPeaksSpectrum = 1 - entropyOfPeaksSpectrum;
 
-
             // ######################################################################################################################################################
-            // (C) ################################## EXTRACT SPECTRAL INDICES FROM THE DECIBEL SPECTROGRAM ##################################           
+            // (C) ################################## EXTRACT SPECTRAL INDICES FROM THE DECIBEL SPECTROGRAM ##################################
 
-                deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput1.AmplitudeSpectrogram, dspOutput1.WindowPower, sampleRate, epsilon);
+            deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput1.AmplitudeSpectrogram, dspOutput1.WindowPower, sampleRate, epsilon);
 
             // ii: Calculate background noise spectrum in decibels
             spectralIndices.BGN = spectralDecibelBgn;
+
             //DataTools.writeBarGraph(spectralDecibelBGN);
 
-            // iii: CALCULATE noise reduced AVERAGE DECIBEL POWER SPECTRUM 
+            // iii: CALCULATE noise reduced AVERAGE DECIBEL POWER SPECTRUM
             deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, spectralDecibelBgn);
             double nhDecibelThreshold = 2.0; // SPECTRAL dB THRESHOLD for smoothing background
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, nhDecibelThreshold);
             spectralIndices.POW = SpectrogramTools.CalculateAvgSpectrumFromSpectrogram(deciBelSpectrogram);
-
 
             // ######################################################################################################################################################
             // iv: CALCULATE SPECTRAL COVER. NOTE: spectrogram is a noise reduced decibel spectrogram
@@ -436,10 +423,8 @@ namespace AudioAnalysisTools.Indices
             spectralIndices.EVN = spActivity.eventSpectrum;
 
             summaryIndices.HighFreqCover = spActivity.highFreqBandCover;
-            summaryIndices.MidFreqCover  = spActivity.midFreqBandCover;
-            summaryIndices.LowFreqCover  = spActivity.lowFreqBandCover;
-
-
+            summaryIndices.MidFreqCover = spActivity.midFreqBandCover;
+            summaryIndices.LowFreqCover = spActivity.lowFreqBandCover;
 
             // ######################################################################################################################################################
             // vii: CALCULATE SPECTRAL PEAK TRACKS. NOTE: spectrogram is a noise reduced decibel spectrogram
@@ -457,9 +442,9 @@ namespace AudioAnalysisTools.Indices
             //ImageTools.DrawMatrix(sptInfo.RvtSpectrum,             @"C:\SensorNetworks\Output\BAC\HiResRidge\ridgeSpectrum.png");
 
             summaryIndices.SptDensity = sptInfo.TrackDensity;
+
             //summaryIndices.AvgSptDuration = sptInfo.AvTrackDuration;
             //summaryIndices.SptPerSecond = sptInfo.TotalTrackCount / subsegmentSecondsDuration;
-
 
             // ######################################################################################################################################################
             // iv:  set up other info to return
@@ -467,17 +452,19 @@ namespace AudioAnalysisTools.Indices
             double[,] hits = sptInfo.Peaks;
             var scores = new List<Plot>();
 
-            returnSonogramInfo = false; // TEMPORARY ################################
             if (returnSonogramInfo)
             {
-                SonogramConfig sonoConfig = new SonogramConfig(); // default values config
-                sonoConfig.SourceFName = recordingFileName;
-                sonoConfig.WindowSize = (int?)config[AnalysisKeys.FrameLength] ?? 1024; // the default
-                sonoConfig.WindowOverlap = (double?)config[AnalysisKeys.FrameOverlap] ?? 0.0; // the default
+                // init the default sonogram config
+                var sonoConfig = new SonogramConfig
+                {
+                    SourceFName = recording.BaseName,
+                    WindowSize = (int?)config[AnalysisKeys.FrameLength] ?? 1024,
+                    WindowOverlap = (double?)config[AnalysisKeys.FrameOverlap] ?? 0.0,
+                    NoiseReductionType = NoiseReductionType.None,
+                };
 
-                sonoConfig.NoiseReductionType = NoiseReductionType.None; // the default
+                // the default
                 bool doNoiseReduction = (bool?)config[AnalysisKeys.NoiseDoReduction] ?? false;  // the default
-
                 if (doNoiseReduction)
                 {
                     sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
@@ -492,18 +479,22 @@ namespace AudioAnalysisTools.Indices
                 scores.Add(new Plot("Active Frames", DataTools.Bool2Binary(activity.activeFrames), 0.0));
 
                 // convert spectral peaks to frequency
-                var tuple_DecibelPeaks = SpectrogramTools.HistogramOfSpectralPeaks(deciBelSpectrogram);
-                int[] peaksBins = tuple_DecibelPeaks.Item2;
+                var tupleDecibelPeaks = SpectrogramTools.HistogramOfSpectralPeaks(deciBelSpectrogram);
+                int[] peaksBins = tupleDecibelPeaks.Item2;
                 double[] freqPeaks = new double[peaksBins.Length];
-                int binCount = sonogram.Data.GetLength(1);
-                for (int i = 1; i < peaksBins.Length; i++) freqPeaks[i] = (lowerBinBound + peaksBins[i]) / (double)nyquistBin;
+                int nyquistBin = dspOutput1.NyquistBin;
+
+                for (int i = 1; i < peaksBins.Length; i++)
+                {
+                    freqPeaks[i] = (lowerBinBound + peaksBins[i]) / (double)nyquistBin;
+                }
+
                 scores.Add(new Plot("Max Frequency", freqPeaks, 0.0));  // location of peaks for spectral images
             }
 
-
             // ######################################################################################################################################################
             // return if (activeFrameCount too small || segmentCount == 0 || short index calc duration) because no point doing clustering
-            if ((activity.activeFrameCount <= 2) || (activity.eventCount == 0) || (indexCalculationDuration.TotalSeconds < 10))
+            if (activity.activeFrameCount <= 2 || Math.Abs(activity.eventCount) < 0.01 || indexCalculationDuration.TotalSeconds < 10)
             {
                 result.Sg = sonogram;
                 result.Hits = hits;
@@ -512,6 +503,7 @@ namespace AudioAnalysisTools.Indices
                 // IN ADDITION return if indexCalculationDuration < 10 seconds because no point doing clustering on short time segment
                 // NOTE: Activity was calculated with 3dB threshold AFTER backgroundnoise removal.
                 summaryIndices.ClusterCount = 0;
+
                 //summaryIndices.AvgClusterDuration = TimeSpan.Zero;
                 summaryIndices.ThreeGramCount = 0;
                 spectralIndices.CLS = new double[amplitudeSpectrogram.GetLength(1)];
@@ -528,13 +520,13 @@ namespace AudioAnalysisTools.Indices
             // NOTE: The midBandAmplSpectrogram is derived from the amplitudeSpectrogram by removing low freq band AND high freq band.
             // NOTE: The amplitudeSpectrogram is already noise reduced at this stage.
             // Set threshold for deriving binary spectrogram - DEFAULT=0.06 prior to June2016
-            const double BinaryThreshold = 0.12;
+            const double binaryThreshold = 0.12;
 
             // ACTIVITY THRESHOLD - require activity in at least N freq bins to include the spectrum for training
             //                      DEFAULT was N=2 prior to June 2016. You can increase threshold to reduce cluster count due to noise.
-            const double RowSumThreshold = 2.0;
+            const double rowSumThreshold = 2.0;
             var midBandAmplSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, upperBinBound);
-            var parameters = new SpectralClustering.ClusteringParameters(lowerBinBound, midBandAmplSpectrogram.GetLength(1), BinaryThreshold, RowSumThreshold);
+            var parameters = new SpectralClustering.ClusteringParameters(lowerBinBound, midBandAmplSpectrogram.GetLength(1), binaryThreshold, rowSumThreshold);
 
             SpectralClustering.TrainingDataInfo data = SpectralClustering.GetTrainingDataForClustering(midBandAmplSpectrogram, parameters);
 
@@ -542,22 +534,24 @@ namespace AudioAnalysisTools.Indices
             clusterInfo.clusterCount = 0; // init just in case
 
             // cluster pruning parameters
-            const double WtThreshold = RowSumThreshold; // used to remove wt vectors whose sum of wts <= threshold
-            const int HitThreshold = 3; // used to remove wt vectors which have fewer than the threshold hits
+            const double weightThreshold = rowSumThreshold; // used to remove wt vectors whose sum of wts <= threshold
+            const int hitThreshold = 3; // used to remove wt vectors which have fewer than the threshold hits
 
             // Skip clustering if not enough suitable training data
             if (data.trainingData.Count <= 8)
             {
                 clusterInfo.clusterHits2 = null;
                 summaryIndices.ClusterCount = 0;
+
                 //summaryIndices.AvgClusterDuration = TimeSpan.Zero;
                 summaryIndices.ThreeGramCount = 0;
                 spectralIndices.CLS = new double[amplitudeSpectrogram.GetLength(1)];
             }
             else
             {
-                clusterInfo = SpectralClustering.ClusterAnalysis(data.trainingData, WtThreshold, HitThreshold, data.selectedFrames);
+                clusterInfo = SpectralClustering.ClusterAnalysis(data.trainingData, weightThreshold, hitThreshold, data.selectedFrames);
                 summaryIndices.ClusterCount = clusterInfo.clusterCount;
+
                 //summaryIndices.AvgClusterDuration = TimeSpan.FromSeconds(clusterInfo.av2 * frameTimeSpan.TotalSeconds); // av cluster duration
                 summaryIndices.ThreeGramCount = clusterInfo.triGramUniqueCount;
 
@@ -581,55 +575,46 @@ namespace AudioAnalysisTools.Indices
                 scores.Add(new Plot(label, DataTools.normalise(clusterHits), 0.0)); // location of cluster hits
             }
 
-
-
             result.Sg = sonogram;
             result.Hits = hits;
             result.TrackScores = scores;
+
             //result.Tracks = sptInfo.listOfSPTracks; // not calculated but could be
             return result;
         } // end of method Analysis()
-
-
-
-
-
 
         // ########################################################################################################################################################################
         //  OTHER METHODS
         // ########################################################################################################################################################################
 
-
         /// <summary>
         /// returns a subsample of a recording with buffer on either side.
         /// Main complication is dealing with edge effects.
         /// </summary>
-        /// <param name="recording"></param>
-        /// <param name="sampleStart"></param>
-        /// <param name="sampleEnd"></param>
-        /// <param name="sampleBuffer"></param>
-        /// <returns></returns>
         public static AudioRecording GetRecordingSubsegment(AudioRecording recording, int sampleStart, int sampleEnd, int sampleBuffer)
         {
             int signalLength = recording.WavReader.Samples.Length;
             int subsampleStart = sampleStart - sampleBuffer;
-            int subsampleEnd   = sampleEnd + sampleBuffer;
+            int subsampleEnd = sampleEnd + sampleBuffer;
             int subsampleDuration = sampleEnd - sampleStart + 1 + (2 * sampleBuffer);
             if (subsampleStart < 0)
             {
                 subsampleStart = 0;
                 subsampleEnd = subsampleDuration - 1;
             }
+
             if (subsampleEnd >= signalLength)
             {
                 subsampleEnd = signalLength - 1;
                 subsampleStart = signalLength - subsampleDuration;
             }
+
             // catch case where subsampleDuration < recording length.
             if (subsampleStart < 0)
             {
                 subsampleStart = 0;
             }
+
             int subsegmentSampleCount = subsampleEnd - subsampleStart + 1;
             AudioRecording subsegmentRecording = recording;
             if (subsegmentSampleCount <= signalLength)
@@ -638,24 +623,16 @@ namespace AudioAnalysisTools.Indices
                 var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, recording.SampleRate);
                 subsegmentRecording = new AudioRecording(wr);
             }
+
             return subsegmentRecording;
         }
 
-
-
         /// <summary>
-        /// CALCULATEs SPECTRAL PEAK TRACKS. 
+        /// CALCULATEs SPECTRAL PEAK TRACKS.
         /// NOTE: We require a noise reduced decibel spectrogram
         /// FreqBinWidth can be accessed, if required, through dspOutput1.FreqBinWidth,
         /// </summary>
-        /// <param name="recording"></param>
-        /// <param name="sampleStart"></param>
-        /// <param name="sampleEnd"></param>
-        /// <param name="frameSize"></param>
-        /// <param name="octaveScale"></param>
-        /// <returns></returns>
-        public static SpectralPeakTracks CalculateSpectralPeakTracks(AudioRecording recording, int sampleStart, int sampleEnd, 
-                                                                     int frameSize, bool octaveScale)
+        public static SpectralPeakTracks CalculateSpectralPeakTracks(AudioRecording recording, int sampleStart, int sampleEnd, int frameSize, bool octaveScale)
         {
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
             int sampleRate = recording.WavReader.SampleRate;
@@ -667,7 +644,7 @@ namespace AudioAnalysisTools.Indices
 
             // Generate the ridge SUBSEGMENT deciBel spectrogram from the SUBSEGMENT amplitude spectrogram
             // i: generate the SUBSEGMENT deciBel spectrogram from the SUBSEGMENT amplitude spectrogram
-            double[,] decibelSpectrogram = null;
+            double[,] decibelSpectrogram;
             if (octaveScale)
             {
                 var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
@@ -691,6 +668,5 @@ namespace AudioAnalysisTools.Indices
             var sptInfo = new SpectralPeakTracks(decibelSpectrogram, frameStepTimeSpan);
             return sptInfo;
         }
-
     }
 }
