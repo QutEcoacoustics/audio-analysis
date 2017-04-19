@@ -69,6 +69,11 @@ namespace AudioAnalysisTools.Indices
     /// </summary>
     public class SummaryIndexValues : SummaryIndexBase
     {
+        static SummaryIndexValues()
+        {
+            CachedSelectors = ReflectionExtensions.GetGetters<SummaryIndexValues, object>();
+        }
+
         public double ZeroSignal { get; set; }
 
         public double HighAmplitudeIndex { get; set; }
@@ -161,11 +166,6 @@ namespace AudioAnalysisTools.Indices
                 this.SetPropertyValue(kvp.Key, kvp.Value.DefaultValueCasted);
             }
         }
-
-        static SummaryIndexValues()
-        {
-            CachedSelectors = ReflectionExtensions.GetGetters<SummaryIndexValues, object>();
-        }
     }
 
     public class SpectralIndexValues : SpectralIndexBase
@@ -180,7 +180,7 @@ namespace AudioAnalysisTools.Indices
             CachedSelectorsInternal = new Dictionary<string, Func<SpectralIndexBase, double[]>>(getters.Count);
             foreach (var keyValuePair in getters)
             {
-                var key = keyValuePair.Key;
+                // var key = keyValuePair.Key;
                 var selector = keyValuePair.Value;
 
                 CachedSelectorsInternal.Add(
@@ -193,7 +193,7 @@ namespace AudioAnalysisTools.Indices
             CachedSettersInternal = new Dictionary<string, Action<SpectralIndexValues, double[]>>(getters.Count);
             foreach (var keyValuePair in setters)
             {
-                var key = keyValuePair.Key;
+                // var key = keyValuePair.Key;
                 var setter = keyValuePair.Value;
 
                 CachedSettersInternal.Add(
@@ -293,10 +293,20 @@ namespace AudioAnalysisTools.Indices
 
         public double[] DIF { get; set; }
 
+        /// <summary>
+        /// DMN = Decibels Minus Noise. THis is the correct way to average a decibel spectrogram.
+        /// DMN should replace POW as the average decibel spectrogram.
+        /// </summary>
+        public double[] DMN { get; set; }
+
         public double[] ENT { get; set; }
 
         public double[] EVN { get; set; }
 
+        /// <summary>
+        /// The POW spectral index should eventually be depracated.
+        /// It is derived from an incorrect way of averaging decibel values
+        /// </summary>
         public double[] POW { get; set; }
 
         // Spectral Ridges Horizontal

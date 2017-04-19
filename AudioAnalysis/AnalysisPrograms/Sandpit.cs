@@ -60,13 +60,14 @@ namespace AnalysisPrograms
                 //FrequencyScale.TESTMETHOD_OctaveFrequencyScale2();
 
                 //Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms();
-                Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
+                //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
 
                 // The following test methods test various configs of concatenation
                 //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest1();
                 //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest2();
                 //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest3();
                 //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest4();
+                SpectrogramTools.AverageAnArrayOfDecibelValues(null);
             }
 
             if (false)
