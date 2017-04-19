@@ -7,15 +7,9 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-
     using Acoustics.Shared;
-
-    using AnalysisBase;
     using AnalysisBase.ResultBases;
-
     using Fasterflect;
-
     using TowseyLibrary;
 
     public class IndexCalculateResult
@@ -43,6 +37,7 @@ namespace AudioAnalysisTools.Indices
                                               SegmentDuration =
                                                   durationOfResult,
                                           };
+
             this.SpectralIndexValues = new SpectralIndexValues(freqBinCount, indexProperties)
                                            {
                                                // give the results object an offset value so it can be sorted.
@@ -106,12 +101,15 @@ namespace AudioAnalysisTools.Indices
         public double TemporalEntropy { get; set; }
 
         public double EntropyOfAverageSpectrum { get; set; } // this is new more accurate name
+
         public double AvgEntropySpectrum { get; set; } // this is old name for EntropyOfAverageSpectrum
 
         public double EntropyOfVarianceSpectrum { get; set; }
-        public double VarianceEntropySpectrum { get; set; }  // this is old name for EntropyOfVarianceSpectrum
+
+        public double VarianceEntropySpectrum { get; set; } // this is old name for EntropyOfVarianceSpectrum
 
         public double EntropyOfPeaksSpectrum { get; set; }
+
         public double EntropyPeaks { get; set; } // this is old name for EntropyOfPeaksSpectrum
 
         public double EntropyOfCoVSpectrum { get; set; }
@@ -127,8 +125,8 @@ namespace AudioAnalysisTools.Indices
 
         //public TimeSpan AvgSptDuration { get; set; }
 
-		/// Normalised difference soundscape Index
-        public double NDSI { get; set; }
+        // Normalised difference soundscape Index
+        public double Ndsi { get; set; }
 
         public double SptDensity { get; set; }
 
@@ -250,8 +248,6 @@ namespace AudioAnalysisTools.Indices
         /// Used to check that the keys in the indexProperties dictionary correspond to Properties in the SpectralIndexValues class.
         /// Call this method before entering a loop because do not want the error message at every iteration through loop.
         /// </summary>
-        /// <param name="indexProperties">
-        /// </param>
         public static void CheckExistenceOfSpectralIndexValues(Dictionary<string, IndexProperties> indexProperties)
         {
             var siv = new SpectralIndexValues();
@@ -280,6 +276,7 @@ namespace AudioAnalysisTools.Indices
                 return CachedSelectorsInternal;
             }
         }
+
         public static Dictionary<string, Action<SpectralIndexValues, double[]>> CachedSetters
         {
             get
@@ -302,17 +299,20 @@ namespace AudioAnalysisTools.Indices
 
         public double[] POW { get; set; }
 
-        /// Spectral Ridges Horizontal
+        // Spectral Ridges Horizontal
         public double[] RHZ { get; set; }
 
-        /// Spectral Ridges Vertical
+        // Spectral Ridges Vertical
         public double[] RVT { get; set; }
 
-        /// Spectral Ridges Positive slope
+        // Spectral Ridges Positive slope
         public double[] RPS { get; set; }
 
-        /// Spectral Ridges Negative Slope
+        // Spectral Ridges Negative Slope
         public double[] RNG { get; set; }
+
+        // Sum of Spectral Ridges in HRHZ, RPS and RNG directions
+        public double[] R3D { get; set; }
 
         // Spectral Peak Tracks
         public double[] SPT { get; set; }
@@ -320,6 +320,7 @@ namespace AudioAnalysisTools.Indices
         public double[] SUM { get; set; }
 
         public double[] CLS { get; set; }
+
         public override Dictionary<string, Func<SpectralIndexBase, double[]>> GetSelectors()
         {
             return CachedSelectors;
