@@ -72,7 +72,7 @@
             Bitmap image;
 
             using (var recording = new AudioRecording(bytes))
-            using (var img = recording.GetWaveFormDB(width, height, WaveFormDbMin))
+            using (var img = recording.GetWaveFormInDecibels(width, height, WaveFormDbMin))
             {
                 image = new Bitmap(img);
             }
@@ -180,7 +180,7 @@
             Bitmap image;
 
             using (var recording = new AudioRecording(bytes))
-            using (var img = recording.GetWaveFormDB(width, height, WaveFormDbMin))
+            using (var img = recording.GetWaveFormInDecibels(width, height, WaveFormDbMin))
             {
                 image = new Bitmap(img);
             }
