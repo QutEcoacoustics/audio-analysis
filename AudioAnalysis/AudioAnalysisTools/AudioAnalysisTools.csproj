@@ -342,7 +342,7 @@
     <Compile Include="StandardSpectrograms\Image_Track.cs" />
     <Compile Include="SpectralClustering.cs" />
     <Compile Include="SpectralTrack.cs" />
-    <Compile Include="SpectralTracks.cs" />
+    <Compile Include="SpectralPeakTracks.cs" />
     <Compile Include="SprTools.cs" />
     <Compile Include="ResultsTools.cs">
       <SubType>Code</SubType>
