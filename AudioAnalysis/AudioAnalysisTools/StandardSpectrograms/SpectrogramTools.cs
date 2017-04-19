@@ -656,12 +656,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return ndsi;
         }
 
-
         /// <summary>
         /// Returns a HISTORGRAM OF THE DISTRIBUTION of SPECTRAL maxima.
         /// </summary>
-        /// <param name="spectrogram"></param>
-        /// <returns></returns>
         public static Tuple<int[], int[]> HistogramOfSpectralPeaks(double[,] spectrogram)
         {
             if (spectrogram == null)
@@ -673,25 +670,27 @@ namespace AudioAnalysisTools.StandardSpectrograms
             int frameCount = spectrogram.GetLength(0);
             int freqBinCount = spectrogram.GetLength(1);
 
-            int[] peakBins = new int[frameCount];   // store bin id of peaks - use later for imaging purposes
+            int[] peakBins = new int[frameCount]; // store bin id of peaks
             int[] histogram = new int[freqBinCount]; // histogram of peak locations
+
+            // for all frames in dB array
             for (int r = 0; r < frameCount; r++)
             {
                 double[] spectrum = DataTools.GetRow(spectrogram, r);
 
-                int j = DataTools.GetMaxIndex(spectrum); //locate maximum peak
+                //locate maximum peak
+                int j = DataTools.GetMaxIndex(spectrum);
                 //if (spectrogram[r, j] > peakThreshold)
                 //{
-                histogram[j]++; //
-                peakBins[r] = j;  //store bin of peak
-                //}
-            } // over all frames in dB array
+                histogram[j]++;
 
-            //DataTools.writeBarGraph(histogram);
+                //store bin of peak
+                peakBins[r] = j;
+                //}
+            }
+
             return Tuple.Create(histogram, peakBins);
         }
-
-
 
         public static double[,] ExtractFreqSubband(double[,] m, int minHz, int maxHz, bool doMelscale, int binCount, double binWidth)
         {

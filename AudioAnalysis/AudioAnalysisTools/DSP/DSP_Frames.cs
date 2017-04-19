@@ -129,15 +129,13 @@ namespace AudioAnalysisTools.DSP
         public static EnvelopeAndFft ExtractEnvelopeAndFfts(AudioRecording recording, int frameSize, double overlap, string windowName = null)
         {
             int frameStep = (int)(frameSize * (1 - overlap));
-            double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep, windowName);
+            return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, recording.Epsilon, frameSize, frameStep, windowName);
         }
 
         public static EnvelopeAndFft ExtractEnvelopeAndFfts(AudioRecording recording, int frameSize, int frameStep)
         {
-            double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
             string windowName = FFT.Key_HammingWindow;
-            return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep, windowName);
+            return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, recording.Epsilon, frameSize, frameStep, windowName);
         }
 
         public static EnvelopeAndFft ExtractEnvelopeAndAmplSpectrogram(double[] signal, int sampleRate, double epsilon, int frameSize, double overlap)
@@ -287,10 +285,6 @@ namespace AudioAnalysisTools.DSP
             // check the envelope for clipping. Accept a clip if two consecutive frames have max value = 1,0
             Clipping.GetClippingCount(signal, envelope, frameStep, epsilon, out int maxAmplitudeCount, out int clipCount);
 
-            int nyquistFreq = sampleRate / 2;
-            double binWidth = nyquistFreq / (double)amplSpectrogram.GetLength(1);
-            int nyquistBin = amplSpectrogram.GetLength(1) - 1;
-
             return new EnvelopeAndFft
             {
                 // The following data is required when constructing sonograms
@@ -316,9 +310,9 @@ namespace AudioAnalysisTools.DSP
                 FrameDecibels = frameDecibels,
 
                 // freq scale info
-                NyquistFreq = nyquistFreq,
-                NyquistBin = nyquistBin,
-                FreqBinWidth = binWidth,
+                NyquistFreq = sampleRate / 2,
+                NyquistBin = amplSpectrogram.GetLength(1) - 1,
+                FreqBinWidth = sampleRate / (double)amplSpectrogram.GetLength(1) / 2,
             };
         }
 
