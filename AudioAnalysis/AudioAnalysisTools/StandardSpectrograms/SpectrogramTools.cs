@@ -535,28 +535,73 @@ namespace AudioAnalysisTools.StandardSpectrograms
             process.Run(args, output.DirectoryName);
         }
 
+        /// <summary>
+        /// NOTE: This method should not be used to average a decibel spectrogram.
+        /// Use only for power spectrograms.
+        /// </summary>
         public static double[] CalculateAvgSpectrumFromSpectrogram(double[,] spectrogram)
         {
             int frameCount = spectrogram.GetLength(0);
             int freqBinCount = spectrogram.GetLength(1);
             double[] avgSpectrum = new double[freqBinCount];   // for average  of the spectral bins
-            //double[] varSpectrum = new double[freqBinCount];   // for variance of the spectral bins
-            //double[] covSpectrum = new double[freqBinCount];   // for coeff of variance of the spectral bins
-            for (int j = 0; j < freqBinCount; j++)             // for all frequency bins
+
+            //double[] varSpectrum = new double[freqBinCount]; // for variance of the spectral bins
+            //double[] covSpectrum = new double[freqBinCount]; // for coeff of variance of the spectral bins
+            for (int j = 0; j < freqBinCount; j++)
             {
-                var freqBin = new double[frameCount];          // set up an array to take all values in a freq bin i.e. column of matrix
+                // set up an array to take all values in a freq bin i.e. column of matrix
+                var freqBin = new double[frameCount];
                 for (int r = 0; r < frameCount; r++)
                 {
                     freqBin[r] = spectrogram[r, j];
                 }
+
                 double av, sd;
                 NormalDist.AverageAndSD(freqBin, out av, out sd);
                 avgSpectrum[j] = av; // store average of the bin
+
                 //varSpectrum[j] = sd * sd; // store var of the bin
                 //covSpectrum[j] = sd * sd / av; //store the coefficient of variation of the bin
             }
+
             return avgSpectrum;
         }
+
+        /// <summary>
+        /// Use this method to average a decibel spectrogram
+        /// </summary>
+        public static double[] CalculateAvgDecibelSpectrumFromSpectrogram(double[,] spectrogram)
+        {
+            int frameCount = spectrogram.GetLength(0);
+            int freqBinCount = spectrogram.GetLength(1);
+            double[] avgSpectrum = new double[freqBinCount];
+            for (int j = 0; j < freqBinCount; j++)
+            {
+                var freqBin = MatrixTools.GetColumn(spectrogram, j);
+                double av = SpectrogramTools.AverageAnArrayOfDecibelValues(freqBin);
+                avgSpectrum[j] = av;
+            }
+
+            return avgSpectrum;
+        }
+
+        public static double AverageAnArrayOfDecibelValues(double[] array)
+        {
+            // this is test data. Return value should = 96.988 dB
+            // array = new[] { 96.0, 100.0, 90.0, 97.0 };
+            int count = array.Length;
+            double sum = 0.0;
+            for (int j = 0; j < count; j++)
+            {
+                // add the antilogs - see DataTools.AntiLogBase10(double value);
+                sum += Math.Exp(array[j] / 10 * Math.Log(10));
+            }
+
+            double av = sum / count;
+            double dB = Math.Log10(av) * 10;
+            return dB;
+        }
+
         public static double[] CalculateSumSpectrumFromSpectrogram(double[,] spectrogram)
         {
             int frameCount = spectrogram.GetLength(0);

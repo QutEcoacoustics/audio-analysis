@@ -236,29 +236,25 @@ namespace AudioAnalysisTools.Indices
             double signalBgn = NoiseRemovalModal.CalculateBackgroundNoise(dspOutput2.Envelope);
             summaryIndices.BackgroundNoise = signalBgn;
 
-            // iii: Convert amplitude spectrogram to deciBels and calculate the dB noise profile
-            double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput2.AmplitudeSpectrogram, dspOutput2.WindowPower, sampleRate, epsilon);
-            double[] spectralDecibelBgn = NoiseProfile.CalculateBackgroundNoise(deciBelSpectrogram);
-
-            // iv: FRAME ENERGIES - convert signal to decibels and subtract background noise.
+            // iii: FRAME ENERGIES - convert signal to decibels and subtract background noise.
             double[] dBEnvelope = SNR.Signal2Decibels(dspOutput1.Envelope);
             double[] dBEnvelopeSansNoise = SNR.SubtractAndTruncate2Zero(dBEnvelope, signalBgn);
 
-            // v: ACTIVITY for NOISE REDUCED SIGNAL ENVELOPE
+            // iv: ACTIVITY for NOISE REDUCED SIGNAL ENVELOPE
             // Calculate fraction of frames having acoustic activity
             var activity = ActivityAndCover.CalculateActivity(dBEnvelopeSansNoise, frameStepTimeSpan);
             summaryIndices.Activity = activity.fractionOfActiveFrames;
 
-            // vi. average number of events per second whose duration > one frame
+            // v. average number of events per second whose duration > one frame
             // average event duration in milliseconds - no longer calculated
             //summaryIndices.AvgEventDuration = activity.avEventDuration;
             summaryIndices.EventsPerSecond = activity.eventCount / subsegmentSecondsDuration;
 
-            // vii. Calculate SNR and active frames SNR
+            // vi. Calculate SNR and active frames SNR
             summaryIndices.Snr = dBEnvelopeSansNoise.Max();
             summaryIndices.AvgSnrOfActiveFrames = activity.activeAvDB;
 
-            // viii. ENTROPY of ENERGY ENVELOPE -- 1-Ht because want measure of concentration of acoustic energy.
+            // vii. ENTROPY of ENERGY ENVELOPE -- 1-Ht because want measure of concentration of acoustic energy.
             double entropy = DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope));
             summaryIndices.TemporalEntropy = 1 - entropy;
 
@@ -266,7 +262,7 @@ namespace AudioAnalysisTools.Indices
             double[,] amplitudeSpectrogram = dspOutput1.AmplitudeSpectrogram; // get amplitude spectrogram.
 
             // CALCULATE various NDSI (Normalised difference soundscape Index) FROM THE AMPLITUDE SPECTROGRAM
-            // These options proved to be highly correlated. therefore only use tuple.Item 1 which derived from Power Spectral Density.
+            // These options proved to be highly correlated. Therefore only use tuple.Item 1 which derived from Power Spectral Density.
             var tuple3 = SpectrogramTools.CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram(amplitudeSpectrogram);
             summaryIndices.Ndsi = SpectrogramTools.CalculateNdsi(tuple3.Item1, sampleRate, 1000, 2000, 8000);
 
@@ -357,20 +353,22 @@ namespace AudioAnalysisTools.Indices
             // ######################################################################################################################################################
             // (C) ################################## EXTRACT SPECTRAL INDICES FROM THE DECIBEL SPECTROGRAM ##################################
 
-            // i: Store background noise spectrum in decibels. This was calculated above.
+            // i: Convert amplitude spectrogram to deciBels and calculate the dB background noise profile
+            double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput2.AmplitudeSpectrogram, dspOutput2.WindowPower, sampleRate, epsilon);
+            double[] spectralDecibelBgn = NoiseProfile.CalculateBackgroundNoise(deciBelSpectrogram);
             spectralIndices.BGN = spectralDecibelBgn;
 
-            // ii: Calculate decibel spectrogram derived from segment recording. Reuse the var deciBelSpectrogram but this time for dspOutput1.
+            // ii: Calculate the noise reduced decibel spectrogram derived from segment recording. Reuse the var deciBelSpectrogram but this time using dspOutput1.
             deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput1.AmplitudeSpectrogram, dspOutput1.WindowPower, sampleRate, epsilon);
-
-            // iii: CALCULATE noise reduced AVERAGE DECIBEL SPECTRUM
             deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, spectralDecibelBgn);
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, nhThreshold: 2.0);
 
-            // TODO: Averaging decibel values is dodgy! Need to reconsider this sometime.
+            // iii: CALCULATE noise reduced AVERAGE DECIBEL SPECTRUM
+            // TODO: The method to calculate POW by averaging decibel values should be depracated It is now replaced by index DMN.
             spectralIndices.POW = SpectrogramTools.CalculateAvgSpectrumFromSpectrogram(deciBelSpectrogram);
+            spectralIndices.DMN = SpectrogramTools.CalculateAvgDecibelSpectrumFromSpectrogram(deciBelSpectrogram);
 
-            // iv: CALCULATE SPECTRAL COVER. 
+            // iv: CALCULATE SPECTRAL COVER.
             //     NOTE: at this point, deciBelSpectrogram is a noise reduced decibel spectrogram
             double dBThreshold = ActivityAndCover.DefaultActivityThresholdDb; // dB THRESHOLD for calculating spectral coverage
             var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameStepTimeSpan, lowFreqBound, midFreqBound, freqBinWidth);

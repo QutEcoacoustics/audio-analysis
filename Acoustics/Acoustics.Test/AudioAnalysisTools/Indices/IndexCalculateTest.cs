@@ -193,6 +193,12 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.CVR);
 
+            // DMN
+            expectedSpectrumFile = new FileInfo(outputDir + "\\DMN.bin");
+            // Binary.Serialize(expectedSpectrumFile, spectralIndices.DMN);
+            expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
+            CollectionAssert.AreEqual(expectedVector, spectralIndices.DMN);
+
             // ENT
             expectedSpectrumFile = new FileInfo(outputDir + "\\ENT.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.ENT);
