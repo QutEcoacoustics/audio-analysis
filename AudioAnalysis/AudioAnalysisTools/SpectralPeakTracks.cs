@@ -18,6 +18,22 @@ namespace AudioAnalysisTools
     /// </summary>
     public class SpectralPeakTracks
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SpectralPeakTracks"/> class.
+        /// CONSTRUCTOR NOTE: Orientation of passed spectrogram is: row = spectral frames, columns = frequency bins
+        /// </summary>
+        public SpectralPeakTracks(double[,] dBSpectrogram, double peakThreshold)
+        {
+            // double framesStepsPerSecond = 1 / frameStepTimeSpan.TotalSeconds;
+            this.GetPeakTracksSpectrum(dBSpectrogram, peakThreshold);
+
+            // this method was written just before leaving for Toulon to work with Herve Glotin.
+            // It was changed while in Toulon to the following line which does not require a threshold.
+            // this.GetRidgeSpectraVersion1(dBSpectrogram, ridgeThreshold: 4.0);
+            this.GetRidgeSpectraVersion2(dBSpectrogram);
+            this.CalculateCombinationOfThreeDirections();
+        }
+
         public double[,] Peaks { get; private set; }
 
         //public int TotalTrackCount { get; private set; }
@@ -56,25 +72,7 @@ namespace AudioAnalysisTools
         /// <summary>
         /// gets three directions ridge value
         /// </summary>
-        public double[] R3dSpectrum { get; private set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SpectralPeakTracks"/> class.
-        /// CONSTRUCTOR
-        /// NOTE: Orientation of passed spectrogram is: row = spectral frames, columns = frequency bins
-        /// </summary>
-        public SpectralPeakTracks(double[,] dBSpectrogram, TimeSpan frameStepTimeSpan)
-        {
-            // double framesStepsPerSecond = 1 / frameStepTimeSpan.TotalSeconds;
-            double peakThreshold = 6.0; //dB
-            this.GetPeakTracksSpectrum(dBSpectrogram, peakThreshold);
-
-            // this method was written just before leaving for Toulon to work with Herve Glotin.
-            // It was changed while in Toulon to the following line which does not require a threshold.
-            // this.GetRidgeSpectraVersion1(dBSpectrogram, ridgeThreshold: 4.0);
-            this.GetRidgeSpectraVersion2(dBSpectrogram);
-            this.Calculate3DCombination();
-        }
+        public double[] R3DSpectrum { get; private set; }
 
         public void GetRidgeSpectraVersion1(double[,] dbSpectrogramData, double ridgeThreshold)
         {
@@ -305,12 +303,12 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Calculates the sum of the Horizontal, positive and negative slope ridges.
         /// </summary>
-        public void Calculate3DCombination()
+        public void CalculateCombinationOfThreeDirections()
         {
+            this.R3DSpectrum = new double[this.RhzSpectrum.Length];
             for (int i = 0; i < this.RhzSpectrum.Length; i++)
             {
-                this.R3dSpectrum = new double[this.RhzSpectrum.Length];
-                this.R3dSpectrum[i] = this.RhzSpectrum[i] + this.RpsSpectrum[i] + this.RngSpectrum[i];
+                this.R3DSpectrum[i] = this.RhzSpectrum[i] + this.RpsSpectrum[i] + this.RngSpectrum[i];
             }
         }
 
@@ -367,7 +365,7 @@ namespace AudioAnalysisTools
         /// </summary>
         public static SpectralPeakTracks CalculateSpectralPeakTracks(AudioRecording recording, int sampleStart, int sampleEnd, int frameSize, bool octaveScale)
         {
-            double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
+            double epsilon = recording.Epsilon;
             int sampleRate = recording.WavReader.SampleRate;
             int bufferFrameCount = 2; // 2 because must allow for edge effects when using 5x5 grid to find ridges.
             int ridgeBuffer = frameSize * bufferFrameCount;
@@ -395,10 +393,11 @@ namespace AudioAnalysisTools
             decibelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(decibelSpectrogram, nhDecibelThreshold);
 
             // thresholds in decibels
-            double frameStepDuration = frameStep / (double)sampleRate; // fraction of a second
-            TimeSpan frameStepTimeSpan = TimeSpan.FromTicks((long)(frameStepDuration * TimeSpan.TicksPerSecond));
+            // double frameStepDuration = frameStep / (double)sampleRate; // fraction of a second
+            // TimeSpan frameStepTimeSpan = TimeSpan.FromTicks((long)(frameStepDuration * TimeSpan.TicksPerSecond));
 
-            var sptInfo = new SpectralPeakTracks(decibelSpectrogram, frameStepTimeSpan);
+            double peakThreshold = 6.0; //dB
+            var sptInfo = new SpectralPeakTracks(decibelSpectrogram, peakThreshold);
             return sptInfo;
         }
 

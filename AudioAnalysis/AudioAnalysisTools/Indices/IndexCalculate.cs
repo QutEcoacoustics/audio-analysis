@@ -364,12 +364,12 @@ namespace AudioAnalysisTools.Indices
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, nhThreshold: 2.0);
 
             // iii: CALCULATE noise reduced AVERAGE DECIBEL SPECTRUM
-            // TODO: The method to calculate POW by averaging decibel values should be depracated It is now replaced by index DMN.
+            // TODO: The method to calculate POW by averaging decibel values should be depracated. It is now replaced by index DMN.
             spectralIndices.POW = SpectrogramTools.CalculateAvgSpectrumFromSpectrogram(deciBelSpectrogram);
             spectralIndices.DMN = SpectrogramTools.CalculateAvgDecibelSpectrumFromSpectrogram(deciBelSpectrogram);
 
             // iv: CALCULATE SPECTRAL COVER.
-            //     NOTE: at this point, deciBelSpectrogram is a noise reduced decibel spectrogram
+            //     NOTE: at this point, decibelSpectrogram is noise reduced. All values >= 0.0
             double dBThreshold = ActivityAndCover.DefaultActivityThresholdDb; // dB THRESHOLD for calculating spectral coverage
             var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameStepTimeSpan, lowFreqBound, midFreqBound, freqBinWidth);
             spectralIndices.CVR = spActivity.coverSpectrum;
@@ -389,7 +389,7 @@ namespace AudioAnalysisTools.Indices
             spectralIndices.RVT = sptInfo.RvtSpectrum;
             spectralIndices.RPS = sptInfo.RpsSpectrum;
             spectralIndices.RNG = sptInfo.RngSpectrum;
-            spectralIndices.R3D = sptInfo.R3dSpectrum;
+            spectralIndices.R3D = sptInfo.R3DSpectrum;
 
             //images for debugging
             //ImageTools.DrawMatrix(dspOutput3.amplitudeSpectrogram, @"C:\SensorNetworks\Output\BAC\HiResRidge\dspOutput3.amplitudeSpectrogram.png");
