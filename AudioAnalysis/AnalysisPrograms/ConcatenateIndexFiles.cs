@@ -531,7 +531,7 @@ namespace AnalysisPrograms
                 indexPropertiesConfig = arguments.IndexPropertiesConfig;
 
                 // prepare the false-colour spgm config file
-                if (arguments.FalseColourSpectrogramConfig.Exists)
+                if (arguments?.FalseColourSpectrogramConfig?.Exists ?? false)
                 {
                     ldSpectrogramConfig = LdSpectrogramConfig.ReadYamlToConfig(arguments.FalseColourSpectrogramConfig);
 
