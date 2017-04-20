@@ -7,15 +7,9 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-
     using Acoustics.Shared;
-
-    using AnalysisBase;
     using AnalysisBase.ResultBases;
-
     using Fasterflect;
-
     using TowseyLibrary;
 
     public class IndexCalculateResult
@@ -43,6 +37,7 @@ namespace AudioAnalysisTools.Indices
                                               SegmentDuration =
                                                   durationOfResult,
                                           };
+
             this.SpectralIndexValues = new SpectralIndexValues(freqBinCount, indexProperties)
                                            {
                                                // give the results object an offset value so it can be sorted.
@@ -74,6 +69,11 @@ namespace AudioAnalysisTools.Indices
     /// </summary>
     public class SummaryIndexValues : SummaryIndexBase
     {
+        static SummaryIndexValues()
+        {
+            CachedSelectors = ReflectionExtensions.GetGetters<SummaryIndexValues, object>();
+        }
+
         public double ZeroSignal { get; set; }
 
         public double HighAmplitudeIndex { get; set; }
@@ -106,12 +106,15 @@ namespace AudioAnalysisTools.Indices
         public double TemporalEntropy { get; set; }
 
         public double EntropyOfAverageSpectrum { get; set; } // this is new more accurate name
+
         public double AvgEntropySpectrum { get; set; } // this is old name for EntropyOfAverageSpectrum
 
         public double EntropyOfVarianceSpectrum { get; set; }
-        public double VarianceEntropySpectrum { get; set; }  // this is old name for EntropyOfVarianceSpectrum
+
+        public double VarianceEntropySpectrum { get; set; } // this is old name for EntropyOfVarianceSpectrum
 
         public double EntropyOfPeaksSpectrum { get; set; }
+
         public double EntropyPeaks { get; set; } // this is old name for EntropyOfPeaksSpectrum
 
         public double EntropyOfCoVSpectrum { get; set; }
@@ -127,8 +130,8 @@ namespace AudioAnalysisTools.Indices
 
         //public TimeSpan AvgSptDuration { get; set; }
 
-		/// Normalised difference soundscape Index
-        public double NDSI { get; set; }
+        // Normalised difference soundscape Index
+        public double Ndsi { get; set; }
 
         public double SptDensity { get; set; }
 
@@ -163,11 +166,6 @@ namespace AudioAnalysisTools.Indices
                 this.SetPropertyValue(kvp.Key, kvp.Value.DefaultValueCasted);
             }
         }
-
-        static SummaryIndexValues()
-        {
-            CachedSelectors = ReflectionExtensions.GetGetters<SummaryIndexValues, object>();
-        }
     }
 
     public class SpectralIndexValues : SpectralIndexBase
@@ -182,7 +180,7 @@ namespace AudioAnalysisTools.Indices
             CachedSelectorsInternal = new Dictionary<string, Func<SpectralIndexBase, double[]>>(getters.Count);
             foreach (var keyValuePair in getters)
             {
-                var key = keyValuePair.Key;
+                // var key = keyValuePair.Key;
                 var selector = keyValuePair.Value;
 
                 CachedSelectorsInternal.Add(
@@ -195,7 +193,7 @@ namespace AudioAnalysisTools.Indices
             CachedSettersInternal = new Dictionary<string, Action<SpectralIndexValues, double[]>>(getters.Count);
             foreach (var keyValuePair in setters)
             {
-                var key = keyValuePair.Key;
+                // var key = keyValuePair.Key;
                 var setter = keyValuePair.Value;
 
                 CachedSettersInternal.Add(
@@ -250,8 +248,6 @@ namespace AudioAnalysisTools.Indices
         /// Used to check that the keys in the indexProperties dictionary correspond to Properties in the SpectralIndexValues class.
         /// Call this method before entering a loop because do not want the error message at every iteration through loop.
         /// </summary>
-        /// <param name="indexProperties">
-        /// </param>
         public static void CheckExistenceOfSpectralIndexValues(Dictionary<string, IndexProperties> indexProperties)
         {
             var siv = new SpectralIndexValues();
@@ -280,6 +276,7 @@ namespace AudioAnalysisTools.Indices
                 return CachedSelectorsInternal;
             }
         }
+
         public static Dictionary<string, Action<SpectralIndexValues, double[]>> CachedSetters
         {
             get
@@ -296,23 +293,36 @@ namespace AudioAnalysisTools.Indices
 
         public double[] DIF { get; set; }
 
+        /// <summary>
+        /// DMN = Decibels Minus Noise. THis is the correct way to average a decibel spectrogram.
+        /// DMN should replace POW as the average decibel spectrogram.
+        /// </summary>
+        public double[] DMN { get; set; }
+
         public double[] ENT { get; set; }
 
         public double[] EVN { get; set; }
 
+        /// <summary>
+        /// The POW spectral index should eventually be depracated.
+        /// It is derived from an incorrect way of averaging decibel values
+        /// </summary>
         public double[] POW { get; set; }
 
-        /// Spectral Ridges Horizontal
+        // Spectral Ridges Horizontal
         public double[] RHZ { get; set; }
 
-        /// Spectral Ridges Vertical
+        // Spectral Ridges Vertical
         public double[] RVT { get; set; }
 
-        /// Spectral Ridges Positive slope
+        // Spectral Ridges Positive slope
         public double[] RPS { get; set; }
 
-        /// Spectral Ridges Negative Slope
+        // Spectral Ridges Negative Slope
         public double[] RNG { get; set; }
+
+        // Sum of Spectral Ridges in HRHZ, RPS and RNG directions
+        public double[] R3D { get; set; }
 
         // Spectral Peak Tracks
         public double[] SPT { get; set; }
@@ -320,6 +330,7 @@ namespace AudioAnalysisTools.Indices
         public double[] SUM { get; set; }
 
         public double[] CLS { get; set; }
+
         public override Dictionary<string, Func<SpectralIndexBase, double[]>> GetSelectors()
         {
             return CachedSelectors;

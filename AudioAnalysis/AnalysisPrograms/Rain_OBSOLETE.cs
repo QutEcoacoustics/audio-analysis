@@ -301,8 +301,8 @@
             // get parameters for the analysis
             int frameSize = IndexCalculate.DefaultWindowSize;
             double windowOverlap = 0.0;
-            int lowFreqBound = IndexCalculate.DefaultLowFreqBound;
-            int midFreqBound = IndexCalculate.DefaultMidFreqBound;
+            int lowFreqBound = 1000;
+            int midFreqBound = 8000;
 
             if (config.ContainsKey(AnalysisKeys.FrameLength))
             {

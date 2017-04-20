@@ -359,7 +359,7 @@
             image2.Save(path);
 
             double dBMin = -25.0; //-25 dB appear to be good value
-            var image6 = new Image_MultiTrack(recording.GetWaveFormDB(imageWidth, imageHeight, dBMin));
+            var image6 = new Image_MultiTrack(recording.GetWaveFormInDecibels(imageWidth, imageHeight, dBMin));
             //path = outputFolder + wavFileName + "_waveformDB.png"
             image6.Save(path);
         }
