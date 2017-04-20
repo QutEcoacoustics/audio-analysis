@@ -233,7 +233,7 @@ namespace TowseyLibrary
         {
             int rows = list.Count;
             int cols = list[0].Length; //assume all vectors in list are of same length
-            double[,] op = new double[rows,cols];
+            double[,] op = new double[rows, cols];
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
@@ -296,7 +296,7 @@ namespace TowseyLibrary
             for (int col = 0; col < width; col++)
             {
                 for (int row = 0; row < ht; row++)
-                { v[id++] = M[row,col];
+                { v[id++] = M[row, col];
                 }
             }
 
@@ -620,7 +620,7 @@ namespace TowseyLibrary
         {
             int rows = M.GetLength(0);
             int cols = M.GetLength(1);
-            double[,] newM = new double[rows,cols];
+            double[,] newM = new double[rows, cols];
 
             for (int i = 0; i < rows; i++)
             {
@@ -630,13 +630,13 @@ namespace TowseyLibrary
                     {
                         newM[i, j] = min;
                     }
-                    else if (M[i,j] >= max)
+                    else if (M[i, j] >= max)
                     {
-                        newM[i,j] = max;
+                        newM[i, j] = max;
                     }
                     else
                     {
-                        newM[i,j] = M[i,j];
+                        newM[i, j] = M[i, j];
                     }
                 }
             }
@@ -1148,29 +1148,29 @@ namespace TowseyLibrary
         return newMatrix;
     }
 
-        public static byte[] GetColumn(byte[,] m, int colID)
+        public static byte[] GetColumn(byte[,] m, int columnIndex)
         {
             int rows = m.GetLength(0);
             byte[] column = new byte[rows];
             for (int i = 0; i < rows; i++)
             {
-                column[i] = m[i, colID];
+                column[i] = m[i, columnIndex];
             }
 
             return column;
         }
 
-        public static double[] GetColumn(double[,] m, int colID)
-  {
-      int rows = m.GetLength(0);
-      double[] column = new double[rows];
-      for (int i = 0; i < rows; i++)
+        public static double[] GetColumn(double[,] m, int columnIndex)
+        {
+            int rows = m.GetLength(0);
+            double[] column = new double[rows];
+            for (int i = 0; i < rows; i++)
             {
-                column[i] = m[i,colID];
+                column[i] = m[i, columnIndex];
             }
 
-      return column;
-  }
+            return column;
+        }
 
         public static void SetColumn(double[,] m, int colID, double[] array)
   {
@@ -1187,7 +1187,7 @@ namespace TowseyLibrary
       int sum = 0;
       for (int i = 0; i < rows; i++)
             {
-                sum += m[i,colID];
+                sum += m[i, colID];
             }
 
       return sum;
@@ -1747,7 +1747,7 @@ namespace TowseyLibrary
             {
                     for (int c = 0; c < mcols; c++)
                     {
-                        if (matrix[r,c] == 0.0)
+                        if (matrix[r, c] == 0.0)
                     {
                         continue;
                     }
@@ -2136,13 +2136,13 @@ namespace TowseyLibrary
             {
                 for (int j = 1; j < cols; j++)
             {
-                if (data[i,j] < min)
+                if (data[i, j] < min)
                     {
-                        min = data[i,j];
+                        min = data[i, j];
                     }
-                    else if (data[i,j] > max)
+                    else if (data[i, j] > max)
                     {
-                        max = data[i,j];
+                        max = data[i, j];
                     }
                 }//end double loop
             }

@@ -1,78 +1,25 @@
-﻿namespace AudioAnalysisTools.WavTools
+﻿// <copyright file="AudioRecording.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AudioAnalysisTools.WavTools
 {
     using System;
-    using System.Collections.Generic;
-
-    using Acoustics.Tools;
-    using Acoustics.Tools.Wav;
-    using Acoustics.Shared;
-    using Acoustics.Tools.Audio;
-
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
-
-    using TowseyLibrary;
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
+    using Acoustics.Tools.Wav;
     using DSP;
-    using AnalysisBase;
+    using TowseyLibrary;
 
-
-	public class AudioRecording : IDisposable
-	{
-        private readonly WavReader wavReader = null;
-
-        #region Properties
+    public class AudioRecording : IDisposable
+    {
+        private readonly WavReader wavReader;
 
         /// <summary>
-        /// The file name without the extension
-        /// </summary>
-		public string BaseName { get; private set; }
-        public string FilePath { get; private set; }
-        public byte[] Bytes { get; set; }
-        public int SampleRate    { get { if (this.wavReader != null) return this.wavReader.SampleRate;    else return -999; } }
-        public int Nyquist       { get { if (this.wavReader != null) return this.wavReader.SampleRate/2;  else return -999; } }
-        public int BitsPerSample { get { if (this.wavReader != null) return this.wavReader.BitsPerSample; else return -999; } }
-        #endregion
-
-        /// <summary>
-        /// Wrapper for the wav reader.
-        /// Audio must be in wav format.
-        /// Use MasterAudioUtility to convert or segment the audio first.
-        /// </summary>
-        public AudioRecording(byte[] bytes)
-        {
-            this.FilePath = "UNKNOWN";
-            this.Bytes = bytes;
-            if (this.Bytes != null) this.wavReader = new WavReader(bytes);
-        }
-
-        /// <summary>
-        /// Wrapper for the wav reader.
-        /// Audio must be in wav format.
-        /// Use MasterAudioUtility to convert or segment the audio first.
-        /// </summary>
-        public AudioRecording(string path)
-        {
-            this.FilePath  = path;
-            this.BaseName  = Path.GetFileNameWithoutExtension(path);
-            this.wavReader = new WavReader(path);
-        }
-
-        /// <summary>
-        /// Wrapper for the wav reader.
-        /// Audio must be in wav format.
-        /// Use MasterAudioUtility to convert or segment the audio first.
-        /// </summary>
-        public AudioRecording(byte[] bytes, string name)
-        {
-            this.FilePath = name;
-            this.BaseName = Path.GetFileNameWithoutExtension(name);
-            this.Bytes    = bytes;
-            if (this.Bytes != null)
-                this.wavReader = new WavReader(bytes);
-        }
-
-        /// <summary>
+        /// Initializes a new instance of the <see cref="AudioRecording"/> class.
         /// Wrapper for the wav reader.
         /// Audio must be in wav format.
         /// Use MasterAudioUtility to convert or segment the audio first.
@@ -82,95 +29,136 @@
             this.wavReader = wavReader;
         }
 
-        public AudioRecording(FileInfo audioFile) : this(audioFile.FullName)
+        public AudioRecording(FileInfo audioFile)
+            : this(audioFile.FullName)
         {
         }
 
         /// <summary>
-        ///     Wrapper for the wav reader.
-        ///     Audio must be in wav format.
-        ///     Use MasterAudioUtility to convert or segment the audio first.
+        /// Initializes a new instance of the <see cref="AudioRecording"/> class.
+        /// Wrapper for the wav reader.
+        /// Audio must be in wav format.
+        /// Use MasterAudioUtility to convert or segment the audio first.
+        /// </summary>
+        public AudioRecording(byte[] bytes)
+        {
+            this.FilePath = "UNKNOWN";
+            this.Bytes = bytes;
+            if (this.Bytes != null)
+            {
+                this.wavReader = new WavReader(bytes);
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AudioRecording"/> class.
+        /// Wrapper for the wav reader.
+        /// Audio must be in wav format.
+        /// Use MasterAudioUtility to convert or segment the audio first.
+        /// </summary>
+        public AudioRecording(string path)
+        {
+            this.FilePath = path;
+            this.BaseName = Path.GetFileNameWithoutExtension(path);
+            this.wavReader = new WavReader(path);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AudioRecording"/> class.
+        /// Wrapper for the wav reader.
+        /// Audio must be in wav format.
+        /// Use MasterAudioUtility to convert or segment the audio first.
+        /// </summary>
+        public AudioRecording(byte[] bytes, string name)
+        {
+            this.FilePath = name;
+            this.BaseName = Path.GetFileNameWithoutExtension(name);
+            this.Bytes = bytes;
+            if (this.Bytes != null)
+            {
+                this.wavReader = new WavReader(bytes);
+            }
+        }
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the file name without the extension
+        /// </summary>
+        public string BaseName { get; private set; }
+
+        public string FilePath { get; private set; }
+
+        public byte[] Bytes { get; set; }
+
+        public int SampleRate
+        {
+            get
+            {
+                if (this.wavReader != null)
+                {
+                    return this.wavReader.SampleRate;
+                }
+
+                return -int.MaxValue;
+            }
+        }
+
+        public int Nyquist
+        {
+            get
+            {
+                if (this.wavReader != null)
+                {
+                    return this.wavReader.SampleRate / 2;
+                }
+
+                return -int.MaxValue;
+            }
+        }
+
+        public int BitsPerSample
+        {
+            get
+            {
+                if (this.wavReader != null)
+                {
+                    return this.wavReader.BitsPerSample;
+                }
+
+                return -int.MaxValue;
+            }
+        }
+
+        public double Epsilon
+        {
+            get
+            {
+                if (this.wavReader != null)
+                {
+                    return Math.Pow(0.5, this.wavReader.BitsPerSample - 1);
+                }
+
+                return -double.MaxValue;
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Gets a wrapper for the wav reader.
+        /// Audio must be in wav format.
+        /// Use MasterAudioUtility to convert or segment the audio first.
         /// </summary>
         public WavReader WavReader => this.wavReader;
-
-	    /// <summary>
-        /// NOTE: from Michael Towsey May 2014
-        /// WARNING!!!! THIS METHOD IS UNSAFE AND SHOULD BE DEPRACATED
-        /// It subsamples without first removing high frequency content.
-        ///
-        /// Reduces the signal sample rate to 22050Hz.
-        /// Requires the existing signal to be either 44100Hz or 88200 Hz.
-        /// </summary>
-        //[Obsolete]
-        //public void ConvertSampleRate22kHz()
-        //{
-        //    LoggedConsole.WriteError("ConvertSampleRate22kHz is deprecated - DO NOT USE");
-
-        //    int sr = wavReader.SampleRate;
-        //    if(sr == 22050) return; //signal already has required sr
-
-        //    if (sr == 44100)
-        //    {
-        //        wavReader.SubSample(2);
-        //        Log.WriteLine("Original signal Sample Rate=44100 - Downsampled to 22050.");
-        //        return;
-        //    }else
-        //    if (sr == 88200)
-        //    {
-        //        wavReader.SubSample(4);
-        //        Log.WriteLine("Original signal Sample Rate=88200 - Downsampled to 22050.");
-        //        return;
-        //    }
-        //    Log.WriteLine("WARNING: Signal sample rate not 22050Hz and cannot reduce to this value.");
-        //}
 
         /// <summary>
         /// returns Time Span of the recording
         /// </summary>
-        /// <returns></returns>
         public TimeSpan Duration()
         {
             return this.WavReader.Time;
         }
-
-        ///// <summary> OBSOLETE - SHOULD NEVER BE USED
-        ///// Reduces the signal sample rate by a factor of N if sample rate.
-        ///// Requires the existing signal to be either 44100Hz or 88200 Hz.
-        ///// </summary>
-        //public void ReduceSampleRateByFactor(int factor)
-        //{
-        //    int sr = wavReader.SampleRate;
-        //    wavReader.SubSample(factor);
-        //    Log.WriteLine("SIGNAL DOWN-SAMPLED: Original sample rate=" + sr + " >>> Downsampled to " + wavReader.SampleRate + ".");
-        //}
-
-        ///// <summary> OBSOLETE - SHOULD NEVER BE USED
-        ///// Reduces the signal sample rate by a factor of N if sample rate exceed passed threshold.
-        ///// Requires the existing signal to be either 44100Hz or 88200 Hz.
-        ///// </summary>
-        //public void ReduceSampleRateByFactor(int threshold, int factor)
-        //{
-        //    int sr = wavReader.SampleRate;
-        //    if (sr > threshold)
-        //    {
-        //        wavReader.SubSample(factor);
-        //        Log.WriteLine("SIGNAL DOWN-SAMPLED: Original sample rate={1} >>> Downsampled to {2}.", sr, wavReader.SampleRate);
-        //        return;
-        //    }
-        //}
-
-        //public void Filter_IIR(string filterName)
-        //{
-        //    DSP_IIRFilter filter = new DSP_IIRFilter(filterName);
-        //    double[] output;
-        //    filter.ApplyIIRFilter(this.wavReader.Samples, out output);
-        //    //int channels = this.wavReader.Channels;
-        //    //int bitsPerSample = this.BitsPerSample;
-        //    //int sampleRate = this.SampleRate;
-        //    //WavReader wr = new WavReader(output, channels, bitsPerSample, sampleRate);
-        //    //var ar = new AudioRecording(wr);
-        //    this.wavReader.Samples = output;
-        //}
 
         public static AudioRecording Filter_IIR(AudioRecording audio, string filterName)
         {
@@ -188,8 +176,6 @@
         /// <summary>
         /// returns the wave form representation of the signal
         /// </summary>
-        /// <param name="length"></param>
-        /// <returns></returns>
         public double[,] GetWaveForm(int length)
         {
             double[,] envelope = new double[2, length];
@@ -208,10 +194,17 @@
                 double max = -double.MaxValue;
                 for (int x = start; x < end; x++)
                 {
-                    if (min > data[x]) min = data[x];
+                    if (min > data[x])
+                    {
+                        min = data[x];
+                    }
                     else
-                    if (max < data[x]) max = data[x];
+                    if (max < data[x])
+                    {
+                        max = data[x];
+                    }
                 }
+
                 envelope[0, w] = min;
                 envelope[1, w] = max;
             }
@@ -219,23 +212,33 @@
             return envelope;
         }
 
-        public double[,] GetWaveFormDB(int length, double dBMin)
+        public double[,] GetWaveFormDecibels(int length, double dBMin)
         {
             double[,] wf = this.GetWaveForm(length);
-            double[,] wfDB = new double[2, length];
+            double[,] wfDecibels = new double[2, length];
             for (int w = 0; w < length; w++)
             {
-                if (wf[0, w] >= -0.0001) wfDB[0, w] = dBMin;
-                else                     wfDB[0, w] = 10 * Math.Log10(Math.Abs(wf[0, w]));
-                if (wf[1, w] <= 0.0001)  wfDB[1, w] = dBMin;
-                else                     wfDB[1, w] = 10 * Math.Log10(Math.Abs(wf[1, w]));
-                //LoggedConsole.WriteLine(wf[0, w] + " >> " + (wfDB[0, w]).ToString("F5"));
-                //LoggedConsole.WriteLine(wf[1, w] + " >> " + (wfDB[1, w]).ToString("F5"));
-                //Console.ReadLine();
-            }
-            return wfDB;
-        }
+                if (wf[0, w] >= -0.0001)
+                {
+                    wfDecibels[0, w] = dBMin;
+                }
+                else
+                {
+                    wfDecibels[0, w] = 10 * Math.Log10(Math.Abs(wf[0, w]));
+                }
 
+                if (wf[1, w] <= 0.0001)
+                {
+                    wfDecibels[1, w] = dBMin;
+                }
+                else
+                {
+                    wfDecibels[1, w] = 10 * Math.Log10(Math.Abs(wf[1, w]));
+                }
+            }
+
+            return wfDecibels;
+        }
 
         public Image GetWaveForm(int imageWidth, int imageHeight)
         {
@@ -247,9 +250,13 @@
             Bitmap bmp = new Bitmap(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
             for (int w = 0; w < imageWidth; w++)
             {
-                int minID = halfHeight + (int)Math.Round(envelope[0, w] * halfHeight);
-                int maxID = halfHeight + (int)Math.Round(envelope[1, w] * halfHeight);
-                for (int z = minID; z < maxID; z++) bmp.SetPixel(w, imageHeight-z-1, c);
+                int minId = halfHeight + (int)Math.Round(envelope[0, w] * halfHeight);
+                int maxId = halfHeight + (int)Math.Round(envelope[1, w] * halfHeight);
+                for (int z = minId; z < maxId; z++)
+                {
+                    bmp.SetPixel(w, imageHeight - z - 1, c);
+                }
+
                 bmp.SetPixel(w, halfHeight, c); //set zero line in case it was missed
 
                 //mark clipping in red
@@ -259,6 +266,7 @@
                     bmp.SetPixel(w, imageHeight - 2, Color.OrangeRed);
                     bmp.SetPixel(w, imageHeight - 3, Color.OrangeRed);
                 }
+
                 if (envelope[1, w] > 0.99)
                 {
                     bmp.SetPixel(w, 0, Color.OrangeRed);
@@ -266,13 +274,14 @@
                     bmp.SetPixel(w, 2, Color.OrangeRed);
                 }
             }
+
             return bmp;
         }
 
-
-        public Image GetWaveFormDB(int imageWidth, int imageHeight, double dBMin)
+        public Image GetWaveFormInDecibels(int imageWidth, int imageHeight, double dBMin)
         {
-            double[,] envelope = this.GetWaveFormDB(imageWidth, dBMin);
+            double[,] envelope = this.GetWaveFormDecibels(imageWidth, dBMin);
+
             //envelope values should all lie in [-40.0, 0.0].
             double slope = -(1 / dBMin);
             int halfHeight = imageHeight / 2;
@@ -281,7 +290,6 @@
 
             //set up min, max, range for normalising of dB values
 
-
             Bitmap bmp = new Bitmap(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
 
             for (int w = 0; w < imageWidth; w++)
@@ -289,11 +297,11 @@
                 //Convert log values to interval [0,1]
                 double minLinear = (slope * envelope[0, w]) + 1.0;  // y = mx + c
                 double maxLinear = (slope * envelope[1, w]) + 1.0;
-                int minID = halfHeight - (int)Math.Round(minLinear * halfHeight);
-                int maxID = halfHeight + (int)Math.Round(maxLinear * halfHeight);
+                int minId = halfHeight - (int)Math.Round(minLinear * halfHeight);
+                int maxId = halfHeight + (int)Math.Round(maxLinear * halfHeight);
                 for (int z = 0; z < imageHeight; z++)
                 {
-                    if (z >= minID && z < maxID)
+                    if (z >= minId && z < maxId)
                     {
                         bmp.SetPixel(w, imageHeight - z - 1, c);
                     }
@@ -302,6 +310,7 @@
                         bmp.SetPixel(w, imageHeight - z - 1, b);
                     }
                 }
+
                 //LoggedConsole.WriteLine(envelope[0, w] + " >> " + maxLinear);
                 //Console.ReadLine();
 
@@ -314,6 +323,7 @@
                     bmp.SetPixel(w, imageHeight - 2, Color.OrangeRed);
                     bmp.SetPixel(w, imageHeight - 3, Color.OrangeRed);
                 }
+
                 if (maxLinear > 0.99)
                 {
                     bmp.SetPixel(w, 0, Color.OrangeRed);
@@ -321,37 +331,9 @@
                     bmp.SetPixel(w, 2, Color.OrangeRed);
                 }
             }
+
             return bmp;
         }
-
-        //public AudioRecording ExportSignal(double startTime, double endTime)
-        //{
-        //    Log.WriteLine("AudioRecording.Extract()");
-        //    int startIndex = (int)(startTime * this.SampleRate);
-        //    int endIndex   = (int)(endTime   * this.SampleRate);
-        //    Log.WriteLine("start=" + startTime.ToString("F1") + "s = " + startIndex);
-        //    Log.WriteLine("end  =" + endTime.ToString("F1") + "s = " + endIndex);
-        //    int sampleCount = endIndex - startIndex + 1;
-        //    double[] signal = new double[sampleCount];
-        //    //must multiply signal in [-1,+1] to signal in signed 16 bit integer range ie multiply by 2^15
-        //    for (int i = 0; i < sampleCount; i++) signal[i] = this.wavReader.Samples[startIndex+i] * 32768; //65536
-        //    //for (int i = 0; i < 100; i++) LoggedConsole.WriteLine(signal[i]); //debug check for integers
-        //    int channels = 1;
-        //    WavReader wav = new WavReader(signal, channels, this.BitsPerSample, this.SampleRate);
-        //    var ar = new AudioRecording(wav);
-        //    return ar;
-        //}
-
-        //public void Save(string path)
-        //{
-        //    // int sampleRate = 22050;
-        //    //double duration = 30.245; //sig duration in seconds
-        //    //int[] harmonics = { 500, 1000, 2000, 4000 };
-        //    //double[] signal2 = DSP.GetSignal(sampleRate, duration, harmonics);
-        //    //WavWriter.WriteWavFile(signal2, sampleRate, path);
-        //    WavWriter.Write16bitWavFile(this.wavReader.Samples, this.SampleRate, path);
-        //}
-
 
         #region IDisposable Members
 
@@ -362,8 +344,6 @@
 
         #endregion
 
-
-
         //########################################################################################################################################################################
         //########################################################################################################################################################################
         //##  STATIC METHODS BELOW ###############################################################################################################################################
@@ -371,48 +351,20 @@
         //########################################################################################################################################################################
 
         /// <summary>
-        /// returns an audio recording given a file path
-        /// </summary>
-        /// <param name="recordingPath"></param>
-        /// <param name="resampleRate"></param>
-        /// <returns></returns>
-        //public static AudioRecording GetAudioRecording(string recordingPath, int resampleRate)
-        //{
-        //    //OLD CODE
-        //    //AudioRecording recording = new AudioRecording(recordingPath);
-        //    //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
-        //    //MORE OLD CODE
-        //    //AudioRecording recording = new AudioRecording(recordingPath);
-        //    //string filterName = "Chebyshev_Lowpass_5000";
-        //    //recording.Filter_IIR(filterName); //filter audio recording.
-        //    //recording.ReduceSampleRateByFactor(2);
-
-
-
-        //    AudioRecording recording = new AudioRecording(recordingPath);
-
-        //    // WRITE FILTERED SIGNAL IF NEED TO DEBUG
-        //    //write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
-        //    //int bitRate = 16;
-        //    //WavWriter.WriteWavFile(recording.GetWavReader().Samples, filteredRecording.SampleRate, bitRate, recordingPath + "filtered.wav");
-
-        //    return recording;
-        //}
-
-        /// <summary>
         /// TODO - this is long winded way to get file. Need to talk to Mark.
         /// </summary>
-        /// <param name="diOpDir"></param>
-        /// <param name="sourceFile"></param>
-        /// <returns></returns>
         public static AudioRecording GetAudioRecording(FileInfo sourceFile, int resampleRate, string opDir, string opFileName)
         {
-            if (! sourceFile.Exists) return null;
+            if (!sourceFile.Exists)
+            {
+                return null;
+            }
+
             string opPath = Path.Combine(opDir, opFileName); //path location/name of extracted recording segment
             IAudioUtility audioUtility = new MasterAudioUtility();
             var info = audioUtility.Info(sourceFile); // Get duration of the source file
             int startMilliseconds = 0;
-            int endMilliseconds = (int)info.Duration.Value.TotalMilliseconds;
+            int endMilliseconds = (int) info.Duration.Value.TotalMilliseconds;
 
             MasterAudioUtility.SegmentToWav(
                 sourceFile,
@@ -427,16 +379,9 @@
             return new AudioRecording(opPath);
         }
 
-
         /// <summary>
         /// This method extracts a recording segment and saves it to disk at the location fiOutputSegment.
         /// </summary>
-        /// <param name="fiSource"></param>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
-        /// <param name="buffer"></param>
-        /// <param name="resampleRate"></param>
-        /// <param name="fiOutputSegment"></param>
         public static void ExtractSegment(FileInfo fiSource, TimeSpan start, TimeSpan end, TimeSpan buffer, int sampleRate, FileInfo fiOutputSegment)
         {
             // EXTRACT RECORDING SEGMENT
@@ -461,7 +406,44 @@
                     });
         }
 
+        /// <summary>
+        /// returns a subsample of a recording with a buffer on either side.
+        /// Main complication is dealing with edge effects.
+        /// </summary>
+        public static AudioRecording GetRecordingSubsegment(AudioRecording recording, int sampleStart, int sampleEnd, int sampleBuffer)
+        {
+            int signalLength = recording.WavReader.Samples.Length;
+            int subsampleStart = sampleStart - sampleBuffer;
+            int subsampleEnd = sampleEnd + sampleBuffer;
+            int subsampleDuration = sampleEnd - sampleStart + 1 + (2 * sampleBuffer);
+            if (subsampleStart < 0)
+            {
+                subsampleStart = 0;
+                subsampleEnd = subsampleDuration - 1;
+            }
 
+            if (subsampleEnd >= signalLength)
+            {
+                subsampleEnd = signalLength - 1;
+                subsampleStart = signalLength - subsampleDuration;
+            }
 
-    }// end class AudioRecording
+            // catch case where subsampleDuration < recording length.
+            if (subsampleStart < 0)
+            {
+                subsampleStart = 0;
+            }
+
+            int subsegmentSampleCount = subsampleEnd - subsampleStart + 1;
+            var subsegmentRecording = recording;
+            if (subsegmentSampleCount <= signalLength)
+            {
+                double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, subsampleStart, subsegmentSampleCount);
+                var wr = new WavReader(subsamples, 1, 16, recording.SampleRate);
+                subsegmentRecording = new AudioRecording(wr);
+            }
+
+            return subsegmentRecording;
+        }
+    }
 }
