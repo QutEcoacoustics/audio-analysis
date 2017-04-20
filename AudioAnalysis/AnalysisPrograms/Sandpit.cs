@@ -64,10 +64,10 @@ namespace AnalysisPrograms
 
                 // The following test methods test various configs of concatenation
                 //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest1();
-                //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest2();
+                ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest2();
                 //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest3();
                 //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest4();
-                SpectrogramTools.AverageAnArrayOfDecibelValues(null);
+                //SpectrogramTools.AverageAnArrayOfDecibelValues(null);
             }
 
             if (false)
