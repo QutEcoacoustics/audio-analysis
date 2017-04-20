@@ -241,6 +241,12 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.RVT);
 
+            // R3D
+            expectedSpectrumFile = new FileInfo(outputDir + "\\R3D.bin");
+            // Binary.Serialize(expectedSpectrumFile, spectralIndices.R3D);
+            expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
+            CollectionAssert.AreEqual(expectedVector, spectralIndices.R3D);
+
             // SPT
             expectedSpectrumFile = new FileInfo(outputDir + "\\SPT.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.SPT);
