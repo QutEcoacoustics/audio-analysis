@@ -536,25 +536,26 @@ namespace AnalysisPrograms
                     ldSpectrogramConfig = LdSpectrogramConfig.ReadYamlToConfig(arguments.FalseColourSpectrogramConfig);
 
                     // TODO TODO TODO TODO
-                    // this next line is necessary because TimeSpan is not read correctly from yaml.
+                    // this next line is necessary because TimeSpan is not being read correctly from yaml file
                     ldSpectrogramConfig.XAxisTicInterval = TimeSpan.FromMinutes(60);
-                    ldSpectrogramConfig.ColourGain = 1.0;
-                    ldSpectrogramConfig.ColourFilter = 1.0;
                 }
                 else
                 {
                     // set up a default config
+                    // WARNING: This default config is used when testing. If you alter these defaults, Unit Test results may be affected.
                     ldSpectrogramConfig = new LdSpectrogramConfig
                     {
-                        XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
-                        YAxisTicInterval = 1000,
                         ColorMap1 = arguments.ColorMap1,
                         ColorMap2 = arguments.ColorMap2,
+                        ColourGain = 2.0,
+
+                        // de-emphasizes the background or low index values
+                        ColourFilter = 0.75,
+                        XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
+                        YAxisTicInterval = 1000,
+                        FreqScale = "Linear",
                     };
                 }
-
-                // this is currently the default
-                ldSpectrogramConfig.FreqScale = "linear";
             }
 
             // ################################ ConcatenateEverythingYouCanLayYourHandsOn = true
@@ -822,8 +823,7 @@ namespace AnalysisPrograms
         /// This method is designed only to read in Spectrogram ribbons for Georgia marine recordings.
         /// Used to prepare images for Aaron Rice.
         /// </summary>
-        public static void ConcatenateRibbonImages(DirectoryInfo[] dataDirs, string pattern, DirectoryInfo outputDirectory,
-                                                   string opFileStem, string title, SunAndMoon.SunMoonTides[] tidalInfo = null)
+        public static void ConcatenateRibbonImages(DirectoryInfo[] dataDirs, string pattern, DirectoryInfo outputDirectory, string opFileStem, string title, SunAndMoon.SunMoonTides[] tidalInfo = null)
         {
             //get the ribon files
             FileInfo[] imageFiles = IndexMatrices.GetFilesInDirectories(dataDirs, pattern);
@@ -1168,12 +1168,15 @@ namespace AnalysisPrograms
         public static void TESTMETHOD_ConcatenateIndexFilesTest2()
         {
             // Set the drive: work = G; home = E
-            string drive = "C";
+            string drive = "E";
 
             // top level directory
             DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\"), };
-            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestConcatenation\Test2_Output".ToDirectoryInfo();
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_SpectrogramFalseColourConfig.yml");
+            var outputDir = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Test2_Output".ToDirectoryInfo();
+
+            // var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_SpectrogramFalseColourConfig.yml");
+            // if set null will use the default for testing.
+            FileInfo falseColourSpgConfig = null;
 
             var arguments = new Arguments
             {
