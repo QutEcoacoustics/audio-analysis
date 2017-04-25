@@ -573,35 +573,36 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Filters background values by applying a polynomial that lies between y=x and y=x^2.
+        /// Filters or de-emphasizes the background/low index values by applying a polynomial that lies between y=x and y=x^2.
+        /// If c = filterCoeff, newX = [(1/c - 1) * X^2 + X] * c
         /// There are two extremes:
         /// When filterCoeff >= 1.0, the matrix remains unchanged, that is, that is, y=x represents the unfiltered matrix.
         /// When filterCoeff LT  0.1, the matrix is maximally filtered, i.e. y=x^2 represents the filtered matrix.
         /// In a grey scale image, this has the effect of diminshing the low amplitude values, thereby enhancing the highlights.
         ///
         /// </summary>
-        public static double[,] FilterBackgroundValues(double[,] M, double filterCoeff)
+        public static double[,] FilterBackgroundValues(double[,] m, double filterCoeff)
         {
             if (filterCoeff >= 1.0)
             {
-                return M;
+                return m;
             }
 
             if (filterCoeff <= 0.1)
             {
-                return SquareValues(M);
+                return SquareValues(m);
             }
 
             double param = 1 / (double)filterCoeff;
-            int rows = M.GetLength(0);
-            int cols = M.GetLength(1);
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
             double[,] newM = new double[rows, cols];
 
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    newM[i, j] = (((param - 1) * (M[i, j] * M[i, j])) + M[i, j]) / param;
+                    newM[i, j] = (((param - 1) * (m[i, j] * m[i, j])) + m[i, j]) / param;
                 }
             }
 
