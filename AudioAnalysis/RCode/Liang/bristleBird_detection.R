@@ -5,6 +5,7 @@ source('C:/Work/GitHub/audio-analysis/AudioAnalysis/RCode/Liang/Non-negative mat
 
 load("C:/Users/n8781699/Downloads/Eastern bristle bird/bristle1.RData")
 load("C:/Users/n8781699/Downloads/Eastern bristle bird/bristle2.RData")
+# load("C:/Users/n8781699/Downloads/Eastern bristle bird/bristle.templates.RData")
 
 # filepath <- "C:\\Users\\n8781699\\Downloads\\cws_aviaries_0m_1186_262852_20150531_124516_30_0.wav"
 # filepath <- "C:\\Users\\n8781699\\Downloads\\west_lamington_site_d_1269_336756_20150915_092030_30_0.wav"
@@ -18,20 +19,26 @@ for(i in 1:length(filenames)){
   
   amp<-spectra[2:dim(spectra)[1],31:246]
   results<-NMF.analysis(amp)
-  valid.components<-nrow(results[[2]])
   
-  haha<-rbind(bristle1,bristle2,bristle3, bristle4, bristle5, bristle6, bristle7, results[[2]])
+#   haha<-rbind(bristle.templates, results[[2]])
+  haha<-rbind(bristle1,bristle2,results[[2]])
   hehe<-cor(t(haha))
   hehe<-round(hehe, digits=2)
   
-  threshold <- 0.6
-  if(any(hehe[-(1:7),1]>=threshold) | any(hehe[-(1:7),2]>=threshold) | any(hehe[-(1:7),3]>=threshold) | any(hehe[-(1:7),4]>=threshold) | any(hehe[-(1:7),5]>=threshold) | any(hehe[-(1:7),6]>=threshold) | any(hehe[-(1:7),7]>=threshold))
-#     print('true')
+  threshold <- 0.3
+#   if(any(hehe[8:nrow(hehe), 1:7]>=threshold))
+  if(any(hehe[(nrow(hehe)-nrow(results[[2]])+1):nrow(hehe), 1:(nrow(hehe)-nrow(results[[2]]))]>=threshold))
+    #     print('true')
     tags[i] <- 1
   else
-#     print('false')
+    #     print('false')
     tags[i] <- 0
+
 }
+
+
+TP.rate <-sum(tags[1:10])/10
+FP.rate <- sum(tags[11:20])/10
 
 # 
 # file.info <- read.audio.file(filepath)
