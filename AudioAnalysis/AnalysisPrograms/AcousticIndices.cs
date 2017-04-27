@@ -18,27 +18,20 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
-    using Production;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.TileImage;
     using AudioAnalysisTools.WavTools;
-
     using log4net;
-
     using PowerArgs;
-
+    using Production;
     using TowseyLibrary;
 
     public class Acoustic : IAnalyser2
@@ -59,7 +52,7 @@ namespace AnalysisPrograms
             public bool TaskIsLoadCsv => string.Equals(this.Task, TaskLoadCsv, StringComparison.InvariantCultureIgnoreCase);
 
             [ArgDescription("The path to the config file")]
-            [Production.ArgExistingFile()]
+            [Production.ArgExistingFile]
             [ArgRequired]
             public FileInfo Config { get; set; }
 
@@ -68,7 +61,7 @@ namespace AnalysisPrograms
             public FileInfo InputCsv { get; set; }
 
             [ArgDescription("The source audio file to operate on")]
-            [Production.ArgExistingFile()]
+            [Production.ArgExistingFile]
             public FileInfo Source { get; set; }
 
             [ArgDescription("A directory to write output to")]

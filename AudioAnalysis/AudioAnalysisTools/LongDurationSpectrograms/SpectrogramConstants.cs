@@ -24,6 +24,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         // AVG was changed to POW in March 2015 because value was signal power and POW is more descriptive.
         public const string RGBMap_BGN_POW_CVR = "BGN-POW-CVR"; //R-G-B
         public const string RGBMap_BGN_POW_EVN = "BGN-POW-EVN"; //R-G-B
+        public const string RGBMap_BGN_DMN_EVN = "BGN-DMN-EVN"; //R-G-B
+        public const string RGBMap_BGN_DMN_SPT = "BGN-DMN-SPT"; //R-G-B
         public const string RGBMap_BGN_POW_SPT = "BGN-POW-SPT"; //R-G-B
         public const string RGBMap_BGN_POW_CLS = "BGN-POW-CLS"; //R-G-B
 
