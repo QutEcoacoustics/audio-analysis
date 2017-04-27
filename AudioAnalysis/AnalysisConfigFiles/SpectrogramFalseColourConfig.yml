@@ -4,7 +4,7 @@
 # It should NOT contain dynamic data (like file names or analysis types)
 
 ColorMap1: "ACI-ENT-EVN"
-ColorMap2: "BGN-POW-EVN"
+ColorMap2: "BGN-DMN-EVN"
 
 ColourGain: 2.0
 ColourFilter: 0.75

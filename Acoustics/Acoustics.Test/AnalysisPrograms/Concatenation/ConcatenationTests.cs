@@ -6,6 +6,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 {
     using System;
     using System.IO;
+    using Acoustics.Shared;
     using EcoSounds.Mvc.Tests;
     using global::AnalysisPrograms;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
@@ -77,9 +78,13 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var indexPropertiesConfig = new FileInfo("Configs\\IndexPropertiesConfig.yml");
             var dateString = "20160725";
 
-            // make a default config file
-            var falseColourSpgConfig = new FileInfo("ConcatTest_SpectrogramFalseColourConfig.yml");
-            ConfigsHelper.WriteDefaultFalseColourSpgmConfig(falseColourSpgConfig);
+            // get the default config file
+            var defaultConfigFile = ConfigsHelper.ResolveConcatenationConfig("SpectrogramFalseColourConfig.yml");
+            var config = Yaml.Deserialise<LdSpectrogramConfig>(defaultConfigFile);
+
+            // make changes to config file as required for test
+            var testConfig = new FileInfo(this.outputDirectory + "\\SpectrogramFalseColourConfig.yml");
+            Yaml.Serialise(testConfig, config);
 
             var arguments = new ConcatenateIndexFiles.Arguments
             {
@@ -90,7 +95,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 StartDate = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero),
                 EndDate = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero),
                 IndexPropertiesConfig = indexPropertiesConfig,
-                FalseColourSpectrogramConfig = falseColourSpgConfig,
+                FalseColourSpectrogramConfig = testConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
                 ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
                 ConcatenateEverythingYouCanLayYourHandsOn = true, // 24 hour blocks only
@@ -144,9 +149,13 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var indexPropertiesConfig = new FileInfo("Configs\\IndexPropertiesConfig.yml");
             var dateString = "20160726";
 
-            // make a default config file
-            var falseColourSpgConfig = new FileInfo("ConcatTest_SpectrogramFalseColourConfig.yml");
-            ConfigsHelper.WriteDefaultFalseColourSpgmConfig(falseColourSpgConfig);
+            // get the default config file
+            var defaultConfigFile = ConfigsHelper.ResolveConcatenationConfig("SpectrogramFalseColourConfig.yml");
+            var config = Yaml.Deserialise<LdSpectrogramConfig>(defaultConfigFile);
+
+            // make changes to config file as required for test
+            var testConfig = new FileInfo(this.outputDirectory + "\\SpectrogramFalseColourConfig.yml");
+            config.WriteConfigToYaml(testConfig);
 
             var arguments = new ConcatenateIndexFiles.Arguments
             {
@@ -157,7 +166,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 StartDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
                 EndDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
                 IndexPropertiesConfig = indexPropertiesConfig,
-                FalseColourSpectrogramConfig = falseColourSpgConfig,
+                FalseColourSpectrogramConfig = testConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
                 ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
@@ -215,9 +224,13 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             DirectoryInfo[] dataDirs = { new DirectoryInfo(outputDir.FullName + "\\Indonesia20160726"), };
             var indexPropertiesConfig = new FileInfo("Configs\\IndexPropertiesConfig.yml");
 
-            // make a default config file
-            var falseColourSpgConfig = new FileInfo("ConcatTest_SpectrogramFalseColourConfig.yml");
-            ConfigsHelper.WriteDefaultFalseColourSpgmConfig(falseColourSpgConfig);
+            // get the default config file
+            var defaultConfigFile = ConfigsHelper.ResolveConcatenationConfig("SpectrogramFalseColourConfig.yml");
+            var config = Yaml.Deserialise<LdSpectrogramConfig>(defaultConfigFile);
+
+            // make changes to config file as required for test
+            var testConfig = new FileInfo(this.outputDirectory + "\\SpectrogramFalseColourConfig.yml");
+            Yaml.Serialise(testConfig, config);
 
             var arguments = new ConcatenateIndexFiles.Arguments
             {
@@ -228,7 +241,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 StartDate = null,
                 EndDate = null,
                 IndexPropertiesConfig = indexPropertiesConfig,
-                FalseColourSpectrogramConfig = falseColourSpgConfig,
+                FalseColourSpectrogramConfig = testConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
                 ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only

@@ -75,6 +75,18 @@ HighAmplitudeIndex:
   Units: "av/s"
   IncludeInComboIndex: false
   ComboWeight: 0.0
+ZeroSignal:
+  Name: Zero Signal Index
+  Comment: "Indicates if signal segment is flat or zero."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
 ClippingIndex:
   Name: Clipping Index
   Comment: "Av number of clipped samples/sec i.e. where the abs. amplitude of two conscutive samples is within 4*epislon of the max signal value."
@@ -577,7 +589,7 @@ BGN:
   # min = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20 = -80-20 = -100, 
   # Usual value is -30. However -20 adds more contrast into BGN spectrogram
   NormMin: -100.0
-  NormMax: -20.0
+  NormMax: -30.0
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -620,6 +632,18 @@ DIF:
   CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: ""
+DMN:
+  Name: spectralDMN
+  Comment: "Spectrum of average dB power in each frequency bin after noise removal."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 5.5
+  CalculateNormMin: true
+  CalculateNormMax: false
+  ProjectID: Acoustic Indices
+  Units: "dB"
 ENT:
   Name: spectralENT
   Comment: "1 - Temporal Entropy. Default value = 0.0 because index = 1-Ht = a measure of concentration of acoustic energy instead of energy dispersal."
@@ -658,12 +682,12 @@ SUM:
   Units: ""
 POW:
   Name: spectralPOW
-  Comment: "Spectrum of average dB power in each frequency bin after noise removal."
+  Comment: "DEPRACATED: Spectrum of average dB power in each frequency bin after noise removal."
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 6.0
+  NormMax: 5.5
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -675,7 +699,7 @@ SPT:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.05
-  NormMax: 0.7
+  NormMax: 0.75
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices

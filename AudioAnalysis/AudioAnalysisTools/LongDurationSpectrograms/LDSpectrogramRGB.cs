@@ -178,9 +178,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     this.FreqScale = new FrequencyScale(fst);
                     break;
                 default:
-                    // default Linear scale
-                    this.FreqScale = new FrequencyScale(nyquist, frameSize, herzInterval: 1000);
-                    break;
+                    throw new ArgumentException($"{config.FreqScale} is an unknown option for drawing a frequency scale");
             }
 
             this.ColorMap = colourMap;
@@ -1321,18 +1319,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// IT CAN BE COPIED AND APPROPRIATELY MODIFIED BY ANY USER FOR THEIR OWN PURPOSE.
         /// WARNING: Make sure the parameters in the CONFIG file are consistent with the CSV files.
         /// </summary>
-        /// <param name="indexPropertiesConfigPath"> The indices Config Path. </param>
-        /// <param name="indexGenerationData"></param>
-        /// <param name="basename"></param>
-        /// <param name="analysisType"></param>
-        /// <param name="indexSpectrograms"> Optional spectra to pass in. If specified the spectra will not be loaded from disk! </param>
-        /// <param name="summaryIndices"></param>
+        /// <param name="indexPropertiesConfigPath">The indices Config Path. </param>
+        /// <param name="indexSpectrograms">Optional spectra to pass in. If specified the spectra will not be loaded from disk! </param>
         /// <param name="indexStatistics">Info about the distributions of the spectral statistics</param>
         /// <param name="siteDescription">Optionally specify details about the site where the audio was recorded.</param>
-        /// <param name="sunriseDataFile"></param>
-        /// <param name="segmentErrors"></param>
         /// <param name="imageChrome">If true, this method generates and returns separate chromeless images.</param>
-        /// <param name="verbose"></param>
         public static Tuple<Image, string>[] DrawSpectrogramsFromSpectralIndices(
             DirectoryInfo inputDirectory,
             DirectoryInfo outputDirectory,
@@ -1355,7 +1346,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             // string freqScale = config.FreqScale ?? "Linear";   // sets the freq scale
             string colorMap1 = config.ColorMap1 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
-            string colorMap2 = config.ColorMap2 ?? SpectrogramConstants.RGBMap_BGN_POW_EVN;   // assigns indices to RGB
+            string colorMap2 = config.ColorMap2 ?? SpectrogramConstants.RGBMap_BGN_DMN_EVN;   // assigns indices to RGB
 
             // Set ColourGain: Determines colour intensity of the lower index values relative to the higher index values. Good value is
             // TODO Need to figure out where config.ColourGain is used. Cannot see that it is used anywhere?????? !!!!!!!
@@ -1481,6 +1472,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
             else
             {
+                cs1.ColorMap = colorMap2;
                 image2 = SpectrogramFraming(cs1, image2NoChrome);
                 var outputPath2 = FilenameHelpers.AnalysisResultPath(outputDirectory, cs1.FileName, colorMap2, "png");
                 image2.Save(outputPath2);

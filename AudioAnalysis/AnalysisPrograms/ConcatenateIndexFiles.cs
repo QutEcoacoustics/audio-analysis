@@ -129,7 +129,7 @@ namespace AnalysisPrograms
 
             // SET DEFAULT COLOUR MAPS
             string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-            string colorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT;
+            string colorMap2 = SpectrogramConstants.RGBMap_BGN_DMN_SPT;
 
             // ########################## CONCATENATION of Kerry Mengersens Data, Puma, South America
             // The drive: work = G; home = E
@@ -154,8 +154,8 @@ namespace AnalysisPrograms
             //dtoStart = new DateTimeOffset(2016, 08, 21, 0, 0, 0, TimeSpan.Zero);
             //dtoEnd = new DateTimeOffset(2016, 08, 22, 02, 23, 29, TimeSpan.Zero);
             // colour maps for this job
-            colorMap1 = "ACI-ENT-RHZ";
-            colorMap2 = "BGN-POW-SPT";
+            // colorMap1 = "ACI-ENT-RHZ";
+            // colorMap2 = "BGN-POW-SPT";
 
             // ########################## END of Kerry Mengersens Data, Puma, South America
 
@@ -1168,7 +1168,7 @@ namespace AnalysisPrograms
         public static void TESTMETHOD_ConcatenateIndexFilesTest2()
         {
             // Set the drive: work = G; home = E
-            string drive = "E";
+            string drive = "C";
 
             // top level directory
             DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\"), };
