@@ -11,29 +11,9 @@ namespace Acoustics.Test.TestHelpers
 
     public class ConfigsHelper
     {
-        public static LdSpectrogramConfig GetDefaultFalseColourSpgmConfig()
+        public static FileInfo ResolveConcatenationConfig(string fileName)
         {
-            var config = new LdSpectrogramConfig
-            {
-                XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
-                ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
-                ColourGain = 2.0,
-                ColourFilter = 0.75,
-            };
-
-            // minutes x-axis scale
-            config.XAxisTicInterval = TimeSpan.FromMinutes(60);
-
-            // Hertz y-axis scale
-            config.YAxisTicInterval = 1000;
-            return config;
-        }
-
-        public static void WriteDefaultFalseColourSpgmConfig(FileInfo file)
-        {
-            var config = GetDefaultFalseColourSpgmConfig();
-            Yaml.Serialise(file, config);
+            return new FileInfo(@"..\\..\\..\\..\\AudioAnalysis\\AnalysisConfigFiles\\" + fileName);
         }
     }
 }
