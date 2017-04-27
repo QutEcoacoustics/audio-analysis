@@ -65,7 +65,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
             {
                 var sourceRecording = @"Recordings\BAC2_20071008-085040.wav".ToFileInfo();
                 var configFile = @"Oscillations2014\Towsey.Sonogram.yml".ToFileInfo();
-                var outputDir = this.outputDirectory;
 
                 // 1. get the config dictionary
                 var configDict = Oscillations2014.GetConfigDictionary(configFile, true);
@@ -73,7 +72,10 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
                 configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
 
                 // 2. Create temp directory to store output
-                if (!this.outputDirectory.Exists) this.outputDirectory.Create();
+                if (!this.outputDirectory.Exists)
+                {
+                    this.outputDirectory.Create();
+                }
 
                 // 3. Generate the FREQUENCY x OSCILLATIONS Graphs and csv data
                 var tuple = Oscillations2014.GenerateOscillationDataAndImages(sourceRecording, configDict, true);
@@ -88,20 +90,20 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
                 // construct name of expected image file to save
                 var sourceName = Path.GetFileNameWithoutExtension(sourceRecording.Name);
                 var stem = sourceName + ".FreqOscilSpectrogram_" + sampleLength;
-                string imageName = stem + ".EXPECTED.png";
-                string imagePath = Path.Combine(outputDir.FullName, imageName);
 
                 // construct name of expected matrix osc spectrogram to save file
-                var expectedMatrixFile = new FileInfo("Oscillations2014\\" + stem + ".EXPECTED.bin");
+                var expectedMatrixFile = new FileInfo("Oscillations2014\\" + stem + ".Matrix.EXPECTED.bin");
 
                 // construct name of expected matrix osc spectrogram to save file
-                var expectedSpectrumFile = new FileInfo("Oscillations2014\\" + stem + ".OSC.EXPECTED.bin");
+                var expectedSpectrumFile = new FileInfo("Oscillations2014\\" + stem + ".Vector.EXPECTED.bin");
 
                 // Run this once to generate expected image and data files (############ IMPORTANT: remember to move saved files OUT of bin/Debug directory!)
                 // SAVE THE OUTPUT if true
                 if (false)
                 {
                     // 1: save image of oscillation spectrogram
+                    string imageName = stem + ".EXPECTED.png";
+                    string imagePath = Path.Combine(this.outputDirectory.FullName, imageName);
                     tuple.Item1.Save(imagePath, ImageFormat.Png);
 
                     // 2: Save matrix of oscillation data stored in freqOscilMatrix1
