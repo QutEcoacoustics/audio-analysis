@@ -3,7 +3,9 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
-//   Defines the AcousticFeatures type.
+// This class calculates all summary and spectral indices.
+// The config file for this analysis is Towsey.Acoustic.yml// This analysis is an instance of Acoustic:IAnalyser2. It is called from AcousticIndices.cs
+// To perform this analysis on a long duration recording, work from the AnalyseLongRecording.Dev file.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 

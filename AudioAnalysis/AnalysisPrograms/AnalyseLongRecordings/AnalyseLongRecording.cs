@@ -10,9 +10,6 @@
 namespace AnalysisPrograms.AnalyseLongRecordings
 {
     using System;
-    using System.Collections.Generic;
-    using System.Configuration;
-    using System.Data;
     using System.Diagnostics;
     using System.Drawing;
     using System.IO;
@@ -23,12 +20,11 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using Acoustics.Tools.Audio;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using Production;
-    using SourcePreparers;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using log4net;
-    using log4net.Repository.Hierarchy;
+    using Production;
+    using SourcePreparers;
 
     public partial class AnalyseLongRecording
     {
@@ -77,6 +73,7 @@ Output  to  directory: {1}
             else if (!configFile.Exists)
             {
                 Log.Warn($"Config file {configFile.FullName} not found... attempting to resolve config file");
+
                 // we use .ToString() here to get the original input string - Using fullname always produces an absolute path wrt to pwd... we don't want to prematurely make asusmptions:
                 // e.g. We require a missing absolute path to fail... that wouldn't work with .Name
                 // e.g. We require a relative path to try and resolve, using .FullName would fail the first absolute check inside ResolveConfigFile
@@ -126,7 +123,6 @@ Output  to  directory: {1}
             {
                 scoreThreshold = (double)configuration[AnalysisKeys.EventThreshold];
                 Log.Info("Minimum event threshold has been set to " + scoreThreshold);
-
             }
             else
             {
@@ -143,7 +139,6 @@ Output  to  directory: {1}
 
                 defaultBehavior = FileSegment.FileDateBehavior.Required;
             }
-
 
             // 3. initilise AnalysisCoordinator class that will do the analysis
             var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonogramsImages, saveIntermediateCsvFiles, arguments.Channels, arguments.MixDownToMono)
@@ -244,15 +239,16 @@ Output  to  directory: {1}
             {
                 LoggedConsole.WriteWarnLine("The analysis produced no EVENTS (mergedResults had zero count)");
             }
+
             if (mergedIndicesResults != null && mergedIndicesResults.Length == 0)
             {
                 LoggedConsole.WriteWarnLine("The analysis produced no Summary INDICES (mergedResults had zero count)");
             }
+
             if (mergedSpectralIndexResults != null && mergedSpectralIndexResults.Length == 0)
             {
                 LoggedConsole.WriteWarnLine("The analysis produced no Spectral INDICES (merged results had zero count)");
             }
-
 
             // 9. CREATE SUMMARY INDICES IF NECESSARY (FROM EVENTS)
 #if DEBUG
@@ -270,7 +266,6 @@ Output  to  directory: {1}
             int eventsCount = mergedEventResults?.Length ?? 0;
             int numberOfRowsOfIndices = mergedIndicesResults?.Length ?? 0;
 
-
             // 10. Allow analysers to post-process
 
             // TODO: remove results directory if possible
@@ -286,11 +281,10 @@ Output  to  directory: {1}
             // Long duration spectrograms are drawn IFF analysis type is Towsey.Acoustic
             analyser.SummariseResults(analysisSettings, fileSegment, mergedEventResults, mergedIndicesResults, mergedSpectralIndexResults, analyserResults);
 
-
             // 12. SAVE THE RESULTS
             string fileNameBase = Path.GetFileNameWithoutExtension(sourceAudio.Name);
 
-            var eventsFile  = ResultsTools.SaveEvents(analyser, fileNameBase, instanceOutputDirectory, mergedEventResults);
+            var eventsFile = ResultsTools.SaveEvents(analyser, fileNameBase, instanceOutputDirectory, mergedEventResults);
             var indicesFile = ResultsTools.SaveSummaryIndices(analyser, fileNameBase, instanceOutputDirectory, mergedIndicesResults);
             var spectraFile = ResultsTools.SaveSpectralIndices(analyser, fileNameBase, instanceOutputDirectory, mergedSpectralIndexResults);
 
@@ -334,8 +328,7 @@ Output  to  directory: {1}
 
             // 14. wrap up, write stats
             LoggedConsole.WriteLine("INDICES CSV file(s) = " + (indicesFile?.Name ?? "<<No indices result, no file!>>"));
-            LoggedConsole.WriteLine("\tNumber of rows (i.e. minutes) in CSV file of indices = " +
-                                    numberOfRowsOfIndices);
+            LoggedConsole.WriteLine("\tNumber of rows (i.e. minutes) in CSV file of indices = " + numberOfRowsOfIndices);
             LoggedConsole.WriteLine(string.Empty);
 
             if (eventsFile == null)
@@ -347,7 +340,6 @@ Output  to  directory: {1}
                 LoggedConsole.WriteLine("EVENTS CSV file(s) = " + eventsFile.Name);
                 LoggedConsole.WriteLine("\tNumber of events = " + eventsCount);
             }
-
 
             LoggedConsole.WriteLine(FinishedMessage, sourceAudio.Name, instanceOutputDirectory.FullName);
         }
@@ -365,6 +357,7 @@ Output  to  directory: {1}
                 {
                     LoggedConsole.WriteLine("\t  " + anal.Identifier);
                 }
+
                 LoggedConsole.WriteLine("###################################################\n");
 
                 throw new Exception("Cannot find a valid IAnalyser2");
@@ -376,8 +369,6 @@ Output  to  directory: {1}
         /// <summary>
         /// Generic organization of resources after a run
         /// </summary>
-        /// <param name="args"></param>
-        /// <param name="configFile"></param>
         private static void Cleanup(Arguments args, FileInfo configFile)
         {
             if (args.WhenExitCopyConfig)

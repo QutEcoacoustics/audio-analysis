@@ -17,6 +17,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     public class LdSpectrogramConfig
     {
         #region Fields
+
         /// <summary>
         ///  mark 1 kHz intervals
         /// </summary>
@@ -43,25 +44,25 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         #region Public Properties
 
         /// <summary>
-        /// This parameter sets the type of freq scale. Obvious possibilities are "linear", "octave" and "mel".
+        /// Gets or sets the type of freq scale. Obvious possibilities are "linear", "octave" and "mel".
         /// Linear is the default. Mel option is not currently functional.
-        /// There are two octave options: for sr=22050 and for sr=64000 
+        /// There are two octave options: for sr=22050 and for sr=64000
         /// </summary>
         public string FreqScale { get; set; }
 
         /// <summary>
-        /// these parameters manipulate the colour map and appearance of the false-colour spectrogram
+        /// Gets or sets parameter to manipulate the colour map and appearance of the false-colour spectrogram
         /// </summary>
         public string ColorMap1 { get; set; }
 
         /// <summary>
-        /// these parameters manipulate the colour map and appearance of the false-colour spectrogram
-        ///  pass two colour maps because interesting to draw a double image.
+        /// Gets or sets parameter to manipulate the colour map and appearance of the false-colour spectrogram
+        /// Pass two colour maps because two maps convey more information.
         /// </summary>
         public string ColorMap2 { get; set; }
 
         /// <summary>
-        /// Determines colour intensity of the lower index values relative to the higher index values. Good value is 2.0
+        /// Gets or sets colour intensity of the lower index values relative to the higher index values. Good value is 2.0
         /// </summary>
         public double? ColourGain { get; set; }
 
@@ -80,15 +81,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public TimeSpan XAxisTicInterval { get; set; }
 
         /// <summary>
-        /// In seconds, the horizontal spacing between vertical grid lines for the x-Axis
-        /// </summary>
-        public double CalculateYAxisTickInterval(double sampleRate, double frameWidth)
-        {
-                double freqBinWidth = sampleRate / frameWidth;
-                return (int)Math.Round(this.yAxisTicInterval / freqBinWidth);
-        }
-
-        /// <summary>
         /// Gets or sets YAxisTicInterval in Hertz.
         /// The vertical spacing between horizontal grid lines for the y-Axis
         /// </summary>
@@ -96,13 +88,22 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             get
             {
-               return this.yAxisTicInterval;
+                return this.yAxisTicInterval;
             }
 
             set
             {
                 this.yAxisTicInterval = value;
             }
+        }
+
+        /// <summary>
+        /// In seconds, the horizontal spacing between vertical grid lines for the x-Axis
+        /// </summary>
+        public double CalculateYAxisTickInterval(double sampleRate, double frameWidth)
+        {
+                double freqBinWidth = sampleRate / frameWidth;
+                return (int)Math.Round(this.yAxisTicInterval / freqBinWidth);
         }
 
         #endregion
@@ -120,69 +121,59 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return Yaml.Deserialise<LdSpectrogramConfig>(path);
         }
 
-        public void WriteConfigToYaml(FileInfo path)
-        {
-            Yaml.Serialise(path, this);
-        }
-
-        public string[] GetKeys()
-        {
-            return GetKeys(this.ColorMap1, this.ColorMap2);
-        }
-
-
-
-
-
         /// <summary>
         /// NOTE: As of August 2015, we are using EVN (event count) in both spectrograms because
         /// CVR (cover) is too highly correlated with POW.
         /// </summary>
-        /// <returns></returns>
         public static LdSpectrogramConfig GetDefaultConfig()
         {
             var ldSpectrogramConfig = new LdSpectrogramConfig
             {
-                YAxisTicInterval = 1000,
-                XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
                 ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_EVN,
-                //ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_CVR,
+                ColourGain = 2.0,
+                ColourFilter = 0.75,
+
+                // X and Y axis conf
+                XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
+                FreqScale = "Linear",
+                YAxisTicInterval = 1000,
             };
             return ldSpectrogramConfig;
         }
-
 
         /// <summary>
+        /// Gets a default config for long-duration false-colour spectrograms
         /// </summary>
-        /// <returns></returns>
         public static LdSpectrogramConfig GetDefaultConfig(string colourMap1, string colourMap2)
         {
-            var ldSpectrogramConfig = new LdSpectrogramConfig
-            {
-                YAxisTicInterval = 1000,
-                XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
-                ColorMap1 = colourMap1,
-                ColorMap2 = colourMap2,
-            };
+            var ldSpectrogramConfig = LdSpectrogramConfig.GetDefaultConfig();
+            ldSpectrogramConfig.ColorMap1 = colourMap1;
+            ldSpectrogramConfig.ColorMap2 = colourMap2;
             return ldSpectrogramConfig;
         }
-
-
 
         public static string[] GetKeys(string colorMap1, string colorMap2)
         {
             var keys = new List<string>();
-            if((colorMap1 != null) && (colorMap1.Length == 11))
+            if ((colorMap1 != null) && (colorMap1.Length == 11))
             {
                 string[] codes = colorMap1.Split('-');
-                foreach (string str in codes) keys.Add(str);
+                foreach (string str in codes)
+                {
+                    keys.Add(str);
+                }
+
                 codes = colorMap2.Split('-');
                 foreach (string str in codes)
                 {
-                    if(! keys.Contains(str)) keys.Add(str);
+                    if (!keys.Contains(str))
+                    {
+                        keys.Add(str);
+                    }
                 }
             }
+
             return keys.ToArray();
         }
 
@@ -193,9 +184,19 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 keys = colorMap.Split('-');
             }
+
             return keys;
         }
 
+        public void WriteConfigToYaml(FileInfo path)
+        {
+            Yaml.Serialise(path, this);
+        }
+
+        public string[] GetKeys()
+        {
+            return GetKeys(this.ColorMap1, this.ColorMap2);
+        }
         #endregion
     }
 }
