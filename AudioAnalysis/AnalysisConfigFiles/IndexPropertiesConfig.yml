@@ -632,6 +632,18 @@ DIF:
   CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: ""
+DMN:
+  Name: spectralDMN
+  Comment: "Spectrum of average dB power in each frequency bin after noise removal."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 5.5
+  CalculateNormMin: true
+  CalculateNormMax: false
+  ProjectID: Acoustic Indices
+  Units: "dB"
 ENT:
   Name: spectralENT
   Comment: "1 - Temporal Entropy. Default value = 0.0 because index = 1-Ht = a measure of concentration of acoustic energy instead of energy dispersal."
@@ -670,7 +682,7 @@ SUM:
   Units: ""
 POW:
   Name: spectralPOW
-  Comment: "Spectrum of average dB power in each frequency bin after noise removal."
+  Comment: "DEPRACATED: Spectrum of average dB power in each frequency bin after noise removal."
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true

@@ -11,9 +11,6 @@ namespace Acoustics.Shared
 {
     using System;
     using System.IO;
-    using System.Linq;
-    using System.Text.RegularExpressions;
-
     using YamlDotNet.Core;
     using YamlDotNet.Core.Events;
     using YamlDotNet.Dynamic;
@@ -47,6 +44,7 @@ namespace Acoustics.Shared
                     var yaml = stream2.ToString();
                     data = new DynamicYaml(yaml);
                 }
+
                 return data;
             }
         }
