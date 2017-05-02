@@ -35,7 +35,6 @@ namespace AudioAnalysisTools.Indices
     /// </summary>
     public class IndexProperties
     {
-
         public string Key { get; set; }
 
         public string Name { get; set; }

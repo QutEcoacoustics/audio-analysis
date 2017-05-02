@@ -5,7 +5,8 @@
 // <summary>
 // This class calculates all summary and spectral indices.
 // The config file for this analysis is Towsey.Acoustic.yml// This analysis is an instance of Acoustic:IAnalyser2. It is called from AcousticIndices.cs
-// To perform this analysis on a long duration recording, work from the AnalyseLongRecording.Dev file.
+// To perform this analysis on a long duration recording, work from the AnalyseLongRecording.Dev file
+// and put "audio2csv" as first argument on the command line.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -368,7 +369,7 @@ namespace AudioAnalysisTools.Indices
             // iii: CALCULATE noise reduced AVERAGE DECIBEL SPECTRUM
             // TODO: The method to calculate POW by averaging decibel values should be depracated. It is now replaced by index DMN.
             spectralIndices.POW = SpectrogramTools.CalculateAvgSpectrumFromSpectrogram(deciBelSpectrogram);
-            spectralIndices.DMN = SpectrogramTools.CalculateAvgDecibelSpectrumFromSpectrogram(deciBelSpectrogram);
+            spectralIndices.PMN = SpectrogramTools.CalculateAvgDecibelSpectrumFromSpectrogram(deciBelSpectrogram);
 
             // iv: CALCULATE SPECTRAL COVER.
             //     NOTE: at this point, decibelSpectrogram is noise reduced. All values >= 0.0

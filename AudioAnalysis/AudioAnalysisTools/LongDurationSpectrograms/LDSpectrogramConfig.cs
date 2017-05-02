@@ -35,8 +35,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             // default values
             this.XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
-            this.ColorMap1 = SpectrogramConstants.RGBMap_BGN_POW_CVR;
-            this.ColorMap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
+            this.ColorMap1 = LDSpectrogramRGB.DefaultColorMap1;
+            this.ColorMap2 = LDSpectrogramRGB.DefaultColorMap2;
         }
 
         #endregion
@@ -129,8 +129,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             var ldSpectrogramConfig = new LdSpectrogramConfig
             {
-                ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_EVN,
+                ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
+                ColorMap2 = LDSpectrogramRGB.DefaultColorMap2,
                 ColourGain = 2.0,
                 ColourFilter = 0.75,
 
