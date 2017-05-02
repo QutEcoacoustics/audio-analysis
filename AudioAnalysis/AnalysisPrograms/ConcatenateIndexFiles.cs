@@ -552,7 +552,9 @@ namespace AnalysisPrograms
                     {
                         ColorMap1 = arguments.ColorMap1,
                         ColorMap2 = arguments.ColorMap2,
-                        ColourGain = 2.0,
+
+                        // following parameter was depracated May 2017
+                        //ColourGain = 2.0,
 
                         // de-emphasizes the background or low index values
                         ColourFilter = 0.75,
