@@ -35,7 +35,6 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using PowerArgs;
-    using Production;
     using TowseyLibrary;
 
     /// <summary>
@@ -161,7 +160,7 @@ namespace AnalysisPrograms
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
 
             //2010 Oct 13th
-            var ipdir = @"C:\SensorNetworks\Output\TsheringDema\Towsey.Acoustic";
+            var ipdir = @"C:\SensorNetworks\Output\TsheringDema\Towsey.Acoustic_OLD4";
             var opdir = @"C:\SensorNetworks\Output\TsheringDema\Towsey.Acoustic";
 
             var ipDir = new DirectoryInfo(ipdir);
@@ -275,7 +274,7 @@ namespace AnalysisPrograms
             //double backgroundFilter = 0.0; // 0.0 means small values are removed.
             double backgroundFilter = 0.75;  // 0.75 means small values are accentuated.
             string analysisType = "Towsey.Acoustic";
-            string[] keys = { "ACI", "BGN", "CVR", "DMN", "ENT", "EVN", "POW", "RHZ", "RVT", "RPS", "RNG", "SPT" };
+            string[] keys = LDSpectrogramRGB.GetArrayOfAvailableKeys();
 
             //LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
             //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
@@ -294,12 +293,7 @@ namespace AnalysisPrograms
 
             // note: the spectra are oriented as per visual orientation, i.e. xAxis = time frames
             //int frameCount = spectra[keys[0]].GetLength(1);
-
-            var minuteOffset = TimeSpan.Zero;
-            var xScale = dataScale;
-            string colorMap1 = null;
-
-            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap1)
+            var cs1 = new LDSpectrogramRGB(minuteOffset: TimeSpan.Zero, xScale: dataScale, sampleRate: sampleRate, frameWidth: frameWidth, colourMap: null)
             {
                 FileName = fileStem,
                 BackgroundFilter = backgroundFilter,
@@ -361,22 +355,18 @@ namespace AnalysisPrograms
             // args.OutputDirectory = new DirectoryInfo(outputDirectory.FullName + @"/SpectrogramImages");
             args.SpectrogramConfigPath = null;
             args.IndexPropertiesConfig = indexPropertiesConfig;
-            args.ColourMap1 = "ACI-ENT-EVN";
-            args.ColourMap2 = "BGN-DMN-EVN";
+            args.ColourMap1 = LDSpectrogramRGB.DefaultColorMap1;
+            args.ColourMap2 = LDSpectrogramRGB.DefaultColorMap2;
             args.TemporalScale = dataScale;
 
             return DrawFalseColourSpectrograms(args, fileStem, indexProperties, spectra);
         }
 
-        public static Image DrawFalseColourSpectrograms(Arguments args, string fileStem,
-                                                        Dictionary<string, IndexProperties> indexProperties, Dictionary<string, double[,]> spectra = null)
+        public static Image DrawFalseColourSpectrograms(Arguments args, string fileStem, Dictionary<string, IndexProperties> indexProperties, Dictionary<string, double[,]> spectra = null)
         {
-            // create new spectral index "PHN" if it does not exist.
-            CreatePhnIndex(indexProperties, spectra);
-
             // note: the spectra are oriented as per visual orientation, i.e. xAxis = time framesDictionary<string, Int16>.KeyCollection keys = AuthorList.Keys
-            string[] keys = spectra.Keys.ToCommaSeparatedList().Split(',');
-            int frameCount = spectra[keys[0]].GetLength(1);
+            // string[] keys = spectra.Keys.ToCommaSeparatedList().Split(',');
+            // int frameCount = spectra[keys[0]].GetLength(1);
 
             int sampleRate = 22050;
             int frameWidth = 512;
@@ -384,7 +374,7 @@ namespace AnalysisPrograms
             var minuteOffset = TimeSpan.Zero;
             var dataScale = args.TemporalScale;
             string colourMode = "NEGATIVE";
-            string colourMap = args.ColourMap1 ?? "BGN-POW-EVN";
+            string colourMap = args.ColourMap1 ?? LDSpectrogramRGB.DefaultColorMap1;
             var cs1 = new LDSpectrogramRGB(minuteOffset, dataScale, sampleRate, frameWidth, colourMap)
             {
                 FileName = fileStem,
@@ -402,20 +392,16 @@ namespace AnalysisPrograms
             int trackHeight = 20;
             var timeScale = Image_Track.DrawTimeRelativeTrack(fullDuration, image1.Width, trackHeight);
 
-            colourMap = args.ColourMap2 ?? "PHN-RVT-SPT";
+            colourMap = args.ColourMap2 ?? LDSpectrogramRGB.DefaultColorMap2;
             var image2 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap);
-            var list = new List<Image>();
-            list.Add(titleImage);
-            list.Add(image1);
-            list.Add(timeScale);
-            list.Add(image2);
-
+            var list = new List<Image> { titleImage, image1, timeScale, image2 };
             var combinedImage = ImageTools.CombineImagesVertically(list.ToArray());
             return combinedImage;
         }
 
         /// <summary>
         /// The integer returned from this method is the number of seconds duration of the spectrogram.
+        /// Note that this method is called only when spectrogramScale = 0.1
         /// </summary>
         public static int DrawRidgeSpectrograms(Arguments arguments, string fileStem, Dictionary<string, double[,]> spectra = null)
         {
@@ -425,7 +411,8 @@ namespace AnalysisPrograms
             var outputDirectory = arguments.OutputDirectory;
             var indexPropertiesConfig = arguments.IndexPropertiesConfig;
             double spectrogramScale = 0.1;
-            var dataScale = TimeSpan.FromSeconds(spectrogramScale);
+
+            // var dataScale = TimeSpan.FromSeconds(spectrogramScale);
 
             // draw the spectrogram images
             var labelledImage = DrawRidgeSpectrograms(inputDirectory, indexPropertiesConfig, fileStem, spectrogramScale, spectra = null);
@@ -445,8 +432,7 @@ namespace AnalysisPrograms
             var dataScale = TimeSpan.FromSeconds(scale);
 
             Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(ipConfig);
-
-            string[] keys = { "SPT", "RVT", "RHZ", "RPS", "RNG" };
+            string[] keys = SpectralPeakTracks.GetDefaultRidgeKeys();
 
             // read the csv files of the indices in keys array
             if (spectra == null)
@@ -459,19 +445,15 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
             }
 
-            var minuteOffset = TimeSpan.Zero;
-            var xScale = dataScale;
-            string colorMap1 = null;
-            int sampleRate = 22050;
-            int frameWidth = 512;
+            var cs1 = new LDSpectrogramRGB(minuteOffset: TimeSpan.Zero, xScale: dataScale, sampleRate: 22050, frameWidth: 512, colourMap: null)
+            {
+                FileName = fileStem,
+                BackgroundFilter = backgroundFilter,
+                IndexCalculationDuration = dataScale,
+            };
 
-            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap1);
-
-            cs1.FileName = fileStem;
-            cs1.BackgroundFilter = backgroundFilter;
-            cs1.IndexCalculationDuration = dataScale;
-            cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
-
+            // set the relevant dictionary of index properties
+            cs1.SetSpectralIndexProperties(indexProperties);
             cs1.SpectrogramMatrices = spectra;
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
@@ -532,6 +514,7 @@ namespace AnalysisPrograms
             return ridges;
         } // method DrawRidgeSpectrograms()
 
+        /*
         public static void CreatePhnIndex(Dictionary<string, IndexProperties> indexProperties, Dictionary<string, double[,]> spectra)
         {
             string newKey = "PHN";
@@ -585,5 +568,6 @@ namespace AnalysisPrograms
 
             return compositeIndex;
         }
+        */
     }
 }
