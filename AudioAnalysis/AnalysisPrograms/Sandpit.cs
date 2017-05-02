@@ -54,19 +54,19 @@ namespace AnalysisPrograms
             {
                 // The following are test methods to confirm that the frequency scale code is working
                 // They are also good tests for the making of standard sonograms.
-                //FrequencyScale.TESTMETHOD_LinearFrequencyScaleDefault();
-                //FrequencyScale.TESTMETHOD_LinearFrequencyScale();
-                //FrequencyScale.TESTMETHOD_OctaveFrequencyScale1();
-                //FrequencyScale.TESTMETHOD_OctaveFrequencyScale2();
+                // FrequencyScale.TESTMETHOD_LinearFrequencyScaleDefault();
+                // FrequencyScale.TESTMETHOD_LinearFrequencyScale();
+                // FrequencyScale.TESTMETHOD_OctaveFrequencyScale1();
+                // FrequencyScale.TESTMETHOD_OctaveFrequencyScale2();
 
                 //Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms();
-                Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
+                //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
 
                 // The following test methods test various configs of concatenation
                 //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest1();
                 //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest2();
                 //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest3();
-                //ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest4();
+                ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest4();
                 //SpectrogramTools.AverageAnArrayOfDecibelValues(null);
             }
 
