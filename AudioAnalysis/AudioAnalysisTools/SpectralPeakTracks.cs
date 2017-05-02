@@ -18,6 +18,13 @@ namespace AudioAnalysisTools
     /// </summary>
     public class SpectralPeakTracks
     {
+        private static readonly string[] RidgeKeys = { "SPT", "RVT", "RHZ", "RPS", "RNG", "R3D" };
+
+        public static string[] GetDefaultRidgeKeys()
+        {
+            return RidgeKeys;
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SpectralPeakTracks"/> class.
         /// CONSTRUCTOR NOTE: Orientation of passed spectrogram is: row = spectral frames, columns = frequency bins
@@ -301,14 +308,15 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// Calculates the sum of the Horizontal, positive and negative slope ridges.
+        /// Calculates the max of the Horizontal, positive and negative slope ridges.
         /// </summary>
         public void CalculateCombinationOfThreeDirections()
         {
             this.R3DSpectrum = new double[this.RhzSpectrum.Length];
             for (int i = 0; i < this.RhzSpectrum.Length; i++)
             {
-                this.R3DSpectrum[i] = this.RhzSpectrum[i] + this.RpsSpectrum[i] + this.RngSpectrum[i];
+                var array = new double[] { this.RhzSpectrum[i], this.RpsSpectrum[i], this.RngSpectrum[i] };
+                this.R3DSpectrum[i] = array.Max();
             }
         }
 

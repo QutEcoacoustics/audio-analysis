@@ -44,7 +44,6 @@
     /// </summary>
     public static class LDSpectrogramStitching
     {
-
         // CONSTANT STRINGS
         public const string CsvFileExt = "csv";
         public const string ImgFileExt = "png";
