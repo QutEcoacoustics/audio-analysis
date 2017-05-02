@@ -10,8 +10,6 @@
 
     public static class Oscillations2010
     {
-
-
         /// <summary>
         /// FINDS OSCILLATIONS IN A SONOGRAM
         /// But first it segments the sonogram based on acoustic energy in freq band of interest.
