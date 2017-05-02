@@ -44,9 +44,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         #region Public Properties
 
         /// <summary>
-        /// Gets or sets the type of freq scale. Obvious possibilities are "linear", "octave" and "mel".
-        /// Linear is the default. Mel option is not currently functional.
-        /// There are two octave options: for sr=22050 and for sr=64000
+        /// Gets or sets the type of freq scale.
+        /// # Eventual options will be: Linear, Mel, Linear62Octaves31Nyquist11025, Linear125Octaves30Nyquist11025, Octaves24Nyquist32000, Linear125Octaves28Nyquist32000
+        /// # Only "Linear", "Linear125Octaves6Tones28Nyquist11025", "Linear125Octaves7Tones28Nyquist32000" work at present
         /// </summary>
         public string FreqScale { get; set; }
 
@@ -64,7 +64,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// Gets or sets colour intensity of the lower index values relative to the higher index values. Good value is 2.0
         /// </summary>
-        public double? ColourGain { get; set; }
+        //public double? ColourGain { get; set; }
 
         /// <summary>
         /// Gets or sets value of the colour filter.
@@ -131,7 +131,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
                 ColorMap2 = LDSpectrogramRGB.DefaultColorMap2,
-                ColourGain = 2.0,
                 ColourFilter = 0.75,
 
                 // X and Y axis conf

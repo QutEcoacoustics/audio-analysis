@@ -131,9 +131,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.ColorMap = colourMap;
             this.StartOffset = SpectrogramConstants.MINUTE_OFFSET;
 
-            // IMPORTANT NOTE: these default keys are later over-written in the method
+            // IMPORTANT NOTE: If an IndexPropertiesConfig file is available, these default keys are later over-written in the method
             // SetSpectralIndexProperties(Dictionary < string, IndexProperties > dictionaryOfSpectralIndexProperties)
-            // if a IndexPropertiesConfig file is available. Consequently the INDEX names in DefaultKeys must match those in config file.
+            // Consequently the INDEX names in DefaultKeys should match those in IndexPropertiesConfig file. If they do not, consequences are undefined!
             this.SpectrogramKeys = DefaultKeys;
         }
 
@@ -166,7 +166,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 this.BackgroundFilter = (double)config.ColourFilter;
             }
 
-            double? gain = config.ColourGain;
+            //double? gain = config.ColourGain;
 
             // set the X and Y axis scales for the spectrograms
             this.IndexCalculationDuration = indexGenerationData.IndexCalculationDuration;
@@ -1373,10 +1373,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // Set ColourGain: Determines colour intensity of the lower index values relative to the higher index values. Good value is
             // TODO Need to figure out where config.ColourGain is used. Cannot see that it is used anywhere?????? !!!!!!!
-            if (config.ColourGain == null)
-            {
-                config.ColourGain = SpectrogramConstants.COLOUR_GAIN;
-            }
+            //if (config.ColourGain == null)
+            //{
+            //    config.ColourGain = SpectrogramConstants.COLOUR_GAIN;
+            //}
 
             // Set ColourFilter: Must be <= 1.0. Good value is 0.75
             if (config.ColourFilter == null)
