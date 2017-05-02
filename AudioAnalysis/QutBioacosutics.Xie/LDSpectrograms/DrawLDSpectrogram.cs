@@ -1,95 +1,75 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="DrawLDSpectrogram.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
-// </copyright>
-// <summary>
-//   Defines the DrawLDSpectrogram type.
+﻿// <summary>
+// Defines the DrawLDSpectrogram type.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace QutBioacosutics.Xie.LDSpectrograms
 {
     using System;
-    using System.Collections.Generic;
-    using System.Drawing;
     using System.IO;
-    using System.Linq;
-    using System.Text;
-
-    using AcousticIndicesJie;
-
-    using Acoustics.Shared;
-
-    using AudioAnalysisTools;
-    using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
 
-    using TowseyLibrary;
-
-    public static class DrawLDSpectrogram
+    public static class DrawLdSpectrogram
     {
         public class Arguments
         {
-            // User specified file containing a list of indices and their properties.
+            /// <summary>
+            ///  Gets or sets user specified file containing a list of indices and their properties.
+            /// </summary>
             public FileInfo IndexPropertiesConfig { get; set; }
 
-            // Config file specifing directory containing indices.csv files and other parameters.
+            /// <summary>
+            ///  Gets or sets config file specifing directory containing indices.csv files and other parameters
+            /// </summary>
             public FileInfo SpectrogramConfigPath { get; set; }
         }
-
 
         public static Arguments Dev()
         {
             // INPUT and OUTPUT DIRECTORIES
-            //2010 Oct 13th
-            //string ipFileName = "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
-            //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct13_SpectralIndices";
+            // 2010 Oct 13th
+            // string ipFileName = "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
+            // string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
+            // string opdir = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct13_SpectralIndices";
 
-            //2010 Oct 14th
-            //string ipFileName = "b562c8cd-86ba-479e-b499-423f5d68a847_101014-0000";
-            //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\b562c8cd-86ba-479e-b499-423f5d68a847_101014-0000.mp3\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct14_SpectralIndices";
+            // 2010 Oct 14th
+            // string ipFileName = "b562c8cd-86ba-479e-b499-423f5d68a847_101014-0000";
+            // string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\b562c8cd-86ba-479e-b499-423f5d68a847_101014-0000.mp3\Towsey.Acoustic";
+            // string opdir = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct14_SpectralIndices";
 
-            //2010 Oct 15th
-            //string ipFileName = "d9eb5507-3a52-4069-a6b3-d8ce0a084f17_101015-0000";
-            //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\d9eb5507-3a52-4069-a6b3-d8ce0a084f17_101015-0000.mp3\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct15_SpectralIndices";
+            // 2010 Oct 15th
+            // string ipFileName = "d9eb5507-3a52-4069-a6b3-d8ce0a084f17_101015-0000";
+            // string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\d9eb5507-3a52-4069-a6b3-d8ce0a084f17_101015-0000.mp3\Towsey.Acoustic";
+            // string opdir = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct15_SpectralIndices";
 
-            //2010 Oct 16th
-            //string ipFileName = "418b1c47-d001-4e6e-9dbe-5fe8c728a35d_101016-0000";
-            //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\418b1c47-d001-4e6e-9dbe-5fe8c728a35d_101016-0000.mp3\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct16_SpectralIndices";
+            // 2010 Oct 16th
+            // string ipFileName = "418b1c47-d001-4e6e-9dbe-5fe8c728a35d_101016-0000";
+            // string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\418b1c47-d001-4e6e-9dbe-5fe8c728a35d_101016-0000.mp3\Towsey.Acoustic";
+            // string opdir = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct16_SpectralIndices";
 
-            //2010 Oct 17th
+            // 2010 Oct 17th
             string inputFileName = "020313";
             string inputDirectory = @"C:\JCU\Campus\MyResults_Campus_020313_Nasuta"; // this is where ALL you indices csv files are located
             string outputDirectory = @"C:\JCU\Campus\MyResults_Campus_020313_Nasuta";
 
-
             DirectoryInfo ipDir = new DirectoryInfo(inputDirectory);
             DirectoryInfo opDir = new DirectoryInfo(outputDirectory);
 
-            //Write the default Yaml Config file for producing long duration spectrograms and place in the op directory
+            // Write the default Yaml Config file for producing long duration spectrograms and place in the op directory
             var config = new LdSpectrogramConfigOfJie(inputFileName, ipDir, opDir)
                              {
-                                 ColourMap1 = "ACI-ENT-CVR",
-                                 ColourMap2 = "OSC-ENG-TRK",
-                                 MinuteOffset =
-                                     TimeSpan.FromMinutes(19 * 60),
+                                 ColourMap1 = LDSpectrogramRGB.DefaultColorMap1,
+                                 ColourMap2 = LDSpectrogramRGB.DefaultColorMap2,
+                                 MinuteOffset = TimeSpan.FromMinutes(19 * 60),
                                  FrameWidth = 256,
                                  SampleRate = 22050,
                              }; // default values have been set
 
-            //config.ColourMap = "TRK-OSC-HAR";
-            //config.SampleRate = 17640;
             FileInfo outPath = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
             config.WriteConfigToYaml(outPath);
 
-
             FileInfo fiSpectrogramConfig = new FileInfo(Path.Combine(opDir.FullName, "FrogSpectrogramConfig.yml"));
             config.WriteConfigToYaml(fiSpectrogramConfig);
-
 
             return new Arguments
             {
@@ -97,9 +77,9 @@ namespace QutBioacosutics.Xie.LDSpectrograms
                 IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigForFrogs.yml".ToFileInfo(),
                 SpectrogramConfigPath = fiSpectrogramConfig,
             };
-            throw new Exception();
         }
 
+        /*
         public static void Execute(Arguments arguments)
         {
             if (arguments == null)
@@ -116,8 +96,6 @@ namespace QutBioacosutics.Xie.LDSpectrograms
 
             DrawSpectrogramsFromSpectralIndicesJiesCopyDoNotUseAnthonyThisWholeCopyingMethodsThingIsConfusingMe(arguments.SpectrogramConfigPath, arguments.IndexPropertiesConfig);
         }
-
-
 
         /// <summary>
         ///  This IS THE MAJOR STATIC METHOD FOR CREATING LD SPECTROGRAMS
@@ -142,7 +120,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string map1 = configuration.ColourMap1;
-            string colorMap1 = map1 ?? SpectrogramConstants.RGBMap_BGN_AVG_CVR;   // assigns indices to RGB
+            string colorMap1 = map1 ?? SpectrogramConstants.RGBMap_BGN__CVR;   // assigns indices to RGB
             string map2 = configuration.ColourMap2;
             string colorMap2 = map2 ?? SpectrogramConstants.RGBMap_ACI_ENT_CVR;   // assigns indices to RGB
 
@@ -214,9 +192,6 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             image3.Save(Path.Combine(outputDirectory.FullName, fileStem + ".2MAPS.png"));
         }
 
-
-
-
         public static void GetJiesLDSpectrogramConfig(string fileName, DirectoryInfo ipDir, DirectoryInfo opDir)
         {
             LdSpectrogramConfigOfJie spgConfig = new LdSpectrogramConfigOfJie(fileName, ipDir, opDir);
@@ -230,8 +205,6 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             FileInfo path = new FileInfo(Path.Combine(opDir.FullName, "JiesLDSpectrogramConfig.yml"));
             spgConfig.WriteConfigToYaml(path);
         }
-
-
-
+*/
     }
 }

@@ -27,7 +27,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
     public static class SpectrogramTools
     {
-
         /// <summary>
         ///
         /// </summary>

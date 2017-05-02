@@ -96,8 +96,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 EndDate = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero),
                 IndexPropertiesConfig = indexPropertiesConfig,
                 FalseColourSpectrogramConfig = testConfig,
-                ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
+                ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
+                ColorMap2 = "BGN-POW-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = true, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 SunRiseDataFile = null,
@@ -129,7 +129,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             var pixel2 = actualImage.GetPixel(200, 100);
             var pixel2Txt = pixel2.ToString();
-            string c2 = "Color [A=255, R=54, G=28, B=7]";
+            string c2 = "Color [A=255, R=54, G=28, B=9]";
             Assert.AreEqual(c2, pixel2Txt);
         }
 
@@ -167,8 +167,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 EndDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
                 IndexPropertiesConfig = indexPropertiesConfig,
                 FalseColourSpectrogramConfig = testConfig,
-                ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
+                ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
+                ColorMap2 = "BGN-POW-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 SunRiseDataFile = null,
@@ -195,12 +195,12 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             var pixel1 = actualImage.GetPixel(100, 100);
             var pixel1Txt = pixel1.ToString();
-            string c1 = "Color [A=255, R=32, G=24, B=14]";
+            string c1 = "Color [A=255, R=32, G=24, B=17]";
             Assert.AreEqual(c1, pixel1Txt);
 
             var pixel2 = actualImage.GetPixel(100, 160);
             var pixel2Txt = pixel2.ToString();
-            string c2 = "Color [A=255, R=0, G=22, B=30]";
+            string c2 = "Color [A=255, R=0, G=22, B=38]";
             Assert.AreEqual(c2, pixel2Txt);
 
             // Assert.Fail("Test construction in progrexss");
@@ -242,8 +242,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 EndDate = null,
                 IndexPropertiesConfig = indexPropertiesConfig,
                 FalseColourSpectrogramConfig = testConfig,
-                ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
+                ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
+                ColorMap2 = "BGN-POW-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 SunRiseDataFile = null,
@@ -276,7 +276,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             var pixel2 = actualImage1.GetPixel(50, 50);
             var pixel2Txt = pixel2.ToString();
-            string c2 = "Color [A=255, R=86, G=27, B=6]";
+            string c2 = "Color [A=255, R=86, G=27, B=8]";
             Assert.AreEqual(c2, pixel2Txt);
 
             // IMAGE 2: Compare image files - check that image exists and dimensions are correct
@@ -292,7 +292,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             pixel1 = actualImage2.GetPixel(50, 124);
             pixel1Txt = pixel1.ToString();
-            c1 = "Color [A=255, R=70, G=37, B=203]";
+            c1 = "Color [A=255, R=70, G=37, B=255]";
             Assert.AreEqual(c1, pixel1Txt);
 
             pixel2 = actualImage2.GetPixel(460, 600);
