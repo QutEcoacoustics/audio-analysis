@@ -16,8 +16,6 @@
     /// </summary>
     public static class Oscillations2012
     {
-
-
         public static void Execute(SpectrogramStandard sonogram, int minHz, int maxHz,
                                    double dctDuration, int minOscilFreq, int maxOscilFreq, double dctThreshold, double scoreThreshold,
                                    double minDuration, double maxDuration, int smoothingWindow,
