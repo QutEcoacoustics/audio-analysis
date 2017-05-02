@@ -42,7 +42,6 @@ namespace AudioAnalysisTools
 
     public class SpectralActivity
     {
-
         public double lowFreqBandCover, midFreqBandCover, highFreqBandCover;
         public double[] coverSpectrum, eventSpectrum;
         public SpectralActivity(double[] _eventSpectrum, double[] _coverSpectrum, double _lowFreqCover, double _midFreqCover, double _highFreqCover)
@@ -57,7 +56,6 @@ namespace AudioAnalysisTools
 
     public static class ActivityAndCover
     {
-
         public const double DefaultActivityThresholdDb = 6.0; // used to select frames that have 3dB > background
         // used to remove short events from consideration - NOT USED ANY MORE
         //public static TimeSpan DEFAULT_MinimumEventDuration = TimeSpan.FromMilliseconds(100);
