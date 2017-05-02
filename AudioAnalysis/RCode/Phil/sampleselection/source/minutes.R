@@ -82,16 +82,23 @@ GetTargetMinutesByDay <- function (site, date, version.only = TRUE) {
 }
 
 
+
+
+
 CreateTargetMinutes <- function (target = NULL) {
     # creates a list of target minute ids, based on
     # the target nested list in config
-    # writes the output to csv  
+    # writes the output to csv 
+    
     if (is.null(target)) {
         target <- g.target
     }
     
+    # generates a full list of minute ids for the study
     study.min.list <- GetMinuteList()
+    
     target.mins <- TargetSubset(study.min.list, target)
+    
     if (g.percent.of.target < 100) { 
         num.to.include <- floor(nrow(target.mins)*g.percent.of.target/100)
         to.include <- GetIncluded(total.num = nrow(target.mins), num.included = num.to.include, offset = 0)
@@ -99,7 +106,7 @@ CreateTargetMinutes <- function (target = NULL) {
     }
     
     params <- list(target = GetTargetDescription(target))
-    WriteOutput(target.mins, 'target.min.ids', params = params)
+    datatrack::WriteDataobject(target.mins, 'target.min.ids', params = params)
     
 }
 
@@ -111,9 +118,20 @@ TargetSubset <- function (df, target) {
     #
     # Args:
     #   df: data.frame; must have the columns site, date, min
+    #   target: list; which minutes to select. 
     # 
     # Value
     #   data.frame
+    #
+    # Details 
+    #   target parameter is a list where
+    #   - The names are sites and the values are lists. 
+    #   - The names of these lists are dates and the values are integer vectors. 
+    #   - The integer vectors are the start and end minutes. 
+    #   For example, the following is NE 2017-10-13 between 123 and 234 and between 345 and 456
+    #                     example.target = list('NE' = list(
+    #                        '2017-10-13' = [123,234,345,456]
+    #                     ))
     
     sites <- names(target)
     
@@ -204,6 +222,7 @@ DfToDesc <- function (df) {
     #   in that year, each of which followed by the sites in that month, each of which followed by the days in that site
     #   to avoid ambiguity, year is any number is 4 digits, month is preceded by a dash, sites are characters, 
     #   but if they start or end with an integer will be surrounded by square brackets
+    #   
 
     
     # todo: check the colnames are right

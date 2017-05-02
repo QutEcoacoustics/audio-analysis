@@ -15,7 +15,7 @@ MakeSegmentList <- function (min.list = NULL, num.per.min = 60) {
     # todo: verfify audio exists for full expected duration for each file, and insert NAs for missing audio. 
     
     if (is.null(min.list)) {
-        min.list <- ReadOutput('target.min.ids')
+        min.list <- datatrack::ReadDataobject('target.min.ids')
     }
     
     # get the wave path for every minute
