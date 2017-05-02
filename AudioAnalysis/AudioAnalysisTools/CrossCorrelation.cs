@@ -9,7 +9,6 @@
 
     public class CrossCorrelation
     {
-
         //these keys are used to define a cross-correlation event in a sonogram.
         public const string key_COUNT = "count";
         public const string key_START_FRAME = "startFrame";

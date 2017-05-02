@@ -1,6 +1,5 @@
 ﻿namespace AudioAnalysisTools.DSP
 {
-
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -12,7 +11,6 @@
     /// </summary>
     public class NoiseProfile
     {
-
         public double[] NoiseMode { get; set; }
 
         public double[] NoiseSd { get; set; }

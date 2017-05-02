@@ -9,7 +9,6 @@
 
     public static class NoiseRemoval_Briggs
     {
-
         /// <summary>
         /// Assumes the passed matrix is a spectrogram. i.e. rows=frames, cols=freq bins.
         /// WARNING: This method should NOT be used for short recordings (i.e LT approx 10-15 seconds long)

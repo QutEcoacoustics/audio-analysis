@@ -43,7 +43,6 @@ namespace AudioAnalysisTools
 
     public static class ChannelIntegrity
     {
-
         public static Arguments Dev()
         {
             //FileInfo audioFile = new FileInfo(@"C:\SensorNetworks\WavFiles\Gympie\20151029_064553_Gympie_bad.wav");
@@ -207,7 +206,6 @@ namespace AudioAnalysisTools
             int midBound = frameSize * 7000 / sampleRate;
             for (int i = 0; i < lowBound; i++)
             {
-
                 double dbLeft  = 20 * Math.Log10(avSpectrumL[i]);
                 double dbRight = 20 * Math.Log10(avSpectrumR[i]);
                 avDecibelBias += (dbLeft - dbRight);
@@ -217,7 +215,6 @@ namespace AudioAnalysisTools
             midFreqDbBias = 0.0;
             for (int i = lowBound; i < midBound; i++)
             {
-
                 double dbLeft = 20 * Math.Log10(avSpectrumL[i]);
                 double dbRight = 20 * Math.Log10(avSpectrumR[i]);
                 avDecibelBias += (dbLeft - dbRight);
@@ -227,7 +224,6 @@ namespace AudioAnalysisTools
             hiFreqDbBias = 0.0;
             for (int i = midBound; i < avSpectrumR.Length; i++)
             {
-
                 double dbLeft = 20 * Math.Log10(avSpectrumL[i]);
                 double dbRight = 20 * Math.Log10(avSpectrumR[i]);
                 avDecibelBias += (dbLeft - dbRight);

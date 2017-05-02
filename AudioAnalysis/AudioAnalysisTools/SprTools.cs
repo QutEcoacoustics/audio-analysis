@@ -8,7 +8,6 @@
 
     public static class SprTools
     {
-
         //char[] code = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q' }; //10 degree jumps
         //90 degree angle = symbol 'i'   i.e. the vertical
         //int resolutionAngle = 10;

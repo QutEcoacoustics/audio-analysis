@@ -79,7 +79,6 @@
         /// <returns></returns>
         public static double[,] FFT2DOutput2MatrixOfMagnitude(double[] sampleData, int[] dims)
         {
-
             // After 2D-FFT transformation, the sampleData array now has alternating real and imaginary values.
             // Create an array of class Complex.
             Complex[] sampleComplexPairs = new Complex[sampleData.Length / 2];

@@ -9,8 +9,6 @@
 
     public static class NoiseRemovalModal
     {
-
-
         public static Image ModalNoiseRemovalAndGetSonograms(double[,] deciBelSpectrogram, double parameter,
                                                              TimeSpan wavDuration, TimeSpan xAxisInterval, TimeSpan stepDuration,
                                                              int nyquist, int hzInterval)
