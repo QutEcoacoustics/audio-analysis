@@ -8,7 +8,6 @@
 
     public sealed class BinaryCluster
     {
-
         public int IPSize { get; set; }
         public int OPSize { get; set; }
         public double vigilance_rho { get; set; } //vigilance

@@ -528,7 +528,6 @@ namespace AudioAnalysisTools.DSP
             int framesExceedingThirdSNR = 0;
             for (int frame = 0; frame < frameSpan; frame++)
             {
-
                 if (frameAverages[frame] > threshold)
                 {
                     framesExceedingThreshold++;

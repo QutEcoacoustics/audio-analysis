@@ -16,7 +16,6 @@
 */
 namespace AudioAnalysisTools.LongDurationSpectrograms
 {
-
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -31,7 +30,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
     public static class ZoomFocusedSpectrograms
     {
-
         public static void DrawStackOfZoomedSpectrograms(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory,
                                                          ZoomCommonArguments common,
                                                          TimeSpan focalTime, int imageWidth)
@@ -280,7 +278,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Dictionary<string, double[,]> spectra,
             string basename)
         {
-
             // check that scalingFactor >= 1.0
             double scalingFactor = Math.Round(imageScale.TotalMilliseconds / dataScale.TotalMilliseconds);
             if (scalingFactor < 1.0)

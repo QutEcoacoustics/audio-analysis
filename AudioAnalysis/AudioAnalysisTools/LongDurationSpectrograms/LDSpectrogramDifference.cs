@@ -73,7 +73,6 @@
         /// <param name="opdir"></param>
         public static void DrawDifferenceSpectrogram(DirectoryInfo ipdir, FileInfo ipFileName1, FileInfo ipFileName2, DirectoryInfo opdir)
         {
-
             var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
             cs1.FileName = ipFileName1.Name;
             cs1.ColorMode = colorMap;

@@ -368,7 +368,6 @@ namespace AudioAnalysisTools.TileImage
                 IEnumerable<ISuperTile[]> windowed = scaleGroup.OrderBy(st => st.OffsetX).WindowedOrDefault(3);
                 foreach (var superTiles in windowed)
                 {
-
                     this.Tile(superTiles[0], superTiles[1], superTiles[2]);
                 }
             }
@@ -456,7 +455,6 @@ namespace AudioAnalysisTools.TileImage
 
         private void CheckForTileDuplication(ISuperTile superTile)
         {
-
             if (this.superTileHistory.ContainsKey(superTile.Scale))
             {
                 var offsets = Tuple.Create(superTile.OffsetX, superTile.OffsetY);

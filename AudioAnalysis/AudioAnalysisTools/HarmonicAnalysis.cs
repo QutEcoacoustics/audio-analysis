@@ -10,7 +10,6 @@
 
     public static class HarmonicAnalysis
     {
-
         /// <summary>
         /// Returns a tuple consisting of:
         /// 1) an array of scores over the entire recording

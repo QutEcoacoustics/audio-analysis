@@ -479,7 +479,6 @@
 
         public Bitmap DrawDecibelTrack(Bitmap bmp)
         {
-
             Bitmap track = DrawDecibelTrack(this.doubleData, bmp.Width, this.SegmentationThreshold_k1, this.SegmentationThreshold_k2);
             Graphics g = Graphics.FromImage(bmp);
             g.DrawImage(track, 0, this.topOffset);
@@ -768,7 +767,6 @@
         /// <returns></returns>
         public static Bitmap DrawGrayScaleScoreTrack(double[] array, double minVal, double maxVal, double threshold, string title)
         {
-
             int trackHeight = IndexDisplay.DefaultTrackHeight;
             Color[] grayScale = ImageTools.GrayScale();
             int imageWidth = array.Length;

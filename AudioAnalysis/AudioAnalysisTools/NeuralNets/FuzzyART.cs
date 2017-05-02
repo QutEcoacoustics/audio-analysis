@@ -8,7 +8,6 @@
 
     public sealed class FuzzyART
     {
-
         public int IPSize { get; set; }
         public int F1Size { get; set; }
         public int F2Size { get; set; }
@@ -511,7 +510,6 @@
     /// <param name="index"></param>
     public void ChangeWtsOfCommittedNode(double[] IP, int index)
     {
-
         //get wts of current F2 node
         double[] wtsJ = new double[this.F1Size];
         for (int i = 0; i < this.F1Size; i++) wtsJ[i] = this.wts[index, i];

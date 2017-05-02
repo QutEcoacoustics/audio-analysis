@@ -13,7 +13,6 @@
 
     public static class FrommoltProject
     {
-
         public static void ConcatenateDays()
         {
             DirectoryInfo parentDir = new DirectoryInfo(@"C:\SensorNetworks\Output\Frommolt");

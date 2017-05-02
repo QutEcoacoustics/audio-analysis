@@ -1,6 +1,5 @@
 ﻿namespace AudioAnalysisTools
 {
-
     using System;
     using System.Collections.Generic;
     using System.Drawing;
@@ -14,9 +13,6 @@
 
     public class FindMatchingEvents
     {
-
-
-
         public static double[,] ReadImage2BinaryMatrixDouble(string fileName)
         {
             Bitmap bitmap = ImageTools.ReadImage2Bitmap(fileName);
