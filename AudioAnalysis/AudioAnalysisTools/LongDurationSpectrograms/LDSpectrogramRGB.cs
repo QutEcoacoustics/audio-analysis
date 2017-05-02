@@ -64,6 +64,27 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     /// </summary>
     public class LDSpectrogramRGB
     {
+        // string[] keys = { "ACI", "TEN", "CVR", "BGN", "AVG", "VAR" }; // the OLDEST default i.e. used in 2014
+        // string[] keys = { "ACI", "ENT", "EVN", "BGN", "POW", "EVN" }; // the OLD default i.e. since July 2015
+        // assign indices to RGB - the next two lines are for experimental purposes
+        // public static readonly string DefaultColorMap1 = "ACI, ENT, EVN";
+        // public static readonly string DefaultColorMap2 = "BGN, PMN, R3D";
+
+        // the defaults
+        public static readonly string DefaultColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
+        public static readonly string DefaultColorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_R3D;
+
+        // Before May 2017, only the required six spectral indices were incorporated in a dicitonary of spectral matrices.
+        // Since May 2017, all the likely available matrices are incorporated into a dictionary. Note the new names for PMN and R3D, previously POW and HPN respectively.
+        // Note 1: This default array will be subsequently over-written by the indices in the IndexPropertiesConfig file if one is available.
+        // Note 1: RHZ, SPT and CVR are correlated with POW and do not add much. CLS is not particularly useful. Currently using R3D
+        private static readonly string[] DefaultKeys = { "ACI", "BGN", "CLS", "CVR", "ENT", "EVN", "PMN", "POW", "RHZ", "RVT", "RPS", "RNG", "R3D", "SPT" };
+
+        public static string[] GetArrayOfAvailableKeys()
+        {
+            return DefaultKeys;
+        }
+
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public string FileName { get; set; }
@@ -87,6 +108,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.FrameWidth = SpectrogramConstants.FRAME_LENGTH; // default value - from which spectrogram was derived
             this.XTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default = one minute spectra and hourly time lines
             this.StartOffset = SpectrogramConstants.MINUTE_OFFSET;
+            this.SpectrogramKeys = DefaultKeys;
         }
 
         /// <summary>
@@ -108,6 +130,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.SampleRate = sampleRate;
             this.ColorMap = colourMap;
             this.StartOffset = SpectrogramConstants.MINUTE_OFFSET;
+
+            // IMPORTANT NOTE: these default keys are later over-written in the method
+            // SetSpectralIndexProperties(Dictionary < string, IndexProperties > dictionaryOfSpectralIndexProperties)
+            // if a IndexPropertiesConfig file is available. Consequently the INDEX names in DefaultKeys must match those in config file.
+            this.SpectrogramKeys = DefaultKeys;
         }
 
         /// <summary>
@@ -184,6 +211,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.ColorMap = colourMap;
         }
 
+        // Rarely used. Only if reading standard deviation matrices for tTest
+        private Dictionary<string, double[,]> spgrStdDevMatrices;
+
+        // used to save all spectrograms as dictionary of matrices
+        // IMPORTANT: The matrices are stored as they would appear in the LD spectrogram image. i.e. rotated 90 degrees anti-clockwise.
+        public Dictionary<string, double[,]> SpectrogramMatrices = new Dictionary<string, double[,]>();
+
+        public string[] SpectrogramKeys { get; private set; }
+
         /// <summary>
         /// Gets or sets the date and time at which the current LDspectrogram starts
         /// This can be used to correctly
@@ -244,15 +280,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public string ColorMode { get; set; }
 
-        public string[] SpectrogramKeys { get; private set; }
-
-        // used to save all spectrograms as dictionary of matrices
-        // IMPORTANT: The matrices are stored as they would appear in the LD spectrogram image. i.e. rotated 90 degrees anti-clockwise.
-        public Dictionary<string, double[,]> SpectrogramMatrices = new Dictionary<string, double[,]>();
-
-        // used if reading standard deviation matrices for tTest
-        private Dictionary<string, double[,]> spgrStdDevMatrices;
-
         /// <summary>
         /// Gets or sets used where the spectrograms are derived from averages and want to do t-test of difference.
         /// </summary>
@@ -266,7 +293,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public List<ErroneousIndexSegments> ErroneousSegments { get; private set; }
 
         /// <summary>
-        /// A file from which can be obtained information about sunrise and sunset times for the recording site.
+        /// Gets or sets a file from which can be obtained information about sunrise and sunset times for the recording site.
         /// The csv file needs to be in the correct format and typically should contain 365 lines.
         /// Have not attempted to deal with leap years!
         /// </summary>
@@ -283,10 +310,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public void SetSpectralIndexProperties(Dictionary<string, IndexProperties> dictionaryOfSpectralIndexProperties)
         {
-            string[] keys = { "ACI", "ENT", "EVN", "BGN", "POW", "EVN" }; // the NEW default i.e. since July 2015
-            //string[] keys = { "ACI", "TEN", "CVR", "BGN", "AVG", "VAR" }; // the OLD default i.e. used in 2014
-            this.SpectrogramKeys = keys;
-            if ((dictionaryOfSpectralIndexProperties != null) && ((dictionaryOfSpectralIndexProperties.Count > 0)))
+            if (dictionaryOfSpectralIndexProperties != null && dictionaryOfSpectralIndexProperties.Count > 0)
             {
                 this.spectralIndexProperties = dictionaryOfSpectralIndexProperties;
                 this.SpectrogramKeys = this.spectralIndexProperties.Keys.ToArray();
@@ -571,7 +595,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             if (!this.ContainsMatrixForKeys(colorMap))
             {
                 LoggedConsole.WriteLine("WARNING: From method ColourSpectrogram.DrawFalseColourSpectrogram()");
-                LoggedConsole.WriteLine("         Nn matrices are available for the passed colour map.");
+                LoggedConsole.WriteLine("         No matrices are available for the passed colour map.");
                 return null;
             }
 
@@ -1341,12 +1365,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             ImageChrome imageChrome = ImageChrome.With,
             bool verbose = false)
         {
-            LdSpectrogramConfig config = ldSpectrogramConfig;
+            var config = ldSpectrogramConfig;
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
-            // string freqScale = config.FreqScale ?? "Linear";   // sets the freq scale
-            string colorMap1 = config.ColorMap1 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
-            string colorMap2 = config.ColorMap2 ?? SpectrogramConstants.RGBMap_BGN_DMN_EVN;   // assigns indices to RGB
+            string colorMap1 = config.ColorMap1 ?? DefaultColorMap1;   // assigns indices to RGB
+            string colorMap2 = config.ColorMap2 ?? DefaultColorMap2;   // assigns indices to RGB
 
             // Set ColourGain: Determines colour intensity of the lower index values relative to the higher index values. Good value is
             // TODO Need to figure out where config.ColourGain is used. Cannot see that it is used anywhere?????? !!!!!!!
