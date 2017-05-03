@@ -573,27 +573,37 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Filters or de-emphasizes the background/low index values by applying a polynomial that lies between y=x and y=x^2.
-        /// If c = filterCoeff, newX = [(1/c - 1) * X^2 + X] * c
-        /// There are two extremes:
-        /// When filterCoeff >= 1.0, the matrix remains unchanged, that is, that is, y=x represents the unfiltered matrix.
-        /// When filterCoeff LT  0.1, the matrix is maximally filtered, i.e. y=x^2 represents the filtered matrix.
-        /// In a grey scale image, this has the effect of diminshing the low amplitude values, thereby enhancing the highlights.
-        ///
+        /// The ColourFilter parameter determines how much the low index values are emphasized or de-emphasized.
+        /// The purpose is to make low intensity features stand out (emphasis) or become even less obvious (de-emphasis).
+        /// This parameter applies a function that lies between y=x^-2 and y=x^2, i.e. between the square-root and the square.
+        /// For an acoustic index value of X, newX = [(1/c - 1) * X^2 + X] * c, where c = the supplied filterCoeff.
+        /// When filterCoeff = 1.0, small values are maximally emphasized, i.e. y=sqrt(x).
+        /// When filterCoeff = 0.0, the matrix remains unchanged, that is, y=x.
+        /// When filterCoeff =-1.0, small values are maximally de-emphasized, i.e. y=x^2.
+        /// Generally usage suggests that a value of -0.25 is suitable. i.e. a slight de-emphasis.
         /// </summary>
         public static double[,] FilterBackgroundValues(double[,] m, double filterCoeff)
         {
-            if (filterCoeff >= 1.0)
+            if (filterCoeff == 0.0)
             {
+                // no change
                 return m;
             }
 
-            if (filterCoeff <= 0.1)
+            if (filterCoeff < -0.9)
             {
+                // maximal de-emphasis of background values
                 return SquareValues(m);
             }
 
-            double param = 1 / (double)filterCoeff;
+            if (filterCoeff > 0.9)
+            {
+                // maximal emphasis of background values
+                return SquareRootOfValues(m);
+            }
+
+            // shift the coefficient
+            double param = 1 / (double)(filterCoeff + 1);
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
             double[,] newM = new double[rows, cols];
