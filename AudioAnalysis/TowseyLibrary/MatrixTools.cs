@@ -580,6 +580,7 @@ namespace TowseyLibrary
         /// When filterCoeff LT  0.1, the matrix is maximally filtered, i.e. y=x^2 represents the filtered matrix.
         /// In a grey scale image, this has the effect of diminshing the low amplitude values, thereby enhancing the highlights.
         ///
+        /// Visual example https://www.wolframalpha.com/input/?i=plot+y+%3D+%5B(1%2Fc+-+1)+*+x%5E2+%2B+x%5D+*+c+,+x%3D0..1,+c%3D0.0..2.0
         /// </summary>
         public static double[,] FilterBackgroundValues(double[,] m, double filterCoeff)
         {
