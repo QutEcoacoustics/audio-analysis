@@ -36,7 +36,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public const string RGBMap_BGN_POW_EVN = "BGN-POW-EVN"; //R-G-B
 
         // these parameters manipulate the colour map and appearance of the false-colour LONG DURATION spectrogram
-        public const double BACKGROUND_FILTER_COEFF = 0.75; //must be value <=1.0
+        public const double BACKGROUND_FILTER_COEFF = -0.25; //value must lie in -1.0 to +1.0
 
         // These parameters describe the time and frequency scales for drawing X and Y axes on LONG DURATION spectrograms
         public static TimeSpan X_AXIS_TIC_INTERVAL = TimeSpan.FromMinutes(60);  // default assumes one minute spectra and 60 spectra per hour
