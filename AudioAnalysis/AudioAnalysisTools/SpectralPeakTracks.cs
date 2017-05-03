@@ -371,7 +371,7 @@ namespace AudioAnalysisTools
         /// NOTE: We require a noise reduced decibel spectrogram
         /// FreqBinWidth can be accessed, if required, through dspOutput1.FreqBinWidth,
         /// </summary>
-        public static SpectralPeakTracks CalculateSpectralPeakTracks(AudioRecording recording, int sampleStart, int sampleEnd, int frameSize, bool octaveScale)
+        public static SpectralPeakTracks CalculateSpectralPeakTracks(AudioRecording recording, int sampleStart, int sampleEnd, int frameSize, bool octaveScale, double peakThreshold)
         {
             double epsilon = recording.Epsilon;
             int sampleRate = recording.WavReader.SampleRate;
@@ -404,7 +404,6 @@ namespace AudioAnalysisTools
             // double frameStepDuration = frameStep / (double)sampleRate; // fraction of a second
             // TimeSpan frameStepTimeSpan = TimeSpan.FromTicks((long)(frameStepDuration * TimeSpan.TicksPerSecond));
 
-            double peakThreshold = 6.0; //dB
             var sptInfo = new SpectralPeakTracks(decibelSpectrogram, peakThreshold);
             return sptInfo;
         }

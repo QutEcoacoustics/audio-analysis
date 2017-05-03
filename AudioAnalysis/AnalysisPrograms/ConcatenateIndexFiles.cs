@@ -552,10 +552,9 @@ namespace AnalysisPrograms
                     {
                         ColorMap1 = arguments.ColorMap1,
                         ColorMap2 = arguments.ColorMap2,
-                        ColourGain = 2.0,
 
-                        // de-emphasizes the background or low index values
-                        ColourFilter = 0.75,
+                        // emphasizes or de-emphasizes the background, low index values
+                        ColourFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
                         XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
                         YAxisTicInterval = 1000,
                         FreqScale = "Linear",

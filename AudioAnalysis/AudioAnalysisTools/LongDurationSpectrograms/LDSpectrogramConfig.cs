@@ -12,7 +12,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using Acoustics.Shared;
 
     /// <summary>
-    ///     CONFIG CLASS FOR the class LDSpectrogramRGB
+    /// CONFIG CLASS FOR the class LDSpectrogramRGB
     /// </summary>
     public class LdSpectrogramConfig
     {
@@ -34,9 +34,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public LdSpectrogramConfig()
         {
             // default values
+            this.ColorMap1 = LDSpectrogramRGB.DefaultColorMap1;
+            this.ColorMap2 = LDSpectrogramRGB.DefaultColorMap2;
             this.XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
             this.ColorMap1 = LDSpectrogramRGB.DefaultColorMap1;
             this.ColorMap2 = LDSpectrogramRGB.DefaultColorMap2;
+            this.ColourFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+            this.XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
+            this.FreqScale = "Linear";
+            this.YAxisTicInterval = 1000;
         }
 
         #endregion
@@ -44,9 +50,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         #region Public Properties
 
         /// <summary>
-        /// Gets or sets the type of freq scale. Obvious possibilities are "linear", "octave" and "mel".
-        /// Linear is the default. Mel option is not currently functional.
-        /// There are two octave options: for sr=22050 and for sr=64000
+        /// Gets or sets the type of freq scale.
+        /// # Eventual options will be: Linear, Mel, Linear62Octaves31Nyquist11025, Linear125Octaves30Nyquist11025, Octaves24Nyquist32000, Linear125Octaves28Nyquist32000
+        /// # Only "Linear", "Linear125Octaves6Tones28Nyquist11025", "Linear125Octaves7Tones28Nyquist32000" work at present
         /// </summary>
         public string FreqScale { get; set; }
 
@@ -60,11 +66,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// Pass two colour maps because two maps convey more information.
         /// </summary>
         public string ColorMap2 { get; set; }
-
-        /// <summary>
-        /// Gets or sets colour intensity of the lower index values relative to the higher index values. Good value is 2.0
-        /// </summary>
-        public double? ColourGain { get; set; }
 
         /// <summary>
         /// Gets or sets value of the colour filter.
@@ -122,23 +123,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         /// <summary>
-        /// NOTE: As of August 2015, we are using EVN (event count) in both spectrograms because
-        /// CVR (cover) is too highly correlated with POW.
+        /// NOTE: As of August 2015, we are using EVN (event count) in both spectrograms because CVR (cover) is too highly correlated with POW.
+        /// NOTE: As of May 2017, PMN replaces POW and we are using R3D in spectrogram2 because it is less correlated with PMN.
         /// </summary>
         public static LdSpectrogramConfig GetDefaultConfig()
         {
-            var ldSpectrogramConfig = new LdSpectrogramConfig
-            {
-                ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
-                ColorMap2 = LDSpectrogramRGB.DefaultColorMap2,
-                ColourGain = 2.0,
-                ColourFilter = 0.75,
-
-                // X and Y axis conf
-                XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
-                FreqScale = "Linear",
-                YAxisTicInterval = 1000,
-            };
+            var ldSpectrogramConfig = new LdSpectrogramConfig();
             return ldSpectrogramConfig;
         }
 
@@ -147,7 +137,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public static LdSpectrogramConfig GetDefaultConfig(string colourMap1, string colourMap2)
         {
-            var ldSpectrogramConfig = LdSpectrogramConfig.GetDefaultConfig();
+            var ldSpectrogramConfig = GetDefaultConfig();
             ldSpectrogramConfig.ColorMap1 = colourMap1;
             ldSpectrogramConfig.ColorMap2 = colourMap2;
             return ldSpectrogramConfig;
