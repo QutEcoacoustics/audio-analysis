@@ -367,12 +367,13 @@ namespace AudioAnalysisTools.Indices
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, nhThreshold: 2.0);
 
             // iii: CALCULATE noise reduced AVERAGE DECIBEL SPECTRUM
-            // TODO: The method to calculate POW by averaging decibel values should be depracated. It is now replaced by index DMN.
+            // TODO: The method to calculate POW by averaging decibel values should be depracated. It is now replaced by index PMN.
             spectralIndices.POW = SpectrogramTools.CalculateAvgSpectrumFromSpectrogram(deciBelSpectrogram);
             spectralIndices.PMN = SpectrogramTools.CalculateAvgDecibelSpectrumFromSpectrogram(deciBelSpectrogram);
 
             // iv: CALCULATE SPECTRAL COVER.
             //     NOTE: at this point, decibelSpectrogram is noise reduced. All values >= 0.0
+            //           FreqBinWidth can be accessed, if required, through dspOutput1.FreqBinWidth
             double dBThreshold = ActivityAndCover.DefaultActivityThresholdDb; // dB THRESHOLD for calculating spectral coverage
             var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameStepTimeSpan, lowFreqBound, midFreqBound, freqBinWidth);
             spectralIndices.CVR = spActivity.coverSpectrum;
@@ -384,9 +385,23 @@ namespace AudioAnalysisTools.Indices
 
             // ######################################################################################################################################################
 
-            // v: CALCULATE SPECTRAL PEAK TRACKS. NOTE: spectrogram is a noise reduced decibel spectrogram
-            // FreqBinWidth can be accessed, if required, through dspOutput1.FreqBinWidth
-            var sptInfo = SpectralPeakTracks.CalculateSpectralPeakTracks(recording, sampleStart, sampleEnd, frameSize, octaveScale);
+            // v: CALCULATE SPECTRAL PEAK TRACKS.
+            //    NOTE: at this point, the var decibelSpectrogram is noise reduced. i.e. all its values >= 0.0
+            //    Detecting ridges or spectral peak tracks requires using a 5x5 mask which has edge effects.
+            //    This becomes significant if we have a short indexCalculationDuration.
+            //    Consequently if the indexCalculationDuration < 10 seconds then we revert back to the recording and cut out a recording segment that includes
+            //    a buffer for edge effects. In most cases however, we can just use the decibel spectrogram already calculated and ignore the edge effects.
+            double peakThreshold = 6.0; //dB
+            SpectralPeakTracks sptInfo;
+            if (indexCalculationDuration.TotalSeconds < 10.0)
+            {
+                sptInfo = SpectralPeakTracks.CalculateSpectralPeakTracks(recording, sampleStart, sampleEnd, frameSize, octaveScale, peakThreshold);
+            }
+            else
+            {
+                sptInfo = new SpectralPeakTracks(deciBelSpectrogram, peakThreshold);
+            }
+
             spectralIndices.SPT = sptInfo.SptSpectrum;
             spectralIndices.RHZ = sptInfo.RhzSpectrum;
             spectralIndices.RVT = sptInfo.RvtSpectrum;

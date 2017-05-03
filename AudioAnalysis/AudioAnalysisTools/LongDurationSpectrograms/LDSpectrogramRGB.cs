@@ -103,7 +103,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public LDSpectrogramRGB()
         {
-            this.BackgroundFilter = 1.0; // default value = no filtering
+            // default BackgroundFilter value
+            this.BackgroundFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
             this.SampleRate = SpectrogramConstants.SAMPLE_RATE; // default recording starts at midnight
             this.FrameWidth = SpectrogramConstants.FRAME_LENGTH; // default value - from which spectrogram was derived
             this.XTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default = one minute spectra and hourly time lines
@@ -117,8 +118,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public LDSpectrogramRGB(TimeSpan xScale, int sampleRate, string colourMap)
         {
-            // this.ColourGain = 1.0;
-            this.BackgroundFilter = 1.0;
+            // default BackgroundFilter value
+            this.BackgroundFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
             this.SampleRate = sampleRate;
 
             // assume default linear Herz scale
@@ -131,9 +132,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.ColorMap = colourMap;
             this.StartOffset = SpectrogramConstants.MINUTE_OFFSET;
 
-            // IMPORTANT NOTE: these default keys are later over-written in the method
+            // IMPORTANT NOTE: If an IndexPropertiesConfig file is available, these default keys are later over-written in the method
             // SetSpectralIndexProperties(Dictionary < string, IndexProperties > dictionaryOfSpectralIndexProperties)
-            // if a IndexPropertiesConfig file is available. Consequently the INDEX names in DefaultKeys must match those in config file.
+            // Consequently the INDEX names in DefaultKeys should match those in IndexPropertiesConfig file. If they do not, consequences are undefined!
             this.SpectrogramKeys = DefaultKeys;
         }
 
@@ -160,13 +161,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.FrameWidth = indexGenerationData.FrameLength;
             this.StartOffset = indexGenerationData.MinuteOffset;
 
-            this.BackgroundFilter = 1.0;
+            // default BackgroundFilter value
+            this.BackgroundFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
             if (config.ColourFilter != null)
             {
                 this.BackgroundFilter = (double)config.ColourFilter;
             }
-
-            double? gain = config.ColourGain;
 
             // set the X and Y axis scales for the spectrograms
             this.IndexCalculationDuration = indexGenerationData.IndexCalculationDuration;
@@ -481,7 +481,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             matrix = MatrixTools.NormaliseInZeroOne(matrix, min, max);
 
             // de-demphasize the background small values
-            matrix = MatrixTools.FilterBackgroundValues(matrix, this.BackgroundFilter); 
+            matrix = MatrixTools.FilterBackgroundValues(matrix, this.BackgroundFilter);
             return matrix;
         }
 
@@ -1371,14 +1371,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string colorMap1 = config.ColorMap1 ?? DefaultColorMap1;   // assigns indices to RGB
             string colorMap2 = config.ColorMap2 ?? DefaultColorMap2;   // assigns indices to RGB
 
-            // Set ColourGain: Determines colour intensity of the lower index values relative to the higher index values. Good value is
-            // TODO Need to figure out where config.ColourGain is used. Cannot see that it is used anywhere?????? !!!!!!!
-            if (config.ColourGain == null)
-            {
-                config.ColourGain = SpectrogramConstants.COLOUR_GAIN;
-            }
-
-            // Set ColourFilter: Must be <= 1.0. Good value is 0.75
+            // Set ColourFilter: Must lie between +/-1. A good value is -0.25
             if (config.ColourFilter == null)
             {
                 config.ColourFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
@@ -1388,7 +1381,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string fileStem = basename;
 
             cs1.FileName = fileStem;
-            cs1.BackgroundFilter = indexGenerationData.BackgroundFilterCoeff;
+
+            // we do not necessarily want to keep previous BackgroundFilter
+            // cs1.BackgroundFilter = indexGenerationData.BackgroundFilterCoeff;
             cs1.SiteName = siteDescription?.SiteName;
             cs1.Latitude = siteDescription?.Latitude;
             cs1.Longitude = siteDescription?.Longitude;
