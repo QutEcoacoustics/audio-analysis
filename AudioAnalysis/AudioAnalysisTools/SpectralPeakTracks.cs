@@ -4,11 +4,9 @@
 
 namespace AudioAnalysisTools
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using DSP;
-    using Indices;
     using StandardSpectrograms;
     using TowseyLibrary;
     using WavTools;
@@ -19,11 +17,6 @@ namespace AudioAnalysisTools
     public class SpectralPeakTracks
     {
         private static readonly string[] RidgeKeys = { "SPT", "RVT", "RHZ", "RPS", "RNG", "R3D" };
-
-        public static string[] GetDefaultRidgeKeys()
-        {
-            return RidgeKeys;
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SpectralPeakTracks"/> class.
@@ -39,6 +32,11 @@ namespace AudioAnalysisTools
             // this.GetRidgeSpectraVersion1(dBSpectrogram, ridgeThreshold: 4.0);
             this.GetRidgeSpectraVersion2(dBSpectrogram);
             this.CalculateCombinationOfThreeDirections();
+        }
+
+        public static string[] GetDefaultRidgeKeys()
+        {
+            return RidgeKeys;
         }
 
         public double[,] Peaks { get; private set; }
@@ -309,14 +307,16 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// Calculates the max of the Horizontal, positive and negative slope ridges.
+        /// Could alternatively calculate the sum of the Horizontal, positive and negative slope ridges.
         /// </summary>
         public void CalculateCombinationOfThreeDirections()
         {
             this.R3DSpectrum = new double[this.RhzSpectrum.Length];
             for (int i = 0; i < this.RhzSpectrum.Length; i++)
             {
-                var array = new double[] { this.RhzSpectrum[i], this.RpsSpectrum[i], this.RngSpectrum[i] };
-                this.R3DSpectrum[i] = array.Max();
+                //var array = new double[] { this.RhzSpectrum[i], this.RpsSpectrum[i], this.RngSpectrum[i] };
+                //this.R3DSpectrum[i] = array.Max();
+                this.R3DSpectrum[i] = this.RhzSpectrum[i] + this.RpsSpectrum[i] + this.RngSpectrum[i];
             }
         }
 
