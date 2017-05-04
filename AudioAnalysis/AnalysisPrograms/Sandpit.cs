@@ -68,6 +68,9 @@ namespace AnalysisPrograms
                 // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest3();
                 // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest4();
                 // SpectrogramTools.AverageAnArrayOfDecibelValues(null);
+
+                // experiments with clustering the spectra within spectrograms
+                SpectralClustering.TESTMETHOD_SpectralClustering();
             }
 
             if (false)
@@ -350,12 +353,6 @@ namespace AnalysisPrograms
                     Console.WriteLine(file.FullName);
                 }
             }
-
-            // experiments with clustering the spectra within spectrograms
-            if (false)
-            {
-                SpectralClustering.Sandpit();
-            } // end if (true)
 
             // experiments with false colour images - categorising/discretising the colours
             if (false)
