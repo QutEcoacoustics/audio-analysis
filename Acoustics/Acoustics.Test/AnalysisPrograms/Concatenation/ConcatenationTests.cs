@@ -119,9 +119,9 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             // Do TESTS on the 2Maps image
             // Compare image files - check that image dimensions are correct
-            var outputDataDir = new DirectoryInfo(this.outputDirectory.FullName + "\\" + arguments.FileStemName + "\\" + dateString);
+            var outputDataDir = this.outputDirectory.Combine(arguments.FileStemName, dateString);
             string imageFileName = arguments.FileStemName + "__2Maps.png";
-            var imageFileInfo = new FileInfo(Path.Combine(outputDataDir.FullName, imageFileName));
+            var imageFileInfo = outputDataDir.CombineFile(imageFileName);
             Assert.IsTrue(imageFileInfo.Exists);
 
             var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
@@ -174,9 +174,9 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             // Do TESTS on the 2Maps image
             // Compare image files - check that image dimensions are correct
-            var outputDataDir = new DirectoryInfo(this.outputDirectory.FullName + "\\" + arguments.FileStemName + "\\" + dateString);
+            var outputDataDir = this.outputDirectory.Combine(arguments.FileStemName, dateString);
             string imageFileName = arguments.FileStemName + "_" + dateString + "__2Maps.png";
-            var imageFileInfo = new FileInfo(Path.Combine(outputDataDir.FullName, imageFileName));
+            var imageFileInfo = outputDataDir.CombineFile(outputDataDir.FullName, imageFileName);
             Assert.IsTrue(imageFileInfo.Exists);
 
             var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
@@ -232,9 +232,9 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             // There should be two sets of output images one for each partial day.
             // IMAGE 1: Compare image files - check that image exists and dimensions are correct
             var dateString1 = "20160725";
-            var outputDataDir1 = new DirectoryInfo(this.outputDirectory.FullName + "\\" + arguments.FileStemName + "\\" + dateString1);
+            var outputDataDir1 = this.outputDirectory.Combine(arguments.FileStemName, dateString1);
             string image1FileName = arguments.FileStemName + "_" + dateString1 + "__2Maps.png";
-            var image1FileInfo = new FileInfo(Path.Combine(outputDataDir1.FullName, image1FileName));
+            var image1FileInfo = outputDataDir1.CombineFile(outputDataDir1.FullName, image1FileName);
             Assert.IsTrue(image1FileInfo.Exists);
 
             var actualImage1 = ImageTools.ReadImage2Bitmap(image1FileInfo.FullName);
@@ -246,9 +246,9 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             // IMAGE 2: Compare image files - check that image exists and dimensions are correct
             var dateString2 = "20160726";
-            var outputDataDir2 = new DirectoryInfo(this.outputDirectory.FullName + "\\" + arguments.FileStemName + "\\" + dateString2);
+            var outputDataDir2 = this.outputDirectory.Combine(arguments.FileStemName, dateString2);
             string image2FileName = arguments.FileStemName + "_" + dateString2 + "__2Maps.png";
-            var image2FileInfo = new FileInfo(Path.Combine(outputDataDir2.FullName, image2FileName));
+            var image2FileInfo = outputDataDir2.CombineFile(image2FileName);
             Assert.IsTrue(image2FileInfo.Exists);
 
             var actualImage2 = ImageTools.ReadImage2Bitmap(image2FileInfo.FullName);
@@ -257,6 +257,64 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             ImageAssert.PixelIsColor(new Point(50, 124), Color.FromArgb(70, 37, 255), actualImage2);
 
             ImageAssert.PixelIsColor(new Point(460, 600), Color.FromArgb(255, 0, 0), actualImage2);
+        }
+
+        /// <summary>
+        /// This test checks that settings in an SpectrogramFalseColourConfig are honored.
+        /// </summary>
+        [TestMethod]
+        public void ConcatenateIndexFilesTestConfigFileChanges()
+        {
+            // top level directory
+            DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia20160726") };
+            var indexPropertiesConfig = new FileInfo("Configs\\IndexPropertiesConfig.yml");
+            var dateString = "20160726";
+
+            // get the default config file
+            var defaultConfigFile = ConfigsHelper.ResolveConfigFilePath("SpectrogramFalseColourConfig.yml");
+            var config = Yaml.Deserialise<LdSpectrogramConfig>(defaultConfigFile);
+
+            // make changes to config file as required for test
+            config.ColorMap1 = "BGN-ENT-POW";
+            config.ColorMap2 = "ACI-RNG-EVN";
+
+            // write new config
+            var testConfig = this.outputDirectory.CombineFile("SpectrogramFalseColourConfig.yml");
+            Yaml.Serialise(testConfig, config);
+
+            var arguments = new ConcatenateIndexFiles.Arguments
+            {
+                InputDataDirectories = dataDirs,
+                OutputDirectory = this.outputDirectory,
+                DirectoryFilter = "*.wav",
+                FileStemName = "Test2_Indonesia",
+                StartDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
+                EndDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
+                IndexPropertiesConfig = indexPropertiesConfig,
+                FalseColourSpectrogramConfig = testConfig,
+                ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
+                TimeSpanOffsetHint = TimeSpan.FromHours(8),
+                SunRiseDataFile = null,
+                DrawImages = true,
+                Verbose = true,
+
+                // following two lines can be used to add in a recognizer score track
+                EventDataDirectories = null,
+                EventFilePattern = null,
+            };
+
+            ConcatenateIndexFiles.Execute(arguments);
+
+            // Make sure files that match our config file are actully created!
+            var outputDataDir = this.outputDirectory.Combine(arguments.FileStemName, dateString);
+
+            string map1 = arguments.FileStemName + "_" + dateString + "__BGN-ENT-POW.png";
+            var imageFileInfo1 = new FileInfo(Path.Combine(outputDataDir.FullName, map1));
+            Assert.IsTrue(imageFileInfo1.Exists);
+
+            string map2 = arguments.FileStemName + "_" + dateString + "__ACI-RNG-EVN.png";
+            var imageFileInfo2 = new FileInfo(Path.Combine(outputDataDir.FullName, map2));
+            Assert.IsTrue(imageFileInfo2.Exists);
         }
     }
 }

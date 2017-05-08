@@ -532,33 +532,21 @@ namespace AnalysisPrograms
                 indexPropertiesConfig = arguments.IndexPropertiesConfig;
 
                 // prepare the false-colour spgm config file
-                if (arguments?.FalseColourSpectrogramConfig?.Exists ?? false)
-                {
-                    ldSpectrogramConfig = LdSpectrogramConfig.ReadYamlToConfig(arguments.FalseColourSpectrogramConfig);
+                // or set up a default config
+                // WARNING: This default config is used when testing. If you alter these defaults, Unit Test results may be affected.
+                ldSpectrogramConfig = (arguments?.FalseColourSpectrogramConfig?.Exists ?? false)
+                    ? LdSpectrogramConfig.ReadYamlToConfig(arguments.FalseColourSpectrogramConfig)
+                    : new LdSpectrogramConfig();
 
-                    // the user should have provided ColorMap arguments which we insert here
+                // the user should have provided ColorMap arguments which we insert here
+                if (arguments.ColorMap1.NotNull())
+                {
                     ldSpectrogramConfig.ColorMap1 = arguments.ColorMap1;
-                    ldSpectrogramConfig.ColorMap2 = arguments.ColorMap2;
-
-                    // TODO TODO TODO TODO
-                    // this next line is necessary because TimeSpan is not being read correctly from yaml file
-                    ldSpectrogramConfig.XAxisTicInterval = TimeSpan.FromMinutes(60);
                 }
-                else
-                {
-                    // set up a default config
-                    // WARNING: This default config is used when testing. If you alter these defaults, Unit Test results may be affected.
-                    ldSpectrogramConfig = new LdSpectrogramConfig
-                    {
-                        ColorMap1 = arguments.ColorMap1,
-                        ColorMap2 = arguments.ColorMap2,
 
-                        // emphasizes or de-emphasizes the background, low index values
-                        ColourFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
-                        XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
-                        YAxisTicInterval = 1000,
-                        FreqScale = "Linear",
-                    };
+                if (arguments.ColorMap2.NotNull())
+                {
+                    ldSpectrogramConfig.ColorMap2 = arguments.ColorMap2;
                 }
             }
 
