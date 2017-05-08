@@ -9,9 +9,11 @@
 
 namespace Acoustics.Shared
 {
+    using System;
     using System.IO;
 
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
 
     public static class Json
     {
@@ -43,7 +45,6 @@ namespace Acoustics.Shared
             return JsonConvert.SerializeObject(obj, prettyPrint ? Formatting.Indented : Formatting.None);
         }
 
-
         public static T Deserialise<T>(FileInfo file)
         {
             var serializer = new JsonSerializer();
@@ -52,6 +53,48 @@ namespace Acoustics.Shared
             using (var reader = new JsonTextReader(stream))
             {
                 return serializer.Deserialize<T>(reader);
+            }
+        }
+
+        public class LagacyTimeSpanDataConverter : JsonConverter
+        {
+            public override bool CanWrite => false;
+
+            public override bool CanConvert(Type objectType)
+            {
+                // we only want to allow conversion where this converter is explicitly attached via a
+                // JsonConverterAttribute
+                throw new NotImplementedException();
+            }
+
+            public override object ReadJson(
+                JsonReader reader,
+                Type objectType,
+                object existingValue,
+                JsonSerializer serializer)
+            {
+                JToken token = JToken.Load(reader);
+                if (token.Type == JTokenType.String)
+                {
+                    var seconds = ((TimeSpan)token).TotalSeconds;
+                    if (objectType.IsAssignableFrom(typeof(double)))
+                    {
+                        return seconds;
+                    }
+                    else
+                    {
+                        LoggedConsole.WriteWarnLine("LagacyTimeSpanDataConverter is truncating values.");
+                        return (int)seconds;
+                    }
+                }
+
+                // otherwise fallback to default parsing semantics
+                return token.ToObject(objectType);
+            }
+
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+                throw new NotImplementedException();
             }
         }
     }

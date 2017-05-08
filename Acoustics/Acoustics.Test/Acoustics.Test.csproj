@@ -109,6 +109,10 @@
     <Reference Include="MSTestExtensions">
       <HintPath>..\..\AudioAnalysis\packages\MSTestExtensions.4.0.0\lib\MSTestExtensions.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\AudioAnalysis\packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core">
@@ -139,6 +143,7 @@
     <Compile Include="AudioAnalysisTools\DSP\EnvelopeAndFftTests.cs" />
     <Compile Include="AudioAnalysisTools\DSP\FrequencyScaleTests.cs" />
     <Compile Include="AudioAnalysisTools\Indices\IndexCalculateTest.cs" />
+    <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\LdSpectrogramConfigTests.cs" />
     <Compile Include="AudioAnalysisTools\Oscillations2014\OscillationTests.cs" />
     <Compile Include="AudioAnalysisTools\StandardSpectrograms\SonogramTests.cs" />
     <Compile Include="AudioAnalysisTools\TilerTests.cs" />
@@ -147,6 +152,7 @@
     <Compile Include="Shared\BinaryTests.cs" />
     <Compile Include="Shared\CsvTests.cs" />
     <Compile Include="Shared\ConfigFileTests.cs" />
+    <Compile Include="Shared\JsonTests.cs" />
     <Compile Include="Shared\YamlTests.cs" />
     <Compile Include="TestHelpers.cs" />
     <Compile Include="TestHelpers\ConfigsHelper.cs" />
