@@ -11,9 +11,9 @@ namespace Acoustics.Test.TestHelpers
 
     public class ConfigsHelper
     {
-        public static FileInfo ResolveConcatenationConfig(string fileName)
+        public static FileInfo ResolveConfigFilePath(string fileName)
         {
-            return new FileInfo(@"..\\..\\..\\..\\AudioAnalysis\\AnalysisConfigFiles\\" + fileName);
+            return new FileInfo(@"..\..\..\..\AudioAnalysis\AnalysisConfigFiles\" + fileName);
         }
     }
 }
