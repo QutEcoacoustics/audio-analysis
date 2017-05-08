@@ -10,6 +10,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Collections.Generic;
     using System.IO;
     using Acoustics.Shared;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// CONFIG CLASS FOR the class LDSpectrogramRGB
@@ -17,11 +18,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     public class LdSpectrogramConfig
     {
         #region Fields
-
-        /// <summary>
-        ///  mark 1 kHz intervals
-        /// </summary>
-        private int yAxisTicInterval = 1000;
 
         #endregion
 
@@ -36,11 +32,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // default values
             this.ColorMap1 = LDSpectrogramRGB.DefaultColorMap1;
             this.ColorMap2 = LDSpectrogramRGB.DefaultColorMap2;
-            this.XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
-            this.ColorMap1 = LDSpectrogramRGB.DefaultColorMap1;
-            this.ColorMap2 = LDSpectrogramRGB.DefaultColorMap2;
             this.ColourFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
-            this.XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
+            this.XAxisTicInterval = (int)SpectrogramConstants.X_AXIS_TIC_INTERVAL.TotalSeconds;
             this.FreqScale = "Linear";
             this.YAxisTicInterval = 1000;
         }
@@ -78,25 +71,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// The default assumes one minute spectra i.e. 60 per hour
         /// But as of January 2015, this is not fixed. The user can adjust
         ///  the tic interval to be appropriate to the time scale of the spectrogram.
+        /// May 2017: Now measureed in seconds
         /// </summary>
-        public TimeSpan XAxisTicInterval { get; set; }
+        [JsonConverter(typeof(Json.LagacyTimeSpanDataConverter))]
+        public int XAxisTicInterval { get; set; }
 
         /// <summary>
         /// Gets or sets YAxisTicInterval in Hertz.
         /// The vertical spacing between horizontal grid lines for the y-Axis
+        /// mark 1 kHz intervals
         /// </summary>
-        public int YAxisTicInterval
-        {
-            get
-            {
-                return this.yAxisTicInterval;
-            }
-
-            set
-            {
-                this.yAxisTicInterval = value;
-            }
-        }
+        public int YAxisTicInterval { get; set; }
 
         /// <summary>
         /// In seconds, the horizontal spacing between vertical grid lines for the x-Axis
@@ -104,7 +89,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public double CalculateYAxisTickInterval(double sampleRate, double frameWidth)
         {
                 double freqBinWidth = sampleRate / frameWidth;
-                return (int)Math.Round(this.yAxisTicInterval / freqBinWidth);
+                return (int)Math.Round(this.YAxisTicInterval / freqBinWidth);
         }
 
         #endregion

@@ -170,7 +170,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // set the X and Y axis scales for the spectrograms
             this.IndexCalculationDuration = indexGenerationData.IndexCalculationDuration;
-            this.XTicInterval = config.XAxisTicInterval;
+            this.XTicInterval = TimeSpan.FromSeconds(config.XAxisTicInterval);
 
             // the Herz scale
             int nyquist = indexGenerationData.SampleRateResampled / 2;
@@ -1512,12 +1512,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 imageX = IndexDisplay.DrawHighAmplitudeClippingTrack(summaryIndices);
             }
 
-            if (imageX != null)
-            {
-                imageX.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, ".ClipHiAmpl", "png"));
-            }
+            imageX?.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, ".ClipHiAmpl", "png"));
 
-            if ((image1 == null) || (image2 == null))
+            if (image1 == null || image2 == null)
             {
                 throw new Exception("NULL image returned. Cannot proceed!");
             }
