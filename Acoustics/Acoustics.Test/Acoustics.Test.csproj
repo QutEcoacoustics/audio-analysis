@@ -175,6 +175,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />
+    <Compile Include="TestHelpers\ImageAssert.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\AudioAnalysis\AnalysisPrograms\AnalysisPrograms.csproj">

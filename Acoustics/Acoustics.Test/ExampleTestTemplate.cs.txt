@@ -66,6 +66,15 @@ namespace Acoustics.Test
             //Json.Serialise("data.json".ToFileInfo(), actualData);
             //Csv.WriteMatrixToCsv("data.csv".ToFileInfo(), actualData);
             //Binary.Serialize("data.bin".ToFileInfo(), actualData);
+
+            // Example: modifying a default config file.
+            // get the default config file
+            var defaultConfigFile = ConfigsHelper.ResolveConfigFilePath("SpectrogramFalseColourConfig.yml");
+            var config = Yaml.Deserialise<LdSpectrogramConfig>(defaultConfigFile);
+
+            // make changes to config file as required for test
+            var testConfig = new FileInfo(this.outputDirectory + "\\SpectrogramFalseColourConfig.yml");
+            Yaml.Serialise(testConfig, config);
         }
     }
 }
