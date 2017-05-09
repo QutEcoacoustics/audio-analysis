@@ -68,5 +68,67 @@ namespace Acoustics.Test.TestHelpers
                 Math.Abs(averageBlue - expectedColor.B) < tolerance,
                 $"Region {region} is not expected color {expectedColor} - actual averages: R={averageRed}, G={averageGreen}, B={averageBlue}");
         }
+
+        /// <summary>
+        /// Assert a certain ratio of colors are present in a region.
+        /// NOT WELL TESTED.
+        /// </summary>
+        /// <example>
+        /// var expectedColors = new Dictionary&lt;Color, double&gt;()
+        ///            {
+        ///                { Color.FromArgb(0, 0, 0), 0.7 },
+        ///                { Color.FromArgb(255, 255, 255), 0.3 },
+        ///            };
+        /// ImageAssert.RegionHasColors(new Rectangle(0, 24, 210, 3),  expectedColors, actualImage1, 0.07);
+        /// </example>
+        /// <param name="region"></param>
+        /// <param name="expectedColors"></param>
+        /// <param name="actualImage"></param>
+        /// <param name="tolerance"></param>
+        public static void RegionHasColors(
+            Rectangle region,
+            Dictionary<Color, double> expectedColors,
+            Bitmap actualImage,
+            double tolerance = 0.0)
+        {
+            var histogram = new Dictionary<Color, int>(expectedColors.Count);
+
+            for (var i = region.Left; i < region.Right; i++)
+            {
+                for (var j = region.Top; j < region.Bottom; j++)
+                {
+                    var color = actualImage.GetPixel(i, j);
+                    if (histogram.ContainsKey(color))
+                    {
+                        histogram[color] = histogram[color] + 1;
+                    }
+                    else
+                    {
+                        histogram.Add(color, 1);
+                    }
+                }
+            }
+
+            int sum = histogram.Sum(kvp => kvp.Value);
+
+            var actualColors = histogram.ToDictionary(kvp => kvp.Key, kvp => kvp.Value / (double)sum);
+
+            var allColors = expectedColors.Keys.Union(actualColors.Keys);
+            var genericError = $"\nExpected: {expectedColors.ToDebugString()}\nActual: {actualColors.ToDebugString()}";
+            foreach (var color in allColors)
+            {
+                if (!expectedColors.ContainsKey(color) && actualColors[color] > tolerance)
+                {
+                    Assert.Fail($"Unexpected extra color {color} found in actual" + genericError);
+                }
+
+                if (!actualColors.ContainsKey(color))
+                {
+                    Assert.Fail($"Expected color {color} not found in actual" + genericError);
+                }
+
+                Assert.AreEqual(expectedColors[color], actualColors[color], tolerance, genericError);
+            }
+        }
     }
 }
