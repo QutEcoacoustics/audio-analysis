@@ -1,4 +1,8 @@
-﻿namespace AudioAnalysisTools.Indices
+﻿// <copyright file="ErroneousIndexSegments.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
@@ -10,12 +14,10 @@
     {
         public const string ErroneousIndexSegmentsFilenameFragment = "WARNING-IndexErrors";
 
-
+        private static string errorMissingData = "Missing Data";
+        private static string errorZeroSignal = "Flat Zero Signal";
 
         public string ErrorDescription { get; set; }
-
-        public static string ErrorMissingData = "Missing Data";
-        public static string ErrorZeroSignal  = "Flat Zero Signal";
 
         public int StartPosition { get; set; }
 
@@ -25,17 +27,25 @@
         {
             int width = this.EndPosition - this.StartPosition + 1;
             var bmp = new Bitmap(width, height);
-            int fontVerticalPosition = (height/2) - 7;
+            int fontVerticalPosition = (height / 2) - 7;
             var g = Graphics.FromImage(bmp);
 
-            if (this.ErrorDescription.Equals(ErrorMissingData) )
+            if (this.ErrorDescription.Equals(errorMissingData))
             {
                 g.Clear(Color.LightGray);
             }
-            else // ErrorZeroSignal
+            else
+            if (this.ErrorDescription.Equals(errorZeroSignal))
             {
+                // ErrorZeroSignal
                 g.Clear(Color.Red);
             }
+            else
+            {
+                // Unknown error
+                g.Clear(Color.Red);
+            }
+
             // Draw cross in black over the error patch.
             if (width > 10)
             {
@@ -58,18 +68,15 @@
             return bmp;
         }
 
-
-
         // #####################################################################################################################
         //  STATIC METHODS BELOW
         // #####################################################################################################################
 
-        public static List<ErroneousIndexSegments> DataIntegrityCheck(Dictionary<string, double[]> summaryIndices,
-            DirectoryInfo outputDirectory, string fileStem)
+        public static List<ErroneousIndexSegments> DataIntegrityCheck(Dictionary<string, double[]> summaryIndices, DirectoryInfo outputDirectory, string fileStem)
         {
-            bool allOK = true;
-            int errorStart = 0;
-            int errorEnd = 0;
+            bool allOk = true;
+            int errorStart;
+
             // init list of errors
             var errors = new List<ErroneousIndexSegments>();
 
@@ -80,34 +87,35 @@
             {
                 if (Math.Abs(zeroSignalArray[i]) > 0.00001)
                 {
-                    if (allOK)
+                    if (allOk)
                     {
-                        allOK = false;
-                        error = new ErroneousIndexSegments();
-                        error.StartPosition = i;
-                        error.ErrorDescription = ErrorZeroSignal;
+                        allOk = false;
+                        error = new ErroneousIndexSegments
+                        {
+                            StartPosition = i,
+                            ErrorDescription = errorZeroSignal,
+                        };
                     }
                 }
                 else
-                if ((!allOK) && (Math.Abs(zeroSignalArray[i]) < 0.00001))
+                if ((!allOk) && (Math.Abs(zeroSignalArray[i]) < 0.00001))
                 {
                     // come to end of a bad patch
-                    allOK = true;
+                    allOk = true;
                     error.EndPosition = i - 1;
                     errors.Add(error);
                 }
             } // end of loop
 
-
             // (2) NOW check for zero index values
-            allOK = true;
+            allOk = true;
             double sum = summaryIndices["AcousticComplexity"][0] + summaryIndices["TemporalEntropy"][0] + summaryIndices["Snr"][0];
-            if (sum == 0.0)
+            if (Math.Abs(sum) < 0.000001)
             {
-                allOK = false;
+                allOk = false;
                 errorStart = 0;
                 errors.Add(new ErroneousIndexSegments());
-                errors[errors.Count - 1].ErrorDescription = ErrorMissingData;
+                errors[errors.Count - 1].ErrorDescription = errorMissingData;
                 errors[errors.Count - 1].StartPosition = errorStart;
             }
 
@@ -117,41 +125,40 @@
                 sum = summaryIndices["AcousticComplexity"][i] + summaryIndices["TemporalEntropy"][i] + summaryIndices["Snr"][i];
                 if (Math.Abs(sum) < 0.00001)
                 {
-                    if (allOK)
+                    if (allOk)
                     {
                         errorStart = i;
                         errors.Add(new ErroneousIndexSegments());
-                        errors[errors.Count - 1].ErrorDescription = ErrorMissingData;
+                        errors[errors.Count - 1].ErrorDescription = errorMissingData;
                         errors[errors.Count - 1].StartPosition = errorStart;
                     }
-                    allOK = false;
+
+                    allOk = false;
                 }
                 else
-                if ((!allOK) && (Math.Abs(sum) > 0.00001))
+                if (!allOk && Math.Abs(sum) > 0.00001)
                 {
-                    allOK = true;
-                    errorEnd = i - 1;
-                    errors[errors.Count - 1].EndPosition = errorEnd;
+                    allOk = true;
+                    errors[errors.Count - 1].EndPosition = i - 1;
                 }
-
             } // end of loop
 
             // do final clean up
-            if (!allOK)
+            if (!allOk)
             {
                 errors[errors.Count - 1].EndPosition = arrayLength - 1;
             }
+
             // write info to file
             if (errors.Count != 0)
             {
                 string path = FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, ErroneousIndexSegmentsFilenameFragment, "json");
-                Yaml.Serialise<List<ErroneousIndexSegments>>(new FileInfo(path), errors);
+
+                // Yaml.Serialise<List<ErroneousIndexSegments>>(new FileInfo(path), errors);
+                Yaml.Serialise(new FileInfo(path), errors);
             }
 
             return errors;
         }
-
-
-
     }
 }
