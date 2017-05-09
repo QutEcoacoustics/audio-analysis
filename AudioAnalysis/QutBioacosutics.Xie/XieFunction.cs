@@ -223,7 +223,7 @@
             Json.Serialise(Path.Combine(opDir.FullName, fileStem + ".IndexStatistics.json").ToFileInfo(), cs1.IndexStats);
 
             colorMap = SpectrogramConstantsJie.RGBMap_TRK_OSC_ENG;
-            Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+            Image image1 = cs1.DrawFalseColourSpectrogramChromeless("NEGATIVE", colorMap);
             int nyquist = cs1.SampleRate / 2;
             int hzInterval = 1000;
 
@@ -233,7 +233,7 @@
             image1.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap + ".png"));
 
             colorMap = SpectrogramConstantsJie.RGBMap_ACI_ENT_SPT;
-            Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+            Image image2 = cs1.DrawFalseColourSpectrogramChromeless("NEGATIVE", colorMap);
             title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
             image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, cs1, nyquist, hzInterval);

@@ -1105,7 +1105,7 @@ namespace AnalysisPrograms
         public static void TESTMETHOD_ConcatenateIndexFilesTest1()
         {
             // Set the drive: work = G; home = E
-            string drive = "C";
+            string drive = "E";
 
             // top level directory
             DirectoryInfo[] dataDirs =
@@ -1158,7 +1158,7 @@ namespace AnalysisPrograms
         public static void TESTMETHOD_ConcatenateIndexFilesTest2()
         {
             // Set the drive: work = G; home = E
-            string drive = "C";
+            string drive = "E";
 
             // top level directory
             DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\"), };
@@ -1206,7 +1206,7 @@ namespace AnalysisPrograms
         public static void TESTMETHOD_ConcatenateIndexFilesTest3()
         {
             // Set the drive: work = G; home = E
-            string drive = "C";
+            string drive = "E";
 
             // top level directory
             DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\"), };
@@ -1250,7 +1250,7 @@ namespace AnalysisPrograms
         public static void TESTMETHOD_ConcatenateIndexFilesTest4()
         {
             // Set the drive: work = G; home = E
-            string drive = "C";
+            string drive = "E";
 
             // top level directory
             DirectoryInfo[] dataDirs =

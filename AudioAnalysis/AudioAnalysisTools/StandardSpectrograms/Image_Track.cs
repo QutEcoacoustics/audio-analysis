@@ -472,6 +472,12 @@
         public Bitmap DrawSegmentationTrack(Bitmap bmp)
         {
             Bitmap track = DrawSegmentationTrack(this.doubleData, this.intData, this.SegmentationThreshold_k1, this.SegmentationThreshold_k2, bmp.Width);
+            if (track == null)
+            {
+                LoggedConsole.WriteErrorLine("Cannot draw Segmentation Track due to null data");
+                return bmp;
+            }
+
             Graphics g = Graphics.FromImage(bmp);
             g.DrawImage(track, 0, this.topOffset);
             return bmp;
@@ -613,14 +619,21 @@
 
         public static Bitmap DrawSegmentationTrack(double[] data, int[] stateData, double segmentationThreshold_k1, double segmentationThreshold_k2, int imageWidth)
         {
-            if (data == null) return null;
-            Bitmap segmentBmp = DrawDecibelTrack(data, imageWidth, segmentationThreshold_k1, segmentationThreshold_k2);
-            //track.Save(@"C:\SensorNetworks\Output\Sonograms\segmentBmp.png");
+            if (data == null)
+            {
+                return null;
+            }
 
+            Bitmap segmentBmp = DrawDecibelTrack(data, imageWidth, segmentationThreshold_k1, segmentationThreshold_k2);
             int dataLength = data.Length;
             int subSample = (int)Math.Round((double)(dataLength / imageWidth));
-            if (subSample < 1) subSample = 1;
+            if (subSample < 1)
+            {
+                subSample = 1;
+            }
+
             var stateBmp = new Bitmap(imageWidth, 4);
+
             //display vocalisation state and thresholds used to determine endpoints
             Color[] stateColors = { Color.White, Color.Green, Color.Red };
 
@@ -636,10 +649,9 @@
             }
 
             // surround the whole by a frame
-            Graphics g = Graphics.FromImage(segmentBmp);
+            var g = Graphics.FromImage(segmentBmp);
             g.DrawImage(stateBmp, 0, 1);
             g.DrawRectangle(new Pen(Color.Black), 0, 0, imageWidth, DefaultHeight);
-
             return segmentBmp;
         }
 

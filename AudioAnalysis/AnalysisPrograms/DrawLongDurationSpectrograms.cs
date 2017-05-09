@@ -373,7 +373,6 @@ namespace AnalysisPrograms
             double backgroundFilter = 0.75;  // 0.75 means small values are accentuated.
             var minuteOffset = TimeSpan.Zero;
             var dataScale = args.TemporalScale;
-            string colourMode = "NEGATIVE";
             string colourMap = args.ColourMap1 ?? LDSpectrogramRGB.DefaultColorMap1;
             var cs1 = new LDSpectrogramRGB(minuteOffset, dataScale, sampleRate, frameWidth, colourMap)
             {
@@ -384,7 +383,7 @@ namespace AnalysisPrograms
             cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
             cs1.SpectrogramMatrices = spectra;
 
-            var image1 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap);
+            var image1 = cs1.DrawFalseColourSpectrogramChromeless("NEGATIVE", colourMap);
             var fullDuration = TimeSpan.FromSeconds(image1.Width * dataScale.TotalSeconds);
 
             string title = fileStem;
@@ -393,7 +392,7 @@ namespace AnalysisPrograms
             var timeScale = Image_Track.DrawTimeRelativeTrack(fullDuration, image1.Width, trackHeight);
 
             colourMap = args.ColourMap2 ?? LDSpectrogramRGB.DefaultColorMap2;
-            var image2 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap);
+            var image2 = cs1.DrawFalseColourSpectrogramChromeless("NEGATIVE", colourMap);
             var list = new List<Image> { titleImage, image1, timeScale, image2 };
             var combinedImage = ImageTools.CombineImagesVertically(list.ToArray());
             return combinedImage;
