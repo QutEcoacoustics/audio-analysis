@@ -234,7 +234,6 @@
         /// <returns></returns>
         public static Bitmap DrawHighAmplitudeClippingTrack(double[] array1, double[] array2)
         {
-
             double[] values1 = DataTools.NormaliseInZeroOne(array1, 0, 1.0);
             double[] values2 = DataTools.NormaliseInZeroOne(array2, 0, 1.0);
 

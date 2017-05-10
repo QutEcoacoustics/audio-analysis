@@ -11,22 +11,12 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using System.Data;
     using System.IO;
     using System.Linq;
-    using System.Text;
-
     using Acoustics.Shared;
-    using Acoustics.Shared.Extensions;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
-    using Indices;
-
     using log4net;
-
-    using TowseyLibrary;
 
     public static class ResultsTools
     {
@@ -82,20 +72,25 @@ namespace AudioAnalysisTools
             }
 
             return Tuple.Create(mergedEvents, mergedIndices);
-        }*/
+        }
+        */
 
-
-        public static T[] MergeResults<T>(IEnumerable<AnalysisResult2> results, Func<AnalysisResult2, T[]> selector,
-            Action<AnalysisResult2, T, int, int> correctionFunc) where T : ResultBase
+        public static T[] MergeResults<T>(
+            IEnumerable<AnalysisResult2> results,
+            Func<AnalysisResult2,
+            T[]> selector,
+            Action<AnalysisResult2,
+            T,
+            int,
+            int> correctionFunc)
+            where T : ResultBase
         {
             var count = results.Sum(result => selector(result).Length);
-
 
             if (count <= 0)
             {
                 return null;
             }
-
 
             var merged = new T[count];
 
@@ -207,7 +202,6 @@ namespace AudioAnalysisTools
         } //GetSegmentDatatableWithContext()
          */
 
-
         public static void CorrectEvent(AnalysisResult2 result, EventBase eventToBeFixed, int totalEventsSoFar, int totalEventsInResultSoFar)
         {
             // just in case the event was in a segment longer than 60 seconds, rebase values
@@ -300,6 +294,7 @@ namespace AudioAnalysisTools
             return System.Tuple.Create(masterDataTable, indicesDatatable);
         }
         */
+
         private static readonly TimeSpan IndexUnitTime = new TimeSpan(0, 1, 0);
 
         public static void ConvertEventsToIndices(
@@ -464,15 +459,12 @@ namespace AudioAnalysisTools
         } // DataTable2CSV()
         */
 
-
-        public static FileInfo SaveEvents(IAnalyser2 analyser2, string fileName,
-            DirectoryInfo outputDirectory, IEnumerable<EventBase> events)
+        public static FileInfo SaveEvents(IAnalyser2 analyser2, string fileName, DirectoryInfo outputDirectory, IEnumerable<EventBase> events)
         {
             return SaveResults(outputDirectory, fileName, analyser2.Identifier + ".Events", analyser2.WriteEventsFile, events);
         }
 
-        public static FileInfo SaveSummaryIndices(IAnalyser2 analyser2, string fileName,
-            DirectoryInfo outputDirectory, IEnumerable<SummaryIndexBase> indices)
+        public static FileInfo SaveSummaryIndices(IAnalyser2 analyser2, string fileName, DirectoryInfo outputDirectory, IEnumerable<SummaryIndexBase> indices)
         {
             return SaveResults(outputDirectory, fileName, analyser2.Identifier + ".Indices", analyser2.WriteSummaryIndicesFile, indices);
         }
@@ -496,7 +488,6 @@ namespace AudioAnalysisTools
                 Log.Debug("No results returned... file not written:" + resultFilenamebase + ReportFileExt);
                 return null;
             }
-
 
             var reportfilePath = FilenameHelpers.AnalysisResultPath(outputDirectory, resultFilenamebase, analysisTag, ReportFileExt).ToFileInfo();
             var reportfilePathBackup = FilenameHelpers.AnalysisResultPath(outputDirectory, resultFilenamebase, analysisTag, ReportFileExt, "BACKUP").ToFileInfo();

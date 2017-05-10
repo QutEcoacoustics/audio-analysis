@@ -41,7 +41,6 @@ namespace AudioAnalysisTools.TileImage
 
         public virtual string GetFileBaseName(SortedSet<Layer> calculatedLayers, Layer selectedLayer, Point tileOffsets)
         {
-
             var coordinates = (Point)this.GetTileIndexes(calculatedLayers, selectedLayer, tileOffsets);
             return
                 $"{"tile"}-{(double)this.GetZoomIndex(calculatedLayers, selectedLayer)}_{coordinates.X}_{coordinates.Y}";

@@ -16,7 +16,6 @@
     /// </summary>
     public class DSP_IIRFilter
     {
-
         /// <summary>
         /// method to convert string codes to a specific IIR filter.
         /// FOR EACH NEW FILTER ADD LINE HERE AND WRITE NEW METHOD TO CREATE FILTER

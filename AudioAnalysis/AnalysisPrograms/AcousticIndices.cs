@@ -4,6 +4,7 @@
 // </copyright>
 // <summary>
 //   Defines the Acoustic type.
+// This class is derived from IAnalyser2 and is typically called from AnalyseLongRecording.Dev with "audio2csv" as first argument on the command line.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 

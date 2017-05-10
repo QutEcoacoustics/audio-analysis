@@ -10,18 +10,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Collections.Generic;
     using System.IO;
     using Acoustics.Shared;
+    using Newtonsoft.Json;
 
     /// <summary>
-    ///     CONFIG CLASS FOR the class LDSpectrogramRGB
+    /// CONFIG CLASS FOR the class LDSpectrogramRGB
     /// </summary>
     public class LdSpectrogramConfig
     {
         #region Fields
-
-        /// <summary>
-        ///  mark 1 kHz intervals
-        /// </summary>
-        private int yAxisTicInterval = 1000;
 
         #endregion
 
@@ -34,9 +30,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public LdSpectrogramConfig()
         {
             // default values
-            this.XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
-            this.ColorMap1 = SpectrogramConstants.RGBMap_BGN_POW_CVR;
-            this.ColorMap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
+            this.ColorMap1 = LDSpectrogramRGB.DefaultColorMap1;
+            this.ColorMap2 = LDSpectrogramRGB.DefaultColorMap2;
+            this.ColourFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+            this.XAxisTicInterval = (int)SpectrogramConstants.X_AXIS_TIC_INTERVAL.TotalSeconds;
+            this.FreqScale = "Linear";
+            this.YAxisTicInterval = 1000;
         }
 
         #endregion
@@ -44,9 +43,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         #region Public Properties
 
         /// <summary>
-        /// Gets or sets the type of freq scale. Obvious possibilities are "linear", "octave" and "mel".
-        /// Linear is the default. Mel option is not currently functional.
-        /// There are two octave options: for sr=22050 and for sr=64000
+        /// Gets or sets the type of freq scale.
+        /// # Eventual options will be: Linear, Mel, Linear62Octaves31Nyquist11025, Linear125Octaves30Nyquist11025, Octaves24Nyquist32000, Linear125Octaves28Nyquist32000
+        /// # Only "Linear", "Linear125Octaves6Tones28Nyquist11025", "Linear125Octaves7Tones28Nyquist32000" work at present
         /// </summary>
         public string FreqScale { get; set; }
 
@@ -62,11 +61,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public string ColorMap2 { get; set; }
 
         /// <summary>
-        /// Gets or sets colour intensity of the lower index values relative to the higher index values. Good value is 2.0
-        /// </summary>
-        public double? ColourGain { get; set; }
-
-        /// <summary>
         /// Gets or sets value of the colour filter.
         /// Its value must be less than 1.0. Good value is 0.75
         /// </summary>
@@ -77,25 +71,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// The default assumes one minute spectra i.e. 60 per hour
         /// But as of January 2015, this is not fixed. The user can adjust
         ///  the tic interval to be appropriate to the time scale of the spectrogram.
+        /// May 2017: Now measureed in seconds
         /// </summary>
-        public TimeSpan XAxisTicInterval { get; set; }
+        [JsonConverter(typeof(Json.LagacyTimeSpanDataConverter))]
+        public int XAxisTicInterval { get; set; }
 
         /// <summary>
         /// Gets or sets YAxisTicInterval in Hertz.
         /// The vertical spacing between horizontal grid lines for the y-Axis
+        /// mark 1 kHz intervals
         /// </summary>
-        public int YAxisTicInterval
-        {
-            get
-            {
-                return this.yAxisTicInterval;
-            }
-
-            set
-            {
-                this.yAxisTicInterval = value;
-            }
-        }
+        public int YAxisTicInterval { get; set; }
 
         /// <summary>
         /// In seconds, the horizontal spacing between vertical grid lines for the x-Axis
@@ -103,7 +89,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public double CalculateYAxisTickInterval(double sampleRate, double frameWidth)
         {
                 double freqBinWidth = sampleRate / frameWidth;
-                return (int)Math.Round(this.yAxisTicInterval / freqBinWidth);
+                return (int)Math.Round(this.YAxisTicInterval / freqBinWidth);
         }
 
         #endregion
@@ -122,23 +108,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         /// <summary>
-        /// NOTE: As of August 2015, we are using EVN (event count) in both spectrograms because
-        /// CVR (cover) is too highly correlated with POW.
+        /// NOTE: As of August 2015, we are using EVN (event count) in both spectrograms because CVR (cover) is too highly correlated with POW.
+        /// NOTE: As of May 2017, PMN replaces POW and we are using R3D in spectrogram2 because it is less correlated with PMN.
         /// </summary>
         public static LdSpectrogramConfig GetDefaultConfig()
         {
-            var ldSpectrogramConfig = new LdSpectrogramConfig
-            {
-                ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_EVN,
-                ColourGain = 2.0,
-                ColourFilter = 0.75,
-
-                // X and Y axis conf
-                XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
-                FreqScale = "Linear",
-                YAxisTicInterval = 1000,
-            };
+            var ldSpectrogramConfig = new LdSpectrogramConfig();
             return ldSpectrogramConfig;
         }
 
@@ -147,7 +122,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public static LdSpectrogramConfig GetDefaultConfig(string colourMap1, string colourMap2)
         {
-            var ldSpectrogramConfig = LdSpectrogramConfig.GetDefaultConfig();
+            var ldSpectrogramConfig = GetDefaultConfig();
             ldSpectrogramConfig.ColorMap1 = colourMap1;
             ldSpectrogramConfig.ColorMap2 = colourMap2;
             return ldSpectrogramConfig;

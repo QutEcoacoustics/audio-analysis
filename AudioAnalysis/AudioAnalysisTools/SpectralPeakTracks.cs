@@ -4,11 +4,9 @@
 
 namespace AudioAnalysisTools
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using DSP;
-    using Indices;
     using StandardSpectrograms;
     using TowseyLibrary;
     using WavTools;
@@ -18,6 +16,8 @@ namespace AudioAnalysisTools
     /// </summary>
     public class SpectralPeakTracks
     {
+        private static readonly string[] RidgeKeys = { "SPT", "RVT", "RHZ", "RPS", "RNG", "R3D" };
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SpectralPeakTracks"/> class.
         /// CONSTRUCTOR NOTE: Orientation of passed spectrogram is: row = spectral frames, columns = frequency bins
@@ -32,6 +32,11 @@ namespace AudioAnalysisTools
             // this.GetRidgeSpectraVersion1(dBSpectrogram, ridgeThreshold: 4.0);
             this.GetRidgeSpectraVersion2(dBSpectrogram);
             this.CalculateCombinationOfThreeDirections();
+        }
+
+        public static string[] GetDefaultRidgeKeys()
+        {
+            return RidgeKeys;
         }
 
         public double[,] Peaks { get; private set; }
@@ -301,13 +306,16 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// Calculates the sum of the Horizontal, positive and negative slope ridges.
+        /// Calculates the max of the Horizontal, positive and negative slope ridges.
+        /// Could alternatively calculate the sum of the Horizontal, positive and negative slope ridges.
         /// </summary>
         public void CalculateCombinationOfThreeDirections()
         {
             this.R3DSpectrum = new double[this.RhzSpectrum.Length];
             for (int i = 0; i < this.RhzSpectrum.Length; i++)
             {
+                //var array = new double[] { this.RhzSpectrum[i], this.RpsSpectrum[i], this.RngSpectrum[i] };
+                //this.R3DSpectrum[i] = array.Max();
                 this.R3DSpectrum[i] = this.RhzSpectrum[i] + this.RpsSpectrum[i] + this.RngSpectrum[i];
             }
         }
@@ -363,7 +371,7 @@ namespace AudioAnalysisTools
         /// NOTE: We require a noise reduced decibel spectrogram
         /// FreqBinWidth can be accessed, if required, through dspOutput1.FreqBinWidth,
         /// </summary>
-        public static SpectralPeakTracks CalculateSpectralPeakTracks(AudioRecording recording, int sampleStart, int sampleEnd, int frameSize, bool octaveScale)
+        public static SpectralPeakTracks CalculateSpectralPeakTracks(AudioRecording recording, int sampleStart, int sampleEnd, int frameSize, bool octaveScale, double peakThreshold)
         {
             double epsilon = recording.Epsilon;
             int sampleRate = recording.WavReader.SampleRate;
@@ -396,7 +404,6 @@ namespace AudioAnalysisTools
             // double frameStepDuration = frameStep / (double)sampleRate; // fraction of a second
             // TimeSpan frameStepTimeSpan = TimeSpan.FromTicks((long)(frameStepDuration * TimeSpan.TicksPerSecond));
 
-            double peakThreshold = 6.0; //dB
             var sptInfo = new SpectralPeakTracks(decibelSpectrogram, peakThreshold);
             return sptInfo;
         }

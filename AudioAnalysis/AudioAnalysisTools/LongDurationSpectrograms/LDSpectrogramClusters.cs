@@ -39,8 +39,6 @@
     /// </summary>
     public static class LDSpectrogramClusters
     {
-
-
         ///// <summary>
         ///// This method merges all files of acoustic indices derived from a sequence of consecutive 6 hour recording,
         ///// that have a total duration of 24 hours. This was necesarry to deal with Jason's new regime of doing 24 hour recordings

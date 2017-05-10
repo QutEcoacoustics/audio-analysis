@@ -5,7 +5,8 @@
 // <summary>
 // This class calculates all summary and spectral indices.
 // The config file for this analysis is Towsey.Acoustic.yml// This analysis is an instance of Acoustic:IAnalyser2. It is called from AcousticIndices.cs
-// To perform this analysis on a long duration recording, work from the AnalyseLongRecording.Dev file.
+// To perform this analysis on a long duration recording, work from the AnalyseLongRecording.Dev file
+// and put "audio2csv" as first argument on the command line.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -366,12 +367,13 @@ namespace AudioAnalysisTools.Indices
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, nhThreshold: 2.0);
 
             // iii: CALCULATE noise reduced AVERAGE DECIBEL SPECTRUM
-            // TODO: The method to calculate POW by averaging decibel values should be depracated. It is now replaced by index DMN.
+            // TODO: The method to calculate POW by averaging decibel values should be depracated. It is now replaced by index PMN.
             spectralIndices.POW = SpectrogramTools.CalculateAvgSpectrumFromSpectrogram(deciBelSpectrogram);
-            spectralIndices.DMN = SpectrogramTools.CalculateAvgDecibelSpectrumFromSpectrogram(deciBelSpectrogram);
+            spectralIndices.PMN = SpectrogramTools.CalculateAvgDecibelSpectrumFromSpectrogram(deciBelSpectrogram);
 
             // iv: CALCULATE SPECTRAL COVER.
             //     NOTE: at this point, decibelSpectrogram is noise reduced. All values >= 0.0
+            //           FreqBinWidth can be accessed, if required, through dspOutput1.FreqBinWidth
             double dBThreshold = ActivityAndCover.DefaultActivityThresholdDb; // dB THRESHOLD for calculating spectral coverage
             var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameStepTimeSpan, lowFreqBound, midFreqBound, freqBinWidth);
             spectralIndices.CVR = spActivity.coverSpectrum;
@@ -383,9 +385,23 @@ namespace AudioAnalysisTools.Indices
 
             // ######################################################################################################################################################
 
-            // v: CALCULATE SPECTRAL PEAK TRACKS. NOTE: spectrogram is a noise reduced decibel spectrogram
-            // FreqBinWidth can be accessed, if required, through dspOutput1.FreqBinWidth
-            var sptInfo = SpectralPeakTracks.CalculateSpectralPeakTracks(recording, sampleStart, sampleEnd, frameSize, octaveScale);
+            // v: CALCULATE SPECTRAL PEAK TRACKS.
+            //    NOTE: at this point, the var decibelSpectrogram is noise reduced. i.e. all its values >= 0.0
+            //    Detecting ridges or spectral peak tracks requires using a 5x5 mask which has edge effects.
+            //    This becomes significant if we have a short indexCalculationDuration.
+            //    Consequently if the indexCalculationDuration < 10 seconds then we revert back to the recording and cut out a recording segment that includes
+            //    a buffer for edge effects. In most cases however, we can just use the decibel spectrogram already calculated and ignore the edge effects.
+            double peakThreshold = 6.0; //dB
+            SpectralPeakTracks sptInfo;
+            if (indexCalculationDuration.TotalSeconds < 10.0)
+            {
+                sptInfo = SpectralPeakTracks.CalculateSpectralPeakTracks(recording, sampleStart, sampleEnd, frameSize, octaveScale, peakThreshold);
+            }
+            else
+            {
+                sptInfo = new SpectralPeakTracks(deciBelSpectrogram, peakThreshold);
+            }
+
             spectralIndices.SPT = sptInfo.SptSpectrum;
             spectralIndices.RHZ = sptInfo.RhzSpectrum;
             spectralIndices.RVT = sptInfo.RvtSpectrum;
@@ -439,69 +455,36 @@ namespace AudioAnalysisTools.Indices
 
             // xiv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband AMPLITDUE SPECTRUM
             //                   In June 2016, the mid-band (i.e. the bird-band) was set to lowerBound=1000Hz, upperBound=8000hz.
-
-            // SET CLUSTERING VERBOSITY.
-            //SpectralClustering.Verbose = true;
-
-            // NOTE: The midBandAmplSpectrogram is derived from the amplitudeSpectrogram by removing low freq band AND high freq band.
+            // NOTE: Clustering is performed only on the midBandAmplSpectrogram of the amplitudeSpectrogram.
             // NOTE: The amplitudeSpectrogram is already noise reduced at this stage.
             // Set threshold for deriving binary spectrogram - DEFAULT=0.06 prior to June2016
             const double binaryThreshold = 0.12;
+            var clusterInfo = SpectralClustering.ClusterTheSpectra(amplitudeSpectrogram, lowerBinBound, upperBinBound, binaryThreshold);
 
-            // ACTIVITY THRESHOLD - require activity in at least N freq bins to include the spectrum for training
-            //                      DEFAULT was N=2 prior to June 2016. You can increase threshold to reduce cluster count due to noise.
-            const double rowSumThreshold = 2.0;
-            var midBandAmplSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, upperBinBound);
-            var parameters = new SpectralClustering.ClusteringParameters(lowerBinBound, midBandAmplSpectrogram.GetLength(1), binaryThreshold, rowSumThreshold);
+            // transfer cluster info to summary index results
+            summaryIndices.ClusterCount = clusterInfo.ClusterCount;
+            summaryIndices.ThreeGramCount = clusterInfo.TriGramUniqueCount;
 
-            SpectralClustering.TrainingDataInfo data = SpectralClustering.GetTrainingDataForClustering(midBandAmplSpectrogram, parameters);
-
-            SpectralClustering.ClusterInfo clusterInfo;
-            clusterInfo.clusterCount = 0; // init just in case
-
-            // cluster pruning parameters
-            const double weightThreshold = rowSumThreshold; // used to remove wt vectors whose sum of wts <= threshold
-            const int hitThreshold = 3; // used to remove wt vectors which have fewer than the threshold hits
-
-            // Skip clustering if not enough suitable training data
-            if (data.trainingData.Count <= 8)
-            {
-                clusterInfo.clusterHits2 = null;
-                summaryIndices.ClusterCount = 0;
-
-                //summaryIndices.AvgClusterDuration = TimeSpan.Zero;
-                summaryIndices.ThreeGramCount = 0;
-                spectralIndices.CLS = new double[amplitudeSpectrogram.GetLength(1)];
-            }
-            else
-            {
-                clusterInfo = SpectralClustering.ClusterAnalysis(data.trainingData, weightThreshold, hitThreshold, data.selectedFrames);
-                summaryIndices.ClusterCount = clusterInfo.clusterCount;
-
-                //summaryIndices.AvgClusterDuration = TimeSpan.FromSeconds(clusterInfo.av2 * frameTimeSpan.TotalSeconds); // av cluster duration
-                summaryIndices.ThreeGramCount = clusterInfo.triGramUniqueCount;
-
-                double[] clusterSpectrum = clusterInfo.clusterSpectrum;
-                spectralIndices.CLS = SpectralClustering.RestoreFullLengthSpectrum(clusterSpectrum, freqBinCount, data.lowBinBound, data.reductionFactor);
-            }
+            // transfer cluster info to spectral index results
+            spectralIndices.CLS = clusterInfo.ClusterSpectrum;
 
             // xv: STORE CLUSTERING IMAGES
             if (returnSonogramInfo)
             {
-                string label = string.Format(clusterInfo.clusterCount + " Clusters");
-                if (clusterInfo.clusterHits2 == null)
+                string label = string.Format(clusterInfo.ClusterCount + " Clusters");
+                if (clusterInfo.ClusterHits2 == null)
                 {
-                    clusterInfo.clusterHits2 = new int[dBEnvelopeSansNoise.Length]; // array of zeroes
+                    clusterInfo.ClusterHits2 = new int[dBEnvelopeSansNoise.Length]; // array of zeroes
                 }
 
-                scores.Add(new Plot(label, DataTools.normalise(clusterInfo.clusterHits2), 0.0)); // location of cluster hits
+                scores.Add(new Plot(label, DataTools.normalise(clusterInfo.ClusterHits2), 0.0)); // location of cluster hits
             }
 
             result.Sg = GetSonogram(recording, windowSize: 1024);
             result.Hits = sptInfo.Peaks;
             result.TrackScores = scores;
             return result;
-        } // end of method Analysis()
+        } // end Analysis()
 
         private static SpectrogramStandard GetSonogram(AudioRecording recording, int windowSize)
         {

@@ -129,7 +129,7 @@ namespace AnalysisPrograms
 
             // SET DEFAULT COLOUR MAPS
             string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-            string colorMap2 = SpectrogramConstants.RGBMap_BGN_DMN_SPT;
+            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_SPT;
 
             // ########################## CONCATENATION of Kerry Mengersens Data, Puma, South America
             // The drive: work = G; home = E
@@ -386,8 +386,9 @@ namespace AnalysisPrograms
             // Concatenation is designed only for the output from a "Towsey.Acoustic" analysis.
             const string analysisType = "Towsey.Acoustic";
 
-            // Only the following spectral indices will be concatenated.
-            string[] keys = { "ACI", "BGN", "CLS", "CVR", "ENT", "EVN", "POW", "RHZ", "SPT" };
+            // Get the currently available sepctral indices
+            // RHZ, SPT and CVR are correlated with POW and do not add much. CLS not particularly useful. Now using R3D
+            string[] keys = LDSpectrogramRGB.GetArrayOfAvailableKeys();
 
             // deal with verbosity
             bool verbose = false; // default
@@ -531,30 +532,21 @@ namespace AnalysisPrograms
                 indexPropertiesConfig = arguments.IndexPropertiesConfig;
 
                 // prepare the false-colour spgm config file
-                if (arguments?.FalseColourSpectrogramConfig?.Exists ?? false)
-                {
-                    ldSpectrogramConfig = LdSpectrogramConfig.ReadYamlToConfig(arguments.FalseColourSpectrogramConfig);
+                // or set up a default config
+                // WARNING: This default config is used when testing. If you alter these defaults, Unit Test results may be affected.
+                ldSpectrogramConfig = (arguments?.FalseColourSpectrogramConfig?.Exists ?? false)
+                    ? LdSpectrogramConfig.ReadYamlToConfig(arguments.FalseColourSpectrogramConfig)
+                    : new LdSpectrogramConfig();
 
-                    // TODO TODO TODO TODO
-                    // this next line is necessary because TimeSpan is not being read correctly from yaml file
-                    ldSpectrogramConfig.XAxisTicInterval = TimeSpan.FromMinutes(60);
+                // the user should have provided ColorMap arguments which we insert here
+                if (arguments.ColorMap1.NotNull())
+                {
+                    ldSpectrogramConfig.ColorMap1 = arguments.ColorMap1;
                 }
-                else
-                {
-                    // set up a default config
-                    // WARNING: This default config is used when testing. If you alter these defaults, Unit Test results may be affected.
-                    ldSpectrogramConfig = new LdSpectrogramConfig
-                    {
-                        ColorMap1 = arguments.ColorMap1,
-                        ColorMap2 = arguments.ColorMap2,
-                        ColourGain = 2.0,
 
-                        // de-emphasizes the background or low index values
-                        ColourFilter = 0.75,
-                        XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
-                        YAxisTicInterval = 1000,
-                        FreqScale = "Linear",
-                    };
+                if (arguments.ColorMap2.NotNull())
+                {
+                    ldSpectrogramConfig.ColorMap2 = arguments.ColorMap2;
                 }
             }
 
@@ -616,8 +608,6 @@ namespace AnalysisPrograms
                 // Calculate the index distribution statistics and write to a json file. Also save as png image
                 var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectralIndices1, resultsDir, opFileStem);
 
-                // The currently available sepctral indices are  "ACI", "ENT", "EVN", "BGN", "POW", "CLS", "SPT", "RHZ", "CVR"
-                // RHZ, SPT and CVR correlated with POW and do not add much. Currently use SPT.  Do not use CLS. Not particularly useful.
                 if (arguments.DrawImages)
                 {
                     Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
@@ -1115,7 +1105,7 @@ namespace AnalysisPrograms
         public static void TESTMETHOD_ConcatenateIndexFilesTest1()
         {
             // Set the drive: work = G; home = E
-            string drive = "C";
+            string drive = "E";
 
             // top level directory
             DirectoryInfo[] dataDirs =
@@ -1141,7 +1131,7 @@ namespace AnalysisPrograms
                 IndexPropertiesConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml"),
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
+                ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
                 ConcatenateEverythingYouCanLayYourHandsOn = true,
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 SunRiseDataFile = null,
@@ -1168,7 +1158,7 @@ namespace AnalysisPrograms
         public static void TESTMETHOD_ConcatenateIndexFilesTest2()
         {
             // Set the drive: work = G; home = E
-            string drive = "C";
+            string drive = "E";
 
             // top level directory
             DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\"), };
@@ -1189,7 +1179,7 @@ namespace AnalysisPrograms
                 IndexPropertiesConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml"),
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
+                ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 SunRiseDataFile = null,
@@ -1216,7 +1206,7 @@ namespace AnalysisPrograms
         public static void TESTMETHOD_ConcatenateIndexFilesTest3()
         {
             // Set the drive: work = G; home = E
-            string drive = "C";
+            string drive = "E";
 
             // top level directory
             DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\"), };
@@ -1234,7 +1224,7 @@ namespace AnalysisPrograms
                 IndexPropertiesConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml"),
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
+                ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 SunRiseDataFile = null,
@@ -1260,12 +1250,13 @@ namespace AnalysisPrograms
         public static void TESTMETHOD_ConcatenateIndexFilesTest4()
         {
             // Set the drive: work = G; home = E
-            string drive = "C";
+            string drive = "E";
 
             // top level directory
             DirectoryInfo[] dataDirs =
             {
-                new DirectoryInfo($"{drive}:\\Work\\GitHub\\audio-analysis\\Acoustics\\Acoustics.Test\\TestResources\\Concatenation\\Indonesia20160726"),
+                //new DirectoryInfo($"{drive}:\\Work\\GitHub\\audio-analysis\\Acoustics\\Acoustics.Test\\TestResources\\Concatenation\\Indonesia20160726"),
+                new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2"),
             };
 
             var outputDir = @"C:\SensorNetworks\SoftwareTests\TestConcatenation\Test4_Output".ToDirectoryInfo();
@@ -1286,7 +1277,7 @@ namespace AnalysisPrograms
                 IndexPropertiesConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml"),
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
+                ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
                 ConcatenateEverythingYouCanLayYourHandsOn = true,
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 SunRiseDataFile = null,

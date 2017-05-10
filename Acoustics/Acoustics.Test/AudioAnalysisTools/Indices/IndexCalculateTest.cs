@@ -103,7 +103,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             Assert.AreEqual(0.054840, summaryIndices.LowFreqCover, 0.000001);
             Assert.AreEqual(0.957433, summaryIndices.Ndsi, 0.000001);
             Assert.AreEqual(27.877206, summaryIndices.Snr, 0.000001);
-            Assert.AreEqual(6.256191, summaryIndices.SptDensity, 0.000001);
+            Assert.AreEqual(6.2306202, summaryIndices.SptDensity, 0.000001);
             Assert.AreEqual(TimeSpan.Zero, summaryIndices.StartOffset);
             Assert.AreEqual(0.162215, summaryIndices.TemporalEntropy, 0.000001);
             Assert.AreEqual(116, summaryIndices.ThreeGramCount, 0.000001);
@@ -194,10 +194,10 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             CollectionAssert.AreEqual(expectedVector, spectralIndices.CVR);
 
             // DMN
-            expectedSpectrumFile = new FileInfo(outputDir + "\\DMN.bin");
-            // Binary.Serialize(expectedSpectrumFile, spectralIndices.DMN);
+            expectedSpectrumFile = new FileInfo(outputDir + "\\PMN.bin");
+            // Binary.Serialize(expectedSpectrumFile, spectralIndices.PMN);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.DMN);
+            CollectionAssert.AreEqual(expectedVector, spectralIndices.PMN);
 
             // ENT
             expectedSpectrumFile = new FileInfo(outputDir + "\\ENT.bin");

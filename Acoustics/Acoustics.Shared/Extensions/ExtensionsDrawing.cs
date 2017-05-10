@@ -1,10 +1,14 @@
-﻿namespace System.Drawing
+﻿// <copyright file="ExtensionsDrawing.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+// ReSharper disable once CheckNamespace
+namespace System.Drawing
 {
-    using Imaging;
     using Globalization;
+    using Imaging;
     using IO;
     using System.Text.RegularExpressions;
-
     using Acoustics.Shared;
 
     /// <summary>
@@ -36,7 +40,10 @@
         /// </returns>
         public static byte[] ToByteArray(this Image image, ImageFormat imageFormat)
         {
-            if (image == null) return new byte[0];
+            if (image == null)
+            {
+                return new byte[0];
+            }
 
             byte[] bytes;
 
@@ -209,12 +216,12 @@
         {
             if (color.Length < 6 || color.Length > 9)
             {
-                throw new ArgumentOutOfRangeException("color");
+                throw new ArgumentOutOfRangeException(nameof(color));
             }
 
             if (!Regex.IsMatch(color, RegExHexColor))
             {
-                throw new ArgumentOutOfRangeException("color", ColorRegExError);
+                throw new ArgumentOutOfRangeException(nameof(color), ColorRegExError);
             }
 
             if (color[0] == '#')
@@ -227,10 +234,25 @@
 
             if (parts.Length == 4)
             {
-                return Color.FromArgb(parts[3], parts[2], parts[1], parts[0]);
+                return Drawing.Color.FromArgb(parts[3], parts[2], parts[1], parts[0]);
             }
 
-            return Color.FromArgb(255, parts[2], parts[1], parts[0]);
+            return Drawing.Color.FromArgb(255, parts[2], parts[1], parts[0]);
+        }
+
+        public static Color Color(int red, int green, int blue)
+        {
+            return System.Drawing.Color.FromArgb(red, green, blue);
+        }
+
+        public static Color Color(int alpha, int red, int green, int blue)
+        {
+            return Drawing.Color.FromArgb(alpha, red, green, blue);
+        }
+
+        public static Color Gray(int tone)
+        {
+            return Drawing.Color.FromArgb(tone, tone, tone);
         }
     }
 }

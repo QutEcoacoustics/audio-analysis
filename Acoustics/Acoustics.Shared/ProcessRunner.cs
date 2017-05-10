@@ -64,6 +64,7 @@
         /// The file path.
         /// </param>
         /// <exception cref="FileNotFoundException">
+        /// Thrown if <paramref name="filePath"/> is not found on disk.
         /// </exception>
         public ProcessRunner(string filePath)
         {
@@ -116,7 +117,7 @@
         /// </summary>
         public void Stop()
         {
-            this.process.Kill();
+            this.KillProcess();
         }
 
         /// <summary>
@@ -139,6 +140,11 @@
             // run the process
             //RunAsyncOutputs(arguments, workingDirectory, 0);
             this.RunTaskReaders(arguments, workingDirectory, 0);
+
+            // https://github.com/QutBioacoustics/audio-analysis/issues/118
+            // Workaround for: https://bugzilla.xamarin.com/show_bug.cgi?id=43462#c14
+            this.process.Dispose();
+            GC.Collect();
         }
 
         private void PrepareRun(string arguments, string workingDirectory)

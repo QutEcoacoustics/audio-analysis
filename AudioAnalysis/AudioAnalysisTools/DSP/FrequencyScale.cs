@@ -286,7 +286,7 @@ namespace AudioAnalysisTools.DSP
         /// </summary>
         public static void TESTMETHOD_LinearFrequencyScaleDefault()
         {
-            var recordingPath = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC\BAC2_20071008-085040.wav";
+            var recordingPath = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC2_20071008-085040.wav";
             var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
             var expectedResultsDir = Path.Combine(outputDir.FullName, TestTools.ExpectedResultsDir).ToDirectoryInfo();
             var outputImagePath = Path.Combine(outputDir.FullName, "linearScaleSonogram_default.png");
@@ -336,7 +336,7 @@ namespace AudioAnalysisTools.DSP
         /// </summary>
         public static void TESTMETHOD_LinearFrequencyScale()
         {
-            var recordingPath = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC\BAC2_20071008-085040.wav";
+            var recordingPath = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC2_20071008-085040.wav";
             var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
             var expectedResultsDir = Path.Combine(outputDir.FullName, TestTools.ExpectedResultsDir).ToDirectoryInfo();
             var outputImagePath = Path.Combine(outputDir.FullName, "linearScaleSonogram.png");
@@ -445,7 +445,7 @@ namespace AudioAnalysisTools.DSP
         /// </summary>
         public static void TESTMETHOD_OctaveFrequencyScale2()
         {
-            var recordingPath = @"C:\SensorNetworks\SoftwareTests\TestRecordings\MarineGBRJasco\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit.wav";
+            var recordingPath = @"C:\SensorNetworks\SoftwareTests\TestRecordings\MarineJasco_AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit.wav";
             var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
             var expectedResultsDir = Path.Combine(outputDir.FullName, TestTools.ExpectedResultsDir).ToDirectoryInfo();
             var outputImagePath = Path.Combine(outputDir.FullName, "JascoMarineGBR1.png");

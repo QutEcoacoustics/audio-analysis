@@ -5,7 +5,6 @@
 
     public class WavWriter
     {
-
         /// <summary>
         /// The basic WAV file format follows the Interchange File Format specification.
         /// An IFF file consists of a series of "chunks" where chunks can contain other chunks.
@@ -155,7 +154,6 @@
         {
             using (FileStream FS_Write = File.Open(path, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-
                 BinaryWriter bw = new BinaryWriter(FS_Write);
 
                 int c = 0;

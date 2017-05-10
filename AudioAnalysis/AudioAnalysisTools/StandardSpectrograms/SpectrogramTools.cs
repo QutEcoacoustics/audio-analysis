@@ -14,20 +14,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
-
     using Acoustics.Shared;
-
     using AnalysisBase;
-
-    using DSP;
-    using WavTools;
-
-    using TowseyLibrary;
     using ColorMine.ColorSpaces;
+    using DSP;
+    using TowseyLibrary;
+    using WavTools;
 
     public static class SpectrogramTools
     {
-
         /// <summary>
         ///
         /// </summary>

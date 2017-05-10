@@ -11,9 +11,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
         public static Arguments Dev()
         {
             // TO GET TO HERE audio2csv MUST BE ONLY COMMAND LINE ARGUMENT
-            // If you end up with indices and no images, then call activity ColourSpectrogram
-
-            // To draw the false-colour spectrograms you need to call activity "colourspectrogram"
+            // If you end up with indices and no images, then, to draw the false-colour spectrograms, you must call activity "colourspectrogram"
 
             // DEV CONFIG OPTIONS
             //C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\App.config
@@ -54,7 +52,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //Y:\Results\2016Dec06-094005 - Tshering, Towsey.Indices, ICD=10.0, #133\Tshering\WBH_Walaytar\201505 - second deployment\Site2_Waklaytar\24Hours WBH_28032016
 
             // This file contains lots of heron calls.     WBH12HOURS-N_20160403_000000.wav
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\SecondDeployment\WBH12HOURS-N_20160426_000010.wav";
+            // This is a six-hour recording and quite good for debugging calculation of acoustic indices
+            string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\SecondDeployment\WBH12HOURS-N_20160403_000000.wav";
             string outputPath = @"C:\SensorNetworks\Output\TsheringDema";
             string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
