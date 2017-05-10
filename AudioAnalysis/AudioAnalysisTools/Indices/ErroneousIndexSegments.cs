@@ -14,8 +14,9 @@ namespace AudioAnalysisTools.Indices
     {
         public const string ErroneousIndexSegmentsFilenameFragment = "WARNING-IndexErrors";
 
-        private static string errorMissingData = "Missing Data";
-        private static string errorZeroSignal = "Flat Zero Signal";
+        private static string errorMissingData = "No Recording";
+        private static string errorZeroSignal = "Flat Signal";
+        private static string invalidIndexValue = "Invalid Index Value";
 
         public string ErrorDescription { get; set; }
 
@@ -23,59 +24,25 @@ namespace AudioAnalysisTools.Indices
 
         public int EndPosition { get; set; }
 
-        public Bitmap DrawErrorPatch(int height, bool textInVerticalOrientation)
-        {
-            int width = this.EndPosition - this.StartPosition + 1;
-            var bmp = new Bitmap(width, height);
-            int fontVerticalPosition = (height / 2) - 7;
-            var g = Graphics.FromImage(bmp);
-
-            if (this.ErrorDescription.Equals(errorMissingData))
-            {
-                g.Clear(Color.LightGray);
-            }
-            else
-            if (this.ErrorDescription.Equals(errorZeroSignal))
-            {
-                // ErrorZeroSignal
-                g.Clear(Color.Red);
-            }
-            else
-            {
-                // Unknown error
-                g.Clear(Color.Red);
-            }
-
-            // Draw cross in black over the error patch.
-            if (width > 10)
-            {
-                g.DrawLine(Pens.Black, 0, 0, width, height);
-                g.DrawLine(Pens.Black, 0, height, width, 0);
-            }
-
-            // Write description of the error cause.
-            var font = new Font("Arial", 9.0f, FontStyle.Bold);
-            if (textInVerticalOrientation)
-            {
-                var drawFormat = new StringFormat(StringFormatFlags.DirectionVertical);
-                g.DrawString("ERROR: " + this.ErrorDescription, font, Brushes.Black, 2, 10, drawFormat);
-            }
-            else
-            {
-                g.DrawString("ERROR: " + this.ErrorDescription, font, Brushes.Black, 2, fontVerticalPosition);
-            }
-
-            return bmp;
-        }
-
         // #####################################################################################################################
         //  STATIC METHODS BELOW
         // #####################################################################################################################
 
+        /// <summary>
+        /// This method reads through four SUMMARY index arrays to check for signs that something might be wrong with the data.
+        /// It reads the ZeroSignal array to make sure there was actually a signal to analyse.
+        /// It then reads through the ACI, Temporal Entropy and SNR summary index arrays to check that they have positive values. These should never be LTE zero.
+        /// If any of these events occurs an error is flagged.
+        /// </summary>
+        /// <param name="summaryIndices">Dictionary of the currently calculated summary indices</param>
+        /// <param name="outputDirectory">directory where the error.JSON file is to be written</param>
+        /// <param name="fileStem">name of the Json file</param>
+        /// <returns>a list of the same erroneous segments that was written to file</returns>
         public static List<ErroneousIndexSegments> DataIntegrityCheck(Dictionary<string, double[]> summaryIndices, DirectoryInfo outputDirectory, string fileStem)
         {
             bool allOk = true;
             int errorStart;
+            double tolerance = 0.00001;
 
             // init list of errors
             var errors = new List<ErroneousIndexSegments>();
@@ -85,7 +52,8 @@ namespace AudioAnalysisTools.Indices
             var error = new ErroneousIndexSegments();
             for (int i = 0; i < zeroSignalArray.Length; i++)
             {
-                if (Math.Abs(zeroSignalArray[i]) > 0.00001)
+                // if (zeroSignal index > 0), i.e. if signal == zero
+                if (Math.Abs(zeroSignalArray[i]) > tolerance)
                 {
                     if (allOk)
                     {
@@ -98,7 +66,7 @@ namespace AudioAnalysisTools.Indices
                     }
                 }
                 else
-                if ((!allOk) && (Math.Abs(zeroSignalArray[i]) < 0.00001))
+                if (!allOk && Math.Abs(zeroSignalArray[i]) < tolerance)
                 {
                     // come to end of a bad patch
                     allOk = true;
@@ -107,37 +75,51 @@ namespace AudioAnalysisTools.Indices
                 }
             } // end of loop
 
-            // (2) NOW check for zero index values
+ /*           // (2) NOW check for zero index values
             allOk = true;
-            double sum = summaryIndices["AcousticComplexity"][0] + summaryIndices["TemporalEntropy"][0] + summaryIndices["Snr"][0];
-            if (Math.Abs(sum) < 0.000001)
+            bool zeroIndex = summaryIndices["AcousticComplexity"][0] < tolerance ||
+                             summaryIndices["TemporalEntropy"][0] < tolerance ||
+                             summaryIndices["Snr"][0] < tolerance;
+
+            bool zeroSignal = Math.Abs(zeroSignalArray[0]) > tolerance;
+            if (!zeroSignal && zeroIndex)
             {
                 allOk = false;
                 errorStart = 0;
                 errors.Add(new ErroneousIndexSegments());
-                errors[errors.Count - 1].ErrorDescription = errorMissingData;
+                errors[errors.Count - 1].ErrorDescription = invalidIndexValue;
                 errors[errors.Count - 1].StartPosition = errorStart;
             }
 
             int arrayLength = summaryIndices["AcousticComplexity"].Length;
             for (int i = 1; i < arrayLength; i++)
             {
-                sum = summaryIndices["AcousticComplexity"][i] + summaryIndices["TemporalEntropy"][i] + summaryIndices["Snr"][i];
-                if (Math.Abs(sum) < 0.00001)
+                if (Math.Abs(zeroSignalArray[i]) > tolerance)
+                {
+                    // ignore locations with zero signal
+                    continue;
+                }
+
+                zeroIndex = summaryIndices["AcousticComplexity"][i] < tolerance ||
+                            summaryIndices["TemporalEntropy"][i] < tolerance ||
+                            summaryIndices["Snr"][i] < tolerance;
+
+                if (zeroIndex)
                 {
                     if (allOk)
                     {
                         errorStart = i;
                         errors.Add(new ErroneousIndexSegments());
-                        errors[errors.Count - 1].ErrorDescription = errorMissingData;
+                        errors[errors.Count - 1].ErrorDescription = invalidIndexValue;
                         errors[errors.Count - 1].StartPosition = errorStart;
                     }
 
                     allOk = false;
                 }
                 else
-                if (!allOk && Math.Abs(sum) > 0.00001)
+                if (!allOk)
                 {
+                    // if (!allOk && !zeroIndex)
                     allOk = true;
                     errors[errors.Count - 1].EndPosition = i - 1;
                 }
@@ -148,17 +130,48 @@ namespace AudioAnalysisTools.Indices
             {
                 errors[errors.Count - 1].EndPosition = arrayLength - 1;
             }
-
+*/
             // write info to file
             if (errors.Count != 0)
             {
                 string path = FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, ErroneousIndexSegmentsFilenameFragment, "json");
 
-                // Yaml.Serialise<List<ErroneousIndexSegments>>(new FileInfo(path), errors);
-                Yaml.Serialise(new FileInfo(path), errors);
+                // ReSharper disable once RedundantTypeArgumentsOfMethod
+                Json.Serialise<List<ErroneousIndexSegments>>(new FileInfo(path), errors);
             }
 
             return errors;
+        }
+
+        public Bitmap DrawErrorPatch(int height, bool textInVerticalOrientation)
+        {
+            int width = this.EndPosition - this.StartPosition + 1;
+            var bmp = new Bitmap(width, height);
+            int fontVerticalPosition = (height / 2) - 7;
+            var g = Graphics.FromImage(bmp);
+
+            g.Clear(this.ErrorDescription.Equals(errorMissingData) ? Color.LightGray : Color.Red);
+
+            // Draw black cross over error patch only if is wider than arbitrary 10 pixels.
+            if (width > 10)
+            {
+                g.DrawLine(Pens.Black, 0, 0, width, height);
+                g.DrawLine(Pens.Black, 0, height, width, 0);
+
+                // Write description of the error cause.
+                var font = new Font("Arial", 9.0f, FontStyle.Bold);
+                if (textInVerticalOrientation)
+                {
+                    var drawFormat = new StringFormat(StringFormatFlags.DirectionVertical);
+                    g.DrawString("ERROR: " + this.ErrorDescription, font, Brushes.Black, 2, 10, drawFormat);
+                }
+                else
+                {
+                    g.DrawString("ERROR: " + this.ErrorDescription, font, Brushes.Black, 2, fontVerticalPosition);
+                }
+            }
+
+            return bmp;
         }
     }
 }
