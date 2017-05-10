@@ -13,7 +13,6 @@
     /// </summary>
     public static class SpectralIndicesToAndFromTable
     {
-
         private static Arguments Dev()
         {
             DateTime time = DateTime.Now;

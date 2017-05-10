@@ -16,7 +16,6 @@
 */
 namespace AudioAnalysisTools.LongDurationSpectrograms
 {
-
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -31,7 +30,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
     public static class ZoomFocusedSpectrograms
     {
-
         public static void DrawStackOfZoomedSpectrograms(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory,
                                                          ZoomCommonArguments common,
                                                          TimeSpan focalTime, int imageWidth)
@@ -254,7 +252,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 titleBar,
                 startTime,
                 imageScale,
-                config.XAxisTicInterval,
+                TimeSpan.FromSeconds(config.XAxisTicInterval),
                 nyquist,
                 herzInterval);
 
@@ -280,7 +278,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Dictionary<string, double[,]> spectra,
             string basename)
         {
-
             // check that scalingFactor >= 1.0
             double scalingFactor = Math.Round(imageScale.TotalMilliseconds / dataScale.TotalMilliseconds);
             if (scalingFactor < 1.0)
@@ -461,7 +458,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // add the recording start time ONLY IF WANT ABSOLUTE TIME SCALE - obtained from info in file name
             // startTime += recordingStartTime;
-            spectrogramImage = FrameZoomSpectrogram(spectrogramImage, titleBar, startTime, imageScale, config.XAxisTicInterval, nyquist, herzInterval);
+            spectrogramImage = FrameZoomSpectrogram(spectrogramImage, titleBar, startTime, imageScale, TimeSpan.FromSeconds(config.XAxisTicInterval), nyquist, herzInterval);
 
 
             // MAY WANT THESE CLIPPING TRACKS AT SOME POINT

@@ -1,29 +1,28 @@
-﻿namespace AudioAnalysisTools
+﻿// <copyright file="LDSpectrogramTStatistic.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
-    using System.Linq;
-    using System.Text;
-    using LongDurationSpectrograms;
     using TowseyLibrary;
 
-    public static class LDSpectrogramTStatistic
+    public static class LdSpectrogramTStatistic
     {
         //PARAMETERS
         // set DEFAULT values for parameters
+        private static readonly double ColourGain = 2.0; // increases colour intensity by factor of 2.
         private static TimeSpan minuteOffset = SpectrogramConstants.MINUTE_OFFSET;  // assume recording starts at zero minute of day i.e. midnight
-        private static TimeSpan xScale      = SpectrogramConstants.X_AXIS_TIC_INTERVAL;         // assume one minute spectra and hourly time lines
+        private static TimeSpan xScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL;         // assume one minute spectra and hourly time lines
         private static int sampleRate = SpectrogramConstants.SAMPLE_RATE;      // default value - after resampling
         private static int frameWidth = SpectrogramConstants.FRAME_LENGTH;      // default value - from which spectrogram was derived
 
         private static string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR; //CHANGE default RGB mapping here.
         private static double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF; //must be value <=1.0
-        private static double colourGain = SpectrogramConstants.COLOUR_GAIN;
-
-
 
         //double[] table_df_inf = { 0.25, 0.51, 0.67, 0.85, 1.05, 1.282, 1.645, 1.96, 2.326, 2.576, 3.09, 3.291 };
         //double[] table_df_15 =  { 0.26, 0.53, 0.69, 0.87, 1.07, 1.341, 1.753, 2.13, 2.602, 2.947, 3.73, 4.073 };
@@ -34,8 +33,6 @@
         //public const double T_STAT_THRESHOLD = 3.09;  // 0.1% confidence @ df=infinity
         public const double T_STAT_THRESHOLD = 3.29;    // 0.05% confidence @ df=infinity
         private static double tStatThreshold = T_STAT_THRESHOLD;
-
-
 
         public static void DrawTStatisticThresholdedDifferenceSpectrograms(dynamic configuration)
         {
@@ -48,10 +45,12 @@
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string map = configuration.ColorMap;
-            colorMap = map != null ? map : SpectrogramConstants.RGBMap_ACI_ENT_CVR;           // assigns indices to RGB
+            colorMap = map ?? SpectrogramConstants.RGBMap_ACI_ENT_CVR;
 
             backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
-            colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
+
+            // depracated May 2017
+            // colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
             minuteOffset = (TimeSpan?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET; // default = zero minute of day i.e. midnight
@@ -61,12 +60,14 @@
 
             tStatThreshold = (double?)configuration.TStatThreshold ?? T_STAT_THRESHOLD;
 
-            DrawTStatisticThresholdedDifferenceSpectrograms(new DirectoryInfo(ipdir),
-                                                            new FileInfo(ipFileName1), new FileInfo(ipSdFileName1),
-                                                            new FileInfo(ipFileName2), new FileInfo(ipSdFileName2),
-                                                            new DirectoryInfo(opdir));
+            DrawTStatisticThresholdedDifferenceSpectrograms(
+                new DirectoryInfo(ipdir),
+                new FileInfo(ipFileName1),
+                new FileInfo(ipSdFileName1),
+                new FileInfo(ipFileName2),
+                new FileInfo(ipSdFileName2),
+                new DirectoryInfo(opdir));
         }
-
 
         /// <summary>
         /// This method compares the acoustic indices derived from two different long duration recordings of the same length.
@@ -84,53 +85,53 @@
         /// 4) A double image. Top:    A t-statistic thresholded difference spectrogram (t-statistic is positive).
         ///                    Bottom: A t-statistic thresholded difference spectrogram (t-statistic is negative).
         /// </summary>
-        /// <param name="ipdir"></param>
-        /// <param name="ipFileName1"></param>
-        /// <param name="ipSdFileName1"></param>
-        /// <param name="ipFileName2"></param>
-        /// <param name="ipSdFileName2"></param>
-        /// <param name="opdir"></param>
         public static void DrawTStatisticThresholdedDifferenceSpectrograms(DirectoryInfo ipdir, FileInfo ipFileName1, FileInfo ipSdFileName1,
                                                                                                 FileInfo ipFileName2, FileInfo ipSdFileName2,
                                                                                                 DirectoryInfo opdir)
         {
             string opFileName1 = ipFileName1.Name;
-            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
-            cs1.FileName = opFileName1;
-            cs1.ColorMode = colorMap;
-            cs1.BackgroundFilter = backgroundFilterCoeff;
+            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap)
+            {
+                FileName = opFileName1,
+                ColorMode = colorMap,
+                BackgroundFilter = backgroundFilterCoeff,
+            };
             string[] keys = colorMap.Split('-');
             cs1.ReadCsvFiles(ipdir, ipFileName1.Name, keys);
-            string imagePath = Path.Combine(opdir.FullName, opFileName1 + ".COLNEG.png");
+
+            // string imagePath = Path.Combine(opdir.FullName, opFileName1 + ".COLNEG.png");
 
             string opFileName2 = ipFileName2.Name;
-            var cs2 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
-            cs2.FileName = opFileName2;
-            cs2.ColorMode = colorMap;
-            cs2.BackgroundFilter = backgroundFilterCoeff;
+            var cs2 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap)
+            {
+                FileName = opFileName2,
+                ColorMode = colorMap,
+                BackgroundFilter = backgroundFilterCoeff,
+            };
             cs2.ReadCsvFiles(ipdir, ipFileName2.Name, keys);
 
-            bool allOK = true;
-            int N = 30;
+            bool allOk = true;
+            int sampleCount = 30;
 
-            allOK = cs1.ReadStandardDeviationSpectrogramCsvs(ipdir, ipSdFileName1.Name);
-            if (!allOK)
+            allOk = cs1.ReadStandardDeviationSpectrogramCsvs(ipdir, ipSdFileName1.Name);
+            if (!allOk)
             {
                 Console.WriteLine("Cannot do t-test comparison because error reading standard deviation file: {0}", ipSdFileName1.Name);
                 return;
             }
-            cs1.SampleCount = N;
 
-            allOK = cs2.ReadStandardDeviationSpectrogramCsvs(ipdir, ipSdFileName2.Name);
-            if (!allOK)
+            cs1.SampleCount = sampleCount;
+            allOk = cs2.ReadStandardDeviationSpectrogramCsvs(ipdir, ipSdFileName2.Name);
+            if (!allOk)
             {
                 Console.WriteLine("Cannot do t-test comparison because error reading standard deviation file: {0}", ipSdFileName2.Name);
                 return;
             }
-            cs2.SampleCount = N;
+
+            cs2.SampleCount = sampleCount;
 
             string key = "ACI";
-            Image tStatIndexImage = DrawTStatisticSpectrogramsOfSingleIndex(key, cs1, cs2, tStatThreshold);
+            var tStatIndexImage = DrawTStatisticSpectrogramsOfSingleIndex(key, cs1, cs2, tStatThreshold);
             string opFileName3 = ipFileName1 + ".tTest." + key + ".png";
             tStatIndexImage.Save(Path.Combine(opdir.FullName, opFileName3));
 
@@ -144,23 +145,26 @@
             opFileName3 = ipFileName1 + ".tTest." + key + ".png";
             tStatIndexImage.Save(Path.Combine(opdir.FullName, opFileName3));
 
-            tStatIndexImage = DrawTStatisticSpectrogramsOfMultipleIndices(cs1, cs2, tStatThreshold, colourGain);
+            tStatIndexImage = DrawTStatisticSpectrogramsOfMultipleIndices(cs1, cs2, tStatThreshold, ColourGain);
             opFileName3 = ipFileName1+"-"+ipFileName2 + ".Difference.tTestThreshold.png";
             tStatIndexImage.Save(Path.Combine(opdir.FullName, opFileName3));
         }
-
 
         public static double[,] GetTStatisticMatrix(string key, LDSpectrogramRGB cs1, LDSpectrogramRGB cs2)
         {
             double[,] avg1 = cs1.GetSpectrogramMatrix(key);
             if (key.Equals("TEN"))
+            {
                 avg1 = MatrixTools.SubtractValuesFromOne(avg1);
+            }
 
             double[,] std1 = cs1.GetStandarDeviationMatrix(key);
 
             double[,] avg2 = cs2.GetSpectrogramMatrix(key);
             if (key.Equals("TEN"))
+            {
                 avg2 = MatrixTools.SubtractValuesFromOne(avg2);
+            }
 
             double[,] std2 = cs2.GetStandarDeviationMatrix(key);
 
@@ -168,13 +172,12 @@
             return tStatMatrix;
         }
 
-
-        public static double[,] GetTStatisticMatrix(double[,] m1Av, double[,] m1Sd, int N1, double[,] m2Av, double[,] m2Sd, int N2)
+        public static double[,] GetTStatisticMatrix(double[,] m1Av, double[,] m1Sd, int n1, double[,] m2Av, double[,] m2Sd, int n2)
         {
             int rows = m1Av.GetLength(0); //number of rows
             int cols = m1Av.GetLength(1); //number
             double avg1, avg2, std1, std2;
-            double[,] M = new double[rows, cols];
+            double[,] matrix = new double[rows, cols];
             int expectedMinAvg = 0; // expected minimum average  of spectral dB above background
             int expectedMinVar = 0; // expected minimum variance of spectral dB above background
 
@@ -193,56 +196,59 @@
                         avg1 = expectedMinAvg;
                         std1 = expectedMinVar;
                     }
+
                     if (avg2 < expectedMinAvg)
                     {
                         avg2 = expectedMinAvg;
                         std2 = expectedMinVar;
                     }
 
-                    M[row, column] = Statistics.tStatistic(avg1, std1, N1, avg2, std2, N2);
-                }//end all columns
-            }//end all rows
+                    matrix[row, column] = Statistics.tStatistic(avg1, std1, n1, avg2, std2, n2);
+                }
+            }
 
-            return M;
+            return matrix;
         }
-
-
 
         public static Image DrawTStatisticSpectrogramsOfSingleIndex(string key, LDSpectrogramRGB cs1, LDSpectrogramRGB cs2, double tStatThreshold)
         {
-            Image image1 = cs1.DrawGreyscaleSpectrogramOfIndex(key);
-            Image image2 = cs2.DrawGreyscaleSpectrogramOfIndex(key);
+            var image1 = cs1.DrawGreyscaleSpectrogramOfIndex(key);
+            var image2 = cs2.DrawGreyscaleSpectrogramOfIndex(key);
 
             if ((image1 == null) || (image2 == null))
             {
                 Console.WriteLine("WARNING: From method ColourSpectrogram.DrawTStatisticGreyscaleSpectrogramOfIndex()");
                 Console.WriteLine("         Null image returned with key: {0}", key);
                 return null;
-                //Console.WriteLine("  Press <RETURN> to exit.");
-                //Console.ReadLine();
-                //System.Environment.Exit(666);
             }
-
 
             //frame image 1
             int nyquist = cs1.SampleRate / 2;
             int herzInterval = 1000;
 
             string title = string.Format("{0} SPECTROGRAM for: {1}.      (scale:hours x kHz)", key, cs1.FileName);
-            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image1.Width);
+            var titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image1.Width);
             image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, cs1, nyquist, herzInterval);
 
             //frame image 2
-            title = string.Format("{0} SPECTROGRAM for: {1}.      (scale:hours x kHz)", key, cs2.FileName);
+            title = $"{key} SPECTROGRAM for: {cs2.FileName}.      (scale:hours x kHz)";
             titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image2.Width);
             image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, cs1, nyquist, herzInterval);
 
             //get matrices required to calculate matrix of t-statistics
             double[,] avg1 = cs1.GetSpectrogramMatrix(key);
-            if (key.Equals("TEN")) avg1 = MatrixTools.SubtractValuesFromOne(avg1);
+            if (key.Equals("ENT"))
+            {
+                avg1 = MatrixTools.SubtractValuesFromOne(avg1);
+            }
+
             double[,] std1 = cs1.GetStandarDeviationMatrix(key);
             double[,] avg2 = cs2.GetSpectrogramMatrix(key);
-            if (key.Equals("TEN")) avg2 = MatrixTools.SubtractValuesFromOne(avg2);
+            if (key.Equals("ENT"))
+            {
+                avg2 = MatrixTools.SubtractValuesFromOne(avg2);
+            }
+
             double[,] std2 = cs2.GetStandarDeviationMatrix(key);
 
             //draw a spectrogram of t-statistic values
@@ -252,7 +258,7 @@
             //image3 = ColourSpectrogram.FrameSpectrogram(image3, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
 
             //draw a difference spectrogram derived from by thresholding a t-statistic matrix
-            Image image4 = DrawDifferenceSpectrogramDerivedFromSingleTStatistic(key, cs1, cs2, tStatThreshold, colourGain);
+            Image image4 = DrawDifferenceSpectrogramDerivedFromSingleTStatistic(key, cs1, cs2, tStatThreshold, ColourGain);
             title = string.Format("{0} DIFFERENCE SPECTROGRAM (thresholded by t-statistic={3}) for: {1} - {2}.      (scale:hours x kHz)", key, cs1.FileName, cs2.FileName, tStatThreshold);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image2.Width);
             image4 = LDSpectrogramRGB.FrameLDSpectrogram(image4, titleBar, cs2, nyquist, herzInterval);
@@ -261,13 +267,10 @@
             opArray[0] = image1;
             opArray[1] = image2;
             opArray[2] = image4;
-            //opArray[3] = image4;
 
-            Image combinedImage = ImageTools.CombineImagesVertically(opArray);
+            var combinedImage = ImageTools.CombineImagesVertically(opArray);
             return combinedImage;
         }
-
-
 
         /// <summary>
         /// double tStatThreshold = 1.645; // 0.05% confidence @ df=infinity
@@ -275,8 +278,6 @@
         /// double[] table_df_15 =  { 0.26, 0.53, 0.69, 0.87, 1.07, 1.341, 1.753, 2.13, 2.602, 2.947, 3.73, 4.073 };
         /// double[] alpha =        { 0.40, 0.30, 0.25, 0.20, 0.15, 0.10,  0.05,  0.025, 0.01, 0.005, 0.001, 0.0005 };
         /// </summary>
-        /// <param name="tStatMatrix"></param>
-        /// <returns></returns>
         public static Image DrawTStatisticSpectrogram(double[,] tStatMatrix)
         {
             double maxTStat = 20.0;
@@ -286,7 +287,7 @@
 
             int rows = tStatMatrix.GetLength(0); //number of rows
             int cols = tStatMatrix.GetLength(1); //number
-            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            var bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
             for (int row = 0; row < rows; row++)
             {
                 for (int col = 0; col < cols; col++)
@@ -305,7 +306,10 @@
                             if (tStatAbsolute > halfTStat) { colour = colourChart["+99.0%"]; } //99.0% conf
                             else
                             {
-                                if (tStatAbsolute > qtrTStat) { colour = colourChart["+95.0%"]; } //95% conf
+                                if (tStatAbsolute > qtrTStat)
+                                {
+                                    colour = colourChart["+95.0%"];
+                                } //95% conf
                                 else
                                 {
                                     //if (tStatAbsolute < fifthTStat) { colour = colourChart["NoValue"]; }
@@ -315,34 +319,46 @@
                                     //}
                                 }
                             }
-                        }  // if() else
+                        }
+
                         bmp.SetPixel(col, row, colour);
                     }
-                    else //  if (tStat < 0)
+                    else // if (tStat < 0)
                     {
-                        if (tStatAbsolute > maxTStat) { colour = colourChart["-99.9%"]; } //99.9% conf
+                        if (tStatAbsolute > maxTStat)
+                        {
+                            colour = colourChart["-99.9%"];
+                        } //99.9% conf
                         else
                         {
-                            if (tStatAbsolute > halfTStat) { colour = colourChart["-99.0%"]; } //99.0% conf
+                            if (tStatAbsolute > halfTStat)
+                            {
+                                colour = colourChart["-99.0%"];
+                            } //99.0% conf
                             else
                             {
-                                if (tStatAbsolute > qtrTStat) { colour = colourChart["-95.0%"]; } //95% conf
+                                if (tStatAbsolute > qtrTStat)
+                                {
+                                    colour = colourChart["-95.0%"];
+                                } //95% conf
                                 else
                                 {
                                     //if (tStatAbsolute < 0.0) { colour = colourChart["NoValue"]; }
                                     //else
                                     //{
                                     colour = colourChart["NoValue"];
+
                                     //colour = colourChart["-NotSig"];
                                     //}
                                 }
                             }
-                        }  // if() else
+                        }
+
                         bmp.SetPixel(col, row, colour);
                     }
+                }
+            }
 
-                }//end all columns
-            }//end all rows
             return bmp;
         }
 
@@ -352,7 +368,6 @@
             double[,] m2 = cs2.GetNormalisedSpectrogramMatrix(key);
             double[,] tStatM = GetTStatisticMatrix(key, cs1, cs2);
             return DrawDifferenceSpectrogramDerivedFromSingleTStatistic(key, m1, m2, tStatM, tStatThreshold, colourGain);
-
         }
 
         public static Image DrawDifferenceSpectrogramDerivedFromSingleTStatistic(string key, double[,] m1, double[,] m2, double[,] tStatM, double tStatThreshold, double colourGain)
@@ -361,37 +376,39 @@
             int cols = m2.GetLength(1); //number
 
             Bitmap image = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
-            int MaxRGBValue = 255;
-            double diff;
-            int ipos, ineg, value;
+            int maxRgbValue = 255;
 
             for (int row = 0; row < rows; row++)
             {
                 for (int column = 0; column < cols; column++)
                 {
+                    double diff;
                     if (Math.Abs(tStatM[row, column]) >= tStatThreshold)
+                    {
                         diff = (m1[row, column] - m2[row, column]) * colourGain;
-                    else diff = 0;
-                    value = Math.Abs(Convert.ToInt32(diff * MaxRGBValue));
+                    }
+                    else
+                    {
+                        diff = 0;
+                    }
+
+                    var value = Math.Abs(Convert.ToInt32(diff * maxRgbValue));
                     value = Math.Max(0, value);
-                    value = Math.Min(MaxRGBValue, value);
-                    ipos = 0;
-                    ineg = 0;
+                    value = Math.Min(maxRgbValue, value);
 
                     if (diff >= 0)
                     {
-                        ipos = value;
+                        var ipos = value;
                         image.SetPixel(column, row, Color.FromArgb(ipos, 0, 0));
                     }
                     else
                     {
-                        ineg = value;
+                        var ineg = value;
                         image.SetPixel(column, row, Color.FromArgb(0, ineg, 0));
                     }
+                }
+            }
 
-
-                }//end all columns
-            }//end all rows
             return image;
         }
 
@@ -409,9 +426,12 @@
                 for (int column = 0; column < cols; column++)
                 {
                     if (Math.Abs(tStatM[row, column]) >= tStatThreshold)
+                    {
                         differenceM[row, column] = m1[row, column] - m2[row, column];
-                }//end all columns
-            }//end all rows
+                    }
+                }
+            }
+
             return differenceM;
         }
 
@@ -426,64 +446,78 @@
             int rows = m1.GetLength(0); //number of rows
             int cols = m1.GetLength(1); //number
 
-            Bitmap spg1Image = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
-            Bitmap spg2Image = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
-
-            int MaxRGBValue = 255;
-            double dR, dG, dB;
-            int iR1, iG1, iB1, value;
-            int iR2, iG2, iB2;
-            Color colour1, colour2;
+            var spg1Image = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            var spg2Image = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            int maxRgbValue = 255;
 
             for (int row = 0; row < rows; row++)
             {
                 for (int column = 0; column < cols; column++)
                 {
-                    dR = m1[row, column] * colourGain;
-                    dG = m2[row, column] * colourGain;
-                    dB = m3[row, column] * colourGain;
+                    var dR = m1[row, column] * colourGain;
+                    var dG = m2[row, column] * colourGain;
+                    var dB = m3[row, column] * colourGain;
 
-                    iR1 = 0; iR2 = 0; iG1 = 0; iG2 = 0; iB1 = 0; iB2 = 0;
+                    var iR1 = 0;
+                    var iR2 = 0;
+                    var iG1 = 0;
+                    var iG2 = 0;
+                    var iB1 = 0;
+                    var iB2 = 0;
 
-                    value = Convert.ToInt32(Math.Abs(dR) * MaxRGBValue);
-                    value = Math.Min(MaxRGBValue, value);
-                    if (dR > 0.0) { iR1 = value; }
-                    else { iR2 = value; }
+                    var value = Convert.ToInt32(Math.Abs(dR) * maxRgbValue);
+                    value = Math.Min(maxRgbValue, value);
+                    if (dR > 0.0)
+                    {
+                        iR1 = value;
+                    }
+                    else
+                    {
+                        iR2 = value;
+                    }
 
-                    value = Convert.ToInt32(Math.Abs(dG) * MaxRGBValue);
-                    value = Math.Min(MaxRGBValue, value);
-                    if (dG > 0.0) { iG1 = value; }
-                    else { iG2 = value; }
+                    value = Convert.ToInt32(Math.Abs(dG) * maxRgbValue);
+                    value = Math.Min(maxRgbValue, value);
+                    if (dG > 0.0)
+                    {
+                        iG1 = value;
+                    }
+                    else
+                    {
+                        iG2 = value;
+                    }
 
-                    value = Convert.ToInt32(Math.Abs(dB) * MaxRGBValue);
-                    value = Math.Min(MaxRGBValue, value);
-                    if (dB > 0.0) { iB1 = value; }
-                    else { iB2 = value; }
+                    value = Convert.ToInt32(Math.Abs(dB) * maxRgbValue);
+                    value = Math.Min(maxRgbValue, value);
+                    if (dB > 0.0)
+                    {
+                        iB1 = value;
+                    }
+                    else
+                    {
+                        iB2 = value;
+                    }
 
-                    colour1 = Color.FromArgb(iR1, iG1, iB1);
-                    colour2 = Color.FromArgb(iR2, iG2, iB2);
+                    var colour1 = Color.FromArgb(iR1, iG1, iB1);
+                    var colour2 = Color.FromArgb(iR2, iG2, iB2);
                     spg1Image.SetPixel(column, row, colour1);
                     spg2Image.SetPixel(column, row, colour2);
-                }//end all columns
-            }//end all rows
+                }
+            }
 
             Image[] images = new Image[2];
-
             int nyquist = cs1.SampleRate / 2;
             int herzInterval = 1000;
 
             string title = string.Format("DIFFERENCE SPECTROGRAM (thresholded by t-Statistic={2}) where {0} > {1}      (scale:hours x kHz)       (colour: R-G-B={2})", cs1.FileName, cs2.FileName, tStatThreshold);
-            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width);
+            var titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width);
             images[0] = LDSpectrogramRGB.FrameLDSpectrogram(spg1Image, titleBar, cs1, nyquist, herzInterval);
             title = string.Format("DIFFERENCE SPECTROGRAM (thresholded by t-Statistic={2}) where {1} > {0}      (scale:hours x kHz)       (colour: R-G-B={2})", cs1.FileName, cs2.FileName, tStatThreshold);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg2Image.Width);
             images[1] = LDSpectrogramRGB.FrameLDSpectrogram(spg2Image, titleBar, cs1, nyquist, herzInterval);
 
-            Image compositeImage = ImageTools.CombineImagesVertically(images);
+            var compositeImage = ImageTools.CombineImagesVertically(images);
             return compositeImage;
         }
-
-
-
-    } // class LDSpectrogramTStatistic
+    }
 }

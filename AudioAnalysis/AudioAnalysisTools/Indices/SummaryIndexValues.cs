@@ -293,15 +293,16 @@ namespace AudioAnalysisTools.Indices
 
         public double[] DIF { get; set; }
 
-        /// <summary>
-        /// DMN = Decibels Minus Noise. THis is the correct way to average a decibel spectrogram.
-        /// DMN should replace POW as the average decibel spectrogram.
-        /// </summary>
-        public double[] DMN { get; set; }
-
         public double[] ENT { get; set; }
 
         public double[] EVN { get; set; }
+
+        /// <summary>
+        /// PMN = Power Minus Noise.
+        /// PMN is measured in decibels but should replace POW as the average decibel spectrogram.
+        /// PMN calculates the average decibel spectrogram correctly.
+        /// </summary>
+        public double[] PMN { get; set; }
 
         /// <summary>
         /// The POW spectral index should eventually be depracated.
@@ -321,7 +322,7 @@ namespace AudioAnalysisTools.Indices
         // Spectral Ridges Negative Slope
         public double[] RNG { get; set; }
 
-        // Sum of Spectral Ridges in HRHZ, RPS and RNG directions
+        // Sum of Spectral Ridges in Horizontal, postive and neg slope directions (RHZ+RPS+RNG)
         public double[] R3D { get; set; }
 
         // Spectral Peak Tracks

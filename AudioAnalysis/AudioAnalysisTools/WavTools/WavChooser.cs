@@ -8,8 +8,6 @@
 
     public static class WavChooser
     {
-
-
         public static void ChooseWavFile(out string wavDirName, out string wavFileName)
         {
             //BRISBANE AIRPORT CORP

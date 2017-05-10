@@ -354,7 +354,6 @@
                 else
                 if ((fields[fields.Length-2] == "Low") && (fields[fields.Length-1] == "Tide"))
                 {
-
                     //var dto = new DateTimeOffset();
                     tides.dictionary.Add(SunMoonTides.LOWTIDE, dto);
                 }

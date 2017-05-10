@@ -527,7 +527,6 @@
 
     public static int[] RandomizeNumberOrder (int n) // var randomArray:array of word);
     {
-
         int[] randomArray = new int[n];
         for (int i = 0; i < n; i++) randomArray[i] = i;   // integers in ascending order
         //{  randomize;}{do NOT randomize. Instead Initialise RANDSEED in order to get
@@ -558,7 +557,6 @@
 
     public static int[] ClusterWithART2a(double[,] trainingData)
     {
-
         //DataTools.WriteMinMaxOfFeatures(trainingData);
         //if (true) Console.ReadLine();
 

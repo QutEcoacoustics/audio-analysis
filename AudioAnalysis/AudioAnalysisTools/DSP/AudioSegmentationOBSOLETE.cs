@@ -1,6 +1,5 @@
 ﻿namespace AudioAnalysisTools.DSP
 {
-
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -15,7 +14,6 @@
     /// </summary>
     public class AudioSegmentationOBSOLETE
     {
-
         /*
         public static void Main(string[] args)
         {

@@ -1,7 +1,5 @@
 ﻿namespace AudioAnalysisTools
 {
-
-
     using System;
     using System.Collections.Generic;
     using System.Drawing;
@@ -28,7 +26,6 @@
     /// </summary>
     public static class BirdClefExperiment1
     {
-
         const string FEATURE_KEYS = "SPT,RHZ,RVT,RPS,RNG";
         const string HEADERS = "index,Hz(top),SPT,RHZ,RVT,RPS,RNG";
 
@@ -471,7 +468,6 @@
         /// <param name="output"></param>
         public static void Normalise(Arguments arguments, Output output)
         {
-
             var keyArray = FEATURE_KEYS.Split(',');
             int speciesCount = arguments.SpeciesCount;
             int instanceCount = arguments.InstanceCount;
@@ -736,7 +732,6 @@
 
         public static void WriteDataTODOTODOTODOTODO()
         {
-
             // write inf to csv file
             //var lines = new List<string>();
             //    lines.Add(HEADERS);

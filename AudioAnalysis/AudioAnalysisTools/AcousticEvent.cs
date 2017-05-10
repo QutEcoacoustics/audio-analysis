@@ -28,8 +28,6 @@ namespace AudioAnalysisTools
     {
         public sealed class AcousticEventClassMap : CsvClassMap<AcousticEvent>
         {
-
-
             private static readonly string[] IgnoredProperties =
                 {
                     "TimeStart", "TimeEnd", "MinFreq", "MaxFreq",

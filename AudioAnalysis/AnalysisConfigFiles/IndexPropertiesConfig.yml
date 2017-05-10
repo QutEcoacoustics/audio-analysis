@@ -632,18 +632,6 @@ DIF:
   CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: ""
-DMN:
-  Name: spectralDMN
-  Comment: "Spectrum of average dB power in each frequency bin after noise removal."
-  DataType: double[]
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0.0
-  NormMax: 5.5
-  CalculateNormMin: true
-  CalculateNormMax: false
-  ProjectID: Acoustic Indices
-  Units: "dB"
 ENT:
   Name: spectralENT
   Comment: "1 - Temporal Entropy. Default value = 0.0 because index = 1-Ht = a measure of concentration of acoustic energy instead of energy dispersal."
@@ -663,7 +651,7 @@ EVN:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 5.0
+  NormMax: 2.0
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -680,6 +668,18 @@ SUM:
   CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: ""
+PMN:
+  Name: spectralPMN
+  Comment: "Spectrum of average dB power in each frequency bin after noise removal."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 5.5
+  CalculateNormMin: true
+  CalculateNormMax: false
+  ProjectID: Acoustic Indices
+  Units: "dB"
 POW:
   Name: spectralPOW
   Comment: "DEPRACATED: Spectrum of average dB power in each frequency bin after noise removal."
@@ -692,18 +692,6 @@ POW:
   CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "dB"
-SPT:
-  Name: spectralSPT
-  Comment: "Spectrum of average number of spectral Peak Tracks per second within each freq bin."
-  DataType: double[]
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0.05
-  NormMax: 0.75
-  CalculateNormMin: false
-  CalculateNormMax: false
-  ProjectID: Acoustic Indices
-  Units: "tracks/s"
 RHZ:
   Name: spectralRHZ
   Comment: "Spectrum of average number of horizontal spectral ridges per sec."
@@ -748,6 +736,30 @@ RNG:
   DoDisplay: true
   NormMin: 0.0
   NormMax: 0.4
+  CalculateNormMin: false
+  CalculateNormMax: false
+  ProjectID: Acoustic Indices
+  Units: "tracks/s"
+R3D:
+  Name: spectralR3D
+  Comment: "Spectrum of max value of horizontal, positive and negative slope ridges per sec."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.15
+  NormMax: 1.0
+  CalculateNormMin: false
+  CalculateNormMax: false
+  ProjectID: Acoustic Indices
+  Units: "tracks/s"
+SPT:
+  Name: spectralSPT
+  Comment: "Spectrum of average number of spectral Peak Tracks per second within each freq bin."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.05
+  NormMax: 0.5
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices

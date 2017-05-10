@@ -1,6 +1,5 @@
 ﻿namespace AudioAnalysisTools.DSP
 {
-
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -12,8 +11,6 @@
     /// </summary>
     public class LocalContrastNormalisation
     {
-
-
         /// <summary>
         /// WARNING!!: This method implements a convolution and like all convolutions is very slow (unless it can be fully parellised);
         ///            Consider using another noise normalisation method such as in the class NoiseRemoval_Briggs.
