@@ -74,6 +74,41 @@ namespace AudioAnalysisTools.Indices
             CachedSelectors = ReflectionExtensions.GetGetters<SummaryIndexValues, object>();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SummaryIndexValues"/> class.
+        /// All summary indices initialised to zero except background and av Sig AMplitude both = -100 dB.
+        /// </summary>
+        public SummaryIndexValues()
+        {
+            // serialization entry
+            this.BackgroundNoise = -100;
+            this.AvgSignalAmplitude = -100;
+        }
+
+        public SummaryIndexValues(TimeSpan wavDuration, Dictionary<string, IndexProperties> indexProperties)
+        {
+            this.SegmentDuration = wavDuration;
+
+            // initialize with default values stored values in the dictionary of index properties.
+            foreach (var kvp in indexProperties)
+            {
+                // do not process spectral indices properties
+                // don't bother with slow reflection if the default is 0.0
+                if (kvp.Value.IsSpectralIndex || kvp.Value.DefaultValue == default(double))
+                {
+                    continue;
+                }
+
+                this.SetPropertyValue(kvp.Key, kvp.Value.DefaultValueCasted);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the NoFile Index.
+        /// This is used only when concatenating index files. It helps to keep track of missing files.
+        /// </summary>
+        public double NoFile { get; set; }
+
         public double ZeroSignal { get; set; }
 
         public double HighAmplitudeIndex { get; set; }
@@ -95,6 +130,7 @@ namespace AudioAnalysisTools.Indices
         // Commented out on 2nd Feb 2015.
         // AvgEventDuration is no longer accurately calculated now that estimating it on subsegments of < 1 second duration.
         // public TimeSpan AvgEventDuration { get; set; }
+
         public double HighFreqCover { get; set; }
 
         public double MidFreqCover { get; set; }
@@ -140,32 +176,6 @@ namespace AudioAnalysisTools.Indices
         //public double CicadaIndex { get; set; }
 
         private static Dictionary<string, Func<SummaryIndexValues, object>> CachedSelectors { get; set; }
-
-        // all summary indices initialised to zero except background and av Sig AMplitude both = -100 dB.
-        public SummaryIndexValues()
-        {
-            // serialization entry
-            this.BackgroundNoise = -100;
-            this.AvgSignalAmplitude = -100;
-        }
-
-        public SummaryIndexValues(TimeSpan wavDuration, Dictionary<string, IndexProperties> indexProperties)
-        {
-            this.SegmentDuration = wavDuration;
-
-            // initialize with default values stored values in the dictionary of index properties.
-            foreach (var kvp in indexProperties)
-            {
-                // do not process spectral indices properties
-                // don't bother with slow reflection if the default is 0.0
-                if (kvp.Value.IsSpectralIndex || kvp.Value.DefaultValue == default(double))
-                {
-                    continue;
-                }
-
-                this.SetPropertyValue(kvp.Key, kvp.Value.DefaultValueCasted);
-            }
-        }
     }
 
     public class SpectralIndexValues : SpectralIndexBase

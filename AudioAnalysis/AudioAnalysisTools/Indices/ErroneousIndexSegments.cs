@@ -35,7 +35,8 @@ namespace AudioAnalysisTools.Indices
         /// <returns>a list of erroneous segments</returns>
         public static List<ErroneousIndexSegments> DataIntegrityCheck(Dictionary<string, double[]> summaryIndices)
         {
-            var errors = DataIntegrityCheckForZeroSignal(summaryIndices);
+            var errors = DataIntegrityCheckForNoRecording(summaryIndices);
+            errors.AddRange(DataIntegrityCheckForZeroSignal(summaryIndices));
             errors.AddRange(DataIntegrityCheckIndices(summaryIndices));
             return errors;
         }
@@ -58,6 +59,59 @@ namespace AudioAnalysisTools.Indices
 
             // ReSharper disable once RedundantTypeArgumentsOfMethod
             Json.Serialise<List<ErroneousIndexSegments>>(new FileInfo(path), errors);
+        }
+
+        /// <summary>
+        /// This method reads through a ZeroIndex SUMMARY array.
+        /// It reads the ZeroSignal array to make sure there was actually a signal to analyse.
+        /// If this occurs an error is flagged.
+        /// </summary>
+        /// <param name="summaryIndices">Dictionary of the currently calculated summary indices</param>
+        /// <returns>a list of erroneous segments</returns>
+        public static List<ErroneousIndexSegments> DataIntegrityCheckForNoRecording(Dictionary<string, double[]> summaryIndices)
+        {
+            double tolerance = 0.00001;
+
+            // init list of errors
+            var errors = new List<ErroneousIndexSegments>();
+
+            double[] zeroSignalArray = summaryIndices["NoFile"];
+            int arrayLength = zeroSignalArray.Length;
+
+            bool allOk = true;
+            var error = new ErroneousIndexSegments();
+            for (int i = 0; i < zeroSignalArray.Length; i++)
+            {
+                // if (zeroSignal index > 0), i.e. if signal == zero
+                if (Math.Abs(zeroSignalArray[i]) > tolerance)
+                {
+                    if (allOk)
+                    {
+                        allOk = false;
+                        error = new ErroneousIndexSegments
+                        {
+                            StartPosition = i,
+                            ErrorDescription = errorMissingData,
+                        };
+                    }
+                }
+                else
+                if (!allOk && Math.Abs(zeroSignalArray[i]) < tolerance)
+                {
+                    // come to end of a bad patch
+                    allOk = true;
+                    error.EndPosition = i - 1;
+                    errors.Add(error);
+                }
+            } // end of loop
+
+            // if not OK at end of the array, need to close the error.
+            if (!allOk)
+            {
+                errors[errors.Count - 1].EndPosition = arrayLength - 1;
+            }
+
+            return errors;
         }
 
         /// <summary>
@@ -178,15 +232,34 @@ namespace AudioAnalysisTools.Indices
             return errors;
         }
 
-        public static void DrawErrorPatches(List<ErroneousIndexSegments> errorPatches, string errorDescription, int height, bool textInVerticalOrientation)
+        /// <summary>
+        /// This method draws the error segments in in hierarchical order, highest level errors first.
+        /// THis way error due to mssing recording is drawn last and overwrites other casading errors due ot missing recording.
+        /// </summary>
+        /// <param name="bmp">The chromeless spectrogram to have segments drawn on it.</param>
+        /// <param name="list">list of erroneous segments</param>
+        /// <returns>spectrogram with erroneous segments marked.</returns>
+        public static Image DrawErrorSegments(Image bmp, List<ErroneousIndexSegments> list)
         {
-            foreach (var errorPatch in errorPatches)
+            var newBmp = DrawErrorPatches(bmp, list, invalidIndexValue, bmp.Height, true);
+            newBmp = DrawErrorPatches(newBmp, list, errorZeroSignal, bmp.Height, true);
+            newBmp = DrawErrorPatches(newBmp, list, errorMissingData, bmp.Height, true);
+            return newBmp;
+        }
+
+        public static Image DrawErrorPatches(Image bmp, List<ErroneousIndexSegments> errorList, string errorDescription, int height, bool textInVerticalOrientation)
+        {
+            var g = Graphics.FromImage(bmp);
+            foreach (var error in errorList)
             {
-                if (errorPatch.ErrorDescription.Equals(errorDescription))
+                if (error.ErrorDescription.Equals(errorDescription))
                 {
-                    errorPatch.DrawErrorPatch(height, textInVerticalOrientation);
+                    var patch = error.DrawErrorPatch(height, textInVerticalOrientation);
+                    g.DrawImage(patch, error.StartPosition, 1);
                 }
             }
+
+            return bmp;
         }
 
         public Bitmap DrawErrorPatch(int height, bool textInVerticalOrientation)

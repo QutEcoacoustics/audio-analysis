@@ -275,7 +275,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var indicesCsvfile = new FileInfo(indicesFile);
             Csv.WriteToCsv(indicesCsvfile, summaryIndices);
 
-            //now put summary indices into a dictionary. ##### WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
+            // Put SUMMARY indices into dictionary. ################# WARNING: THIS METHOD ONLY GETS A "HARD CODED" LIST OF SUMMARY INDICES. See the method.
             var dictionaryOfSummaryIndices = IndexMatrices.GetDictionaryOfSummaryIndices(summaryIndices);
 
             // return the dictionary - it will be used later to produce an index tracks image.
