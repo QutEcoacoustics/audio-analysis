@@ -29,26 +29,55 @@ namespace AudioAnalysisTools.Indices
         // #####################################################################################################################
 
         /// <summary>
-        /// This method reads through four SUMMARY index arrays to check for signs that something might be wrong with the data.
+        /// Does two data integrity checks.
+        /// </summary>
+        /// <param name="summaryIndices">a dictionary of summary indices</param>
+        /// <returns>a list of erroneous segments</returns>
+        public static List<ErroneousIndexSegments> DataIntegrityCheck(Dictionary<string, double[]> summaryIndices)
+        {
+            var errors = DataIntegrityCheckForZeroSignal(summaryIndices);
+            errors.AddRange(DataIntegrityCheckIndices(summaryIndices));
+            return errors;
+        }
+
+        /// <summary>
+        /// Writes a list of erroneous segment properties to file
+        /// </summary>
+        /// <param name="errors">list of erroneous segments</param>
+        /// <param name="outputDirectory">directory in which json file to be written</param>
+        /// <param name="fileStem">name of json file</param>
+        public static void WriteErrorsToFile(List<ErroneousIndexSegments> errors, DirectoryInfo outputDirectory, string fileStem)
+        {
+            // write info to file
+            if (errors.Count == 0)
+            {
+                return;
+            }
+
+            string path = FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, ErroneousIndexSegmentsFilenameFragment, "json");
+
+            // ReSharper disable once RedundantTypeArgumentsOfMethod
+            Json.Serialise<List<ErroneousIndexSegments>>(new FileInfo(path), errors);
+        }
+
+        /// <summary>
+        /// This method reads through a ZeroIndex SUMMARY array.
         /// It reads the ZeroSignal array to make sure there was actually a signal to analyse.
-        /// It then reads through the ACI, Temporal Entropy and SNR summary index arrays to check that they have positive values. These should never be LTE zero.
-        /// If any of these events occurs an error is flagged.
+        /// If this occurs an error is flagged.
         /// </summary>
         /// <param name="summaryIndices">Dictionary of the currently calculated summary indices</param>
-        /// <param name="outputDirectory">directory where the error.JSON file is to be written</param>
-        /// <param name="fileStem">name of the Json file</param>
-        /// <returns>a list of the same erroneous segments that was written to file</returns>
-        public static List<ErroneousIndexSegments> DataIntegrityCheck(Dictionary<string, double[]> summaryIndices, DirectoryInfo outputDirectory, string fileStem)
+        /// <returns>a list of erroneous segments</returns>
+        public static List<ErroneousIndexSegments> DataIntegrityCheckForZeroSignal(Dictionary<string, double[]> summaryIndices)
         {
-            bool allOk = true;
-            int errorStart;
             double tolerance = 0.00001;
 
             // init list of errors
             var errors = new List<ErroneousIndexSegments>();
 
-            // (1) FIRST check for zero signal values - these will be indicated in the Zero Signal Index.
             double[] zeroSignalArray = summaryIndices["ZeroSignal"];
+            int arrayLength = zeroSignalArray.Length;
+
+            bool allOk = true;
             var error = new ErroneousIndexSegments();
             for (int i = 0; i < zeroSignalArray.Length; i++)
             {
@@ -75,14 +104,36 @@ namespace AudioAnalysisTools.Indices
                 }
             } // end of loop
 
- /*           // (2) NOW check for zero index values
-            allOk = true;
+            // if not OK at end of the array, need to close the error.
+            if (!allOk)
+            {
+                errors[errors.Count - 1].EndPosition = arrayLength - 1;
+            }
+
+            return errors;
+        }
+
+        /// <summary>
+        /// This method reads through three SUMMARY index arrays to check for signs that something might be wrong with the data.
+        /// It reads through the ACI, Temporal Entropy and SNR summary index arrays to check that they have positive values. These should never be LTE zero.
+        /// If any of these events occurs an error is flagged.
+        /// </summary>
+        /// <param name="summaryIndices">Dictionary of the currently calculated summary indices</param>
+        /// <returns>a list of erroneous segments</returns>
+        public static List<ErroneousIndexSegments> DataIntegrityCheckIndices(Dictionary<string, double[]> summaryIndices)
+        {
+            int errorStart;
+            double tolerance = 0.00001;
+
+            // init list of errors
+            var errors = new List<ErroneousIndexSegments>();
+
+            bool allOk = true;
             bool zeroIndex = summaryIndices["AcousticComplexity"][0] < tolerance ||
                              summaryIndices["TemporalEntropy"][0] < tolerance ||
                              summaryIndices["Snr"][0] < tolerance;
 
-            bool zeroSignal = Math.Abs(zeroSignalArray[0]) > tolerance;
-            if (!zeroSignal && zeroIndex)
+            if (zeroIndex)
             {
                 allOk = false;
                 errorStart = 0;
@@ -94,12 +145,6 @@ namespace AudioAnalysisTools.Indices
             int arrayLength = summaryIndices["AcousticComplexity"].Length;
             for (int i = 1; i < arrayLength; i++)
             {
-                if (Math.Abs(zeroSignalArray[i]) > tolerance)
-                {
-                    // ignore locations with zero signal
-                    continue;
-                }
-
                 zeroIndex = summaryIndices["AcousticComplexity"][i] < tolerance ||
                             summaryIndices["TemporalEntropy"][i] < tolerance ||
                             summaryIndices["Snr"][i] < tolerance;
@@ -119,7 +164,6 @@ namespace AudioAnalysisTools.Indices
                 else
                 if (!allOk)
                 {
-                    // if (!allOk && !zeroIndex)
                     allOk = true;
                     errors[errors.Count - 1].EndPosition = i - 1;
                 }
@@ -130,17 +174,19 @@ namespace AudioAnalysisTools.Indices
             {
                 errors[errors.Count - 1].EndPosition = arrayLength - 1;
             }
-*/
-            // write info to file
-            if (errors.Count != 0)
-            {
-                string path = FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, ErroneousIndexSegmentsFilenameFragment, "json");
-
-                // ReSharper disable once RedundantTypeArgumentsOfMethod
-                Json.Serialise<List<ErroneousIndexSegments>>(new FileInfo(path), errors);
-            }
 
             return errors;
+        }
+
+        public static void DrawErrorPatches(List<ErroneousIndexSegments> errorPatches, string errorDescription, int height, bool textInVerticalOrientation)
+        {
+            foreach (var errorPatch in errorPatches)
+            {
+                if (errorPatch.ErrorDescription.Equals(errorDescription))
+                {
+                    errorPatch.DrawErrorPatch(height, textInVerticalOrientation);
+                }
+            }
         }
 
         public Bitmap DrawErrorPatch(int height, bool textInVerticalOrientation)

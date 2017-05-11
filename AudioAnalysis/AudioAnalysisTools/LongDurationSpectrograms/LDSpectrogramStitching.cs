@@ -1,4 +1,8 @@
-﻿namespace AudioAnalysisTools.LongDurationSpectrograms
+﻿// <copyright file="LDSpectrogramStitching.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
@@ -42,15 +46,14 @@
     /// This method was written to deal with a new recording protocol in which 24 hours of recording are made in 4 blocks of 6 hours each.
     /// It merges all files of acoustic indices derived from a sequence of consecutive 6 hour recording, into one file. It then creates the images.
     /// </summary>
-    public static class LDSpectrogramStitching
+    public static class LdSpectrogramStitching
     {
         // CONSTANT STRINGS
         public const string CsvFileExt = "csv";
         public const string ImgFileExt = "png";
 
-        public const string SummaryIndicesStr  = "SummaryIndices";
+        public const string SummaryIndicesStr = "SummaryIndices";
         public const string SpectralIndicesStr = "SpectralIndices";
-
 
         public static DirectoryInfo[] GetSubDirectoriesForSiteData(DirectoryInfo[] topLevelDataDirectories, string site)
         {
@@ -71,6 +74,7 @@
             {
                 dataDirectories.Add(new DirectoryInfo(path));
             }
+
             return dataDirectories.ToArray();
         }
 
@@ -78,30 +82,20 @@
         /// ONLY Use this concatenation method when you want to concatenate the files for a fixed single day.
         /// The files to be concatenated must be somewhere in the subdirectory structure of the passed list of data directories
         /// Read them into a dictionary
-        /// </summary>
-        /// <param name="indexPropertiesConfigFileInfo"></param>
-        /// <param name="opDir"></param>
-        /// <param name="dictionary"></param>
-        /// <param name="sgConfig"></param>
-        /// <param name="indexGenerationData"></param>
-        /// <param name="siteDescription"></param>
-        /// <param name="sunriseDataFile"></param>
-        /// <param name="segmentErrors"></param>
-        /// <param name="verbose"></param>
-        /// <summary>
         /// MOST RECENT METHOD TO CONCATENATE Spectral INDEX.CSV FILES - Early September 2015.
         /// It is designed to deal with Yvonne's case where want to concatenate files distributed over arbitrary directories.
         /// It only merges files for the passed fixed date. i.e only 24 hours
         /// </summary>
-        public static void DrawSpectralIndexFiles(Dictionary<string, double[,]> dictionary,
-                                                  LdSpectrogramConfig sgConfig,
-                                                  IndexGenerationData indexGenerationData,
-                                                  FileInfo indexPropertiesConfigFileInfo,
-                                                  DirectoryInfo opDir,
-                                                  SiteDescription siteDescription,
-                                                  FileInfo sunriseDataFile = null,
-                                                  List<ErroneousIndexSegments> segmentErrors = null,
-                                                  bool verbose = false)
+        public static void DrawSpectralIndexFiles(
+            Dictionary<string, double[,]> dictionary,
+            LdSpectrogramConfig sgConfig,
+            IndexGenerationData indexGenerationData,
+            FileInfo indexPropertiesConfigFileInfo,
+            DirectoryInfo opDir,
+            SiteDescription siteDescription,
+            FileInfo sunriseDataFile = null,
+            List<ErroneousIndexSegments> segmentErrors = null,
+            bool verbose = false)
         {
             // derive new indices such as sqrt(POW), NCDI etc -- main reason for this is to view what their distributions look like.
             dictionary = IndexMatrices.AddDerivedIndices(dictionary);
@@ -137,12 +131,9 @@
             }
         }
 
-
         // ####################################  SPECTRAL INDEX METHODS ABOVE HERE  ##################################
 
         // ####################################  SUMMARY  INDEX METHODS BELOW HERE  ##################################
-
-
 
         public static FileInfo[] GetFileArrayForOneDay(SortedDictionary<DateTimeOffset, FileInfo> dict, DateTimeOffset dto)
         {
@@ -155,6 +146,7 @@
                     matchFiles.Add(dict[key]);
                 }
             }
+
             FileInfo[] array = matchFiles.ToArray<FileInfo>();
             return array;
         }
@@ -170,22 +162,22 @@
                     matchFiles.Add(dict[key]);
                 }
             }
+
             DirectoryInfo[] array = matchFiles.ToArray<DirectoryInfo>();
             return array;
         }
 
-
-        public static void DrawSummaryIndexFiles(Dictionary<string, double[]> dictionaryOfCsvColumns,
-                                                IndexGenerationData indexGenerationData,
-                                                FileInfo indexPropertiesConfigFileInfo,
-                                                DirectoryInfo opDir,
-                                                SiteDescription siteDescription,
-                                                FileInfo sunriseDatafile = null,
-                                                List<ErroneousIndexSegments> erroneousSegments = null, // info if have fatal errors i.e. no signal
-                                                bool verbose = false
-            )
+        public static void DrawSummaryIndexFiles(
+            Dictionary<string, double[]> dictionaryOfCsvColumns,
+            IndexGenerationData indexGenerationData,
+            FileInfo indexPropertiesConfigFileInfo,
+            DirectoryInfo opDir,
+            SiteDescription siteDescription,
+            FileInfo sunriseDatafile = null,
+            List<ErroneousIndexSegments> erroneousSegments = null, // info if have fatal errors i.e. no signal
+            bool verbose = false)
         {
-            DateTimeOffset dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
+            var dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
 
             string dateString = $"{dto.Year}{dto.Month:D2}{dto.Day:D2}";
             string opFileStem = $"{siteDescription.SiteName}_{dateString}";
@@ -193,9 +185,13 @@
             // Calculate the index distribution statistics and write to a json file. Also save as png image
             var indexDistributions = IndexDistributions.WriteSummaryIndexDistributionStatistics(dictionaryOfCsvColumns, opDir, opFileStem);
 
-            TimeSpan start = ((DateTimeOffset)indexGenerationData.RecordingStartDate).TimeOfDay;
+            var start = ((DateTimeOffset)indexGenerationData.RecordingStartDate).TimeOfDay;
             string startTime = $"{start.Hours:d2}{start.Minutes:d2}h";
-            if((start.Hours == 0) && (start.Minutes == 0)) startTime = "midnight";
+            if (start.Hours == 0 && start.Minutes == 0)
+            {
+                startTime = "midnight";
+            }
+
             string titletext =
                 $"SOURCE: \"{opFileStem}\".     Starts at {startTime}                       (c) QUT.EDU.AU";
             Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndices(
@@ -211,11 +207,9 @@
             tracksImage.Save(imagePath);
         }
 
-
         // ##############################################################################################################
         // ######################### METHODS FOR STITCHING TNC - EDDIE GAME's DATA
         // ######################### CONCATENATE EVERYTHING
-
 
         /// <summary>
         /// RECENT METHOD TO CONCATENATE Spectral INDEX.CSV FILES - August 2015. Revised Septermber 2016
@@ -223,12 +217,10 @@
         /// This method merges all files of spectral indices in the passed directories.
         /// The total length of the concatenated files can exceed 24 hours - limited by memory!
         /// </summary>
-        public static Dictionary<string, double[,]> ConcatenateAllSpectralIndexFiles(DirectoryInfo[] directories, string[] keys,
-                                                         IndexGenerationData indexGenerationData)
+        public static Dictionary<string, double[,]> ConcatenateAllSpectralIndexFiles(DirectoryInfo[] directories, string[] keys, IndexGenerationData indexGenerationData)
         {
             string analysisType = "Towsey.Acoustic";
             var dictionaryOfSpectralIndices = IndexMatrices.GetSpectralIndexFilesAndConcatenate(directories, analysisType, keys, indexGenerationData, true);
-
 
             if (dictionaryOfSpectralIndices.Count == 0)
             {
@@ -242,17 +234,17 @@
             return dictionaryOfSpectralIndices;
         }
 
-
         /// <summary>
         /// MOST RECENT METHOD TO CONCATENATE SUMMARY INDEX.CSV FILES - August 2015. Revised september 2016
         /// WRITTEN FOR THE NATURE CONSERVANCY DATA
         /// This method merges ALL the passed files of acoustic indices
         /// It is assumed you are concatenating a sequence of consecutive short recordings.
         /// </summary>
-        public static Dictionary<string, double[]> ConcatenateAllSummaryIndexFiles(FileInfo[] summaryIndexFiles,
-                                                        DirectoryInfo opDir,
-                                                        IndexGenerationData indexGenerationData,
-                                                        string opFileStem)
+        public static Dictionary<string, double[]> ConcatenateAllSummaryIndexFiles(
+            FileInfo[] summaryIndexFiles,
+            DirectoryInfo opDir,
+            IndexGenerationData indexGenerationData,
+            string opFileStem)
         {
             var indexResolution = indexGenerationData.IndexCalculationDuration;
 
@@ -265,8 +257,8 @@
             }
 
             // check length of data and make adjustments if required.
-            int totalRowMinutes = (int)Math.Round(summaryIndices.Count() * indexResolution.TotalMinutes);
             // NOTHING done with this info at the moment. Could be used to truncate data to 24 hours.
+            int totalRowMinutes = (int)Math.Round(summaryIndices.Count() * indexResolution.TotalMinutes);
 
             // write out the list of data file names to JSON file.
             var arrayOfFileNames = summaryIndices.Select(x => x.FileName).ToArray();
@@ -282,14 +274,13 @@
             var indicesFile = FilenameHelpers.AnalysisResultPath(opDir, opFileStem, indexType, csvFileExt);
             var indicesCsvfile = new FileInfo(indicesFile);
             Csv.WriteToCsv(indicesCsvfile, summaryIndices);
+
             //now put summary indices into a dictionary. ##### WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
             var dictionaryOfSummaryIndices = IndexMatrices.GetDictionaryOfSummaryIndices(summaryIndices);
+
             // return the dictionary - it will be used later to produce an index tracks image.
             return dictionaryOfSummaryIndices;
         }
-
-
-
 
         /// <summary>
         /// There can be issues with this method because images are not at same dpi.
@@ -304,12 +295,14 @@
             //DirectoryInfo dirInfo = new DirectoryInfo(@"G:\Documents\Karlina\BickertonIsSpectrograms_2013Dec-2014Jun");
             DirectoryInfo dirInfo = new DirectoryInfo(@"G:\Documents\Karlina\Bickerton 20131212_20140104Copy");
             FileInfo[] files = dirInfo.GetFiles();
+
             //FileInfo opPath = new FileInfo(@"G:\Documents\Karlina\BickertonIsSpectrograms_2013Dec-2014Jun.png");
             FileInfo opPath = new FileInfo(@"G:\Documents\Karlina\BickertonIsSpectrograms_2013Dec-2014Jan.png");
 
             double verticalScaleReduction = 0.4;
             int width = 785;
             Image spacer = new Bitmap(width, 8);
+
             // float standardresolution = 96;
             float standardresolution = ((Bitmap)spacer).VerticalResolution;
             Graphics g = Graphics.FromImage(spacer);
@@ -320,6 +313,7 @@
             {
                 Image image = ImageTools.ReadImage2Bitmap(file.FullName);
                 float verticalresolution = ((Bitmap)image).VerticalResolution;
+
                 //float horizontalresolution = ((Bitmap)image).HorizontalResolution;
                 ((Bitmap)image).SetResolution(standardresolution, (float)(verticalresolution / verticalScaleReduction));
                 imageList.Add(image);
@@ -329,10 +323,6 @@
             var opImage = ImageTools.CombineImagesVertically(imageList);
             opImage.Save(opPath.FullName);
         }
-
-
-
-
 
         // ##############################################################################################################
         // ######################### ORIGINAL METHOD FOR STITCHING  Gianna Pavan's DATA (10 minutes every 30 minutes)
@@ -353,15 +343,18 @@
             var inputDirectory = new DirectoryInfo(@"Z:\Italy_GianniPavan\output4\Towsey.Acoustic");
             string opFileStem = "Sassofratino_24hours_v3";
             var outputDirectory = new DirectoryInfo(@"Z:\Italy_GianniPavan\output4\");
+
             // a filter to select images to be stitched
             string endString = "_000.2MAPS.png";
 
             // recording protocol
             int minutesBetweenRecordingStarts = 30;
             TimeSpan minOffset = TimeSpan.Zero; // assume first recording in sequence started at midnight
+
             // X-axis timescale
             int pixelColumnsPerHour = 60;
             int trackHeight = IndexDisplay.DefaultTrackHeight;
+
             // ********************* set the above parameters
             //######################################################
 
@@ -376,7 +369,11 @@
             foreach (string path in fileEntries)
             {
                 // filter files.
-                if (!path.EndsWith(endString)) continue;
+                if (!path.EndsWith(endString))
+                {
+                    continue;
+                }
+
                 var image = new Bitmap(path);
                 int spacerWidth = minutesBetweenRecordingStarts - image.Width;
 
@@ -390,6 +387,7 @@
 
                 images.Add(image);
             }
+
             var compositeBmp = ImageTools.CombineImagesInLine(images.ToArray());
 
             var fullDuration = TimeSpan.FromMinutes(compositeBmp.Width);
@@ -420,7 +418,5 @@
 
             compositeBmp.Save(Path.Combine(outputDirectory.FullName, opFileStem + ".png"));
         }
-
-
     }
 }
