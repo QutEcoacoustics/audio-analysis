@@ -273,7 +273,7 @@ namespace AnalysisPrograms
             if (false)
             {
                 //LDSpectrogramStitching.ConcatenateSpectralIndexFiles1(); //DEPRACATED
-                LDSpectrogramStitching.ConcatenateFalsecolourSpectrograms();
+                LdSpectrogramStitching.ConcatenateFalsecolourSpectrograms();
                 //LDSpectrogramClusters.ExtractSOMClusters();
 
                 // concatenating spectrogram images with gaps between them.

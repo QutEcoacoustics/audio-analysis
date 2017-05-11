@@ -428,7 +428,7 @@ namespace AnalysisPrograms
 
             // 1. PATTERN SEARCH FOR CORRECT SUBDIRECTORIES
             // Assumes that the required subdirectories have the given FILTER/SiteName somewhere in their path.
-            var subDirectories = LDSpectrogramStitching.GetSubDirectoriesForSiteData(arguments.InputDataDirectories, arguments.DirectoryFilter);
+            var subDirectories = LdSpectrogramStitching.GetSubDirectoriesForSiteData(arguments.InputDataDirectories, arguments.DirectoryFilter);
             if (subDirectories.Length == 0)
             {
                 LoggedConsole.WriteErrorLine("\n\n#WARNING from method ConcatenateIndexFiles.Execute():");
@@ -575,10 +575,11 @@ namespace AnalysisPrograms
                 // ###### FIRST CONCATENATE THE SUMMARY INDICES, DRAW IMAGES AND SAVE IN RESULTS DIRECTORY
                 var summaryIndexFiles = sortedDictionaryOfDatesAndFiles.Values.ToArray<FileInfo>();
 
-                var dictionaryOfSummaryIndices = LDSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, resultsDir, indexGenerationData, opFileStem);
+                var dictionaryOfSummaryIndices = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, resultsDir, indexGenerationData, opFileStem);
 
                 // REALITY CHECK - check for continuous zero indices or anything else that might indicate defective signal or incomplete analysis of recordings
-                List<ErroneousIndexSegments> indexErrors = ErroneousIndexSegments.DataIntegrityCheck(dictionaryOfSummaryIndices, resultsDir, arguments.FileStemName);
+                var indexErrors = ErroneousIndexSegments.DataIntegrityCheck(dictionaryOfSummaryIndices);
+                ErroneousIndexSegments.WriteErrorsToFile(indexErrors, resultsDir, opFileStem);
 
                 if (arguments.DrawImages)
                 {
@@ -603,7 +604,7 @@ namespace AnalysisPrograms
                 }
 
                 // ###### NOW CONCATENATE THE SPECTRAL INDICES, DRAW IMAGES AND SAVE IN RESULTS DIRECTORY
-                var dictionaryOfSpectralIndices1 = LDSpectrogramStitching.ConcatenateAllSpectralIndexFiles(subDirectories, keys, indexGenerationData);
+                var dictionaryOfSpectralIndices1 = LdSpectrogramStitching.ConcatenateAllSpectralIndexFiles(subDirectories, keys, indexGenerationData);
 
                 // Calculate the index distribution statistics and write to a json file. Also save as png image
                 var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectralIndices1, resultsDir, opFileStem);
@@ -649,7 +650,7 @@ namespace AnalysisPrograms
                 var thisday = startDateOffset.AddDays(d);
                 LoggedConsole.WriteLine($"\n\n\nCONCATENATING DAY { d + 1} of {dayCount}:   {thisday}");
 
-                FileInfo[] indexFiles = LDSpectrogramStitching.GetFileArrayForOneDay(sortedDictionaryOfDatesAndFiles, thisday);
+                FileInfo[] indexFiles = LdSpectrogramStitching.GetFileArrayForOneDay(sortedDictionaryOfDatesAndFiles, thisday);
                 if (indexFiles.Length == 0)
                 {
                     LoggedConsole.WriteErrorLine("\n\nWARNING from method ConcatenateIndexFiles.Execute():");
@@ -677,7 +678,7 @@ namespace AnalysisPrograms
                 } // else <thisday> will not contain the start time of the day.
 
                 // CONCATENATE the SUMMARY INDEX FILES
-                var summaryDict = LDSpectrogramStitching.ConcatenateAllSummaryIndexFiles(indexFiles, resultsDir, indexGenerationData, opFileStem1);
+                var summaryDict = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(indexFiles, resultsDir, indexGenerationData, opFileStem1);
 
                 if (summaryDict == null)
                 {
@@ -685,13 +686,14 @@ namespace AnalysisPrograms
                 }
 
                 // REALITY CHECK - check for zero signal and anything else that might indicate defective signal
-                List<ErroneousIndexSegments> indexErrors = ErroneousIndexSegments.DataIntegrityCheck(summaryDict, resultsDir, opFileStem1);
+                List<ErroneousIndexSegments> indexErrors = ErroneousIndexSegments.DataIntegrityCheck(summaryDict);
+                ErroneousIndexSegments.WriteErrorsToFile(indexErrors, resultsDir, opFileStem1);
 
                 // DRAW SUMMARY INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
                 if (arguments.DrawImages)
                 {
                     indexGenerationData.RecordingStartDate = thisday;
-                    LDSpectrogramStitching.DrawSummaryIndexFiles(
+                    LdSpectrogramStitching.DrawSummaryIndexFiles(
                         summaryDict,
                         indexGenerationData,
                         indexPropertiesConfig,
@@ -712,7 +714,7 @@ namespace AnalysisPrograms
                 // NOW CONCATENATE SPECTRAL INDEX FILES
                 //Filter the array of Directories to get the correct dates
                 var spectralSubdirectories = FileDateHelpers.FilterDirectoriesForDates(subDirectories, arguments.TimeSpanOffsetHint);
-                var dirArray = LDSpectrogramStitching.GetDirectoryArrayForOneDay(spectralSubdirectories, thisday);
+                var dirArray = LdSpectrogramStitching.GetDirectoryArrayForOneDay(spectralSubdirectories, thisday);
 
                 if (dirArray.Length == 0)
                 {
@@ -721,7 +723,7 @@ namespace AnalysisPrograms
                     break;
                 }
 
-                var dictionaryOfSpectralIndices2 = LDSpectrogramStitching.ConcatenateAllSpectralIndexFiles(dirArray, keys, indexGenerationData);
+                var dictionaryOfSpectralIndices2 = LdSpectrogramStitching.ConcatenateAllSpectralIndexFiles(dirArray, keys, indexGenerationData);
                 if (dictionaryOfSpectralIndices2.Count == 0)
                 {
                     LoggedConsole.WriteErrorLine("WARNING from method ConcatenateIndexFiles.Execute():");
@@ -755,7 +757,7 @@ namespace AnalysisPrograms
                     {
                         var candidateFiles = IndexMatrices.GetFilesInDirectories(arguments.EventDataDirectories, arguments.EventFilePattern);
                         var sortedDictionaryOfEventFiles = FileDateHelpers.FilterFilesForDates(candidateFiles, arguments.TimeSpanOffsetHint);
-                        var eventFiles = LDSpectrogramStitching.GetFileArrayForOneDay(sortedDictionaryOfEventFiles, thisday);
+                        var eventFiles = LdSpectrogramStitching.GetFileArrayForOneDay(sortedDictionaryOfEventFiles, thisday);
 
                         //int lineCount = 0;
                         var output = new List<string>();
