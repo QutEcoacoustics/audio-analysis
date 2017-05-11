@@ -16,6 +16,7 @@ namespace AudioAnalysisTools.Indices
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+    using Fasterflect;
     using log4net;
     using TowseyLibrary;
 
@@ -129,77 +130,89 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         public static Dictionary<string, double[]> GetDictionaryOfSummaryIndices(List<SummaryIndexValues> summaryIndices)
         {
-            var dictionary = new Dictionary<string, double[]>();
-            dictionary.Add("ZeroSignal", summaryIndices.Select(x => x.ZeroSignal).ToArray());
-            dictionary.Add("ClippingIndex", summaryIndices.Select(x => x.ClippingIndex).ToArray());
-            //dictionary.Add("AvgSignalAmplitude", summaryIndices.Select(x => x.AcousticComplexity).ToArray());
-            dictionary.Add("BackgroundNoise", summaryIndices.Select(x => x.BackgroundNoise).ToArray());
-            dictionary.Add("Snr", summaryIndices.Select(x => x.Snr).ToArray());
-            dictionary.Add("EventsPerSecond", summaryIndices.Select(x => x.EventsPerSecond).ToArray());
-            dictionary.Add("Activity", summaryIndices.Select(x => x.Activity).ToArray());
-            dictionary.Add("HighFreqCover", summaryIndices.Select(x => x.HighFreqCover).ToArray());
-            dictionary.Add("MidFreqCover", summaryIndices.Select(x => x.MidFreqCover).ToArray());
-            dictionary.Add("LowFreqCover", summaryIndices.Select(x => x.LowFreqCover).ToArray());
-            dictionary.Add("TemporalEntropy", summaryIndices.Select(x => x.TemporalEntropy).ToArray());
-            dictionary.Add("EntropyOfAverageSpectrum", summaryIndices.Select(x => x.EntropyOfAverageSpectrum).ToArray());
-            dictionary.Add("EntropyOfPeaksSpectrum", summaryIndices.Select(x => x.EntropyOfPeaksSpectrum).ToArray());
-            dictionary.Add("AcousticComplexity", summaryIndices.Select(x => x.AcousticComplexity).ToArray());
-            dictionary.Add("ClusterCount", summaryIndices.Select(x => x.ClusterCount).ToArray());
-            dictionary.Add("ThreeGramCount", summaryIndices.Select(x => x.ThreeGramCount).ToArray());
+            var dictionary = new Dictionary<string, double[]>
+            {
+                { "ZeroSignal", summaryIndices.Select(x => x.ZeroSignal).ToArray() },
+                { "ClippingIndex", summaryIndices.Select(x => x.ClippingIndex).ToArray() },
+                { "BackgroundNoise", summaryIndices.Select(x => x.BackgroundNoise).ToArray() },
+                { "Snr", summaryIndices.Select(x => x.Snr).ToArray() },
+                { "EventsPerSecond", summaryIndices.Select(x => x.EventsPerSecond).ToArray() },
+                { "Activity", summaryIndices.Select(x => x.Activity).ToArray() },
+                { "HighFreqCover", summaryIndices.Select(x => x.HighFreqCover).ToArray() },
+                { "MidFreqCover", summaryIndices.Select(x => x.MidFreqCover).ToArray() },
+                { "LowFreqCover", summaryIndices.Select(x => x.LowFreqCover).ToArray() },
+                { "TemporalEntropy", summaryIndices.Select(x => x.TemporalEntropy).ToArray() },
+                { "EntropyOfAverageSpectrum", summaryIndices.Select(x => x.EntropyOfAverageSpectrum).ToArray() },
+                { "EntropyOfPeaksSpectrum", summaryIndices.Select(x => x.EntropyOfPeaksSpectrum).ToArray() },
+                { "AcousticComplexity", summaryIndices.Select(x => x.AcousticComplexity).ToArray() },
+                { "ClusterCount", summaryIndices.Select(x => x.ClusterCount).ToArray() },
+                { "ThreeGramCount", summaryIndices.Select(x => x.ThreeGramCount).ToArray() },
+            };
 
+            // Generate the following index to keep track of missing recording files
+            // This index is only constructed when concatenating summary index files.
+            // It will be used to draw erroneous segments on Long Duration spectrograms
+            var list = new List<double>();
+            foreach (var siv in summaryIndices)
+            {
+                list.Add(siv.FileName == null ? 1.0 : 0.0);
+            }
+
+            dictionary.Add("NoFile", list.ToArray());
             return dictionary;
         }
 
-/*
-        static T[,] CreateRectangularArray<T>(IList<T[]> arrays)
-        {
-            // TODO: Validation and special-casing for arrays.Count == 0
-            int minorLength = arrays[0].Length;
-            T[,] ret = new T[arrays.Count, minorLength];
-            for (int i = 0; i < arrays.Count; i++)
-            {
-                var array = arrays[i];
-                if (array.Length != minorLength)
+        /*
+                static T[,] CreateRectangularArray<T>(IList<T[]> arrays)
                 {
-                    throw new ArgumentException
-                        ("All arrays must be the same length");
+                    // TODO: Validation and special-casing for arrays.Count == 0
+                    int minorLength = arrays[0].Length;
+                    T[,] ret = new T[arrays.Count, minorLength];
+                    for (int i = 0; i < arrays.Count; i++)
+                    {
+                        var array = arrays[i];
+                        if (array.Length != minorLength)
+                        {
+                            throw new ArgumentException
+                                ("All arrays must be the same length");
+                        }
+                        for (int j = 0; j < minorLength; j++)
+                        {
+                            ret[i, j] = array[j];
+                        }
+                    }
+                    return ret;
                 }
-                for (int j = 0; j < minorLength; j++)
-                {
-                    ret[i, j] = array[j];
-                }
-            }
-            return ret;
-        }
 
-        static T[,] CreateRectangularArrayFromListOfColumnArrays<T>(IList<T[]> arrays)
-        {
-            // TODO: Validation and special-casing for arrays.Count == 0
-            int rowCount = arrays[0].Length;
-            int colCount = arrays.Count;
-            T[,] ret = new T[rowCount, colCount];
-            for (int c = 0; c < colCount; c++)
-            {
-                var array = arrays[c];
-                if (array.Length != rowCount)
+                static T[,] CreateRectangularArrayFromListOfColumnArrays<T>(IList<T[]> arrays)
                 {
-                    throw new ArgumentException
-                        ("All arrays must be the same length");
+                    // TODO: Validation and special-casing for arrays.Count == 0
+                    int rowCount = arrays[0].Length;
+                    int colCount = arrays.Count;
+                    T[,] ret = new T[rowCount, colCount];
+                    for (int c = 0; c < colCount; c++)
+                    {
+                        var array = arrays[c];
+                        if (array.Length != rowCount)
+                        {
+                            throw new ArgumentException
+                                ("All arrays must be the same length");
+                        }
+                        for (int r = 0; r < rowCount; r++)
+                        {
+                            ret[r, c] = array[r];
+                        }
+                    }
+                    return ret;
                 }
-                for (int r = 0; r < rowCount; r++)
-                {
-                    ret[r, c] = array[r];
-                }
-            }
-            return ret;
-        }
+        */
 
-*/
-        public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(DirectoryInfo[] dirs,
-                                                                                        string analysisType,
-                                                                                        string[] keys,
-                                                                                        IndexGenerationData indexGenerationData,
-                                                                                        bool verbose = false)
+        public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(
+            DirectoryInfo[] dirs,
+            string analysisType,
+            string[] keys,
+            IndexGenerationData indexGenerationData,
+            bool verbose = false)
         {
             Verbose = verbose;
             TimeSpan indexCalcTimeSpan = indexGenerationData.IndexCalculationDuration;
