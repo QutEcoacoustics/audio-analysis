@@ -11,6 +11,7 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+    using Acoustics.Shared.Csv;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
@@ -49,6 +50,25 @@ namespace AnalysisPrograms
             var tStart = DateTime.Now;
             Log.Verbosity = 1;
             Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
+
+            // this is a test to read a file of summary indices.
+            if (true)
+            {
+                var summaryIndices = new List<SummaryIndexValues>();
+                var file = new FileInfo(@"C:\SensorNetworks\SoftwareTests\TestConcatenation\20160726_073000_Towsey.Acoustic.Indices.csv");
+
+                if (!file.Exists)
+                {
+                    LoggedConsole.WriteErrorLine("File does not exist");
+                    return;
+                }
+
+                var rowsOfCsvFile = Csv.ReadFromCsv<SummaryIndexValues>(file, throwOnMissingField: false);
+                //summaryIndices.AddRange(rowsOfCsvFile);
+
+                // track the row counts
+                int partialRowCount = rowsOfCsvFile.Count();
+            }
 
             if (true)
             {

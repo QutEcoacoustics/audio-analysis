@@ -605,6 +605,7 @@ namespace AnalysisPrograms
 
                 // ###### NOW CONCATENATE THE SPECTRAL INDICES, DRAW IMAGES AND SAVE IN RESULTS DIRECTORY
                 var dictionaryOfSpectralIndices1 = LdSpectrogramStitching.ConcatenateAllSpectralIndexFiles(subDirectories, keys, indexGenerationData);
+                indexErrors.AddRange(ErroneousIndexSegments.DataIntegrityCheck(dictionaryOfSpectralIndices1));
 
                 // Calculate the index distribution statistics and write to a json file. Also save as png image
                 var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectralIndices1, resultsDir, opFileStem);

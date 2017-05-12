@@ -9,6 +9,7 @@ namespace AudioAnalysisTools.Indices
     using System.Drawing;
     using System.IO;
     using Acoustics.Shared;
+    using TowseyLibrary;
 
     public class ErroneousIndexSegments
     {
@@ -29,7 +30,7 @@ namespace AudioAnalysisTools.Indices
         // #####################################################################################################################
 
         /// <summary>
-        /// Does two data integrity checks.
+        /// Does three data integrity checks.
         /// </summary>
         /// <param name="summaryIndices">a dictionary of summary indices</param>
         /// <returns>a list of erroneous segments</returns>
@@ -37,7 +38,20 @@ namespace AudioAnalysisTools.Indices
         {
             var errors = DataIntegrityCheckForNoRecording(summaryIndices);
             errors.AddRange(DataIntegrityCheckForZeroSignal(summaryIndices));
-            errors.AddRange(DataIntegrityCheckIndices(summaryIndices));
+
+            // this error check not done for time being - a bit unrealistic
+            // errors.AddRange(DataIntegrityCheckIndices(summaryIndices));
+            return errors;
+        }
+
+        /// <summary>
+        /// Does three data integrity checks.
+        /// </summary>
+        /// <param name="spectralIndices">a dictionary of spectral indices</param>
+        /// <returns>a list of erroneous segments</returns>
+        public static List<ErroneousIndexSegments> DataIntegrityCheck(Dictionary<string, double[,]> spectralIndices)
+        {
+            var errors = DataIntegrityCheckIndices(spectralIndices);
             return errors;
         }
 
@@ -171,6 +185,8 @@ namespace AudioAnalysisTools.Indices
         /// This method reads through three SUMMARY index arrays to check for signs that something might be wrong with the data.
         /// It reads through the ACI, Temporal Entropy and SNR summary index arrays to check that they have positive values. These should never be LTE zero.
         /// If any of these events occurs an error is flagged.
+        /// The tests done here are not particularly realistic and the chosen errors are possible unlikely to occur.
+        /// TODO Other data integrity tests can be inserted in the future.
         /// </summary>
         /// <param name="summaryIndices">Dictionary of the currently calculated summary indices</param>
         /// <returns>a list of erroneous segments</returns>
@@ -204,6 +220,68 @@ namespace AudioAnalysisTools.Indices
                             summaryIndices["Snr"][i] < tolerance;
 
                 if (zeroIndex)
+                {
+                    if (allOk)
+                    {
+                        errorStart = i;
+                        errors.Add(new ErroneousIndexSegments());
+                        errors[errors.Count - 1].ErrorDescription = invalidIndexValue;
+                        errors[errors.Count - 1].StartPosition = errorStart;
+                    }
+
+                    allOk = false;
+                }
+                else
+                if (!allOk)
+                {
+                    allOk = true;
+                    errors[errors.Count - 1].EndPosition = i - 1;
+                }
+            } // end of loop
+
+            // do final clean up
+            if (!allOk)
+            {
+                errors[errors.Count - 1].EndPosition = arrayLength - 1;
+            }
+
+            return errors;
+        }
+
+        /// <summary>
+        /// This method reads through SPECTRAL index matrices to check for signs that something might be wrong with the data.
+        /// Currently, it reads through the ACI matrix to check where the spectral row sums are close to zero. These should never be LTE zero.
+        /// This test is not particularly realistic but might occur.
+        /// Other tests can be inserted in the future.
+        /// </summary>
+        /// <param name="spectralIndices">Dictionary of the currently calculated spectral indices</param>
+        /// <returns>a list of erroneous segments</returns>
+        public static List<ErroneousIndexSegments> DataIntegrityCheckIndices(Dictionary<string, double[,]> spectralIndices)
+        {
+            int errorStart;
+            double tolerance = 0.00001;
+
+            // get row sums of the ACI matrix
+            var rowSums = MatrixTools.SumRows(spectralIndices["ACI"]);
+
+            // init list of errors
+            var errors = new List<ErroneousIndexSegments>();
+
+            bool allOk = true;
+
+            if (rowSums[0] < tolerance)
+            {
+                allOk = false;
+                errorStart = 0;
+                errors.Add(new ErroneousIndexSegments());
+                errors[errors.Count - 1].ErrorDescription = invalidIndexValue;
+                errors[errors.Count - 1].StartPosition = errorStart;
+            }
+
+            int arrayLength = rowSums.Length;
+            for (int i = 1; i < arrayLength; i++)
+            {
+                if (rowSums[i] < tolerance)
                 {
                     if (allOk)
                     {
