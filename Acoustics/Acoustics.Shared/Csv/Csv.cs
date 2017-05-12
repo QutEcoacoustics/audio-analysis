@@ -118,14 +118,33 @@ namespace Acoustics.Shared.Csv
             // using CSV Helper
             using (var stream = source.OpenText())
             {
-                var configuration = DefaultConfiguration;
-                configuration.WillThrowOnMissingField = false;
-                var reader = new CsvReader(stream, configuration);
-
-                IEnumerable<T> results = reader.GetRecords<T>();
-                foreach (var result in results)
+                try
                 {
-                    yield return result;
+                    var configuration = DefaultConfiguration;
+                    configuration.WillThrowOnMissingField = false;
+                    var reader = new CsvReader(stream, configuration);
+
+                    IEnumerable<T> results = reader.GetRecords<T>();
+
+                    // had to disable the yield here so i could fix this csv exception shit
+                    //foreach (var result in results)
+                    //{
+                    //    yield return result;
+                    //}
+                    return results.ToArray();
+                }
+                catch (CsvTypeConverterException ctce)
+                {
+                    // The CsvHelper exception messages are particularly unhelpful... let us fix this
+                    if (ctce.Data.Count > 0)
+                    {
+                        var parserData = ctce.Data.ToDictDebugString();
+                        var newMessage = ctce.Message + Environment.NewLine + parserData;
+
+                        throw new CsvTypeConverterException(newMessage, ctce);
+                    }
+
+                    throw;
                 }
             }
         }
