@@ -10,17 +10,16 @@
 namespace Acoustics.Test.Shared
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
-
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
-
+    using CsvHelper.TypeConversion;
     using EcoSounds.Mvc.Tests;
-
+    using global::AudioAnalysisTools.Indices;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-
     using TowseyLibrary;
 
     [TestClass]
@@ -33,7 +32,7 @@ namespace Acoustics.Test.Shared
                 { 5.0, 6.0, 7.0, 8.0 },
                 { 9.0, 10.0, 11.0, 12.0 },
                 { 13.0, 14.0, 15.0, 16.0 },
-                { 17.0, 18.0, 19.0, 20.0 },
+                { 17.0, 18.0, 19.0, 20.0 }
             };
 
         private DirectoryInfo outputDirectory;
@@ -89,10 +88,10 @@ namespace Acoustics.Test.Shared
             Csv.WriteMatrixToCsv(this.testFile, TestMatrix, TwoDimensionalArray.ColumnMajorFlipped);
 
             var expected = CsvExpectedHelper(
-                new[] { 16, 12, 8, 4, 0, },
-                new[] { 17, 13, 9, 5, 1, },
-                new[] { 18, 14, 10, 6, 2, },
-                new[] { 19, 15, 11, 7, 3, });
+                new[] { 16, 12, 8, 4, 0 },
+                new[] { 17, 13, 9, 5, 1 },
+                new[] { 18, 14, 10, 6, 2 },
+                new[] { 19, 15, 11, 7, 3 });
 
             this.AssertCsvEqual(expected, this.testFile);
         }
@@ -132,10 +131,10 @@ namespace Acoustics.Test.Shared
             Csv.WriteMatrixToCsv(this.testFile, TestMatrix, TwoDimensionalArray.Rotate90ClockWise);
 
             var expected = CsvExpectedHelper(
-                new[] { 16, 12, 8, 4, 0, },
-                new[] { 17, 13, 9, 5, 1, },
-                new[] { 18, 14, 10, 6, 2, },
-                new[] { 19, 15, 11, 7, 3, });
+                new[] { 16, 12, 8, 4, 0 },
+                new[] { 17, 13, 9, 5, 1 },
+                new[] { 18, 14, 10, 6, 2 },
+                new[] { 19, 15, 11, 7, 3 });
 
             this.AssertCsvEqual(expected, this.testFile);
         }
@@ -188,6 +187,73 @@ namespace Acoustics.Test.Shared
             CollectionAssert.AreEqual(TestMatrix, matrix);
         }
 
+        [TestMethod]
+        public void TestTimeSpanRoundTrip()
+        {
+            int randomDataCount = 30;
+            int seed = Environment.TickCount;
+            var random = new Random(seed);
+
+            LoggedConsole.WriteWarnLine($"Random seed: {seed}");
+
+            // we'll create 30 timespans, across 30 orders of magnitude to test all possible versions of timespan
+            // encoding
+            var data = new CsvTestClass[randomDataCount];
+            for (int i = 0; i < data.Length; i++)
+            {
+                var ticks = Math.Pow(i, 10) * random.NextDouble();
+                data[i] = new CsvTestClass {
+                    SomeNumber = random.Next(),
+                    SomeTimeSpan = TimeSpan.FromTicks((long)ticks),
+                };
+            }
+
+            var file = new FileInfo("testCsvRoundTrip.csv");
+            Csv.WriteToCsv(file, data);
+
+            var actual = Csv.ReadFromCsv<CsvTestClass>(file).ToArray();
+
+            Assert.AreEqual(30, actual.Length);
+            for (var i = 0; i < data.Length; i++)
+            {
+                var expectedRow = data[i];
+                var actualRow = actual[i];
+
+                Assert.AreEqual(expectedRow.SomeNumber, actualRow.SomeNumber);
+                Assert.AreEqual(expectedRow.SomeTimeSpan.Ticks, actualRow.SomeTimeSpan.Ticks);
+            }
+
+            file.Delete();
+        }
+
+        [TestMethod]
+        public void TestThatCsvDeserializerGivesHumanFriendlyErrors()
+        {
+            var file = Path.GetRandomFileName().ToFileInfo();
+
+            var testString = @"SomeNumber,SomeTimeSpan
+123,123.456";
+
+            File.WriteAllText(file.FullName, testString);
+
+            Exception actual = null;
+            CsvTestClass[] data = null;
+            try
+            {
+                data = Csv.ReadFromCsv<CsvTestClass>(file).ToArray();
+            }
+            catch (Exception ex)
+            {
+                actual = ex;
+            }
+
+            Assert.IsNull(data);
+            Assert.IsNotNull(actual);
+            Assert.IsInstanceOfType(actual, typeof(CsvTypeConverterException));
+            Assert.IsNotNull(actual.InnerException);
+            StringAssert.Contains(actual.Message, "Row");
+            StringAssert.Contains(actual.Message, "Field Name");
+        }
 
         private void AssertCsvEqual(string expected, FileInfo actual)
         {
@@ -200,7 +266,6 @@ namespace Acoustics.Test.Shared
 
         private static string CsvExpectedHelper(params int[][] indexes)
         {
-
             return "Index," + string.Join(",", indexes[0].Select((s, i) => "c00000" + i)) + Environment.NewLine
                    + string.Join(
                        Environment.NewLine,
@@ -212,6 +277,13 @@ namespace Acoustics.Test.Shared
         private static string GetValue(int index)
         {
             return TestMatrix[index / TestMatrix.ColumnLength(), index % TestMatrix.ColumnLength()].ToString();
+        }
+
+        public class CsvTestClass
+        {
+            public int SomeNumber { get; set; }
+
+            public TimeSpan SomeTimeSpan { get; set; }
         }
     }
 }
