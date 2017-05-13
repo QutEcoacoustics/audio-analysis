@@ -16,7 +16,7 @@ namespace AudioAnalysisTools.Indices
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
-
+    using Fasterflect;
     using log4net;
     using TowseyLibrary;
 
@@ -26,13 +26,11 @@ namespace AudioAnalysisTools.Indices
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         /// <summary>
-        ///
+        /// All the passed files will be concatenated. Filtering needs to be done somewhere else.
         /// </summary>
-        /// <param name="files">All the passed files will be concatenated. Filtering needs to be done somewhere else.</param>
+        /// <param name="files">array of file names</param>
         /// <param name="indexCalcDuration">used to match rows of indices to elapsed time in file names</param>
-        /// <returns></returns>
         public static List<SummaryIndexValues> ConcatenateSummaryIndexFilesWithTimeCheck(FileInfo[] files, TimeSpan indexCalcDuration)
         {
             TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
@@ -47,8 +45,9 @@ namespace AudioAnalysisTools.Indices
                     if (Verbose)
                     {
                         LoggedConsole.WriteWarnLine("WARNING: from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(" + files[f].Extension + ") ");
-                        LoggedConsole.WriteWarnLine(string.Format("   MISSING FILE: {0}", files[f].FullName));
+                        LoggedConsole.WriteWarnLine($"   MISSING FILE: {files[f].FullName}");
                     }
+
                     continue;
                 }
 
@@ -62,7 +61,7 @@ namespace AudioAnalysisTools.Indices
                 dtoArray[f] = startDto;
             }
 
-            // now loop through the files again to extact the indices
+            // now loop through the files again to extract the indices
             for (int i = 0; i < files.Length; i++)
             {
                 if (!files[i].Exists)
@@ -72,8 +71,10 @@ namespace AudioAnalysisTools.Indices
 
                 var rowsOfCsvFile = Csv.ReadFromCsv<SummaryIndexValues>(files[i], throwOnMissingField: false);
                 summaryIndices.AddRange(rowsOfCsvFile);
+
                 // track the row counts
                 int partialRowCount = rowsOfCsvFile.Count();
+
                 // calculate elapsed time from the rows
                 int partialRowMinutes = (int)Math.Round(partialRowCount * indexCalcDuration.TotalMinutes);
 
@@ -100,14 +101,13 @@ namespace AudioAnalysisTools.Indices
                         string str2 = $"    Row Count={partialRowMinutes} != {partialMinutes} elapsed minutes";
                         LoggedConsole.WriteWarnLine(str2);
                     }
+
                     //dictionary = RepairDictionaryOfArrays(dictionary, rowCounts[i], partialMinutes);
                     for (int j = partialRowMinutes; j < partialMinutes; j++)
                     {
                         summaryIndices.Add(new SummaryIndexValues());
                     }
-
                 }
-
             }
 
             // Can prune the list of summary indices as required.
@@ -125,87 +125,94 @@ namespace AudioAnalysisTools.Indices
             return summaryIndices;
         }
 
-
-
-
         /// <summary>
         /// WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
         /// </summary>
-        /// <param name="summaryIndices"></param>
-        /// <returns></returns>
         public static Dictionary<string, double[]> GetDictionaryOfSummaryIndices(List<SummaryIndexValues> summaryIndices)
         {
-            var dictionary = new Dictionary<string, double[]>();
-            dictionary.Add("ZeroSignal", summaryIndices.Select(x => x.ZeroSignal).ToArray());
-            dictionary.Add("ClippingIndex", summaryIndices.Select(x => x.ClippingIndex).ToArray());
-            //dictionary.Add("AvgSignalAmplitude", summaryIndices.Select(x => x.AcousticComplexity).ToArray());
-            dictionary.Add("BackgroundNoise", summaryIndices.Select(x => x.BackgroundNoise).ToArray());
-            dictionary.Add("Snr", summaryIndices.Select(x => x.Snr).ToArray());
-            dictionary.Add("EventsPerSecond", summaryIndices.Select(x => x.EventsPerSecond).ToArray());
-            dictionary.Add("Activity", summaryIndices.Select(x => x.Activity).ToArray());
-            dictionary.Add("HighFreqCover", summaryIndices.Select(x => x.HighFreqCover).ToArray());
-            dictionary.Add("MidFreqCover", summaryIndices.Select(x => x.MidFreqCover).ToArray());
-            dictionary.Add("LowFreqCover", summaryIndices.Select(x => x.LowFreqCover).ToArray());
-            dictionary.Add("TemporalEntropy", summaryIndices.Select(x => x.TemporalEntropy).ToArray());
-            dictionary.Add("EntropyOfAverageSpectrum", summaryIndices.Select(x => x.EntropyOfAverageSpectrum).ToArray());
-            dictionary.Add("EntropyOfPeaksSpectrum", summaryIndices.Select(x => x.EntropyOfPeaksSpectrum).ToArray());
-            dictionary.Add("AcousticComplexity", summaryIndices.Select(x => x.AcousticComplexity).ToArray());
-            dictionary.Add("ClusterCount", summaryIndices.Select(x => x.ClusterCount).ToArray());
-            dictionary.Add("ThreeGramCount", summaryIndices.Select(x => x.ThreeGramCount).ToArray());
+            var dictionary = new Dictionary<string, double[]>
+            {
+                { "ZeroSignal", summaryIndices.Select(x => x.ZeroSignal).ToArray() },
+                { "ClippingIndex", summaryIndices.Select(x => x.ClippingIndex).ToArray() },
+                { "BackgroundNoise", summaryIndices.Select(x => x.BackgroundNoise).ToArray() },
+                { "Snr", summaryIndices.Select(x => x.Snr).ToArray() },
+                { "EventsPerSecond", summaryIndices.Select(x => x.EventsPerSecond).ToArray() },
+                { "Activity", summaryIndices.Select(x => x.Activity).ToArray() },
+                { "HighFreqCover", summaryIndices.Select(x => x.HighFreqCover).ToArray() },
+                { "MidFreqCover", summaryIndices.Select(x => x.MidFreqCover).ToArray() },
+                { "LowFreqCover", summaryIndices.Select(x => x.LowFreqCover).ToArray() },
+                { "TemporalEntropy", summaryIndices.Select(x => x.TemporalEntropy).ToArray() },
+                { "EntropyOfAverageSpectrum", summaryIndices.Select(x => x.EntropyOfAverageSpectrum).ToArray() },
+                { "EntropyOfPeaksSpectrum", summaryIndices.Select(x => x.EntropyOfPeaksSpectrum).ToArray() },
+                { "AcousticComplexity", summaryIndices.Select(x => x.AcousticComplexity).ToArray() },
+                { "ClusterCount", summaryIndices.Select(x => x.ClusterCount).ToArray() },
+                { "ThreeGramCount", summaryIndices.Select(x => x.ThreeGramCount).ToArray() },
+            };
 
+            // Generate the following index to keep track of missing recording files
+            // This index is only constructed when concatenating summary index files.
+            // It will be used to draw erroneous segments on Long Duration spectrograms
+            var list = new List<double>();
+            foreach (var siv in summaryIndices)
+            {
+                list.Add(siv.FileName == null ? 1.0 : 0.0);
+            }
+
+            dictionary.Add("NoFile", list.ToArray());
             return dictionary;
         }
 
-/*
-        static T[,] CreateRectangularArray<T>(IList<T[]> arrays)
-        {
-            // TODO: Validation and special-casing for arrays.Count == 0
-            int minorLength = arrays[0].Length;
-            T[,] ret = new T[arrays.Count, minorLength];
-            for (int i = 0; i < arrays.Count; i++)
-            {
-                var array = arrays[i];
-                if (array.Length != minorLength)
+        /*
+                static T[,] CreateRectangularArray<T>(IList<T[]> arrays)
                 {
-                    throw new ArgumentException
-                        ("All arrays must be the same length");
+                    // TODO: Validation and special-casing for arrays.Count == 0
+                    int minorLength = arrays[0].Length;
+                    T[,] ret = new T[arrays.Count, minorLength];
+                    for (int i = 0; i < arrays.Count; i++)
+                    {
+                        var array = arrays[i];
+                        if (array.Length != minorLength)
+                        {
+                            throw new ArgumentException
+                                ("All arrays must be the same length");
+                        }
+                        for (int j = 0; j < minorLength; j++)
+                        {
+                            ret[i, j] = array[j];
+                        }
+                    }
+                    return ret;
                 }
-                for (int j = 0; j < minorLength; j++)
-                {
-                    ret[i, j] = array[j];
-                }
-            }
-            return ret;
-        }
 
-        static T[,] CreateRectangularArrayFromListOfColumnArrays<T>(IList<T[]> arrays)
-        {
-            // TODO: Validation and special-casing for arrays.Count == 0
-            int rowCount = arrays[0].Length;
-            int colCount = arrays.Count;
-            T[,] ret = new T[rowCount, colCount];
-            for (int c = 0; c < colCount; c++)
-            {
-                var array = arrays[c];
-                if (array.Length != rowCount)
+                static T[,] CreateRectangularArrayFromListOfColumnArrays<T>(IList<T[]> arrays)
                 {
-                    throw new ArgumentException
-                        ("All arrays must be the same length");
+                    // TODO: Validation and special-casing for arrays.Count == 0
+                    int rowCount = arrays[0].Length;
+                    int colCount = arrays.Count;
+                    T[,] ret = new T[rowCount, colCount];
+                    for (int c = 0; c < colCount; c++)
+                    {
+                        var array = arrays[c];
+                        if (array.Length != rowCount)
+                        {
+                            throw new ArgumentException
+                                ("All arrays must be the same length");
+                        }
+                        for (int r = 0; r < rowCount; r++)
+                        {
+                            ret[r, c] = array[r];
+                        }
+                    }
+                    return ret;
                 }
-                for (int r = 0; r < rowCount; r++)
-                {
-                    ret[r, c] = array[r];
-                }
-            }
-            return ret;
-        }
+        */
 
-*/
-        public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(DirectoryInfo[] dirs,
-                                                                                        string analysisType,
-                                                                                        string[] keys,
-                                                                                        IndexGenerationData indexGenerationData,
-                                                                                        bool verbose = false)
+        public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(
+            DirectoryInfo[] dirs,
+            string analysisType,
+            string[] keys,
+            IndexGenerationData indexGenerationData,
+            bool verbose = false)
         {
             Verbose = verbose;
             TimeSpan indexCalcTimeSpan = indexGenerationData.IndexCalculationDuration;
@@ -219,35 +226,34 @@ namespace AudioAnalysisTools.Indices
 
                 if (files.Length == 0)
                 {
-                    LoggedConsole.WriteWarnLine("WARNING: No csv files found for KEY="+key);
+                    LoggedConsole.WriteWarnLine("WARNING: No csv files found for KEY=" + key);
                     continue;
                 }
 
                 List<double[,]> matrices = ConcatenateSpectralIndexFilesWithTimeCheck(files, indexCalcTimeSpan);
                 double[,] m = MatrixTools.ConcatenateMatrixRows(matrices);
+
                 //Dictionary<string, double[,]> dict = spectralIndexValues.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
 
                 m = MatrixTools.MatrixRotate90Anticlockwise(m);
                 spectrogramMatrices.Add(key, m);
 
                 var now2 = DateTime.Now;
-                TimeSpan et = now2 - now1;
+                var et = now2 - now1;
                 if (verbose)
                 {
                     LoggedConsole.WriteLine(string.Format("\t\tTime to read <{0}> spectral index files = {1:f2} seconds", key, et.TotalSeconds));
                 }
             }
+
             return spectrogramMatrices;
         }
-
-
 
         /// <summary>
         ///
         /// </summary>
         /// <param name="files">All the passed files will be concatenated. Filtering needs to be done somewhere else.</param>
         /// <param name="indexCalcDuration">used to match rows of indices to elapsed time in file names</param>
-        /// <returns></returns>
         public static List<double[,]> ConcatenateSpectralIndexFilesWithTimeCheck(FileInfo[] files, TimeSpan indexCalcDuration)
         {
             TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
@@ -264,6 +270,7 @@ namespace AudioAnalysisTools.Indices
                         LoggedConsole.WriteWarnLine("WARNING: from IndexMatrices.ConcatenateSpectralIndexFilesWithTimeCheck(" + files[f].Extension + ") ");
                         LoggedConsole.WriteWarnLine(string.Format("   MISSING FILE: {0}", files[f].FullName));
                     }
+
                     continue;
                 }
 
@@ -333,9 +340,9 @@ namespace AudioAnalysisTools.Indices
                             }
                         }
                     }
+
                     matrices.Add(emptyMatrix);
                 }
-
             }
 
             // Can prune the list of summary indices as required.
@@ -352,8 +359,6 @@ namespace AudioAnalysisTools.Indices
 
             return matrices;
         }
-
-
 
         public static FileInfo[] GetFilesInDirectory(string path, string pattern)
         {
@@ -375,7 +380,6 @@ namespace AudioAnalysisTools.Indices
 
             return files;
         }
-
 
         /// <summary>
         /// Returns a sorted list of file paths, sorted on file name.
@@ -413,12 +417,11 @@ namespace AudioAnalysisTools.Indices
             return returnList;
         }
 
-
         public static Dictionary<string, double[,]> AddDerivedIndices(Dictionary<string, double[,]> spectrogramMatrices)
         {
             string key = "POW";
             string newKey = "Sqrt" + key;
-            if ((spectrogramMatrices.ContainsKey(key)) && (! spectrogramMatrices.ContainsKey(newKey)))
+            if ((spectrogramMatrices.ContainsKey(key)) && (!spectrogramMatrices.ContainsKey(newKey)))
             // add another matrix with square root and log transform  of values for lop-sided distributions
             {
                 var m = spectrogramMatrices[key];
@@ -430,22 +433,21 @@ namespace AudioAnalysisTools.Indices
             // add another matrix with square root and log transform of values for lop-sided distributions
             key = "ENT";
             newKey = "Sqrt" + key;
-            if ((spectrogramMatrices.ContainsKey(key)) && (! spectrogramMatrices.ContainsKey(newKey)))
+            if ((spectrogramMatrices.ContainsKey(key)) && (!spectrogramMatrices.ContainsKey(newKey)))
             {
                 var m = spectrogramMatrices[key];
                 spectrogramMatrices.Add(newKey, MatrixTools.SquareRootOfValues(m));
             }
 
             newKey = "Log" + key;
-            if ((spectrogramMatrices.ContainsKey(key)) && (! spectrogramMatrices.ContainsKey(newKey)))
+            if ((spectrogramMatrices.ContainsKey(key)) && (!spectrogramMatrices.ContainsKey(newKey)))
             {
                 var m = spectrogramMatrices[key];
                 spectrogramMatrices.Add(newKey, MatrixTools.LogTransform(m));
             }
+
             return spectrogramMatrices;
         }
-
-
 
         /// <summary>
         /// DO NOT DELETE THIS METHOD DESPITE NO REFERENCES
@@ -468,6 +470,7 @@ namespace AudioAnalysisTools.Indices
             {
                 summaryIndices = AddNDSI_GageGauge(summaryIndices, ndsiKey);
             }
+
             ndsiKey = "NDSI-MH";
             if (!summaryIndices.ContainsKey(ndsiKey))
             {
@@ -476,7 +479,6 @@ namespace AudioAnalysisTools.Indices
 
             return summaryIndices;
         }
-
 
         /// <summary>
         /// This method reads spectrogram csv files where the first row contains column names
@@ -577,6 +579,7 @@ namespace AudioAnalysisTools.Indices
                 double[,] matrix = ReadSpectrogram(files[c], out freqBinCount);
                 dict.Add(keys[c], matrix);
             }
+
             return dict;
         }
 
@@ -592,7 +595,6 @@ namespace AudioAnalysisTools.Indices
             // ReSharper disable PossibleInvalidOperationException
             var spectrogramMatrices = readData.ToDictionary(kvp => kvp.Value.Key, kvp => kvp.Value.Value);
             // ReSharper restore PossibleInvalidOperationException
-
 
             if (spectrogramMatrices.Count == 0)
             {
@@ -684,6 +686,7 @@ namespace AudioAnalysisTools.Indices
                                 // square the amplitude to give energy
                                 tempArray[i] = matrix[r, c + i] * matrix[r, c + i];
                             }
+
                             double entropy = DataTools.Entropy_normalised(tempArray);
                             if (double.IsNaN(entropy)) entropy = 1.0;
                             newMatrix[r, colIndex] = 1 - entropy;
@@ -706,6 +709,7 @@ namespace AudioAnalysisTools.Indices
                                     DIFArray[i] = spectra["DIF"][r, c + i];
                                     SUMArray[i] = spectra["SUM"][r, c + i];
                                 }
+
                                 newMatrix[r, colIndex] = DIFArray.Sum() / SUMArray.Sum();
                             }
                         }
@@ -724,8 +728,10 @@ namespace AudioAnalysisTools.Indices
                             }
                         }
                     }
+
                 compressedSpectra[key] = newMatrix;
             }
+
             return compressedSpectra;
         }
 
@@ -778,7 +784,6 @@ namespace AudioAnalysisTools.Indices
             return dict;
         }
 
-
         public static Dictionary<string, double[]> AddNDSI_GageGauge(Dictionary<string, double[]> dictionaryOfCsvColumns, string newKey)
         {
             const string highKey = "HighFreqCover";
@@ -817,10 +822,7 @@ namespace AudioAnalysisTools.Indices
                 dictionaryOfCsvColumns.Add(newKey, array);
             }
 
-
             return dictionaryOfCsvColumns;
         }
-
-
     }
 }

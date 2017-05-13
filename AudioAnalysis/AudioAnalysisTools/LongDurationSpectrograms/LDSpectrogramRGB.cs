@@ -608,21 +608,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             var bmp = DrawRgbColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
 
+            if (bmp == null)
+            {
+                LoggedConsole.WriteWarnLine($" No image returned for ColorMap: {colorMap}!");
+            }
+
             // now add in image patches for possible erroneous index segments
             bool errorsExist = (this.ErroneousSegments != null) && (this.ErroneousSegments.Count > 0);
             if (errorsExist)
             {
-                var g = Graphics.FromImage(bmp);
-                foreach (ErroneousIndexSegments errorSegment in this.ErroneousSegments)
-                {
-                    var errorPatch = errorSegment.DrawErrorPatch(bmp.Height, true);
-                    g.DrawImage(errorPatch, errorSegment.StartPosition, 1);
-                }
-            }
-
-            if (bmp == null)
-            {
-                LoggedConsole.WriteWarnLine($" No image returned for ColorMap: {colorMap}!");
+                bmp = ErroneousIndexSegments.DrawErrorSegments(bmp, this.ErroneousSegments);
             }
 
             return bmp;

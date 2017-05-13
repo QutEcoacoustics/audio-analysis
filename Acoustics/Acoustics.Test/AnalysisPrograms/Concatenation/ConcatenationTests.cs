@@ -309,11 +309,11 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var outputDataDir = this.outputDirectory.Combine(arguments.FileStemName, dateString);
 
             string map1 = arguments.FileStemName + "_" + dateString + "__BGN-ENT-POW.png";
-            var imageFileInfo1 = new FileInfo(Path.Combine(outputDataDir.FullName, map1));
+            var imageFileInfo1 = outputDataDir.CombineFile(map1);
             Assert.IsTrue(imageFileInfo1.Exists);
 
             string map2 = arguments.FileStemName + "_" + dateString + "__ACI-RNG-EVN.png";
-            var imageFileInfo2 = new FileInfo(Path.Combine(outputDataDir.FullName, map2));
+            var imageFileInfo2 = outputDataDir.CombineFile(map2);
             Assert.IsTrue(imageFileInfo2.Exists);
         }
     }
