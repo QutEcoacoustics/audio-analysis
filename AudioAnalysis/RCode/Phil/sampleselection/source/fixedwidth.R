@@ -45,11 +45,11 @@ MakeSegmentList <- function (min.list = NULL, num.per.min = 60) {
     include[segment.list$wave.path == final.path][(duration.of.final+1):sum(segment.list$wave.path == final.path)] <- FALSE
     segment.list <- segment.list[include,]
     
-    # drop the wave.path col, because it's dependant on the location of the audio
+    # drop the wave.path col, because it's dependent on the location of the audio,
     # which might change
     segment.list <- segment.list[,-(match('wave.path',colnames(segment.list)))]
     
-    segment.list.version <- WriteOutput(x = segment.list, name = 'segment.events',params = params, dependencies = dependencies)
+    segment.list.version <- datatrack::WriteDataobject(x = segment.list, name = 'segment.events',params = params, dependencies = dependencies)
     
 }
 
@@ -86,7 +86,7 @@ ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coeffici
     #   num.coefficients: how many time domain ceptral coefficients to keep. Only the first coefficients are kept with the high-frequency coefficients discarded. 
     
 
-    segment.events <- ReadOutput('segment.events')
+    segment.events <- datatrack::ReadDataobject('segment.events')
     segment.list <- segment.events$data
     
     #!! temp debug
@@ -172,7 +172,7 @@ ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coeffici
     # output
     dependencies <- list(segment.events = segment.events$version)
     params <- list(max.f = max.f, min.f = min.f, num.coefficients = num.coefficients)
-    WriteOutput(x = res, name = 'TDCCs', params = params, dependencies = dependencies)
+    datatrack::WriteDataobject(x = res, name = 'TDCCs', params = params, dependencies = dependencies)
     
     # re-save segments without those with missing audio
     # (no longer necessary, this is done earlier when creating segment listn)

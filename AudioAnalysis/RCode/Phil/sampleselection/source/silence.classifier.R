@@ -26,7 +26,7 @@
 RemoveSilentSegments <- function () {
     # reads in segements, runs classifier, removes silent segments
     # saves as new output
-    res <- ClassifySegments(save = TRUE)
+    res <- ClassifySegments(save.features = TRUE, save.classified = TRUE)
 }
 
 RunSilenceClassifier <- function () {
@@ -77,7 +77,7 @@ ClassifySegments <- function (segments = NULL, silence.features = NULL, use.save
     # uses the logistic regression model previously saved to classify the seconds
     
     if (is.null(segments)) {
-        segments <- ReadOutput('segment.events')
+        segments <- datatrack::ReadDataobject('segment.events')
     }
     
     if (!is.data.frame(segments)) {
@@ -86,11 +86,10 @@ ClassifySegments <- function (segments = NULL, silence.features = NULL, use.save
         segments.data <- segments
     }
     
-    
     # TODO: add audio path here
     
     if (is.null(silence.features) && is.list(segments) && use.saved.features) {
-        silence.features <- ReadOutput(name = 'silence.features', dependencies = list('segment.events' = segments$version), false.if.missing = TRUE)
+        silence.features <- datatrack::ReadDataobject(name = 'silence.features', dependencies = list('segment.events' = segments$version), false.if.missing = TRUE)
     } 
     
     if (is.list(silence.features)) {
@@ -103,21 +102,19 @@ ClassifySegments <- function (segments = NULL, silence.features = NULL, use.save
         #!! temp test
         # segments.data <- tail(segments.data, 15000)
         
-        
         silence.features.data <- CalculateSilenceFeatures(seconds = segments.data)
         
         silence.features.data <- KeepSelectedFeatures(silence.features.data)
         
-        
         # TODO: update to specify whether to save the features
         # if we are using the segments read from the system, we can save silence features with dependencies
         if (save.features && is.list(segments) && 'version' %in% names(segments)) {
-            WriteOutput(silence.features.data, 'silence.features', dependencies = list(segment.events = segments$version))
+            datatrack::WriteDataobject(silence.features.data, 'silence.features', dependencies = list(segment.events = segments$version))
         }
 
     }
 
-    model <- ReadOutput('silence.model')
+    model <- datatrack::ReadDataobject('silence.model')
     fitted.results <- predict(model$data,newdata=silence.features.data,type='response')
     fitted.results <- ifelse(fitted.results > 0.5,1,0)
     
@@ -131,7 +128,7 @@ ClassifySegments <- function (segments = NULL, silence.features = NULL, use.save
         segments.data <- segments.data[segments.data$classified.has.bird > 0, ]
         Report(5, 'silent segments removed (', nrow(segments.data), 'of', before, ' rows remain)' )
         dependencies <- list(silence.features = silence.features$version, silence.model = model$version)
-        WriteOutput(segments.data, 'filtered.segment.events', dependencies = dependencies)
+        datatrack::WriteDataobject(segments.data, 'filtered.segment.events', dependencies = dependencies)
     }
     
     if (is.list(segments)) {
