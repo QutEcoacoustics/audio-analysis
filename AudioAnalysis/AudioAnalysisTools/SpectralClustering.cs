@@ -23,6 +23,9 @@ namespace AudioAnalysisTools
 
     public static class SpectralClustering
     {
+        public const int DefaultReductionFactor = 3;
+        public const double DefaultBinaryThreshold = 0.12;
+
         private const bool Verbose = false;
 
         public struct ClusteringParameters
@@ -41,7 +44,7 @@ namespace AudioAnalysisTools
                 this.UpperBinBound = spectrogramHeight - this.HighBinOffset;
                 this.IntensityThreshold = intensityThreshold;
                 this.RowSumThreshold = rowSumThreshold;
-                this.ReductionFactor = 3;
+                this.ReductionFactor = DefaultReductionFactor;
             }
         }
 
@@ -55,10 +58,9 @@ namespace AudioAnalysisTools
             public int HighBinBound;
             public double IntensityThreshold;
             public int LowBinBound;
-            public int ReductionFactor;
 
             public TrainingDataInfo(double[,] trainingDataAsSpectrogram, List<double[]> trainingData, bool[] selectedFrames,
-                                    int lowBinBound, int highBinBound, double intensityThreshold, int reductionFactor)
+                                    int lowBinBound, int highBinBound, double intensityThreshold)
             {
                 this.TrainingDataAsSpectrogram = trainingDataAsSpectrogram;
                 this.TrainingData = trainingData;
@@ -66,7 +68,6 @@ namespace AudioAnalysisTools
                 this.LowBinBound = lowBinBound;
                 this.HighBinBound = highBinBound;
                 this.IntensityThreshold = intensityThreshold;
-                this.ReductionFactor = reductionFactor;
             }
         }
 
@@ -123,7 +124,7 @@ namespace AudioAnalysisTools
                 }
             }
 
-            return new TrainingDataInfo(trainingDataAsSpectrogram, trainingData, selectedFrames, cp.LowBinBound, cp.UpperBinBound, cp.IntensityThreshold, cp.ReductionFactor);
+            return new TrainingDataInfo(trainingDataAsSpectrogram, trainingData, selectedFrames, cp.LowBinBound, cp.UpperBinBound, cp.IntensityThreshold);
         }
 
         /// <summary>
@@ -147,7 +148,10 @@ namespace AudioAnalysisTools
             int[] clusterHits1 = tupleClusters.Item1; //the cluster to which each frame belongs
             List<double[]> clusterWts = tupleClusters.Item2;
 
-            //if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(clusterWts, clusterHits1);
+            if (BinaryCluster.Verbose)
+            {
+                BinaryCluster.DisplayClusterWeights(clusterWts, clusterHits1);
+            }
 
             //PRUNE THE CLUSTERS
             var tupleOutput2 = BinaryCluster.PruneClusters(clusterWts, clusterHits1, wtThreshold, hitThreshold);
@@ -162,7 +166,7 @@ namespace AudioAnalysisTools
             }
 
             // ix: AVERAGE CLUSTER DURATION - to determine spectral persistence
-            //  First:  reassemble cluster hits into an array matching the original array of active frames.
+            //  First:  re-assemble cluster hits into an array matching the original array of active frames.
             int hitCount = 0;
             int[] clusterHits2 = new int[frameCount]; // after pruning of clusters
             for (int i = 0; i < frameCount; i++)
@@ -185,7 +189,7 @@ namespace AudioAnalysisTools
                 {
                     if ((clusterHits2[i - 1] != 0) && (currentDuration > 1))
                     {
-                        hitDurations.Add(currentDuration); //do not add if cluster = 0
+                        hitDurations.Add(currentDuration); // do not add if cluster = 0
                     }
 
                     currentDuration = 1;
@@ -239,8 +243,9 @@ namespace AudioAnalysisTools
             }
         }
 
-        public static double[] RestoreFullLengthSpectrum(double[] ipSpectrum, int fullLength, int lowOffset, int reductionFactor)
+        public static double[] RestoreFullLengthSpectrum(double[] ipSpectrum, int fullLength, int lowOffset)
         {
+            int reductionFactor = DefaultReductionFactor;
             double[] op = new double[fullLength];
             for (int c = 0; c < ipSpectrum.Length; c++)
             {
@@ -303,7 +308,7 @@ namespace AudioAnalysisTools
                 {
                     int clusterId = clusterHits[i];
                     double[] wts = clusterWts[clusterId];
-                    double[] fullLengthSpectrum = RestoreFullLengthSpectrum(wts, freqBinCount, data.LowBinBound, data.ReductionFactor);
+                    double[] fullLengthSpectrum = RestoreFullLengthSpectrum(wts, freqBinCount, data.LowBinBound);
                     for (int j = excludeBins; j < freqBinCount; j++)
                     {
                         //if (spectrogram[i, j] > data.intensityThreshold)
@@ -423,11 +428,11 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// This CLUSTERING method is called only from IndexCalculate.cs. It estimates the number of spectral clusters in a spectrogram.
-        /// In order to determine spectral diversity and spectral persistence, we only use the midband of the AMPLITDUE SPECTRUM,
+        /// In order to determine spectral diversity (cluster count) and spectral persistence, we only use the midband of the AMPLITDUE SPECTRUM,
         /// i.e. the band between lowerBinBound and upperBinBound.
         /// In June 2016, the mid-band was set to lowerBound=1000Hz, upperBound=8000hz, because this band contains most bird activity, i.e. it is the Bird-Band
         /// NOTE: The passed spectrogram should be an amplitude spectrogram that is already noise reduced.
-        /// It is a highly reduced version of ART, Adaptive resonance Theory, disigned for speed.
+        /// This clustering algorithm is a highly reduced version of binary ART, Adaptive resonance Theory, designed for speed.
         /// </summary>
         /// <param name="spectrogram">a collection of spectra that are to be clustered</param>
         /// <param name="lowerBinBound">lower end of the bird-band</param>
@@ -475,10 +480,8 @@ namespace AudioAnalysisTools
             //string wavFilePath = @"C:\SensorNetworks\WavFiles\BAC\BAC5_20080520-040000_silence.wav";
             //string wavFilePath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
             string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
+            string outputDir = @"C:\SensorNetworks\Output\Clustering\Test";
 
-            string outputDir = @"C:\SensorNetworks\Output\Test";
-            string imageFname = "test3.png";
-            string imagePath = Path.Combine(outputDir, imageFname);
             int frameSize = 512;
             int frameStep = 512;
             double frameOverlap = 0.0; // alternative to step
@@ -492,54 +495,76 @@ namespace AudioAnalysisTools
                 NoiseReductionParameter = 0.0,
             };
 
-            // backgroundNeighbourhood noise reduction in dB
-            var spectrogram = new SpectrogramStandard(config, recording.WavReader);
-            double eventThreshold = 0.5; // dummy variable - not used
-            List<AcousticEvent> list = null;
-
-            //var image = DrawSonogram(spectrogram, scores, list, eventThreshold);
-            //image.Save(imagePath, ImageFormat.Png);
-
             //#######################################################################################################################################
             // get amplitude spectrogram and remove the DC column ie column zero.
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
             var results2 = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep);
-            double[,] spectrogramData = results2.AmplitudeSpectrogram;
 
             // double windowPower = frameSize * 0.66; //power of a rectangular window =frameSize. Hanning is less
             //spectrogramData = MatrixTools.Submatrix(spectrogramData, 0, 1, spectrogramData.GetLength(0) - 1, spectrogramData.GetLength(1) - 1);
 
-            // vi: remove background noise from the full spectrogram
+            // vi: remove background noise from the full amplitude spectrogram
             const double sdCount = 0.1;
             const double spectralBgThreshold = 0.003; // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
-            var profile = NoiseProfile.CalculateModalNoiseProfile(spectrogramData, sdCount); //calculate noise profile - assumes a dB spectrogram.
+            var profile = NoiseProfile.CalculateModalNoiseProfile(results2.AmplitudeSpectrogram, sdCount); //calculate noise profile - assumes a dB spectrogram.
             double[] noiseValues = DataTools.filterMovingAverage(profile.NoiseThresholds, 7);      // smooth the noise profile
-            spectrogramData = SNR.NoiseReduce_Standard(spectrogramData, noiseValues, spectralBgThreshold);
-
-            // convert spectrum to decibels
-            //spectrogramData = Speech.DecibelSpectra(spectrogramData, windowPower, recording.SampleRate, epsilon);
+            var amplitudeSpectrogram = SNR.NoiseReduce_Standard(results2.AmplitudeSpectrogram, noiseValues, spectralBgThreshold);
 
             // xv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband spectrum
             int nyquistFreq = recording.Nyquist;
-            double binWidth = nyquistFreq / (double)spectrogramData.GetLength(1);
+            int freqBinCount = amplitudeSpectrogram.GetLength(1);
+            double binWidth = nyquistFreq / (double)freqBinCount;
 
             // int nyquistBin = spectrogramData.GetLength(1) - 1;
             int lowFreqBound = 482;
-            int lowBinBound = (int)Math.Ceiling(lowFreqBound / binWidth);
+            int lowerBinBound = (int)Math.Ceiling(lowFreqBound / binWidth);
+            int upperBinBound = freqBinCount - 5;
 
-            // int upperBinBound = spectrogramData.GetLength(1) - 5;
-            double binaryThreshold = 0.07; // for deriving binary spectrogram. An amplitude threshold of 0.03 = -30 dB. A threhold of 0.05 = -26dB.
+            double binaryThreshold = DefaultBinaryThreshold; // for deriving binary spectrogram.
+            binaryThreshold = 0.07; // An amplitude threshold of 0.03 = -30 dB. A threhold of 0.05 = -26dB.
             double rowSumThreshold = 2.0;  // ACTIVITY THRESHOLD - require activity in at least N bins to include for training
-            var parameters = new ClusteringParameters(lowBinBound, spectrogramData.GetLength(1), binaryThreshold, rowSumThreshold);
 
-            TrainingDataInfo data = GetTrainingDataForClustering(spectrogramData, parameters);
-            var image = DrawSonogram(spectrogram, null, list, eventThreshold, data.TrainingDataAsSpectrogram);
-            image.Save(imagePath, ImageFormat.Png);
-            var fiImage = new FileInfo(imagePath);
+            // the following are pruning parameters
+            double wtThreshold = rowSumThreshold; // used to remove wt vectors whose sum of wts <= threshold
+            int hitThreshold = 4;                 // used to remove wt vectors which have fewer than the threshold hits
+
+            var parameters = new ClusteringParameters(lowerBinBound, freqBinCount, binaryThreshold, rowSumThreshold);
+
+            var clusterInfo = ClusterTheSpectra(amplitudeSpectrogram, lowerBinBound, upperBinBound, binaryThreshold);
+
+            // transfer cluster info to spectral index results
+            var clusterSpectrum = SpectralClustering.RestoreFullLengthSpectrum(clusterInfo.ClusterSpectrum, freqBinCount, lowerBinBound);
+            Console.WriteLine("Binary Threshold=" + binaryThreshold);
+            Console.WriteLine("Weight Threshold=" + wtThreshold);
+            Console.WriteLine("Hit Threshold=" + hitThreshold);
+            Console.WriteLine("Cluster Count =" + clusterInfo.ClusterCount);
+            Console.WriteLine("Three Gram Count=" + clusterInfo.TriGramUniqueCount);
+            Console.WriteLine($"Cluster Spectrum = ..... {clusterSpectrum[100]}, {clusterSpectrum[101]}, {clusterSpectrum[102]}, {clusterSpectrum[103]} .....");
+
+            // ###################################################################################
+
+            // Now repeat the entire process again with different parameters.
+            // We want to get intermediate results to superimpose on spectrogram
+            TrainingDataInfo data = GetTrainingDataForClustering(amplitudeSpectrogram, parameters);
+
+            // make a normal standard decibel spectogram on which to superimpose cl;uster results
+            var spectrogram = new SpectrogramStandard(config, recording.WavReader);
+            List<AcousticEvent> list = null;
+            double eventThreshold = 0.5; // dummy variable - not used
+            var image = DrawSonogram(spectrogram, null, list, eventThreshold, null);
+            string imageFname0 = "test0Spectrogram.png";
+            string imagePath0 = Path.Combine(outputDir, imageFname0);
+            image.Save(imagePath0, ImageFormat.Png);
+
+            image = DrawSonogram(spectrogram, null, list, eventThreshold, data.TrainingDataAsSpectrogram);
+            string imageFname1 = "test1Spectrogram.png";
+            string imagePath1 = Path.Combine(outputDir, imageFname1);
+            image.Save(imagePath1, ImageFormat.Png);
+            var fiImage = new FileInfo(imagePath1);
             if (fiImage.Exists)
             {
                 var process = new ProcessRunner(imageViewer);
-                process.Run(imagePath, outputDir);
+                process.Run(imagePath1, outputDir);
             }
 
             // Return if no suitable training data for clustering
@@ -549,23 +574,27 @@ namespace AudioAnalysisTools
             }
             else
             {
-                // pruning parameters
-                double wtThreshold = rowSumThreshold; // used to remove wt vectors whose sum of wts <= threshold
-                int hitThreshold = 4;                 // used to remove wt vectors which have fewer than the threshold hits
-                ClusterInfo clusterInfo = ClusterAnalysis(data.TrainingData, wtThreshold, hitThreshold, data.SelectedFrames);
+                clusterInfo = ClusterAnalysis(data.TrainingData, wtThreshold, hitThreshold, data.SelectedFrames);
+                Console.WriteLine("Binary Threshold=" + binaryThreshold);
+                Console.WriteLine("Weight Threshold=" + wtThreshold);
+                Console.WriteLine("Hit Threshold=" + hitThreshold);
                 Console.WriteLine("Cluster Count=" + clusterInfo.ClusterCount);
+                Console.WriteLine("Three Gram Count=" + clusterInfo.TriGramUniqueCount);
+                Console.WriteLine($"Cluster Spectrum = ..... {clusterSpectrum[100]}, {clusterSpectrum[101]}, {clusterSpectrum[102]}, {clusterSpectrum[103]} .....");
 
                 //spectrogramData = SpectralClustering.SuperImposeHitsOnSpectrogram(spectrogramData, lowBinBound, clusterInfo.trainingDataAsSpectrogram);
                 //spectrogramData = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
                 //ImageTools.DrawMatrix(spectrogramData, imagePath);
 
                 image = DrawClusterSpectrogram(spectrogram, clusterInfo, data);
-                image.Save(imagePath, ImageFormat.Png);
-                fiImage = new FileInfo(imagePath);
+                string imageFname2 = "test2Spectrogram.png";
+                string imagePath2 = Path.Combine(outputDir, imageFname2);
+                image.Save(imagePath2, ImageFormat.Png);
+                fiImage = new FileInfo(imagePath2);
                 if (fiImage.Exists)
                 {
                     var process = new ProcessRunner(imageViewer);
-                    process.Run(imagePath, outputDir);
+                    process.Run(imagePath2, outputDir);
                 }
             }
         }
@@ -584,6 +613,7 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClusterInfo"/> class.
+        /// CONSTRUCTOR
         /// The default or zero cluster info.
         /// </summary>
         public ClusterInfo(int spectralLength)
@@ -599,7 +629,6 @@ namespace AudioAnalysisTools
 
             // spectral index
             this.ClusterSpectrum = new double[spectralLength];
-
             this.ClusterHits2 = null;
         }
 

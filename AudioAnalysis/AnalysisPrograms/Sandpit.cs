@@ -52,7 +52,8 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
             // this is a test to read a file of summary indices.
-            if (true)
+            // THis could be made a unit test???
+            if (false)
             {
                 var summaryIndices = new List<SummaryIndexValues>();
                 var file = new FileInfo(@"C:\SensorNetworks\SoftwareTests\TestConcatenation\20160726_073000_Towsey.Acoustic.Indices.csv");
@@ -83,14 +84,14 @@ namespace AnalysisPrograms
                 //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
 
                 // The following test methods test various configs of concatenation
-                ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest1();
+                // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest1();
                 // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest2();
                 // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest3();
                 // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest4();
                 // SpectrogramTools.AverageAnArrayOfDecibelValues(null);
 
                 // experiments with clustering the spectra within spectrograms
-                // SpectralClustering.TESTMETHOD_SpectralClustering();
+                SpectralClustering.TESTMETHOD_SpectralClustering();
             }
 
             if (false)

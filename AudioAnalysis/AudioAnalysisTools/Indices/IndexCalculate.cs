@@ -433,6 +433,7 @@ namespace AudioAnalysisTools.Indices
 
             // ######################################################################################################################################################
 
+            // xiv: CLUSTERING - DETERMINE IF IT IS WORTH DOING
             // return if (activeFrameCount too small || segmentCount == 0 || short index calc duration) because no point doing clustering
             if (activity.activeFrameCount <= 2 || Math.Abs(activity.eventCount) < 0.01 || indexCalculationDuration.TotalSeconds < 10)
             {
@@ -453,11 +454,11 @@ namespace AudioAnalysisTools.Indices
 
             // #######################################################################################################################################################
 
-            // xiv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband AMPLITDUE SPECTRUM
-            //                   In June 2016, the mid-band (i.e. the bird-band) was set to lowerBound=1000Hz, upperBound=8000hz.
+            // YES WE WILL DO CLUSTERING! to determine cluster count (spectral diversity) and spectral persistence.
+            // Only use midband AMPLITDUE SPECTRUM. In June 2016, the mid-band (i.e. the bird-band) was set to lowerBound=1000Hz, upperBound=8000hz.
             // NOTE: Clustering is performed only on the midBandAmplSpectrogram of the amplitudeSpectrogram.
             // NOTE: The amplitudeSpectrogram is already noise reduced at this stage.
-            // Set threshold for deriving binary spectrogram - DEFAULT=0.06 prior to June2016
+            // Actually do clustering of binary spectra. Must first threshold - DEFAULT=0.06 prior to June2016
             const double binaryThreshold = 0.12;
             var clusterInfo = SpectralClustering.ClusterTheSpectra(amplitudeSpectrogram, lowerBinBound, upperBinBound, binaryThreshold);
 
@@ -466,7 +467,7 @@ namespace AudioAnalysisTools.Indices
             summaryIndices.ThreeGramCount = clusterInfo.TriGramUniqueCount;
 
             // transfer cluster info to spectral index results
-            spectralIndices.CLS = clusterInfo.ClusterSpectrum;
+            spectralIndices.CLS = SpectralClustering.RestoreFullLengthSpectrum(clusterInfo.ClusterSpectrum, freqBinCount, lowerBinBound);
 
             // xv: STORE CLUSTERING IMAGES
             if (returnSonogramInfo)
