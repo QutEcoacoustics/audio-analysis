@@ -11,32 +11,33 @@ matrix:
   fast_finish: true
   
 platform:
-    - Any CPU
+  - Any CPU
 
 configuration:
-    - Debug
-    - Release
+  - Debug
+  - Release
 
 # Restore packages
 before_build:
-    - cd AudioAnalysis
-    - nuget restore
+  - cd AudioAnalysis
+  - nuget restore
 
-build:
-    # enable MSBuild parallel builds
-    parallel: true
-    # path to Visual Studio solution or project
-    project: AudioAnalysis\AudioAnalysis2012.sln
-    # MSBuild verbosity level
-    verbosity: quiet
-  
+build_script:
+  - ps: >
+      msbuild 
+      "C:\projects\audio-analysis\AudioAnalysis\AudioAnalysis2012.sln" /m /verbosity:minimal 
+      /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+      /p:WarningLevel=0 /p:RunCodeAnalysis=false /t:AnalysisPrograms
+      /p:Configuration=$env:configuration /property:Platform=$env:platform
+
 test:
-    assemblies:
-        only:
-            #- "C:\Work\Github\audio-analysis\Acoustics\Acoustics.Test\bin\Debug\Acoustics.Test.dll"
-            #- "C:\Work\Github\audio-analysis\AudioAnalysis\Analysis.Test\bin\Debug\Acoustics.Test.dll"
-            #- "C:\Work\Github\audio-analysis\AudioAnalysis\AED\Test\bin\Debug\Test.dll"
-            - '**\*.tests.dll'
+  assemblies:
+    only:
+      #- "C:\Work\Github\audio-analysis\Acoustics\Acoustics.Test\bin\Debug\Acoustics.Test.dll"
+      #- "C:\Work\Github\audio-analysis\AudioAnalysis\Analysis.Test\bin\Debug\Acoustics.Test.dll"
+      #- "C:\Work\Github\audio-analysis\AudioAnalysis\AED\Test\bin\Debug\Test.dll"
+      - "Acoustics\\Acoustics.Test\\bin\\$(configuration)\\Acoustics.Test.dll"
+      - "AudioAnalysis\\Analysis.Test\\bin\\$(configuration)\\Acoustics.Test.dll"
 
 init:
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
