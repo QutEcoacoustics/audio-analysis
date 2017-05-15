@@ -348,7 +348,7 @@ namespace NeuralNets
         /// <summary>
         /// removes wtVectors from a list where two threshold conditions not satisfied:
         /// 1) Sum of positive wts must exceed weight threshold
-        /// 2) Cluster size (i.e. total frames hit by wtVector) must exceed threshold
+        /// 2) Cluster size (i.e. total number of frames hit by wtVector) must exceed threshold
         /// </summary>
         public static Tuple<int[], List<double[]>> PruneClusters(List<double[]> wtVectors, int[] clusterHits, double wtThreshold, int hitThreshold)
         {

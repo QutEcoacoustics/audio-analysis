@@ -82,6 +82,38 @@ namespace TowseyLibrary
             LoggedConsole.WriteLine("Completed benchmark test.");
         }
 
+        public static void CompareTwoArrays(double[]array1, double[] array2)
+        {
+            LoggedConsole.WriteLine("# TESTING: Compare two arrays of double");
+            bool allOk = true;
+
+            if (array1.Length != array2.Length)
+            {
+                LoggedConsole.WriteWarnLine("   FAIL! ARRAYS are not of same length.");
+                return;
+            }
+
+            for (int i = 0; i < array1.Length; i++)
+            {
+                if (array1[i] != array2[i])
+                {
+                    LoggedConsole.WriteWarnLine($"Line {i}: {array1[i]} != {array1[i]}");
+                    allOk = false;
+                }
+            }
+
+            if (allOk)
+            {
+                LoggedConsole.WriteSuccessLine("   SUCCESS! Two arrays are equal.");
+            }
+            else
+            {
+                LoggedConsole.WriteWarnLine("   FAILED THE ARRAY TEST");
+            }
+
+            LoggedConsole.WriteLine("Completed test.");
+        }
+
         /// <summary>
         /// This test checks two text/csv files to determine if they are the same.
         /// </summary>
