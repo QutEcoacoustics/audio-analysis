@@ -143,30 +143,6 @@
     <Reference Include="CsvHelper, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
       <HintPath>..\packages\CsvHelper.2.7.0\lib\net40-client\CsvHelper.dll</HintPath>
     </Reference>
-    <Reference Include="Emgu.CV">
-      <HintPath>..\packages\VVVV.EmguCV.2.4.2.1\build\net40\lib\Emgu.CV.dll</HintPath>
-    </Reference>
-    <Reference Include="Emgu.CV.GPU">
-      <HintPath>..\packages\VVVV.EmguCV.2.4.2.1\build\net40\lib\Emgu.CV.GPU.dll</HintPath>
-    </Reference>
-    <Reference Include="Emgu.CV.ML">
-      <HintPath>..\packages\VVVV.EmguCV.2.4.2.1\build\net40\lib\Emgu.CV.ML.dll</HintPath>
-    </Reference>
-    <Reference Include="Emgu.CV.OCR">
-      <HintPath>..\packages\VVVV.EmguCV.2.4.2.1\build\net40\lib\Emgu.CV.OCR.dll</HintPath>
-    </Reference>
-    <Reference Include="Emgu.CV.Stitching">
-      <HintPath>..\packages\VVVV.EmguCV.2.4.2.1\build\net40\lib\Emgu.CV.Stitching.dll</HintPath>
-    </Reference>
-    <Reference Include="Emgu.CV.UI">
-      <HintPath>..\packages\VVVV.EmguCV.2.4.2.1\build\net40\lib\Emgu.CV.UI.dll</HintPath>
-    </Reference>
-    <Reference Include="Emgu.CV.VideoStab">
-      <HintPath>..\packages\VVVV.EmguCV.2.4.2.1\build\net40\lib\Emgu.CV.VideoStab.dll</HintPath>
-    </Reference>
-    <Reference Include="Emgu.Util">
-      <HintPath>..\packages\VVVV.EmguCV.2.4.2.1\build\net40\lib\Emgu.Util.dll</HintPath>
-    </Reference>
     <Reference Include="FSharp.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <Private>True</Private>
     </Reference>
