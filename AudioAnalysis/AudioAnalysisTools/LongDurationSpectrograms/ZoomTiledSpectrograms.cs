@@ -377,7 +377,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 titleBar,
                 startTimeOfData,
                 frameScale,
-                TimeSpan.FromSeconds(config.XAxisTicInterval),
+                config.XAxisTicInterval,
                 nyquist,
                 herzInterval);
             return spectrogramImage;
@@ -551,7 +551,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 titleBar,
                 startTime,
                 imageScale,
-                TimeSpan.FromSeconds(config.XAxisTicInterval),
+                config.XAxisTicInterval,
                 nyquist,
                 herzInterval);
 
