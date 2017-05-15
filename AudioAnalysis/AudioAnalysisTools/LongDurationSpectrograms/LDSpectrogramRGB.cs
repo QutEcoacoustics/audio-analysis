@@ -172,7 +172,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // set the X and Y axis scales for the spectrograms
             this.IndexCalculationDuration = indexGenerationData.IndexCalculationDuration;
-            this.XTicInterval = TimeSpan.FromSeconds(config.XAxisTicInterval);
+            this.XTicInterval = config.XAxisTicInterval;
 
             // the Herz scale
             int nyquist = indexGenerationData.SampleRateResampled / 2;

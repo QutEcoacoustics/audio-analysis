@@ -70,10 +70,10 @@ namespace Acoustics.Test.Shared
 
         public class TestDataClass
         {
-            [JsonConverter(typeof(Json.LagacyTimeSpanDataConverter))]
+            [JsonConverter(typeof(Json.LegacyTimeSpanDataConverter))]
             public int A { get; set; }
 
-            [JsonConverter(typeof(Json.LagacyTimeSpanDataConverter))]
+            [JsonConverter(typeof(Json.LegacyTimeSpanDataConverter))]
             public double B { get; set; }
         }
 

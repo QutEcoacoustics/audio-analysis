@@ -17,7 +17,7 @@ ColorMap2: "BGN-PMN-R3D"
 ColourFilter: -0.25
 
 # minutes x-axis scale
-XAxisTicInterval: 60
+XAxisTicIntervalSeconds: 3600
 
 # Hertz y-axis scale
 # Eventual options will be: Linear, Mel, Linear62Octaves31Nyquist11025, Linear125Octaves30Nyquist11025, Octaves24Nyquist32000, Linear125Octaves28Nyquist32000

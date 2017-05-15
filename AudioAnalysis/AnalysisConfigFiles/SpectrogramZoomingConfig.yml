@@ -29,7 +29,7 @@ LdSpectrogramConfig:
     ColorMap1: "ACI-ENT-EVN" 
     ColorMap2: "BGN-POW-EVN"
     # minutes
-    XAxisTicInterval: 60
+    XAxisTicIntervalSeconds: 3600
     # Hertz
     YAxisTicInterval: 1000
 IndexPropertiesConfig: './IndexPropertiesConfig.yml'

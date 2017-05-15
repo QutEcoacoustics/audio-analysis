@@ -11,6 +11,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.IO;
     using Acoustics.Shared;
     using Newtonsoft.Json;
+    using YamlDotNet.Serialization;
 
     /// <summary>
     /// CONFIG CLASS FOR the class LDSpectrogramRGB
@@ -33,7 +34,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.ColorMap1 = LDSpectrogramRGB.DefaultColorMap1;
             this.ColorMap2 = LDSpectrogramRGB.DefaultColorMap2;
             this.ColourFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
-            this.XAxisTicInterval = (int)SpectrogramConstants.X_AXIS_TIC_INTERVAL.TotalSeconds;
+            this.XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
             this.FreqScale = "Linear";
             this.YAxisTicInterval = 1000;
         }
@@ -71,10 +72,24 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// The default assumes one minute spectra i.e. 60 per hour
         /// But as of January 2015, this is not fixed. The user can adjust
         ///  the tic interval to be appropriate to the time scale of the spectrogram.
-        /// May 2017: Now measureed in seconds
+        /// May 2017: XAxisTicIntervalSeconds is the new configuration option!
         /// </summary>
-        [JsonConverter(typeof(Json.LagacyTimeSpanDataConverter))]
-        public int XAxisTicInterval { get; set; }
+        [YamlIgnore]
+        [JsonIgnore]
+        public TimeSpan XAxisTicInterval
+        {
+            get => TimeSpan.FromSeconds(this.XAxisTicIntervalSeconds);
+            set => this.XAxisTicIntervalSeconds = value.TotalSeconds;
+        }
+
+        /// <summary>
+        /// Gets or sets the default XAxisTicIntervalSeconds.
+        /// The default assumes one minute spectra i.e. 60 per hour
+        /// But as of January 2015, this is not fixed. The user can adjust
+        ///  the tic interval to be appropriate to the time scale of the spectrogram.
+        /// May 2017: Now measured in seconds and usage XAxisTicIntervalSeconds is preferred
+        /// </summary>
+        public double XAxisTicIntervalSeconds { get; set; }
 
         /// <summary>
         /// Gets or sets YAxisTicInterval in Hertz.
@@ -113,8 +128,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public static LdSpectrogramConfig GetDefaultConfig()
         {
-            var ldSpectrogramConfig = new LdSpectrogramConfig();
-            return ldSpectrogramConfig;
+            return new LdSpectrogramConfig();
         }
 
         /// <summary>

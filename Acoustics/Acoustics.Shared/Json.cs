@@ -56,7 +56,7 @@ namespace Acoustics.Shared
             }
         }
 
-        public class LagacyTimeSpanDataConverter : JsonConverter
+        public class LegacyTimeSpanDataConverter : JsonConverter
         {
             public override bool CanWrite => false;
 
@@ -83,7 +83,7 @@ namespace Acoustics.Shared
                     }
                     else
                     {
-                        LoggedConsole.WriteWarnLine("LagacyTimeSpanDataConverter is truncating values.");
+                        LoggedConsole.WriteWarnLine("LegacyTimeSpanDataConverter is truncating values.");
                         return (int)seconds;
                     }
                 }
