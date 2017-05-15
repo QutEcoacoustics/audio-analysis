@@ -11,10 +11,12 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
+    using System.Security.Cryptography.X509Certificates;
     using DSP;
     using NeuralNets;
     using StandardSpectrograms;
@@ -24,7 +26,20 @@ namespace AudioAnalysisTools
     public static class SpectralClustering
     {
         public const int DefaultReductionFactor = 3;
+
+        // Amplitude threshold used to convert spectrogram to binary
+        // An amplitude threshold of 0.03 = -30 dB. A threshold of 0.05 = -26dB.
         public const double DefaultBinaryThreshold = 0.12;
+
+        // A decibel threshold for post noise removal
+        public const double DefaultBinaryThresholdInDecibels = 3.0;
+
+        // ACTIVITY THRESHOLD - require activity in at least N freq bins before including the spectrum for training.
+        //                      DEFAULT was N=2 prior to June 2016. You can increase threshold to reduce cluster count due to noise.
+        public const double DefaultRowSumThreshold = 2.0;
+
+        // used to remove weight vectors which have fewer than the threshold number of hits i.e. sets a minimum cluster size
+        public const int DefaultHitThreshold = 3;
 
         private const bool Verbose = false;
 
@@ -32,16 +47,14 @@ namespace AudioAnalysisTools
         {
             public int LowBinBound;
             public int UpperBinBound;
-            public int HighBinOffset;
             public int ReductionFactor;
             public double IntensityThreshold;
             public double RowSumThreshold;
 
-            public ClusteringParameters(int lowBinBound, int spectrogramHeight, double intensityThreshold, double rowSumThreshold)
+            public ClusteringParameters(int lowBinBound, int upperBinBound, double intensityThreshold, double rowSumThreshold)
             {
                 this.LowBinBound = lowBinBound;
-                this.HighBinOffset = 5; // to avoid edge effects at top of spectrogram
-                this.UpperBinBound = spectrogramHeight - this.HighBinOffset;
+                this.UpperBinBound = upperBinBound;
                 this.IntensityThreshold = intensityThreshold;
                 this.RowSumThreshold = rowSumThreshold;
                 this.ReductionFactor = DefaultReductionFactor;
@@ -76,7 +89,6 @@ namespace AudioAnalysisTools
         /// </summary>
         public static TrainingDataInfo GetTrainingDataForClustering(double[,] spectrogram, ClusteringParameters cp)
         {
-            //double binaryThreshold, double rowSumThreshold
             int frameCount = spectrogram.GetLength(0);
             int freqBinCount = spectrogram.GetLength(1);
             var trainingData = new List<double[]>(); // training data that will be used for clustering
@@ -249,10 +261,10 @@ namespace AudioAnalysisTools
             double[] op = new double[fullLength];
             for (int c = 0; c < ipSpectrum.Length; c++)
             {
-                int start = c * reductionFactor;
+                int start = lowOffset + (c * reductionFactor);
                 for (int j = 0; j < reductionFactor; j++)
                 {
-                    op[lowOffset + start + j] = ipSpectrum[c];
+                    op[start + j] = ipSpectrum[c];
                 }
             }
 
@@ -285,45 +297,57 @@ namespace AudioAnalysisTools
         /// Later on it is superimposed on a detailed spectrogram.
         /// </summary>
         /// <param name="spectrogram">spectrogram used to derive spectral richness indices</param>
-        /// <param name="excludeBins">bottom N freq bins that are excluded because likely to contain traffic and wind noise.</param>
+        /// <param name="lowerBinBound">bottom N freq bins are excluded because likely to contain traffic and wind noise.</param>
         /// <param name="clusterInfo">information about accumulated clusters</param>
         /// <param name="data">training data</param>
-        public static int[,] AssembleClusterSpectrogram(double[,] spectrogram, int excludeBins, ClusterInfo clusterInfo, TrainingDataInfo data)
+        public static int[,] AssembleClusterSpectrogram(double[,] spectrogram, int lowerBinBound, ClusterInfo clusterInfo, TrainingDataInfo data)
         {
-            List<double[]> clusterWts = clusterInfo.PrunedClusterWts;
+            var clusterWts = clusterInfo.PrunedClusterWts;
             int[] clusterHits = clusterInfo.ClusterHits2;
             bool[] activeFrames = clusterInfo.SelectedFrames;
             int frameCount = spectrogram.GetLength(0);
             int freqBinCount = spectrogram.GetLength(1);
-            // int upperBound = data.highBinBound;
 
             //reassemble spectrogram to visualise the clusters
             var clusterSpectrogram = new int[frameCount, freqBinCount];
 
-            // loop over original frames
-            int count = 0;
-            for (int i = 0; i < frameCount; i++)
+            for (int row = 0; row < frameCount; row++)
             {
-                if (activeFrames[i])
+                if (activeFrames[row])
                 {
-                    int clusterId = clusterHits[i];
-                    double[] wts = clusterWts[clusterId];
-                    double[] fullLengthSpectrum = RestoreFullLengthSpectrum(wts, freqBinCount, data.LowBinBound);
-                    for (int j = excludeBins; j < freqBinCount; j++)
+                    int clusterId = clusterHits[row];
+                    if (clusterId == 0)
                     {
-                        //if (spectrogram[i, j] > data.intensityThreshold)
+                        // cluster zero does not exist. Place filler
+                        continue;
+                    }
+
+                    double[] wts = clusterWts[clusterId];
+                    if (wts == null)
+                    {
+                        // This should not happen but it might
+                        LoggedConsole.WriteErrorLine($"WARNING: Cluster {clusterId} = null");
+                        continue;
+                    }
+
+                    double[] fullLengthSpectrum = RestoreFullLengthSpectrum(wts, freqBinCount, data.LowBinBound);
+
+                    //for (int j = lowerBinBound; j < freqBinCount; j++)
+                    for (int j = 0; j < freqBinCount; j++)
+                    {
+                        //if (spectrogram[row, j] > data.intensityThreshold)
                         if (fullLengthSpectrum[j] > 0.0)
                         {
-                            clusterSpectrogram[i, j] = clusterId + 1; //+1 so do not have zero index for a cluster
+                            clusterSpectrogram[row, j] = clusterId + 1; //+1 so do not have zero index for a cluster
                         }
-
-                        if (clusterSpectrogram[i, j] < 0)
+                        else 
+                        // if (clusterSpectrogram[row, j] < 0)
                         {
-                            clusterSpectrogram[i, j] = 0; //correct for case where set hit count < 0 for pruned wts.
+                            clusterSpectrogram[row, j] = 0; //correct for case where set hit count < 0 for pruned wts.
                         }
                     }
 
-                    count++;
+                    // count++;
                 }
             }
 
@@ -375,6 +399,202 @@ namespace AudioAnalysisTools
             ImageTools.DrawMatrixInColour(m, imagePath, false);
         }
 
+        /// <summary>
+        /// This CLUSTERING method is called only from IndexCalculate.cs. It estimates the number of spectral clusters in a spectrogram.
+        /// In order to determine spectral diversity (cluster count) and spectral persistence, we only use the midband of the AMPLITDUE SPECTRUM,
+        /// i.e. the band between lowerBinBound and upperBinBound.
+        /// In June 2016, the mid-band was set to lowerBound=1000Hz, upperBound=8000hz, because this band contains most bird activity, i.e. it is the Bird-Band
+        /// NOTE: The passed spectrogram should be an amplitude spectrogram that is already noise reduced.
+        /// This clustering algorithm is a highly reduced version of binary ART, Adaptive resonance Theory, designed for speed.
+        /// </summary>
+        /// <param name="spectrogram">a collection of spectra that are to be clustered</param>
+        /// <param name="lowerBinBound">lower end of the bird-band</param>
+        /// <param name="upperBinBound">upper end of the bird-band</param>
+        /// <param name="binaryThreshold">used to convert real value spectrum to binary</param>
+        public static ClusterInfo ClusterTheSpectra(double[,] spectrogram, int lowerBinBound, int upperBinBound, double binaryThreshold)
+        {
+            // Use verbose only when debugging
+            // SpectralClustering.Verbose = true;
+
+            // NOTE: The midBandAmplSpectrogram is derived from an amplitudeSpectrogram by removing low freq band AND high freq band.
+            var midBandAmplSpectrogram = MatrixTools.Submatrix(spectrogram, 0, lowerBinBound, spectrogram.GetLength(0) - 1, upperBinBound);
+
+            var parameters = new ClusteringParameters(lowerBinBound, upperBinBound, binaryThreshold, DefaultRowSumThreshold);
+            TrainingDataInfo data = GetTrainingDataForClustering(midBandAmplSpectrogram, parameters);
+
+            // cluster pruning parameters
+            const double weightThreshold = DefaultRowSumThreshold; // used to remove weight vectors whose sum of wts <= threshold
+            const int hitThreshold = DefaultHitThreshold; // used to remove weight vectors which have fewer than the threshold number of hits i.e. sets minimum cluster size
+
+            // Skip clustering if not enough suitable training data
+            if (data.TrainingData.Count <= 8)
+            {
+                int freqBinCount = spectrogram.GetLength(1);
+                return new ClusterInfo(freqBinCount);
+            }
+
+            var clusterInfo = ClusterAnalysis(data.TrainingData, weightThreshold, hitThreshold, data.SelectedFrames);
+            return clusterInfo;
+        }
+
+        public static void TESTMETHOD_SpectralClustering()
+        {
+            string imageViewer = @"C:\Windows\system32\mspaint.exe";
+
+            //string wavFilePath = @"C:\SensorNetworks\WavFiles\BAC\BAC2_20071005-235040.wav";
+            //string wavFilePath = @"C:\SensorNetworks\WavFiles\BAC\BAC5_20080520-040000_silence.wav";
+            //string wavFilePath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
+            string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
+            string outputDir = @"C:\SensorNetworks\Output\Clustering\Test";
+
+            int frameSize = 512;
+            TESTMETHOD_SpectralClustering(wavFilePath, outputDir, frameSize);
+        }
+
+        /// <summary>
+        /// This method was set up as a TESTMETHOD in May 2017 but has not yet been debugged.
+        /// It was transferred from Sandpit.cls. It is several years old and has not been checked since.
+        /// </summary>
+        public static void TESTMETHOD_SpectralClustering(string wavFilePath, string outputDir, int frameSize)
+        {
+            string imageViewer = @"C:\Windows\system32\mspaint.exe";
+
+            var recording = new AudioRecording(wavFilePath); // get recording segment
+
+            // for deriving binary spectrogram
+            double binaryThreshold = DefaultBinaryThreshold;
+
+            //binaryThreshold = 0.07; // An amplitude threshold of 0.03 = -30 dB. A threshold of 0.05 = -26dB.
+            //double[,] spectrogramData = GetAmplitudeSpectrogramNoiseReduced(recording, frameSize);
+
+            binaryThreshold = DefaultBinaryThresholdInDecibels; // A decibel threshold for post noise removal
+            double[,] spectrogramData = GetDecibelSpectrogramNoiseReduced(recording, frameSize);
+
+            //#######################################################################################################################################
+            // xv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband spectrum
+            int nyquistFreq = recording.Nyquist;
+            int frameCount = spectrogramData.GetLength(0);
+            int freqBinCount = spectrogramData.GetLength(1);
+            double binWidth = nyquistFreq / (double)freqBinCount;
+            int lowFreqBound = 482;
+            int lowerBinBound = (int)Math.Ceiling(lowFreqBound / binWidth);
+            int upperBinBound = freqBinCount - 5;
+            var clusterInfo = ClusterTheSpectra(spectrogramData, lowerBinBound, upperBinBound, binaryThreshold);
+
+            // transfer cluster info to spectral index results
+            var clusterSpectrum1 = SpectralClustering.RestoreFullLengthSpectrum(clusterInfo.ClusterSpectrum, freqBinCount, lowerBinBound);
+
+            Console.WriteLine("Lower BinBound=" + lowerBinBound);
+            Console.WriteLine("Upper BinBound=" + upperBinBound);
+            Console.WriteLine("Binary Threshold=" + binaryThreshold);
+            Console.WriteLine("Cluster Count =" + clusterInfo.ClusterCount);
+            Console.WriteLine("Three Gram Count=" + clusterInfo.TriGramUniqueCount);
+            Console.WriteLine($"Cluster Spectrum = ..... {clusterSpectrum1[100]}, {clusterSpectrum1[101]}, {clusterSpectrum1[102]}, {clusterSpectrum1[103]} .....");
+
+            // ###################################################################################
+
+            // Now repeat the entire process again with different parameters.
+            // We want to get intermediate results to superimpose on spectrogram
+            // NOTE: The midBandAmplSpectrogram is derived from an amplitudeSpectrogram by removing low freq band AND high freq band.
+            var midBandAmplSpectrogram = MatrixTools.Submatrix(spectrogramData, 0, lowerBinBound, spectrogramData.GetLength(0) - 1, upperBinBound);
+
+            // ACTIVITY THRESHOLD - require activity in at least N bins to include spectrum for training
+            double rowSumThreshold = DefaultRowSumThreshold;
+            var parameters = new ClusteringParameters(lowerBinBound, upperBinBound, binaryThreshold, rowSumThreshold);
+            TrainingDataInfo data = GetTrainingDataForClustering(midBandAmplSpectrogram, parameters);
+
+            // make a normal standard decibel spectogram on which to superimpose cluster results
+            var stdSpectrogram = GetStandardSpectrogram(recording, frameSize);
+            List<AcousticEvent> list = null;
+            double eventThreshold = 0.5; // dummy variable - not used
+            var image = DrawSonogram(stdSpectrogram, null, list, eventThreshold, null);
+            SaveAndViewSpectrogramImage(image, outputDir, "test0Spectrogram.png", imageViewer);
+
+            // Debug.Assert(data.TrainingDataAsSpectrogram != null, "data.TrainingDataAsSpectrogram != null");
+            double[,] overlay = ConvertOverlayToSpectrogramSize(data.TrainingDataAsSpectrogram, lowerBinBound, frameCount, freqBinCount);
+            image = DrawSonogram(stdSpectrogram, null, list, eventThreshold, overlay);
+            SaveAndViewSpectrogramImage(image, outputDir, "test1Spectrogram.png", imageViewer);
+
+            // Return if no suitable training data for clustering
+            if (data.TrainingData.Count <= 8)
+            {
+                Console.WriteLine("Abort clustering. Only {0} spectra available for training data. Must be at least 9.", data.TrainingData.Count);
+            }
+            else
+            {
+                // the following are pruning parameters
+                double wtThreshold = rowSumThreshold; // used to remove wt vectors whose sum of wts <= threshold
+                int hitThreshold = DefaultHitThreshold; // used to remove wt vectors which have < N hits, i.e. cluster size < N
+
+                clusterInfo = ClusterAnalysis(data.TrainingData, wtThreshold, hitThreshold, data.SelectedFrames);
+                Console.WriteLine("Binary Threshold=" + binaryThreshold);
+                Console.WriteLine("Weight Threshold=" + wtThreshold);
+                Console.WriteLine("Hit Threshold=" + hitThreshold);
+                Console.WriteLine("Cluster Count=" + clusterInfo.ClusterCount);
+                Console.WriteLine("Three Gram Count=" + clusterInfo.TriGramUniqueCount);
+                //Console.WriteLine($"Cluster Spectrum = ..... {clusterInfo.ClusterSpectrum[100]}, {clusterInfo.ClusterSpectrum[101]}, {clusterInfo.ClusterSpectrum[102]}, {clusterInfo.ClusterSpectrum[103]} .....");
+
+                //spectrogramData = SpectralClustering.SuperImposeHitsOnSpectrogram(spectrogramData, lowBinBound, clusterInfo.trainingDataAsSpectrogram);
+                //spectrogramData = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
+                //ImageTools.DrawMatrix(spectrogramData, imagePath);
+
+                image = DrawClusterSpectrogram(stdSpectrogram, clusterInfo, data, lowerBinBound);
+                SaveAndViewSpectrogramImage(image, outputDir, "test2Spectrogram.png", imageViewer);
+
+                // transfer cluster info to spectral index results
+                var clusterSpectrum2 = SpectralClustering.RestoreFullLengthSpectrum(clusterInfo.ClusterSpectrum, freqBinCount, lowerBinBound);
+                TestTools.CompareTwoArrays(clusterSpectrum1, clusterSpectrum2);
+            }
+        }
+
+        // ################################## REMAINING STATIC METHODS DEAL WITH THE OBTAINING AND DRAWING OF SPECTROGRAMS
+
+        public static SpectrogramStandard GetStandardSpectrogram(AudioRecording recording, int frameSize)
+        {
+            // make a normal standard decibel spectogram on which to superimpose cluster results
+            var config = new SonogramConfig
+            {
+                WindowSize = frameSize,
+                NoiseReductionType = NoiseReductionType.Standard,
+                WindowOverlap = 0.0,
+                NoiseReductionParameter = 0.0,
+            };
+
+            var stdSpectrogram = new SpectrogramStandard(config, recording.WavReader);
+            return stdSpectrogram;
+        }
+
+        public static double[,] GetAmplitudeSpectrogramNoiseReduced(AudioRecording recording, int frameSize)
+        {
+            int frameStep = frameSize;
+
+            // get amplitude spectrogram and remove the DC column ie column zero.
+            var results = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, recording.Epsilon, frameSize, frameStep);
+
+            // remove background noise from the full amplitude spectrogram
+            const double sdCount = 0.1;
+            const double spectralBgThreshold = 0.003; // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
+            var profile = NoiseProfile.CalculateModalNoiseProfile(results.AmplitudeSpectrogram, sdCount); //calculate noise profile - assumes a dB spectrogram.
+            double[] noiseValues = DataTools.filterMovingAverage(profile.NoiseThresholds, 7);      // smooth the noise profile
+            var amplitudeSpectrogram = SNR.NoiseReduce_Standard(results.AmplitudeSpectrogram, noiseValues, spectralBgThreshold);
+            return amplitudeSpectrogram;
+        }
+
+        public static double[,] GetDecibelSpectrogramNoiseReduced(AudioRecording recording, int frameSize)
+        {
+            int frameStep = frameSize;
+
+            // get decibel spectrogram 
+            var results = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, recording.Epsilon, frameSize, frameStep);
+            var spectrogram = MFCCStuff.DecibelSpectra(results.AmplitudeSpectrogram, results.WindowPower, recording.SampleRate, recording.Epsilon);
+
+            // remove background noise from spectrogram
+            double[] spectralDecibelBgn = NoiseProfile.CalculateBackgroundNoise(spectrogram);
+            spectrogram = SNR.TruncateBgNoiseFromSpectrogram(spectrogram, spectralDecibelBgn);
+            spectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogram, nhThreshold: 3.0);
+            return spectrogram;
+        }
+
         public static Image DrawSonogram(BaseSonogram sonogram, Plot scores, List<AcousticEvent> poi, double eventThreshold, double[,] overlay)
         {
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband: false, add1KHzLines: false));
@@ -399,7 +619,12 @@ namespace AudioAnalysisTools
             return image.GetImage();
         }
 
-        public static Image DrawClusterSpectrogram(BaseSonogram sonogram, ClusterInfo clusterInfo, TrainingDataInfo data)
+        /// <summary>
+        /// This method is supposed to overlay the spectral cluster IDs on a spectrogram from which the clusters derived.
+        /// Howev er there is a bug in the method which causes the clusters to be misplaced.
+        /// Too much time spent on this - will have to leave it.
+        /// </summary>
+        public static Image DrawClusterSpectrogram(BaseSonogram sonogram, ClusterInfo clusterInfo, TrainingDataInfo data, int lowerBinBound)
         {
             using (var img = sonogram.GetImage(doHighlightSubband: false, add1KHzLines: true))
             using (var image = new Image_MultiTrack(img))
@@ -409,198 +634,52 @@ namespace AudioAnalysisTools
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
                 image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
 
-                int[] clusterHits = new int[sonogram.FrameCount]; // array of zeroes
-                if (clusterInfo.ClusterHits2 != null)
-                {
-                    clusterHits = clusterInfo.ClusterHits2;
-                }
-
+                // add cluster track, show ID of cluster of each frame
                 string label = string.Format(clusterInfo.ClusterCount + " Clusters");
-                var scores = new Plot(label, DataTools.normalise(clusterHits), 0.0); // location of cluster hits
+                var scores = new Plot(label, DataTools.normalise(clusterInfo.ClusterHits2), 0.0); // location of cluster hits
                 image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
-                int excludeBins = 10;
-                int[,] hits = AssembleClusterSpectrogram(sonogram.Data, excludeBins, clusterInfo, data);
+
+                // overlay cluster hits on spectrogram
+                int[,] hits = AssembleClusterSpectrogram(sonogram.Data, lowerBinBound, clusterInfo, data);
                 image.OverlayDiscreteColorMatrix(hits);
 
                 return image.GetImage();
             } // using
         }
 
-        /// <summary>
-        /// This CLUSTERING method is called only from IndexCalculate.cs. It estimates the number of spectral clusters in a spectrogram.
-        /// In order to determine spectral diversity (cluster count) and spectral persistence, we only use the midband of the AMPLITDUE SPECTRUM,
-        /// i.e. the band between lowerBinBound and upperBinBound.
-        /// In June 2016, the mid-band was set to lowerBound=1000Hz, upperBound=8000hz, because this band contains most bird activity, i.e. it is the Bird-Band
-        /// NOTE: The passed spectrogram should be an amplitude spectrogram that is already noise reduced.
-        /// This clustering algorithm is a highly reduced version of binary ART, Adaptive resonance Theory, designed for speed.
-        /// </summary>
-        /// <param name="spectrogram">a collection of spectra that are to be clustered</param>
-        /// <param name="lowerBinBound">lower end of the bird-band</param>
-        /// <param name="upperBinBound">upper end of the bird-band</param>
-        /// <param name="binaryThreshold">used to convert real value spectrum to binary</param>
-        public static ClusterInfo ClusterTheSpectra(double[,] spectrogram, int lowerBinBound, int upperBinBound, double binaryThreshold)
+        public static double[,] ConvertOverlayToSpectrogramSize(double[,] dataMatrix, int lowerBinBound, int newRowCount, int newColumnCount)
         {
-            // Use verbose only when debugging
-            // SpectralClustering.Verbose = true;
-
-            // ACTIVITY THRESHOLD - require activity in at least N freq bins before including the spectrum for training
-            //                      DEFAULT was N=2 prior to June 2016. You can increase threshold to reduce cluster count due to noise.
-            const double rowSumThreshold = 2.0;
-
-            // NOTE: The midBandAmplSpectrogram is derived from an amplitudeSpectrogram by removing low freq band AND high freq band.
-            var midBandAmplSpectrogram = MatrixTools.Submatrix(spectrogram, 0, lowerBinBound, spectrogram.GetLength(0) - 1, upperBinBound);
-
-            var parameters = new ClusteringParameters(lowerBinBound, midBandAmplSpectrogram.GetLength(1), binaryThreshold, rowSumThreshold);
-            TrainingDataInfo data = GetTrainingDataForClustering(midBandAmplSpectrogram, parameters);
-
-            // cluster pruning parameters
-            const double weightThreshold = rowSumThreshold; // used to remove weight vectors whose sum of wts <= threshold
-            const int hitThreshold = 3; // used to remove wt vectors which have fewer than the threshold hits
-
-            // Skip clustering if not enough suitable training data
-            if (data.TrainingData.Count <= 8)
+            double[,] newOverlay = new double[newRowCount, newColumnCount];
+            if (dataMatrix == null)
             {
-                int freqBinCount = spectrogram.GetLength(1);
-                return new ClusterInfo(freqBinCount);
+                return newOverlay;
             }
 
-            var clusterInfo = ClusterAnalysis(data.TrainingData, weightThreshold, hitThreshold, data.SelectedFrames);
-            return clusterInfo;
+            for (int r = 0; r < dataMatrix.GetLength(0); r++)
+            {
+                for (int c = 0; c < dataMatrix.GetLength(1); c++)
+                {
+                    newOverlay[r, c + lowerBinBound] = dataMatrix[r, c];
+                }
+            }
+
+            return newOverlay;
         }
 
-        /// <summary>
-        /// This method was set up as a TESTMETHOD in May 2017 but has not yet been debugged.
-        /// It was transferred from Sandpit.cls. It is several years old and has not been checked since.
-        /// </summary>
-        public static void TESTMETHOD_SpectralClustering()
+        public static void SaveAndViewSpectrogramImage(Image image, string opDir, string fName, string imageViewer)
         {
-            string imageViewer = @"C:\Windows\system32\mspaint.exe";
-
-            //string wavFilePath = @"C:\SensorNetworks\WavFiles\BAC\BAC2_20071005-235040.wav";
-            //string wavFilePath = @"C:\SensorNetworks\WavFiles\BAC\BAC5_20080520-040000_silence.wav";
-            //string wavFilePath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
-            string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
-            string outputDir = @"C:\SensorNetworks\Output\Clustering\Test";
-
-            int frameSize = 512;
-            int frameStep = 512;
-            double frameOverlap = 0.0; // alternative to step
-
-            //NORMAL WAY TO DO THINGS
-            var recording = new AudioRecording(wavFilePath); // get recording segment
-            var config = new SonogramConfig
-            {
-                NoiseReductionType = NoiseReductionType.Standard,
-                WindowOverlap = frameOverlap,
-                NoiseReductionParameter = 0.0,
-            };
-
-            //#######################################################################################################################################
-            // get amplitude spectrogram and remove the DC column ie column zero.
-            double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            var results2 = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep);
-
-            // double windowPower = frameSize * 0.66; //power of a rectangular window =frameSize. Hanning is less
-            //spectrogramData = MatrixTools.Submatrix(spectrogramData, 0, 1, spectrogramData.GetLength(0) - 1, spectrogramData.GetLength(1) - 1);
-
-            // vi: remove background noise from the full amplitude spectrogram
-            const double sdCount = 0.1;
-            const double spectralBgThreshold = 0.003; // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
-            var profile = NoiseProfile.CalculateModalNoiseProfile(results2.AmplitudeSpectrogram, sdCount); //calculate noise profile - assumes a dB spectrogram.
-            double[] noiseValues = DataTools.filterMovingAverage(profile.NoiseThresholds, 7);      // smooth the noise profile
-            var amplitudeSpectrogram = SNR.NoiseReduce_Standard(results2.AmplitudeSpectrogram, noiseValues, spectralBgThreshold);
-
-            // xv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband spectrum
-            int nyquistFreq = recording.Nyquist;
-            int freqBinCount = amplitudeSpectrogram.GetLength(1);
-            double binWidth = nyquistFreq / (double)freqBinCount;
-
-            // int nyquistBin = spectrogramData.GetLength(1) - 1;
-            int lowFreqBound = 482;
-            int lowerBinBound = (int)Math.Ceiling(lowFreqBound / binWidth);
-            int upperBinBound = freqBinCount - 5;
-
-            double binaryThreshold = DefaultBinaryThreshold; // for deriving binary spectrogram.
-            binaryThreshold = 0.07; // An amplitude threshold of 0.03 = -30 dB. A threhold of 0.05 = -26dB.
-            double rowSumThreshold = 2.0;  // ACTIVITY THRESHOLD - require activity in at least N bins to include for training
-
-            // the following are pruning parameters
-            double wtThreshold = rowSumThreshold; // used to remove wt vectors whose sum of wts <= threshold
-            int hitThreshold = 4;                 // used to remove wt vectors which have fewer than the threshold hits
-
-            var parameters = new ClusteringParameters(lowerBinBound, freqBinCount, binaryThreshold, rowSumThreshold);
-
-            var clusterInfo = ClusterTheSpectra(amplitudeSpectrogram, lowerBinBound, upperBinBound, binaryThreshold);
-
-            // transfer cluster info to spectral index results
-            var clusterSpectrum = SpectralClustering.RestoreFullLengthSpectrum(clusterInfo.ClusterSpectrum, freqBinCount, lowerBinBound);
-            Console.WriteLine("Binary Threshold=" + binaryThreshold);
-            Console.WriteLine("Weight Threshold=" + wtThreshold);
-            Console.WriteLine("Hit Threshold=" + hitThreshold);
-            Console.WriteLine("Cluster Count =" + clusterInfo.ClusterCount);
-            Console.WriteLine("Three Gram Count=" + clusterInfo.TriGramUniqueCount);
-            Console.WriteLine($"Cluster Spectrum = ..... {clusterSpectrum[100]}, {clusterSpectrum[101]}, {clusterSpectrum[102]}, {clusterSpectrum[103]} .....");
-
-            // ###################################################################################
-
-            // Now repeat the entire process again with different parameters.
-            // We want to get intermediate results to superimpose on spectrogram
-            TrainingDataInfo data = GetTrainingDataForClustering(amplitudeSpectrogram, parameters);
-
-            // make a normal standard decibel spectogram on which to superimpose cl;uster results
-            var spectrogram = new SpectrogramStandard(config, recording.WavReader);
-            List<AcousticEvent> list = null;
-            double eventThreshold = 0.5; // dummy variable - not used
-            var image = DrawSonogram(spectrogram, null, list, eventThreshold, null);
-            string imageFname0 = "test0Spectrogram.png";
-            string imagePath0 = Path.Combine(outputDir, imageFname0);
-            image.Save(imagePath0, ImageFormat.Png);
-
-            image = DrawSonogram(spectrogram, null, list, eventThreshold, data.TrainingDataAsSpectrogram);
-            string imageFname1 = "test1Spectrogram.png";
-            string imagePath1 = Path.Combine(outputDir, imageFname1);
-            image.Save(imagePath1, ImageFormat.Png);
-            var fiImage = new FileInfo(imagePath1);
+            string imagePath = Path.Combine(opDir, fName);
+            image.Save(imagePath, ImageFormat.Png);
+            var fiImage = new FileInfo(imagePath);
             if (fiImage.Exists)
             {
                 var process = new ProcessRunner(imageViewer);
-                process.Run(imagePath1, outputDir);
-            }
-
-            // Return if no suitable training data for clustering
-            if (data.TrainingData.Count <= 8)
-            {
-                Console.WriteLine("Abort clustering. Only {0} spectra available for training data. Must be at least 9.", data.TrainingData.Count);
-            }
-            else
-            {
-                clusterInfo = ClusterAnalysis(data.TrainingData, wtThreshold, hitThreshold, data.SelectedFrames);
-                Console.WriteLine("Binary Threshold=" + binaryThreshold);
-                Console.WriteLine("Weight Threshold=" + wtThreshold);
-                Console.WriteLine("Hit Threshold=" + hitThreshold);
-                Console.WriteLine("Cluster Count=" + clusterInfo.ClusterCount);
-                Console.WriteLine("Three Gram Count=" + clusterInfo.TriGramUniqueCount);
-                Console.WriteLine($"Cluster Spectrum = ..... {clusterSpectrum[100]}, {clusterSpectrum[101]}, {clusterSpectrum[102]}, {clusterSpectrum[103]} .....");
-
-                //spectrogramData = SpectralClustering.SuperImposeHitsOnSpectrogram(spectrogramData, lowBinBound, clusterInfo.trainingDataAsSpectrogram);
-                //spectrogramData = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
-                //ImageTools.DrawMatrix(spectrogramData, imagePath);
-
-                image = DrawClusterSpectrogram(spectrogram, clusterInfo, data);
-                string imageFname2 = "test2Spectrogram.png";
-                string imagePath2 = Path.Combine(outputDir, imageFname2);
-                image.Save(imagePath2, ImageFormat.Png);
-                fiImage = new FileInfo(imagePath2);
-                if (fiImage.Exists)
-                {
-                    var process = new ProcessRunner(imageViewer);
-                    process.Run(imagePath2, outputDir);
-                }
+                process.Run(imagePath, opDir);
             }
         }
     }
 
-    public class ClusterInfo
+public class ClusterInfo
     {
         public int ClusterCount;
         public double Av2;
