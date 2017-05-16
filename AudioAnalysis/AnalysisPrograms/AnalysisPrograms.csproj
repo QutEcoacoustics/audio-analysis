@@ -433,6 +433,7 @@
       <year>$([System.DateTime]::Now.ToString("yy"))</year>
       <month>$([System.DateTime]::Now.ToString("MM"))</month>
       <APPVEYOR_BUILD_NUMBER Condition="''=='$(APPVEYOR_BUILD_NUMBER)'">000</APPVEYOR_BUILD_NUMBER>
+      <GitBranch Condition="''=='$(GitBranch)'">$(APPVEYOR_REPO_BRANCH)</GitBranch>
       <version>$(year).$(month).$(APPVEYOR_BUILD_NUMBER).$(GitDescribeCommitCount)</version>
       <isDirty Condition="$(GitHasPendingChanges)">-DIRTY</isDirty>
       <gitVersion>$(GitBranch)-$(GitCommitHash)$(isDirty)</gitVersion>
