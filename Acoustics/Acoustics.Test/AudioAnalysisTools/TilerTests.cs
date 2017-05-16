@@ -33,6 +33,7 @@ namespace Acoustics.Test.AudioAnalysisTools
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly",
         Justification = "Automagically is totally a word!")]
     [TestClass]
+    [Ignore]
     public class TilerTests : BaseTest
     {
         private PanoJsTilingProfile tilingProfile;
@@ -732,6 +733,7 @@ namespace Acoustics.Test.AudioAnalysisTools
     }
 
     [TestClass]
+    [Ignore]
     public class AbsoluteDateTimeTilerTests
     {
         private AbsoluteDateTilingProfile tilingProfile;

@@ -125,9 +125,7 @@ namespace System
         /// Log a message object with the <see cref="F:LogExtensions.SuccessLevel"/> level -
         /// equivalent to <see cref="F:log4net.Core.Level.Notice"/>
         /// </summary>
-        /// <param name="log">
-        /// The log.
-        /// </param>
+        /// <param name="log">The logger to use</param>
         /// <param name="format">
         /// The string format.
         /// </param>
@@ -136,7 +134,8 @@ namespace System
         /// </param>
         public static void Success(this ILog log, string format, params object[] args)
         {
-            log.Logger.Log(null, SuccessLevel, string.Format(format, args), null);
+            var message = args.Length > 0 ? string.Format(format, args) : format;
+            log.Logger.Log(null, SuccessLevel, message, null);
         }
 
         /// <summary>
@@ -164,7 +163,8 @@ namespace System
         /// </remarks>
         public static void Verbose(this ILog log, string format, params object[] args)
         {
-            log.Logger.Log(null, log4net.Core.Level.Verbose, string.Format(format, args), null);
+            var message = args.Length > 0 ? string.Format(format, args) : format;
+            log.Logger.Log(null, log4net.Core.Level.Verbose, message, null);
         }
 
         /// <summary>
@@ -173,7 +173,9 @@ namespace System
         ///             as a parameter.
         /// Verbose is the most detailed log level.
         /// </summary>
-        /// <param name="message">The message object to log.</param><param name="exception">The exception to log, including its stack trace.</param>
+        /// <param name="log">The logger to use</param>
+        /// <param name="message">The message object to log.</param>
+        /// <param name="exception">The exception to log, including its stack trace.</param>
         /// <remarks>
         /// <para>
         /// See the <see cref="M:Verbose(object)"/> form for more detailed information.
@@ -190,6 +192,7 @@ namespace System
         ///             as a parameter.
         /// Verbose is the most detailed log level.
         /// </summary>
+        /// <param name="log">The logger to use</param>
         /// <param name="message">The message object to log.</param>
         /// <remarks>
         /// <para>
@@ -212,7 +215,8 @@ namespace System
         /// </remarks>
         public static void Trace(this ILog log, string format, params object[] args)
         {
-            log.Logger.Log(null, log4net.Core.Level.Trace, string.Format(format, args), null);
+            var message = args.Length > 0 ? string.Format(format, args) : format;
+            log.Logger.Log(null, log4net.Core.Level.Trace, message, null);
         }
 
         /// <summary>
@@ -221,6 +225,7 @@ namespace System
         ///             as a parameter.
         /// Trace is the most detailed log level.
         /// </summary>
+        /// <param name="log">The logger to use</param>
         /// <param name="message">The message object to log.</param><param name="exception">The exception to log, including its stack trace.</param>
         /// <remarks>
         /// <para>
@@ -234,4 +239,3 @@ namespace System
         }
     }
 }
-
