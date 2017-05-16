@@ -2,6 +2,9 @@
 // <copyright file="SpectralClustering.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
+//
+// NOTE: The passed spectrogram must be already noise reduced.
+// This clustering algorithm is a highly reduced version of binary ART, Adaptive resonance Theory, designed for speed.
 // <summary>
 //   Defines the SpectralClustering type.
 // </summary>
@@ -11,12 +14,10 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
-    using System.Security.Cryptography.X509Certificates;
     using DSP;
     using NeuralNets;
     using StandardSpectrograms;
@@ -378,19 +379,15 @@ namespace AudioAnalysisTools
         /// </summary>
         public static void OutputClusterAndWeightInfo(int[] clusters, List<double[]> wts, string imagePath)
         {
-            int min, max;
             int maxIndex;
             DataTools.getMaxIndex(clusters, out maxIndex);
             int binCount = clusters[maxIndex] + 1;
             double binWidth;
+            int min, max;
             int[] histo = Histogram.Histo(clusters, binCount, out binWidth, out min, out max);
-            if (Verbose)
-            {
-                LoggedConsole.WriteLine("Sum = " + histo.Sum());
-                DataTools.writeArray(histo);
-            }
-
-            //DataTools.writeBarGraph(histo);
+            LoggedConsole.WriteLine("Sum = " + histo.Sum());
+            DataTools.writeArray(histo);
+            DataTools.writeBarGraph(histo);
 
             //make image of the wts matrix
             wts = DataTools.RemoveNullElementsFromList(wts);
@@ -400,11 +397,12 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// This CLUSTERING method is called only from IndexCalculate.cs. It estimates the number of spectral clusters in a spectrogram.
-        /// In order to determine spectral diversity (cluster count) and spectral persistence, we only use the midband of the AMPLITDUE SPECTRUM,
-        /// i.e. the band between lowerBinBound and upperBinBound.
+        /// This CLUSTERING method is called only from IndexCalculate.cs
+        ///    and TESTMETHOD_SpectralClustering(string wavFilePath, string outputDir, int frameSize)
+        /// It estimates the number of spectral clusters in a spectrogram, and outputs two summary indices: cluster count (also called spectral diversity) and the threegram count.
+        /// We only use the midband of the Spectrogram, i.e. the band between lowerBinBound and upperBinBound.
         /// In June 2016, the mid-band was set to lowerBound=1000Hz, upperBound=8000hz, because this band contains most bird activity, i.e. it is the Bird-Band
-        /// NOTE: The passed spectrogram should be an amplitude spectrogram that is already noise reduced.
+        /// NOTE: The passed spectrogram must be already noise reduced.
         /// This clustering algorithm is a highly reduced version of binary ART, Adaptive resonance Theory, designed for speed.
         /// </summary>
         /// <param name="spectrogram">a collection of spectra that are to be clustered</param>
@@ -416,7 +414,7 @@ namespace AudioAnalysisTools
             // Use verbose only when debugging
             // SpectralClustering.Verbose = true;
 
-            // NOTE: The midBandAmplSpectrogram is derived from an amplitudeSpectrogram by removing low freq band AND high freq band.
+            // NOTE: The midBandAmplSpectrogram is derived from an spectrogram by removing low freq band AND high freq band.
             var midBandAmplSpectrogram = MatrixTools.Submatrix(spectrogram, 0, lowerBinBound, spectrogram.GetLength(0) - 1, upperBinBound);
 
             var parameters = new ClusteringParameters(lowerBinBound, upperBinBound, binaryThreshold, DefaultRowSumThreshold);
