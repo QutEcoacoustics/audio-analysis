@@ -340,8 +340,6 @@ namespace AudioAnalysisTools.Indices
 
         public double[] SUM { get; set; }
 
-        public double[] CLS { get; set; }
-
         public override Dictionary<string, Func<SpectralIndexBase, double[]>> GetSelectors()
         {
             return CachedSelectors;

@@ -37,15 +37,15 @@ namespace AudioAnalysisTools.Indices
         // EXTRACT INDICES: IF (frameLength = 256 AND sample rate = 17640) THEN frame duration = 18.576ms.
         public const int DefaultWindowSize = 256;
 
+        private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         // semi-arbitrary bounds between lf, mf and hf bands of the spectrum
         // The midband, 1000Hz to 8000Hz, covers the bird-band in SERF & Gympie recordings.
         private static int defaultLowFreqBound = 1000;
 
         private static int defaultMidFreqBound = 8000;
 
-        private static int defaultHighFreqBound = 11000;
-
-        private static readonly ILog logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        // private static int defaultHighFreqBound = 11000;
 
         /// <summary>
         /// Extracts summary and spectral acoustic indices from the entire segment of the passed recording or a subsegment of it.
@@ -72,7 +72,7 @@ namespace AudioAnalysisTools.Indices
             int sampleRateOfOriginalAudioFile,
             TimeSpan segmentStartOffset,
             dynamic config,
-            bool returnSonogramInfo = true)
+            bool returnSonogramInfo = false)
         {
             // returnSonogramInfo = false; // TEMPORARY ################################
             double epsilon = recording.Epsilon;
@@ -96,7 +96,8 @@ namespace AudioAnalysisTools.Indices
             double freqBinWidth = recording.Nyquist / (double)freqBinCount;
             int lowFreqBound = (int?)config[AnalysisKeys.LowFreqBound] ?? defaultLowFreqBound;
             int midFreqBound = (int?)config[AnalysisKeys.MidFreqBound] ?? defaultMidFreqBound;
-            int hihFreqBound = (int?)config[AnalysisKeys.HighFreqBound] ?? defaultHighFreqBound;
+
+            // int hihFreqBound = (int?)config[AnalysisKeys.HighFreqBound] ?? defaultHighFreqBound;
 
             // get TimeSpans and durations
             var subsegmentTimeSpan = indexCalculationDuration;
@@ -155,7 +156,7 @@ namespace AudioAnalysisTools.Indices
                     var oldStart = sampleStart;
                     sampleStart = signalLength - subsegmentSampleCount;
 
-                    logger.Trace("Backtracking to fill missing data from imperfect audio cuts because not enough samples available. " + (oldStart - sampleStart) + " samples overlap.");
+                    Logger.Trace("Backtracking to fill missing data from imperfect audio cuts because not enough samples available. " + (oldStart - sampleStart) + " samples overlap.");
                 }
 
                 double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, sampleStart, subsegmentSampleCount);
@@ -225,7 +226,7 @@ namespace AudioAnalysisTools.Indices
             // Although signal appears zero, this condition is required.
             if (avgSignalEnvelope < 0.001)
             {
-                logger.Debug("Segment skipped because avSignalEnvelope is < 0.001!");
+                Logger.Debug("Segment skipped because avSignalEnvelope is < 0.001!");
                 summaryIndices.ZeroSignal = 1.0;
                 return result;
             }
@@ -385,7 +386,7 @@ namespace AudioAnalysisTools.Indices
 
             // ######################################################################################################################################################
 
-            // v: CALCULATE SPECTRAL PEAK TRACKS.
+            // v: CALCULATE SPECTRAL PEAK TRACKS and RIDGE indices.
             //    NOTE: at this point, the var decibelSpectrogram is noise reduced. i.e. all its values >= 0.0
             //    Detecting ridges or spectral peak tracks requires using a 5x5 mask which has edge effects.
             //    This becomes significant if we have a short indexCalculationDuration.
@@ -422,7 +423,36 @@ namespace AudioAnalysisTools.Indices
 
             // ######################################################################################################################################################
 
-            // iv: set up other info to return
+            // vi: CLUSTERING - FIRST DETERMINE IF IT IS WORTH DOING
+            // return if (activeFrameCount too small || segmentCount == 0 || short index calc duration) because no point doing clustering
+            if (activity.activeFrameCount <= 2 || Math.Abs(activity.eventCount) < 0.01 || indexCalculationDuration.TotalSeconds < 15)
+            {
+                // IN ADDITION return if indexCalculationDuration < 10 seconds because no point doing clustering on short time segment
+                // NOTE: Activity was calculated with 3dB threshold AFTER backgroundnoise removal.
+                //summaryIndices.AvgClusterDuration = TimeSpan.Zero;
+                summaryIndices.ClusterCount = 0;
+                summaryIndices.ThreeGramCount = 0;
+                return result;
+            }
+
+            // YES WE WILL DO CLUSTERING! to determine cluster count (spectral diversity) and spectral persistence.
+            // Only use midband AMPLITDUE SPECTRUM. In June 2016, the mid-band (i.e. the bird-band) was set to lowerBound=1000Hz, upperBound=8000hz.
+            // NOTE: Clustering is performed only on the midBandAmplSpectrogram of the noise reduced decibelSpectrogram.
+            // NOTE: The amplitudeSpectrogram is already noise reduced at this stage.
+            // Actually do clustering of binary spectra. Must first threshold
+            double binaryThreshold = SpectralClustering.DefaultBinaryThresholdInDecibels;
+            var clusterInfo = SpectralClustering.ClusterTheSpectra(deciBelSpectrogram, lowerBinBound, upperBinBound, binaryThreshold);
+
+            // Store two summary index values from cluster info
+            summaryIndices.ClusterCount = clusterInfo.ClusterCount;
+            summaryIndices.ThreeGramCount = clusterInfo.TriGramUniqueCount;
+
+            // As of May 2017, no longer store clustering results superimposed on spectrogram.
+            // If you want to see this, then call the TEST methods in class SpectralClustering.cs.
+
+            // #######################################################################################################################################################
+
+            // vii: set up other info to return
             var freqPeaks = SpectralPeakTracks.ConvertSpectralPeaksToNormalisedArray(deciBelSpectrogram);
             var scores = new List<Plot>
             {
@@ -431,61 +461,13 @@ namespace AudioAnalysisTools.Indices
                 new Plot("Max Frequency", freqPeaks, 0.0), // relative location of freq maxima in spectra
             };
 
-            // ######################################################################################################################################################
-
-            // xiv: CLUSTERING - DETERMINE IF IT IS WORTH DOING
-            // return if (activeFrameCount too small || segmentCount == 0 || short index calc duration) because no point doing clustering
-            if (activity.activeFrameCount <= 2 || Math.Abs(activity.eventCount) < 0.01 || indexCalculationDuration.TotalSeconds < 10)
-            {
-                // int windowSize = (int?)config[AnalysisKeys.FrameLength] ?? 1024;
-                result.Sg = GetSonogram(recording, windowSize: 1024);
-                result.Hits = sptInfo.Peaks;
-                result.TrackScores = scores;
-
-                // IN ADDITION return if indexCalculationDuration < 10 seconds because no point doing clustering on short time segment
-                // NOTE: Activity was calculated with 3dB threshold AFTER backgroundnoise removal.
-                summaryIndices.ClusterCount = 0;
-
-                //summaryIndices.AvgClusterDuration = TimeSpan.Zero;
-                summaryIndices.ThreeGramCount = 0;
-                spectralIndices.CLS = new double[amplitudeSpectrogram.GetLength(1)];
-                return result;
-            }
-
-            // #######################################################################################################################################################
-
-            // YES WE WILL DO CLUSTERING! to determine cluster count (spectral diversity) and spectral persistence.
-            // Only use midband AMPLITDUE SPECTRUM. In June 2016, the mid-band (i.e. the bird-band) was set to lowerBound=1000Hz, upperBound=8000hz.
-            // NOTE: Clustering is performed only on the midBandAmplSpectrogram of the amplitudeSpectrogram.
-            // NOTE: The amplitudeSpectrogram is already noise reduced at this stage.
-            // Actually do clustering of binary spectra. Must first threshold - DEFAULT=0.06 prior to June2016
-            const double binaryThreshold = 0.12;
-            var clusterInfo = SpectralClustering.ClusterTheSpectra(amplitudeSpectrogram, lowerBinBound, upperBinBound, binaryThreshold);
-
-            // transfer cluster info to summary index results
-            summaryIndices.ClusterCount = clusterInfo.ClusterCount;
-            summaryIndices.ThreeGramCount = clusterInfo.TriGramUniqueCount;
-
-            // transfer cluster info to spectral index results
-            spectralIndices.CLS = SpectralClustering.RestoreFullLengthSpectrum(clusterInfo.ClusterSpectrum, freqBinCount, lowerBinBound);
-
-            // xv: STORE CLUSTERING IMAGES
-            if (returnSonogramInfo)
-            {
-                string label = string.Format(clusterInfo.ClusterCount + " Clusters");
-                if (clusterInfo.ClusterHits2 == null)
-                {
-                    clusterInfo.ClusterHits2 = new int[dBEnvelopeSansNoise.Length]; // array of zeroes
-                }
-
-                scores.Add(new Plot(label, DataTools.normalise(clusterInfo.ClusterHits2), 0.0)); // location of cluster hits
-            }
-
+            // int windowSize = (int?)config[AnalysisKeys.FrameLength] ?? 1024;
             result.Sg = GetSonogram(recording, windowSize: 1024);
             result.Hits = sptInfo.Peaks;
             result.TrackScores = scores;
+
             return result;
-        } // end Analysis()
+        } // end Calculation of Summary and Spectral Indices
 
         private static SpectrogramStandard GetSonogram(AudioRecording recording, int windowSize)
         {
