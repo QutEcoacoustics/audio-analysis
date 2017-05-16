@@ -319,7 +319,7 @@
       <Name>AnalysisBase</Name>
     </ProjectReference>
     <ProjectReference Include="..\AudioAnalysisTools\AudioAnalysisTools.csproj">
-      <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>
+      <Project>{86855cbc-7243-492a-a500-2de36cc7c825}</Project>
       <Name>AudioAnalysisTools</Name>
     </ProjectReference>
     <ProjectReference Include="..\Dong.Felt\Dong.Felt.csproj">

@@ -32,7 +32,7 @@ namespace AudioAnalysisTools
         public const double DefaultBinaryThreshold = 0.12;
 
         // A decibel threshold for post noise removal
-        public const double DefaultBinaryThresholdInDecibels = 3.0;
+        public const double DefaultBinaryThresholdInDecibels = 9.0;
 
         // ACTIVITY THRESHOLD - require activity in at least N freq bins before including the spectrum for training.
         //                      DEFAULT was N=2 prior to June 2016. You can increase threshold to reduce cluster count due to noise.
@@ -96,12 +96,12 @@ namespace AudioAnalysisTools
 
             // training data represented in spectrogram
             bool[] selectedFrames = new bool[frameCount];
-            int spectrumLength = cp.UpperBinBound - cp.LowBinBound;
+            //int spectrumLength = cp.UpperBinBound - cp.LowBinBound;
 
             for (int r = 0; r < frameCount; r++)
             {
                 double[] spectrum = DataTools.GetRow(spectrogram, r);
-                spectrum = DataTools.Subarray(spectrum, cp.LowBinBound, spectrumLength);
+                //spectrum = DataTools.Subarray(spectrum, cp.LowBinBound, spectrumLength);
                 spectrum = DataTools.VectorReduceLength(spectrum, cp.ReductionFactor);
 
                 // reduce length of the vector by factor of N
@@ -131,7 +131,7 @@ namespace AudioAnalysisTools
                 if (spectrum.Sum() > cp.RowSumThreshold)
                 {
                     trainingData.Add(spectrum);
-                    IncludeSpectrumInSpectrogram(trainingDataAsSpectrogram, r, cp.LowBinBound, spectrum, cp.ReductionFactor);
+                    IncludeSpectrumInSpectrogram(trainingDataAsSpectrogram, r, spectrum, cp.ReductionFactor);
                     selectedFrames[r] = true;
                 }
             }
@@ -242,7 +242,7 @@ namespace AudioAnalysisTools
             return new ClusterInfo(prunedClusterWts, av2, selectedFrames, clusterSpectrum, clusterHits2, triGramUniqueCount, triGramRepeatRate);
         }
 
-        public static void IncludeSpectrumInSpectrogram(double[,] trainingDataAsBinarySpectrogram, int row, int lowOffset, double[] binarySpectrum, int reductionFactor)
+        public static void IncludeSpectrumInSpectrogram(double[,] trainingDataAsBinarySpectrogram, int row, double[] binarySpectrum, int reductionFactor)
         {
             int colCount = binarySpectrum.Length;
             for (int c = 0; c < colCount; c++)
@@ -250,7 +250,7 @@ namespace AudioAnalysisTools
                 int start = c * reductionFactor;
                 for (int j = 0; j < reductionFactor; j++)
                 {
-                    trainingDataAsBinarySpectrogram[row, lowOffset + start + j] = binarySpectrum[c];
+                    trainingDataAsBinarySpectrogram[row, start + j] = binarySpectrum[c];
                 }
             }
         }
@@ -296,13 +296,16 @@ namespace AudioAnalysisTools
         /// Create a new spectrogram of same size as the passed spectrogram.
         /// Later on it is superimposed on a detailed spectrogram.
         /// </summary>
-        /// <param name="spectrogram">spectrogram used to derive spectral richness indices</param>
+        /// <param name="spectrogram">spectrogram used to derive spectral richness indices. Orientation is row=frame</param>
         /// <param name="lowerBinBound">bottom N freq bins are excluded because likely to contain traffic and wind noise.</param>
         /// <param name="clusterInfo">information about accumulated clusters</param>
         /// <param name="data">training data</param>
         public static int[,] AssembleClusterSpectrogram(double[,] spectrogram, int lowerBinBound, ClusterInfo clusterInfo, TrainingDataInfo data)
         {
+            // the weight vector for each cluster - a list of double-arrays
             var clusterWts = clusterInfo.PrunedClusterWts;
+
+            // an array indicating which cluster each frame belongs to. Zero = no cluster
             int[] clusterHits = clusterInfo.ClusterHits2;
             bool[] activeFrames = clusterInfo.SelectedFrames;
             int frameCount = spectrogram.GetLength(0);
@@ -322,15 +325,15 @@ namespace AudioAnalysisTools
                         continue;
                     }
 
-                    double[] wts = clusterWts[clusterId];
-                    if (wts == null)
+                    double[] wtVector = clusterWts[clusterId];
+                    if (wtVector == null)
                     {
-                        // This should not happen but it might
+                        // This should not happen but ...
                         LoggedConsole.WriteErrorLine($"WARNING: Cluster {clusterId} = null");
                         continue;
                     }
 
-                    double[] fullLengthSpectrum = RestoreFullLengthSpectrum(wts, freqBinCount, data.LowBinBound);
+                    double[] fullLengthSpectrum = RestoreFullLengthSpectrum(wtVector, freqBinCount, data.LowBinBound);
 
                     //for (int j = lowerBinBound; j < freqBinCount; j++)
                     for (int j = 0; j < freqBinCount; j++)
@@ -340,14 +343,11 @@ namespace AudioAnalysisTools
                         {
                             clusterSpectrogram[row, j] = clusterId + 1; //+1 so do not have zero index for a cluster
                         }
-                        else 
-                        // if (clusterSpectrogram[row, j] < 0)
+                        else
                         {
                             clusterSpectrogram[row, j] = 0; //correct for case where set hit count < 0 for pruned wts.
                         }
                     }
-
-                    // count++;
                 }
             }
 
@@ -444,7 +444,7 @@ namespace AudioAnalysisTools
             //string wavFilePath = @"C:\SensorNetworks\WavFiles\BAC\BAC2_20071005-235040.wav";
             //string wavFilePath = @"C:\SensorNetworks\WavFiles\BAC\BAC5_20080520-040000_silence.wav";
             //string wavFilePath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
-            string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
+            string wavFilePath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
             string outputDir = @"C:\SensorNetworks\Output\Clustering\Test";
 
             int frameSize = 512;
@@ -464,11 +464,11 @@ namespace AudioAnalysisTools
             // for deriving binary spectrogram
             double binaryThreshold = DefaultBinaryThreshold;
 
-            //binaryThreshold = 0.07; // An amplitude threshold of 0.03 = -30 dB. A threshold of 0.05 = -26dB.
-            //double[,] spectrogramData = GetAmplitudeSpectrogramNoiseReduced(recording, frameSize);
+            binaryThreshold = 0.07; // An amplitude threshold of 0.03 = -30 dB. A threshold of 0.05 = -26dB.
+            double[,] spectrogramData = GetAmplitudeSpectrogramNoiseReduced(recording, frameSize);
 
-            binaryThreshold = DefaultBinaryThresholdInDecibels; // A decibel threshold for post noise removal
-            double[,] spectrogramData = GetDecibelSpectrogramNoiseReduced(recording, frameSize);
+            //binaryThreshold = DefaultBinaryThresholdInDecibels; // A decibel threshold for post noise removal
+            //double[,] spectrogramData = GetDecibelSpectrogramNoiseReduced(recording, frameSize);
 
             //#######################################################################################################################################
             // xv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband spectrum
