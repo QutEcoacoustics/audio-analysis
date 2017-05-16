@@ -141,6 +141,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalysisPrograms\Concatenation\ConcatenationTests.cs" />
+    <Compile Include="AnalysisPrograms\SourcePreparers\LocalSourcePreparerTests.cs" />
     <Compile Include="ArrayExtensionsTests.cs" />
     <Compile Include="AudioAnalysisTools\DSP\EnvelopeAndFftTests.cs" />
     <Compile Include="AudioAnalysisTools\DSP\FrequencyScaleTests.cs" />
@@ -186,6 +187,10 @@
     <Compile Include="TestHelpers\ImageAssert.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\AudioAnalysis\AnalysisBase\AnalysisBase.csproj">
+      <Project>{80bc795a-a987-45ab-b29b-76cf190384ba}</Project>
+      <Name>AnalysisBase</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\AudioAnalysis\AnalysisPrograms\AnalysisPrograms.csproj">
       <Project>{EC323929-0160-46BC-A04B-B4A66D02E757}</Project>
       <Name>AnalysisPrograms</Name>
