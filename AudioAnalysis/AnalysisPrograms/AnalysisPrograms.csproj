@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -37,6 +37,8 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -394,15 +396,13 @@
       xcopy "$(ProjectDir)..\..\Extra Assemblies\sox" "$(TargetDir)audio-utils\sox\" /S /Y
       xcopy "$(ProjectDir)..\..\Extra Assemblies\wavpack" "$(TargetDir)audio-utils\wavpack\" /S /Y
       xcopy "$(ProjectDir)..\..\Extra Assemblies\shntool" "$(TargetDir)audio-utils\shntool\" /S /Y
-      
-      rem xcopy "$(ProjectDir)..\packages\VVVV.EmguCV.2.4.2.1\build\net40\opencv\x64" "$(TargetDir)" /S /Y
 
       rem copy configs
       xcopy "$(ProjectDir)..\AnalysisConfigFiles" "$(TargetDir)ConfigFiles\" /S /Y
 </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <MSBuildCommunityTasksPath>$(SolutionDir)\.build</MSBuildCommunityTasksPath>
+    <MSBuildCommunityTasksPath>$(ProjectDir)..\.build</MSBuildCommunityTasksPath>
   </PropertyGroup>
   <Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.Targets" />
   <UsingTask AssemblyFile="$(MSBuildCommunityTasksLib)" TaskName="MSBuild.Community.Tasks.Git.GitCommits" />
@@ -414,22 +414,26 @@
     <GitBranch>
       <Output TaskParameter="Branch" PropertyName="GitBranch" />
     </GitBranch>
-    <GitCommits>
-      <Output TaskParameter="CommitsCount" PropertyName="GitCommitsCount" />
-    </GitCommits>
+    <GitDescribe Always="True">
+      <Output TaskParameter="Tag" PropertyName="GitDescribeTag" />
+      <Output TaskParameter="CommitHash" PropertyName="GitDescribeHash" />
+      <Output TaskParameter="CommitCount" PropertyName="GitDescribeCommitCount" />
+    </GitDescribe>
+    <!--    <GitCommits>-->
+    <!--      <Output TaskParameter="CommitsCount" PropertyName="GitCommitsCount" />-->
+    <!--    </GitCommits>-->
     <GitPendingChanges>
       <Output TaskParameter="HasPendingChanges" PropertyName="GitHasPendingChanges" />
     </GitPendingChanges>
     <PropertyGroup>
       <File Condition="Exists('Properties\AssemblyInfo.cs')">$([System.IO.File]::ReadAllText("Properties\AssemblyInfo.cs"))</File>
       <Expr>AssemblyVersion\x28\x22(\d+\.\d+\.[\*\d]+\.[\*\d]+)\x22</Expr>
-      <reg>
-      $([System.Text.RegularExpressions.Regex]::Match($(File), $(Expr) ).Groups[1].Value)
-      </reg>
+      <reg>$([System.Text.RegularExpressions.Regex]::Match($(File), $(Expr) ).Groups[1].Value)</reg>
       <oldVersion>$(reg)</oldVersion>
       <year>$([System.DateTime]::Now.ToString("yy"))</year>
       <month>$([System.DateTime]::Now.ToString("MM"))</month>
-      <version>$(year).$(month).$(GitCommitsCount).0</version>
+      <APPVEYOR_BUILD_NUMBER Condition="''=='$(APPVEYOR_BUILD_NUMBER)'">000</APPVEYOR_BUILD_NUMBER>
+      <version>$(year).$(month).$(APPVEYOR_BUILD_NUMBER).$(GitDescribeCommitCount)</version>
       <isDirty Condition="$(GitHasPendingChanges)">-DIRTY</isDirty>
       <gitVersion>$(GitBranch)-$(GitCommitHash)$(isDirty)</gitVersion>
     </PropertyGroup>
@@ -441,8 +445,16 @@
         <ReplacementValue>$(gitVersion)</ReplacementValue>
       </Tokens>
     </ItemGroup>
+    <Message Text="Last Tag: $(GitDescribeTag)%0aHash: $(GitDescribeHash)%0aCommitCount:$(GitDescribeCommitCount)" Importance="High" />
     <Message Text="Old assembly version: $(oldVersion). Replacing with: $(version)!" Importance="High" />
     <Message Text="Git version: $(gitVersion)" Importance="High" />
     <TemplateFile Tokens="@(Tokens)" Template=".\Properties\AssemblyInfo.cs.template" OutputFilename="AssemblyInfo.cs" />
+  </Target>
+  <Import Project="..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets" Condition="Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets'))" />
   </Target>
 </Project>

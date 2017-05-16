@@ -18,7 +18,10 @@
               <xs:documentation>[Optional] When , the aspnet_client scripts will be installed. No script mappings will be updated.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="Path" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] The web application that should have its script maps updated.</xs:documentation>
@@ -34,11 +37,13 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Version" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] The version of ASP.NET to install</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -267,6 +272,30 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
+  <xs:element name="Checksum" substitutionGroup="msb:Task">
+    <xs:annotation>
+      <xs:documentation>Calculates checksum of a file set. 
+            
+            It is based on ANT's checksum task. The output is stored in a file in the same folder
+            as the input file with the name [input_file].[algorithm_type]. Supported algorithms: MD5, SH1.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:complexContent mixed="false">
+        <xs:extension base="msb:TaskType">
+          <xs:attribute name="Algorithm" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Algorithm to be used. Defaults to MD5.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Files" type="msb:non_empty_string" use="required">
+            <xs:annotation>
+              <xs:documentation>Files uses to calculate the checksum</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="Computer" substitutionGroup="msb:Task">
     <xs:annotation>
       <xs:documentation>Provides information about the build computer.</xs:documentation>
@@ -329,6 +358,49 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
+  <xs:element name="DependencyGraph" substitutionGroup="msb:Task">
+    <xs:annotation>
+      <xs:documentation>Reads a set of project files (.csproj, .vbproj) in InputFiles and generate a GraphViz style syntax.
+             You can paste the result of the graphs in places like http://graphviz-dev.appspot.com/ to see your chart or
+             run the file using the GraphViz tool http://www.graphviz.org/</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:complexContent mixed="false">
+        <xs:extension base="msb:TaskType">
+          <xs:attribute name="Exclude" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] A set of regular expression to filter the input files</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="ExcludeProjectReferences" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] A set of regular expression to filter the referenced projects</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="ExcludeReferences" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] A set of regular expression to filter the referenced assemblies</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="InputFiles" type="msb:non_empty_string" use="required">
+            <xs:annotation>
+              <xs:documentation>Project files to parse</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="IsIncludeProjectDependecies" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] includes project dependencies to output</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="OutputFile" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] FileName to output results</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="EmbedNativeResource" substitutionGroup="msb:Task">
     <xs:annotation>
       <xs:documentation>A task for embedded native resource.</xs:documentation>
@@ -367,6 +439,11 @@
     <xs:complexType>
       <xs:complexContent mixed="false">
         <xs:extension base="msb:TaskType">
+          <xs:attribute name="AllItemsUpdated" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] [Output] Returns true if all items were updated, else false</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
           <xs:attribute name="Encoding" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] The character encoding used to read and write the file.</xs:documentation>
@@ -380,6 +457,11 @@
           <xs:attribute name="IgnoreCase" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets a value specifies case-insensitive matching. .</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="ItemsNotUpdated" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] [Output] Returns list of items that were not updated</xs:documentation>
             </xs:annotation>
           </xs:attribute>
           <xs:attribute name="Multiline" type="msb:non_empty_string">
@@ -686,6 +768,8 @@
             output before it is displayed.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="FailOnError" type="msb:non_empty_string">
             <xs:annotation>
@@ -713,6 +797,7 @@
             messages returned by FxCopCmd.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="OutputXslFileName" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Specifies the XSL or XSLT file that is referenced by the 
@@ -739,6 +824,11 @@
           <xs:attribute name="Rules" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] The list of rules to run</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="RuleSet" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Gets or sets the rule set.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
           <xs:attribute name="SaveResults" type="msb:non_empty_string">
@@ -769,6 +859,7 @@
             Use the wildcard character '*' at the end of the name to select multiple types.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Verbose" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets a value indicating whether the output is verbose.</xs:documentation>
@@ -779,6 +870,7 @@
               <xs:documentation>[Optional] Gets or sets the working directory.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -915,17 +1007,22 @@
               <xs:documentation>[Optional] [Output] Gets command console output messages.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="LocalPath" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the local or working path for git command.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="StandardErrorImportance" type="xs:string" />
           <xs:attribute name="StandardOutputImportance" type="xs:string" />
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -952,10 +1049,66 @@
               <xs:documentation>[Optional] [Output] Gets command console output messages.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="LocalPath" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the local or working path for git command.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
+          <xs:attribute name="StandardErrorImportance" type="xs:string" />
+          <xs:attribute name="StandardOutputImportance" type="xs:string" />
+          <xs:attribute name="Timeout" />
+          <xs:attribute name="ToolExe" type="xs:string" />
+          <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GitCommitDate" substitutionGroup="msb:Task">
+    <xs:annotation>
+      <xs:documentation>A task for git to get the current commit datetime.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:complexContent mixed="false">
+        <xs:extension base="msb:TaskType">
+          <xs:attribute name="Arguments" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Gets or sets the raw arguments to pass to the git command.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Command" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Gets or sets the command to run.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="CommitDate" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] [Output] Gets or sets the commit datetime.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="ConsoleOutput" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] [Output] Gets command console output messages.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
+          <xs:attribute name="ExitCode" />
+          <xs:attribute name="Format" type="xs:string" />
+          <xs:attribute name="LocalPath" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Gets or sets the local or working path for git command.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
+          <xs:attribute name="Revision" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Gets or sets the revision to get the version from. Default is HEAD.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
           <xs:attribute name="StandardErrorImportance" type="xs:string" />
@@ -963,6 +1116,8 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -994,12 +1149,15 @@
               <xs:documentation>[Optional] [Output] Gets command console output messages.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="LocalPath" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the local or working path for git command.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="Revision" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the revision to get the total number of commits from. Default is HEAD.</xs:documentation>
@@ -1010,6 +1168,8 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -1021,6 +1181,11 @@
     <xs:complexType>
       <xs:complexContent mixed="false">
         <xs:extension base="msb:TaskType">
+          <xs:attribute name="Always" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] When true, Git describe will always return at least hash</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
           <xs:attribute name="Arguments" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the raw arguments to pass to the git command.</xs:documentation>
@@ -1046,15 +1211,28 @@
               <xs:documentation>[Optional] [Output] Gets command console output messages.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ErrorMessage" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] [Output] Not active yet</xs:documentation>
             </xs:annotation>
           </xs:attribute>
           <xs:attribute name="ExitCode" />
+          <xs:attribute name="LightWeight" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] When true, will use unannotated tags</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
           <xs:attribute name="LocalPath" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the local or working path for git command.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
+          <xs:attribute name="Match" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Matches the specified pattern</xs:documentation>
             </xs:annotation>
           </xs:attribute>
           <xs:attribute name="SoftErrorMode" type="msb:non_empty_string">
@@ -1072,6 +1250,8 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -1098,6 +1278,8 @@
               <xs:documentation>[Optional] [Output] Gets command console output messages.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="HasPendingChanges" type="msb:non_empty_string">
             <xs:annotation>
@@ -1109,11 +1291,14 @@
               <xs:documentation>[Optional] Gets or sets the local or working path for git command.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="StandardErrorImportance" type="xs:string" />
           <xs:attribute name="StandardOutputImportance" type="xs:string" />
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -1145,12 +1330,15 @@
               <xs:documentation>[Optional] [Output] Gets command console output messages.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="LocalPath" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the local or working path for git command.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="Revision" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the revision to get the version from. Default is HEAD.</xs:documentation>
@@ -1161,11 +1349,18 @@
               <xs:documentation>[Optional] Gets or sets a value indicating whether to abbreviate to a shorter unique name.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="ShortLength" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Gets or sets a value indicating short hash length.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
           <xs:attribute name="StandardErrorImportance" type="xs:string" />
           <xs:attribute name="StandardOutputImportance" type="xs:string" />
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -1177,7 +1372,10 @@
     <xs:complexType>
       <xs:complexContent mixed="false">
         <xs:extension base="msb:TaskType">
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="ProjectFile" type="msb:non_empty_string" use="required">
             <xs:annotation>
               <xs:documentation>Gets or sets the project file path.</xs:documentation>
@@ -1188,6 +1386,8 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -1199,12 +1399,15 @@
     <xs:complexType>
       <xs:complexContent mixed="false">
         <xs:extension base="msb:TaskType">
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="LogFile" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the log file.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="NoErrorMessages" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets a value indicating whether no error messages will be output.</xs:documentation>
@@ -1255,6 +1458,8 @@
               <xs:documentation>[Optional] Gets or sets the uncompile file.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -2379,6 +2584,8 @@
             the target assembly will be delay signed.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExcludeFile" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the file
@@ -2409,6 +2616,7 @@
             to write log messages to.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="OutputFile" type="msb:non_empty_string" use="required">
             <xs:annotation>
               <xs:documentation>Gets or sets the target assembly.</xs:documentation>
@@ -2449,6 +2657,7 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Version" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the version number of the target assembly.</xs:documentation>
@@ -2461,6 +2670,7 @@
             into one for the target assembly.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -2472,7 +2682,10 @@
     <xs:complexType>
       <xs:complexContent mixed="false">
         <xs:extension base="msb:TaskType">
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="OutputFileName" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Specify output filename</xs:documentation>
@@ -2498,6 +2711,8 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -2519,12 +2734,15 @@
               <xs:documentation>[Optional] The assemblies to process, identified by their assembly name.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="LogFile" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] The file to write installation progress to.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="ShowCallStack" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] If an exception occurs at any point during installation, the call
@@ -2536,6 +2754,8 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -2557,12 +2777,15 @@
               <xs:documentation>[Optional] The assemblies to process, identified by their assembly name.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="LogFile" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] The file to write installation progress to.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="ShowCallStack" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] If an exception occurs at any point during installation, the call
@@ -2574,6 +2797,39 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CssCompress" substitutionGroup="msb:Task">
+    <xs:annotation>
+      <xs:documentation>MSBuild task to minimize the size of a css file.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:complexContent mixed="false">
+        <xs:extension base="msb:TaskType">
+          <xs:attribute name="CompressedFiles" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] [Output] Gets the items that were successfully compressed.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="DestinationFiles" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] [Output] Gets or sets the list of files to compressed the source files to.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="DestinationFolder" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Gets or sets the directory to which you want to compress the files.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="SourceFiles" type="msb:non_empty_string" use="required">
+            <xs:annotation>
+              <xs:documentation>Gets or sets the source files to compress.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -2916,7 +3172,10 @@
               <xs:documentation>Gets or sets the documenter.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="ProjectFilePath" type="msb:non_empty_string" use="required">
             <xs:annotation>
               <xs:documentation>Gets or sets the project file path.</xs:documentation>
@@ -2927,6 +3186,7 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Verbose" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets a value indicating whether the output is verbose.</xs:documentation>
@@ -2937,6 +3197,7 @@
               <xs:documentation>[Optional] Gets or sets the working directory.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -2992,6 +3253,64 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
+  <xs:element name="NuGetDelete" substitutionGroup="msb:Task">
+    <xs:annotation>
+      <xs:documentation>Deletes a package with a specific version. It can be useful if the server has disallow 
+            to overwrite existing packages.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:complexContent mixed="false">
+        <xs:extension base="msb:TaskType">
+          <xs:attribute name="ApiKey" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] The API key for the server.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="ConfigFile" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] (v2.5) The NuGet configuation file. If not specified, file %AppData%\NuGet\NuGet.config is used as configuration file.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
+          <xs:attribute name="ExitCode" />
+          <xs:attribute name="LogStandardErrorAsError" />
+          <xs:attribute name="Package" type="msb:non_empty_string" use="required">
+            <xs:annotation>
+              <xs:documentation>Specify the id of the package to delete.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Source" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] A list of packages sources to use for the delete.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="StandardErrorImportance" type="xs:string" />
+          <xs:attribute name="StandardOutputImportance" type="xs:string" />
+          <xs:attribute name="Timeout" />
+          <xs:attribute name="ToolExe" type="xs:string" />
+          <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="Verbosity" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Display this amount of details in the output: normal, quiet, detailed.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Version" type="msb:non_empty_string" use="required">
+            <xs:annotation>
+              <xs:documentation>The version of the package to delete.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="WorkingDirectory" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Gets or sets the working directory.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="NuGetInstall" substitutionGroup="msb:Task">
     <xs:annotation>
       <xs:documentation>Installs a package using the specified sources.</xs:documentation>
@@ -3004,12 +3323,15 @@
               <xs:documentation>[Optional] The NuGet configuation file. If not specified, file %AppData%\NuGet\NuGet.config is used as configuration file.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExcludeVersion" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] If set, the destination directory will contain only the package name, not the version number</xs:documentation>
             </xs:annotation>
           </xs:attribute>
           <xs:attribute name="ExitCode" />
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="NoCache" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] Disable looking up packages from local machine cache.</xs:documentation>
@@ -3045,6 +3367,7 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Verbosity" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Display this amount of details in the output: normal, quiet, detailed.</xs:documentation>
@@ -3060,6 +3383,7 @@
               <xs:documentation>[Optional] Gets or sets the working directory.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -3076,10 +3400,51 @@
               <xs:documentation>[Optional] The base path of the files defined in the nuspec file.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="Build" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Determines if the project should be built before building the package.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
+          <xs:attribute name="Exclude" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Specifies one or more wildcard patterns to exclude when creating a package.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="ExcludeEmptyDirectories" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Prevent inclusion of empty directories when building the package</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
           <xs:attribute name="ExitCode" />
           <xs:attribute name="File" type="msb:non_empty_string" use="required">
             <xs:annotation>
               <xs:documentation>The location of the nuspec or project file to create a package.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="IncludeReferencedProjects" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Include referenced projects either as dependencies or as part of the package. If a referenced project
+            has a corresponding nuspec file that has the same name as the project, then that referenced project is
+            added as a dependency. Otherwise, the referenced project is added as part of the package.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
+          <xs:attribute name="MinClientVersion" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Set the minClientVersion attribute for the created package. This value will override the value of the
+            existing minClientVersion attribute (if any) in the .nuspec file.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="NoDefaultExcludes" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Prevent default exclusion of NuGet package files and files and folders starting with a dot e.g. .svn.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="NoPackageAnalysis" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Specify if the command should not run package analysis after building the package.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
           <xs:attribute name="OutputDirectory" type="xs:string">
@@ -3099,6 +3464,11 @@
           </xs:attribute>
           <xs:attribute name="StandardErrorImportance" type="xs:string" />
           <xs:attribute name="StandardOutputImportance" type="xs:string" />
+          <xs:attribute name="Suffix" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Appends a pre-release suffix to the internally generated version number.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
           <xs:attribute name="Symbols" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] Determines if a package containing sources and symbols should be created. When specified with a nuspec, 
@@ -3106,8 +3476,14 @@
             </xs:annotation>
           </xs:attribute>
           <xs:attribute name="Timeout" />
+          <xs:attribute name="Tool" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Determines if the output files of the project should be in the tool folder.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Verbose" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] Shows verbose output for package building.</xs:documentation>
@@ -3128,6 +3504,7 @@
               <xs:documentation>[Optional] Gets or sets the working directory.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -3149,12 +3526,15 @@
               <xs:documentation>[Optional] Specifies if the package should be created and uploaded to the server but not published to the server. False by default.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="File" type="msb:non_empty_string" use="required">
             <xs:annotation>
               <xs:documentation>The path to the package to push the package to the server.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="Source" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Specifies the server URL.</xs:documentation>
@@ -3165,11 +3545,13 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="WorkingDirectory" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the working directory.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -3191,7 +3573,10 @@
               <xs:documentation>[Optional] Disable parallel nuget package restores.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="NoCache" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] Disable looking up packages from local machine cache.</xs:documentation>
@@ -3224,6 +3609,7 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Verbosity" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Display this amount of details in the output: normal, quiet, detailed.</xs:documentation>
@@ -3234,6 +3620,89 @@
               <xs:documentation>[Optional] Gets or sets the working directory.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="NuGetUpdate" substitutionGroup="msb:Task">
+    <xs:annotation>
+      <xs:documentation>Updates packages</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:complexContent mixed="false">
+        <xs:extension base="msb:TaskType">
+          <xs:attribute name="ConfigFile" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] (v2.5) The NuGet configuation file. If not specified, file %AppData%\NuGet\NuGet.config is used as configuration file.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
+          <xs:attribute name="ExitCode" />
+          <xs:attribute name="FileConflictAction" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] (v2.5) The action to take, when asked to overwrite or ignore existing files referenced by the project: Overwrite, Ignore, None.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
+          <xs:attribute name="OutputDirectory" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] The directory in which packages will be updated. If none specified, uses the current directory.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Package" type="msb:non_empty_string" use="required">
+            <xs:annotation>
+              <xs:documentation>Specify the id of the package to update. If a path to a packages.config file is used instead of an id, all the packages it contains are updated.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Prerelease" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Allows updating to prerelease versions. This flag is not required when updating prerelease packages that are already installed.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="RepositoryPath" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Path to the local packages folder (location where packages are installed).</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Safe" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Looks for updates with the highest version available within the same major and minor version as the installed package.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Self" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] (v1.4) Update the running NuGet.exe to the newest version available from the server.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Source" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] A list of packages sources to use for the update.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="StandardErrorImportance" type="xs:string" />
+          <xs:attribute name="StandardOutputImportance" type="xs:string" />
+          <xs:attribute name="Timeout" />
+          <xs:attribute name="ToolExe" type="xs:string" />
+          <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="Verbosity" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Display this amount of details in the output: normal, quiet, detailed.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Version" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] The version of the package to update.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="WorkingDirectory" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Gets or sets the working directory.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -3270,6 +3739,8 @@
             The default is to use multiple domains if multiple assemblies are listed on the command line. Otherwise a single domain is used.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ErrorOutputFile" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] The file to receive test error details.</xs:documentation>
@@ -3301,6 +3772,7 @@
               <xs:documentation>[Optional] Gets or sets the categories to include.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="OutputXmlFile" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the output XML file.</xs:documentation>
@@ -3340,6 +3812,7 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="WorkingDirectory" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the working directory.</xs:documentation>
@@ -3350,6 +3823,153 @@
               <xs:documentation>[Optional] Gets or sets the XSLT transform file.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="NUnit3" substitutionGroup="msb:Task">
+    <xs:annotation>
+      <xs:documentation>Run NUnit 3.x on a group of assemblies.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:complexContent mixed="false">
+        <xs:extension base="msb:TaskType">
+          <xs:attribute name="Apartment" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] The --apartment option may be used to specify the ApartmentState (STA or MTA) of the test runner thread. Since the default is MTA, the option is only needed to force execution in the Single Threaded Apartment.
+            Note: If a given test must always run in a particular apartment, as is the case with many Gui tests, you should use an attribute on the test rather than specifying this option at the command line.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Assemblies" type="msb:non_empty_string" use="required">
+            <xs:annotation>
+              <xs:documentation>Gets or sets the assemblies.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Domain" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] The --domain option controls of the creation of AppDomains for running tests. The following values are recognized:
+            None - No domain is created - the tests are run in the primary domain. This normally requires copying the NUnit assemblies into the same directory as your tests.
+            Single - A test domain is created - this is how NUnit worked prior to version 2.4
+            Multiple - A separate test domain is created for each assembly
+            The default is to use multiple domains if multiple assemblies are listed on the command line. Otherwise a single domain is used.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnableShadowCopy" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Determines whether assemblies are copied to a shadow folder during testing.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="EnvironmentVariables" />
+          <xs:attribute name="ErrorOutputFile" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] The file to receive test error details.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="ExitCode" />
+          <xs:attribute name="Force32Bit" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Determines whether the tests are run in a 32bit process on a 64bit OS.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Framework" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Determines the framework to run aganist.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="InternalTrace" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] The --trace option may be used to specify the internal trace level. 
+            Off
+            Error
+            Warning
+            Info
+            Verbose (Debug)</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
+          <xs:attribute name="NoColor" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] The --nocolor displays console output without color.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="NoHeader" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] The --noheader suppress display of program information at start of run.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="OutputXmlFile" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Gets or sets the output XML file.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Process" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] The --process option controls how NUnit loads tests in processes. The following values are recognized.
+            Single - All the tests are run in the nunit-console process. This is the default.
+            Separate - A separate process is created to run the tests.
+            Multiple - A separate process is created for each test assembly, whether specified on the command line or listed in an NUnit project file.
+            Note: This option is not available using the .NET 1.1 build of nunit-console.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="ProjectConfiguration" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] The project configuration to run.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="ShowLabels" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Whether or not to show test labels in output.
+            On - Labels are shown in the output.
+            Off - Labels are not shown in the output.
+            All -</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="StandardErrorImportance" type="xs:string" />
+          <xs:attribute name="StandardOutputImportance" type="xs:string" />
+          <xs:attribute name="TestInNewThread" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Allows tests to be run in a new thread, allowing you to take advantage of ApartmentState and ThreadPriority settings in the config file.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="TestTimeout" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] The --timeout option may be used to specify the timeout for each test case in MILLISECONDS.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="TextOutputFile" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] The file to redirect standard output to.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Timeout" />
+          <xs:attribute name="ToolExe" type="xs:string" />
+          <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="Verbose" type="msb:non_empty_string">
+            <xs:annotation>
+              <xs:documentation>[Optional] The --verbose displays additional information as the test runs.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Where" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] The --where option may be used to specify an expression indicating which tests to run. 
+            It may specify test names, classes, methods, catgories or properties comparing them to actual values with the operators ==, !=, =~ and !~. 
+            See NUnit 3.0 Test Selection Language for a full description of the syntax.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Workers" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] The --workers option may be used to specify the number of worker threads to be used in running tests.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="WorkingDirectory" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Gets or sets the working directory.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -3724,6 +4344,8 @@
               <xs:documentation>Destination directory.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExcludeFiles" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] /XF file [file]	Excludes files with the specified names, paths, or wildcard characters.</xs:documentation>
@@ -3775,6 +4397,7 @@
               <xs:documentation>[Optional] /LOG:file	Redirects output to the specified file, overwriting the file if it already exists.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="Mirror" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] /MIR	Mirrors a directory tree (equivalent to running both /E and /PURGE).</xs:documentation>
@@ -3860,11 +4483,13 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Verbose" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] /V 	Produces verbose output (including skipped files).</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -3881,7 +4506,10 @@
               <xs:documentation>Gets or sets the configuration file.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="ManifestFile" type="msb:non_empty_string" use="required">
             <xs:annotation>
               <xs:documentation>Gets or sets the manifest file.</xs:documentation>
@@ -3907,6 +4535,8 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -3918,6 +4548,8 @@
     <xs:complexType>
       <xs:complexContent mixed="false">
         <xs:extension base="msb:TaskType">
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="HtmlDirectory" type="xs:string">
             <xs:annotation>
@@ -3929,6 +4561,7 @@
               <xs:documentation>[Optional] Gets or sets the language id.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="Metadata" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets a value indicating whether this  is metadata.</xs:documentation>
@@ -3969,6 +4602,8 @@
           </xs:attribute>
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -3985,12 +4620,15 @@
               <xs:documentation>[Optional] Gets or sets the CHM directory.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="LanguageId" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the language id.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="NoInfoMessages" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets a value indicating whether no info messages will be output.</xs:documentation>
@@ -4011,6 +4649,8 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -4032,12 +4672,15 @@
               <xs:documentation>[Optional] Gets or sets the config file.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="IncludeInternal" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets a value indicating whether to include internal members.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="NoInfoMessages" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets a value indicating whether no info messages will be output.</xs:documentation>
@@ -4068,6 +4711,8 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -4160,7 +4805,10 @@
               <xs:documentation>[Optional] Gets or sets the arguments.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="NoInfoMessages" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets a value indicating whether no info messages will be output.</xs:documentation>
@@ -4186,6 +4834,7 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="XmlFile" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the XML files.</xs:documentation>
@@ -4196,6 +4845,7 @@
               <xs:documentation>[Optional] Gets or sets the XSLT files.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -4579,7 +5229,10 @@
               <xs:documentation>[Optional] Gets or sets the command.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="PdbFile" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the PDB file.</xs:documentation>
@@ -4600,6 +5253,8 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -4638,6 +5293,8 @@
               <xs:documentation>[Optional] Gets or sets a value indicating whether to get the count of indexed files. The -c switch.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="Extract" type="msb:non_empty_string">
             <xs:annotation>
@@ -4659,6 +5316,7 @@
               <xs:documentation>[Optional] Gets or sets the filter to only source files that match this regular expression. The -l switch.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="PdbFile" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the PDB file.</xs:documentation>
@@ -4684,6 +5342,8 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -4917,6 +5577,8 @@
             not the schema should be scripted.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="HosterName" type="xs:string">
             <xs:annotation>
@@ -4924,6 +5586,7 @@
             configured hosting Web service.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="NoDropExisting" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets a value indicating whether the produced 
@@ -4999,6 +5662,7 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Username" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the SQL Server user name to use for connection
@@ -5010,6 +5674,7 @@
               <xs:documentation>[Optional] Gets or sets the configuration of the hosting Web service endpoint.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -5031,6 +5696,8 @@
               <xs:documentation>[Optional] Gets or sets the command.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="Force" type="msb:non_empty_string">
             <xs:annotation>
@@ -5042,6 +5709,7 @@
               <xs:documentation>[Optional] Gets or sets the local path.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="Message" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the message.</xs:documentation>
@@ -5112,6 +5780,7 @@
               <xs:documentation>[Optional] Gets or sets a value indicating whether to trust the server cert.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Username" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the username.</xs:documentation>
@@ -5127,6 +5796,7 @@
               <xs:documentation>[Optional] Gets or sets a value indicating the output is XML.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -5148,6 +5818,8 @@
               <xs:documentation>[Optional] Gets or sets the command.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="Force" type="msb:non_empty_string">
             <xs:annotation>
@@ -5159,6 +5831,7 @@
               <xs:documentation>[Optional] Gets or sets the local path.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="Message" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the message.</xs:documentation>
@@ -5229,6 +5902,7 @@
               <xs:documentation>[Optional] Gets or sets a value indicating whether to trust the server cert.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Username" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the username.</xs:documentation>
@@ -5244,6 +5918,7 @@
               <xs:documentation>[Optional] Gets or sets a value indicating the output is XML.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -5265,6 +5940,8 @@
               <xs:documentation>[Optional] Gets or sets the command.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="Force" type="msb:non_empty_string">
             <xs:annotation>
@@ -5276,6 +5953,7 @@
               <xs:documentation>[Optional] Gets or sets the local path.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="Message" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the message.</xs:documentation>
@@ -5346,6 +6024,7 @@
               <xs:documentation>[Optional] Gets or sets a value indicating whether to trust the server cert.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Username" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the username.</xs:documentation>
@@ -5361,6 +6040,7 @@
               <xs:documentation>[Optional] Gets or sets a value indicating the output is XML.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -5393,6 +6073,8 @@
               <xs:documentation>[Optional] The path to which the SourcePath should be copied</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="Force" type="msb:non_empty_string">
             <xs:annotation>
@@ -5404,6 +6086,7 @@
               <xs:documentation>[Optional] Gets or sets the local path.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="Message" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the message.</xs:documentation>
@@ -5479,6 +6162,7 @@
               <xs:documentation>[Optional] Gets or sets a value indicating whether to trust the server cert.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Username" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the username.</xs:documentation>
@@ -5494,6 +6178,7 @@
               <xs:documentation>[Optional] Gets or sets a value indicating the output is XML.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -5515,6 +6200,8 @@
               <xs:documentation>[Optional] Gets or sets the command.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="Force" type="msb:non_empty_string">
             <xs:annotation>
@@ -5526,6 +6213,7 @@
               <xs:documentation>[Optional] Gets or sets the local path.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="Message" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the message.</xs:documentation>
@@ -5596,6 +6284,7 @@
               <xs:documentation>[Optional] Gets or sets a value indicating whether to trust the server cert.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Username" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the username.</xs:documentation>
@@ -5611,6 +6300,7 @@
               <xs:documentation>[Optional] Gets or sets a value indicating the output is XML.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -5632,6 +6322,8 @@
               <xs:documentation>[Optional] Gets or sets the command.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="Force" type="msb:non_empty_string">
             <xs:annotation>
@@ -5658,6 +6350,7 @@
               <xs:documentation>[Optional] Gets or sets the local path.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="Message" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the message.</xs:documentation>
@@ -5748,6 +6441,7 @@
               <xs:documentation>[Optional] Gets or sets a value indicating whether to trust the server cert.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Username" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the username.</xs:documentation>
@@ -5763,6 +6457,7 @@
               <xs:documentation>[Optional] Gets or sets a value indicating the output is XML.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -5835,11 +6530,13 @@
               <xs:documentation>[Optional] Gets or sets the command.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
           <xs:attribute name="Entries" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] [Output] Gets or sets the entries.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="Force" type="msb:non_empty_string">
             <xs:annotation>
@@ -5851,6 +6548,7 @@
               <xs:documentation>[Optional] Gets or sets the local path.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="Message" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the message.</xs:documentation>
@@ -5921,6 +6619,7 @@
               <xs:documentation>[Optional] Gets or sets a value indicating whether to trust the server cert.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Username" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the username.</xs:documentation>
@@ -5936,6 +6635,7 @@
               <xs:documentation>[Optional] Gets or sets a value indicating the output is XML.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -5957,6 +6657,8 @@
               <xs:documentation>[Optional] Gets or sets the command.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="Force" type="msb:non_empty_string">
             <xs:annotation>
@@ -5968,6 +6670,7 @@
               <xs:documentation>[Optional] Gets or sets the local path.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="Message" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the message.</xs:documentation>
@@ -6038,6 +6741,7 @@
               <xs:documentation>[Optional] Gets or sets a value indicating whether to trust the server cert.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Username" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the username.</xs:documentation>
@@ -6053,6 +6757,7 @@
               <xs:documentation>[Optional] Gets or sets a value indicating the output is XML.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -6064,6 +6769,8 @@
     <xs:complexType>
       <xs:complexContent mixed="false">
         <xs:extension base="msb:TaskType">
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="Exported" type="msb:non_empty_string">
             <xs:annotation>
@@ -6081,6 +6788,7 @@
               <xs:documentation>Path to local working copy.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="LowRevision" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] [Output] Low revision number of the local working repository revision range.</xs:documentation>
@@ -6106,12 +6814,14 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="UseLastCommittedRevision" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] Specifies whether to use the last committed revision number as
             opposed to the last updated revision number.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -6143,6 +6853,8 @@
               <xs:documentation>[Optional] Gets or sets a value indicating SymStore will create a compressed version of each file copied to the symbol store instead of using an uncompressed copy of the file.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="Files" type="xs:string">
             <xs:annotation>
@@ -6164,6 +6876,7 @@
               <xs:documentation>[Optional] Gets or sets a log file to be used for command output. If this is not included, transaction information and other output is sent to stdout.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="Message" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the message to be added to each file.</xs:documentation>
@@ -6214,6 +6927,7 @@
           <xs:attribute name="Timeout" />
           <xs:attribute name="ToolExe" type="xs:string" />
           <xs:attribute name="ToolPath" type="xs:string" />
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="Verbose" type="msb:non_empty_string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets a value indicating whether SymStore will display verbose output.</xs:documentation>
@@ -6229,6 +6943,7 @@
               <xs:documentation>[Optional] Gets or sets the index file. Causes SymStore not to store the actual symbol files. Instead, SymStore records information in the IndexFile that will enable SymStore to access the symbol files at a later time.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -6348,6 +7063,8 @@
               <xs:documentation>[Optional] Gets or sets the comment.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="EchoOff" />
+          <xs:attribute name="EnvironmentVariables" />
           <xs:attribute name="ExitCode" />
           <xs:attribute name="Files" type="xs:string">
             <xs:annotation>
@@ -6369,6 +7086,7 @@
               <xs:documentation>[Optional] Gets or sets the lock.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="LogStandardErrorAsError" />
           <xs:attribute name="Notes" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the notes.</xs:documentation>
@@ -6379,9 +7097,9 @@
               <xs:documentation>[Optional] Gets the output resulting from executing this command.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
-          <xs:attribute name="Override" type="msb:non_empty_string">
+          <xs:attribute name="Override" type="xs:string">
             <xs:annotation>
-              <xs:documentation>[Optional] Gets or sets a value indicating whether this  is override.</xs:documentation>
+              <xs:documentation>[Optional] Gets or sets a the override reason.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
           <xs:attribute name="Overwrite" type="msb:non_empty_string">
@@ -6444,6 +7162,7 @@
               <xs:documentation>[Optional] Gets or sets the type.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="UseCommandProcessor" />
           <xs:attribute name="UserName" type="xs:string">
             <xs:annotation>
               <xs:documentation>[Optional] Gets or sets the name of the user.</xs:documentation>
@@ -6474,6 +7193,7 @@
               <xs:documentation>[Optional] Gets or sets the workspace owner.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="YieldDuringToolExecution" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -6807,7 +7527,12 @@
           </xs:attribute>
           <xs:attribute name="FileName" type="msb:non_empty_string" use="required">
             <xs:annotation>
-              <xs:documentation>Gets or sets the name of the local file that is to receive the data.</xs:documentation>
+              <xs:documentation>Gets or sets the name of the local file to upload to the specified URI.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+          <xs:attribute name="Method" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>[Optional] Gets or sets the HTTP method to use when uploading data to the speficied URI.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
           <xs:attribute name="Password" type="xs:string">
@@ -6817,7 +7542,7 @@
           </xs:attribute>
           <xs:attribute name="RemoteUri" type="msb:non_empty_string" use="required">
             <xs:annotation>
-              <xs:documentation>Gets or sets the URI from which to upload data to.</xs:documentation>
+              <xs:documentation>Gets or sets the URI to which to upload data to.</xs:documentation>
             </xs:annotation>
           </xs:attribute>
           <xs:attribute name="UseDefaultCredentials" type="msb:non_empty_string">

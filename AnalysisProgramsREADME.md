@@ -7,7 +7,7 @@ Usage is obtained by running the program without arguments:
 
 Which will produce output like:
 ```
-QUT Bioacoustic Analysis Program - version 16.10.3596.0 (DEBUG build, 11/10/2016 11:07 AM)
+QUT Bioacoustic Analysis Program - version 16.10.123.456 (DEBUG build, 11/10/2016 11:07 AM)
 Git branch-version: master-e2a88694390d39216bfab3a88a77d21f96be2f4a
 Copyright QUT 2016
 An action is required to run the program, here are some suggestions:
@@ -61,7 +61,7 @@ the values. For example `"Y:\Results\abc, 123, doo-dah-dee"` will be parsed as
 Our program uses an automatic version numbering system. A version number such as `16.06.3430.0` can be deciphered as:
 
 ```
-<2-digit-year>.<2-digit-month>.<number-of-repository-commits>.0
+<2-digit-year>.<2-digit-month>.<build-server-count>.<commits-since-last-release>
 ```
 
 It is important that before building releases that the local repository is clean and up-to-date - otherwise the 
@@ -70,7 +70,7 @@ build number won't increment.
 The version information is also printed when the program first starts:
 
 ```
-QUT Bioacoustic Analysis Program - version 16.06.3430.0 (RELEASE build, 23/06/2016 11:29)
+QUT Bioacoustic Analysis Program - version 16.06.123.456 (RELEASE build, 23/06/2016 11:29)
 Git branch-version: master-16a11bad5e3c2423bb92386ec83773c700eb4be0
 ```
 

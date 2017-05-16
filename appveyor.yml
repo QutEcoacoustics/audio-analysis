@@ -20,7 +20,8 @@ configuration:
   - Release
 
 # Attempt to limit the number of commits to clone - our project has a LOT of history
-clone_depth: 30
+# TODO: drop this to about ~100 later on
+clone_depth: 200
 
 environment:
   # Disable git-lfs to give appveyor a chance to overlay the cache files onto the repo
@@ -28,7 +29,7 @@ environment:
 
 # Before the clone occurs
 init:
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   #- git lfs install --skip-smudge
 
 before_build:
