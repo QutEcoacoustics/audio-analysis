@@ -4,7 +4,7 @@ version: '{build}'
 image: Visual Studio 2017
 
 cache:
-  - packages -> **\packages.config
+  - AudioAnalysis\packages -> **\packages.config
   - 'Acoustics\Acoustics.Test\TestResources'
 
 matrix:
@@ -17,8 +17,19 @@ configuration:
   - Debug
   - Release
 
-# Restore packages
+# Attempt to limit the number of commits to clone - our project has a LOT of history
+clone_depth: 30
+
+# Before the clone occurs
+init:
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  # Disable git-lfs to give appveyor a chance to overlay the cache files onto the repo
+  - git lfs init --skip-smudge
+
 before_build:
+  # Download fresh lfs assets
+  - git lfs pull
+  # Restore packages 
   - cd AudioAnalysis
   - nuget restore
 
@@ -36,10 +47,8 @@ test:
       #- "C:\Work\Github\audio-analysis\Acoustics\Acoustics.Test\bin\Debug\Acoustics.Test.dll"
       #- "C:\Work\Github\audio-analysis\AudioAnalysis\Analysis.Test\bin\Debug\Acoustics.Test.dll"
       #- "C:\Work\Github\audio-analysis\AudioAnalysis\AED\Test\bin\Debug\Test.dll"
-      - "Acoustics\\Acoustics.Test\\bin\\$(configuration)\\Acoustics.Test.dll"
-      - "AudioAnalysis\\Analysis.Test\\bin\\$(configuration)\\Acoustics.Test.dll"
+      - "**\\Acoustics\\Acoustics.Test\\bin\\$(configuration)\\Acoustics.Test.dll"
+      - "**\\AudioAnalysis\\Analysis.Test\\bin\\$(configuration)\\Acoustics.Test.dll"
 
-init:
-  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 on_finish:
   - ps: $blockRdp = $true;
