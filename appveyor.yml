@@ -24,7 +24,7 @@ clone_depth: 30
 init:
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   # Disable git-lfs to give appveyor a chance to overlay the cache files onto the repo
-  - git lfs init --skip-smudge
+  - git lfs install --skip-smudge
 
 before_build:
   # Download fresh lfs assets
@@ -43,12 +43,11 @@ build_script:
 
 test:
   assemblies:
-    only:
-      #- "C:\Work\Github\audio-analysis\Acoustics\Acoustics.Test\bin\Debug\Acoustics.Test.dll"
-      #- "C:\Work\Github\audio-analysis\AudioAnalysis\Analysis.Test\bin\Debug\Acoustics.Test.dll"
-      #- "C:\Work\Github\audio-analysis\AudioAnalysis\AED\Test\bin\Debug\Test.dll"
-      - "**\\Acoustics\\Acoustics.Test\\bin\\$(configuration)\\Acoustics.Test.dll"
-      - "**\\AudioAnalysis\\Analysis.Test\\bin\\$(configuration)\\Acoustics.Test.dll"
+    #- "C:\Work\Github\audio-analysis\Acoustics\Acoustics.Test\bin\Debug\Acoustics.Test.dll"
+    #- "C:\Work\Github\audio-analysis\AudioAnalysis\Analysis.Test\bin\Debug\Acoustics.Test.dll"
+    #- "C:\Work\Github\audio-analysis\AudioAnalysis\AED\Test\bin\Debug\Test.dll"
+    - "**\\Acoustics\\Acoustics.Test\\bin\\$(configuration)\\Acoustics.Test.dll"
+    - "**\\AudioAnalysis\\Analysis.Test\\bin\\$(configuration)\\Acoustics.Test.dll"
 
 on_finish:
   - ps: $blockRdp = $true;
