@@ -5,7 +5,9 @@ image: Visual Studio 2017
 
 cache:
   - AudioAnalysis\packages -> **\packages.config
-  - 'Acoustics\Acoustics.Test\TestResources'
+  # cache the lfs objects directory so that git-lfs does not always download a
+  # full set of blobs (saves bandwidth)
+  - '.git\lfs\objects'
 
 matrix:
   fast_finish: true
@@ -20,11 +22,14 @@ configuration:
 # Attempt to limit the number of commits to clone - our project has a LOT of history
 clone_depth: 30
 
+environment:
+  # Disable git-lfs to give appveyor a chance to overlay the cache files onto the repo
+  GIT_LFS_SKIP_SMUDGE: 1
+
 # Before the clone occurs
 init:
-  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-  # Disable git-lfs to give appveyor a chance to overlay the cache files onto the repo
-  - git lfs install --skip-smudge
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  #- git lfs install --skip-smudge
 
 before_build:
   # Download fresh lfs assets
@@ -38,16 +43,15 @@ build_script:
       msbuild 
       "C:\projects\audio-analysis\AudioAnalysis\AudioAnalysis2012.sln" /m /verbosity:minimal 
       /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-      /p:WarningLevel=0 /p:RunCodeAnalysis=false /t:AnalysisPrograms
+      /p:WarningLevel=0 /p:RunCodeAnalysis=false
       /p:Configuration=$env:configuration /property:Platform=$env:platform
 
 test:
   assemblies:
-    #- "C:\Work\Github\audio-analysis\Acoustics\Acoustics.Test\bin\Debug\Acoustics.Test.dll"
-    #- "C:\Work\Github\audio-analysis\AudioAnalysis\Analysis.Test\bin\Debug\Acoustics.Test.dll"
-    #- "C:\Work\Github\audio-analysis\AudioAnalysis\AED\Test\bin\Debug\Test.dll"
-    - "**\\Acoustics\\Acoustics.Test\\bin\\$(configuration)\\Acoustics.Test.dll"
-    - "**\\AudioAnalysis\\Analysis.Test\\bin\\$(configuration)\\Acoustics.Test.dll"
+    only:
+      #- "C:\Work\Github\audio-analysis\Acoustics\Acoustics.Test\bin\Debug\Acoustics.Test.dll"
+      #- "C:\Work\Github\audio-analysis\AudioAnalysis\AED\Test\bin\Debug\Test.dll"
+      - '**\Acoustics.Test.dll'
 
 on_finish:
-  - ps: $blockRdp = $true;
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
