@@ -137,7 +137,7 @@ EvaluateSamplesEventCountOnly <- function (use.last.accessed = FALSE, versions =
 }
 
 GetHeading <- function (ranks) {
-    target.min.ids <- GetMeta('target.min.ids', ranks$indirect.dependencies$target.min.ids)
+    target.min.ids <- datatrack::GetMeta('target.min.ids', ranks$indirect.dependencies$target.min.ids)
     target <- target.min.ids$params$target
     target <- gsub("[^A-Za-z0-9 -]", '', target)
     heading = target;
@@ -276,7 +276,7 @@ GetSpeciesInEachSample <- function (min.ids = NULL) {
         speciesmins <- GetTags(target.only = FALSE, study.only = TRUE);  # get tags from whole study
         speciesmins <- AddMinuteIdCol(speciesmins)
         species.in.each.sample <- ListSpeciesInEachMinute(speciesmins)
-        WriteOutput(species.in.each.sample, 'species.in.each.min', params = params)
+        datatrack::WriteDataobject(species.in.each.sample, 'species.in.each.min', params = params)
     } else {
         species.in.each.sample <- species.in.each.sample$data
     }
@@ -378,9 +378,9 @@ GetOptimalSamples <- function (mins = NA, species.in.each.min = NA, use.saved = 
         optimal <- NULL
     }
     if (!is.list(optimal)) {
-        optimal <- OptimalSamples(species.in.each.min = species.in.each.min)
+        optimal <- CalculateOptimalSamples(species.in.each.min = species.in.each.min)
         if (use.saved) {
-            WriteOutput(optimal, 'optimal.samples', dependencies = dependencies)
+            datatrack::WriteDataobject(optimal, 'optimal.samples', dependencies = dependencies)
         }
     } else {
         optimal <- optimal$data
@@ -622,7 +622,7 @@ WriteRichnessResults <- function (min.ids, found.species.progression, output.fn,
     
     output <- cbind(mins, output)
     
-    WriteOutput(output, output.fn)
+    datatrack::WriteDataobject(output, output.fn)
     
     
 }

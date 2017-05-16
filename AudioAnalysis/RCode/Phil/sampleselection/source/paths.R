@@ -6,11 +6,14 @@
 paths <- list(
     audio = c("/Volumes/passport/phil/SERF/serf_audio",
              "/Volumes/files/qut_data/SERF/serf_audio",
-             "D:/phil/SERF/serf_audio"),
+             "D:/phil/SERF/serf_audio",
+             "/Users/eichinsp/Desktop/SERF/serf_audio"),
     cache = c('/Volumes/PACKARDBELL/qut_spectrogram_cache',
               '/Volumes/files/qut_data/cache',
-              '/Users/n8933464/Documents/sample_selection_output/cache'),
-    indices.1.sec = c("/Users/n8933464/Documents/SERF/indices_1_sec")
+              '/Users/n8933464/Documents/sample_selection_output/cache',
+              '/Users/eichinsp/Documents/sample_selection_output/cache'),
+    indices.1.sec = c("/Users/n8933464/Documents/SERF/indices_1_sec",
+                      "/Users/eichinsp/Documents/SERF/indices_1_sec")
     )
     
 

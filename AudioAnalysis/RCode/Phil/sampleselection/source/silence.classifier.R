@@ -230,11 +230,6 @@ InspectClassification <- function (seconds, features = NULL, rows = 10, random =
                                          end.sec = seg.sec.of.day + seconds$segment.duration, 
                                          margin = 2)
     
-    
-
-    
-
-    
     spectro.list <- SaveSpectroImgsForInspection(seconds, use.parallel = FALSE)
     seconds$img.path <- spectro.list
     
@@ -463,7 +458,7 @@ AudioPath <- function (fn = NULL, input.directory = NULL) {
     }
 }
 
-CalculateSilenceFeatures <- function (seconds, wavecol = c('wav.file','wave.path'), parallel = 1) {
+CalculateSilenceFeatures <- function (seconds, wavecol = c('wav.file','wave.path'), parallel = 5) {
     
     #debugging
     #seconds <- seconds[1:4000,]

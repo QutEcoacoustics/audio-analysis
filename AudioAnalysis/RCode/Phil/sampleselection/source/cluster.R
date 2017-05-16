@@ -66,14 +66,14 @@ ClusterEvents <- function (num.groups = 'auto',
         #k-means
         clustering.result <- DoClusterKmeans(event.features$data, weights = weights, num.clusters = num.clusters)
         params$num.clusters <- num.clusters
-        version <- WriteOutput(clustering.result, 'clustering.kmeans', params = params, dependencies = dependencies)
+        version <- datatrack::WriteDataobject(clustering.result, 'clustering.kmeans', params = params, dependencies = dependencies)
         groups.df <- CreateEventGroups.kmeans(events$data, clustering.result)
         groups.df.dependencies <- list('clustering.kmeans' = version)
-        WriteOutput(groups.df, 'clustered.events', dependencies = groups.df.dependencies)
+        datatrack::WriteDataobject(groups.df, 'clustered.events', dependencies = groups.df.dependencies)
     } else {
         params$method <- method
         clustering.result <- DoClusterHA(event.features$data, weights = weights, method = method) 
-        WriteOutput(fit, 'clustering.HA', params = params, dependencies = dependencies)
+        datatrack::WriteDataobject(fit, 'clustering.HA', params = params, dependencies = dependencies)
         CreateEventGroups.HA(events$data, clustering.result)
     }
 
@@ -90,10 +90,10 @@ GetEventsAndFeaturesTDCC <- function () {
     
     
     
-    events <- ReadOutput('filtered.segment.events')
-    event.features <- ReadOutput('TDCCs')
-    # event.features <- ReadOutput(c('features','TDCCs'), dependencies = events.dependencies)
-    #    rating.features <- ReadOutput('rating.features')  
+    events <- datatrack::ReadDataobject('filtered.segment.events')
+    event.features <- datatrack::ReadDataobject('TDCCs')
+    # event.features <- datatrack::ReadDataobject(c('features','TDCCs'), dependencies = events.dependencies)
+    #    rating.features <- datatrack::ReadDataobject('rating.features')  
     
     # remove event.id.column from features table
     # drop.cols <- names(event.features$data) %in% c('event.id')
@@ -142,15 +142,15 @@ GetEventsAndFeaturesAED <- function () {
     
     
     
-    events <- ReadOutput(c('events','filtered.segment.events'))
+    events <- datatrack::ReadDataobject(c('events','filtered.segment.events'))
     events.dependencies <- list()
     events.dependencies[[events$name]] <- events$version
     
     
     # TODO: check this. I don't see how event.dependencies can be correct for finding the TDCCs since the segment events are indirect 
-    event.features <- ReadOutput(c('features','TDCCs'))
-    # event.features <- ReadOutput(c('features','TDCCs'), dependencies = events.dependencies)
-    #    rating.features <- ReadOutput('rating.features')  
+    event.features <- datatrack::ReadDataobject(c('features','TDCCs'))
+    # event.features <- datatrack::ReadDataobject(c('features','TDCCs'), dependencies = events.dependencies)
+    #    rating.features <- datatrack::ReadDataobject('rating.features')  
     
     # remove event.id.column from features table
     # drop.cols <- names(event.features$data) %in% c('event.id')
@@ -332,19 +332,19 @@ DoClusterKmeans <- function (df, weights = NULL, num.clusters = NULL) {
 
 InternalMinuteDistances <- function () {
     vals <- GetEventsAndFeatures()
-    mins <- ReadOutput('target.min.ids')
+    mins <- datatrack::ReadDataobject('target.min.ids')
     vals$event.features$data <- as.matrix(scale(vals$event.features$data))  # standardize variables
     dist.scores <- sapply(mins$data$min.id, InternalMinuteDistance, vals$event.features$data, vals$events$data);
     dependencies <- list(events = vals$events$version, features = vals$event.features$version, target.min.ids = mins$version)
-    WriteOutput(dist.scores, 'distance.scores', params = list(), dependencies = dependencies)
+    datatrack::WriteDataobject(dist.scores, 'distance.scores', params = list(), dependencies = dependencies)
 }
 InternalMinuteDistances.lines <- function () {
     vals <- GetLinesForclustering()
-    mins <- ReadOutput('target.min.ids', level = 0)
+    mins <- datatrack::ReadDataobject('target.min.ids', level = 0)
     vals$event.features <- as.matrix(scale(vals$event.features))  # standardize variables
     dist.scores <- sapply(mins$min.id, InternalMinuteDistance, vals$event.features, vals$events);
     mins$distance.score <- dist.scores
-    WriteOutput(mins, 'distance.scores', level = 2)
+    datatrack::WriteDataobject(mins, 'distance.scores', level = 2)
 }
 
 
@@ -373,7 +373,7 @@ ClusterDendrogram <- function () {
     library('pvclust')
     # display dendogram
     #todo: OutputFilePath function
-    fit <- ReadOutput('clustering')
+    fit <- datatrack::ReadDataobject('clustering')
     #img.path <- OutputFilePath('cluster_dendrogram', ext = 'png', level = 2);
     Report(5, 'saving dendrogram')
     #png(img.path, width = 30000, height = 20000)

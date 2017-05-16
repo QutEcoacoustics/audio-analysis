@@ -39,13 +39,13 @@ RankSamplesBatch <- function (events.versions, clustered.events.versions, target
     }
     
     for (i in 1:length(events.versions)) {
-        events <- ReadOutput('events', version = events.versions[i], use.last.accessed = FALSE) 
+        events <- datatrack::ReadDataobject('events', version = events.versions[i], use.last.accessed = FALSE) 
         if (events$dependencies$target.min.ids != target.min.ids.versions[i]) {
             Report(5, events$dependencies$target.min.ids, '!=', target.min.ids.versions[i])
             stop('mismatched versions 1')
         }
-        mins <- ReadOutput('target.min.ids', version = target.min.ids.versions[i], use.last.accessed = FALSE)
-        clustered.events <- ReadOutput('clustered.events', version = clustered.events.versions[i], use.last.accessed = FALSE)
+        mins <- datatrack::ReadDataobject('target.min.ids', version = target.min.ids.versions[i], use.last.accessed = FALSE)
+        clustered.events <- datatrack::ReadDataobject('clustered.events', version = clustered.events.versions[i], use.last.accessed = FALSE)
  
         if (!setequal(clustered.events$data$event.id, events$data$event.id)) {
             stop('mismatched versions 2')
@@ -68,15 +68,15 @@ RankSamples <- function (mins = NULL, clustered.events = NULL) {
     #   clustered.events: data.frame; must contain the column "event.id" which must have the same values as "events$event.id"
  
 #     if (is.null(events)) {
-#         events <- ReadOutput('events') 
+#         events <- datatrack::ReadDataobject('events') 
 #     }
     
     if (is.null(clustered.events)) {
-        clustered.events <- ReadOutput('clustered.events')
+        clustered.events <- datatrack::ReadDataobject('clustered.events')
     } 
     
     if (is.null(mins)) {
-        mins <- ReadOutput('target.min.ids')
+        mins <- datatrack::ReadDataobject('target.min.ids')
     } else if (class(mins) != 'data.frame' && class(mins) != 'numeric') {
         # pass in NA to use the same min ids as are present in the 
         min <- unique(clustered.events$min.id)
@@ -136,7 +136,7 @@ RankSamples <- function (mins = NULL, clustered.events = NULL) {
     params <- list(ranking.methods = use.ranking.methods)
     dependencies <- list(clustered.events = clustered.events$version)
     
-    WriteOutput(output, 'ranked.samples', params = params, dependencies = dependencies)
+    datatrack::WriteDataobject(output, 'ranked.samples', params = params, dependencies = dependencies)
     
 }
 
@@ -150,10 +150,10 @@ RankSamplesEventCountOnly <- function (events = NULL) {
     #       that way it converts to a dataframe without losing any information
     
     if (is.null(events)) {
-        events <- ReadOutput('events', use.last.accessed = FALSE)
+        events <- datatrack::ReadDataobject('events', use.last.accessed = FALSE)
     }
     # the correct version of mins should be taken based on the dependency of events
-    mins <- ReadOutput('target.min.ids', use.last.accessed = TRUE)
+    mins <- datatrack::ReadDataobject('target.min.ids', use.last.accessed = TRUE)
     
     ranking.methods <- list()
     ranking.methods[['4']] <- RankSamples4 # event count only
@@ -179,7 +179,7 @@ RankSamplesEventCountOnly <- function (events = NULL) {
     
     params <- list(ranking.methods = use.ranking.methods)
     dependencies <- list(target.min.ids = mins$version, events = events$version)
-    WriteOutput(output, 'ranked.samples.ec', params = params, dependencies = dependencies) 
+    datatrack::WriteDataobject(output, 'ranked.samples.ec', params = params, dependencies = dependencies) 
     
 }
 
@@ -190,7 +190,7 @@ RankSamples1 <- function (events, min.ids) {
     # use the iterateOnSparseMatrix raking algorithm, 
     # using the distance scores as the multiplier
     
-    distance.scores <- ReadOutput('distance.scores', level = 2)
+    distance.scores <- datatrack::ReadDataobject('distance.scores', level = 2)
     multiplier <- data.frame(min.id = distance.scores$min.id, multiplier = distance.scores$distance.score)
     #multiplier$multiplier <- 1
     return(IterateOnSparseMatrix(events, multiplier))
@@ -222,7 +222,7 @@ RankSamples3 <- function (events, min.ids) {
     # i.e. similar minutes will can both score high 
     # input argument is just so that it fits with the conventions of ranking methods
     
-    mins <- ReadOutput('distance.scores', level = 2)
+    mins <- datatrack::ReadDataobject('distance.scores', level = 2)
     
     mins.ranked <- mins[order(mins$distance.score, decreasing = TRUE),]
     mins.ranked$rank <- 1:nrow(mins)
@@ -545,7 +545,7 @@ IterateOnSparseMatrix <- function (events, multipliers = NA, min.ids,  decay.rat
     #mins.sorted <- rankings[order(rankings$rank, decreasing = FALSE),]
     
     #append empty minutes
-    #mins <- ReadOutput('target.min.ids')
+    #mins <- datatrack::ReadDataobject('target.min.ids')
     unranked.ids <- setdiff(min.ids, rankings$min.id)
     
     if (length(unranked.ids > 0)) {
@@ -652,7 +652,7 @@ IterateOnSparseMatrix.orig <- function (events, multipliers = NA,  decay.rate = 
     #mins.sorted <- rankings[order(rankings$rank, decreasing = FALSE),]
     
     #append empty minutes
-    mins <- ReadOutput('target.min.ids')
+    mins <- datatrack::ReadDataobject('target.min.ids')
     unranked.ids <- setdiff(mins$data$min.id, rankings$min.id)
     
     if (length(unranked.ids > 0)) {
