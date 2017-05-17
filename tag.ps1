@@ -31,4 +31,4 @@ if ($tags -contains $tag_name) {
 
 exec { git tag -a -m "Version $tag_name" $tag_name }
 echo "pushing tags"
-exec { git push origin $tag_name } 2>&1
+exec { git push  --porcelain origin $tag_name } 2>&1

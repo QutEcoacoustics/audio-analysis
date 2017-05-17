@@ -81,14 +81,14 @@ test:
   assemblies:
     only:
       #- "Acoustics\Acoustics.Test\bin\Debug\Acoustics.Test.dll"
-      - '**bin\Debug\Acoustics.Test.dll'
+      - '**\bin\Debug\Acoustics.Test.dll'
   
 # Upload previously generated artifacts
 artifacts:
   - path: '$(ApPackageDebug)'
-    name: '$(ApNameDebug)'
+    name: DebugPackage
   - path: '$(ApPackageRelease)'
-    name: '$(ApNameRelease)'
+    name: ReleasePackage
 
 before_deploy:
   # Enable git credential store
@@ -111,7 +111,7 @@ deploy:
     release: "$(ApReleaseTitle)"
     description: "$(ApReleaseMessage)"
     auth_token: $(GH_CREATE_RELEASES_TOKEN)
-    artifact: $(ApNameDebug),$(ApNameRelease)
+    artifact: DebugPackage,ReleasePackage
     prerelease: true
     on:
       # Do not create new releases unless this is the master branch
