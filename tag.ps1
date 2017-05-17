@@ -1,7 +1,21 @@
 # This script has been modified to work with our CI server
 
 param($version)
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
+
+function script:exec {
+    [CmdletBinding()]
+
+	param(
+		[Parameter(Position=0,Mandatory=1)][scriptblock]$cmd,
+		[Parameter(Position=1,Mandatory=0)][string]$errorMessage = ("Error executing command: {0}" -f $cmd)
+	)
+	& $cmd 2>&1
+	if ($lastexitcode -ne 0)
+	{
+		throw $errorMessage
+	}
+}
 
 
 
@@ -17,4 +31,4 @@ if ($tags -contains $tag_name) {
 
 exec { git tag -a -m "Version $tag_name" $tag_name }
 echo "pushing tags"
-exec { git push origin $tag_name}
+exec { git push origin $tag_name } 2>&1

@@ -5,7 +5,7 @@
 # This script has been modified to work with our CI server
 
 param($tag_name, [bool]$ci = $false, [bool]$pre_release = $true)
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
 
 function script:exec {
     [CmdletBinding()]
@@ -32,7 +32,7 @@ if (!$ci -and !(Check-Command hub)) {
 
 echo "Creating release message"
 # we assumed we've already tagged before describing this release
-$old_tag_name =  exec { git describe --abbrev=0 --always "$tag_name^2" }
+$old_tag_name =  exec { git describe --abbrev=0 --always "$tag_name^" }
 
 $compare_message = "[Compare $old_tag_name...$tag_name](https://github.com/QutBioacoustics/audio-analysis/compare/$old_tag_name...$tag_name)"
 $commit_summary = exec { git log --no-merges --pretty=format:"%h %an - %s" "$old_tag_name...$tag_name" -- . ':(exclude,icase)*.r' }
