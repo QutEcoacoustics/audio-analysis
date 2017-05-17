@@ -1,63 +1,58 @@
 # Create release .tar.gz files for AnalysisPrograms.exe
 #
-# depends on 7-zip (7za.exe) being on path (`choco install 7zip`)
 # depends on hub being on path (`choco install hub`)
-# depends on MSBuild.exe being on path
+# 
+# This script has been modified to work with our CI server
 
-param([bool]$pre_release = $true)
+param($tag_name, [bool]$ci = $false, [bool]$pre_release = $true)
 $ErrorActionPreference = "Stop"
+
+function script:exec {
+    [CmdletBinding()]
+
+	param(
+		[Parameter(Position=0,Mandatory=1)][scriptblock]$cmd,
+		[Parameter(Position=1,Mandatory=0)][string]$errorMessage = ("Error executing command: {0}" -f $cmd)
+	)
+	& $cmd
+	if ($lastexitcode -ne 0)
+	{
+		throw $errorMessage
+	}
+}
 
 function Check-Command($cmdname)
 {
     return [bool](Get-Command -Name $cmdname -ErrorAction SilentlyContinue)
 }
-if (!(Check-Command 7za) -or !(Check-Command hub) -or !(Check-Command MSBuild)) {
+if (!$ci -and !(Check-Command hub)) {
 	throw "Cannot find needed executable dependencies";
 }
 
 
-cd $PSScriptRoot
+echo "Creating release message"
+# we assumed we've already tagged before describing this release
+$old_tag_name =  exec { git describe --abbrev=0 --always "$tag_name^2" }
 
-echo "Running build"
+$compare_message = "[Compare $old_tag_name...$tag_name](https://github.com/QutBioacoustics/audio-analysis/compare/$old_tag_name...$tag_name)"
+$commit_summary = exec { git log --no-merges --pretty=format:"%h %an - %s" "$old_tag_name...$tag_name" -- . ':(exclude,icase)*.r' }
+$commit_summary = $commit_summary -join "`n"
+$release_message = "Version $tag_name`n`n$compare_message`n`n$commit_summary"
+$env:ApReleaseMessage = $release_message
+$release_title = "Version $tag_name - Release and Debug builds"
+$env:ApReleaseTitle = $release_title
 
-. .\build.ps1
-
-echo "Build complete, press any key to continue"
-Pause
-
-cd "AudioAnalysis/AnalysisPrograms/bin"
-
-echo "Removing old tarballs"
-
-rm *.tar*
-
-# extract the built version
-$version =  (.\Release\AnalysisPrograms.exe | Select-String '\d{2}\.\d{2}\.\d{4}\.\d+').Matches[0].Value
-
-echo "Packging files for version $version"
+echo "Release strings:`n$release_title`n$release_message"
 
 
-
-# FYI pipelining is slow because each line is allocated a System.String object.
-# We're just going to write temporary files instead.
-
-# create tar.gz for Release
-7za.exe a -ttar Release.$version.tar ./Release/* -xr0!*log.txt* ; 7za.exe a Release.$version.tar.gz Release.$version.tar 
-
-# create tar.gz for Debug
-7za.exe a -ttar Debug.$version.tar ./Debug/* xr0!*log.txt* ; 7za.exe a Debug.$version.tar.gz Debug.$version.tar
-
-echo "Packing complete, press any key to continue"
-Pause
-
-# create and upload a github release
-$tag_name = "v$version"
-echo "creating tag '$tag_name'"
-git tag -a -m "Version $tag_name" $tag_name
-echo "pushing tags"
-git push --follow-tags
-echo "creating github release"
-hub release create "$(if($pre_release){"-p"})" -a .\Release.$version.tar.gz -a .\Debug.$version.tar.gz -m "Version $tag_name`nRELEASE and DEBUG builds" $tag_name
-
-Write-Host "Release created!"
-cd "../../.."
+if (!$ci) {
+  # create and upload a github release
+  echo "creating github release"
+  
+  $artifacts = ((ls .\AudioAnalysis\AnalysisPrograms\bin\*.zip) | % { "-a " + $_ }) -join " "
+  
+  hub release create "$(if($pre_release){"-p"})" $artifacts -m $release_message $tag_name
+  
+  echo "Release created!"
+  
+}
