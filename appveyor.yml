@@ -64,22 +64,23 @@ build_script:
       /p:WarningLevel=0 /p:RunCodeAnalysis=false
       /p:Configuration=$env:configuration /property:Platform=$env:platform
 
+after_build:
+  # package up artifacts
+  # defined env vars: $env:ApPackage , $env:ApVersion , $env:ApName
+  - cd $(APPVEYOR_BUILD_FOLDER)
+  - ps: . .\package.ps1 $env:configuration
+  
 test:
   assemblies:
     only:
       #- "C:\Work\Github\audio-analysis\Acoustics\Acoustics.Test\bin\Debug\Acoustics.Test.dll"
       #- "C:\Work\Github\audio-analysis\AudioAnalysis\AED\Test\bin\Debug\Test.dll"
       - '**\Acoustics.Test.dll'
-
-before_package:
-  # package up artifacts
-  # defined env vars: $env:ApPackage , $env:ApVersion , $env:ApName
-  - ps: . .\package.ps1 $env:configuration
   
 # Upload previously generated artifacts
 artifacts:
-  - path: $(ApPackage)
-    name: $(ApName)
+  - path: '$(ApPackage)'
+    name: '$(ApName)'
 
 before_deploy:
   # Enable git credential store
@@ -89,6 +90,7 @@ before_deploy:
   # add our auth token to the cred store
   - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:GH_CREATE_RELEASES_TOKEN):x-oauth-basic@github.com`n"
   # tag if needed, and output $env:ApTagName 
+  - cd $(APPVEYOR_BUILD_FOLDER)
   - ps: . .\tag.ps1 $env:ApVersion
   # prepare release strings: $env:ApReleaseMessage, $env:ApReleaseTitle
   - ps: . .\release.ps1 $env:ApTagName $true

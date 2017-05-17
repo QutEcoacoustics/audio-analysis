@@ -27,7 +27,7 @@ function Check-Command($cmdname)
 }
 
 
-if (!(Check-Command 7za)) {
+if (!(Check-Command 7z)) {
 	throw "Cannot find needed executable dependencies";
 }
 
@@ -56,7 +56,7 @@ $ApName = "$configuration.$version.zip"
 $env:ApName = $ApName
 
 # create tar.gz for $environment
-exec { 7za.exe a -tzip $ApName "./$configuration/*" -xr0!*log.txt* }
+exec { 7z a -tzip $ApName "./$configuration/*" -xr0!*log.txt* }
 
 echo "Packing complete"
 
