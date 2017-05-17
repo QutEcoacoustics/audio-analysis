@@ -67,7 +67,7 @@ build_script:
 after_build:
   # package up artifacts
   # defined env vars: $env:ApPackage , $env:ApVersion , $env:ApName
-  - cd $(APPVEYOR_BUILD_FOLDER)
+  - cd %APPVEYOR_BUILD_FOLDER%
   - ps: . .\package.ps1 $env:configuration
   
 test:
@@ -90,7 +90,7 @@ before_deploy:
   # add our auth token to the cred store
   - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:GH_CREATE_RELEASES_TOKEN):x-oauth-basic@github.com`n"
   # tag if needed, and output $env:ApTagName 
-  - cd $(APPVEYOR_BUILD_FOLDER)
+  - cd %APPVEYOR_BUILD_FOLDER%
   - ps: . .\tag.ps1 $env:ApVersion
   # prepare release strings: $env:ApReleaseMessage, $env:ApReleaseTitle
   - ps: . .\release.ps1 $env:ApTagName $true
