@@ -18,6 +18,9 @@
         /// <param name="actual">The file that we are testing with actual data</param>
         public static void TextFileEqual(FileInfo expected, FileInfo actual)
         {
+            expected.Refresh();
+            actual.Refresh();
+
             Assert.IsTrue(expected.Exists, $"Expected file does not exist at {expected.FullName}");
             Assert.IsTrue(actual.Exists, $"Expected file does not exist at {actual.FullName}");
 
@@ -26,7 +29,10 @@
 
             CollectionAssert.AreEqual(expectedLines, actualLines);
 
-            Assert.AreEqual(expected.Length, actual.Length);
+            Assert.AreEqual(
+                expected.Length,
+                actual.Length,
+                $"Expected file sizes to be the same. Expected {expected} was {expected.Length}. Actual {actual} was {actual.Length}");
         }
 
         /// <summary>
