@@ -167,13 +167,9 @@ namespace AudioAnalysisTools.Indices
             SpectralIndexValues spectralIndices = result.SpectralIndexValues;
 
             // set up default spectrogram to return
-            if (returnSonogramInfo)
-            {
-                result.Sg = GetSonogram(recording, windowSize: 1024);
-            }
-
+            result.Sg = returnSonogramInfo ? GetSonogram(recording, windowSize: 1024) : null;
             result.Hits = null;
-            result.TrackScores = null;
+            result.TrackScores = new List<Plot>();
 
             // ################################## FINSIHED SET-UP
             // ################################## NOW GET THE AMPLITUDE SPECTORGRAMS
