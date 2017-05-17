@@ -5,7 +5,7 @@
 # This script has been modified to work with our CI server
 
 param($configuration = $null)
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
 
 function script:exec {
     [CmdletBinding()]
@@ -27,7 +27,7 @@ function Check-Command($cmdname)
 }
 
 
-if (!(Check-Command 7za)) {
+if (!(Check-Command 7z)) {
 	throw "Cannot find needed executable dependencies";
 }
 
@@ -53,14 +53,14 @@ $env:ApVersion = $version
 echo "Packging files for version $version"
 
 $ApName = "$configuration.$version.zip"
-$env:ApName = $ApName
+Set-Item "env:AppName$Configuration" $ApName
 
 # create tar.gz for $environment
-exec { 7za.exe a -tzip $ApName "./$configuration/*" -xr0!*log.txt* }
+exec { 7z a -tzip $ApName "./$configuration/*" -xr0!*log.txt* }
 
 echo "Packing complete"
 
-$env:ApPackage = Join-Path $pwd $ApName
+Set-Item "env:ApPackage$Configuration" (Join-Path "AudioAnalysis\AnalysisPrograms\bin" $ApName)
 
 }
 finally {

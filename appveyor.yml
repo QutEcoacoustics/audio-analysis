@@ -28,9 +28,6 @@ matrix:
 platform:
   - Any CPU
 
-configuration:
-  - Debug
-  - Release
 
 # Attempt to limit the number of commits to clone - our project has a LOT of history
 # TODO: drop this to about ~100 later on
@@ -57,29 +54,41 @@ before_build:
   - nuget restore
 
 build_script:
+  - echo "Building Debug"
   - ps: >
       msbuild 
       "C:\projects\audio-analysis\AudioAnalysis\AudioAnalysis2012.sln" /m /verbosity:minimal 
       /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
       /p:WarningLevel=0 /p:RunCodeAnalysis=false
-      /p:Configuration=$env:configuration /property:Platform=$env:platform
+      /p:Configuration=Debug /property:Platform=$env:platform
 
+  - echo "Building Release"
+  - ps: >
+      msbuild 
+      "C:\projects\audio-analysis\AudioAnalysis\AudioAnalysis2012.sln" /m /verbosity:minimal 
+      /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+      /p:WarningLevel=0 /p:RunCodeAnalysis=false
+      /p:Configuration=Release /property:Platform=$env:platform
+
+after_build:
+  # package up artifacts
+  # defined env vars: $env:ApPackage{Configuration} , $env:ApVersion , $env:ApName{Configuration}
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - ps: . .\package.ps1 "Debug"
+  - ps: . .\package.ps1 "Release"
+  
 test:
   assemblies:
     only:
-      #- "C:\Work\Github\audio-analysis\Acoustics\Acoustics.Test\bin\Debug\Acoustics.Test.dll"
-      #- "C:\Work\Github\audio-analysis\AudioAnalysis\AED\Test\bin\Debug\Test.dll"
-      - '**\Acoustics.Test.dll'
-
-before_package:
-  # package up artifacts
-  # defined env vars: $env:ApPackage , $env:ApVersion , $env:ApName
-  - ps: . .\package.ps1 $env:configuration
+      #- "Acoustics\Acoustics.Test\bin\Debug\Acoustics.Test.dll"
+      - '**bin\Debug\Acoustics.Test.dll'
   
 # Upload previously generated artifacts
 artifacts:
-  - path: $(ApPackage)
-    name: $(ApName)
+  - path: '$(ApPackageDebug)'
+    name: '$(ApNameDebug)'
+  - path: '$(ApPackageRelease)'
+    name: '$(ApNameRelease)'
 
 before_deploy:
   # Enable git credential store
@@ -89,6 +98,9 @@ before_deploy:
   # add our auth token to the cred store
   - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:GH_CREATE_RELEASES_TOKEN):x-oauth-basic@github.com`n"
   # tag if needed, and output $env:ApTagName 
+  - cd %APPVEYOR_BUILD_FOLDER%
+  # Buggy authentication with git-lfs
+  - git config lfs.https://github.com/QutBioacoustics/audio-analysis.git/info/lfs.locksverify false
   - ps: . .\tag.ps1 $env:ApVersion
   # prepare release strings: $env:ApReleaseMessage, $env:ApReleaseTitle
   - ps: . .\release.ps1 $env:ApTagName $true
@@ -99,7 +111,7 @@ deploy:
     release: "$(ApReleaseTitle)"
     description: "$(ApReleaseMessage)"
     auth_token: $(GH_CREATE_RELEASES_TOKEN)
-    artifact: $(ApName)
+    artifact: $(ApNameDebug),$(ApNameRelease)
     prerelease: true
     on:
       # Do not create new releases unless this is the master branch
