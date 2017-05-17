@@ -31,6 +31,7 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+    using Acoustics.Shared.Csv;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
@@ -160,8 +161,11 @@ namespace AnalysisPrograms
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
 
             //2010 Oct 13th
-            var ipdir = @"C:\SensorNetworks\Output\TsheringDema\Towsey.Acoustic_OLD4";
-            var opdir = @"C:\SensorNetworks\Output\TsheringDema\Towsey.Acoustic";
+            //var ipdir = @"C:\SensorNetworks\Output\TsheringDema\Towsey.Acoustic_OLD4";
+            //var opdir = @"C:\SensorNetworks\Output\TsheringDema\Towsey.Acoustic";
+
+            var ipdir = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017\Towsey.Acoustic";
+            var opdir = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017";
 
             var ipDir = new DirectoryInfo(ipdir);
             var opDir = new DirectoryInfo(opdir);
@@ -188,7 +192,7 @@ namespace AnalysisPrograms
             {
                 arguments = Dev();
 
-                // assume verbose becausein Dev mode
+                // assume verbose because in Dev mode
                 string date = "# DATE AND TIME: " + DateTime.Now;
                 LoggedConsole.WriteLine("# DRAW LONG DURATION SPECTROGRAMS DERIVED FROM CSV FILES OF SPECTRAL INDICES OBTAINED FROM AN AUDIO RECORDING");
                 LoggedConsole.WriteLine(date);
@@ -226,6 +230,14 @@ namespace AnalysisPrograms
             string analysisTag;
             FilenameHelpers.ParseAnalysisFileName(indexGenerationDataFile, out originalBaseName, out analysisTag, out otherSegments);
 
+            // CHECK FOR ERROR SEGMENTS - get zero signal array
+            var csvFile = new FileInfo(Path.Combine(arguments.InputDataDirectory.FullName, originalBaseName + "__Towsey.Acoustic.Indices.csv"));
+            Dictionary<string, double[]> summaryIndices = CsvTools.ReadCSVFile2Dictionary(csvFile.FullName);
+            //var summaryIndices = Csv.ReadFromCsv<Dictionary<string, double[]>>(csvFile);
+            //var summaryIndices = Csv.ReadFromCsv<SummaryIndexValues[]>(csvFile);
+            double[] zeroSignalArray = summaryIndices["ZeroSignal"];
+            var indexErrors = ErroneousIndexSegments.DataIntegrityCheckForZeroSignal(zeroSignalArray);
+
             //config.IndexCalculationDuration = TimeSpan.FromSeconds(1.0);
             //config.XAxisTicInterval = TimeSpan.FromSeconds(60.0);
             //config.IndexCalculationDuration = TimeSpan.FromSeconds(60.0);
@@ -240,6 +252,7 @@ namespace AnalysisPrograms
                 analysisType: Acoustic.TowseyAcoustic,
                 indexSpectrograms: null,
                 indexStatistics: indexDistributionsData,
+                segmentErrors: indexErrors,
                 imageChrome: false.ToImageChrome());
         } // Execute()
 

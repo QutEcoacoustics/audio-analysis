@@ -1,47 +1,38 @@
-﻿namespace AudioAnalysisTools.Indices
+﻿// <copyright file="IndexDisplay.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
-    using System.Data;
     using System.Drawing;
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
     using AnalysisBase.ResultBases;
-
-    using LongDurationSpectrograms;
-
     using log4net;
-
+    using LongDurationSpectrograms;
     using TowseyLibrary;
 
     public static class IndexDisplay
     {
         public const int DefaultTrackHeight = 20;
         public const int TrackEndPanelWidth = 250; // pixels. This is where name of index goes in track image
+
         // This constant must be same as for spectrograms. It places grid lines every 60 pixels = 1 hour
         public static TimeSpan TimeScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL; // Default = one minute segments or 60 segments per hour.
 
         private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
-        /// Uses a dictionary of index properties to traw an image of summary index tracks
+        /// Uses a dictionary of index properties to draw an image of summary index tracks
         /// </summary>
-        /// <param name="csvFile">
-        /// </param>
-        /// <param name="indexPropertiesConfig">
-        /// </param>
-        /// <param name="title">
-        /// </param>
-        /// <param name="indexCalculationDuration">
-        /// The index Calculation Duration.
-        /// </param>
-        /// <param name="recordingStartDate">
-        /// The recording Start Date.
-        /// </param>
-        /// <returns>
-        /// </returns>
+        /// <param name="csvFile"> file containing the summary indices </param>
+        /// <param name="indexPropertiesConfig"> indexPropertiesConfig </param>
+        /// <param name="title"> image title </param>
+        /// <param name="indexCalculationDuration"> The index Calculation Duration. </param>
+        /// <param name="recordingStartDate"> The recording Start Date. </param>
         public static Bitmap DrawImageOfSummaryIndexTracks(
             FileInfo csvFile,
             FileInfo indexPropertiesConfig,
@@ -49,10 +40,10 @@
             TimeSpan indexCalculationDuration,
             DateTimeOffset? recordingStartDate)
         {
-            Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfig);
-            dictIP = InitialiseIndexProperties.GetDictionaryOfSummaryIndexProperties(dictIP);
+            Dictionary<string, IndexProperties> dictionaryOfIndexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
+            dictionaryOfIndexProperties = InitialiseIndexProperties.GetDictionaryOfSummaryIndexProperties(dictionaryOfIndexProperties);
             return DrawImageOfSummaryIndices(
-                dictIP,
+                dictionaryOfIndexProperties,
                 csvFile,
                 title,
                 indexCalculationDuration,
@@ -89,10 +80,8 @@
                 titleText,
                 indexCalculationDuration,
                 recordingStartDate,
-                sunriseDataFile = null
-                );
+                sunriseDataFile = null);
         }
-
 
         /// <summary>
         /// Converts summary indices to a tracks image
@@ -104,25 +93,20 @@
         /// <param name="recordingStartDate"></param>
         /// <param name="sunriseDataFile"></param>
         /// <param name="errors"></param>
-        /// <param name="verbose"></param>
-        /// <returns></returns>
         public static Bitmap DrawImageOfSummaryIndices(
             Dictionary<string, IndexProperties> listOfIndexProperties,
-
             Dictionary<string, double[]> dictionaryOfSummaryIndices,
             string titleText,
             TimeSpan indexCalculationDuration,
             DateTimeOffset? recordingStartDate,
             FileInfo sunriseDataFile = null,
             List<ErroneousIndexSegments> errors = null,
-            bool verbose = false
-            )
+            bool verbose = false)
         {
+            // to translate past keys into current keys
             Dictionary<string, string> translationDictionary = InitialiseIndexProperties.GetKeyTranslationDictionary();
-                // to translate past keys into current keys
 
-
-            const int TrackHeight = DefaultTrackHeight;
+            const int trackHeight = DefaultTrackHeight;
             int scaleLength = 0;
             var bitmapList = new List<Tuple<IndexProperties, Image>>(dictionaryOfSummaryIndices.Keys.Count);
 
@@ -177,19 +161,19 @@
             int graphWidth = X_offset + scaleLength;
             int imageWidth = X_offset + scaleLength + TrackEndPanelWidth;
             TimeSpan scaleDuration = TimeSpan.FromMinutes(scaleLength);
-            int imageHt = TrackHeight * (listOfBitmaps.Count + 4); //+3 for title and top and bottom time tracks
-            Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, TrackHeight, titleText);
+            int imageHt = trackHeight * (listOfBitmaps.Count + 4); //+3 for title and top and bottom time tracks
+            Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, titleText);
             //Bitmap time1Bmp = Image_Track.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, graphWidth, TrackHeight, "Time (hours)");
             TimeSpan xAxisPixelDuration = indexCalculationDuration;
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * graphWidth);
-            Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(fullDuration, graphWidth, TrackHeight);
+            Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(fullDuration, graphWidth, trackHeight);
             Bitmap timeBmp2 = timeBmp1;
             Bitmap suntrack = null;
             DateTimeOffset? dateTimeOffset = recordingStartDate;
             if (dateTimeOffset.HasValue)
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
-                timeBmp2 = Image_Track.DrawTimeTrack(fullDuration, dateTimeOffset, graphWidth, TrackHeight);
+                timeBmp2 = Image_Track.DrawTimeTrack(fullDuration, dateTimeOffset, graphWidth, trackHeight);
                 suntrack = SunAndMoon.AddSunTrackToImage(scaleLength, dateTimeOffset, sunriseDataFile);
             }
 

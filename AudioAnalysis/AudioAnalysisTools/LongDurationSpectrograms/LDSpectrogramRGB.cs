@@ -1343,12 +1343,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// IT CAN BE COPIED AND APPROPRIATELY MODIFIED BY ANY USER FOR THEIR OWN PURPOSE.
         /// WARNING: Make sure the parameters in the CONFIG file are consistent with the CSV files.
         /// </summary>
+        /// <param name="inputDirectory">inputDirectory</param>
+        /// <param name="outputDirectory">outputDirectory</param>
+        /// <param name="ldSpectrogramConfig">config for drawing FCSs</param>
         /// <param name="indexPropertiesConfigPath">The indices Config Path. </param>
+        /// <param name="indexGenerationData">indexGenerationData</param>
         /// <param name="indexSpectrograms">Optional spectra to pass in. If specified the spectra will not be loaded from disk! </param>
         /// <param name="indexStatistics">Info about the distributions of the spectral statistics</param>
         /// <param name="siteDescription">Optionally specify details about the site where the audio was recorded.</param>
         /// <param name="segmentErrors">Note that these segment errors were derived from previous analysis of the summary indices.</param>
-        /// <param name="imageChrome">If true, this method generates and returns separate chromeless images.</param>
+        /// <param name="imageChrome">If true, this method generates and returns separate chromeless images used for tiling website images.</param>
         public static Tuple<Image, string>[] DrawSpectrogramsFromSpectralIndices(
             DirectoryInfo inputDirectory,
             DirectoryInfo outputDirectory,

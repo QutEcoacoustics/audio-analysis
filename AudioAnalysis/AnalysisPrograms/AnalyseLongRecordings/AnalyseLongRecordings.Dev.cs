@@ -137,7 +137,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string recordingPath = @"Y:\Eclipise 2012\Eclipse\Site 4 - Farmstay\ECLIPSE3_20121115_040001.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Eclipse2012\Farmstay_ECLIPSE3_20121114_060001TEST.wav";
             //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
-            string outputPath = @"C:\SensorNetworks\Output\LSKiwi3\TestMay2017";
+            string outputPath = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017";
 
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg";
             string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
