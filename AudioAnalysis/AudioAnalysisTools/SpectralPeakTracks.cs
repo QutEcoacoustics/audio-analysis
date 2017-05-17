@@ -34,11 +34,6 @@ namespace AudioAnalysisTools
             this.CalculateCombinationOfThreeDirections();
         }
 
-        public static string[] GetDefaultRidgeKeys()
-        {
-            return RidgeKeys;
-        }
-
         public double[,] Peaks { get; private set; }
 
         //public int TotalTrackCount { get; private set; }
@@ -78,6 +73,11 @@ namespace AudioAnalysisTools
         /// gets three directions ridge value
         /// </summary>
         public double[] R3DSpectrum { get; private set; }
+
+        public static string[] GetDefaultRidgeKeys()
+        {
+            return RidgeKeys;
+        }
 
         public void GetRidgeSpectraVersion1(double[,] dbSpectrogramData, double ridgeThreshold)
         {
@@ -202,59 +202,71 @@ namespace AudioAnalysisTools
             //Therefore need to assign ridge number to re-oriented values.
 
             // Accumulate info for the horizontal ridges
-            var M = hits[2];
+            var hitsMatrix = hits[2];
 
             // for each frequency bin
             for (int col = 0; col < colCount; col++)
             {
                 sum = 0;
                 for (int row = 2; row < rowCount - 2; row++)
-                { sum += M[row, col]; }
-                spectrum[col] = sum / (double)spanCount;
+                {
+                    sum += hitsMatrix[row, col];
+                }
+
+                spectrum[col] = sum / spanCount;
             }
 
             this.RhzSpectrum = spectrum;
 
             // accumulate info for the vertical ridges
-            M = hits[0];
+            hitsMatrix = hits[0];
             spectrum = new double[colCount];
             for (int col = 0; col < colCount; col++)
             {
                 // i.e. for each frequency bin
                 sum = 0;
                 for (int row = 2; row < rowCount - 2; row++)
-                { sum += M[row, col]; }
-                spectrum[col] = sum / (double)spanCount;
+                {
+                    sum += hitsMatrix[row, col];
+                }
+
+                spectrum[col] = sum / spanCount;
             }
 
             this.RvtSpectrum = spectrum;
 
             // accumulate info for the positive/up-slope ridges
-            M = hits[3];
+            hitsMatrix = hits[3];
             spectrum = new double[colCount];
-            for (int col = 0; col < colCount; col++) // i.e. for each frequency bin
+
+            // for each frequency bin
+            for (int col = 0; col < colCount; col++)
             {
                 sum = 0;
-                // i.e. for each row or frame
                 for (int row = 2; row < rowCount - 2; row++)
                 {
-                    sum += M[row, col];
+                    sum += hitsMatrix[row, col];
                 }
 
-                spectrum[col] = sum / (double)spanCount;
+                spectrum[col] = sum / spanCount;
             }
 
             this.RpsSpectrum = spectrum;
 
             // accumulate info for the negative/down slope ridges
-            M = hits[1];
+            hitsMatrix = hits[1];
             spectrum = new double[colCount];
-            for (int col = 0; col < colCount; col++) // i.e. for each frequency bin
+
+            // for each frequency bin
+            for (int col = 0; col < colCount; col++)
             {
                 sum = 0;
                 for (int row = 2; row < rowCount - 2; row++)
-                { sum += M[row, col]; }
-                spectrum[col] = sum / (double)spanCount;
+                {
+                    sum += hitsMatrix[row, col];
+                }
+
+                spectrum[col] = sum / spanCount;
             }
 
             this.RngSpectrum = spectrum;
@@ -275,14 +287,16 @@ namespace AudioAnalysisTools
             {
                 double sum = 0;
                 int cover = 0;
-                // i.e. for each row or frame
                 for (int row = 2; row < rowCount - 2; row++)
                 {
                     sum += this.Peaks[row, col];
-                    if(this.Peaks[row, col] > 0.0) cover++;
+                    if (this.Peaks[row, col] > 0.0)
+                    {
+                        cover++;
+                    }
                 }
 
-                spectrum[col] = sum / (double)spanCount;
+                spectrum[col] = sum / spanCount;
                 cummulativeFrameCount += cover;
 
                 //freqBin = MatrixTools.GetColumn(this.Peaks, col);
@@ -314,9 +328,11 @@ namespace AudioAnalysisTools
             this.R3DSpectrum = new double[this.RhzSpectrum.Length];
             for (int i = 0; i < this.RhzSpectrum.Length; i++)
             {
-                //var array = new double[] { this.RhzSpectrum[i], this.RpsSpectrum[i], this.RngSpectrum[i] };
-                //this.R3DSpectrum[i] = array.Max();
-                this.R3DSpectrum[i] = this.RhzSpectrum[i] + this.RpsSpectrum[i] + this.RngSpectrum[i];
+                var array = new[] { this.RhzSpectrum[i], this.RpsSpectrum[i], this.RngSpectrum[i] };
+                this.R3DSpectrum[i] = array.Max();
+
+                // alternatively, sum the indices
+                //this.R3DSpectrum[i] = this.RhzSpectrum[i] + this.RpsSpectrum[i] + this.RngSpectrum[i];
             }
         }
 
@@ -347,15 +363,16 @@ namespace AudioAnalysisTools
                         && dBSpectrogram[row, col] > dBSpectrogram[row, col - 1]
                         && dBSpectrogram[row, col] > dBSpectrogram[row, col + 2]
                         && dBSpectrogram[row, col] > dBSpectrogram[row, col - 2])
-
-                       // && ((dBSpectrogram[row, col] - dBSpectrogram[row, col + 3])
-                       // && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 3])
-                       // if (((dBSpectrogram[row, col] - dBSpectrogram[row, col + 1]) > 0.0)
-                       // && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 1]) > 0.0)
-                       //// && ((dBSpectrogram[row, col] - dBSpectrogram[row, col + 2]) > dBThreshold)
-                       //// && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 2]) > dBThreshold)
-                       //// && ((dBSpectrogram[row, col] - dBSpectrogram[row, col + 3]) > dBThreshold)
-                       //// && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 3]) > dBThreshold))
+                        /*
+                        && ((dBSpectrogram[row, col] - dBSpectrogram[row, col + 3])
+                        && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 3])
+                        if (((dBSpectrogram[row, col] - dBSpectrogram[row, col + 1]) > 0.0)
+                        && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 1]) > 0.0)
+                        && ((dBSpectrogram[row, col] - dBSpectrogram[row, col + 2]) > dBThreshold)
+                        && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 2]) > dBThreshold)
+                        && ((dBSpectrogram[row, col] - dBSpectrogram[row, col + 3]) > dBThreshold)
+                        && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 3]) > dBThreshold))
+                       */
                     {
                         // localpeaks[row, col] = dBSpectrogram[row, col] - ((dBSpectrogram[row, col+2] + dBSpectrogram[row, col-2]) * 0.5);
                         localpeaks[row, col] = dBSpectrogram[row, col];

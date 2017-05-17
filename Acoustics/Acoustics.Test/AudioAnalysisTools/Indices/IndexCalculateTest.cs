@@ -91,22 +91,22 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             Assert.AreEqual(-30.946519, summaryIndices.AvgSignalAmplitude, 0.000001);
             Assert.AreEqual(11.533420, summaryIndices.AvgSnrOfActiveFrames, 0.000001);
             Assert.AreEqual(-39.740775, summaryIndices.BackgroundNoise, 0.000001);
-            Assert.AreEqual(15, summaryIndices.ClusterCount);
-            Assert.AreEqual(0.153148, summaryIndices.EntropyOfAverageSpectrum, 0.000001);
-            Assert.AreEqual(0.301938, summaryIndices.EntropyOfCoVSpectrum, 0.000001);
-            Assert.AreEqual(0.259239, summaryIndices.EntropyOfPeaksSpectrum, 0.000001);
+            Assert.AreEqual(21, summaryIndices.ClusterCount);
+            Assert.AreEqual(0.153191, summaryIndices.EntropyOfAverageSpectrum, 0.000001);
+            Assert.AreEqual(0.301929, summaryIndices.EntropyOfCoVSpectrum, 0.000001);
+            Assert.AreEqual(0.260999, summaryIndices.EntropyOfPeaksSpectrum, 0.000001);
             Assert.AreEqual(0.522080, summaryIndices.EntropyOfVarianceSpectrum, 0.000001);
             Assert.AreEqual(0.0, summaryIndices.EntropyPeaks, 0.000001);
             Assert.AreEqual(2.0, summaryIndices.EventsPerSecond, 0.000001);
-            Assert.AreEqual(0.139952, summaryIndices.HighFreqCover, 0.000001);
+            Assert.AreEqual(0.140306, summaryIndices.HighFreqCover, 0.000001);
             Assert.AreEqual(0.137873, summaryIndices.MidFreqCover, 0.000001);
-            Assert.AreEqual(0.054840, summaryIndices.LowFreqCover, 0.000001);
+            Assert.AreEqual(0.055341, summaryIndices.LowFreqCover, 0.000001);
             Assert.AreEqual(0.957433, summaryIndices.Ndsi, 0.000001);
             Assert.AreEqual(27.877206, summaryIndices.Snr, 0.000001);
-            Assert.AreEqual(6.2306202, summaryIndices.SptDensity, 0.000001);
+            Assert.AreEqual(6.240310, summaryIndices.SptDensity, 0.000001);
             Assert.AreEqual(TimeSpan.Zero, summaryIndices.StartOffset);
-            Assert.AreEqual(0.162215, summaryIndices.TemporalEntropy, 0.000001);
-            Assert.AreEqual(116, summaryIndices.ThreeGramCount, 0.000001);
+            Assert.AreEqual(0.162216, summaryIndices.TemporalEntropy, 0.000001);
+            Assert.AreEqual(401, summaryIndices.ThreeGramCount, 0.000001);
 
             // CollectionAssert.AreEqual(new[] { 1, 2, 3 }, new[] { 1, 2, 3 });
             // CollectionAssert.AreEquivalent(new[] { 1, 2, 3 }, new[] { 3, 2, 1 });
@@ -180,12 +180,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.BGN);
-
-            // CLS
-            expectedSpectrumFile = new FileInfo(outputDir + "\\CLS.bin");
-            // Binary.Serialize(expectedSpectrumFile, spectralIndices.CLS);
-            expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.CLS);
 
             // CVR
             expectedSpectrumFile = new FileInfo(outputDir + "\\CVR.bin");
