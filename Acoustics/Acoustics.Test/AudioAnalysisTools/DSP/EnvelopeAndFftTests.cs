@@ -31,13 +31,13 @@ namespace Acoustics.Test
         [TestInitialize]
         public void Setup()
         {
-            this.outputDirectory = TestHelper.GetTempDir();
+            this.outputDirectory = PathHelper.GetTempDir();
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            TestHelper.DeleteTempDir(this.outputDirectory);
+            PathHelper.DeleteTempDir(this.outputDirectory);
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Acoustics.Test
         [TestMethod]
         public void TestEnvelopeAndFft1()
         {
-            var recording = new AudioRecording(@"Recordings\BAC2_20071008-085040.wav");
+            var recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
             int windowSize = 512;
 
             // window overlap is used only for sonograms. It is not used when calculating acoustic indices.
@@ -109,7 +109,7 @@ namespace Acoustics.Test
             // first write to here and move binary file to resources folder.
             // var sumFile = new FileInfo(this.outputDirectory + @"\BAC2_20071008-085040_DataColumnSums.bin");
             // Binary.Serialize(sumFile, columnSums);
-            var sumFile = new FileInfo(@"EnvelopeAndFft\BAC2_20071008-085040_DataColumnSums.bin");
+            var sumFile = PathHelper.ResolveAsset(@"EnvelopeAndFft\BAC2_20071008-085040_DataColumnSums.bin");
             var expectedColSums = Binary.Deserialize<double[]>(sumFile);
             CollectionAssert.AreEqual(expectedColSums, columnSums);
         }
@@ -122,7 +122,7 @@ namespace Acoustics.Test
         [TestMethod]
         public void TestEnvelopeAndFft2()
         {
-            var recording = new AudioRecording(@"Recordings\BAC2_20071008-085040.wav");
+            var recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
             int windowSize = 512;
 
             // window overlap is used only for sonograms. It is not used when calculating acoustic indices.
@@ -177,25 +177,25 @@ namespace Acoustics.Test
             // first write to here and move binary file to resources folder.
             // var averageArrayFile = new FileInfo(this.outputDirectory + @"\BAC2_20071008-085040_AvSigArray.bin");
             // Binary.Serialize(averageArrayFile, avArray);
-            var averageFile = new FileInfo(@"EnvelopeAndFft\BAC2_20071008-085040_AvSigArray.bin");
+            var averageFile = PathHelper.ResolveAsset(@"EnvelopeAndFft\BAC2_20071008-085040_AvSigArray.bin");
             var expectedAvArray = Binary.Deserialize<double[]>(averageFile);
             CollectionAssert.AreEqual(expectedAvArray, avArray);
 
             // var envelopeArrayFile = new FileInfo(this.outputDirectory + @"\BAC2_20071008-085040_EnvelopeArray.bin");
             // Binary.Serialize(envelopeArrayFile, envelope);
-            var envelopeFile = new FileInfo(@"EnvelopeAndFft\BAC2_20071008-085040_EnvelopeArray.bin");
+            var envelopeFile = PathHelper.ResolveAsset(@"EnvelopeAndFft\BAC2_20071008-085040_EnvelopeArray.bin");
             var expectedEnvelope = Binary.Deserialize<double[]>(envelopeFile);
             CollectionAssert.AreEqual(expectedEnvelope, envelope);
 
             // var frameEnergyArrayFile = new FileInfo(this.outputDirectory + @"\BAC2_20071008-085040_FrameEnergyArray.bin");
             // Binary.Serialize(frameEnergyArrayFile, frameEnergy);
-            var frameEnergyFile = new FileInfo(@"EnvelopeAndFft\BAC2_20071008-085040_FrameEnergyArray.bin");
+            var frameEnergyFile = PathHelper.ResolveAsset(@"EnvelopeAndFft\BAC2_20071008-085040_FrameEnergyArray.bin");
             var expectedFrameEnergy = Binary.Deserialize<double[]>(frameEnergyFile);
             CollectionAssert.AreEqual(expectedFrameEnergy, frameEnergy);
 
             var frameDecibelsArrayFile = new FileInfo(this.outputDirectory + @"\BAC2_20071008-085040_FrameDecibelsArray.bin");
             Binary.Serialize(frameDecibelsArrayFile, frameDecibels);
-            var frameDecibelsFile = new FileInfo(@"EnvelopeAndFft\BAC2_20071008-085040_FrameDecibelsArray.bin");
+            var frameDecibelsFile = PathHelper.ResolveAsset(@"EnvelopeAndFft\BAC2_20071008-085040_FrameDecibelsArray.bin");
             var expectedFrameDecibels = Binary.Deserialize<double[]>(frameDecibelsFile);
             CollectionAssert.AreEqual(expectedFrameDecibels, frameDecibels);
 

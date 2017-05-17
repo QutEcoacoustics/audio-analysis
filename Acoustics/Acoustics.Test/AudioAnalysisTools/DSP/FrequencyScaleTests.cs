@@ -54,13 +54,13 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         [TestInitialize]
         public void Setup()
         {
-            this.outputDirectory = TestHelper.GetTempDir();
+            this.outputDirectory = PathHelper.GetTempDir();
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            TestHelper.DeleteTempDir(this.outputDirectory);
+            PathHelper.DeleteTempDir(this.outputDirectory);
         }
 
         #endregion
@@ -72,8 +72,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         [TestMethod]
         public void LinearFrequencyScaleDefault()
         {
-            // relative path because post-Build command transfers files to ...\\Work\GitHub\...\bin\Debug subfolder.
-            var recordingPath = @"Recordings\BAC2_20071008-085040.wav";
+            var recordingPath = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
             var opFileStem = "BAC2_20071008";
             var outputDir = this.outputDirectory;
             var outputImagePath = Path.Combine(outputDir.FullName, "DefaultLinearScaleSonogram.png");
@@ -108,7 +107,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var stemOfActualFile = opFileStem + "_DefaultLinearScaleGridLineLocations.ACTUAL.json";
 
             // Check that freqScale.GridLineLocations are correct
-            var expectedFile1 = new FileInfo("FrequencyScale\\" + stemOfExpectedFile);
+            var expectedFile1 = PathHelper.ResolveAsset("FrequencyScale\\" + stemOfExpectedFile);
             if (!expectedFile1.Exists)
             {
                 LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
@@ -131,7 +130,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         [TestMethod]
         public void LinearFrequencyScale()
         {
-            var recordingPath = @"Recordings\BAC2_20071008-085040.wav";
+            var recordingPath = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
             var opFileStem = "BAC2_20071008";
             var outputDir = this.outputDirectory;
             var outputImagePath = Path.Combine(outputDir.FullName, "LinearScaleSonogram.png");
@@ -169,7 +168,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var stemOfActualFile = opFileStem + "_LinearScaleGridLineLocations.ACTUAL.json";
 
             // Check that freqScale.GridLineLocations are correct
-            var expectedFile1 = new FileInfo("FrequencyScale\\" + stemOfExpectedFile);
+            var expectedFile1 = PathHelper.ResolveAsset("FrequencyScale\\" + stemOfExpectedFile);
             if (!expectedFile1.Exists)
             {
                 LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
@@ -192,7 +191,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         [TestMethod]
         public void OctaveFrequencyScale1()
         {
-            var recordingPath = @"Recordings\BAC2_20071008-085040.wav";
+            var recordingPath = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
             var opFileStem = "BAC2_20071008";
             var outputDir = this.outputDirectory;
             var outputImagePath = Path.Combine(outputDir.FullName, "Octave1ScaleSonogram.png");
@@ -230,7 +229,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // Check that freqScale.OctaveBinBounds are correct
             var stemOfExpectedFile = opFileStem + "_Octave1ScaleBinBounds.EXPECTED.json";
             var stemOfActualFile = opFileStem + "_Octave1ScaleBinBounds.ACTUAL.json";
-            var expectedFile1 = new FileInfo("FrequencyScale\\" + stemOfExpectedFile);
+            var expectedFile1 = PathHelper.ResolveAsset("FrequencyScale\\" + stemOfExpectedFile);
             if (!expectedFile1.Exists)
             {
                 LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
@@ -244,7 +243,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // Check that freqScale.GridLineLocations are correct
             stemOfExpectedFile = opFileStem + "_Octave1ScaleGridLineLocations.EXPECTED.json";
             stemOfActualFile = opFileStem + "_Octave1ScaleGridLineLocations.ACTUAL.json";
-            var expectedFile2 = new FileInfo("FrequencyScale\\" + stemOfExpectedFile);
+            var expectedFile2 = PathHelper.ResolveAsset("FrequencyScale\\" + stemOfExpectedFile);
             if (!expectedFile2.Exists)
             {
                 LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
@@ -270,7 +269,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         [TestMethod]
         public void OctaveFrequencyScale2()
         {
-            var recordingPath = @"Recordings\MarineJasco_AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit-60sec.wav";
+            var recordingPath = PathHelper.ResolveAsset(@"Recordings\MarineJasco_AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit-60sec.wav");
             var opFileStem = "JascoMarineGBR1";
             var outputDir = this.outputDirectory;
             var outputImagePath = Path.Combine(outputDir.FullName, "Octave2ScaleSonogram.png");
@@ -303,7 +302,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // Check that freqScale.OctaveBinBounds are correct
             var stemOfExpectedFile = opFileStem + "_Octave2ScaleBinBounds.EXPECTED.json";
             var stemOfActualFile = opFileStem + "_Octave2ScaleBinBounds.ACTUAL.json";
-            var expectedFile1 = new FileInfo("FrequencyScale\\" + stemOfExpectedFile);
+            var expectedFile1 = PathHelper.ResolveAsset("FrequencyScale\\" + stemOfExpectedFile);
             if (!expectedFile1.Exists)
             {
                 LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
@@ -317,7 +316,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // Check that freqScale.GridLineLocations are correct
             stemOfExpectedFile = opFileStem + "_Octave2ScaleGridLineLocations.EXPECTED.json";
             stemOfActualFile = opFileStem + "_Octave2ScaleGridLineLocations.ACTUAL.json";
-            var expectedFile2 = new FileInfo("FrequencyScale\\" + stemOfExpectedFile);
+            var expectedFile2 = PathHelper.ResolveAsset("FrequencyScale\\" + stemOfExpectedFile);
             if (!expectedFile2.Exists)
             {
                 LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");

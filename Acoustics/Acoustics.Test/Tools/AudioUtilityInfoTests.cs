@@ -8,6 +8,7 @@
     using EcoSounds.Mvc.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using TestHelpers;
 
     [TestClass]
     public class AudioUtilityInfoTests

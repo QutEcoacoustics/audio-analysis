@@ -25,6 +25,7 @@ namespace Acoustics.Test.Tools
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using MSTestExtensions;
+    using TestHelpers;
 
     [TestClass]
     public class AudioUtilityChannelTests : BaseTest
@@ -364,14 +365,14 @@ namespace Acoustics.Test.Tools
             var audioUtilityRequest = new AudioUtilityRequest { Channels = channels, MixDownToMono = mixDownToMono };
 
             var outputMimeType = MediaTypes.MediaTypeWav;
-            var source = TestHelper.GetTestAudioFile(sourceFile);
+            var source = PathHelper.GetTestAudioFile(sourceFile);
 
             var destExtension = MediaTypes.GetExtension(outputMimeType);
             var outputFilename = Path.GetFileNameWithoutExtension(FourChannelFile) + "_modified." + destExtension;
 
             var util = MasterAudioUtilityTests.GetAudioUtility();
 
-            var dir = TestHelper.GetTempDir();
+            var dir = PathHelper.GetTempDir();
             var output = new FileInfo(Path.Combine(dir.FullName, outputFilename));
             expected.SourceFile = output;
 
@@ -379,7 +380,7 @@ namespace Acoustics.Test.Tools
 
             DoFrequencyAnalysis(expected, expectedFrequencies);
 
-            TestHelper.DeleteTempDir(dir);
+            PathHelper.DeleteTempDir(dir);
         }
 
         private static void DoFrequencyAnalysis(

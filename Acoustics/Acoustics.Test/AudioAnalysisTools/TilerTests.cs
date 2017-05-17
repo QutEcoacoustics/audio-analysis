@@ -25,6 +25,7 @@ namespace Acoustics.Test.AudioAnalysisTools
     using Moq;
 
     using MSTestExtensions;
+    using TestHelpers;
 
     /// <summary>
     /// Note the files in /TestResources are copied
@@ -45,7 +46,7 @@ namespace Acoustics.Test.AudioAnalysisTools
         {
             this.tilingProfile = new PanoJsTilingProfile();
 
-            this.outputDirectory = TestHelper.GetTempDir();
+            this.outputDirectory = PathHelper.GetTempDir();
 
             this.tiler = new Tiler(
                 this.outputDirectory,
@@ -61,7 +62,7 @@ namespace Acoustics.Test.AudioAnalysisTools
         [TestCleanup]
         public void Cleanup()
         {
-            TestHelper.DeleteTempDir(this.outputDirectory);
+            PathHelper.DeleteTempDir(this.outputDirectory);
         }
 
         [TestMethod]
@@ -757,7 +758,7 @@ namespace Acoustics.Test.AudioAnalysisTools
                 256,
                 60);
 
-            this.outputDirectory = TestHelper.GetTempDir();
+            this.outputDirectory = PathHelper.GetTempDir();
 
             this.tiler = new Tiler(
                 this.outputDirectory,
@@ -773,7 +774,7 @@ namespace Acoustics.Test.AudioAnalysisTools
         [TestCleanup]
         public void Cleanup()
         {
-            TestHelper.DeleteTempDir(this.outputDirectory);
+            PathHelper.DeleteTempDir(this.outputDirectory);
         }
 
         [TestMethod]

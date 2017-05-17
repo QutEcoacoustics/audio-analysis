@@ -12,6 +12,7 @@
     using EcoSounds.Mvc.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using TestHelpers;
 
     [TestClass]
     public class AudioUtilityWavTests
@@ -39,7 +40,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -72,7 +73,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -105,7 +106,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -138,7 +139,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -172,7 +173,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -206,7 +207,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("geckos.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -241,7 +242,7 @@
             var util = TestHelper.GetAudioUtilityShntool();
 
             var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -275,7 +276,7 @@
             var util = TestHelper.GetAudioUtilityShntool();
 
             var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -309,7 +310,7 @@
             var util = TestHelper.GetAudioUtilityShntool();
 
             var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -343,7 +344,7 @@
             var util = TestHelper.GetAudioUtilityShntool();
 
             var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -378,7 +379,7 @@
             var util = TestHelper.GetAudioUtilityShntool();
 
             var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -413,7 +414,7 @@
             var util = TestHelper.GetAudioUtilityShntool();
 
             var source = TestHelper.GetAudioFile("geckos.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -447,7 +448,7 @@
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -480,7 +481,7 @@
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -513,7 +514,7 @@
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -546,7 +547,7 @@
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -580,7 +581,7 @@
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -614,7 +615,7 @@
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("geckos.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -648,7 +649,7 @@
             var util = TestHelper.GetAudioUtilityFfmpeg();
 
             var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -681,7 +682,7 @@
             var util = TestHelper.GetAudioUtilityFfmpeg();
 
             var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -714,7 +715,7 @@
             var util = TestHelper.GetAudioUtilityFfmpeg();
 
             var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -747,7 +748,7 @@
             var util = TestHelper.GetAudioUtilityFfmpeg();
 
             var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -781,7 +782,7 @@
             var util = TestHelper.GetAudioUtilityFfmpeg();
 
             var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -815,7 +816,7 @@
             var util = TestHelper.GetAudioUtilityFfmpeg();
 
             var source = TestHelper.GetAudioFile("geckos.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -849,7 +850,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -882,7 +883,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -915,7 +916,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -948,7 +949,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -982,7 +983,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -1016,7 +1017,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("geckos.wav");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 

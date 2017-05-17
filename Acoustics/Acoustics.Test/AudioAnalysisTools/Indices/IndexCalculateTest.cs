@@ -12,6 +12,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using TestHelpers;
 
     // using TestHelpers;
 
@@ -32,13 +33,13 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         [TestInitialize]
         public void Setup()
         {
-            this.outputDirectory = TestHelper.GetTempDir();
+            this.outputDirectory = PathHelper.GetTempDir();
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            TestHelper.DeleteTempDir(this.outputDirectory);
+            PathHelper.DeleteTempDir(this.outputDirectory);
         }
 
         /// <summary>
@@ -47,9 +48,11 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         [TestMethod]
         public void TestOfSummaryIndices()
         {
-            var sourceRecording = new FileInfo(@"Recordings\BAC2_20071008-085040.wav");
-            var configFile = @"Indices\Towsey.Acoustic.yml".ToFileInfo();
-            var indexPropertiesConfig = new FileInfo(@"Configs\IndexPropertiesConfig.yml");
+            var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
+
+            // TODO: stop using a custom indices config!
+            var configFile = PathHelper.ResolveAsset(@"Indices\Towsey.Acoustic.yml");
+            var indexPropertiesConfig = PathHelper.ResolveAsset(@"Configs\IndexPropertiesConfig.yml");
 
             // var outputDir = this.outputDirectory;
 
@@ -127,12 +130,14 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         [TestMethod]
         public void TestOfSpectralIndices()
         {
-            var sourceRecording = new FileInfo(@"Recordings\BAC2_20071008-085040.wav");
-            var configFile = @"Indices\Towsey.Acoustic.yml".ToFileInfo();
-            var indexPropertiesConfig = new FileInfo(@"Configs\IndexPropertiesConfig.yml");
+            var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
+
+            // TODO: stop using a custom indices config!
+            var configFile = PathHelper.ResolveAsset(@"Indices\Towsey.Acoustic.yml");
+            var indexPropertiesConfig = PathHelper.ResolveAsset(@"Configs\IndexPropertiesConfig.yml");
 
             // var outputDir = this.outputDirectory;
-            var outputDir = "Indices";
+            var outputDir = PathHelper.ResolveAssetPath("Indices");
 
             // 1. get the config dictionary
             var configDict = Oscillations2014.GetConfigDictionary(configFile, true);

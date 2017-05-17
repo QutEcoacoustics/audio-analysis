@@ -12,6 +12,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
     using System.Linq;
 
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
 
@@ -212,7 +213,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
             var combined = GetAudioUtility();
 
             TestHelper.ExceptionMatches<ArgumentException>(
-                () => combined.Info(TestHelper.GetTestAudioFile("does not exist.wav")),
+                () => combined.Info(PathHelper.GetTestAudioFile("does not exist.wav")),
                 "File does not exist");
         }
 
@@ -309,7 +310,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         [TestMethod]
         public void TestSox()
         {
-            GetAudioUtility().Info(TestHelper.GetTestAudioFile("TorresianCrow.wav"));
+            GetAudioUtility().Info(PathHelper.GetTestAudioFile("TorresianCrow.wav"));
         }
 
         /// <summary>
@@ -357,7 +358,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
 
         private static FileInfo GetAudioUtilityExe(string name)
         {
-            var baseResourceDir = TestHelper.GetResourcesBaseDir();
+            var baseResourceDir = PathHelper.GetResourcesBaseDir();
             var exe = new FileInfo(Path.Combine(baseResourceDir, name));
             return exe;
         }
@@ -377,7 +378,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         {
             foreach (var combined in new[] { GetAudioUtility() })
             {
-                var utilInfo = combined.Info(TestHelper.GetTestAudioFile(filename));
+                var utilInfo = combined.Info(PathHelper.GetTestAudioFile(filename));
                 var info = GetDurationInfo(utilInfo);
 
                 var compareResult = "Expected duration " + expectedDuration + " actual duration " + utilInfo.Duration
@@ -401,7 +402,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         {
             foreach (var util in new[] { GetAudioUtility() })
             {
-                var dir = TestHelper.GetTempDir();
+                var dir = PathHelper.GetTempDir();
                 var output =
                     new FileInfo(
                         Path.Combine(
@@ -411,7 +412,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
 
                 var audioUtilRequest = new AudioUtilityRequest { };
 
-                var input = TestHelper.GetTestAudioFile(filename);
+                var input = PathHelper.GetTestAudioFile(filename);
 
                 util.Modify(input, mimetype, output, outputMimeType, audioUtilRequest);
 
@@ -439,7 +440,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                     + infoOutput);
 
                 var info = util.Info(output);
-                TestHelper.DeleteTempDir(dir);
+                PathHelper.DeleteTempDir(dir);
 
                 /*
                 var sb = new StringBuilder();
@@ -504,7 +505,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         {
             foreach (var util in new[] { GetAudioUtility()})
             {
-                var dir = TestHelper.GetTempDir();
+                var dir = PathHelper.GetTempDir();
 
                 var destMimeType = mimetype;
                 if (mimetype == MediaTypes.MediaTypeWavpack)
@@ -521,7 +522,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
 
                 var audioUtilRequest = new AudioUtilityRequest { OffsetStart = start, OffsetEnd = end };
 
-                var input = TestHelper.GetTestAudioFile(filename);
+                var input = PathHelper.GetTestAudioFile(filename);
                 util.Modify(input, mimetype, output, destMimeType, audioUtilRequest);
 
                 var utilInfoInput = util.Info(input);
@@ -543,7 +544,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                     compareResult + ". Info input: " + infoInput + "." + Environment.NewLine + "Info output: "
                     + infoOutput);
 
-                TestHelper.DeleteTempDir(dir);
+                PathHelper.DeleteTempDir(dir);
             }
         }
 
@@ -555,14 +556,14 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
             AudioUtilityInfo outputExpected,
             Action<AudioUtilityInfo, AudioUtilityInfo> additionalTests = null)
         {
-            var source = TestHelper.GetTestAudioFile(filename);
+            var source = PathHelper.GetTestAudioFile(filename);
 
             var destExtension = MediaTypes.GetExtension(outputMimeType);
             var outputFilename = Path.GetFileNameWithoutExtension(filename) + "_modified." + destExtension;
 
             foreach (var util in new[] { GetAudioUtility() })
             {
-                var dir = TestHelper.GetTempDir();
+                var dir = PathHelper.GetTempDir();
                 var output = new FileInfo(Path.Combine(dir.FullName, outputFilename));
 
                 util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, outputMimeType, request);
@@ -576,7 +577,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
 
                 additionalTests?.Invoke(sourceExpected, sourceInfo);
 
-                TestHelper.DeleteTempDir(dir);
+                PathHelper.DeleteTempDir(dir);
             }
         }
 

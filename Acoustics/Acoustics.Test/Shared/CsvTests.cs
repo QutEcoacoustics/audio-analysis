@@ -20,6 +20,7 @@ namespace Acoustics.Test.Shared
     using EcoSounds.Mvc.Tests;
     using global::AudioAnalysisTools.Indices;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using TestHelpers;
     using TowseyLibrary;
 
     [TestClass]
@@ -41,9 +42,9 @@ namespace Acoustics.Test.Shared
         [TestInitialize]
         public void Setup()
         {
-            this.outputDirectory = TestHelper.GetTempDir();
+            this.outputDirectory = PathHelper.GetTempDir();
 
-            this.testFile = TestHelper.GetTempFile(".csv");
+            this.testFile = PathHelper.GetTempFile(".csv");
         }
 
         [TestCleanup]

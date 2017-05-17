@@ -9,6 +9,7 @@
     using Acoustics.Tools;
     using EcoSounds.Mvc.Tests;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using TestHelpers;
 
     /// <summary>
     /// The audio utility wavpack tests.
@@ -38,7 +39,7 @@
             };
 
             var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             TestHelper.GetAudioUtilityWavunpack().Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -69,7 +70,7 @@
             };
 
             var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             TestHelper.GetAudioUtilityWavunpack().Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -101,7 +102,7 @@
             };
 
             var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             TestHelper.GetAudioUtilityWavunpack().Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -133,7 +134,7 @@
             };
 
             var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             TestHelper.GetAudioUtilityWavunpack().Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -165,7 +166,7 @@
 
 
             var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             TestHelper.GetAudioUtilityWavunpack().Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -197,7 +198,7 @@
             };
 
             var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             TestHelper.GetAudioUtilityWavunpack().Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -226,7 +227,7 @@
             };
 
             var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             TestHelper.GetAudioUtilityWavunpack().Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -260,7 +261,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -293,7 +294,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -326,7 +327,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -360,7 +361,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -393,7 +394,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -427,7 +428,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -459,7 +460,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
