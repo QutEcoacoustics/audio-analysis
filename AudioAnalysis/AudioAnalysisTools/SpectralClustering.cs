@@ -46,47 +46,7 @@ namespace AudioAnalysisTools
         // used to remove weight vectors which have fewer than the threshold number of hits i.e. sets a minimum cluster size
         public const int DefaultHitThreshold = 3;
 
-        private const bool Verbose = false;
-
-        public struct ClusteringParameters
-        {
-            public int LowBinBound;
-            public int UpperBinBound;
-            public int ReductionFactor;
-            public double IntensityThreshold;
-            public double RowSumThreshold;
-
-            public ClusteringParameters(int lowBinBound, int upperBinBound, double intensityThreshold, double rowSumThreshold)
-            {
-                this.LowBinBound = lowBinBound;
-                this.UpperBinBound = upperBinBound;
-                this.IntensityThreshold = intensityThreshold;
-                this.RowSumThreshold = rowSumThreshold;
-                this.ReductionFactor = DefaultReductionFactor;
-            }
-        }
-
-        public struct TrainingDataInfo
-        {
-            public double[,] TrainingDataAsSpectrogram;
-
-            // training data that will be used for clustering
-            public List<double[]> TrainingData;
-            public bool[] SelectedFrames;
-            public int HighBinBound;
-            public double IntensityThreshold;
-            public int LowBinBound;
-
-            public TrainingDataInfo(double[,] trainingDataAsSpectrogram, List<double[]> trainingData, bool[] selectedFrames, int lowBinBound, int highBinBound, double intensityThreshold)
-            {
-                this.TrainingDataAsSpectrogram = trainingDataAsSpectrogram;
-                this.TrainingData = trainingData;
-                this.SelectedFrames = selectedFrames;
-                this.LowBinBound = lowBinBound;
-                this.HighBinBound = highBinBound;
-                this.IntensityThreshold = intensityThreshold;
-            }
-        }
+        private static bool verbose = false;
 
         /// <summary>
         /// First convert spectrogram to Binary using threshold. An amplitude threshold of 0.03 = -30 dB.   An amplitude threhold of 0.05 = -26dB.
@@ -146,7 +106,7 @@ namespace AudioAnalysisTools
         /// </summary>
         public static ClusterInfo ClusterAnalysis(List<double[]> trainingData, double wtThreshold, int hitThreshold, bool[] selectedFrames)
         {
-            BinaryCluster.Verbose = Verbose;
+            BinaryCluster.Verbose = verbose;
             int frameCount = selectedFrames.Length;
 
             //DO CLUSTERING - if have suitable data
@@ -161,7 +121,7 @@ namespace AudioAnalysisTools
             int[] clusterHits1 = tupleClusters.Item1; //the cluster to which each frame belongs
             List<double[]> clusterWts = tupleClusters.Item2;
 
-            if (BinaryCluster.Verbose)
+            if (verbose)
             {
                 BinaryCluster.DisplayClusterWeights(clusterWts, clusterHits1);
             }
@@ -172,7 +132,7 @@ namespace AudioAnalysisTools
             List<double[]> prunedClusterWts = tupleOutput2.Item2;
             double[] clusterSpectrum = BinaryCluster.GetClusterSpectrum(clusterWts);
 
-            if (Verbose)
+            if (verbose)
             {
                 BinaryCluster.DisplayClusterWeights(prunedClusterWts, clusterHits1);
                 LoggedConsole.WriteLine(" Pruned cluster count = {0}", prunedClusterWts.Count);
@@ -454,15 +414,12 @@ namespace AudioAnalysisTools
 
             var recording = new AudioRecording(wavFilePath); // get recording segment
 
-            // for deriving binary spectrogram
-            double binaryThreshold = DefaultBinaryThreshold;
-
             // test clustering using amplitude spectrogram
-            // binaryThreshold = 0.07; // An amplitude threshold of 0.03 = -30 dB. A threshold of 0.05 = -26dB.
+            // double binaryThreshold = 0.07; // An amplitude threshold of 0.03 = -30 dB. A threshold of 0.05 = -26dB.
             // double[,] spectrogramData = GetAmplitudeSpectrogramNoiseReduced(recording, frameSize);
 
             // test clustering using decibel spectrogram
-            binaryThreshold = DefaultBinaryThresholdInDecibels; // A decibel threshold for converting to binary
+            double binaryThreshold = DefaultBinaryThresholdInDecibels; // A decibel threshold for converting to binary
             double[,] spectrogramData = GetDecibelSpectrogramNoiseReduced(recording, frameSize);
 
             //#######################################################################################################################################
@@ -486,7 +443,7 @@ namespace AudioAnalysisTools
             var clusterInfo = ClusterTheSpectra(midBandSpectrogram, lowerBinBound, upperBinBound, binaryThreshold);
 
             // transfer cluster info to spectral index results
-            var clusterSpectrum1 = SpectralClustering.RestoreFullLengthSpectrum(clusterInfo.ClusterSpectrum, freqBinCount, lowerBinBound);
+            var clusterSpectrum1 = RestoreFullLengthSpectrum(clusterInfo.ClusterSpectrum, freqBinCount, lowerBinBound);
 
             Console.WriteLine("Lower BinBound=" + lowerBinBound);
             Console.WriteLine("Upper BinBound=" + upperBinBound);
@@ -534,7 +491,7 @@ namespace AudioAnalysisTools
                 SaveAndViewSpectrogramImage(image, outputDir, "test2Spectrogram.png", imageViewer);
 
                 // transfer cluster info to spectral index results
-                var clusterSpectrum2 = SpectralClustering.RestoreFullLengthSpectrum(clusterInfo.ClusterSpectrum, freqBinCount, lowerBinBound);
+                var clusterSpectrum2 = RestoreFullLengthSpectrum(clusterInfo.ClusterSpectrum, freqBinCount, lowerBinBound);
                 TestTools.CompareTwoArrays(clusterSpectrum1, clusterSpectrum2);
             }
         }
@@ -576,7 +533,7 @@ namespace AudioAnalysisTools
         {
             int frameStep = frameSize;
 
-            // get decibel spectrogram 
+            // get decibel spectrogram
             var results = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, recording.Epsilon, frameSize, frameStep);
             var spectrogram = MFCCStuff.DecibelSpectra(results.AmplitudeSpectrogram, results.WindowPower, recording.SampleRate, recording.Epsilon);
 
@@ -612,9 +569,7 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// This method is supposed to overlay the spectral cluster IDs on a spectrogram from which the clusters derived.
-        /// Howev er there is a bug in the method which causes the clusters to be misplaced.
-        /// Too much time spent on this - will have to leave it.
+        /// Overlays the spectral cluster IDs on a spectrogram from which the clusters derived.
         /// </summary>
         public static Image DrawClusterSpectrogram(BaseSonogram sonogram, ClusterInfo clusterInfo, TrainingDataInfo data, int lowerBinBound)
         {
@@ -669,9 +624,49 @@ namespace AudioAnalysisTools
                 process.Run(imagePath, opDir);
             }
         }
+
+        public struct ClusteringParameters
+        {
+            public int LowBinBound;
+            public int UpperBinBound;
+            public int ReductionFactor;
+            public double IntensityThreshold;
+            public double RowSumThreshold;
+
+            public ClusteringParameters(int lowBinBound, int upperBinBound, double intensityThreshold, double rowSumThreshold)
+            {
+                this.LowBinBound = lowBinBound;
+                this.UpperBinBound = upperBinBound;
+                this.IntensityThreshold = intensityThreshold;
+                this.RowSumThreshold = rowSumThreshold;
+                this.ReductionFactor = DefaultReductionFactor;
+            }
+        }
+
+        public struct TrainingDataInfo
+        {
+            public double[,] TrainingDataAsSpectrogram;
+
+            // training data that will be used for clustering
+            public List<double[]> TrainingData;
+            public bool[] SelectedFrames;
+            public int HighBinBound;
+            public double IntensityThreshold;
+            public int LowBinBound;
+
+            public TrainingDataInfo(double[,] trainingDataAsSpectrogram, List<double[]> trainingData, bool[] selectedFrames, int lowBinBound, int highBinBound, double intensityThreshold)
+            {
+                this.TrainingDataAsSpectrogram = trainingDataAsSpectrogram;
+                this.TrainingData = trainingData;
+                this.SelectedFrames = selectedFrames;
+                this.LowBinBound = lowBinBound;
+                this.HighBinBound = highBinBound;
+                this.IntensityThreshold = intensityThreshold;
+            }
+        }
     }
 
-public class ClusterInfo
+    public class ClusterInfo
     {
         public int ClusterCount;
         public double Av2;
