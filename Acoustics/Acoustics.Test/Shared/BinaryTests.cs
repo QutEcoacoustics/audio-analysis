@@ -9,6 +9,7 @@ namespace Acoustics.Test.Shared
     using Acoustics.Shared;
     using EcoSounds.Mvc.Tests;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using TestHelpers;
 
     [TestClass]
     public class BinaryTests
@@ -18,13 +19,13 @@ namespace Acoustics.Test.Shared
         [TestInitialize]
         public void Setup()
         {
-            this.outputDirectory = TestHelper.GetTempDir();
+            this.outputDirectory = PathHelper.GetTempDir();
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            TestHelper.DeleteTempDir(this.outputDirectory);
+            PathHelper.DeleteTempDir(this.outputDirectory);
         }
 
         [TestMethod]

@@ -6,6 +6,7 @@
     using System.Linq;
     using System.Text;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using AnalysisBase;
     using AnalysisPrograms.SourcePreparers;
     using EcoSounds.Mvc.Tests;
@@ -23,7 +24,7 @@
         [TestInitialize]
         public void Initialize()
         {
-            this.testDirectory = TestHelper.GetTempDir();
+            this.testDirectory = PathHelper.GetTempDir();
             this.preparer = new LocalSourcePreparer();
             this.settings = new AnalysisSettings()
             {

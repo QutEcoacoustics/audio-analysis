@@ -1,24 +1,19 @@
-﻿namespace EcoSounds.Mvc.Tests
+﻿namespace Acoustics.Test.TestHelpers
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
     using Acoustics.Shared;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using Acoustics.Tools.Wav;
-
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.StandardSpectrograms;
-
+    using global::AudioAnalysisTools.DSP;
+    using global::AudioAnalysisTools.StandardSpectrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-
     using MSTestExtensions;
-
-    using TowseyLibrary;
 
     /// <summary>
     /// The test helper.
@@ -329,22 +324,6 @@
             return null;
         }
 
-        private static void Check(Exception thrownException, Type expectedException, string expectedExceptionPartialString)
-        {
-            Assert.AreEqual(expectedException, thrownException.GetType(),
-                    "Exception type did not match expected type. " +
-                    " Expected: " + expectedException,
-                    " Actual: " + thrownException.GetType());
-
-            Assert.IsFalse(string.IsNullOrWhiteSpace(expectedExceptionPartialString), "Parameter 'expectedExceptionPartialString' was null, empty or white space.");
-
-            Assert.IsTrue(
-                thrownException.ToString().Contains(expectedExceptionPartialString),
-                "Exception did not contain expected exception partial string." +
-                  " Expected: " + expectedExceptionPartialString +
-                  " Actual: " + thrownException);
-        }
-
         /// <summary>
         /// Datetimes may not be exactly equal.
         /// </summary>
@@ -448,7 +427,6 @@
             //create reflection bindings - will be used to retrive private fields,methods or properties
             BindingFlags privateBindings = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetField;
 
-
             var field = objType.GetField(name, privateBindings);
             if (field != null)
             {
@@ -461,66 +439,6 @@
             {
                 property.SetValue(obj, newValue, null);
             }
-        }
-
-        public static FileInfo GetTempFile(string ext)
-        {
-            return new FileInfo(Path.Combine(GetTempDir().FullName, Path.GetRandomFileName().Substring(0, 9) + ext));
-        }
-
-        public static DirectoryInfo GetTempDir()
-        {
-            var dir = "." + Path.DirectorySeparatorChar + Path.GetRandomFileName();
-
-            if (!Directory.Exists(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
-
-            return new DirectoryInfo(dir);
-        }
-
-        public static void DeleteTempDir(DirectoryInfo dir)
-        {
-            var baseDir = "." + Path.DirectorySeparatorChar;
-
-            try
-            {
-                Directory.Delete(dir.FullName, true);
-            }
-            catch
-            {
-
-            }
-        }
-
-        public static string GetResourcesBaseDir()
-        {
-            return AppConfigHelper.GetString("BaseTestResourcesDir");
-        }
-
-        public static FileInfo GetExe(string exePath)
-        {
-            //var resourcesBaseDir = TestHelper.GetResourcesBaseDir();
-
-            //return new FileInfo(Path.Combine(exePath, resourcesBaseDir));
-            return new FileInfo(exePath);
-        }
-
-        public static FileInfo GetTestAudioFile(string filename)
-        {
-            return
-                new FileInfo(
-                    Path.Combine(AppConfigHelper.GetString("TestAudioDir"), filename));
-        }
-
-        public static FileInfo GetAnalysisConfigFile(string identifier)
-        {
-            return
-               new FileInfo(
-                   Path.Combine(
-                       GetResourcesBaseDir(), AppConfigHelper.GetString("AnalysisConfigDir"), identifier + ".cfg"));
-
         }
 
         public static void CheckAudioUtilityInfo(AudioUtilityInfo expected, AudioUtilityInfo actual, int epsilonDurationMilliseconds = 150)
@@ -563,7 +481,7 @@
 
         public static FileInfo GetAudioFile(string filename)
         {
-            var source = GetTestAudioFile(filename);
+            var source = PathHelper.GetTestAudioFile(filename);
             return source;
         }
 
@@ -579,7 +497,7 @@
 
         public static IAudioUtility GetAudioUtilitySox()
         {
-            var soxExe = GetExe(AppConfigHelper.SoxExe);
+            var soxExe = PathHelper.GetExe(AppConfigHelper.SoxExe);
 
             var sox = new SoxAudioUtility(soxExe);
 
@@ -588,8 +506,8 @@
 
         public static IAudioUtility GetAudioUtilityFfmpeg()
         {
-            var ffmpegExe = GetExe(AppConfigHelper.FfmpegExe);
-            var ffprobeExe = GetExe(AppConfigHelper.FfprobeExe);
+            var ffmpegExe = PathHelper.GetExe(AppConfigHelper.FfmpegExe);
+            var ffprobeExe = PathHelper.GetExe(AppConfigHelper.FfprobeExe);
 
             var ffmpeg = new FfmpegAudioUtility(ffmpegExe, ffprobeExe);
 
@@ -598,7 +516,7 @@
 
         public static IAudioUtility GetAudioUtilityWavunpack()
         {
-            var wavunpackExe = GetExe(AppConfigHelper.WvunpackExe);
+            var wavunpackExe = PathHelper.GetExe(AppConfigHelper.WvunpackExe);
 
             var util = new WavPackAudioUtility(wavunpackExe);
 
@@ -607,7 +525,7 @@
 
         public static IAudioUtility GetAudioUtilityMp3Splt()
         {
-            var mp3SpltExe = GetExe(AppConfigHelper.Mp3SpltExe);
+            var mp3SpltExe = PathHelper.GetExe(AppConfigHelper.Mp3SpltExe);
 
             var mp3Splt = new Mp3SpltAudioUtility(mp3SpltExe);
 
@@ -616,7 +534,7 @@
 
         public static IAudioUtility GetAudioUtilityShntool()
         {
-            var shntoolExe = GetExe(AppConfigHelper.ShntoolExe);
+            var shntoolExe = PathHelper.GetExe(AppConfigHelper.ShntoolExe);
 
             var shntool = new ShntoolAudioUtility(shntoolExe);
 
@@ -648,6 +566,7 @@
                             break;
                         }
                     }
+
                     isOk = anyMatch;
                 }
 
@@ -671,26 +590,22 @@
                 reader.BlockCount,
                 100);
         }
-    }
 
-    internal class ConsoleRedirector : IDisposable
-    {
-        private StringWriter _consoleOutput = new StringWriter();
-        private TextWriter _originalConsoleOutput;
-        public ConsoleRedirector()
+        private static void Check(Exception thrownException, Type expectedException, string expectedExceptionPartialString)
         {
-            this._originalConsoleOutput = Console.Out;
-            Console.SetOut(this._consoleOutput);
-        }
-        public void Dispose()
-        {
-            Console.SetOut(this._originalConsoleOutput);
-            LoggedConsole.Write(this.ToString());
-            this._consoleOutput.Dispose();
-        }
-        public override string ToString()
-        {
-            return this._consoleOutput.ToString();
+            Assert.AreEqual(
+                expectedException,
+                thrownException.GetType(),
+                $"Exception type did not match expected type. Expected: {expectedException}",
+                " Actual: " + thrownException.GetType());
+
+            Assert.IsFalse(
+                string.IsNullOrWhiteSpace(expectedExceptionPartialString),
+                "Parameter 'expectedExceptionPartialString' was null, empty or white space.");
+
+            Assert.IsTrue(
+                thrownException.ToString().Contains(expectedExceptionPartialString),
+                $"Exception did not contain expected exception partial string.  Expected: {expectedExceptionPartialString} Actual: {thrownException}");
         }
     }
 }

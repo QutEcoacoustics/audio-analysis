@@ -368,7 +368,7 @@ namespace Acoustics.Shared
 
         public static string GetString(string key)
         {
-            if (!ConfigurationManager.AppSettings.AllKeys.Any(k => k == key))
+            if (ConfigurationManager.AppSettings.AllKeys.All(k => k != key))
             {
                 //throw new ConfigurationErrorsException("Could not find key: " + key);
                 return string.Empty;

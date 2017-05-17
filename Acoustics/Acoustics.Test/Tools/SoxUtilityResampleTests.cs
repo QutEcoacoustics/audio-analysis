@@ -19,6 +19,7 @@ namespace Acoustics.Test.Tools
     using EcoSounds.Mvc.Tests.AcousticsTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using MSTestExtensions;
+    using TestHelpers;
 
     [TestClass]
     public class SoxUtilityResampleTests: BaseTest
@@ -48,7 +49,7 @@ namespace Acoustics.Test.Tools
             var repeats = new double[5][];
             for (int r = 0; r < repeats.Length; r++)
             {
-                var output = TestHelper.GetTempFile(MediaTypes.ExtWav);
+                var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
                 util.Modify(source, MediaTypes.GetMediaType(source.Extension), output,
                     MediaTypes.GetMediaType(output.Extension), request);

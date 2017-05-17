@@ -158,8 +158,9 @@
     <Compile Include="Shared\ConfigFileTests.cs" />
     <Compile Include="Shared\JsonTests.cs" />
     <Compile Include="Shared\YamlTests.cs" />
-    <Compile Include="TestHelpers.cs" />
-    <Compile Include="TestHelpers\ConfigsHelper.cs" />
+    <Compile Include="TestHelpers\ConsoleRedirector.cs" />
+    <Compile Include="TestHelpers\TestHelper.cs" />
+    <Compile Include="TestHelpers\PathHelper.cs" />
     <Compile Include="TestHelpers\FileEqualityHelpers.cs" />
     <Compile Include="Tools\AudioUtilityInfoTests.cs" />
     <Compile Include="Tools\AudioUtilityMp3Tests.cs" />
@@ -243,7 +244,8 @@
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /Y /S "$(SolutionDir)..\Acoustics\Acoustics.Test\TestResources\*" "$(TargetDir)"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

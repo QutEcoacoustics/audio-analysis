@@ -9,6 +9,7 @@
     using Acoustics.Tools;
     using EcoSounds.Mvc.Tests;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using TestHelpers;
 
     [TestClass]
     public class AudioUtilityMp3Tests
@@ -36,7 +37,7 @@
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -69,7 +70,7 @@
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -103,7 +104,7 @@
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -137,7 +138,7 @@
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -170,7 +171,7 @@
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -204,7 +205,7 @@
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("A French Fiddle Speaks.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -238,7 +239,7 @@
             var util = TestHelper.GetAudioUtilityFfmpeg();
 
             var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -271,7 +272,7 @@
             var util = TestHelper.GetAudioUtilityFfmpeg();
 
             var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -304,7 +305,7 @@
             var util = TestHelper.GetAudioUtilityFfmpeg();
 
             var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -338,7 +339,7 @@
             var util = TestHelper.GetAudioUtilityFfmpeg();
 
             var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -371,7 +372,7 @@
             var util = TestHelper.GetAudioUtilityFfmpeg();
 
             var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -405,7 +406,7 @@
             var util = TestHelper.GetAudioUtilityFfmpeg();
 
             var source = TestHelper.GetAudioFile("A French Fiddle Speaks.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -439,7 +440,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -472,7 +473,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -511,7 +512,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -545,7 +546,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -578,7 +579,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
@@ -612,7 +613,7 @@
             var util = TestHelper.GetAudioUtility();
 
             var source = TestHelper.GetAudioFile("A French Fiddle Speaks.mp3");
-            var output = TestHelper.GetTempFile(MediaTypes.ExtMp3);
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
             util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 

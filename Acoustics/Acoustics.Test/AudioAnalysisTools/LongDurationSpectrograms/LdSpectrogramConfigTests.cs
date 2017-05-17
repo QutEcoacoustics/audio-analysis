@@ -29,7 +29,7 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
             // Michael had a comment somewhere that derserialization of TimeSpans
             // does not work properly. This test ensures it does.
             // Michael was correct kind of - so I changed XAxisTicInterval to an int to make serialization simpler
-            var file = ConfigsHelper.ResolveConfigFilePath("SpectrogramFalseColourConfig.yml");
+            var file = PathHelper.ResolveConfigFile("SpectrogramFalseColourConfig.yml");
 
             var config = LdSpectrogramConfig.ReadYamlToConfig(file);
 

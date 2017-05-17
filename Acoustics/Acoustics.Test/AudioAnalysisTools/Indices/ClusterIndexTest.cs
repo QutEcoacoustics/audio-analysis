@@ -11,6 +11,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using TestHelpers;
     using TowseyLibrary;
 
     /// <summary>
@@ -29,13 +30,13 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         [TestInitialize]
         public void Setup()
         {
-            this.outputDirectory = TestHelper.GetTempDir();
+            this.outputDirectory = PathHelper.GetTempDir();
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            TestHelper.DeleteTempDir(this.outputDirectory);
+            PathHelper.DeleteTempDir(this.outputDirectory);
         }
 
         /// <summary>
@@ -46,10 +47,10 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         public void TestBinaryClusteringOfSpectra()
         {
             //string wavFilePath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
-            var wavFilePath = @"Recordings\BAC2_20071008-085040.wav";
+            var wavFilePath = PathHelper.ResolveAsset(@"Recordings", "BAC2_20071008-085040.wav");
 
             // var outputDir = this.outputDirectory;
-            var outputDir = "BinaryClustering"; // only use this to write expected output.
+            var outputDir = PathHelper.ResolveAssetPath("BinaryClustering"); // only use this to write expected output.
 
             int frameSize = 512;
             var recording = new AudioRecording(wavFilePath); // get recording segment

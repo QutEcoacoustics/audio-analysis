@@ -11,6 +11,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
     using EcoSounds.Mvc.Tests;
     using global::AudioAnalysisTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using TestHelpers;
 
     /// <summary>
     /// Test for drawing of Oscillation Spectrogram
@@ -45,13 +46,13 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
         [TestInitialize]
         public void Setup()
         {
-            this.outputDirectory = TestHelper.GetTempDir();
+            this.outputDirectory = PathHelper.GetTempDir();
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            TestHelper.DeleteTempDir(this.outputDirectory);
+            PathHelper.DeleteTempDir(this.outputDirectory);
         }
 
         #endregion
@@ -63,8 +64,8 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
         public void TwoOscillationTests()
         {
             {
-                var sourceRecording = @"Recordings\BAC2_20071008-085040.wav".ToFileInfo();
-                var configFile = @"Oscillations2014\Towsey.Sonogram.yml".ToFileInfo();
+                var sourceRecording = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
+                var configFile = PathHelper.ResolveAsset("Oscillations2014", "Towsey.Sonogram.yml");
 
                 // 1. get the config dictionary
                 var configDict = Oscillations2014.GetConfigDictionary(configFile, true);
@@ -92,10 +93,10 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
                 var stem = sourceName + ".FreqOscilSpectrogram_" + sampleLength;
 
                 // construct name of expected matrix osc spectrogram to save file
-                var expectedMatrixFile = new FileInfo("Oscillations2014\\" + stem + ".Matrix.EXPECTED.bin");
+                var expectedMatrixFile = PathHelper.ResolveAsset("Oscillations2014", stem + ".Matrix.EXPECTED.bin");
 
                 // construct name of expected matrix osc spectrogram to save file
-                var expectedSpectrumFile = new FileInfo("Oscillations2014\\" + stem + ".Vector.EXPECTED.bin");
+                var expectedSpectrumFile = PathHelper.ResolveAsset("Oscillations2014", stem + ".Vector.EXPECTED.bin");
 
                 // Run this once to generate expected image and data files (############ IMPORTANT: remember to move saved files OUT of bin/Debug directory!)
                 // SAVE THE OUTPUT if true

@@ -25,7 +25,7 @@ namespace Acoustics.Test.Tools
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using MSTestExtensions;
-
+    using TestHelpers;
     using TowseyLibrary;
 
     [TestClass]
@@ -48,7 +48,7 @@ namespace Acoustics.Test.Tools
         [TestMethod]
         public void WavReaderGetChannel()
         {
-            var source = TestHelper.GetTestAudioFile("4channelsPureTones.wav");
+            var source = PathHelper.GetTestAudioFile("4channelsPureTones.wav");
             var info = this.audioUtility.Info(source);
 
             var reader = new WavReader(source);
@@ -68,7 +68,7 @@ namespace Acoustics.Test.Tools
         [TestMethod]
         public void WavReaderIndexChannel()
         {
-            var source = TestHelper.GetTestAudioFile("4channelsPureTones.wav");
+            var source = PathHelper.GetTestAudioFile("4channelsPureTones.wav");
             var info = this.audioUtility.Info(source);
 
             var reader = new WavReader(source);
@@ -94,7 +94,7 @@ namespace Acoustics.Test.Tools
         [TestMethod]
         public void WavReaderIndexChannelMono()
         {
-            var source = TestHelper.GetTestAudioFile("curlew.wav");
+            var source = PathHelper.GetTestAudioFile("curlew.wav");
             var info = this.audioUtility.Info(source);
 
             var reader = new WavReader(source);
@@ -149,7 +149,7 @@ namespace Acoustics.Test.Tools
             // 11025Hz fake array
             var a = new double[44100 * 5].Select((v, i) => i % 4 == 3 ? -1 : i % 2 ).ToArray();
 
-            var source = TestHelper.GetTestAudioFile("11025Hz.wav");
+            var source = PathHelper.GetTestAudioFile("11025Hz.wav");
             var info = this.audioUtility.Info(source);
 
             var reader = new WavReader(source);
@@ -174,7 +174,7 @@ namespace Acoustics.Test.Tools
             // 11025Hz fake array
             var a = new double[44100 * 5].Select((v, i) => i % 4 == 3 ? -1 : i % 2).ToArray();
 
-            var source = TestHelper.GetTestAudioFile("11025Hz-8bit.wav");
+            var source = PathHelper.GetTestAudioFile("11025Hz-8bit.wav");
             var info = this.audioUtility.Info(source);
 
             var reader = new WavReader(source);
@@ -195,7 +195,7 @@ namespace Acoustics.Test.Tools
         [TestMethod]
         public void WavReaderReadsMono()
         {
-            var source = TestHelper.GetTestAudioFile("curlew.wav");
+            var source = PathHelper.GetTestAudioFile("curlew.wav");
             var info = this.audioUtility.Info(source);
 
             var reader = new WavReader(source);
@@ -210,7 +210,7 @@ namespace Acoustics.Test.Tools
         [TestMethod]
         public void WavReaderReadStereoAsMonoFails()
         {
-            var source = TestHelper.GetTestAudioFile("different_channels_tone.wav");
+            var source = PathHelper.GetTestAudioFile("different_channels_tone.wav");
             var info = this.audioUtility.Info(source);
 
             var reader = new WavReader(source);
@@ -227,7 +227,7 @@ namespace Acoustics.Test.Tools
 
         public void WavReaderChannelOutOfBoundsFails()
         {
-            var source = TestHelper.GetTestAudioFile("different_channels_tone.wav");
+            var source = PathHelper.GetTestAudioFile("different_channels_tone.wav");
 
             var reader = new WavReader(source);
 
@@ -240,7 +240,7 @@ namespace Acoustics.Test.Tools
         [TestMethod]
         public void WavReaderSampleOutOfBoundsFails()
         {
-            var source = TestHelper.GetTestAudioFile("different_channels_tone.wav");
+            var source = PathHelper.GetTestAudioFile("different_channels_tone.wav");
 
             var reader = new WavReader(source);
 
@@ -251,7 +251,7 @@ namespace Acoustics.Test.Tools
         [TestMethod]
         public void WavReaderSubSampleFailsWhenNotMono()
         {
-            var source = TestHelper.GetTestAudioFile("different_channels_tone.wav");
+            var source = PathHelper.GetTestAudioFile("different_channels_tone.wav");
             var info = this.audioUtility.Info(source);
 
             var reader = new WavReader(source);

@@ -12,6 +12,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
     using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using TestHelpers;
 
     /// <summary>
     /// Test methods for the various standard Sonograms or Spectrograms
@@ -52,13 +53,13 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         [TestInitialize]
         public void Setup()
         {
-            this.outputDirectory = TestHelper.GetTempDir();
+            this.outputDirectory = PathHelper.GetTempDir();
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            TestHelper.DeleteTempDir(this.outputDirectory);
+            PathHelper.DeleteTempDir(this.outputDirectory);
         }
 
         #endregion
@@ -70,7 +71,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         [TestMethod]
         public void TestAmplitudeSonogram()
         {
-            var recording = new AudioRecording(@"Recordings\BAC2_20071008-085040.wav");
+            var recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
 
             // specfied linear scale
             var freqScale = new FrequencyScale(nyquist: 11025, frameSize: 1024, herzInterval: 1000);
@@ -87,7 +88,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
             // DO EQUALITY TEST on the AMPLITUDE SONGOGRAM DATA
             // Do not bother with the image because this is only an amplitude spectrogram.
             var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
-            var expectedFile = new FileInfo("StandardSonograms\\BAC2_20071008_AmplSonogramData.EXPECTED.bin");
+            var expectedFile = PathHelper.ResolveAsset("StandardSonograms", "BAC2_20071008_AmplSonogramData.EXPECTED.bin");
 
             // run this once to generate expected test data (and remember to copy out of bin/debug!)
             //Binary.Serialize(expectedFile, sonogram.Data);
@@ -100,7 +101,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         [TestMethod]
         public void TestDecibelSpectrogram()
         {
-            var recording = new AudioRecording(@"Recordings\BAC2_20071008-085040.wav");
+            var recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
 
             // specfied linear scale
             var freqScale = new FrequencyScale(nyquist: 11025, frameSize: 1024, herzInterval: 1000);
@@ -122,7 +123,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
             // Do not bother with the image because this has been tested elsewhere.
             var decibelSonogram = MFCCStuff.DecibelSpectra(sonogram.Data, sonogram.Configuration.WindowPower, sonogram.SampleRate, sonogram.Configuration.epsilon);
 
-            var expectedFile = new FileInfo("StandardSonograms\\BAC2_20071008_DecibelSonogramData.EXPECTED.bin");
+            var expectedFile = PathHelper.ResolveAsset("StandardSonograms", "BAC2_20071008_DecibelSonogramData.EXPECTED.bin");
 
             // run this once to generate expected test data (and remember to copy out of bin/debug!)
             //Binary.Serialize(expectedFile, decibelSonogram);
@@ -135,7 +136,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         [TestMethod]
         public void SonogramDecibelMethodsAreEquivalent()
         {
-            var recording = new AudioRecording(@"Recordings\BAC2_20071008-085040.wav");
+            var recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
 
             // specfied linear scale
             var freqScale = new FrequencyScale(nyquist: 11025, frameSize: 1024, herzInterval: 1000);
