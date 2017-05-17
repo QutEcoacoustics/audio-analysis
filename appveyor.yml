@@ -91,6 +91,8 @@ before_deploy:
   - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:GH_CREATE_RELEASES_TOKEN):x-oauth-basic@github.com`n"
   # tag if needed, and output $env:ApTagName 
   - cd %APPVEYOR_BUILD_FOLDER%
+  # Buggy authentication with git-lfs
+  - git config 'lfs.https://github.com/QutBioacoustics/audio-analysis.git/info/lfs.locksverify' false
   - ps: . .\tag.ps1 $env:ApVersion
   # prepare release strings: $env:ApReleaseMessage, $env:ApReleaseTitle
   - ps: . .\release.ps1 $env:ApTagName $true
