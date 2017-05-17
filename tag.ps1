@@ -3,8 +3,6 @@
 param($version)
 $ErrorActionPreference = "Continue"
 
-throw "test"
-
 function script:exec {
     [CmdletBinding()]
 
