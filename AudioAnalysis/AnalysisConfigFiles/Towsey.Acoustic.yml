@@ -15,7 +15,7 @@ SegmentOverlap: 0
 
 # IndexCalculationDuration: units=seconds (default=60 seconds; use 0.2 for zooming spectrogram tiles)
 # The Timespan (in seconds) over which summary and spectral indices are calculated
-IndexCalculationDuration: 60.0
+IndexCalculationDuration: 20.0
 
 # BGNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
 # BG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.

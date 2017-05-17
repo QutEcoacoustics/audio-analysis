@@ -137,12 +137,24 @@ namespace AudioAnalysisTools.Indices
         /// <returns>a list of erroneous segments</returns>
         public static List<ErroneousIndexSegments> DataIntegrityCheckForZeroSignal(Dictionary<string, double[]> summaryIndices)
         {
+            double[] zeroSignalArray = summaryIndices["ZeroSignal"];
+            return DataIntegrityCheckForZeroSignal(zeroSignalArray);
+        }
+
+        /// <summary>
+        /// This method reads through a ZeroIndex SUMMARY array.
+        /// It reads the ZeroSignal array to make sure there was actually a signal to analyse.
+        /// If this occurs an error is flagged.
+        /// </summary>
+        /// <param name="zeroSignalArray"> array indicating zero signal</param>
+        /// <returns>a list of erroneous segments</returns>
+        public static List<ErroneousIndexSegments> DataIntegrityCheckForZeroSignal(double[] zeroSignalArray)
+        {
             double tolerance = 0.00001;
 
             // init list of errors
             var errors = new List<ErroneousIndexSegments>();
 
-            double[] zeroSignalArray = summaryIndices["ZeroSignal"];
             int arrayLength = zeroSignalArray.Length;
 
             bool allOk = true;
@@ -347,7 +359,7 @@ namespace AudioAnalysisTools.Indices
             int fontVerticalPosition = (height / 2) - 7;
             var g = Graphics.FromImage(bmp);
 
-            g.Clear(this.ErrorDescription.Equals(errorMissingData) ? Color.LightGray : Color.Red);
+            g.Clear(this.ErrorDescription.Equals(errorMissingData) ? Color.LightGray : Color.Pink);
 
             // Draw black cross over error patch only if is wider than arbitrary 10 pixels.
             if (width > 10)
