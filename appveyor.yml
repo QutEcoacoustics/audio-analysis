@@ -3,6 +3,19 @@ version: '{build}'
 
 image: Visual Studio 2017
 
+skip_commits:
+  # allow us to manually skip a build
+  message: '/\[chore\]|\[no_ci\]|\[ci_skip\]|\[skip_ci\]/'
+  # Do not trigger a build for anything not .NET
+  files:
+    - 'AudioAnalysis/Matlab/*'
+    - 'AudioAnalysis/RCode/*'
+    - '**/*.md'
+
+# Do not run a build on new tags - we use tags to create releases, which can
+# only occur after sucessful build on another branch
+skip_tags: true
+
 cache:
   - AudioAnalysis\packages -> **\packages.config
   # cache the lfs objects directory so that git-lfs does not always download a
@@ -26,10 +39,14 @@ clone_depth: 200
 environment:
   # Disable git-lfs to give appveyor a chance to overlay the cache files onto the repo
   GIT_LFS_SKIP_SMUDGE: 1
+  # An encrypted token that allows deploying to GitHub (registered to @atruskie)
+  GH_CREATE_RELEASES_TOKEN:
+    secure: iVfuU5KWiUqXeahc+j7hfQPquJFuxRXnLJajRBE94PGxkliT2GGaXkxJGJVCBDPW
 
 # Before the clone occurs
 init:
-  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - echo Starting Build
   #- git lfs install --skip-smudge
 
 before_build:
@@ -54,5 +71,49 @@ test:
       #- "C:\Work\Github\audio-analysis\AudioAnalysis\AED\Test\bin\Debug\Test.dll"
       - '**\Acoustics.Test.dll'
 
+before_package:
+  # package up artifacts
+  # defined env vars: $env:ApPackage , $env:ApVersion , $env:ApName
+  - ps: . .\package.ps1 $env:configuration
+  
+# Upload previously generated artifacts
+artifacts:
+  - path: $(ApPackage)
+    name: $(ApName)
+
+before_deploy:
+  # Enable git credential store
+  - git config --global credential.helper store
+  - ps: git config --global user.email "$($env:APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL)"
+  - ps: git config --global user.name "$($env:APPVEYOR_REPO_COMMIT_AUTHOR)"
+  # add our auth token to the cred store
+  - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:GH_CREATE_RELEASES_TOKEN):x-oauth-basic@github.com`n"
+  # tag if needed, and output $env:ApTagName 
+  - ps: . .\tag.ps1 $env:ApVersion
+  # prepare release strings: $env:ApReleaseMessage, $env:ApReleaseTitle
+  - ps: . .\release.ps1 $env:ApTagName $true
+  
+deploy:
+  - provider: GitHub
+    tag: $(ApTagName)
+    release: "$(ApReleaseTitle)"
+    description: "$(ApReleaseMessage)"
+    auth_token: $(GH_CREATE_RELEASES_TOKEN)
+    artifact: $(ApName)
+    prerelease: true
+    on:
+      # Do not create new releases unless this is the master branch
+      branch: master
+    
+      
+
+notifications:
+  - provider: Email
+    to:
+      - '{{commitAuthorEmail}}'
+    on_build_status_changed: true
+    on_build_failure: true
+    on_build_success: false
+  
 on_finish:
-  #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
