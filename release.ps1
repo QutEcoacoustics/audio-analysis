@@ -5,7 +5,7 @@
 # This script has been modified to work with our CI server
 
 param($tag_name, [bool]$ci = $false, [bool]$pre_release = $true)
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
 
 function script:exec {
     [CmdletBinding()]

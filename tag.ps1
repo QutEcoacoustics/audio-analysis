@@ -1,7 +1,9 @@
 # This script has been modified to work with our CI server
 
 param($version)
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
+
+throw "test"
 
 function script:exec {
     [CmdletBinding()]
