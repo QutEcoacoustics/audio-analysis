@@ -60,7 +60,7 @@ exec { 7z a -tzip $ApName "./$configuration/*" -xr0!*log.txt* }
 
 echo "Packing complete"
 
-$env:ApPackage = Join-Path $pwd $ApName
+$env:ApPackage = Join-Path "AudioAnalysis\AnalysisPrograms\bin" $ApName
 
 }
 finally {
