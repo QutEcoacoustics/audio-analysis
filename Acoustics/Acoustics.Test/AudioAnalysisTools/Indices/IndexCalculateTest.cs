@@ -132,17 +132,16 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         {
             var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
 
-            // TODO: stop using a custom indices config!
-            var configFile = PathHelper.ResolveAsset(@"Indices\Towsey.Acoustic.yml");
-            var indexPropertiesConfig = PathHelper.ResolveAsset(@"Configs\IndexPropertiesConfig.yml");
+            var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
+            var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
 
             // var outputDir = this.outputDirectory;
             var outputDir = PathHelper.ResolveAssetPath("Indices");
 
             // 1. get the config dictionary
-            var configDict = Oscillations2014.GetConfigDictionary(configFile, true);
-            configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
-            configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
+            //var configDict = Oscillations2014.GetConfigDictionary(configFile, true);
+            //configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
+            //configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
 
             // 2. Create temp directory to store output
             if (!this.outputDirectory.Exists)
@@ -157,6 +156,8 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             var bgNoiseNeighborhood = TimeSpan.FromSeconds(5); // not use in this test where subsegment = 60 duration.
             var segmentStartOffset = TimeSpan.Zero; // assume zero offset
             dynamic configuration = Yaml.Deserialise(configFile);
+            var indexCalculateConfig = (IndexCalculateConfig)IndexCalculateConfig.GetDefaultConfig(configuration);
+            indexCalculateConfig.IndexCalculationDuration = 20;
 
             var results = IndexCalculate.Analysis(
                 recording,

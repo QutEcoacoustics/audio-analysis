@@ -680,6 +680,10 @@ namespace AnalysisPrograms
             for (int i = 0; i < subsegmentCount; i++)
             {
                 var subsegmentOffset = segmentStartOffset + TimeSpan.FromSeconds(i * subsegmentDuration);
+                IndexCalculateConfig icc = new IndexCalculateConfig()
+                {
+                    //FrameLength = (int?)config[AnalysisKeys.FrameLength]
+                };
                 var indexCalculateResult = IndexCalculate.Analysis(
                     recording,
                     subsegmentOffset,

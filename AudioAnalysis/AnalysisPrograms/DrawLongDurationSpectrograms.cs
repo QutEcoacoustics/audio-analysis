@@ -232,10 +232,12 @@ namespace AnalysisPrograms
 
             // CHECK FOR ERROR SEGMENTS - get zero signal array
             var csvFile = new FileInfo(Path.Combine(arguments.InputDataDirectory.FullName, originalBaseName + "__Towsey.Acoustic.Indices.csv"));
-            Dictionary<string, double[]> summaryIndices = CsvTools.ReadCSVFile2Dictionary(csvFile.FullName);
+            //Dictionary<string, double[]> summaryIndices = CsvTools.ReadCSVFile2Dictionary(csvFile.FullName);
             //var summaryIndices = Csv.ReadFromCsv<Dictionary<string, double[]>>(csvFile);
-            //var summaryIndices = Csv.ReadFromCsv<SummaryIndexValues[]>(csvFile);
-            double[] zeroSignalArray = summaryIndices["ZeroSignal"];
+            var summaryIndices = Csv.ReadFromCsv<SummaryIndexValues>(csvFile);
+
+            double[] zeroSignalArray = summaryIndices.Select(si => si.ZeroSignal).ToArray();
+
             var indexErrors = ErroneousIndexSegments.DataIntegrityCheckForZeroSignal(zeroSignalArray);
 
             //config.IndexCalculationDuration = TimeSpan.FromSeconds(1.0);
