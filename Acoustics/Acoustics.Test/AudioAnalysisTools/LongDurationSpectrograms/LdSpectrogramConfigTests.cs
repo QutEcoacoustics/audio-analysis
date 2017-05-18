@@ -33,8 +33,8 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
 
             var config = LdSpectrogramConfig.ReadYamlToConfig(file);
 
-            Assert.AreEqual(TimeSpan.FromHours(1), config.XAxisTicInterval);
-            Assert.AreEqual(3600, config.XAxisTicIntervalSeconds);
+            Assert.AreEqual<TimeSpan>(TimeSpan.FromHours(1), config.XAxisTicInterval);
+            Assert.AreEqual<double>(3600, config.XAxisTicIntervalSeconds);
 
             var lines = File.ReadAllLines(file.FullName);
             int index = lines.IndexOf(x => x.Contains("XAxisTicIntervalSeconds"));
@@ -43,8 +43,8 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
             File.WriteAllLines("SpectrogramFalseColourConfig.yml", lines);
 
             var modifiedConfig = LdSpectrogramConfig.ReadYamlToConfig("SpectrogramFalseColourConfig.yml".ToFileInfo());
-            Assert.AreEqual(TimeSpan.FromSeconds(127347.567), modifiedConfig.XAxisTicInterval);
-            Assert.AreEqual(127347.567, modifiedConfig.XAxisTicIntervalSeconds);
+            Assert.AreEqual<TimeSpan>(TimeSpan.FromSeconds(127347.567), modifiedConfig.XAxisTicInterval);
+            Assert.AreEqual<double>(127347.567, modifiedConfig.XAxisTicIntervalSeconds);
         }
     }
 }

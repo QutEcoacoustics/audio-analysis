@@ -127,6 +127,7 @@ namespace AudioAnalysisTools.Indices
 
         /// <summary>
         /// WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
+        /// TODO: This needs to be generalized
         /// </summary>
         public static Dictionary<string, double[]> GetDictionaryOfSummaryIndices(List<SummaryIndexValues> summaryIndices)
         {
