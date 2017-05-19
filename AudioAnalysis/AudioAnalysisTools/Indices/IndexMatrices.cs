@@ -258,45 +258,50 @@ namespace AudioAnalysisTools.Indices
         public static List<double[,]> ConcatenateSpectralIndexFilesWithTimeCheck(FileInfo[] files, TimeSpan indexCalcDuration)
         {
             TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
-            DateTimeOffset[] dtoArray = new DateTimeOffset[files.Length];
+            var datesAndFiles = new(DateTimeOffset date, FileInfo file)[files.Length];
             var matrices = new List<double[,]>();
 
             // accumulate the start times for each of the files
             for (int f = 0; f < files.Length; f++)
             {
-                if (!files[f].Exists)
+                var file = files[f];
+                if (!file.Exists)
                 {
                     if (Verbose)
                     {
-                        LoggedConsole.WriteWarnLine("WARNING: from IndexMatrices.ConcatenateSpectralIndexFilesWithTimeCheck(" + files[f].Extension + ") ");
-                        LoggedConsole.WriteWarnLine(string.Format("   MISSING FILE: {0}", files[f].FullName));
+                        LoggedConsole.WriteWarnLine("WARNING: from IndexMatrices.ConcatenateSpectralIndexFilesWithTimeCheck(" + file.Extension + ") ");
+                        LoggedConsole.WriteWarnLine(string.Format("   MISSING FILE: {0}", file.FullName));
                     }
 
                     continue;
                 }
 
                 DateTimeOffset startDto;
-                if (!FileDateHelpers.FileNameContainsDateTime(files[f].Name, out startDto, offsetHint))
+                if (!FileDateHelpers.FileNameContainsDateTime(file.Name, out startDto, offsetHint))
                 {
-                    LoggedConsole.WriteWarnLine("WARNING from IndexMatrices.ConcatenateSpectralIndexFilesWithTimeCheck(" + files[f].Name + ") ");
-                    LoggedConsole.WriteWarnLine("  File name <{0}> does not contain a valid DateTime = {0}", files[f].Name);
+                    LoggedConsole.WriteWarnLine("WARNING from IndexMatrices.ConcatenateSpectralIndexFilesWithTimeCheck(" + file.Name + ") ");
+                    LoggedConsole.WriteWarnLine("  File name <{0}> does not contain a valid DateTime = {0}", file.Name);
                 }
 
-                dtoArray[f] = startDto;
+                datesAndFiles[f] = (startDto, file);
             }
 
-            string fileName = files[0].Name;
+            // list of file needs to be sorted (relying on system sorting is not reliable)
+            datesAndFiles = datesAndFiles.OrderBy(df => df.date).ToArray();
+
+            string fileName = datesAndFiles[0].file.Name;
             string fileExt = fileName.Substring(fileName.Length - 7);
 
             // now loop through the files again to extract the indices
-            for (int i = 0; i < files.Length; i++)
+            for (int i = 0; i < datesAndFiles.Length; i++)
             {
-                if (!files[i].Exists)
+                var file = datesAndFiles[i].file;
+                if (!file.Exists)
                 {
                     continue;
                 }
 
-                var matrix = Csv.ReadMatrixFromCsv<double>(files[i], TwoDimensionalArray.Normal);
+                var matrix = Csv.ReadMatrixFromCsv<double>(file, TwoDimensionalArray.Normal);
                 matrices.Add(matrix);
 
                 // track the row counts
@@ -307,9 +312,10 @@ namespace AudioAnalysisTools.Indices
                 //track the elapsed minutes
                 // calculate the partial elapsed time indexed by file names.
                 var partialMinutes = 0;
-                if (i < files.Length - 1)
+                var length = datesAndFiles.Length;
+                if (i < length - 1)
                 {
-                    TimeSpan partialElapsedTime = dtoArray[i + 1] - dtoArray[i];
+                    TimeSpan partialElapsedTime = datesAndFiles[i + 1].date - datesAndFiles[i].date;
                     partialMinutes = (int)Math.Round(partialElapsedTime.TotalMinutes);
                 }
                 else
@@ -321,8 +327,8 @@ namespace AudioAnalysisTools.Indices
                 {
                     if (Verbose)
                     {
-                        LoggedConsole.WriteWarnLine("WARNING from IndexMatrices.ConcatenateSpectralIndexFilesWithTimeCheck(" + files[i].Name + ") ");
-                        string str1 = $"    Mismatch in csvFile {i + 1}/{files.Length} between rows added and elapsed time according to file names.";
+                        LoggedConsole.WriteWarnLine("WARNING from IndexMatrices.ConcatenateSpectralIndexFilesWithTimeCheck(" + file.Name + ") ");
+                        string str1 = $"    Mismatch in csvFile {i + 1}/{length} between rows added and elapsed time according to file names.";
                         LoggedConsole.WriteWarnLine(str1);
                         string str2 = $"    Row Count={partialRowMinutes} != {partialMinutes} elapsed minutes";
                         LoggedConsole.WriteWarnLine(str2);

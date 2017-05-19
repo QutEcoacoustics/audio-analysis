@@ -21,6 +21,7 @@ namespace Acoustics.Shared.Csv
     using CsvHelper.Configuration;
     using CsvHelper.TypeConversion;
     using Fasterflect;
+    using log4net;
 
     /// <summary>
     /// Generic methods for reading and writing Csv file.
@@ -29,6 +30,8 @@ namespace Acoustics.Shared.Csv
     /// </summary>
     public static class Csv
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         private static readonly List<CsvClassMap> ClassMapsToRegister = new List<CsvClassMap>();
 
         static Csv()
@@ -135,6 +138,8 @@ namespace Acoustics.Shared.Csv
                 }
                 catch (CsvTypeConverterException ctce)
                 {
+                    Log.Debug($"Error doing type conversion - dictionary contains {ctce.Data.Count} entries");
+
                     // The CsvHelper exception messages are particularly unhelpful... let us fix this
                     if (ctce.Data.Count > 0)
                     {
