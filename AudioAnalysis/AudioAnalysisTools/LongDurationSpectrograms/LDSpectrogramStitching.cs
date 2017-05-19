@@ -55,27 +55,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public const string SummaryIndicesStr = "SummaryIndices";
         public const string SpectralIndicesStr = "SpectralIndices";
 
-        public static DirectoryInfo[] GetSubDirectoriesForSiteData(DirectoryInfo[] topLevelDataDirectories, string site)
+        public static DirectoryInfo[] GetSubDirectoriesForSiteData(IEnumerable<DirectoryInfo> topLevelDataDirectories, string site)
         {
             //string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
             string searchPattern = "*" + site + "*";
 
-            // PATTERN SEARCH FOR CORRECT SUBDIRECTORIES
-            // Assumes that the required files are subdirectories of given site.
-            List<string> dirList = new List<string>();
-            foreach (DirectoryInfo dir in topLevelDataDirectories)
-            {
-                string[] dirs = Directory.GetDirectories(dir.FullName, searchPattern, SearchOption.AllDirectories);
-                dirList.AddRange(dirs);
-            }
-
-            var dataDirectories = new List<DirectoryInfo>();
-            foreach (string path in dirList)
-            {
-                dataDirectories.Add(new DirectoryInfo(path));
-            }
-
-            return dataDirectories.ToArray();
+            return topLevelDataDirectories
+                .SelectMany(dir => dir.GetDirectories(searchPattern, SearchOption.AllDirectories))
+                .ToArray();
         }
 
         /// <summary>
