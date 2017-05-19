@@ -299,7 +299,7 @@
             Dictionary<string, string> config = analysisSettings.ConfigDict;
 
             // get parameters for the analysis
-            int frameSize = IndexCalculate.DefaultWindowSize;
+            int frameSize = IndexCalculateConfig.DefaultWindowSize;
             double windowOverlap = 0.0;
             int lowFreqBound = 1000;
             int midFreqBound = 8000;

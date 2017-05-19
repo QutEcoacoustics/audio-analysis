@@ -547,7 +547,7 @@ namespace AnalysisPrograms
 
             // #################################################################
             // Place LOW RESOLUTION SPECTRAL INDICES INTO analysisResults before returning.
-            int windowLength   = (int?)analysisSettings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
+            int windowLength = (int?)analysisSettings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculateConfig.DefaultWindowSize;
             int spectrumLength = windowLength / 2;
             Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(ipConfig);
             SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);

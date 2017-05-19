@@ -49,41 +49,29 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         public void TestOfSummaryIndices()
         {
             var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
-
-            // TODO: stop using a custom indices config!
-            var configFile = PathHelper.ResolveAsset(@"Indices\Towsey.Acoustic.yml");
-            var indexPropertiesConfig = PathHelper.ResolveAsset(@"Configs\IndexPropertiesConfig.yml");
+            var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
+            var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
 
             // var outputDir = this.outputDirectory;
-
-            // 1. get the config dictionary
-            var configDict = Oscillations2014.GetConfigDictionary(configFile, true);
-            configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
-            configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
-
-            // 2. Create temp directory to store output
+            // Create temp directory to store output
             if (!this.outputDirectory.Exists)
             {
                 this.outputDirectory.Create();
             }
 
             var recording = new AudioRecording(sourceRecording);
-            var subsegmentOffsetTimeSpan = TimeSpan.Zero;
-            int sampleRateOfOriginalAudioFile = 22050;
-            var indexCalculationDuration = TimeSpan.FromSeconds(60);
             var bgNoiseNeighborhood = TimeSpan.FromSeconds(5); // not use in this test where subsegment = 60 duration.
-            var segmentStartOffset = TimeSpan.Zero; // assume zero offset
-            dynamic configuration = Yaml.Deserialise(configFile);
+            var indexCalculateConfig = IndexCalculateConfig.GetConfig(configFile);
 
             var results = IndexCalculate.Analysis(
                 recording,
-                subsegmentOffsetTimeSpan,
-                indexCalculationDuration,
+                TimeSpan.Zero,
+                TimeSpan.FromSeconds(60),
                 bgNoiseNeighborhood,
                 indexPropertiesConfig,
-                sampleRateOfOriginalAudioFile,
-                segmentStartOffset,
-                configuration,
+                22050,
+                TimeSpan.Zero,
+                indexCalculateConfig,
                 returnSonogramInfo: true);
 
             var summaryIndices = results.SummaryIndexValues;
@@ -131,43 +119,33 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         public void TestOfSpectralIndices()
         {
             var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
-
             var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
             var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
 
             // var outputDir = this.outputDirectory;
             var outputDir = PathHelper.ResolveAssetPath("Indices");
 
-            // 1. get the config dictionary
-            //var configDict = Oscillations2014.GetConfigDictionary(configFile, true);
-            //configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
-            //configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
-
-            // 2. Create temp directory to store output
             if (!this.outputDirectory.Exists)
             {
                 this.outputDirectory.Create();
             }
 
+            var indexCalculateConfig = IndexCalculateConfig.GetConfig(configFile);
+            //indexCalculateConfig.IndexCalculationDuration = TimeSpan.FromSeconds(20);
+
             var recording = new AudioRecording(sourceRecording);
-            var subsegmentOffsetTimeSpan = TimeSpan.Zero;
-            int sampleRateOfOriginalAudioFile = 22050;
-            var indexCalculationDuration = TimeSpan.FromSeconds(60);
-            var bgNoiseNeighborhood = TimeSpan.FromSeconds(5); // not use in this test where subsegment = 60 duration.
-            var segmentStartOffset = TimeSpan.Zero; // assume zero offset
-            dynamic configuration = Yaml.Deserialise(configFile);
-            var indexCalculateConfig = (IndexCalculateConfig)IndexCalculateConfig.GetDefaultConfig(configuration);
-            indexCalculateConfig.IndexCalculationDuration = 20;
+            var indexCalculationDuration = TimeSpan.FromSeconds(IndexCalculateConfig.DefaultIndexCalculationDurationInSeconds);
+            var bgNoiseNeighborhood = TimeSpan.FromSeconds(5); // not used in this test where subsegment = 60 duration.
 
             var results = IndexCalculate.Analysis(
                 recording,
-                subsegmentOffsetTimeSpan,
+                TimeSpan.Zero,
                 indexCalculationDuration,
                 bgNoiseNeighborhood,
                 indexPropertiesConfig,
-                sampleRateOfOriginalAudioFile,
-                segmentStartOffset,
-                configuration,
+                22050,
+                TimeSpan.Zero,
+                indexCalculateConfig,
                 returnSonogramInfo: true);
 
             var spectralIndices = results.SpectralIndexValues;

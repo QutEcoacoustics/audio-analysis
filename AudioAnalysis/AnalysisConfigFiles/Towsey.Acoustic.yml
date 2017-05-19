@@ -9,13 +9,14 @@
 #
 
 AnalysisName: Towsey.Acoustic
-#SegmentDuration: units=minutes;     SegmentOverlap: units=seconds;
+#SegmentDuration: units=minutes;
 SegmentDuration: 1
+#SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 
 # IndexCalculationDuration: units=seconds (default=60 seconds; use 0.2 for zooming spectrogram tiles)
 # The Timespan (in seconds) over which summary and spectral indices are calculated
-IndexCalculationDuration: 20.0
+IndexCalculationDuration: 60.0
 
 # BGNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
 # BG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
@@ -24,47 +25,35 @@ IndexCalculationDuration: 20.0
 #    Consequently for a 60sec Index calculation duration, the  BG noise is calculated form the 60sec segment only.
 BGNoiseNeighbourhood: 5
 
+# Resample rate must be 2 X the desired Nyquist
+ResampleRate: 22050
+
 # FRAME LENGTH. units=samples
 # FrameWidth is used without overlap to calculate the spectral indices. Typical value=512
 FrameLength: 512
 
-# Resample rate must be 2 X the desired Nyquist
-# ResampleRate: 17640
-ResampleRate: 22050
-
-#Default values in code are LowFreqBound=500Hz & MidFreqBound=4000
+#Default values in code are LowFreqBound=1000Hz & MidFreqBound=8000
 LowFreqBound: 1000
 MidFreqBound: 8000
 
-DisplayWeightedIndices: false
+# FrequencyScale options are currently only Linear and Octave
+# Octave scale is to be used only for Jasco Marine recordings @ sample rate = 64000
+FrequencyScale: Linear
 
 # SAVE INTERMEDIARY FILES
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
+# One-minute spectrograms can be saved in any analysis task.
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
 
 # SAVE SONOGRAM DATA FILES FOR SUBSEQUENT ZOOMING SPECTROGRAMS
 # Next two parameters are used only when creating images for zooming spectrograms.
 # Warning: IndexCalculationDuration must be set = 0.2  when SaveSonogramData = true
 # TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
 SaveSonogramData: false
-# Frame step. units=samples
-# NOTE: The value for FrameStep is used only when calculating a standard spectrogram within the ZOOMING spectrogram function.
-#       FrameStep is NOT used when calculating Summary and Spectral indices.
-#       However the FrameStep entry must NOT be deleted from this file. Keep the value for when it is required. 
-#       The value 441 should NOT be changed because it has been calculated specifically for current ZOOMING spectrogram set-up.
-# TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
-FrameStep: 441
 
-# One-minute spectrograms can be saved in any analysis task.
-# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-SaveSonogramImages: Never
-
-# DisplayCsvImage is obsolete - ensure it remains set to: false
-DisplayCsvImage: false
-DoNoiseReduction: true
-BgNoiseThreshold: 3.0
-SonogramBackgroundThreshold: 4.0
 ParallelProcessing: false
 
 # if true an additional set of images will be produced that are tiles

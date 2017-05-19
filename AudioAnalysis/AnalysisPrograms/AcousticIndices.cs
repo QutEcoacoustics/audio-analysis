@@ -145,11 +145,9 @@ namespace AnalysisPrograms
         public string Description
             => "Generates all our default acoustic indices, including summary indices and spectral indices. Also generates false color spectrograms IFF IndexCalculationDuration==60.0";
 
-
         public static void Dev(Arguments arguments)
         {
-            bool executeDev = arguments == null;
-            if (executeDev)
+            if (arguments == null)
             {
                 arguments = new Arguments();
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
@@ -167,14 +165,12 @@ namespace AnalysisPrograms
                 //string outputDir = @"C:\SensorNetworks\Output\Crow\";
                 //string csvPath = @"C:\SensorNetworks\Output\Crow\Towsey.Acoustic.Indices.csv";
 
-
                 string title = "# FOR EXTRACTION OF Acoustic Indices";
                 string date = "# DATE AND TIME: " + DateTime.Now;
                 LoggedConsole.WriteLine(title);
                 LoggedConsole.WriteLine(date);
                 LoggedConsole.WriteLine("# Output folder:  " + outputDir);
                 LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
-                //var diOutputDir = new DirectoryInfo(outputDir);
 
                 int startMinute = 0;
                 int durationSeconds = 0; //set zero to get entire recording
@@ -182,6 +178,7 @@ namespace AnalysisPrograms
                 var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
                 var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
                 var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
+
                 //var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
                 //var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, "Towsey." + AnalysisName);
                 var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, "Towsey." + AnalysisName);
@@ -207,12 +204,6 @@ namespace AnalysisPrograms
                     arguments.InputCsv = csvPath.ToFileInfo();
                     arguments.Config = configPath.ToFileInfo();
                 }
-            }
-
-            ////Execute(arguments);
-
-            if (executeDev)
-            {
 
                 string indicesPath = Path.Combine(arguments.Output.FullName, arguments.Indices);
                 FileInfo fiCsvIndices = new FileInfo(indicesPath);
@@ -231,8 +222,8 @@ namespace AnalysisPrograms
                 }
 
                 LoggedConsole.WriteLine("\n\n# Finished analysis:- " + arguments.Source.FullName);
-
             }
+
             return;
         }
 
@@ -403,7 +394,7 @@ namespace AnalysisPrograms
             {
                 var sonoConfig = new SonogramConfig(); // default values config
                 sonoConfig.SourceFName = recording.FilePath;
-                sonoConfig.WindowSize = (int?)analysisSettings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
+                sonoConfig.WindowSize = (int?)analysisSettings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculateConfig.DefaultWindowSize;
                 sonoConfig.WindowStep = (int?)analysisSettings.Configuration[AnalysisKeys.FrameStep] ?? sonoConfig.WindowSize; // default = no overlap
                 sonoConfig.WindowOverlap = (sonoConfig.WindowSize - sonoConfig.WindowStep) / (double)sonoConfig.WindowSize;
 
@@ -504,19 +495,19 @@ namespace AnalysisPrograms
              * FrameStep is NOT used when calculating Summary and Spectral indices.
              */
             var indexConfigData = new IndexGenerationData()
-                                      {
-                                          RecordingType  = inputFileSegment.TargetFile.Extension,
-                                          RecordingStartDate = inputFileSegment.TargetFileStartDate,
-                                          SampleRateOriginal = inputFileSegment.TargetFileSampleRate.Value,
-                                          SampleRateResampled = sampleRate,
-                                          FrameLength = frameWidth,
-                                          FrameStep = (int?)settings.Configuration[AnalysisKeys.FrameStep] ?? (int?)settings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize,
-                                          IndexCalculationDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration,
-                                          BGNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
-                                          MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
-                                          BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
-                                          LongDurationSpectrogramConfig = ldSpectrogramConfig,
-                                      };
+                {
+                    RecordingType = inputFileSegment.TargetFile.Extension,
+                    RecordingStartDate = inputFileSegment.TargetFileStartDate,
+                    SampleRateOriginal = inputFileSegment.TargetFileSampleRate.Value,
+                    SampleRateResampled = sampleRate,
+                    FrameLength = frameWidth,
+                    FrameStep = (int?)settings.Configuration[AnalysisKeys.FrameStep] ?? (int?)settings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculateConfig.DefaultWindowSize,
+                    IndexCalculationDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration,
+                    BGNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
+                    MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
+                    BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
+                    LongDurationSpectrogramConfig = ldSpectrogramConfig,
+                };
             var icdPath = FilenameHelpers.AnalysisResultPath(
                 resultsDirectory,
                 basename,
@@ -671,19 +662,18 @@ namespace AnalysisPrograms
                         subsegmentCount,
                         fraction >= 0.5 ? "added" : "removed"));
             }
+
             Log.Trace(subsegmentCount + " sub segments will be calculated");
 
-
             var indexCalculateResults = new IndexCalculateResult[subsegmentCount];
+
+            // convert the dynamic config to a config class.
+            IndexCalculateConfig config = IndexCalculateConfig.GetConfig(configuration, false);
 
             // calculate indices for each subsegment
             for (int i = 0; i < subsegmentCount; i++)
             {
                 var subsegmentOffset = segmentStartOffset + TimeSpan.FromSeconds(i * subsegmentDuration);
-                IndexCalculateConfig icc = new IndexCalculateConfig()
-                {
-                    //FrameLength = (int?)config[AnalysisKeys.FrameLength]
-                };
                 var indexCalculateResult = IndexCalculate.Analysis(
                     recording,
                     subsegmentOffset,
@@ -692,7 +682,7 @@ namespace AnalysisPrograms
                     indexPropertiesFile,
                     sampleRateOfOriginalAudioFile,
                     segmentStartOffset,
-                    configuration);
+                    config);
 
                 indexCalculateResults[i] = indexCalculateResult;
             }
