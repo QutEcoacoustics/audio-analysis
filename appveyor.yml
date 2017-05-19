@@ -76,7 +76,8 @@ after_build:
   - cd %APPVEYOR_BUILD_FOLDER%
   - ps: . .\package.ps1 "Debug"
   - ps: . .\package.ps1 "Release"
-  
+  - ps: 'ls env:'
+
 test:
   assemblies:
     only:
