@@ -650,9 +650,9 @@ namespace AnalysisPrograms
             // round, we expect perfect numbers, warn if not
             double subsegmentsInSegment = segmentDurationSeconds / subsegmentDuration;
             int subsegmentCount = (int)Math.Round(segmentDurationSeconds / subsegmentDuration);
-            const double WarningThreshold = 0.01; // 10%
+            const double warningThreshold = 0.01; // 1%
             double fraction = subsegmentsInSegment - subsegmentCount;
-            if (Math.Abs(fraction) > WarningThreshold)
+            if (Math.Abs(fraction) > warningThreshold)
             {
                 Log.Warn(
                     string.Format(
@@ -667,8 +667,10 @@ namespace AnalysisPrograms
 
             var indexCalculateResults = new IndexCalculateResult[subsegmentCount];
 
-            // convert the dynamic config to a config class.
+            // Convert the dynamic config to IndexCalculateConfig class and merge in the unnecesary parameters.
             IndexCalculateConfig config = IndexCalculateConfig.GetConfig(configuration, false);
+            config.IndexCalculationDuration = indexCalculationDuration;
+            config.BgNoiseBuffer = bgNoiseNeighborhood;
 
             // calculate indices for each subsegment
             for (int i = 0; i < subsegmentCount; i++)
@@ -677,8 +679,6 @@ namespace AnalysisPrograms
                 var indexCalculateResult = IndexCalculate.Analysis(
                     recording,
                     subsegmentOffset,
-                    indexCalculationDuration,
-                    bgNoiseNeighborhood,
                     indexPropertiesFile,
                     sampleRateOfOriginalAudioFile,
                     segmentStartOffset,
@@ -691,13 +691,13 @@ namespace AnalysisPrograms
         }
 
         public AnalysisSettings DefaultSettings => new AnalysisSettings
-            {
-                SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                SegmentMinDuration = TimeSpan.FromSeconds(1),
-                SegmentMediaType = MediaTypes.MediaTypeWav,
-                SegmentOverlapDuration = TimeSpan.Zero,
-                SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
-            };
+        {
+            SegmentMaxDuration = TimeSpan.FromMinutes(1),
+            SegmentMinDuration = TimeSpan.FromSeconds(1),
+            SegmentMediaType = MediaTypes.MediaTypeWav,
+            SegmentOverlapDuration = TimeSpan.Zero,
+            SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
+        };
     }
 
 }

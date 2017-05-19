@@ -9,6 +9,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using Acoustics.Shared;
     using EcoSounds.Mvc.Tests;
     using global::AudioAnalysisTools;
+    using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -59,15 +60,15 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
                 this.outputDirectory.Create();
             }
 
-            var recording = new AudioRecording(sourceRecording);
-            var bgNoiseNeighborhood = TimeSpan.FromSeconds(5); // not use in this test where subsegment = 60 duration.
             var indexCalculateConfig = IndexCalculateConfig.GetConfig(configFile);
 
+            // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
+            //indexCalculateConfig.IndexCalculationDuration = TimeSpan.FromSeconds(20);
+            //indexCalculateConfig.SetTypeOfFreqScale("Octave");
+
             var results = IndexCalculate.Analysis(
-                recording,
+                new AudioRecording(sourceRecording),
                 TimeSpan.Zero,
-                TimeSpan.FromSeconds(60),
-                bgNoiseNeighborhood,
                 indexPropertiesConfig,
                 22050,
                 TimeSpan.Zero,
@@ -98,18 +99,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             Assert.AreEqual(TimeSpan.Zero, summaryIndices.StartOffset);
             Assert.AreEqual(0.162216, summaryIndices.TemporalEntropy, 0.000001);
             Assert.AreEqual(401, summaryIndices.ThreeGramCount, 0.000001);
-
-            // CollectionAssert.AreEqual(new[] { 1, 2, 3 }, new[] { 1, 2, 3 });
-            // CollectionAssert.AreEquivalent(new[] { 1, 2, 3 }, new[] { 3, 2, 1 });
-
-            // FileEqualityHelpers.TextFileEqual(new FileInfo("data.txt"), new FileInfo("data.txt"));
-            // FileEqualityHelpers.FileEqual(new FileInfo("data.bin"), new FileInfo("data.bin"));
-
-            // output initial data
-            // var actualData = new[] { 1, 2, 3 };
-            // Json.Serialise("data.json".ToFileInfo(), actualData);
-            // Csv.WriteMatrixToCsv("data.csv".ToFileInfo(), actualData);
-            // Binary.Serialize("data.bin".ToFileInfo(), actualData);
         }
 
         /// <summary>
@@ -131,17 +120,14 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             }
 
             var indexCalculateConfig = IndexCalculateConfig.GetConfig(configFile);
-            //indexCalculateConfig.IndexCalculationDuration = TimeSpan.FromSeconds(20);
 
-            var recording = new AudioRecording(sourceRecording);
-            var indexCalculationDuration = TimeSpan.FromSeconds(IndexCalculateConfig.DefaultIndexCalculationDurationInSeconds);
-            var bgNoiseNeighborhood = TimeSpan.FromSeconds(5); // not used in this test where subsegment = 60 duration.
+            // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
+            //indexCalculateConfig.IndexCalculationDuration = TimeSpan.FromSeconds(20);
+            //indexCalculateConfig.SetTypeOfFreqScale("Octave");
 
             var results = IndexCalculate.Analysis(
-                recording,
+                new AudioRecording(sourceRecording),
                 TimeSpan.Zero,
-                indexCalculationDuration,
-                bgNoiseNeighborhood,
                 indexPropertiesConfig,
                 22050,
                 TimeSpan.Zero,
@@ -231,5 +217,52 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.SPT);
         }
+
+        /// <summary>
+        /// Test index calculation when the various spectral indices
+        /// </summary>
+        [TestMethod]
+        public void TestOfSpectralIndices_ICD20()
+        {
+            var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
+            var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
+            var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
+            var outputDir = PathHelper.ResolveAssetPath("Indices");
+
+            // var outputDir = this.outputDirectory;
+            // Create temp directory to store output
+            if (!this.outputDirectory.Exists)
+            {
+                this.outputDirectory.Create();
+            }
+
+            var indexCalculateConfig = IndexCalculateConfig.GetConfig(configFile);
+            var recording = new AudioRecording(sourceRecording);
+
+            // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
+            indexCalculateConfig.IndexCalculationDuration = TimeSpan.FromSeconds(20);
+            //indexCalculateConfig.SetTypeOfFreqScale("Octave");
+
+            var results = IndexCalculate.Analysis(
+                recording,
+                TimeSpan.Zero,
+                indexPropertiesConfig,
+                22050,
+                TimeSpan.Zero,
+                indexCalculateConfig,
+                returnSonogramInfo: true);
+
+            var spectralIndices = results.SpectralIndexValues;
+
+            // TEST the SPECTRAL INDICES
+            // After serialising the expected vector, comment the Binary.Serialise line and copy file to dir TestResources\Indices.
+
+            // ACI
+            var expectedSpectrumFile = new FileInfo(outputDir + "\\ACI_ICD20.bin");
+            // Binary.Serialize(expectedSpectrumFile, spectralIndices.ACI);
+            var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
+            CollectionAssert.AreEqual(expectedVector, spectralIndices.ACI);
+        }
+
     }
 }

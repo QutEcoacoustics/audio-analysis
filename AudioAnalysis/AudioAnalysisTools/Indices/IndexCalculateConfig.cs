@@ -61,8 +61,6 @@ namespace AudioAnalysisTools.Indices
             this.MidFreqBound = DefaultMidFreqBound;
             this.SetTypeOfFreqScale(DefaultFrequencyScaleType);
 
-            this.EventThreshold = 0.2;
-
             this.SaveIntermediateFiles = "Never";
             this.SaveSonogramImages = "Never";
 
@@ -120,20 +118,6 @@ namespace AudioAnalysisTools.Indices
         /// Units=samples
         /// </summary>
         public int FrameLength { get; set; }
-
-        /// <summary>
-        /// Gets the FrameStep.
-        /// FrameWidth is used WITHOUT overlap to calculate the spectral indices.
-        /// Default step value when calculating summary and spectral indices = FrameLength = 512.
-        /// Default step value when calculating spectral indices for ZOOMING spectrograms = 441.
-        /// Units=samples
-        /// IMPORTANT NOTE: The value for FrameStep is used ONLY when calculating a standard spectrogram within the ZOOMING spectrogram function.
-        /// FrameStep is NOT used when calculating Summary and Spectral indices.
-        /// However the FrameStep entry must NOT be deleted from the config. Must keep its value for when it is required.
-        /// The value 441 should NOT be changed because it has been calculated specifically for current ZOOMING spectrogram set-up.
-        /// TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
-        /// </summary>
-        public int FrameStep { get; }
 
         /// <summary>
         /// Gets or sets the ResampleRate.
@@ -196,27 +180,11 @@ namespace AudioAnalysisTools.Indices
         public string SaveIntermediateFiles { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to SaveSonogramData
-        /// SAVE SONOGRAM DATA FILES FOR SUBSEQUENT ZOOMING SPECTROGRAMS
-        /// Next two parameters are used only when creating images for zooming spectrograms.
-        /// WARNING: IndexCalculationDuration must be set = 0.2  when SaveSonogramData = true
-        /// # TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
-        /// The default = false
-        /// </summary>
-        public bool SaveSonogramData { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether one-minute spectrograms can be saved in any analysis task.
         /// Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
         /// The default = false
         /// </summary>
         public string SaveSonogramImages { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether to DisplayCsvImage
-        /// DisplayCsvImage is obsolete - ensure it remains set to: false
-        /// </summary>
-        public bool DisplayCsvImage { get; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to TileImageOutput
@@ -253,18 +221,46 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         public string IndexPropertiesConfig { get; set; }
 
-        /// <summary>
-        /// Gets or sets threshold value for detecting an acoustic event.
-        /// Forgotten what htis is used for!!!!!!
-        /// Default=0.2
-        /// Units=none
-        /// </summary>
-        public double EventThreshold { get; set; }
-
         public static IndexCalculateConfig GetDefaultConfig()
         {
             return new IndexCalculateConfig();
         }
+
+        // ##############################################################################################################################
+        // THE FOLLOWING THREE PROPERITIES SHOULD BE REMOVED
+
+        /// <summary>
+        /// Gets a value indicating whether to DisplayCsvImage
+        /// DisplayCsvImage is obsolete - ensure it remains set to: false
+        /// </summary>
+        public bool DisplayCsvImage { get; }
+
+        /// <summary>
+        /// Gets the FrameStep.
+        /// FrameWidth is used WITHOUT overlap to calculate the spectral indices.
+        /// Default step value when calculating summary and spectral indices = FrameLength = 512.
+        /// Default step value when calculating spectral indices for ZOOMING spectrograms = 441.
+        /// Units=samples
+        /// IMPORTANT NOTE: The value for FrameStep is used ONLY when calculating a standard spectrogram within the ZOOMING spectrogram function.
+        /// FrameStep is NOT used when calculating Summary and Spectral indices.
+        /// However the FrameStep entry must NOT be deleted from the config. Must keep its value for when it is required.
+        /// The value 441 should NOT be changed because it has been calculated specifically for current ZOOMING spectrogram set-up.
+        /// TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
+        /// </summary>
+        private int FrameStep { get; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to SaveSonogramData
+        /// SAVE SONOGRAM DATA FILES FOR SUBSEQUENT ZOOMING SPECTROGRAMS
+        /// Next two parameters are used only when creating images for zooming spectrograms.
+        /// WARNING: IndexCalculationDuration must be set = 0.2  when SaveSonogramData = true
+        /// # TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
+        /// The default = false
+        /// </summary>
+        private bool SaveSonogramData { get; set; }
+
+        // ##############################################################################################################################
+        // THE FOLLOWING STATIC METHODS RETURN CONFIG FILES
 
         /// <summary>
         /// Link method to one which does the real work.

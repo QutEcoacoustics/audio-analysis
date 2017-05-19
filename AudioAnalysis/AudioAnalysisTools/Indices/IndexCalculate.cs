@@ -38,8 +38,6 @@ namespace AudioAnalysisTools.Indices
         /// <param name="subsegmentOffsetTimeSpan">
         /// The start time of the required subsegment relative to start of SOURCE audio recording.
         ///     i.e. SegmentStartOffset + time duration from Segment start to subsegment start. </param>
-        /// <param name="indexCalculationDuration">Time span over which acoustic indices are calculated. Default = 60 seconds.</param>
-        /// <param name="bgNoiseNeighborhood">A buffer added to either side of recording segment to allow more useful calculation of BGN. </param>
         /// <param name="indicesPropertiesConfig">file containing info about index value distributions. Used when drawing false-colour spectrograms. </param>
         /// <param name="sampleRateOfOriginalAudioFile"> That is, prior to being resample to the default of 22050.</param>
         /// <param name="segmentStartOffset"> Time elapsed between start of recording and start of this recording segment. </param>
@@ -50,8 +48,6 @@ namespace AudioAnalysisTools.Indices
         public static IndexCalculateResult Analysis(
             AudioRecording recording,
             TimeSpan subsegmentOffsetTimeSpan,
-            TimeSpan indexCalculationDuration,
-            TimeSpan bgNoiseNeighborhood,
             FileInfo indicesPropertiesConfig,
             int sampleRateOfOriginalAudioFile,
             TimeSpan segmentStartOffset,
@@ -63,6 +59,7 @@ namespace AudioAnalysisTools.Indices
             int signalLength = recording.WavReader.GetChannel(0).Length;
             int sampleRate = recording.WavReader.SampleRate;
             var segmentDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
+            var indexCalculationDuration = config.IndexCalculationDuration;
             var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
             int nyquist = sampleRate / 2;
 
@@ -181,7 +178,7 @@ namespace AudioAnalysisTools.Indices
 
             // NOW EXTRACT SIGNAL FOR BACKGROUND NOISE CALCULATION
             // If the index calculation duration >= 30 seconds, then calculate BGN from the existing segment of recording.
-            bool doSeparateBgnNoiseCalculation = (indexCalculationDuration.TotalSeconds + (2 * bgNoiseNeighborhood.TotalSeconds)) < (segmentDuration.TotalSeconds / 2);
+            bool doSeparateBgnNoiseCalculation = (indexCalculationDuration.TotalSeconds + (2 * config.BgNoiseBuffer.TotalSeconds)) < (segmentDuration.TotalSeconds / 2);
             var dspOutput2 = dspOutput1;
 
             if (doSeparateBgnNoiseCalculation)
@@ -189,7 +186,7 @@ namespace AudioAnalysisTools.Indices
                 // GET a longer SUBSEGMENT FOR NOISE calculation with 5 sec buffer on either side.
                 // If the index calculation duration is shorter than 30 seconds, then need to calculate BGN noise from a longer length of recording
                 //      i.e. need to add noiseBuffer either side. Typical noiseBuffer value = 5 seconds
-                int sampleBuffer = (int)(bgNoiseNeighborhood.TotalSeconds * sampleRate);
+                int sampleBuffer = (int)(config.BgNoiseBuffer.TotalSeconds * sampleRate);
                 var bgnRecording = AudioRecording.GetRecordingSubsegment(recording, sampleStart, sampleEnd, sampleBuffer);
 
                 // EXTRACT ENVELOPE and SPECTROGRAM FROM BACKGROUND NOISE SUBSEGMENT
