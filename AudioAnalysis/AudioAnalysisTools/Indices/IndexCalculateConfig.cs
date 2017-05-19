@@ -9,15 +9,34 @@ using System.Text;
 
 namespace AudioAnalysisTools.Indices
 {
+    using System.IO;
+    using System.Runtime.CompilerServices;
+    using Acoustics.Shared;
+    using DSP;
+
     /// <summary>
     /// CONFIG CLASS FOR the class IndexCalculate.cs
     /// </summary>
     public class IndexCalculateConfig
     {
-        private bool displayWeightedIndices;
-        private static int defaultWindowSize = 512;
-        private static int defaultLowFreqBound = 1000;
-        private static int defaultMidFreqBound = 8000;
+        // EXTRACT INDICES: IF (frameLength = 128 AND sample rate = 22050) THEN frame duration = 5.805ms.
+        // EXTRACT INDICES: IF (frameLength = 256 AND sample rate = 22050) THEN frame duration = 11.61ms.
+        // EXTRACT INDICES: IF (frameLength = 512 AND sample rate = 22050) THEN frame duration = 23.22ms.
+        // EXTRACT INDICES: IF (frameLength = 128 AND sample rate = 11025) THEN frame duration = 11.61ms.
+        // EXTRACT INDICES: IF (frameLength = 256 AND sample rate = 11025) THEN frame duration = 23.22ms.
+        // EXTRACT INDICES: IF (frameLength = 256 AND sample rate = 17640) THEN frame duration = 18.576ms.
+
+        public const int DefaultResampleRate = 22050;
+        public const int DefaultWindowSize = 512;
+        public const int DefaultIndexCalculationDurationInSeconds = 60;
+
+        // semi-arbitrary bounds between lf, mf and hf bands of the spectrum
+        // The midband, 1000Hz to 8000Hz, covers the bird-band in SERF & Gympie recordings.
+        public const int DefaultHighFreqBound = 11000;
+        public const int DefaultMidFreqBound = 8000;
+        public const int DefaultLowFreqBound = 1000;
+
+        public const string DefaultFrequencyScaleType = "Linear";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IndexCalculateConfig"/> class.
@@ -27,25 +46,28 @@ namespace AudioAnalysisTools.Indices
         {
             // default values
             this.AnalysisName = "Towsey.Analysis";
-            this.SegmentDuration = 1;
-            this.SegmentOverlap = 0;
-            this.IndexCalculationDuration = 60.0;
-            this.BgNoiseBuffer = 5.0;
+            this.SegmentDuration = TimeSpan.FromSeconds(60);
+            this.SegmentOverlap = TimeSpan.Zero;
+            this.IndexCalculationDuration = TimeSpan.FromSeconds(DefaultIndexCalculationDurationInSeconds);
+            this.BgNoiseBuffer = TimeSpan.FromSeconds(5);
 
-            this.FrameLength = defaultWindowSize;
+            this.FrameLength = DefaultWindowSize;
+
+            // this framestep gives an exact 20ms frame when doing hi-resolution zooming spectrograms.
             this.FrameStep = 441;
-            this.ResampleRate = 22050;
+            this.ResampleRate = DefaultResampleRate;
 
-            this.LowFreqBound = defaultLowFreqBound;
-            this.MidFreqBound = defaultMidFreqBound;
+            this.LowFreqBound = DefaultLowFreqBound;
+            this.MidFreqBound = DefaultMidFreqBound;
+            this.SetTypeOfFreqScale(DefaultFrequencyScaleType);
 
             this.EventThreshold = 0.2;
 
-            this.SaveIntermediateFiles = "WhenEventsDetected";
+            this.SaveIntermediateFiles = "Never";
+            this.SaveSonogramImages = "Never";
+
             this.SaveSonogramData = false;
-            this.SaveSonogramImages = false;
             this.DisplayCsvImage = false;
-            this.displayWeightedIndices = false;
             this.IndexPropertiesConfig = @"./IndexPropertiesConfig.yml";
 
             this.ParallelProcessing = false;
@@ -65,21 +87,21 @@ namespace AudioAnalysisTools.Indices
         /// Default value = 1.0
         /// Units=minutes
         /// </summary>
-        public int SegmentDuration { get; set; }
+        public TimeSpan SegmentDuration { get; set; }
 
         /// <summary>
         /// Gets or sets the SegmentOverlap
         /// Default value = 0.
         /// Units=seconds
         /// </summary>
-        public int SegmentOverlap { get; set; }
+        public TimeSpan SegmentOverlap { get; set; }
 
         /// <summary>
         /// Gets or sets the Timespan (in seconds) over which summary and spectral indices are calculated
         /// Default=
         /// Units=seconds
         /// </summary>
-        public double IndexCalculationDuration { get; set; }
+        public TimeSpan IndexCalculationDuration { get; set; }
 
         /// <summary>
         /// Gets or sets bG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
@@ -89,7 +111,7 @@ namespace AudioAnalysisTools.Indices
         /// Default=5 seconds
         /// Units=seconds
         /// </summary>
-        public double BgNoiseBuffer { get; set; }
+        public TimeSpan BgNoiseBuffer { get; set; }
 
         /// <summary>
         /// Gets or sets the FrameWidth.
@@ -137,6 +159,36 @@ namespace AudioAnalysisTools.Indices
         public int MidFreqBound { get; set; }
 
         /// <summary>
+        /// Frequency scale is Linear or OCtave
+        /// </summary>
+        private FreqScaleType frequencyScaleType;
+
+        /// <summary>
+        /// Gets or sets the type of Herz frequency scale
+        /// </summary>
+        public void SetTypeOfFreqScale(string scaleName)
+        {
+            if (scaleName == "Linear")
+            {
+                this.frequencyScaleType = FreqScaleType.Linear;
+            }
+            else
+            if (scaleName == "Octave")
+            {
+                this.frequencyScaleType = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
+            }
+            else
+            {
+                throw new Exception("ERROR:    Invalid FrequencyScaleType");
+            }
+        }
+
+        public FreqScaleType GetTypeOfFreqScale()
+        {
+            return this.frequencyScaleType;
+        }
+
+        /// <summary>
         /// Gets or sets the options to SaveIntermediatefiles
         /// Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
         /// The default = "Never"
@@ -158,7 +210,7 @@ namespace AudioAnalysisTools.Indices
         /// Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
         /// The default = false
         /// </summary>
-        public bool SaveSonogramImages { get; set; }
+        public string SaveSonogramImages { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether to DisplayCsvImage
@@ -214,16 +266,64 @@ namespace AudioAnalysisTools.Indices
             return new IndexCalculateConfig();
         }
 
-        public static IndexCalculateConfig GetDefaultConfig(dynamic dynamicConfig)
+        /// <summary>
+        /// Link method to one which does the real work.
+        /// </summary>
+        /// <param name="configFile">the config file to be read dynamically</param>
+        public static IndexCalculateConfig GetConfig(FileInfo configFile)
         {
-            var config = new IndexCalculateConfig();
+            dynamic dynamicConfig = Yaml.Deserialise(configFile);
+            var config = IndexCalculateConfig.GetConfig(dynamicConfig, false);
+            return config;
+        }
 
-            //var indexCalculationDuration = (int?)dynamicConfig[AnalysisKeys.FrameLength] ?? defaultWindowSize;
-            config.FrameLength = (int?)dynamicConfig[AnalysisKeys.FrameLength] ?? defaultWindowSize;
-            config.MidFreqBound = (int?)dynamicConfig[AnalysisKeys.MidFreqBound] ?? defaultMidFreqBound;
-            config.LowFreqBound = (int?)dynamicConfig[AnalysisKeys.LowFreqBound] ?? defaultLowFreqBound;
+        /// <summary>
+        /// WARNING: This method does not incorporate all the parameters in the config.yml file.
+        /// Only those that are likely to change.
+        /// If you want to change a config parameter in the yml file make sure it appears in this method.
+        /// </summary>
+        /// <param name="dynamicConfig">the dynamic config</param>
+        /// <param name="writeParameters">default = false</param>
+        public static IndexCalculateConfig GetConfig(dynamic dynamicConfig, bool writeParameters = false)
+        {
+            var config = new IndexCalculateConfig
+            {
+                AnalysisName = (string)dynamicConfig[AnalysisKeys.AnalysisName] ?? "Towsey.Acoustic",
 
-            //config.OctaveScale = (bool?)dynamicConfig["OctaveFreqScale"] ?? false;
+                // SegmentDuration, //Should ever need to change
+                // SegmentOverlap,  //Should ever need to change
+                ResampleRate = (int?)dynamicConfig[AnalysisKeys.ResampleRate] ?? DefaultResampleRate,
+                FrameLength = (int?)dynamicConfig[AnalysisKeys.FrameLength] ?? DefaultWindowSize,
+                MidFreqBound = (int?)dynamicConfig[AnalysisKeys.MidFreqBound] ?? DefaultMidFreqBound,
+                LowFreqBound = (int?)dynamicConfig[AnalysisKeys.LowFreqBound] ?? DefaultLowFreqBound,
+
+                SaveIntermediateFiles = (string)dynamicConfig["SaveIntermediateFiles"] ?? "Never",
+                SaveSonogramImages = (string)dynamicConfig["SaveIntermediateFiles"] ?? "Never",
+
+                //SaveCsvFile,       //Should ever need to change
+                //SaveSonogramData,  //Should ever need to change
+
+                ParallelProcessing = (bool?)dynamicConfig["ParallelProcessing"] ?? false,
+                TileImageOutput = (bool?)dynamicConfig["TileImageOutput"] ?? false,
+                RequireDateInFilename = (bool?)dynamicConfig["RequireDateInFilename"] ?? false,
+            };
+
+            double duration = (double?)dynamicConfig[AnalysisKeys.IndexCalculationDuration] ?? DefaultIndexCalculationDurationInSeconds;
+            config.IndexCalculationDuration = TimeSpan.FromSeconds(duration);
+            duration = (double?)dynamicConfig[AnalysisKeys.BGNoiseNeighbourhood] ?? 5.0;
+            config.BgNoiseBuffer = TimeSpan.FromSeconds(duration);
+            config.SetTypeOfFreqScale((string)dynamicConfig["FrequencyScale"]);
+
+            if (writeParameters)
+            {
+                // print out the sonogram parameters
+                LoggedConsole.WriteLine("\nPARAMETERS");
+                //foreach (KeyValuePair<string, string> kvp in configDict)
+                //{
+                //    LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
+                //}
+            }
+
             return config;
         }
     }

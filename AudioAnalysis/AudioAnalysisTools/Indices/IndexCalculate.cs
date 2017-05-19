@@ -19,7 +19,6 @@ namespace AudioAnalysisTools.Indices
     using System.Linq;
     using System.Reflection;
     using DSP;
-    using Fasterflect;
     using log4net;
     using StandardSpectrograms;
     using TowseyLibrary;
@@ -30,22 +29,7 @@ namespace AudioAnalysisTools.Indices
     /// </summary>
     public class IndexCalculate
     {
-        // EXTRACT INDICES: IF (frameLength = 128 AND sample rate = 22050) THEN frame duration = 5.805ms.
-        // EXTRACT INDICES: IF (frameLength = 256 AND sample rate = 22050) THEN frame duration = 11.61ms.
-        // EXTRACT INDICES: IF (frameLength = 512 AND sample rate = 22050) THEN frame duration = 23.22ms.
-        // EXTRACT INDICES: IF (frameLength = 128 AND sample rate = 11025) THEN frame duration = 11.61ms.
-        // EXTRACT INDICES: IF (frameLength = 256 AND sample rate = 11025) THEN frame duration = 23.22ms.
-        // EXTRACT INDICES: IF (frameLength = 256 AND sample rate = 17640) THEN frame duration = 18.576ms.
-        public const int DefaultWindowSize = 256;
-
         private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
-        // semi-arbitrary bounds between lf, mf and hf bands of the spectrum
-        // The midband, 1000Hz to 8000Hz, covers the bird-band in SERF & Gympie recordings.
-        private static int defaultLowFreqBound = 1000;
-        private static int defaultMidFreqBound = 8000;
-
-        // private static int defaultHighFreqBound = 11000;
 
         /// <summary>
         /// Extracts summary and spectral acoustic indices from the entire segment of the passed recording or a subsegment of it.
@@ -71,7 +55,7 @@ namespace AudioAnalysisTools.Indices
             FileInfo indicesPropertiesConfig,
             int sampleRateOfOriginalAudioFile,
             TimeSpan segmentStartOffset,
-            dynamic config,
+            IndexCalculateConfig config,
             bool returnSonogramInfo = false)
         {
             // returnSonogramInfo = true; // if debugging
@@ -86,16 +70,17 @@ namespace AudioAnalysisTools.Indices
             //WARNING: DO NOT USE Frame Overlap when calculating acoustic indices.
             //         It yields ACI, BGN, POW and EVN results that are significantly different from the default.
             //         I have not had time to check if the difference is meaningful. Best to avoid.
-            int frameSize = (int?)config[AnalysisKeys.FrameLength] ?? DefaultWindowSize;
+            //int frameSize = (int?)config[AnalysisKeys.FrameLength] ?? IndexCalculateConfig.DefaultWindowSize;
+
+            int frameSize = config.FrameLength;
             int frameStep = frameSize; // that is, windowOverlap = zero
 
             double frameStepDuration = frameStep / (double)sampleRate; // fraction of a second
             var frameStepTimeSpan = TimeSpan.FromTicks((long)(frameStepDuration * TimeSpan.TicksPerSecond));
 
-            // get frequency parameters for the analysis
-            // int hihFreqBound = (int?)config[AnalysisKeys.HighFreqBound] ?? defaultHighFreqBound;
-            int midFreqBound = (int?)config[AnalysisKeys.MidFreqBound] ?? defaultMidFreqBound;
-            int lowFreqBound = (int?)config[AnalysisKeys.LowFreqBound] ?? defaultLowFreqBound;
+            int midFreqBound = config.MidFreqBound;
+            int lowFreqBound = config.LowFreqBound;
+
             int freqBinCount = frameSize / 2;
             double freqBinWidth = recording.Nyquist / (double)freqBinCount;
 
@@ -115,7 +100,9 @@ namespace AudioAnalysisTools.Indices
             var freqScale = new FrequencyScale(nyquist: nyquist, frameSize: frameSize, herzInterval: 1000);
 
             // Linear or Octave frequency scale?
-            bool octaveScale = (bool?)config["OctaveFreqScale"] ?? false;
+            var freqScaleType = config.GetTypeOfFreqScale();
+            bool octaveScale = freqScaleType == FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
+
             if (octaveScale)
             {
                 // only allow one octave scale at the moment - for Jasco marine recordings.
