@@ -104,6 +104,7 @@ before_deploy:
   - ps: . .\tag.ps1 $env:ApVersion
   # prepare release strings: $env:ApReleaseMessage, $env:ApReleaseTitle
   - ps: . .\release.ps1 $env:ApTagName $true
+  - ps: 'ls env:'
   
 deploy:
   - provider: GitHub
