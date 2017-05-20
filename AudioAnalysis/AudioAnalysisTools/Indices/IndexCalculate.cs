@@ -81,65 +81,52 @@ namespace AudioAnalysisTools.Indices
             int freqBinCount = frameSize / 2;
             double freqBinWidth = recording.Nyquist / (double)freqBinCount;
 
-            // minimum samples needed to calculate data
-            // this value was chosen somewhat arbitrarily.
-            // It allowes for case where IndexCalculationDuration = 100ms which is approx 8 frames
-            int minimumViableSampleCount = frameSize * 8;
+            // get duration in seconds and sample count and frame count
+            double subsegmentDurationInSeconds = indexCalculationDuration.TotalSeconds;
+            int subsegmentSampleCount = (int)(subsegmentDurationInSeconds * sampleRate);
+            double subsegmentFrameCount = subsegmentSampleCount / (double)frameStep;
+            subsegmentFrameCount = (int)Math.Ceiling(subsegmentFrameCount);
 
-            // get TimeSpans and durations
-            var subsegmentTimeSpan = indexCalculationDuration;
-            double subsegmentSecondsDuration = subsegmentTimeSpan.TotalSeconds;
-            var ts = subsegmentOffsetTimeSpan;
-            double subsegmentOffsetInSeconds = ts.TotalSeconds;
-            ts = segmentStartOffset;
-            double segmentOffsetInSeconds = ts.TotalSeconds;
-            double localOffsetInSeconds = subsegmentOffsetInSeconds - segmentOffsetInSeconds;
-            var freqScale = new FrequencyScale(nyquist: nyquist, frameSize: frameSize, herzInterval: 1000);
-
-            // Linear or Octave frequency scale?
-            var freqScaleType = config.GetTypeOfFreqScale();
-            bool octaveScale = freqScaleType == FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
-
-            if (octaveScale)
-            {
-                // only allow one octave scale at the moment - for Jasco marine recordings.
-                freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
-            }
-
-            // calculate start and end samples of the subsegment and noise segment
-            int sampleStart = (int)(localOffsetInSeconds * sampleRate);
-
-            //calculate the number of samples in the exact subsegment duration
-            int subsegmentSampleCount = (int)(subsegmentSecondsDuration * sampleRate);
-
-            //calculate the exact number of frames in the exact subsegment duration
-            double frameCount = subsegmentSampleCount / (double)frameStep;
-
-            //In order not to lose the last fractional frame, round up the frame number
+            // In order not to lose the last fractional frame, round up the frame number
             // and get the exact number of samples in the integer number of frames.
             // Do this because when IndexCalculationDuration = 100ms, the number of frames is only 8.
-            subsegmentSampleCount = (int)Math.Ceiling(frameCount) * frameStep;
-            int sampleEnd = sampleStart + subsegmentSampleCount - 1;
+            subsegmentSampleCount = (int)(subsegmentFrameCount * frameStep);
 
-            // set the SUBSEGMENT recording = total segment if its length >= 60 seconds
+            // get start and end samples of the subsegment and noise segment
+            double localOffsetInSeconds = subsegmentOffsetTimeSpan.TotalSeconds - segmentStartOffset.TotalSeconds;
+            int startSample = (int)(localOffsetInSeconds * sampleRate);
+            int endSample = startSample + subsegmentSampleCount - 1;
+
+            if (startSample > signalLength)
+            {
+                LoggedConsole.WriteErrorLine("SERIOUS ERROR: The start sample is beyond end of recording!");
+                return null;
+            }
+
+            // if (indexCalculationDuration >= segmentDuration) set SUBSEGMENT = total recording
             AudioRecording subsegmentRecording = recording;
+
+            // But if the indexCalculationDuration < segmentDuration
             if (indexCalculationDuration < segmentDuration)
             {
-                var end = sampleStart + subsegmentSampleCount;
-                int availableSignal = signalLength - sampleStart;
+                // minimum samples needed to calculate acoustic indices. This value was chosen somewhat arbitrarily.
+                // It allowes for case where IndexCalculationDuration = 100ms which is approx 8 frames
+                int minimumViableSampleCount = frameSize * 8;
+                int availableSignal = signalLength - startSample;
 
-                // if start beyond the available audio OR end falls outside of audio
-                if (sampleStart > signalLength || (end > signalLength && availableSignal < minimumViableSampleCount))
+                // if (the required end sample is beyond recording end OR the available audio is insufficient for analysis) then backtrack.
+                if (endSample > signalLength && availableSignal < minimumViableSampleCount)
                 {
                     // Back-track so we can fill a whole result.
-                    // This is a silent correction equivalent to setting segment overlap for last segment.
-                    var oldStart = sampleStart;
-                    sampleStart = signalLength - subsegmentSampleCount;
+                    // This is a silent correction, equivalent to having a segment overlap for the last segment.
+                    var oldStart = startSample;
+                    startSample = signalLength - subsegmentSampleCount;
+                    endSample = signalLength;
 
-                    Logger.Trace("Backtracking to fill missing data from imperfect audio cuts because not enough samples available. " + (oldStart - sampleStart) + " samples overlap.");
+                    Logger.Trace("  Backtrack subsegment to fill missing data from imperfect audio cuts because not enough samples available. " + (oldStart - startSample) + " samples overlap.");
                 }
 
-                double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, sampleStart, subsegmentSampleCount);
+                double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, startSample, subsegmentSampleCount);
                 var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
                 subsegmentRecording = new AudioRecording(wr);
             }
@@ -163,10 +150,16 @@ namespace AudioAnalysisTools.Indices
 
             // Recalculate the spectrogram according to octave scale.
             // This option works only when have high SR recordings.
+            // Linear or Octave frequency scale? Set Linear as default.
+            var freqScale = new FrequencyScale(nyquist: nyquist, frameSize: frameSize, herzInterval: 1000);
+            var freqScaleType = config.GetTypeOfFreqScale();
+            bool octaveScale = freqScaleType == FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
             if (octaveScale)
             {
+                // only allow one octave scale at the moment - for Jasco marine recordings.
                 // ASSUME fixed Occtave scale - USEFUL ONLY FOR JASCO 64000sr MARINE RECORDINGS
                 // If you wish to use other octave scale types then need to put in the config file and and set up recovery here.
+                freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
                 dspOutput1.AmplitudeSpectrogram = OctaveFreqScale.AmplitudeSpectra(
                     dspOutput1.AmplitudeSpectrogram,
                     dspOutput1.WindowPower,
@@ -187,7 +180,7 @@ namespace AudioAnalysisTools.Indices
                 // If the index calculation duration is shorter than 30 seconds, then need to calculate BGN noise from a longer length of recording
                 //      i.e. need to add noiseBuffer either side. Typical noiseBuffer value = 5 seconds
                 int sampleBuffer = (int)(config.BgNoiseBuffer.TotalSeconds * sampleRate);
-                var bgnRecording = AudioRecording.GetRecordingSubsegment(recording, sampleStart, sampleEnd, sampleBuffer);
+                var bgnRecording = AudioRecording.GetRecordingSubsegment(recording, startSample, endSample, sampleBuffer);
 
                 // EXTRACT ENVELOPE and SPECTROGRAM FROM BACKGROUND NOISE SUBSEGMENT
                 dspOutput2 = DSP_Frames.ExtractEnvelopeAndFfts(bgnRecording, frameSize, frameStep);
@@ -228,8 +221,8 @@ namespace AudioAnalysisTools.Indices
             }
 
             // i. Check for clipping and high amplitude rates per second
-            summaryIndices.HighAmplitudeIndex = dspOutput1.MaxAmplitudeCount / subsegmentSecondsDuration;
-            summaryIndices.ClippingIndex = dspOutput1.ClipCount / subsegmentSecondsDuration;
+            summaryIndices.HighAmplitudeIndex = dspOutput1.MaxAmplitudeCount / subsegmentDurationInSeconds;
+            summaryIndices.ClippingIndex = dspOutput1.ClipCount / subsegmentDurationInSeconds;
 
             // ii. Calculate bg noise in dB
             //    Convert signal envelope to dB and subtract background noise. Default noise SD to calculate threshold = ZERO
@@ -248,7 +241,7 @@ namespace AudioAnalysisTools.Indices
             // v. average number of events per second whose duration > one frame
             // average event duration in milliseconds - no longer calculated
             //summaryIndices.AvgEventDuration = activity.avEventDuration;
-            summaryIndices.EventsPerSecond = activity.eventCount / subsegmentSecondsDuration;
+            summaryIndices.EventsPerSecond = activity.eventCount / subsegmentDurationInSeconds;
 
             // vi. Calculate SNR and active frames SNR
             summaryIndices.Snr = dBEnvelopeSansNoise.Max();
@@ -394,7 +387,7 @@ namespace AudioAnalysisTools.Indices
             if (indexCalculationDuration.TotalSeconds < 10.0)
             {
                 // calculate a new decibel spectrogram
-                sptInfo = SpectralPeakTracks.CalculateSpectralPeakTracks(recording, sampleStart, sampleEnd, frameSize, octaveScale, peakThreshold);
+                sptInfo = SpectralPeakTracks.CalculateSpectralPeakTracks(recording, startSample, endSample, frameSize, octaveScale, peakThreshold);
             }
             else
             {

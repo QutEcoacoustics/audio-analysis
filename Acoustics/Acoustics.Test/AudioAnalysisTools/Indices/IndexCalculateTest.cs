@@ -236,16 +236,16 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
                 this.outputDirectory.Create();
             }
 
-            var indexCalculateConfig = IndexCalculateConfig.GetConfig(configFile);
             var recording = new AudioRecording(sourceRecording);
 
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
+            var indexCalculateConfig = IndexCalculateConfig.GetConfig(configFile);
             indexCalculateConfig.IndexCalculationDuration = TimeSpan.FromSeconds(20);
             //indexCalculateConfig.SetTypeOfFreqScale("Octave");
 
             var results = IndexCalculate.Analysis(
                 recording,
-                TimeSpan.Zero,
+                TimeSpan.FromSeconds(40), // assume thta this is the third of three 20 second subsegments
                 indexPropertiesConfig,
                 22050,
                 TimeSpan.Zero,
@@ -263,6 +263,5 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.ACI);
         }
-
     }
 }
