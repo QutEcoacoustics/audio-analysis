@@ -139,6 +139,26 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
+        /// returns the binId for the grid line closest to the passed frequency
+        /// </summary>
+        public int GetBinIdForHerzValue(int herzValue)
+        {
+            int binId = 0;
+            int gridCount = this.GridLineLocations.GetLength(2);
+
+            for (int i = 0; i < gridCount; i++)
+            {
+                if (this.GridLineLocations[i, 0] > herzValue)
+                {
+                    binId = i;
+                    break;
+                }
+            }
+
+            return binId;
+        }
+
+        /// <summary>
         /// T.
         /// </summary>
         public static int[,] GetLinearGridLineLocations(int nyquist, int herzInterval, int binCount)
@@ -151,7 +171,7 @@ namespace AudioAnalysisTools.DSP
 
             for (int i = 0; i < gridCount; i++)
             {
-                int row = (int)((i+1) * yInterval);
+                int row = (int)((i + 1) * yInterval);
                 gridLineLocations[i, 0] = row;
                 gridLineLocations[i, 1] = (i + 1) * herzInterval;
             }

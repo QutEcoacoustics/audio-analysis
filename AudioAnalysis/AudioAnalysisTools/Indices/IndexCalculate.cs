@@ -148,8 +148,6 @@ namespace AudioAnalysisTools.Indices
             // EXTRACT ENVELOPE and SPECTROGRAM FROM SUBSEGMENT
             var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(subsegmentRecording, frameSize, frameStep);
 
-            // Recalculate the spectrogram according to octave scale.
-            // This option works only when have high SR recordings.
             // Linear or Octave frequency scale? Set Linear as default.
             var freqScale = new FrequencyScale(nyquist: nyquist, frameSize: frameSize, herzInterval: 1000);
             var freqScaleType = config.GetTypeOfFreqScale();
@@ -160,6 +158,8 @@ namespace AudioAnalysisTools.Indices
                 // ASSUME fixed Occtave scale - USEFUL ONLY FOR JASCO 64000sr MARINE RECORDINGS
                 // If you wish to use other octave scale types then need to put in the config file and and set up recovery here.
                 freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
+
+                // Recalculate the spectrogram according to octave scale. This option works only when have high SR recordings.
                 dspOutput1.AmplitudeSpectrogram = OctaveFreqScale.AmplitudeSpectra(
                     dspOutput1.AmplitudeSpectrogram,
                     dspOutput1.WindowPower,
@@ -268,10 +268,10 @@ namespace AudioAnalysisTools.Indices
             // Boundary between low & mid frequency bands is to avoid low freq bins containing anthropogenic noise. These biased index values away from biophony.
             // Boundary of upper bird-band is to avoid high freq artefacts due to mp3.
             int lowerBinBound = (int)Math.Ceiling(lowFreqBound / dspOutput1.FreqBinWidth);
-            int upperBinBound = (int)Math.Ceiling(midFreqBound / dspOutput1.FreqBinWidth);
+            int middleBinBound = (int)Math.Ceiling(midFreqBound / dspOutput1.FreqBinWidth);
 
             // calculate number of freq bins in the reduced bird-band.
-            int midBandBinCount = upperBinBound - lowerBinBound + 1;
+            int midBandBinCount = middleBinBound - lowerBinBound + 1;
 
             if (octaveScale)
             {
@@ -281,8 +281,9 @@ namespace AudioAnalysisTools.Indices
                 lowFreqBound = freqScale.LinearBound;
                 lowerBinBound = 26;  // i.e. 26 bins above the zero bin
                 midFreqBound = 1000;
-                upperBinBound = 139; // i.e.139 bins above the zero bin OR 39 bins below the top bin of 256
-                midBandBinCount = upperBinBound - lowerBinBound + 1;
+                middleBinBound = 139; // i.e.139 bins above the zero bin OR 39 bins below the top bin of 256
+                midBandBinCount = middleBinBound - lowerBinBound + 1;
+                middleBinBound = freqScale.GetBinIdForHerzValue(8000);
             }
 
             // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this will be less than SR/2.
@@ -340,7 +341,7 @@ namespace AudioAnalysisTools.Indices
 
             // vi: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.
             //     First extract High band SPECTROGRAM which is now noise reduced
-            double entropyOfPeaksSpectrum = AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, upperBinBound);
+            double entropyOfPeaksSpectrum = AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, middleBinBound);
             summaryIndices.EntropyOfPeaksSpectrum = 1 - entropyOfPeaksSpectrum;
 
             // ######################################################################################################################################################
@@ -433,8 +434,8 @@ namespace AudioAnalysisTools.Indices
             // NOTE: The amplitudeSpectrogram is already noise reduced at this stage.
             // Actually do clustering of binary spectra. Must first threshold
             double binaryThreshold = SpectralClustering.DefaultBinaryThresholdInDecibels;
-            var midBandSpectrogram = MatrixTools.Submatrix(deciBelSpectrogram, 0, lowerBinBound, deciBelSpectrogram.GetLength(0) - 1, upperBinBound);
-            var clusterInfo = SpectralClustering.ClusterTheSpectra(midBandSpectrogram, lowerBinBound, upperBinBound, binaryThreshold);
+            var midBandSpectrogram = MatrixTools.Submatrix(deciBelSpectrogram, 0, lowerBinBound, deciBelSpectrogram.GetLength(0) - 1, middleBinBound);
+            var clusterInfo = SpectralClustering.ClusterTheSpectra(midBandSpectrogram, lowerBinBound, middleBinBound, binaryThreshold);
 
             // Store two summary index values from cluster info
             summaryIndices.ClusterCount = clusterInfo.ClusterCount;

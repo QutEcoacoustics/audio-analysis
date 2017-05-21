@@ -219,7 +219,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Test index calculation when the various spectral indices
+        /// Test index calculation when the IndexCalculationDuration= 20 seconds & subsegmentOffsetTimeSpan = 40seconds
         /// </summary>
         [TestMethod]
         public void TestOfSpectralIndices_ICD20()
@@ -241,7 +241,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
             var indexCalculateConfig = IndexCalculateConfig.GetConfig(configFile);
             indexCalculateConfig.IndexCalculationDuration = TimeSpan.FromSeconds(20);
-            //indexCalculateConfig.SetTypeOfFreqScale("Octave");
 
             var results = IndexCalculate.Analysis(
                 recording,
@@ -259,6 +258,51 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             // ACI
             var expectedSpectrumFile = new FileInfo(outputDir + "\\ACI_ICD20.bin");
+            // Binary.Serialize(expectedSpectrumFile, spectralIndices.ACI);
+            var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
+            CollectionAssert.AreEqual(expectedVector, spectralIndices.ACI);
+        }
+
+        /// <summary>
+        /// Test index calculation when the Herz FreqScaleType = Octave.
+        /// </summary>
+        [TestMethod]
+        public void TestOfSpectralIndices_Octave()
+        {
+            var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
+            var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
+            var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
+            var outputDir = PathHelper.ResolveAssetPath("Indices");
+
+            // var outputDir = this.outputDirectory;
+            // Create temp directory to store output
+            if (!this.outputDirectory.Exists)
+            {
+                this.outputDirectory.Create();
+            }
+
+            var recording = new AudioRecording(sourceRecording);
+
+            // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
+            var indexCalculateConfig = IndexCalculateConfig.GetConfig(configFile);
+            indexCalculateConfig.SetTypeOfFreqScale("Octave");
+
+            var results = IndexCalculate.Analysis(
+                recording,
+                TimeSpan.FromSeconds(40), // assume thta this is the third of three 20 second subsegments
+                indexPropertiesConfig,
+                22050,
+                TimeSpan.Zero,
+                indexCalculateConfig,
+                returnSonogramInfo: true);
+
+            var spectralIndices = results.SpectralIndexValues;
+
+            // TEST the SPECTRAL INDICES
+            // After serialising the expected vector, comment the Binary.Serialise line and copy file to dir TestResources\Indices.
+
+            // ACI
+            var expectedSpectrumFile = new FileInfo(outputDir + "\\ACI_OctaveScale.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.ACI);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.ACI);
