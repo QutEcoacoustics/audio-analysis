@@ -309,7 +309,7 @@ Output  to  directory: {1}
                 else
                 {
                     var basename = Path.GetFileNameWithoutExtension(fileNameBase);
-                    string imageTitle = $"SOURCE:{basename},   (c) QUT;  ";
+                    string imageTitle = $"SOURCE:{basename},   {Meta.OrganizationTag};  ";
 
                     // Draw Tracks-Image of Summary indices
                     // set time scale resolution for drawing of summary index tracks

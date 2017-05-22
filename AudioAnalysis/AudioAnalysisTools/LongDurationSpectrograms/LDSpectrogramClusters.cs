@@ -6,6 +6,7 @@
     using System.IO;
     using System.Linq;
     using System.Text;
+    using Acoustics.Shared;
     using Indices;
     using TowseyLibrary;
 
@@ -474,7 +475,7 @@
             stringSize = g.MeasureString(title, stringFont);
             X += (stringSize.ToSize().Width + 70);
 
-            string text = string.Format("(c) QUT.EDU.AU");
+            string text = Meta.OrganizationTag;
             stringSize = g.MeasureString(text, stringFont);
             int X2 = width - stringSize.ToSize().Width - 2;
             if (X2 > X) g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X2, 3));

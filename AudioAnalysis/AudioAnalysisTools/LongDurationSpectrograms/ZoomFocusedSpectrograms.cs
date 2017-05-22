@@ -641,7 +641,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //X += (stringSize.ToSize().Width + 1);
             //g.DrawImage(colourChart, X, 1);
 
-            string text = string.Format("(c) qut.edu.au");
+            string text = Meta.OrganizationTag;
             stringSize = g.MeasureString(text, stringFont);
             int X2 = width - stringSize.ToSize().Width - 2;
             if (X2 > X) g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X2, 3));

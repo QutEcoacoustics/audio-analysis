@@ -585,7 +585,7 @@ namespace AnalysisPrograms
                 {
                     TimeSpan start = ((DateTimeOffset)indexGenerationData.RecordingStartDate).TimeOfDay;
                     string startTime = $"{start.Hours:d2}{start.Minutes:d2}h";
-                    string imageTitle = $"SOURCE: \"{opFileStem}\".     Starts at {startTime}                       (c) QUT.EDU.AU";
+                    string imageTitle = $"SOURCE: \"{opFileStem}\".     Starts at {startTime}                       {Meta.OrganizationTag}";
                     Bitmap tracksImage =
                             IndexDisplay.DrawImageOfSummaryIndices(
                             IndexProperties.GetIndexProperties(indexPropertiesConfig),
