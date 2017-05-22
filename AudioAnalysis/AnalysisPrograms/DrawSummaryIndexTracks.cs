@@ -8,6 +8,7 @@
     using System.IO;
     using System.Linq;
     using System.Text;
+    using Acoustics.Shared;
     using Acoustics.Shared.Extensions;
     using AnalysisBase;
     using Production;
@@ -118,7 +119,7 @@
 
             // Convert summary indices to image
             string fileName = Path.GetFileNameWithoutExtension(arguments.InputCsv.Name);
-            string title = $"SOURCE:{fileName},   (c) QUT;  ";
+            string title = $"SOURCE:{fileName},   {Meta.OrganizationTag};  ";
             Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndexTracks(
                 arguments.InputCsv,
                 arguments.IndexPropertiesConfig,

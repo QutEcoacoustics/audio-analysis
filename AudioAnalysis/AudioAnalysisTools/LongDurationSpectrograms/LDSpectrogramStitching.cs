@@ -180,7 +180,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             string titletext =
-                $"SOURCE: \"{opFileStem}\".     Starts at {startTime}                       (c) QUT.EDU.AU";
+                $"SOURCE: \"{opFileStem}\".     Starts at {startTime}                       {Meta.OrganizationTag}";
             Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndices(
                                  IndexProperties.GetIndexProperties(indexPropertiesConfigFileInfo),
                                  dictionaryOfCsvColumns,
@@ -384,11 +384,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int halfHeight = compositeBmp.Height / 2;
 
             //add in the title bars
-            string title = "24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = BGN-AVG-CVR)         (c) QUT.EDU.AU.  ";
+            string title = $"24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = BGN-AVG-CVR)         {Meta.OrganizationTag}  ";
             var titleBmp = Image_Track.DrawTitleTrack(compositeBmp.Width, trackHeight, title);
             int offset = 0;
             gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
-            title = "24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = ACI-ENT-EVN)         (c) QUT.EDU.AU.  ";
+            title = $"24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = ACI-ENT-EVN)         {Meta.OrganizationTag}  ";
             titleBmp = Image_Track.DrawTitleTrack(compositeBmp.Width, trackHeight, title);
             offset = halfHeight;
             gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale

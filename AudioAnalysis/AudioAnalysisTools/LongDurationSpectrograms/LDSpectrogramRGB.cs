@@ -694,7 +694,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             const int trackHeight = 20;
             int imageHt = bmp2.Height + bmp1.Height + trackHeight + trackHeight + trackHeight;
             var title =
-                $"FALSE COLOUR and BACKGROUND NOISE SPECTROGRAMS      (scale: hours x kHz)      (colour: R-G-B = {this.ColorMap})         (c) QUT.EDU.AU.  ";
+                $"FALSE COLOUR and BACKGROUND NOISE SPECTROGRAMS      (scale: hours x kHz)      (colour: R-G-B = {this.ColorMap})         {Meta.OrganizationTag}  ";
             var titleBmp = Image_Track.DrawTitleTrack(bmp2.Width, trackHeight, title);
             var timeScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
             var offsetMinute = TimeSpan.Zero;
@@ -1106,7 +1106,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             var stringSize = g.MeasureString(title, stringFont);
             x += stringSize.ToSize().Width + 70;
-            var text = "SCALE:(time x kHz)   (c) QUT.EDU.AU";
+            var text = $"SCALE:(time x kHz)   {Meta.OrganizationTag}";
             stringSize = g.MeasureString(text, stringFont);
             int x2 = width - stringSize.ToSize().Width - 2;
             if (x2 > x)
@@ -1141,7 +1141,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //var colourChart = LDSpectrogramRGB.DrawColourScale(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR - 2);
             //g.DrawImage(colourChart, X, 1);
 
-            var text = "SCALE:(time x kHz)        (c) QUT.EDU.AU";
+            var text = $"SCALE:(time x kHz)        {Meta.OrganizationTag}";
             stringSize = g.MeasureString(text, stringFont);
             int x2 = width - stringSize.ToSize().Width - 2;
             if (x2 > x)

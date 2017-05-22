@@ -248,6 +248,7 @@
     <Compile Include="Logging\Logging.cs" />
     <Compile Include="Csv\MatrixMapper.cs" />
     <Compile Include="MediaTypes.cs" />
+    <Compile Include="Meta.cs" />
     <Compile Include="NonClosingStreamWrapper.cs" />
     <Compile Include="Orderer.cs" />
     <Compile Include="Plugins.cs" />

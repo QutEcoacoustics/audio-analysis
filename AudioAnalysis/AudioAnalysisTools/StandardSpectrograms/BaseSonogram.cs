@@ -9,6 +9,7 @@ namespace AudioAnalysisTools
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.Linq;
+    using Acoustics.Shared;
     using Acoustics.Tools.Wav;
     using DSP;
     using LongDurationSpectrograms;
@@ -722,7 +723,7 @@ namespace AudioAnalysisTools
 
             var stringSize = g.MeasureString(title, stringFont);
             X += (stringSize.ToSize().Width + 70);
-            string text = "(c) QUT.EDU.AU";
+            string text = Meta.OrganizationTag;
             stringSize = g.MeasureString(text, stringFont);
             int x2 = width - stringSize.ToSize().Width - 2;
             if (x2 > X)

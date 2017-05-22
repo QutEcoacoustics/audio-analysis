@@ -10,6 +10,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
+    using Acoustics.Shared;
     using Indices;
     using TowseyLibrary;
 
@@ -457,7 +458,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             stringSize = g.MeasureString(text, stringFont);
             X += stringSize.ToSize().Width + 1; // distance to end of string
 
-            text = string.Format("(c) QUT.EDU.AU");
+            text = Meta.OrganizationTag;
             stringSize = g.MeasureString(text, stringFont);
             int X2 = width - stringSize.ToSize().Width - 2;
             if (X2 > X)
