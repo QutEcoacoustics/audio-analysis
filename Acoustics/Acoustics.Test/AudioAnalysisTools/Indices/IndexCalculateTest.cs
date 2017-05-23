@@ -290,6 +290,8 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, startSample, subsegmentSampleCount);
             var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, smapleRateOfOriginalRecording);
             var subsegmentRecording = new AudioRecording(wr);
+            //string path = @"C:\SensorNetworks\WavFiles\temp\tempfile.wav";
+            //WavWriter.Write16bitWavFile(wr.Samples, smapleRateOfOriginalRecording, path);
 
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
             var indexCalculateConfig = IndexCalculateConfig.GetConfig(configFile);
