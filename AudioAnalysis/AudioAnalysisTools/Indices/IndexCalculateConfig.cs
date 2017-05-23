@@ -308,7 +308,8 @@ namespace AudioAnalysisTools.Indices
             config.IndexCalculationDuration = TimeSpan.FromSeconds(duration);
             duration = (double?)dynamicConfig[AnalysisKeys.BGNoiseNeighbourhood] ?? 5.0;
             config.BgNoiseBuffer = TimeSpan.FromSeconds(duration);
-            config.SetTypeOfFreqScale((string)dynamicConfig["FrequencyScale"]);
+            string stringvalue = (string)dynamicConfig["FrequencyScale"];
+            config.SetTypeOfFreqScale(stringvalue);
 
             if (writeParameters)
             {

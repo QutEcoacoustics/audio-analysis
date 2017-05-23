@@ -32,9 +32,11 @@ ResampleRate: 22050
 # FrameWidth is used without overlap to calculate the spectral indices. Typical value=512
 FrameLength: 512
 
+
 #Default values in code are LowFreqBound=1000Hz & MidFreqBound=8000
 LowFreqBound: 1000
 MidFreqBound: 8000
+HighFreqBound: 11000
 
 # FrequencyScale options are currently only Linear and Octave
 # Octave scale is to be used only for Jasco Marine recordings @ sample rate = 64000
