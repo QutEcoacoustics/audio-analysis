@@ -79,7 +79,8 @@ namespace AudioAnalysisTools.Indices
             int lowFreqBound = config.LowFreqBound;
 
             int freqBinCount = frameSize / 2;
-            double freqBinWidth = recording.Nyquist / (double)freqBinCount;
+
+            // double freqBinWidth = recording.Nyquist / (double)freqBinCount;
 
             // get duration in seconds and sample count and frame count
             double subsegmentDurationInSeconds = indexCalculationDuration.TotalSeconds;
@@ -97,13 +98,7 @@ namespace AudioAnalysisTools.Indices
             int startSample = (int)(localOffsetInSeconds * sampleRate);
             int endSample = startSample + subsegmentSampleCount - 1;
 
-            if (startSample > signalLength)
-            {
-                LoggedConsole.WriteErrorLine("SERIOUS ERROR: The start sample is beyond end of recording!");
-                return null;
-            }
-
-            // if (indexCalculationDuration >= segmentDuration) set SUBSEGMENT = total recording
+            // Default behaviour: set SUBSEGMENT = total recording
             AudioRecording subsegmentRecording = recording;
 
             // But if the indexCalculationDuration < segmentDuration
@@ -114,8 +109,8 @@ namespace AudioAnalysisTools.Indices
                 int minimumViableSampleCount = frameSize * 8;
                 int availableSignal = signalLength - startSample;
 
-                // if (the required end sample is beyond recording end OR the available audio is insufficient for analysis) then backtrack.
-                if (endSample > signalLength && availableSignal < minimumViableSampleCount)
+                // if (the required audio is beyond recording OR insufficient for analysis) then backtrack.
+                if (availableSignal < minimumViableSampleCount)
                 {
                     // Back-track so we can fill a whole result.
                     // This is a silent correction, equivalent to having a segment overlap for the last segment.
@@ -236,16 +231,16 @@ namespace AudioAnalysisTools.Indices
             // iv: ACTIVITY for NOISE REDUCED SIGNAL ENVELOPE
             // Calculate fraction of frames having acoustic activity
             var activity = ActivityAndCover.CalculateActivity(dBEnvelopeSansNoise, frameStepTimeSpan);
-            summaryIndices.Activity = activity.fractionOfActiveFrames;
+            summaryIndices.Activity = activity.FractionOfActiveFrames;
 
             // v. average number of events per second whose duration > one frame
             // average event duration in milliseconds - no longer calculated
             //summaryIndices.AvgEventDuration = activity.avEventDuration;
-            summaryIndices.EventsPerSecond = activity.eventCount / subsegmentDurationInSeconds;
+            summaryIndices.EventsPerSecond = activity.EventCount / subsegmentDurationInSeconds;
 
             // vi. Calculate SNR and active frames SNR
             summaryIndices.Snr = dBEnvelopeSansNoise.Max();
-            summaryIndices.AvgSnrOfActiveFrames = activity.activeAvDB;
+            summaryIndices.AvgSnrOfActiveFrames = activity.ActiveAvDb;
 
             // vii. ENTROPY of ENERGY ENVELOPE -- 1-Ht because want measure of concentration of acoustic energy.
             double entropy = DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope));
@@ -270,20 +265,17 @@ namespace AudioAnalysisTools.Indices
             int lowerBinBound = (int)Math.Ceiling(lowFreqBound / dspOutput1.FreqBinWidth);
             int middleBinBound = (int)Math.Ceiling(midFreqBound / dspOutput1.FreqBinWidth);
 
-            // calculate number of freq bins in the reduced bird-band.
+            // calculate number of freq bins in the bird-band.
             int midBandBinCount = middleBinBound - lowerBinBound + 1;
 
             if (octaveScale)
             {
-                // the above frequency bin bounds do not apply with octave scale
-                // need to recalculate them suitable for JASCO MARINE recordings.
-                // TODO TODO TODO the below bounds are hard coded for a single OCTAVE SCALE
+                // the above frequency bin bounds do not apply with octave scale. Need to recalculate them suitable for Octave scale recording.
                 lowFreqBound = freqScale.LinearBound;
-                lowerBinBound = 26;  // i.e. 26 bins above the zero bin
-                midFreqBound = 1000;
-                middleBinBound = 139; // i.e.139 bins above the zero bin OR 39 bins below the top bin of 256
+                lowerBinBound = freqScale.GetBinIdForHerzValue(lowFreqBound);
+                midFreqBound = 8000; // This value appears suitable for Jasco Marine recordings. Not much happens above 8kHz.
+                middleBinBound = freqScale.GetBinIdForHerzValue(midFreqBound);
                 midBandBinCount = middleBinBound - lowerBinBound + 1;
-                middleBinBound = freqScale.GetBinIdForHerzValue(8000);
             }
 
             // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this will be less than SR/2.
@@ -367,13 +359,13 @@ namespace AudioAnalysisTools.Indices
             //     NOTE: at this point, decibelSpectrogram is noise reduced. All values >= 0.0
             //           FreqBinWidth can be accessed, if required, through dspOutput1.FreqBinWidth
             double dBThreshold = ActivityAndCover.DefaultActivityThresholdDb; // dB THRESHOLD for calculating spectral coverage
-            var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameStepTimeSpan, lowFreqBound, midFreqBound, freqBinWidth);
-            spectralIndices.CVR = spActivity.coverSpectrum;
-            spectralIndices.EVN = spActivity.eventSpectrum;
+            var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameStepTimeSpan, lowerBinBound, middleBinBound);
+            spectralIndices.CVR = spActivity.CoverSpectrum;
+            spectralIndices.EVN = spActivity.EventSpectrum;
 
-            summaryIndices.HighFreqCover = spActivity.highFreqBandCover;
-            summaryIndices.MidFreqCover = spActivity.midFreqBandCover;
-            summaryIndices.LowFreqCover = spActivity.lowFreqBandCover;
+            summaryIndices.HighFreqCover = spActivity.HighFreqBandCover;
+            summaryIndices.MidFreqCover = spActivity.MidFreqBandCover;
+            summaryIndices.LowFreqCover = spActivity.LowFreqBandCover;
 
             // ######################################################################################################################################################
 
@@ -418,7 +410,7 @@ namespace AudioAnalysisTools.Indices
 
             // vi: CLUSTERING - FIRST DETERMINE IF IT IS WORTH DOING
             // return if (activeFrameCount too small || eventCount == 0 || short index calc duration) because no point doing clustering
-            if (activity.activeFrameCount <= 2 || Math.Abs(activity.eventCount) < 0.01 || indexCalculationDuration.TotalSeconds < 15)
+            if (activity.ActiveFrameCount <= 2 || Math.Abs(activity.EventCount) < 0.01 || indexCalculationDuration.TotalSeconds < 15)
             {
                 // IN ADDITION return if indexCalculationDuration < 15 seconds because no point doing clustering on short time segment
                 // NOTE: Activity was calculated with 3dB threshold AFTER backgroundnoise removal.
@@ -451,7 +443,7 @@ namespace AudioAnalysisTools.Indices
             var scores = new List<Plot>
             {
                 new Plot("Decibels", DataTools.normalise(dBEnvelopeSansNoise), ActivityAndCover.DefaultActivityThresholdDb),
-                new Plot("Active Frames", DataTools.Bool2Binary(activity.activeFrames), 0.0),
+                new Plot("Active Frames", DataTools.Bool2Binary(activity.ActiveFrames), 0.0),
                 new Plot("Max Frequency", freqPeaks, 0.0), // relative location of freq maxima in spectra
             };
 

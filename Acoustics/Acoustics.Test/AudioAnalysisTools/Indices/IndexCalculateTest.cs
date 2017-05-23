@@ -14,6 +14,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
+    using TowseyLibrary;
 
     // using TestHelpers;
 
@@ -112,7 +113,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
 
             // var outputDir = this.outputDirectory;
-            var outputDir = PathHelper.ResolveAssetPath("Indices");
+            var resourcesDir = PathHelper.ResolveAssetPath("Indices");
 
             if (!this.outputDirectory.Exists)
             {
@@ -140,79 +141,79 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             // After serialising the expected vector, comment the Binary.Serialise line and copy file to dir TestResources\Indices.
 
             // ACI
-            var expectedSpectrumFile = new FileInfo(outputDir + "\\ACI.bin");
+            var expectedSpectrumFile = new FileInfo(resourcesDir + "\\ACI.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.ACI);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.ACI);
 
             // BGN
-            expectedSpectrumFile = new FileInfo(outputDir + "\\BGN.bin");
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\BGN.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.BGN);
 
             // CVR
-            expectedSpectrumFile = new FileInfo(outputDir + "\\CVR.bin");
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\CVR.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.CVR);
 
             // DMN
-            expectedSpectrumFile = new FileInfo(outputDir + "\\PMN.bin");
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\PMN.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.PMN);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.PMN);
 
             // ENT
-            expectedSpectrumFile = new FileInfo(outputDir + "\\ENT.bin");
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\ENT.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.ENT);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.ENT);
 
             // EVN
-            expectedSpectrumFile = new FileInfo(outputDir + "\\EVN.bin");
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\EVN.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.EVN);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.EVN);
 
             // POW
-            expectedSpectrumFile = new FileInfo(outputDir + "\\POW.bin");
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\POW.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.POW);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.POW);
 
             // RHZ
-            expectedSpectrumFile = new FileInfo(outputDir + "\\RHZ.bin");
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\RHZ.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.RHZ);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.RHZ);
 
             // RNG
-            expectedSpectrumFile = new FileInfo(outputDir + "\\RNG.bin");
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\RNG.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.RNG);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.RNG);
 
             // RPS
-            expectedSpectrumFile = new FileInfo(outputDir + "\\RPS.bin");
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\RPS.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.RPS);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.RPS);
 
             // RVT
-            expectedSpectrumFile = new FileInfo(outputDir + "\\RVT.bin");
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\RVT.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.RVT);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.RVT);
 
             // R3D
-            expectedSpectrumFile = new FileInfo(outputDir + "\\R3D.bin");
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\R3D.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.R3D);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.R3D);
 
             // SPT
-            expectedSpectrumFile = new FileInfo(outputDir + "\\SPT.bin");
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\SPT.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.SPT);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.SPT);
@@ -227,7 +228,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
             var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
             var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
-            var outputDir = PathHelper.ResolveAssetPath("Indices");
+            var resourcesDir = PathHelper.ResolveAssetPath("Indices");
 
             // var outputDir = this.outputDirectory;
             // Create temp directory to store output
@@ -244,7 +245,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             var results = IndexCalculate.Analysis(
                 recording,
-                TimeSpan.FromSeconds(40), // assume thta this is the third of three 20 second subsegments
+                TimeSpan.FromSeconds(40), // assume that this is the third of three 20 second subsegments
                 indexPropertiesConfig,
                 22050,
                 TimeSpan.Zero,
@@ -257,7 +258,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             // After serialising the expected vector, comment the Binary.Serialise line and copy file to dir TestResources\Indices.
 
             // ACI
-            var expectedSpectrumFile = new FileInfo(outputDir + "\\ACI_ICD20.bin");
+            var expectedSpectrumFile = new FileInfo(resourcesDir + "\\ACI_ICD20.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.ACI);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.ACI);
@@ -265,14 +266,15 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
         /// <summary>
         /// Test index calculation when the Herz FreqScaleType = Octave.
+        /// Only test the ACI spectral index as reasonable to assume that the rest will work if ACI works.
         /// </summary>
         [TestMethod]
         public void TestOfSpectralIndices_Octave()
         {
-            var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
-            var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
-            var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
-            var outputDir = PathHelper.ResolveAssetPath("Indices");
+            var sourceRecording = PathHelper.ResolveAsset(@"C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit.wav");
+            var configFile = PathHelper.ResolveConfigFile(@"Towsey.AcousticMarine.yml");
+            var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesMarineConfig.yml");
+            var resourcesDir = PathHelper.ResolveAssetPath("Indices");
 
             // var outputDir = this.outputDirectory;
             // Create temp directory to store output
@@ -281,17 +283,23 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
                 this.outputDirectory.Create();
             }
 
+            int smapleRateOfOriginalRecording = 64000;
+            int startSample = smapleRateOfOriginalRecording * 120; // start two minutews into recording
+            int subsegmentSampleCount = smapleRateOfOriginalRecording * 60; // get the third minute
             var recording = new AudioRecording(sourceRecording);
+            double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, startSample, subsegmentSampleCount);
+            var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, smapleRateOfOriginalRecording);
+            var subsegmentRecording = new AudioRecording(wr);
 
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
             var indexCalculateConfig = IndexCalculateConfig.GetConfig(configFile);
             indexCalculateConfig.SetTypeOfFreqScale("Octave");
 
             var results = IndexCalculate.Analysis(
-                recording,
-                TimeSpan.FromSeconds(40), // assume thta this is the third of three 20 second subsegments
+                subsegmentRecording,
+                TimeSpan.Zero,
                 indexPropertiesConfig,
-                22050,
+                smapleRateOfOriginalRecording,
                 TimeSpan.Zero,
                 indexCalculateConfig,
                 returnSonogramInfo: true);
@@ -302,7 +310,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             // After serialising the expected vector, comment the Binary.Serialise line and copy file to dir TestResources\Indices.
 
             // ACI
-            var expectedSpectrumFile = new FileInfo(outputDir + "\\ACI_OctaveScale.bin");
+            var expectedSpectrumFile = new FileInfo(resourcesDir + "\\ACI_OctaveScale.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.ACI);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.ACI);

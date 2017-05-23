@@ -144,13 +144,13 @@ namespace AudioAnalysisTools.DSP
         public int GetBinIdForHerzValue(int herzValue)
         {
             int binId = 0;
-            int gridCount = this.GridLineLocations.GetLength(2);
+            int gridCount = this.GridLineLocations.GetLength(0);
 
             for (int i = 0; i < gridCount; i++)
             {
-                if (this.GridLineLocations[i, 0] > herzValue)
+                if (this.GridLineLocations[i, 1] >= herzValue)
                 {
-                    binId = i;
+                    binId = this.GridLineLocations[i, 0];
                     break;
                 }
             }

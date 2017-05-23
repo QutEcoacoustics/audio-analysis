@@ -179,9 +179,9 @@ namespace AudioAnalysisTools.Indices
 
             //vi: SPECTROGRAM ANALYSIS - SPECTRAL COVER. NOTE: spectrogram is still a noise reduced amplitude spectrogram
             SpectralActivity sa = ActivityAndCover.CalculateSpectralEvents(spectrogram, spectralBgThreshold, frameDuration, lowFreqBound, midFreqBound, binWidth);
-            rainIndices.lowFreqCover = sa.lowFreqBandCover;
-            rainIndices.midFreqCover = sa.midFreqBandCover;
-            rainIndices.hiFreqCover = sa.highFreqBandCover;
+            rainIndices.lowFreqCover = sa.LowFreqBandCover;
+            rainIndices.midFreqCover = sa.MidFreqBandCover;
+            rainIndices.hiFreqCover = sa.HighFreqBandCover;
             //double[] coverSpectrum = sa.coverSpectrum;
             //double[] eventSpectrum = sa.eventSpectrum;
 
