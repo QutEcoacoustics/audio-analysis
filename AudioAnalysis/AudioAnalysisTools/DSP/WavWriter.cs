@@ -1,4 +1,8 @@
-﻿namespace AudioAnalysisTools.DSP
+﻿// <copyright file="WavWriter.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AudioAnalysisTools.DSP
 {
     using System;
     using System.IO;
@@ -19,9 +23,9 @@
         /// Unlike a CD, do this in mono, not stereo.
         /// </summary>
         /// <param name="signal">IMPORTANT: The signal values must be in range of signed 16 bit integer ie -32768 to +32768</param>
-        /// <param name="samplesPerSecond"></param>
-        /// <param name="path"></param>
-        public static void Write16bitWavFile(double[] signal, int samplesPerSecond, string path)
+        /// <param name="samplesPerSecond">sampling rate</param>
+        /// <param name="path">for saving the file</param>
+        public static void Write16BitWavFile(double[] signal, int samplesPerSecond, string path)
         {
             int samples = signal.Length;
 
@@ -64,7 +68,10 @@
             //perfect5th tones
             //for (int i = 0; i < samples; i++) writer.Write(perfect5th[i]);
             //write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
-            for (int i = 0; i < samples; i++) writer.Write((short)signal[i]);//converts double to signed 16 bit
+            for (int i = 0; i < samples; i++)
+            {
+                writer.Write((short)signal[i]); // converts double to signed 16 bit
+            }
 
             writer.Close();
             stream.Close();
@@ -75,17 +82,22 @@
             //ONLY HANDLE bit rate = 16.
             if (bitRate != 16)
             {
-                LoggedConsole.WriteLine("######### WARNING: CAN ONLY WRITE A BITRATE=16 SIGNAL TO FILE!");
+                LoggedConsole.WriteLine("######### WARNING: CAN ONLY WRITE A BITRATE=16 SIGNAL!");
                 return;
             }
-            //write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
+
+            // write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
             int length = signal.Length;
             var newSamples = new double[length];
-            for (int i = 0; i < length; i++) newSamples[i] = signal[i] * short.MaxValue; //converts double to signed 16 bit
-            Write16bitWavFile(newSamples, samplesPerSecond, path);
+            for (int i = 0; i < length; i++)
+            {
+                newSamples[i] = signal[i] * short.MaxValue; //converts double to signed 16 bit
+            }
+
+            Write16BitWavFile(newSamples, samplesPerSecond, path);
         }
 
-        public static short[] Perfect5th(int samples, int samplesPerSecond)
+        public static short[] PerfectFifth(int samples, int samplesPerSecond)
         {
             double aNatural = 220.0; //A below middle C, octave below concert A
             double ampl = 10000;
@@ -96,38 +108,43 @@
             int id = 0;
 
             double freq = aNatural * perfect;
-            for (int i = 0; i < samples / 4; i++) //perfect 5th
-            {
-                double t = (double)i / (double)samplesPerSecond;
-                short s = (short)(ampl * (Math.Sin(t * freq * 2.0 * Math.PI)));
-                data[id++] = s;
-                //writer.Write(s);
-            }
-            freq = aNatural * concert;
-            for (int i = 0; i < samples / 4; i++)//concert 5th
-            {
-                double t = (double)i / (double)samplesPerSecond;
-                short s = (short)(ampl * (Math.Sin(t * freq * 2.0 * Math.PI)));
-                data[id++] = s;
-
-                //                writer.Write(s);
-            }
             for (int i = 0; i < samples / 4; i++)
             {
-                double t = (double)i / (double)samplesPerSecond;
+                // perfect 5th
+                double t = i / (double)samplesPerSecond;
+                short s = (short)(ampl * Math.Sin(t * freq * 2.0 * Math.PI));
+                data[id++] = s;
+            }
+
+            freq = aNatural * concert;
+            for (int i = 0; i < samples / 4; i++)
+            {
+                // concert 5th
+                double t = i / (double)samplesPerSecond;
+                short s = (short)(ampl * Math.Sin(t * freq * 2.0 * Math.PI));
+                data[id++] = s;
+
+                // writer.Write(s);
+            }
+
+            for (int i = 0; i < samples / 4; i++)
+            {
+                double t = i / (double)samplesPerSecond;
                 short s = (short)(ampl * (Math.Sin(t * freq * 2.0 * Math.PI) + Math.Sin(t * freq * perfect * 2.0 * Math.PI)));
                 data[id++] = s;
 
                 //                writer.Write(s);
             }
+
             for (int i = 0; i < samples / 4; i++)
             {
-                double t = (double)i / (double)samplesPerSecond;
+                double t = i / (double)samplesPerSecond;
                 short s = (short)(ampl * (Math.Sin(t * freq * 2.0 * Math.PI) + Math.Sin(t * freq * concert * 2.0 * Math.PI)));
                 data[id++] = s;
 
                 //writer.Write(s);
             }
+
             return data;
         }//end Perfect5th();
 
@@ -135,26 +152,24 @@
         {
             LoggedConsole.WriteLine("RUNNING FROM TowseyLib.Main()");
 
-            const string wavDirName = @"C:\SensorNetworks\WavFiles\";
+            const string wavDirName = @"C:\SensorNetworks\WavFiles\temp\";
             const string fName = "SineSignal.wav";
             string path = wavDirName + fName;
 
             int sampleRate = 22050;
-            //int sampleRate = 44100;
-            double duration = 30.245; //sig duration in seconds
+            double duration = 30.245; // sig duration in seconds
             int[] harmonics = { 500, 1000, 2000, 4000 };
             double[] signal = DSP_Filters.GetSignal(sampleRate, duration, harmonics);
-            Write16bitWavFile(signal, sampleRate, path);
+            Write16BitWavFile(signal, sampleRate, path);
             LoggedConsole.WriteLine("FINISHED!");
             Console.ReadLine();
-
         } //end Main method
 
         public static void Write(string path)
         {
-            using (FileStream FS_Write = File.Open(path, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (FileStream fileStream = File.Open(path, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                BinaryWriter bw = new BinaryWriter(FS_Write);
+                BinaryWriter bw = new BinaryWriter(fileStream);
 
                 int c = 0;
 
@@ -171,27 +186,25 @@
                 byte[] header3 = { 2, 0, 16, 0, 100, 97, 116, 97, 152, 9, 4, 0 };
                 bw.Write(header3);
 
-                double t_const = (1.0 / 44100.0);
-                double t_pos = 1.0;
-                double t_val = 0.0;
+                double tConst = 1.0 / 44100.0;
+                double tPos = 1.0;
                 while (c < 264734)
                 {
-                    t_val = t_const * t_pos;
-                    t_pos++;
+                    var tVal = tConst * tPos;
+                    tPos++;
 
                     double amp = 14468.0;
                     amp = amp + 0.0;
 
                     double freq = 440.0;
-                    freq = 440.0;
 
-                    double sample = amp * Math.Sin(t_val * freq * 2 * Math.PI);
+                    double sample = amp * Math.Sin(tVal * freq * 2 * Math.PI);
 
                     sample = sample + amp;
-                    int sample_int = (int)sample;
+                    int sampleInt = (int)sample;
 
-                    int msb = sample_int / 256;
-                    int lsb = sample_int - (msb * 256);
+                    int msb = sampleInt / 256;
+                    int lsb = sampleInt - (msb * 256);
 
                     bw.Write((byte)lsb);
                     bw.Write((byte)msb);
@@ -214,14 +227,12 @@
                     LoggedConsole.WriteLine("Writing samples...");
                     for (int i = 0; i < sampleCount; i++)
                     {
-                        double signalItem = amp * Math.Sin(phase + 2.0 * Math.PI * freq * i / wavInfo.SampleRate);
+                        double signalItem = amp * Math.Sin(phase + (2.0 * Math.PI * freq * i / wavInfo.SampleRate));
                         writer.Write((short)signalItem);
                     }
 
                     LoggedConsole.WriteLine("Writing size...");
-
                     EndWrite(writer, wavInfo, sampleCount);
-
                     LoggedConsole.WriteLine("Writing complete.");
                 }
             }
@@ -283,7 +294,6 @@
             // AvgBytesPerSec = SampleRate * BlockAlign
             int bytesPerSecond = wavInfo.BytesPerSecond;
 
-
             // Block Align / bytes per sample. (frame)
             // The number of bytes per sample slice. This value
             // is not affected by the number of channels and can be
@@ -292,7 +302,6 @@
             // or
             // short frameSize = (short)(channels * ((wavInfo.BitsPerSample + 7) / 8));
             short blockAlign = wavInfo.BytesPerSample;
-
 
             // Significant Bits Per Sample
             // This value specifies the number of bits used to define each sample.
@@ -304,8 +313,6 @@
             /*
              * Chunk - data
              */
-
-            // data
             int chunkIdData = 0x61746164;
 
             // don't know this yet.
@@ -330,7 +337,6 @@
             writer.Write(chunkDataSizeData);
 
             // ready to write data;
-
             return writer;
         }
 
@@ -370,8 +376,5 @@
             writer.Seek(chunkDataSizeRiffOffset, SeekOrigin.Begin);
             writer.Write(chunkDataSizeRiff);
         }
-
-    }// end class
+    }
 }
-
-

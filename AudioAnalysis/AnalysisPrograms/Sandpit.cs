@@ -91,7 +91,8 @@ namespace AnalysisPrograms
                 // SpectrogramTools.AverageAnArrayOfDecibelValues(null);
 
                 // experiments with clustering the spectra within spectrograms
-                SpectralClustering.TESTMETHOD_SpectralClustering();
+                // SpectralClustering.TESTMETHOD_SpectralClustering();
+                WavWriter.Main();
             }
 
             if (false)
