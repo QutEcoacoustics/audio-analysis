@@ -92,7 +92,8 @@ namespace AnalysisPrograms
 
                 // experiments with clustering the spectra within spectrograms
                 // SpectralClustering.TESTMETHOD_SpectralClustering();
-                WavWriter.Main();
+                DspFilters.TestMethod_GenerateSignal1();
+                DspFilters.TestMethod_GenerateSignal2();
             }
 
             if (false)

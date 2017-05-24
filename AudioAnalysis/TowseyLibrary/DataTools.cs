@@ -103,14 +103,17 @@ namespace TowseyLibrary
                 //LoggedConsole.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
                 return null;
             }
+
             int[] sa = new int[length];
 
             for (int i = 0; i < length; i++)
             {
                 sa[i] = A[start+i];
             }
+
             return sa;
         }
+
         /// <summary>
         ///
         /// </summary>
@@ -128,12 +131,14 @@ namespace TowseyLibrary
                 end = A.Length - 1;
                 length = end - start + 1;
             }
+
             double[] sa = new double[length];
 
             for (int i = 0; i < length; i++)
             {
                 sa[i] = A[start + i];
             }
+
             return sa;
         }
 
@@ -164,6 +169,7 @@ namespace TowseyLibrary
                 {   sm[i,j] = M[r1+i,c1+j];
                 }
             }
+
             return sm;
         }
 
@@ -198,11 +204,16 @@ namespace TowseyLibrary
 
                         //obtain average value.
                         double av = 0.0;
-                        for (int n = startFrame; n <= i; n++) av += values[n];
+                        for (int n = startFrame; n <= i; n++)
+                    {
+                        av += values[n];
+                    }
+
                         segment[2] = av / (double)(i - startFrame + 1); //average value.
                         events.Add(segment);
                     }
             } //end of pass over all frames
+
             return events;
         }//end method SegmentArrayOnThreshold()
 
@@ -213,8 +224,12 @@ namespace TowseyLibrary
             var newList = new List<double[]>();
             for (int i = 0; i < list.Count; i++)
             {
-                if (list[i] != null) newList.Add(list[i]);
+                if (list[i] != null)
+                {
+                    newList.Add(list[i]);
+                }
             }
+
             return newList;
         }
 
@@ -230,6 +245,7 @@ namespace TowseyLibrary
                     op[i, j] = list[i][j];
                 }
             }
+
             return op;
         }
 
@@ -250,6 +266,7 @@ namespace TowseyLibrary
                     op[i, j] = list[i][j];
                 }
             }
+
             return op;
         }
 
@@ -269,6 +286,7 @@ namespace TowseyLibrary
                     M[row, col] = array[id++];
                 }
             }
+
             return M;
         }
 
@@ -293,6 +311,7 @@ namespace TowseyLibrary
                     v[id++] = m[row, col];
                 }
             }
+
             return v;
         }
 
@@ -313,6 +332,7 @@ namespace TowseyLibrary
                     v[id++] = m[row, col];
                 }
             }
+
             return v;
         }
 
@@ -356,6 +376,7 @@ namespace TowseyLibrary
                     v[id++] = M[row, col];
                 }
             }
+
             return v;
         }
 
@@ -382,6 +403,7 @@ namespace TowseyLibrary
                     }
                 }
             }
+
             return v;
         }
 
@@ -406,6 +428,7 @@ namespace TowseyLibrary
                     }
                 }
             }
+
             return v;
         }
 
@@ -422,9 +445,13 @@ namespace TowseyLibrary
             {
                 for (int c = 0; c < colCount; c++)
                 {
-                    if (M[r, c] > threshold) op[r, c] = 1.0;
+                    if (M[r, c] > threshold)
+                    {
+                        op[r, c] = 1.0;
+                    }
                 }
             }
+
             return op;
         }
 
@@ -440,12 +467,28 @@ namespace TowseyLibrary
                 for (int row = 0; row < rows; row++)
                 {
                     int count = 0;
-                    if (m1[row, col] == 1.0) count++;
-                    if (m2[row, col] == 1.0) count++;
-                    if (m3[row, col] == 1.0) count++;
-                    if (count >=2) M[row, col] = 1;
+                    if (m1[row, col] == 1.0)
+                    {
+                        count++;
+                    }
+
+                    if (m2[row, col] == 1.0)
+                    {
+                        count++;
+                    }
+
+                    if (m3[row, col] == 1.0)
+                    {
+                        count++;
+                    }
+
+                    if (count >=2)
+                    {
+                        M[row, col] = 1;
+                    }
                 }
             }
+
             return M;
         }
 
@@ -468,8 +511,10 @@ namespace TowseyLibrary
                 {
                     sum += V[index + j];
                 }
+
                 newVector[i] = (sum / (double)factor);
             }
+
             return newVector;
         }
 
@@ -489,6 +534,7 @@ namespace TowseyLibrary
             {
                 d += (V[i] * V[i]);
             }
+
             return Math.Sqrt(d);
         }
 
@@ -506,8 +552,15 @@ namespace TowseyLibrary
 
             // now that length = 1.0;
             double L = VectorEuclidianLength(Vnorm);
-            if (L > 1.00001) LoggedConsole.WriteLine("WARNING:DataUtilities.Vector_NormLength() LENGTH=" + L);
-            if (L < 0.99999) LoggedConsole.WriteLine("WARNING:DataUtilities.Vector_NormLength() LENGTH=" + L);
+            if (L > 1.00001)
+            {
+                LoggedConsole.WriteLine("WARNING:DataUtilities.Vector_NormLength() LENGTH=" + L);
+            }
+
+            if (L < 0.99999)
+            {
+                LoggedConsole.WriteLine("WARNING:DataUtilities.Vector_NormLength() LENGTH=" + L);
+            }
 
             return Vnorm;
         }
@@ -531,6 +584,7 @@ namespace TowseyLibrary
                 Vnorm[i] = (V[i] - min) / range;
                 //LoggedConsole.WriteLine(i + ", " + Vnorm[i]);
             }
+
             return Vnorm;
         }
 
@@ -542,12 +596,21 @@ namespace TowseyLibrary
         public static double[] SubtractMean(double[] v)
         {
             double mean = 0.0;
-            for (int i = 0; i < v.Length; i++) mean += v[i];
+            for (int i = 0; i < v.Length; i++)
+            {
+                mean += v[i];
+            }
+
             mean /= v.Length;
             double[] vOut = new double[v.Length];
-            for (int i = 0; i < v.Length; i++) vOut[i] = v[i] - mean;
+            for (int i = 0; i < v.Length; i++)
+            {
+                vOut[i] = v[i] - mean;
+            }
+
             return vOut;
         }
+
         /// <summary>
         /// subtracts the value from each value of an array
         /// </summary>
@@ -560,6 +623,7 @@ namespace TowseyLibrary
             {
                 vOut[i] = v[i] - value;
             }
+
             return vOut;
         }
 
@@ -575,8 +639,12 @@ namespace TowseyLibrary
             for (int i = 0; i < v.Length; i++)
             {
                 vOut[i] = v[i] - value;
-                if (vOut[i] < 0.0) vOut[i] = 0.0;
+                if (vOut[i] < 0.0)
+                {
+                    vOut[i] = 0.0;
+                }
             }
+
             return vOut;
         }
 
@@ -610,6 +678,7 @@ namespace TowseyLibrary
             {
                 count += Math.Abs(Math.Sign(signal[j]) - Math.Sign(signal[j - 1]));
             }
+
             return count / 2;
         }
 
@@ -625,8 +694,12 @@ namespace TowseyLibrary
             int count = 0;
             for (int j = 1; j < length; j++)  //foreach sample
             {
-                if ((signal[j - 1] >= 0.0) && (signal[j] < 0.0)) count++;
+                if ((signal[j - 1] >= 0.0) && (signal[j] < 0.0))
+                {
+                    count++;
+                }
             }
+
             return count;
         }
 
@@ -641,8 +714,12 @@ namespace TowseyLibrary
             int count = 0;
             for (int j = 1; j < length; j++)  //foreach sample
             {
-                if ((signal[j - 1] <= 0.0) && (signal[j] > 0.0)) count++;
+                if ((signal[j - 1] <= 0.0) && (signal[j] > 0.0))
+                {
+                    count++;
+                }
             }
+
             return count;
         }
 
@@ -660,8 +737,10 @@ namespace TowseyLibrary
             {
                 newArray[i] = V[L - i - 1];
             }
+
             return newArray;
         }
+
         public static int[] reverseArray(int[] V)
         {
             int L = V.Length;
@@ -671,6 +750,7 @@ namespace TowseyLibrary
             {
                 newArray[i] = V[L - i - 1];
             }
+
             return newArray;
         }
 
@@ -690,10 +770,20 @@ namespace TowseyLibrary
 
             for (int i = 0; i < L; i++)
             {
-                if     (A[i] < min) newArray[i] = min;
-                else if(A[i] > max) newArray[i] = max;
-                else                newArray[i] = A[i];
+                if     (A[i] < min)
+                {
+                    newArray[i] = min;
+                }
+                else if(A[i] > max)
+                {
+                    newArray[i] = max;
+                }
+                else
+                {
+                    newArray[i] = A[i];
+                }
             }
+
             return newArray;
         }
 
@@ -708,13 +798,27 @@ namespace TowseyLibrary
             {
                 types[i] = TypeOfArray(listOfArrays[i]);
             }
+
             return types;
         }
+
         public static Type TypeOfArray(string[] array)
         {
-            if (IsArrayOfBoolean(array)) return typeof(bool);
-            if (IsArrayOfInt(array))     return typeof(int);
-            if (IsArrayOfDouble(array))  return typeof(double);
+            if (IsArrayOfBoolean(array))
+            {
+                return typeof(bool);
+            }
+
+            if (IsArrayOfInt(array))
+            {
+                return typeof(int);
+            }
+
+            if (IsArrayOfDouble(array))
+            {
+                return typeof(double);
+            }
+
             return typeof(string);
         }
 
@@ -723,26 +827,40 @@ namespace TowseyLibrary
             int result = 0;
             for (int i = 0; i < array.Length; i++)
             {
-                if (!int.TryParse(array[i], out result)) return false;
+                if (!int.TryParse(array[i], out result))
+                {
+                    return false;
+                }
             }
+
             return true;
         }
+
         public static bool IsArrayOfDouble(string[] array)
         {
             double result = 0;
             for (int i = 0; i < array.Length; i++)
             {
-                if (!double.TryParse(array[i], out result)) return false;
+                if (!double.TryParse(array[i], out result))
+                {
+                    return false;
+                }
             }
+
             return true;
         }
+
         public static bool IsArrayOfBoolean(string[] array)
         {
             bool result = true;
             for (int i = 0; i < array.Length; i++)
             {
-                if (! bool.TryParse(array[i], out result)) return false;
+                if (! bool.TryParse(array[i], out result))
+                {
+                    return false;
+                }
             }
+
             return true;
         }
 
@@ -770,6 +888,7 @@ namespace TowseyLibrary
                 //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
                 clone[maxIndex] = -double.MaxValue;
             }
+
             return Tuple.Create(rankOrder, sort);
         }
 
@@ -797,6 +916,7 @@ namespace TowseyLibrary
                 //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
                 clone[minIndex] = double.MaxValue;
             }
+
             return Tuple.Create(rankOrder, sort);
         }
 
@@ -821,8 +941,10 @@ namespace TowseyLibrary
                 //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
                 array[maxIndex] = -int.MaxValue;
             }
+
             return Tuple.Create(rankOrder, sort);
         }
+
         public static System.Tuple<int[], int[]> SortArray(int[] a)
         {
             //Array.Sort(array);
@@ -838,6 +960,7 @@ namespace TowseyLibrary
                 //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
                 array[maxIndex] = -int.MaxValue;
             }
+
             return Tuple.Create(rankOrder, sort);
         }
 
@@ -863,9 +986,18 @@ namespace TowseyLibrary
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    if (M[i, j] <= min) newM[i, j] = min;
-                    else if (M[i,j] >= max) newM[i,j] = max;
-                    else newM[i,j] = M[i,j];
+                    if (M[i, j] <= min)
+                    {
+                        newM[i, j] = min;
+                    }
+                    else if (M[i,j] >= max)
+                    {
+                        newM[i,j] = max;
+                    }
+                    else
+                    {
+                        newM[i,j] = M[i,j];
+                    }
                 }
             }
 
@@ -888,19 +1020,36 @@ namespace TowseyLibrary
         /// <param name="maxCut">power value equivalent to maxPercentile</param>
         public static void PercentileCutoffs(double[,] matrix, double minPercentile, double maxPercentile, out double minCut, out double maxCut)
         {
-            if (maxPercentile < minPercentile) throw new ArgumentException("maxPercentile must be greater than or equal to minPercentile");
-            if (minPercentile < 0.0) minPercentile = 0.0;
-            if (maxPercentile > 1.0) maxPercentile = 1.0;
+            if (maxPercentile < minPercentile)
+            {
+                throw new ArgumentException("maxPercentile must be greater than or equal to minPercentile");
+            }
+
+            if (minPercentile < 0.0)
+            {
+                minPercentile = 0.0;
+            }
+
+            if (maxPercentile > 1.0)
+            {
+                maxPercentile = 1.0;
+            }
             //if (minPercentile < 0.0) throw new ArgumentException("minPercentile must be at least 0.0");
             //if (maxPercentile > 1.0) throw new ArgumentException("maxPercentile must be at most 1.0");
             double min;
             double max;
             MinMax(matrix, out min, out max);
-            if (max <= min) throw new ArgumentException("max="+max+" must be > min="+min);
+            if (max <= min)
+            {
+                throw new ArgumentException("max="+max+" must be > min="+min);
+            }
+
             minCut = min;
             maxCut = max;
-            if ((minPercentile == 0.0) && (maxPercentile == 1.0)) return;
-
+            if ((minPercentile == 0.0) && (maxPercentile == 1.0))
+            {
+                return;
+            }
 
             const int n = 1024;      //number of bins for histogram
             int[] bins = new int[n]; //histogram of power in sonogram
@@ -912,8 +1061,16 @@ namespace TowseyLibrary
                 for (int j = 0; j < N; j++)
                 {   //normalise power for given min and max
                     int k = (int)Math.Floor(n * (matrix[i, j] - min) / range);//normalise
-                    if (k < 0) k = 0;      //range check
-                    if (k >= n) k = n - 1;
+                    if (k < 0)
+                    {
+                        k = 0;      //range check
+                    }
+
+                    if (k >= n)
+                    {
+                        k = n - 1;
+                    }
+
                     bins[k]++;
                 }
             }
@@ -956,17 +1113,26 @@ namespace TowseyLibrary
             int count = 0;
             foreach (double d in values)
             {
-                if (d > 0.0) count++;
+                if (d > 0.0)
+                {
+                    count++;
+                }
             }
+
             return count;
         }
+
         public static int CountPositives(int[] values)
         {
             int count = 0;
             foreach (int v in values)
             {
-                if (v > 0) count++;
+                if (v > 0)
+                {
+                    count++;
+                }
             }
+
             return count;
         }
 
@@ -974,27 +1140,37 @@ namespace TowseyLibrary
 
 
 
-    public static int CountTrues(bool[] peaks)
+        public static int CountTrues(bool[] peaks)
     {
         int count = 0;
         foreach (bool b in peaks)
         {
-           if (b) count++;
-        }
+           if (b)
+                {
+                    count++;
+                }
+            }
+
         return count;
     }
 
 
-    public static double[] Bool2Binary(bool[] boolArray)
+        public static double[] Bool2Binary(bool[] boolArray)
     {
         int L = boolArray.Length;
         double[] binary = new double[L];
         for (int i = 0; i < L; i++) // iterate through boolArray
-            if (boolArray[i]) binary[i] = 1.0;
+            {
+                if (boolArray[i])
+                {
+                    binary[i] = 1.0;
+                }
+            }
+
         return binary;
     }
 
-    public static List<int> GetEventLengths(bool[] boolArray)
+        public static List<int> GetEventLengths(bool[] boolArray)
     {
         int L = boolArray.Length;
         List<int> list = new List<int>();
@@ -1018,107 +1194,135 @@ namespace TowseyLibrary
                 counter = 0;
             }
         }
+
         if ((boolArray[L - 1]) && (inEvent))
         {
             list.Add(counter);
         }
+
         return list;
     }
 
+        //=============================================================================
 
-
-    //=============================================================================
-
-
-    /// <summary>
-    /// prunes the start and end of an array to remove low values.
-    /// </summary>
-    /// <param name="data">an array of double</param>
-    /// <param name="severity">must be in range [0,1].</param>
-    /// <returns></returns>
-    public static int[] Peaks_CropLowAmplitude(double[] data, double threshold)
-    {
-        int length = data.Length;
-        int[] bounds = new int[2];
-        //double min, max;
-        //DataTools.MinMax(data, out min, out max);
-        //double range = max - min;
-        //double threshold = min + (range * severity); //must be 10% of max.
-
-        for (int i = 0; i < data.Length - 1; i++)
+        /// <summary>
+        /// prunes the start and end of an array to remove low values.
+        /// </summary>
+        /// <param name="data">an array of double</param>
+        /// <param name="threshold">must be in range [0,1].</param>
+        public static int[] Peaks_CropLowAmplitude(double[] data, double threshold)
         {
-            if (data[i] >= threshold) //
+            int length = data.Length;
+            int[] bounds = new int[2];
+
+            //double min, max;
+            //DataTools.MinMax(data, out min, out max);
+            //double range = max - min;
+            //double threshold = min + (range * severity); //must be 10% of max.
+
+            for (int i = 0; i < data.Length - 1; i++)
             {
-                bounds[0] = i;
-                break;
+                if (data[i] >= threshold)
+                {
+                    bounds[0] = i;
+                    break;
+                }
             }
-        }
-        for (int i = data.Length - 1; i > 1; i--)
-        {
-            if (data[i] >= threshold) //
+
+            for (int i = data.Length - 1; i > 1; i--)
             {
-                bounds[1] = i;
-                break;
+                if (data[i] >= threshold)
+                {
+                    bounds[1] = i;
+                    break;
+                }
             }
+
+            return bounds;
         }
-        return bounds;
-    }
 
-     /// Returns the location of the first and last peaks
-    public static int[] Peaks_CropToFirstAndLast(double[] data, double severity)
-    {
-        int length = data.Length;
-        int[] peaks = new int[2];
-        double min, max;
-        MinMax(data, out min, out max);
-        double range = max - min;
-        double lowThreshold = min + (range * severity);      //must be 10% of max.
-        double topThreshold = min + (range * (1- severity)); //must be 90% of max.
-
-        for (int i = 1; i < data.Length - 1; i++)
+        /// <summary>
+        /// Returns the location of the first and last peaks
+        /// </summary>
+        public static int[] Peaks_CropToFirstAndLast(double[] data, double severity)
         {
-            double Dm = data[i] - data[i - 1];
-            double Dp = data[i + 1] - data[i];
-            bool peak = false;
-            if ((Dm > 0.0) && (Dp < 0.0)) peak = true;
-            if ((!peak) || (data[i] < lowThreshold)) continue;
+            int length = data.Length;
+            int[] peaks = new int[2];
+            double min, max;
+            MinMax(data, out min, out max);
+            double range = max - min;
+            double lowThreshold = min + (range * severity);      //must be 10% of max.
+            double topThreshold = min + (range * (1- severity)); //must be 90% of max.
 
-            if ((peak) || (data[i] > topThreshold)) //which ever comes first
+            for (int i = 1; i < data.Length - 1; i++)
             {
-                peaks[0] = i;
-                break;
-            }
-        }
-        for (int i = data.Length - 2; i > 1; i--)
-        {
-            double Dm = data[i] - data[i - 1];
-            double Dp = data[i + 1] - data[i];
-            bool peak = false;
-            if ((Dm > 0.0) && (Dp < 0.0)) peak = true;
-            if ((!peak) || (data[i] < lowThreshold)) continue;
+                double Dm = data[i] - data[i - 1];
+                double Dp = data[i + 1] - data[i];
+                bool peak = false;
+                if ((Dm > 0.0) && (Dp < 0.0))
+                    {
+                        peak = true;
+                    }
 
-            if ((peak) || (data[i] > topThreshold)) //which ever comes first
-            {
-                peaks[1] = i;
-                break;
+                if ((!peak) || (data[i] < lowThreshold))
+                    {
+                        continue;
+                    }
+
+                if ((peak) || (data[i] > topThreshold)) //which ever comes first
+                {
+                    peaks[0] = i;
+                    break;
+                }
             }
+
+            for (int i = data.Length - 2; i > 1; i--)
+            {
+                double Dm = data[i] - data[i - 1];
+                double Dp = data[i + 1] - data[i];
+                bool peak = false;
+                if ((Dm > 0.0) && (Dp < 0.0))
+                    {
+                        peak = true;
+                    }
+
+                if ((!peak) || (data[i] < lowThreshold))
+                    {
+                        continue;
+                    }
+
+                if ((peak) || (data[i] > topThreshold)) //which ever comes first
+                {
+                    peaks[1] = i;
+                    break;
+                }
+            }
+
+            return peaks;
         }
-        return peaks;
-    }
-    public static bool[] GetPeaks(double[] data)
-    {
-        int length = data.Length;
-        bool[] peaks = new bool[length];
-        for (int i = 1; i < data.Length - 1; i++)
+
+        public static bool[] GetPeaks(double[] data)
         {
-            double Dm = data[i] - data[i - 1];
-            double Dp = data[i + 1] - data[i];
-            if ((Dm > 0.0) && (Dp < 0.0)) peaks[i] = true;
-            else peaks[i] = false;
+            int length = data.Length;
+            bool[] peaks = new bool[length];
+            for (int i = 1; i < data.Length - 1; i++)
+            {
+                double dm = data[i] - data[i - 1];
+                double dp = data[i + 1] - data[i];
+                if (dm > 0.0 && dp < 0.0)
+                {
+                    peaks[i] = true;
+                }
+                else
+                {
+                    peaks[i] = false;
+                }
+            }
+
+            return peaks;
         }
-        return peaks;
-    }
-    public static bool[] GetTroughs(double[] data)
+
+        public static bool[] GetTroughs(double[] data)
     {
         int length = data.Length;
         bool[] troughs = new bool[length];
@@ -1126,13 +1330,20 @@ namespace TowseyLibrary
         {
             double deltaMinus = data[i] - data[i - 1];
             double deltaPlus = data[i + 1] - data[i];
-            if ((deltaMinus < 0.0) && (deltaPlus > 0.0)) troughs[i] = true;
-            else troughs[i] = false;
-        }
+            if ((deltaMinus < 0.0) && (deltaPlus > 0.0))
+                {
+                    troughs[i] = true;
+                }
+                else
+                {
+                    troughs[i] = false;
+                }
+            }
+
         return troughs;
     }
 
-    public static int[] GetHistogramOfDistancesBetweenEveryPairOfPeaks(double[] data, double threshold)
+        public static int[] GetHistogramOfDistancesBetweenEveryPairOfPeaks(double[] data, double threshold)
     {
         List<int> peakLocations = PeakLocations(data, threshold);
 
@@ -1151,7 +1362,7 @@ namespace TowseyLibrary
     }
 
 
-    public static void CountPeaks(double[] array, out int count, out double sum)
+        public static void CountPeaks(double[] array, out int count, out double sum)
     {
         count = 0;
         sum = 0.0;
@@ -1173,7 +1384,7 @@ namespace TowseyLibrary
         /// <param name="array"></param>
         /// <param name="count"></param>
         /// <param name="sum"></param>
-    public static void PeakLocations(double[] array, double threshold, out int count, out double[] locations)
+        public static void PeakLocations(double[] array, double threshold, out int count, out double[] locations)
     {
         count = 0;
         int L = array.Length;
@@ -1181,7 +1392,11 @@ namespace TowseyLibrary
 
         for (int i = 1; i < L - 1; i++) // iterate through array
         {
-            if (array[i] < threshold) continue;
+            if (array[i] < threshold)
+                {
+                    continue;
+                }
+
             if ((array[i] > array[i - 1]) && (array[i] > array[i + 1]))
             {
                 count++;
@@ -1196,19 +1411,24 @@ namespace TowseyLibrary
     /// <param name="array"></param>
     /// <param name="count"></param>
     /// <param name="sum"></param>
-    public static List<int> PeakLocations(double[] array, double threshold)
+        public static List<int> PeakLocations(double[] array, double threshold)
     {
         int L = array.Length;
         var locations = new List<int>();
 
         for (int i = 1; i < L - 1; i++) // iterate through array
         {
-            if (array[i] < threshold) continue;
+            if (array[i] < threshold)
+                {
+                    continue;
+                }
+
             if ((array[i] > array[i - 1]) && (array[i] > array[i + 1]))
             {
                 locations.Add(i);
             }
         }
+
         return locations;
     }
 
@@ -1219,7 +1439,7 @@ namespace TowseyLibrary
     /// <param name="array"></param>
     /// <param name="count"></param>
     /// <param name="sum"></param>
-    public static double[] GetPeakValues(double[] array)
+        public static double[] GetPeakValues(double[] array)
     {
         int L = array.Length;
         var values = new double[L];
@@ -1231,11 +1451,12 @@ namespace TowseyLibrary
                 values[i] = array[i];
             }
         }
+
         return values;
     }
 
     // returns the locations of peaks ranked from highest value to lowest valued peak
-    public static int[] GetOrderedPeakLocations(double[] peakValues, int count)
+        public static int[] GetOrderedPeakLocations(double[] peakValues, int count)
     {
         var peakLocations = new List<int>();
         for (int i = 0; i < count; i++)
@@ -1277,8 +1498,10 @@ namespace TowseyLibrary
                 }
                 else if (binaryArray[i] == 1.0) prev = i;
             }
+
             return gaps;
         }
+
         /// <summary>
         /// returns a list of gaps between the trues in a boolean array
         /// </summary>
@@ -1299,6 +1522,7 @@ namespace TowseyLibrary
                 }
                 else if (binaryArray[i]) prev = i;
             }
+
             return gaps;
         }
 
@@ -1306,7 +1530,7 @@ namespace TowseyLibrary
 
 
 
-  public static double[] counts2RF(int[] counts)
+        public static double[] counts2RF(int[] counts)
   { int L = counts.Length;
   	double[] rf = new double[L];
     // get the sum
@@ -1314,19 +1538,33 @@ namespace TowseyLibrary
   	for (int i=0; i<L; i++) // iterate through array
     { sum += counts[i];
     }
-  	for (int i=0; i<L; i++) // iterate through array
-  	rf[i] = (double)counts[i] / (double)sum;
 
-  	// check total sums to 1.0;
+  	for (int i=0; i<L; i++) // iterate through array
+            {
+                rf[i] = (double)counts[i] / (double)sum;
+            }
+
+            // check total sums to 1.0;
   	double p = 0.0;
-  	for (int i=0; i<L; i++) p += rf[i];
-  	if(p > 1.00001) LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob="+p);
-  	if(p < 0.99999) LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob="+p);
+  	for (int i=0; i<L; i++)
+            {
+                p += rf[i];
+            }
+
+  	if (p > 1.00001)
+            {
+                LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob="+p);
+            }
+
+  	if (p < 0.99999)
+            {
+                LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob="+p);
+            }
 
   	return rf;
   }
 
-  public static double[] values2RF(double[] values)
+        public static double[] values2RF(double[] values)
   { int length = values.Length;
   	double[] rf = new double[length];
     // get the sum
@@ -1334,61 +1572,92 @@ namespace TowseyLibrary
   	for (int i=0; i<length; i++) // iterate through array
     { sum += values[i];
     }
-  	for (int i=0; i<length; i++) // iterate through array
-  	rf[i] = values[i] / sum;
 
-  	// check total sums to 1.0;
+  	for (int i=0; i<length; i++) // iterate through array
+            {
+                rf[i] = values[i] / sum;
+            }
+
+            // check total sums to 1.0;
   	double p = 0.0;
-  	for (int i=0; i<length; i++) p += rf[i];
-  	if(p > 1.00001) LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob="+p);
-  	if(p < 0.99999) LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob="+p);
+  	for (int i=0; i<length; i++)
+            {
+                p += rf[i];
+            }
+
+  	if (p > 1.00001)
+            {
+                LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob="+p);
+            }
+
+  	if (p < 0.99999)
+            {
+                LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob="+p);
+            }
 
   	return rf;
   }
 
 //=============================================================================
 
-  public static void WriteArrayList(List<string> list)
+        public static void WriteArrayList(List<string> list)
   {
       for (int i = 0; i < list.Count; i++)
-          LoggedConsole.WriteLine(i + "  " + list[i]);
-  }
+            {
+                LoggedConsole.WriteLine(i + "  " + list[i]);
+            }
+        }
 
-  public static void writeArray(string[] array)
-  {
-      for (int i = 0; i < array.Length; i++)
-      {
-          LoggedConsole.WriteLine(i + "  " + array[i]);
-      }
-  }
-  public static void writeArray(int[] array)
-  {
-      for (int i = 0; i < array.Length; i++)
-          LoggedConsole.WriteLine(i + "  " + array[i]);
-  }
-  public static string writeArray2String(int[] array)
-  {
-      StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < array.Length; i++) sb.Append("  "+array[i]);
-      return sb.ToString();
-  }
-  public static void writeArray(double[] array)
-  {
-      string format = "F3";
-      writeArray(array, format);
-  }
-  public static void writeArray(double[] array, string format)
-  {
-      for (int i = 0; i < array.Length; i++)
-          LoggedConsole.WriteLine(i + "  " + array[i].ToString(format));
-  }
-  public static void writeArray(bool[] array)
-  {
-      for (int i = 0; i < array.Length; i++)
-          LoggedConsole.WriteLine(i + "  " + array[i]);
-  }
+        public static void WriteArray(string[] array)
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                LoggedConsole.WriteLine(i + "  " + array[i]);
+            }
+        }
 
-    public static string WriteArrayAsCsvLine(double[] array, string format)
+        public static void writeArray(int[] array)
+  {
+      for (int i = 0; i < array.Length; i++)
+            {
+                LoggedConsole.WriteLine(i + "  " + array[i]);
+            }
+        }
+
+        public static string Array2String(int[] array)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < array.Length; i++)
+            {
+                sb.Append(array[i] + ", ");
+            }
+
+            return sb.ToString();
+          }
+
+        public static void WriteArray(double[] array)
+        {
+            string format = "F3";
+            writeArray(array, format);
+        }
+
+        public static void writeArray(double[] array, string format)
+  {
+      for (int i = 0; i < array.Length; i++)
+            {
+                LoggedConsole.WriteLine(i + "  " + array[i].ToString(format));
+            }
+        }
+
+        public static void writeArray(bool[] array)
+  {
+      for (int i = 0; i < array.Length; i++)
+            {
+                LoggedConsole.WriteLine(i + "  " + array[i]);
+            }
+        }
+
+        public static string WriteArrayAsCsvLine(double[] array, string format)
     {
         var sb = new StringBuilder(array[0].ToString(format));
         int count = array.Length;//dimension
@@ -1396,6 +1665,7 @@ namespace TowseyLibrary
         {
             sb.Append("," + array[i].ToString(format));
         }
+
         return sb.ToString();
     }
 
@@ -1406,10 +1676,11 @@ namespace TowseyLibrary
       {
           LoggedConsole.Write(" " + array[i].ToString(format));
       }
+
       LoggedConsole.WriteLine();
   }
 
-  public static void writeMatrix(double[,] matrix, string format)
+        public static void writeMatrix(double[,] matrix, string format)
   {
       int rowCount = matrix.GetLength(0);//height
       int colCount = matrix.GetLength(1);//width
@@ -1418,17 +1689,22 @@ namespace TowseyLibrary
           for (int j = 0; j < colCount; j++)
           {
               LoggedConsole.Write(" " + matrix[i, j].ToString(format));
-              if(j<colCount-1)LoggedConsole.Write(",");
-          }
+              if(j<colCount-1)
+                    {
+                        LoggedConsole.Write(",");
+                    }
+                }
+
           LoggedConsole.WriteLine();
       }
   }
-  public static void writeMatrix(double[,] matrix)
+
+        public static void writeMatrix(double[,] matrix)
   {
       writeMatrix(matrix, "F2");
   }
 
-  public static void writeMatrix(int[,] matrix)
+        public static void WriteMatrix(int[,] matrix)
   {
       int rowCount = matrix.GetLength(0);//height
       int colCount = matrix.GetLength(1);//width
@@ -1437,13 +1713,17 @@ namespace TowseyLibrary
           for (int j = 0; j < colCount; j++)
           {
               LoggedConsole.Write(" " + matrix[i, j]);
-              if (j < colCount - 1) LoggedConsole.Write(",");
-          }
+              if (j < colCount - 1)
+                    {
+                        LoggedConsole.Write(",");
+                    }
+                }
+
           LoggedConsole.WriteLine();
       }
   }
 
-  public static void writeMatrix2File(double[,] matrix, string fPath)
+        public static void writeMatrix2File(double[,] matrix, string fPath)
   {
       int rowCount = matrix.GetLength(0);//height
       int colCount = matrix.GetLength(1);//width
@@ -1452,8 +1732,12 @@ namespace TowseyLibrary
           for (int j = 0; j < colCount; j++)
           {
               LoggedConsole.Write(" " + matrix[i, j].ToString("F2"));
-              if (j < colCount - 1) LoggedConsole.Write(",");
-          }
+              if (j < colCount - 1)
+                    {
+                        LoggedConsole.Write(",");
+                    }
+                }
+
           LoggedConsole.WriteLine();
       }
   }
@@ -1464,7 +1748,7 @@ namespace TowseyLibrary
         /// Must be shifted and scaled because all values are neg
         /// </summary>
         /// <param name="data"></param>
-  public static void writeBarGraph(double[] data)
+        public static void writeBarGraph(double[] data)
   {
       LoggedConsole.WriteLine("BAR GRAPH OF DOUBLES DATA");
       double min;
@@ -1476,52 +1760,153 @@ namespace TowseyLibrary
           max = 80;
           data = Normalise(data, min, max);
       }
+
       int[] intdata = new int[data.Length];
-      for(int i=0; i<data.Length; i++) intdata[i] = (int)Math.Round(2*(data[i] - min));//subtract min to remove neg values
+      for(int i=0; i<data.Length; i++)
+            {
+                intdata[i] = (int)Math.Round(2*(data[i] - min));//subtract min to remove neg values
+            }
+
       writeBarGraph(intdata);
   }
 
 
 
-  public static void writeBarGraph(int[] data)
+        public static void writeBarGraph(int[] data)
   {
     int min;
     int max;
     MinMax(data, out min, out max);
     int sf = 1;  // scaling factor for graphing bars
-    if(max>80) sf=2;
-    if(max>160)sf=3;
-    if(max>240)sf=4;
-    if(max>320)sf=5;
-    if(max>400)sf=6;
-    if(max>480)sf=7;
-    if(max>560)sf=8;
-    if(max>640)sf=9;
-    if(max>720)sf=10;
-    if(max>800)sf=20;
-    if(max>1600)sf=30;
-    if(max>3200)sf=50;
-    if(max>4800)sf=70;
-    if(max>6400)sf=90;
-    if(max>7200)sf=100;
-    if(max>8000)sf=200;
-    if(max>16000)sf=300;
-    if(max>32000)sf=600;
-    if(max>64000)sf=1200;
-    if(max>128000)sf=2400;
+    if(max>80)
+            {
+                sf =2;
+            }
+
+    if (max>160)
+            {
+                sf =3;
+            }
+
+    if (max>240)
+            {
+                sf =4;
+            }
+
+    if (max>320)
+            {
+                sf =5;
+            }
+
+    if (max>400)
+            {
+                sf =6;
+            }
+
+    if (max>480)
+            {
+                sf =7;
+            }
+
+    if (max>560)
+            {
+                sf =8;
+            }
+
+    if (max>640)
+            {
+                sf =9;
+            }
+
+    if (max>720)
+            {
+                sf =10;
+            }
+
+    if (max>800)
+            {
+                sf =20;
+            }
+
+    if (max>1600)
+            {
+                sf =30;
+            }
+
+    if (max>3200)
+            {
+                sf =50;
+            }
+
+    if (max>4800)
+            {
+                sf =70;
+            }
+
+    if (max>6400)
+            {
+                sf =90;
+            }
+
+    if (max>7200)
+            {
+                sf =100;
+            }
+
+    if (max>8000)
+            {
+                sf =200;
+            }
+
+    if (max>16000)
+            {
+                sf =300;
+            }
+
+    if (max>32000)
+            {
+                sf =600;
+            }
+
+    if (max>64000)
+            {
+                sf =1200;
+            }
+
+    if (max>128000)
+            {
+                sf =2400;
+            }
 
     for (int i=0; i < data.Length; i++)
     {
-      if(max<20) data[i]*=2;
-      if(i<10)LoggedConsole.Write(" ");// formatting only
+      if(max<20)
+                {
+                    data[i]*=2;
+                }
+
+      if (i<10)
+                {
+                    LoggedConsole.Write(" ");// formatting only
+                }
+
       LoggedConsole.Write(" "+i+"|");
       double v = data[i] / (double)sf;
       int ht = (int)Math.Floor(v);
-      if((v>0.00)&&(v<1.00)) ht = 1;
-      for (int j = 0; j <ht; j++) LoggedConsole.Write("=");
+      if((v>0.00)&&(v<1.00))
+                {
+                    ht = 1;
+                }
+
+      for (int j = 0; j <ht; j++)
+                {
+                    LoggedConsole.Write("=");
+                }
+
       LoggedConsole.WriteLine();
       //if(i % 50 == 0) Console.ReadLine();
     }
+
     LoggedConsole.WriteLine("Min="+min+" Max="+max+"  Scaling factor="+sf);
     LoggedConsole.WriteLine();
   }
@@ -1533,17 +1918,24 @@ namespace TowseyLibrary
   /// <param name="v1"></param>
   /// <param name="v2"></param>
   /// <returns></returns>
-  public static byte[] LogicalORofTwoVectors(byte[] v1, byte[] v2)
+        public static byte[] LogicalORofTwoVectors(byte[] v1, byte[] v2)
   {
       int L1 = v1.Length;
       int L2 = v2.Length;
-      if (L1 != L2) throw new Exception("ERROR! Vectors must be of same length.");
+      if (L1 != L2)
+            {
+                throw new Exception("ERROR! Vectors must be of same length.");
+            }
 
       byte[] addition = new byte[L1];
       for (int i = 0; i < L1; i++)
       {
-          if ((v1[i] >= 1) || (v2[i] >= 1)) addition[i] = 1;
-      }
+          if ((v1[i] >= 1) || (v2[i] >= 1))
+                {
+                    addition[i] = 1;
+                }
+            }
+
       return addition;
   }
 
@@ -1554,17 +1946,21 @@ namespace TowseyLibrary
   /// <param name="v1"></param>
   /// <param name="v2"></param>
   /// <returns></returns>
-  public static double[] AddVectors(double[] v1, double[] v2)
+        public static double[] AddVectors(double[] v1, double[] v2)
   {
       int L1 = v1.Length;
       int L2 = v2.Length;
-      if (L1 != L2) throw new Exception("ERROR! Vectors must be of same length.");
+      if (L1 != L2)
+            {
+                throw new Exception("ERROR! Vectors must be of same length.");
+            }
 
       double[] addition = new double[L1];
       for (int i = 0; i < L1; i++)
           {
               addition[i] = v1[i] + v2[i];
           }
+
       return addition;
   }
 
@@ -1574,17 +1970,21 @@ namespace TowseyLibrary
   /// <param name="v1"></param>
   /// <param name="v2"></param>
   /// <returns></returns>
-  public static double[] SubtractVectors(double[] v1, double[] v2)
+        public static double[] SubtractVectors(double[] v1, double[] v2)
   {
       int L1 = v1.Length;
       int L2 = v2.Length;
-      if (L1 != L2) throw new Exception("ERROR! Vectors must be of same length.");
+      if (L1 != L2)
+            {
+                throw new Exception("ERROR! Vectors must be of same length.");
+            }
 
       double[] difference = new double[L1];
       for (int i = 0; i < L1; i++)
       {
           difference[i] = v1[i] - v2[i];
       }
+
       return difference;
   }
 
@@ -1595,14 +1995,21 @@ namespace TowseyLibrary
   /// <param name="m1"></param>
   /// <param name="m2"></param>
   /// <returns></returns>
-  public static double[,] AddMatrices(double[,] m1, double[,] m2)
+        public static double[,] AddMatrices(double[,] m1, double[,] m2)
   {
       int m1Rows = m1.GetLength(0);
       int m1Cols = m1.GetLength(1);
       int m2Rows = m2.GetLength(0);
       int m2Cols = m2.GetLength(1);
-      if (!(m1Rows == m2Rows)) throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
-      if (!(m1Cols == m2Cols)) throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+      if (!(m1Rows == m2Rows))
+            {
+                throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+            }
+
+      if (!(m1Cols == m2Cols))
+            {
+                throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+            }
 
       double[,] newMatrix = (double[,])m1.Clone();
       for (int i = 0; i < m1Rows; i++)
@@ -1613,7 +2020,7 @@ namespace TowseyLibrary
           }
             }
 
-            return newMatrix;
+      return newMatrix;
   }
 
   /// <summary>
@@ -1622,14 +2029,21 @@ namespace TowseyLibrary
   /// <param name="m1"></param>
   /// <param name="m2"></param>
   /// <returns></returns>
-  public static double[,] SubtractMatrices(double[,] m1, double[,] m2)
+        public static double[,] SubtractMatrices(double[,] m1, double[,] m2)
   {
       int m1Rows = m1.GetLength(0);
       int m1Cols = m1.GetLength(1);
       int m2Rows = m2.GetLength(0);
       int m2Cols = m2.GetLength(1);
-      if (!(m1Rows == m2Rows)) throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
-      if (!(m1Cols == m2Cols)) throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+      if (!(m1Rows == m2Rows))
+            {
+                throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+            }
+
+      if (!(m1Cols == m2Cols))
+            {
+                throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+            }
 
       double[,] newMatrix = (double[,])m1.Clone();
       for (int i = 0; i < m1Rows; i++)
@@ -1640,7 +2054,7 @@ namespace TowseyLibrary
           }
             }
 
-            return newMatrix;
+      return newMatrix;
   }
 
 
@@ -1650,7 +2064,7 @@ namespace TowseyLibrary
   /// </summary>
   /// <param name="matrix"></param>
   /// <returns></returns>
-  public static double[,] Threshold(double[,] matrix, double threshold)
+        public static double[,] Threshold(double[,] matrix, double threshold)
   {
       int height = matrix.GetLength(0);
       int width = matrix.GetLength(1);
@@ -1660,29 +2074,43 @@ namespace TowseyLibrary
       {
           for (int y = 0; y < height; y++) //for all rows
           {
-              if (matrix[y, col] < threshold) M[y, col] = 0.0;
-              else M[y, col] = 1.0;
-          }
+              if (matrix[y, col] < threshold)
+                    {
+                        M[y, col] = 0.0;
+                    }
+                    else
+                    {
+                        M[y, col] = 1.0;
+                    }
+                }
       }//for all cols
+
       return M;
   }// end of Threshold()
 
 
 
 
-  public static double[] GetColumn(double[,] m, int colID)
+        public static double[] GetColumn(double[,] m, int colID)
   {
       int rows = m.GetLength(0);
       double[] column = new double[rows];
-      for (int i = 0; i < rows; i++) column[i] = m[i,colID];
+      for (int i = 0; i < rows; i++)
+            {
+                column[i] = m[i,colID];
+            }
+
       return column;
   }
 
-  public static void SetColumn(double[,] m, int colID, double[] array)
+        public static void SetColumn(double[,] m, int colID, double[] array)
   {
       int rows = m.GetLength(0);
-      for (int r = 0; r < rows; r++) m[r, colID] = array[r];
-  }
+      for (int r = 0; r < rows; r++)
+            {
+                m[r, colID] = array[r];
+            }
+        }
 
 
   /// <summary>
@@ -1690,90 +2118,127 @@ namespace TowseyLibrary
   /// </summary>
   /// <param name="m"></param>
   /// <param name="colID"></param>
-  public static void SetColumnZero(byte[,] m, int colID)
+        public static void SetColumnZero(byte[,] m, int colID)
   {
       int rows = m.GetLength(0);
-      for (int r = 0; r < rows; r++) m[r, colID] = 0;
-  }
+      for (int r = 0; r < rows; r++)
+            {
+                m[r, colID] = 0;
+            }
+        }
 
-  public static int SumColumn(int[,] m, int colID)
+        public static int SumColumn(int[,] m, int colID)
   {
       int rows = m.GetLength(0);
       int sum = 0;
-      for (int i = 0; i < rows; i++) sum += m[i,colID];
+      for (int i = 0; i < rows; i++)
+            {
+                sum += m[i,colID];
+            }
+
       return sum;
   }
 
-  public static double[] GetRow(double[,] m, int rowID)
+        public static double[] GetRow(double[,] m, int rowID)
   {
       int cols = m.GetLength(1);
       double[] row = new double[cols];
-      for (int i = 0; i < cols; i++) row[i] = m[rowID, i];
+      for (int i = 0; i < cols; i++)
+            {
+                row[i] = m[rowID, i];
+            }
+
       return row;
   }
 
-  public static byte[] GetRow(byte[,] m, int rowID)
+        public static byte[] GetRow(byte[,] m, int rowID)
   {
       int cols = m.GetLength(1);
       byte[] row = new byte[cols];
-      for (int i = 0; i < cols; i++) row[i] = m[rowID, i];
+      for (int i = 0; i < cols; i++)
+            {
+                row[i] = m[rowID, i];
+            }
+
       return row;
   }
 
-  public static double GetRowSum(double[,] m, int rowID)
+        public static double GetRowSum(double[,] m, int rowID)
   {
       double[] row = GetRow(m, rowID);
       return row.Sum();
   }
 
-  public static int GetRowSum(byte[,] m, int rowID)
+        public static int GetRowSum(byte[,] m, int rowID)
   {
       int sum = 0;
-      for (int j = 0; j < m.GetLength(1); j++) sum += m[rowID, j];
+      for (int j = 0; j < m.GetLength(1); j++)
+            {
+                sum += m[rowID, j];
+            }
+
       return sum;
   }
 
-  public static int[] GetRowSums(byte[,] m)
+        public static int[] GetRowSums(byte[,] m)
   {
       int[] rowSums = new int[m.GetLength(0)];
       for (int i = 0; i < m.GetLength(0); i++)
       {
           int sum = 0;
-          for (int j = 0; j < m.GetLength(1); j++) sum += m[i, j];
+          for (int j = 0; j < m.GetLength(1); j++)
+                {
+                    sum += m[i, j];
+                }
+
           rowSums[i] = sum;
       }
+
       return rowSums;
   }
 
-  public static int[] GetColumnSums(byte[,] m)
+        public static int[] GetColumnSums(byte[,] m)
   {
       int[] colSums = new int[m.GetLength(1)];
       for (int c = 0; c < m.GetLength(1); c++)
       {
           int sum = 0;
-          for (int r = 0; r < m.GetLength(0); r++) sum += m[r, c];
+          for (int r = 0; r < m.GetLength(0); r++)
+                {
+                    sum += m[r, c];
+                }
+
           colSums[c] = sum;
       }
+
       return colSums;
   }
 
-  public static int GetRowSum(int[,] m, int rowID)
+        public static int GetRowSum(int[,] m, int rowID)
   {
       int cols = m.GetLength(1);
       int sum = 0;
-      for (int i = 0; i < cols; i++) sum += m[rowID, i];
+      for (int i = 0; i < cols; i++)
+            {
+                sum += m[rowID, i];
+            }
+
       return sum;
   }
 
-  public static int GetColumnSum(int[,] m, int colID)
+        public static int GetColumnSum(int[,] m, int colID)
   {
       int rowCount = m.GetLength(0);
       int sum = 0;
-      for (int r = 0; r < rowCount; r++) sum += m[r, colID];
+      for (int r = 0; r < rowCount; r++)
+            {
+                sum += m[r, colID];
+            }
+
       return sum;
   }
 
-  public static double[] SumColumns(double[,] m)
+        public static double[] SumColumns(double[,] m)
   {
       int rows = m.GetLength(0);
       int cols = m.GetLength(1);
@@ -1786,15 +2251,17 @@ namespace TowseyLibrary
           {
               sum += m[i, j];
           }
+
           colSums[j] = sum;
       }
+
       //sum = 0.0;
       //for (int j = 0; j < cols; j++) sum += colSums[j];
       //LoggedConsole.WriteLine("sum="+sum.ToString("F5"));
       return colSums;
   }
 
-  public static double[] GetColumnsAverages(double[,] m)
+        public static double[] GetColumnsAverages(double[,] m)
   {
       int rows = m.GetLength(0);
       int cols = m.GetLength(1);
@@ -1807,14 +2274,16 @@ namespace TowseyLibrary
           {
               sum += m[i, j];
           }
+
           colSums[j] = sum / rows;
       }
+
       return colSums;
   }
 
 
 
-  public static double[] GetWeightedCombinationOfColumns(List<double[]> arrays, double[] wts)
+        public static double[] GetWeightedCombinationOfColumns(List<double[]> arrays, double[] wts)
   {
       int arrayLength = arrays[0].Length;
       double[] weightedCombo = new double[arrayLength];
@@ -1826,15 +2295,17 @@ namespace TowseyLibrary
           {
               combo += (wts[c] * arrays[c][i]);
           }
+
           weightedCombo[i] = combo;
       }
+
       return weightedCombo;
   }
 
 
 
 
-    public static double[] SumMinusDifference(double[] lowerArray, double[] upperArray)
+        public static double[] SumMinusDifference(double[] lowerArray, double[] upperArray)
     {
         if (lowerArray.Length != upperArray.Length)
         {
@@ -1847,6 +2318,7 @@ namespace TowseyLibrary
         {
             smdVector[i] = lowerArray[i] + upperArray[i] - Math.Abs(lowerArray[i] - upperArray[i]);
         }
+
         return smdVector;
     }
 
@@ -1858,21 +2330,34 @@ namespace TowseyLibrary
         public static double[] CopyVector(int n, double[] v1)
     {
         double[] v2 = new double[v1.Length];
-        for (int i = 0; i < n; i++) v2[i] = v1[i];
+        for (int i = 0; i < n; i++)
+            {
+                v2[i] = v1[i];
+            }
+
         return v2;
     }
+
     //returns copy of a vector
-    public static double[] CopyVector(double[] v1)
+        public static double[] CopyVector(double[] v1)
     {
         double[] v2 = new double[v1.Length];
-        for (int i = 0; i < v1.Length; i++) v2[i] = v1[i];
+        for (int i = 0; i < v1.Length; i++)
+            {
+                v2[i] = v1[i];
+            }
+
         return v2;
     }
 
         public static double[] ScaleArray(double[] v, int newLength)
         {
             int L = v.Length;
-            if (newLength == L) return v;
+            if (newLength == L)
+            {
+                return v;
+            }
+
             double[] ret = new double[newLength];
             double ratio = newLength / (double)L;
 
@@ -1881,6 +2366,7 @@ namespace TowseyLibrary
                 int index = (int)(i / ratio);
                 ret[i] = v[index];
             }
+
             return (ret);
         }
 
@@ -1889,10 +2375,14 @@ namespace TowseyLibrary
 		/// <summary>
 		/// returns an array of double initialised with passed value
 		/// </summary>
-		public static double[] GetInitialisedArray(int length, double iniValue)
+        public static double[] GetInitialisedArray(int length, double iniValue)
 		{
 		  double[] array = new double[length];
-		  for (int i = 0; i < length; i++) array[i] = iniValue;
+		  for (int i = 0; i < length; i++)
+            {
+                array[i] = iniValue;
+            }
+
 		  return (array);
 		}
 
@@ -1919,7 +2409,7 @@ namespace TowseyLibrary
 		/// <summary>
 		/// normalised matrix of real values to [0,1].
 		/// </summary>
-		public static double[,] normalise(double[,] m)
+        public static double[,] normalise(double[,] m)
 		{
 			double min = double.MaxValue;
 			double max = -double.MaxValue;
@@ -1927,24 +2417,36 @@ namespace TowseyLibrary
 			int rows = m.GetLength(0);
 			int cols = m.GetLength(1);
 
-            for (int i = 0; i < rows; i++)
+			for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    if (m[i, j] > max) max = m[i, j];
+                    if (m[i, j] > max)
+                    {
+                        max = m[i, j];
+                    }
                     else
-                        if (m[i, j] < min) min = m[i, j];
+                        if (m[i, j] < min)
+                    {
+                        min = m[i, j];
+                    }
                 }
             }
+
 			double range = max - min;
 
-            double[,] ret = new double[rows, cols];
-            if (range == 0.0) return ret;
+			double[,] ret = new double[rows, cols];
+			if (range == 0.0)
+            {
+                return ret;
+            }
 
-            for (int i = 0; i < rows; i++)
+			for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
+                {
                     ret[i, j] = (m[i, j] - min) / range;
+                }
             }
 
 			return (ret);
@@ -1966,7 +2468,9 @@ namespace TowseyLibrary
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
+                {
                     ret[c, r] = m[rows-r, c];
+                }
             }
 
             return ret;
@@ -1986,11 +2490,14 @@ namespace TowseyLibrary
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
+                {
                     ret[c, r] = m[rows - r - 1, c];
+                }
             }
 
             return ret;
         }
+
         /// <summary>
         /// Rotates a matrix 90 degrees anticlockwise.
         /// Used for Syntactic pattern recognition
@@ -2007,7 +2514,9 @@ namespace TowseyLibrary
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
+                {
                     ret[c, r] = m[r, cols -1-c];
+                }
             }
 
             return ret;
@@ -2050,7 +2559,9 @@ namespace TowseyLibrary
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
+                {
                     ret[c, r] = m[r, c];
+                }
             }
 
             return ret;
@@ -2090,15 +2601,26 @@ namespace TowseyLibrary
             {
                     for (int c = 0; c < mcols; c++)
                     {
-                        if (matrix[r,c] == 0.0) continue;
+                        if (matrix[r,c] == 0.0)
+                    {
+                        continue;
+                    }
+
                         int newRow = (int)Math.Round(r * rowScale);
                         int newCol = (int)Math.Round(c * colScale);
                         newCol = (int)Math.Round(c * 4.1);
                         //newCol = 1;
-                        if (newRow >= newRowCount) newRow = newRowCount - 1;
-                        if (newCol >= newColCount) newCol = newColCount - 1;
-                        //if (newMatrix[newRow, newCol] < matrix[r, c])
-                            newMatrix[newRow, newCol] = matrix[r, c];
+                        if (newRow >= newRowCount)
+                    {
+                        newRow = newRowCount - 1;
+                    }
+
+                        if (newCol >= newColCount)
+                    {
+                        newCol = newColCount - 1;
+                    }
+                    //if (newMatrix[newRow, newCol] < matrix[r, c])
+                        newMatrix[newRow, newCol] = matrix[r, c];
                     }
             }
 
@@ -2124,9 +2646,15 @@ namespace TowseyLibrary
             double max = -double.MaxValue;
             for (int i = 0; i < L; i++)
             {
-                if (array[i] < min) min = array[i];
+                if (array[i] < min)
+                {
+                    min = array[i];
+                }
                 else
-                    if (array[i] > max) max = array[i];
+                    if (array[i] > max)
+                {
+                    max = array[i];
+                }
             }
 
             //set up Histogram
@@ -2145,6 +2673,7 @@ namespace TowseyLibrary
                     if (id < 0) id = 0;
                 histo[id]++;
             }
+
             double[] smoothHisto = filterMovingAverage(histo, 3);
             //DataTools.writeBarGraph(histo);
 
@@ -2165,8 +2694,14 @@ namespace TowseyLibrary
                 ssd += dev * dev; //sum of squared deviations
             }
 
-            if (peakID > 0) oneSD = Math.Sqrt(ssd / total);
-            else oneSD = Math.Sqrt((binWidth * binWidth) / smoothHisto[0]); //deal with case where peakID = 0 to prevent division by 0;
+            if (peakID > 0)
+            {
+                oneSD = Math.Sqrt(ssd / total);
+            }
+            else
+            {
+                oneSD = Math.Sqrt((binWidth * binWidth) / smoothHisto[0]); //deal with case where peakID = 0 to prevent division by 0;
+            }
         }
 
 
@@ -2187,7 +2722,9 @@ namespace TowseyLibrary
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
+                {
                     ret[i, j] = m[i, j] - av;
+                }
             }
 
             return ret;
@@ -2206,10 +2743,14 @@ namespace TowseyLibrary
 
             double[] returnV = new double[L];
 
-            for (int i = 0; i < L; i++) returnV[i] = V[i] - av;
+            for (int i = 0; i < L; i++)
+            {
+                returnV[i] = V[i] - av;
+            }
 
             return returnV;
         }
+
         /// <summary>
         /// shift values by their mean.
         /// </summary>
@@ -2223,7 +2764,10 @@ namespace TowseyLibrary
 
             double[] returnV = new double[L];
 
-            for (int i = 0; i < L; i++) returnV[i] = (V[i] - av)/sd;
+            for (int i = 0; i < L; i++)
+            {
+                returnV[i] = (V[i] - av)/sd;
+            }
 
             return returnV;
         }
@@ -2234,7 +2778,11 @@ namespace TowseyLibrary
             //assume v1 and v2 have same dimensions
             int L = v1.Length;
             double sum = 0.0;
-            for (int i = 0; i < L; i++) sum += (v1[i] * v2[i]);
+            for (int i = 0; i < L; i++)
+            {
+                sum += (v1[i] * v2[i]);
+            }
+
             return sum;
         }
 
@@ -2269,6 +2817,7 @@ namespace TowseyLibrary
                     m2Squared += (m2[r, c] * m2[r, c]);
                 }
             }
+
             return sum / (Math.Sqrt(m1Squared) * Math.Sqrt(m2Squared));
         }
 
@@ -2284,7 +2833,14 @@ namespace TowseyLibrary
             //assume v1 and v2 have same dimensions
             int L = v1.Length;
             int d = 0;
-            for (int i = 0; i < L; i++) if((int)Math.Round(Math.Abs(v1[i] - v2[i])) == 1 ) d++;
+            for (int i = 0; i < L; i++)
+            {
+                if ((int)Math.Round(Math.Abs(v1[i] - v2[i])) == 1 )
+                {
+                    d++;
+                }
+            }
+
             return d;
         }
 
@@ -2302,8 +2858,15 @@ namespace TowseyLibrary
             int cols1 = m1.GetLength(1);
             int rows2 = m2.GetLength(0);
             int cols2 = m2.GetLength(1);
-            if (rows1 != rows2) throw new Exception("Matrices have unequal row numbers.");
-            if (cols1 != cols2) throw new Exception("Matrices have unequal column numbers.");
+            if (rows1 != rows2)
+            {
+                throw new Exception("Matrices have unequal row numbers.");
+            }
+
+            if (cols1 != cols2)
+            {
+                throw new Exception("Matrices have unequal column numbers.");
+            }
 
             //calculate euclidian distance
             double sum = 0.0;
@@ -2315,6 +2878,7 @@ namespace TowseyLibrary
                     sum += (v * v);
                 }
             }
+
             return Math.Sqrt(sum);
         } //end
 
@@ -2328,7 +2892,9 @@ namespace TowseyLibrary
         {
             //check v1 and v2 have same length
             if (v1.Length != v2.Length)
+            {
                 throw new Exception("Vectors have unequal length.");
+            }
 
             //calculate euclidian distance
             double sum = 0.0;
@@ -2337,6 +2903,7 @@ namespace TowseyLibrary
                 double v = v1[i] - v2[i];
                 sum += (v * v);
             }
+
             return Math.Sqrt(sum);
         } //end
 
@@ -2350,7 +2917,9 @@ namespace TowseyLibrary
         {
             //check v1 and v2 have same length
             if (v1.Length != v2.Length)
+            {
                 throw new Exception("Vectors have unequal length.");
+            }
 
             //calculate euclidian distance
             double sum = 0.0;
@@ -2359,6 +2928,7 @@ namespace TowseyLibrary
                     double v = v1[i] - v2[i];
                     sum += (v * v);
             }
+
             return Math.Sqrt(sum);
         } //end
 
@@ -2371,13 +2941,23 @@ namespace TowseyLibrary
             int cols1 = m1.GetLength(1);
             int rows2 = m2.GetLength(0);
             int cols2 = m2.GetLength(1);
-            if (rows1 != rows2) throw new Exception("Matrices have unequal row numbers.");
-            if (cols1 != cols2) throw new Exception("Matrices have unequal column numbers.");
+            if (rows1 != rows2)
+            {
+                throw new Exception("Matrices have unequal row numbers.");
+            }
+
+            if (cols1 != cols2)
+            {
+                throw new Exception("Matrices have unequal column numbers.");
+            }
+
             double sum = 0.0;
             for (int i = 0; i < rows1; i++)
             {
                 for (int j = 0; j < cols1; j++)
+                {
                     sum += (m1[i, j] * m2[i, j]);
+                }
             }
 
             return sum;
@@ -2426,6 +3006,7 @@ namespace TowseyLibrary
                 int location = (int)order[i];
                 orderedArray[location] = array[i];
             }
+
             return orderedArray;
         }
 
@@ -2451,9 +3032,14 @@ namespace TowseyLibrary
                 for (int j = 0; j < cols; j++)
                 {
                     if (m[i, j] > max)
+                    {
                         max = m[i, j];
+                    }
+
                     if (m[i, j] < min)
+                    {
                         min = m[i, j];
+                    }
                 }
             }
 
@@ -2491,9 +3077,17 @@ namespace TowseyLibrary
             double[] ret = new double[length];
             for (int i = 0; i < length; i++)
             {
-                if (v[i] > max) max = v[i];
-                if (v[i] < min) min = v[i];
+                if (v[i] > max)
+                {
+                    max = v[i];
+                }
+
+                if (v[i] < min)
+                {
+                    min = v[i];
+                }
             }
+
             double range = max - min;
             double normRange = normMax - normMin;
             //LoggedConsole.WriteLine("range ="+ range+"  normRange="+normRange);
@@ -2521,10 +3115,19 @@ namespace TowseyLibrary
         {
             double range = normMax - normMin;
             double norm  = (value - normMin) / range;
-            if (norm > 1.0) norm = 1.0;
-            if (norm < 0.0) norm = 0.0;
+            if (norm > 1.0)
+            {
+                norm = 1.0;
+            }
+
+            if (norm < 0.0)
+            {
+                norm = 0.0;
+            }
+
             return norm;
         }
+
         /// <summary>
         /// normalises the values in a vector such that the passed min value = 0
         /// and the passed max value = 1.0
@@ -2543,13 +3146,22 @@ namespace TowseyLibrary
             for (int i = 0; i < length; i++)
             {
                 double value = (v[i] - normMin) / range;
-                if (value > 1.0) value = 1.0;
-                if (value < 0.0) value = 0.0;
+                if (value > 1.0)
+                {
+                    value = 1.0;
+                }
+
+                if (value < 0.0)
+                {
+                    value = 0.0;
+                }
+
                 ret[i] = value;
             }
 
             return (ret);
         }
+
         public static double[,] NormaliseInZeroOne(double[,] m, double normMin, double normMax)
         {
             int rows = m.GetLength(0);
@@ -2562,13 +3174,23 @@ namespace TowseyLibrary
                 for (int c = 0; c < cols; c++)
                 {
                     double value = (m[r,c] - normMin) / range;
-                    if (value > 1.0) value = 1.0;
-                    if (value < 0.0) value = 0.0;
+                    if (value > 1.0)
+                    {
+                        value = 1.0;
+                    }
+
+                    if (value < 0.0)
+                    {
+                        value = 0.0;
+                    }
+
                     ret[r,c] = value;
                 }
             }
+
             return (ret);
         }
+
         public static double[,] NormaliseReverseInZeroOne(double[,] m, double normMin, double normMax)
         {
             int rows = m.GetLength(0);
@@ -2581,11 +3203,20 @@ namespace TowseyLibrary
                 for (int c = 0; c < cols; c++)
                 {
                     double value = (m[r, c] - normMin) / range;
-                    if (value > 1.0) value = 1.0;
-                    if (value < 0.0) value = 0.0;
+                    if (value > 1.0)
+                    {
+                        value = 1.0;
+                    }
+
+                    if (value < 0.0)
+                    {
+                        value = 0.0;
+                    }
+
                     ret[r, c] = 1 - value;
                 }
             }
+
             return (ret);
         }
 
@@ -2604,13 +3235,22 @@ namespace TowseyLibrary
             int max = -int.MaxValue;
             for (int i = 0; i < v.Length; i++)
             {
-                if (v[i] > max) max = v[i];
-                if (v[i] < min) min = v[i];
+                if (v[i] > max)
+                {
+                    max = v[i];
+                }
+
+                if (v[i] < min)
+                {
+                    min = v[i];
+                }
             }
 
             double[] ret = new double[v.Length];
             for (int i = 0; i < v.Length; i++)
+            {
                 ret[i] = (v[i] - min) / (double)(max - min);
+            }
 
             return (ret);
         }
@@ -2650,16 +3290,29 @@ namespace TowseyLibrary
             double max = -double.MaxValue;
             for (int i = 0; i < v.Length; i++)
             {
-                if (v[i] > max) max = v[i];
-                if (v[i] < min) min = v[i];
+                if (v[i] > max)
+                {
+                    max = v[i];
+                }
+
+                if (v[i] < min)
+                {
+                    min = v[i];
+                }
             }
+
             double diff = max - min;
 
-            if (diff == 0.0) return v;
+            if (diff == 0.0)
+            {
+                return v;
+            }
 
             double[] ret = new double[v.Length];
             for (int i = 0; i < v.Length; i++)
+            {
                 ret[i] = (v[i] - min) / diff;
+            }
 
             return (ret);
         }
@@ -2678,9 +3331,17 @@ namespace TowseyLibrary
             double max = -double.MaxValue;
             for (int i = 0; i < v.Length; i++)
             {
-                if (v[i] > max) max = v[i];
-                if (v[i] < min) min = v[i];
+                if (v[i] > max)
+                {
+                    max = v[i];
+                }
+
+                if (v[i] < min)
+                {
+                    min = v[i];
+                }
             }
+
             var diff = max - min;
             output = new double[v.Length];
             normalisedThreshold = 0.0;
@@ -2711,10 +3372,16 @@ namespace TowseyLibrary
         {
             double[] v = normalise(array); //ensures all values in 0,1
             double sum = 0;
-            for (int i = 0; i < v.Length; i++) sum += v[i];
+            for (int i = 0; i < v.Length; i++)
+            {
+                sum += v[i];
+            }
 
             double[] ret = new double[v.Length];
-            for (int i = 0; i < v.Length; i++) ret[i] = v[i] / sum;
+            for (int i = 0; i < v.Length; i++)
+            {
+                ret[i] = v[i] / sum;
+            }
 
             return (ret);
         }
@@ -2733,15 +3400,24 @@ namespace TowseyLibrary
             double[] v = normalise(data); //ensures all values in 0,1
             double sum = 0.0;
             for (int i = 0; i < v.Length; i++)
+            {
                 sum += v[i];
+            }
             //Console.WriteLine("Area={0:f4}",sum);
-            if (sum == 0.0) return data;
+            if (sum == 0.0)
+            {
+                return data;
+            }
 
             double[] ret = new double[v.Length];
-            for (int i = 0; i < v.Length; i++) ret[i] = v[i] / sum;
+            for (int i = 0; i < v.Length; i++)
+            {
+                ret[i] = v[i] / sum;
+            }
 
             return ret;
         }
+
         /// <summary>
         /// normalises an array of doubles to probabilities that sum to one.
         /// assumes that values in the data vector are >= zero.
@@ -2753,13 +3429,25 @@ namespace TowseyLibrary
             int length = data.Length;
 
             double sum = 0;
-            for (int i = 0; i < length; i++) sum += data[i];
+            for (int i = 0; i < length; i++)
+            {
+                sum += data[i];
+            }
+
             double[] probs = new double[length];
-            if (sum == 0.0) return probs;
-            for (int i = 0; i < length; i++) probs[i] = data[i] / sum;
+            if (sum == 0.0)
+            {
+                return probs;
+            }
+
+            for (int i = 0; i < length; i++)
+            {
+                probs[i] = data[i] / sum;
+            }
 
             return probs;
         } // end NormaliseProbabilites()
+
         /// <summary>
         /// calculates the cumulative probabilities from a prob array.
         /// assumes that values in the data vector are >= zero and sum = 1.0.
@@ -2777,6 +3465,7 @@ namespace TowseyLibrary
                 sum += data[i];
                 probs[i] = sum;
             }
+
             //Console.WriteLine("cumulative prob = "+sum);
             return probs;
         } // end ConvertProbabilityDistribution2CummulativeProbabilites()
@@ -2797,18 +3486,41 @@ namespace TowseyLibrary
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
             double edge = 0.0;
-            for (int i = 0; i < rows; i++)   edge += (m[i, 0] + m[i, (cols-1)]); //sum the sides
-            for (int i = 1; i < cols-1; i++) edge += (m[0, i] + m[(rows-1), i]); //sum top and bottom
+            for (int i = 0; i < rows; i++)
+            {
+                edge += (m[i, 0] + m[i, (cols-1)]); //sum the sides
+            }
+
+            for (int i = 1; i < cols-1; i++)
+            {
+                edge += (m[0, i] + m[(rows-1), i]); //sum top and bottom
+            }
+
             edge /= ((2*rows) + (2*cols) - 4);
 
             //truncate everything to edge average
             //for (int i = 0; i < rows; i++)
             //    for (int j = 0; j < cols; j++) if (m[i, j] < edge) m[i, j] = edge;
             //set all edges to edge average
-            for (int i = 0; i < rows; i++)   m[i, 0]      = edge;
-            for (int i = 0; i < rows; i++)   m[i, cols-1] = edge;
-            for (int i = 1; i < cols-1; i++) m[0, i]      = edge;
-            for (int i = 1; i < cols-1; i++) m[rows-1, i] = edge;
+            for (int i = 0; i < rows; i++)
+            {
+                m[i, 0]      = edge;
+            }
+
+            for (int i = 0; i < rows; i++)
+            {
+                m[i, cols-1] = edge;
+            }
+
+            for (int i = 1; i < cols-1; i++)
+            {
+                m[0, i]      = edge;
+            }
+
+            for (int i = 1; i < cols-1; i++)
+            {
+                m[rows-1, i] = edge;
+            }
 
             //find min and max
             double min = double.MaxValue;
@@ -2818,9 +3530,14 @@ namespace TowseyLibrary
                 for (int j = 0; j < cols; j++)
                 {
                     if (m[i, j] > max)
+                    {
                         max = m[i, j];
+                    }
+
                     if (m[i, j] < min)
+                    {
                         min = m[i, j];
+                    }
                 }
             }
 
@@ -2844,7 +3561,7 @@ namespace TowseyLibrary
 
 
 
-  public static double[] normalise2UnitLength(int[] v)
+        public static double[] normalise2UnitLength(int[] v)
   {
     double SS = 0.0;
     int length = v.Length;
@@ -2853,6 +3570,7 @@ namespace TowseyLibrary
     {
       SS = SS + (v[i] * v[i]);
     }
+
     // square root of sum to get vector mapLength
     double norm = Math.Sqrt(SS);
     //LoggedConsole.WriteLine("SS="+SS+"  norm="+norm);
@@ -2865,14 +3583,18 @@ namespace TowseyLibrary
 
     return(ret);
   }
-  public static double[] normalise2UnitLength(double[] v)
+
+        public static double[] normalise2UnitLength(double[] v)
   {
       double SS = 0.0; //sum of squares
       int length = v.Length;
 
-      for (int i = 0; i < length; i++) SS += (v[i] * v[i]);
+      for (int i = 0; i < length; i++)
+            {
+                SS += (v[i] * v[i]);
+            }
 
-      // square root of sum to get vector mapLength
+            // square root of sum to get vector mapLength
       double norm = Math.Sqrt(SS);
       //LoggedConsole.WriteLine("SS=" + SS + "  norm=" + norm);
 
@@ -2888,7 +3610,7 @@ namespace TowseyLibrary
 
 
   //normalise and compress/bound the values
-  public static double[,] Clip(double[,] m, double minPercentile, double maxPercentile)
+        public static double[,] Clip(double[,] m, double minPercentile, double maxPercentile)
   {
       double minCut;
       double maxCut;
@@ -2896,62 +3618,117 @@ namespace TowseyLibrary
       return boundMatrix(m, minCut, maxCut);
   }
 
-  public static int Sum(int[] data)
+        public static int Sum(int[] data)
   {
-      if (data == null) return 0;
+      if (data == null)
+            {
+                return 0;
+            }
+
       int sum = 0;
-      for (int i = 0; i < data.Length; i++) sum += data[i];
-      return sum;
-  }
-  public static double Sum(double[] data)
-  {
-      if (data == null) return 0;
-      double sum = 0;
-      for (int i = 0; i < data.Length; i++) sum += data[i];
+      for (int i = 0; i < data.Length; i++)
+            {
+                sum += data[i];
+            }
+
       return sum;
   }
 
-  public static double[] SquareValues(double[] data)
+        public static double Sum(double[] data)
   {
-      if (data == null) return null;
+      if (data == null)
+            {
+                return 0;
+            }
+
+      double sum = 0;
+      for (int i = 0; i < data.Length; i++)
+            {
+                sum += data[i];
+            }
+
+      return sum;
+  }
+
+        public static double[] SquareValues(double[] data)
+  {
+      if (data == null)
+            {
+                return null;
+            }
+
       var squaredArray = new double[data.Length];
-      for (int i = 0; i < data.Length; i++) squaredArray[i] = data[i] * data[i];
+      for (int i = 0; i < data.Length; i++)
+            {
+                squaredArray[i] = data[i] * data[i];
+            }
+
       return squaredArray;
   }
-  public static double[] SquareRootOfValues(double[] data)
+
+        public static double[] SquareRootOfValues(double[] data)
   {
-      if (data == null) return null;
+      if (data == null)
+            {
+                return null;
+            }
+
       var sqrtArray = new double[data.Length];
-      for (int i = 0; i < data.Length; i++) sqrtArray[i] = Math.Sqrt(data[i]);
+      for (int i = 0; i < data.Length; i++)
+            {
+                sqrtArray[i] = Math.Sqrt(data[i]);
+            }
+
       return sqrtArray;
   }
 
         public static double[] LogTransform(double[] data)
         {
-            if (data == null) return null;
+            if (data == null)
+            {
+                return null;
+            }
+
             var logArray = new double[data.Length];
             for (int i = 0; i < data.Length; i++)
             {
-                if (data[i] <= 0.0) logArray[i] = 0.0;
-                else                logArray[i] = Math.Log10(1 + data[i]);
+                if (data[i] <= 0.0)
+                {
+                    logArray[i] = 0.0;
+                }
+                else
+                {
+                    logArray[i] = Math.Log10(1 + data[i]);
+                }
             }
+
             return logArray;
         }
 
-  public static double[] LogValues(double[] data)
+        public static double[] LogValues(double[] data)
   {
-      if (data == null) return null;
+      if (data == null)
+            {
+                return null;
+            }
+
       var logArray = new double[data.Length];
       for (int i = 0; i < data.Length; i++)
       {
-          if(data[i] <= 0.0) logArray[i] = -1000000.0;
-          else
-          logArray[i] = Math.Log10(data[i]);
-      }
+          if(data[i] <= 0.0)
+                {
+                    logArray[i] = -1000000.0;
+                }
+                else
+                {
+                    logArray[i] = Math.Log10(data[i]);
+                }
+            }
+
       return logArray;
   }
 
-  public static int PowerOf2Exponent(int number)
+        public static int PowerOf2Exponent(int number)
   {
       int exponent = (int)(Math.Log(number) / ln2);
       return exponent;
@@ -2961,7 +3738,7 @@ namespace TowseyLibrary
 
 //***************************************************************************************************************************************
 
-  public const double ln2 = 0.69314718;   //log 2 base e
+        public const double ln2 = 0.69314718;   //log 2 base e
 
   /// <summary>
   /// Calculates the entropy of the passed discrete distribution.
@@ -2975,7 +3752,7 @@ namespace TowseyLibrary
   /// </summary>
   /// <param name="data"></param>
   /// <returns></returns>
-  public static double Entropy(double[] distr)
+        public static double Entropy(double[] distr)
   {
       double H=0.0;
 
@@ -2986,9 +3763,11 @@ namespace TowseyLibrary
               H -= distr[i] * Math.Log(distr[i]);
           }
       }
+
       return H / ln2;
   }
-  public static double Entropy(double[,] matrixDistr)
+
+        public static double Entropy(double[,] matrixDistr)
   {
       double H = 0.0;
       int RowCount = matrixDistr.GetLength(0);
@@ -2998,9 +3777,13 @@ namespace TowseyLibrary
       {
           for (int j = 0; j < ColCount; j++)
           {
-              if (matrixDistr[i, j] != 0.00) H -= matrixDistr[i,j] * Math.Log(matrixDistr[i,j]);
-          }
+              if (matrixDistr[i, j] != 0.00)
+                    {
+                        H -= matrixDistr[i,j] * Math.Log(matrixDistr[i,j]);
+                    }
+                }
       }
+
       return H / ln2;
   }
 
@@ -3009,23 +3792,38 @@ namespace TowseyLibrary
     /// </summary>
     /// <param name="distr"></param>
     /// <returns></returns>
-    public static double Entropy_normalised(double[] v)
+        public static double Entropy_normalised(double[] v)
     {
         //some safety checks but unlikely to happen
         int posCount = v.Count(p => p > 0.0);
-        if (posCount == 0) return double.NaN; // cannot calculate entropy
-        if (posCount == 1) return 0.0;        // energy concentrated in one value - i.e. zero entropy
+        if (posCount == 0)
+            {
+                return double.NaN; // cannot calculate entropy
+            }
+
+        if (posCount == 1)
+            {
+                return 0.0;        // energy concentrated in one value - i.e. zero entropy
+            }
 
         double[] pmf2 = Normalise2Probabilites(v); //pmf = probability mass funciton
         double normFactor = Math.Log(v.Length) / ln2; //normalize for length of the array
         return Entropy(pmf2) / normFactor;
     }
-    public static double Entropy_normalised(int[] v)
+
+        public static double Entropy_normalised(int[] v)
     {
         //some safety checks but unlikely to happen
         int posCount = v.Count(p => p > 0.0);
-        if (posCount == 0) return double.NaN; // cannot calculate entropy
-        if (posCount == 1) return 0.0;        // energy concentrated in one value - i.e. zero entropy
+        if (posCount == 0)
+            {
+                return double.NaN; // cannot calculate entropy
+            }
+
+        if (posCount == 1)
+            {
+                return 0.0;        // energy concentrated in one value - i.e. zero entropy
+            }
 
         double[] pmf2 = NormaliseArea(v); //pmf = probability mass funciton
         double normFactor = Math.Log(v.Length) / ln2; //normalize for length of the array
@@ -3064,12 +3862,14 @@ namespace TowseyLibrary
             {
                 rowProbs[r] = rowSums[r] / (double)totalSum;
             }
+
             //double Hrows = DataTools.Entropy_normalised(rowProbs);
             double[] colProbs = new double[colCount]; //pmf = probability mass funciton
             for (int c = 0; c < colCount; c++) // for all time frames
             {
                 colProbs[c] = colSums[c] / (double)totalSum;
             }
+
             //double Hcols = DataTools.Entropy_normalised(colProbs);
             double[,] matrixProbs = new double[rowCount, colCount];
             for (int r = 0; r < rowCount; r++) // for all time frames
@@ -3085,9 +3885,21 @@ namespace TowseyLibrary
             {
                 for (int c = 0; c < colCount; c++) // for all freq bins.
                 {
-                    if (rowProbs[r] == 0) continue;
-                    if (colProbs[c] == 0) continue;
-                    if (matrixProbs[r, c] == 0) continue;
+                    if (rowProbs[r] == 0)
+                    {
+                        continue;
+                    }
+
+                    if (colProbs[c] == 0)
+                    {
+                        continue;
+                    }
+
+                    if (matrixProbs[r, c] == 0)
+                    {
+                        continue;
+                    }
+
                     MI += (matrixProbs[r, c]  * Math.Log(matrixProbs[r, c] / (rowProbs[r] * colProbs[c]), 2) );
                 }
             }
@@ -3109,17 +3921,27 @@ namespace TowseyLibrary
  	{
         //some safety checks but unlikely to happen
         int posCount = distr.Count(p => p > 0.0);
-        if (posCount == 0) return double.NaN; // cannot calculate entropy
-        if (posCount == 1) return 0.0;        // energy concentrated in one value - i.e. zero entropy
+        if (posCount == 0)
+            {
+                return double.NaN; // cannot calculate entropy
+            }
+
+        if (posCount == 1)
+            {
+                return 0.0;        // energy concentrated in one value - i.e. zero entropy
+            }
 
         int length = distr.Length;
  	    // generate a uniform reference distribution
- 	 	double[] refDistr = new double[length];
-        for(int i=0; i<length; i++)refDistr[i]= 1/(double)length;
+        double[] refDistr = new double[length];
+        for(int i=0; i<length; i++)
+            {
+                refDistr[i]= 1/(double)length;
+            }
 
- 	 	double H1 = Entropy(refDistr);
- 	 	double H2 = Entropy(distr);
- 	    return H1-H2;
+        double H1 = Entropy(refDistr);
+        double H2 = Entropy(distr);
+        return H1-H2;
  	}
 
  	/**
@@ -3131,11 +3953,11 @@ namespace TowseyLibrary
  	 * The relative entropy is with respect to the background
  	 * or reference distribution contained in the array refDist.
  	 */
-	public static double RelativeEntropy(double[] dist, double[] refDist)
+        public static double RelativeEntropy(double[] dist, double[] refDist)
  	{
  	 	double H1 = Entropy(refDist);
  	 	double H2 = Entropy(dist);
- 	  return H1-H2;
+ 	 	return H1-H2;
  	}
 
 
@@ -3148,22 +3970,37 @@ namespace TowseyLibrary
   /// <param name="data">array ofintegers</param>
   /// <param name="min">min value to return</param>
   /// <param name="max">max value to return</param>
-  public static void MinMax(int[] data, out int min, out int max)
+        public static void MinMax(int[] data, out int min, out int max)
   { min = data[0];
     max = data[0];
     for(int i=1; i<data.Length; i++)
-    { if(data[i] < min) min = data[i];
-      if(data[i] > max) max = data[i];
-    }
+    { if(data[i] < min)
+                {
+                    min = data[i];
+                }
+
+                if (data[i] > max)
+                {
+                    max = data[i];
+                }
+            }
   }
+
         public static void MinMax(byte[] data, out byte min, out byte max)
         {
             min = data[0];
             max = data[0];
             for (int i = 1; i < data.Length; i++)
             {
-                if (data[i] < min) min = data[i];
-                if (data[i] > max) max = data[i];
+                if (data[i] < min)
+                {
+                    min = data[i];
+                }
+
+                if (data[i] > max)
+                {
+                    max = data[i];
+                }
             }
         }
 
@@ -3202,8 +4039,10 @@ namespace TowseyLibrary
                     {
                         max = data[i];
                     }
+
                 av += data[i];
             }//end for loop
+
             av /= data.Length;
         }
 
@@ -3221,10 +4060,14 @@ namespace TowseyLibrary
                 for (int j = 0; j < cols; j++)
             {
                 if (data[i,j] < min)
-                    min = data[i,j];
-				else if (data[i,j] > max)
-                    max = data[i,j];
-            }//end double loop
+                    {
+                        min = data[i,j];
+                    }
+                    else if (data[i,j] > max)
+                    {
+                        max = data[i,j];
+                    }
+                }//end double loop
             }
         }
 
@@ -3242,9 +4085,13 @@ namespace TowseyLibrary
                 for (int j = 0; j < cols; j++)
                 {
                     if (data[i, j] < min)
+                    {
                         min = data[i, j];
+                    }
                     else if (data[i, j] > max)
+                    {
                         max = data[i, j];
+                    }
                 }
             }
         }
@@ -3264,6 +4111,7 @@ namespace TowseyLibrary
                     byteDistribution[data[i, j]]++;
                 }
             }
+
             return byteDistribution;
         }
 
@@ -3288,6 +4136,7 @@ namespace TowseyLibrary
               min = data[i];
               indexMin = i;
           }
+
           if (data[i] > max)
           {
               max = data[i];
@@ -3296,7 +4145,7 @@ namespace TowseyLibrary
       }
   }
 
-  public static void WriteMinMaxOfArray(double[] data)
+        public static void WriteMinMaxOfArray(double[] data)
   {
       double min;
       double max;
@@ -3305,7 +4154,7 @@ namespace TowseyLibrary
   }
 
 
-  public static void WriteMinMaxOfFeatures(double[,] m)
+        public static void WriteMinMaxOfFeatures(double[,] m)
   {
 
       int rows = m.GetLength(0);
@@ -3320,7 +4169,8 @@ namespace TowseyLibrary
           LoggedConsole.WriteLine("Column:{0:D} min={1:F4}  max={2:F4}  av={3:F4}", i, min, max, av);
       }
   }
-  public static void WriteMinMaxOfArray(string arrayname, double[] data)
+
+        public static void WriteMinMaxOfArray(string arrayname, double[] data)
   {
       double min;
       double max;
@@ -3337,7 +4187,7 @@ namespace TowseyLibrary
   /// </summary>
   /// <param name="data"></param>
   /// <returns></returns>
-  public static int GetMaxIndex(int[] data)
+        public static int GetMaxIndex(int[] data)
   {
       int indexOfMax = 0;
       int max = data[0];
@@ -3349,9 +4199,11 @@ namespace TowseyLibrary
               indexOfMax = i;
           }
       }
+
       return indexOfMax;
   }
-  public static int GetMaxIndex(List<int> data)
+
+        public static int GetMaxIndex(List<int> data)
   {
       int indexOfMax = 0;
       int max = data[0];
@@ -3363,15 +4215,17 @@ namespace TowseyLibrary
               indexOfMax = i;
           }
       }
+
       return indexOfMax;
   }
+
   /**
    * returns the index of max value in an array of doubles.
    * array index starts at zero.
    * @param data
    * @return
    */
-  public static void getMaxIndex(double[] data, out int indexMax)
+        public static void getMaxIndex(double[] data, out int indexMax)
   {
   	//if(data == null) return -1;
     indexMax = 0;
@@ -3392,7 +4246,7 @@ namespace TowseyLibrary
     /// </summary>
     /// <param name="data"></param>
     /// <returns></returns>
-  public static int GetMaxIndex(double[] data)
+        public static int GetMaxIndex(double[] data)
   {
       //if(data == null) return -1;
       int indexMax = 0;
@@ -3405,14 +4259,16 @@ namespace TowseyLibrary
               indexMax = i;
           }
       }
+
       return indexMax;
   }
+
         /// <summary>
         /// same as above but returns the index of data element having minimum value
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-  public static int GetMinIndex(double[] data)
+        public static int GetMinIndex(double[] data)
   {
       //if(data == null) return -1;
       int indexMin = 0;
@@ -3425,6 +4281,7 @@ namespace TowseyLibrary
               indexMin = i;
           }
       }
+
       return indexMin;
   }
 
@@ -3433,7 +4290,7 @@ namespace TowseyLibrary
    * @param data
    * @return
    */
-  public static void getMaxIndex(int[] data, out int indexMax)
+        public static void getMaxIndex(int[] data, out int indexMax)
   {
     //if(data == null) return -1;
     indexMax = 0;
@@ -3447,12 +4304,16 @@ namespace TowseyLibrary
     }
   }
 
-   public static bool ValueInList(int value, int[] data)
+        public static bool ValueInList(int value, int[] data)
    {
        for (int i = 0; i < data.Length; i++)
        {
-           if(value == data[i]) return true;
-       }
+           if(value == data[i])
+                {
+                    return true;
+                }
+            }
+
        return false;
    }
 
@@ -3463,29 +4324,39 @@ namespace TowseyLibrary
    * @param data
    * @return
    */
-  public static int[] GetRankedIndicesInDecendingOrder(double[] data)
+        public static int[] GetRankedIndicesInDecendingOrder(double[] data)
   {
-  	if((data == null)||(data.Length==0)) return null;
+  	if((data == null)||(data.Length==0))
+            {
+                return null;
+            }
+
   	double[] dataCopy = (double[])data.Clone();
   	int[] order = new int[data.Length];
 
-    for(int i=0; i<data.Length; i++)
+  	for(int i=0; i<data.Length; i++)
     {   int maxIndex;
         getMaxIndex(dataCopy, out maxIndex);
-    	order[i] = maxIndex;
-    	dataCopy[maxIndex] = -double.MaxValue;
+        order[i] = maxIndex;
+        dataCopy[maxIndex] = -double.MaxValue;
     }
-    return order;
+
+  	return order;
   }
+
   /**
    * returns an array of indices where the indices point to
    * the data array with values ranked in ascending order
    * @param data
    * @return
    */
-  public static int[] GetRankedIndicesInAscendingOrder(double[] data)
+        public static int[] GetRankedIndicesInAscendingOrder(double[] data)
   {
-      if ((data == null) || (data.Length == 0)) return null;
+      if ((data == null) || (data.Length == 0))
+            {
+                return null;
+            }
+
       double[] dataCopy = (double[])data.Clone();
       int[] order = new int[data.Length];
       int minIndex;
@@ -3496,12 +4367,17 @@ namespace TowseyLibrary
           order[i] = minIndex;
           dataCopy[minIndex] = double.MaxValue;
       }
+
       return order;
   }
 
-  public static double GetNthSmallestValue(double[] data, int N)
+        public static double GetNthSmallestValue(double[] data, int N)
   {
-      if ((data == null) || (data.Length == 0) || (data.Length < N)) return -double.MaxValue;
+      if ((data == null) || (data.Length == 0) || (data.Length < N))
+            {
+                return -double.MaxValue;
+            }
+
       double[] dataCopy = (double[])data.Clone();
       int minIndex = 0;
 
@@ -3510,11 +4386,17 @@ namespace TowseyLibrary
           minIndex = GetMinIndex(dataCopy);
           dataCopy[minIndex] = double.MaxValue;
       }
+
       return data[minIndex];
   }
-  public static double GetNthLargestValue(double[] data, int N)
+
+        public static double GetNthLargestValue(double[] data, int N)
   {
-      if ((data == null) || (data.Length == 0) || (data.Length < N)) return -double.MaxValue;
+      if ((data == null) || (data.Length == 0) || (data.Length < N))
+            {
+                return -double.MaxValue;
+            }
+
       double[] dataCopy = (double[])data.Clone();
       int maxValue = 0;
 
@@ -3523,6 +4405,7 @@ namespace TowseyLibrary
           maxValue = GetMaxIndex(dataCopy);
           dataCopy[maxValue] = -double.MaxValue;
       }
+
       return data[maxValue];
   }
 
@@ -3537,14 +4420,17 @@ namespace TowseyLibrary
    * @param binWidth
    * @return
    */
-  public static int[] Data2Bins(int[] data, int min, int binWidth, int numBins)
+        public static int[] Data2Bins(int[] data, int min, int binWidth, int numBins)
   {
     //LoggedConsole.WriteLine("numBins="+numBins);
     // initialise bin counts
     int[] binCounts = new int[numBins];
-    for(int i=0; i<numBins; i++) binCounts[i] = 0;
+    for(int i=0; i<numBins; i++)
+            {
+                binCounts[i] = 0;
+            }
 
-    for(int i=0; i<data.Length; i++)
+    for (int i=0; i<data.Length; i++)
     { int bin = (data[i] - min) / binWidth;
       binCounts[bin] ++;
     }
@@ -3569,19 +4455,26 @@ namespace TowseyLibrary
       /// <param name="max"></param>
       /// <param name="mode"></param>
       /// <param name="SD"></param>
-      public static void GetModeAndOneTailedStandardDeviation(double[] values, bool writeHistogram, out double min, out double max, out double mode, out double SD)
+        public static void GetModeAndOneTailedStandardDeviation(double[] values, bool writeHistogram, out double min, out double max, out double mode, out double SD)
       {
           int binCount = 300;
           double binWidth;
           int[] histo = Histogram.Histo(values, binCount, out binWidth, out min, out max);
-          if (writeHistogram) writeBarGraph(histo);
+          if (writeHistogram)
+            {
+                writeBarGraph(histo);
+            }
 
-          //Calculate the SD on longest tail. Assume that the tail is Gaussian.
+            //Calculate the SD on longest tail. Assume that the tail is Gaussian.
           int indexOfMode, indexOfOneSD;
           GetModeAndOneTailedStandardDeviation(histo, out indexOfMode, out indexOfOneSD);
           mode = min + (indexOfMode * binWidth);
           int delta = Math.Abs(indexOfOneSD - indexOfMode);
-          if (delta < 1) delta = 1;
+          if (delta < 1)
+            {
+                delta = 1;
+            }
+
           SD = delta * binWidth;
 
           // the below av and sd are just a check on the one-tailed calcualtion.
@@ -3604,7 +4497,7 @@ namespace TowseyLibrary
   /// <param name="histo"></param>
   /// <param name="indexOfMode"></param>
   /// <param name="indexOfOneSD"></param>
-  public static void GetModeAndOneTailedStandardDeviation(int[] histo, out int indexOfMode, out int indexOfOneSD)
+        public static void GetModeAndOneTailedStandardDeviation(int[] histo, out int indexOfMode, out int indexOfOneSD)
   {
       // the below smoothing was added on 15th April 2015. It may or may not be helpful.
       // It was tried on the assumption that some acoustic indices have flat distributions or not many values
@@ -3625,6 +4518,7 @@ namespace TowseyLibrary
           {
               totalAreaUnderLowerCurve += histo[i];
           }
+
           thresholdSum = totalAreaUnderLowerCurve * 0.68; // 0.68 = area under one SD
           partialSum = 0.0;
           for (int i = indexOfMode; i >= 0; i--) //sum in direction of zero index.
@@ -3643,6 +4537,7 @@ namespace TowseyLibrary
           {
               totalAreaUnderLowerCurve += histo[i];
           }
+
           thresholdSum = totalAreaUnderLowerCurve * 0.68; // 0.68 = area under one SD
           partialSum = 0.0;
           for (int i = indexOfMode; i < histo.Length; i++) //sum in direction of max index.
@@ -3668,12 +4563,12 @@ namespace TowseyLibrary
    * the curve given by x1,y1,x2,y2.
    * Assumes that y1 and y2 are both positive.
    */
-  public static double areaUnderCurve(double x1, double y1, double x2, double y2)
+        public static double areaUnderCurve(double x1, double y1, double x2, double y2)
   {
     double width = Math.Abs(x2-x1);
     double area = (width * y1)+ (width*(y2-y1)/2);
     //LoggedConsole.WriteLine(x1+"  "+y1+"  "+x2+"  "+y2+"  area="+area);
-  	return area;
+    return area;
   }
 
 
@@ -3702,23 +4597,37 @@ namespace TowseyLibrary
    * @param K
    * @return the COMBINATORIAL as integer
    */
-  public static long combinatorial(int N, int K)
+        public static long combinatorial(int N, int K)
   {
-    if(K == 0) return 0;
-    if(K >  N) return 0;
-    if(K == N) return 1;
-    //LoggedConsole.WriteLine("N="+N+", K="+K);
+    if(K == 0)
+            {
+                return 0;
+            }
 
-    // COMB(N,K)  = COMB(N, N-K);
-    // more efficient to compute combinations if use K < N/2
-    if(K > (N/2)) K = N - K;
+    if (K >  N)
+            {
+                return 0;
+            }
 
-    // NOTE ON ALGORITHM:
-    // factorial numbers can get very large. To prevent possible out of range errors
-    // this method divides numerator and denominator numbers as it goes.
-    // finally caste the double to a long.
+    if (K == N)
+            {
+                return 1;
+            }
+            //LoggedConsole.WriteLine("N="+N+", K="+K);
 
-    //  first component of C(N,K)
+            // COMB(N,K)  = COMB(N, N-K);
+            // more efficient to compute combinations if use K < N/2
+    if (K > (N/2))
+            {
+                K = N - K;
+            }
+
+            // NOTE ON ALGORITHM:
+            // factorial numbers can get very large. To prevent possible out of range errors
+            // this method divides numerator and denominator numbers as it goes.
+            // finally caste the double to a long.
+
+            //  first component of C(N,K)
     double comb = N/(double)(N-K);
     //LoggedConsole.WriteLine("c=0  comb="+comb);
 
@@ -3727,19 +4636,22 @@ namespace TowseyLibrary
     { comb *= ((N-c)/(double)(N-K-c));
       //LoggedConsole.WriteLine("c="+c+"  NOM  ="+(N-c)+"  DENOM="+(N-K-c)+"   comb="+comb);
     }
+
     return (long)comb;
   }
 
 //=============================================================================
 
-  public static void TEST_FilterMovingAverage()
+        public static void TEST_FilterMovingAverage()
   {
       int window = 99;
       double[] V0 = new double[100];
       for (int i = 0; i < V0.Length; i++)
-          V0[i] = i;
-      //for (int i = 0; i < V0.Length; i++)
-      //    V0[i] = 1.0;
+            {
+                V0[i] = i;
+            }
+            //for (int i = 0; i < V0.Length; i++)
+            //    V0[i] = 1.0;
 
       double[] V1 = filterMovingAverageOLD(V0, window);
       double[] V2 = filterMovingAverage(V0, window);
@@ -3747,9 +4659,13 @@ namespace TowseyLibrary
       for (int i = 0; i < V1.Length; i++)
             {
                 if (V1[i] != V2[i])
-              Console.WriteLine("index {0}: V0={1}    {2} != {3}", i, V0[i], V1[i], V2[i]);
-          else
-              Console.WriteLine("index {0}: V0={1} ", i, V0[i], V1[i], V2[i]);
+                {
+                    Console.WriteLine("index {0}: V0={1}    {2} != {3}", i, V0[i], V1[i], V2[i]);
+                }
+                else
+                {
+                    Console.WriteLine("index {0}: V0={1} ", i, V0[i], V1[i], V2[i]);
+                }
             }
         }
 
@@ -3758,24 +4674,36 @@ namespace TowseyLibrary
   /**
    * wrapper so one can call moving average filter with array of float
    */
-  public static float[] filterMovingAverage(float[] signal, int width)
+        public static float[] filterMovingAverage(float[] signal, int width)
   {
   	int length = signal.Length;
   	double[] dbSignal = new double[length];
-    for(int i=0; i<length; i++) dbSignal[i] = signal[i];
-    dbSignal = filterMovingAverage(dbSignal, width);
-    for(int i=0; i<length; i++) signal[i] = (float)dbSignal[i];
-    return signal;
+  	for(int i=0; i<length; i++)
+            {
+                dbSignal[i] = signal[i];
+            }
+
+  	dbSignal = filterMovingAverage(dbSignal, width);
+  	for(int i=0; i<length; i++)
+            {
+                signal[i] = (float)dbSignal[i];
+            }
+
+  	return signal;
   }
 
   /**
    * wrapper so one can call moving average filter with array of int
    */
-  public static double[] filterMovingAverage(int[] signal, int width)
+        public static double[] filterMovingAverage(int[] signal, int width)
   {
     int length = signal.Length;
     double[] dbSignal = new double[length];
-    for(int i=0; i<length; i++) dbSignal[i] = (double)signal[i];//clone
+    for(int i=0; i<length; i++)
+            {
+                dbSignal[i] = (double)signal[i];//clone
+            }
+
     return filterMovingAverage(dbSignal, width);
   }
 
@@ -3786,10 +4714,13 @@ namespace TowseyLibrary
 /// <param name="signal"></param>
 /// <param name="width"></param>
 /// <returns></returns>
-  public static double[] filterMovingAverageOLD(double[] signal, int width)
+        public static double[] filterMovingAverageOLD(double[] signal, int width)
   {
       int length = signal.Length;
-      if (length <= 3) return signal;   // not worth the effort!
+      if (length <= 3)
+            {
+                return signal;   // not worth the effort!
+            }
 
       double[] fs = new double[length]; // filtered signal
       int edge = width / 2;            // half window width.
@@ -3818,6 +4749,7 @@ namespace TowseyLibrary
           for (int j = i; j < length; j++) { sum += signal[j]; }
           fs[i] = sum / (double)(length - i);
       }
+
       return fs;
   }
 
@@ -3830,21 +4762,31 @@ namespace TowseyLibrary
 /// <param name="signal"></param>
 /// <param name="width"></param>
 /// <returns></returns>
-  public static double[] filterMovingAverage(double[] signal, int width)
+        public static double[] filterMovingAverage(double[] signal, int width)
   {
       int length = signal.Length;
 
-      if (width >= length) return null;
+      if (width >= length)
+            {
+                return null;
+            }
 
-      if (length < 3) return signal;   // not worth the effort!
+      if (length < 3)
+            {
+                return signal;   // not worth the effort!
+            }
 
       if (width % 2 == 0)
-          return filterMovingAverageEven(signal, width);
-      else
-          return filterMovingAverageOdd(signal, width);
-  }
+            {
+                return filterMovingAverageEven(signal, width);
+            }
+            else
+            {
+                return filterMovingAverageOdd(signal, width);
+            }
+        }
 
-  public static double[] filterMovingAverageEven(double[] signal, int width)
+        public static double[] filterMovingAverageEven(double[] signal, int width)
   {
       int length = signal.Length;
       double[] fs = new double[length]; // filtered signal
@@ -3856,6 +4798,7 @@ namespace TowseyLibrary
       {
           sum += signal[i];
       }
+
       // filter leading edge
       for (int i = 0; i <= edge; i++)
       {
@@ -3869,6 +4812,7 @@ namespace TowseyLibrary
       {
           sum += signal[i];
       }
+
       //Console.WriteLine("sum={0}", sum);
       // sum the central part of signal
       for (int i = edge+1; i < length - edge; i++)
@@ -3884,16 +4828,18 @@ namespace TowseyLibrary
       {
           sum += signal[length - i - 1];
       }
+
       // filter trailing edge
       for (int i = 0; i < edge; i++)
       {
           sum += signal[length - edge - i];
           fs[length - i - 1] = sum / (double)(edge + i + 2);
       }
+
       return fs;
   }
 
-  public static double[] filterMovingAverageOdd(double[] signal, int width)
+        public static double[] filterMovingAverageOdd(double[] signal, int width)
   {
       int length = signal.Length;
       if (length == 3)
@@ -3913,6 +4859,7 @@ namespace TowseyLibrary
       {
           sum += signal[i];
       }
+
       // filter leading edge
       for (int i = 0; i <= edge; i++)
       {
@@ -3925,6 +4872,7 @@ namespace TowseyLibrary
       {
           sum += signal[i];
       }
+
       //Console.WriteLine("sum={0}", sum);
       for (int i = edge + 1; i < length - edge; i++)
       {
@@ -3939,12 +4887,14 @@ namespace TowseyLibrary
       {
           sum += signal[length - i - 1];
       }
+
       // filter trailing edge
       for (int i = 0; i < edge; i++)
       {
           sum += signal[length - edge - i];
           fs[length - i - 1] = sum / (double)(edge + i);
       }
+
       return fs;
   }
 
@@ -3963,7 +4913,7 @@ namespace TowseyLibrary
         /// <param name="minPeriod"></param>
         /// <param name="maxPeriod"></param>
         /// <returns></returns>
-  public static double[] PeriodicityDetection(double[] values, int minPeriod, int maxPeriod)
+        public static double[] PeriodicityDetection(double[] values, int minPeriod, int maxPeriod)
   {
 
       int L = values.Length;
@@ -3979,10 +4929,15 @@ namespace TowseyLibrary
               double periodScore    = values[r] + values[r + period]  + values[r + (period * 2)];
               double offPeriodScore = values[r + (int)(period * 0.5)] + values[r + (int)(period * 1.5)] + values[r + (int)(period * 2.5)];
               periodScore -= offPeriodScore;
-              if (periodScore > maxScore) maxScore = periodScore;
-          }
+              if (periodScore > maxScore)
+                    {
+                        maxScore = periodScore;
+                    }
+                }
+
           oscillationScores[r + midPeriod] = maxScore / 3;
       }
+
       return oscillationScores;
   }
 
@@ -3999,7 +4954,7 @@ namespace TowseyLibrary
         /// <param name="maxPeriod"></param>
         /// <returns></returns>
 
-  public static Tuple<double, int, int> Periodicity(double[] values, int minPeriod, int maxPeriod)
+        public static Tuple<double, int, int> Periodicity(double[] values, int minPeriod, int maxPeriod)
   {
 
       double maxScore = -double.MaxValue;
@@ -4042,7 +4997,7 @@ namespace TowseyLibrary
   /// <param name="period"></param>
   /// <param name="phase"></param>
   /// <returns></returns>
-  public static System.Tuple<double, int> PeriodicityAndPhaseDetection(double[] values, int period, int phase)
+        public static System.Tuple<double, int> PeriodicityAndPhaseDetection(double[] values, int period, int phase)
   {
       int L = values.Length;
       int midPeriod = period / 2;
@@ -4058,13 +5013,14 @@ namespace TowseyLibrary
           count++;
           index += period;
       }
+
       amplitude /= (double)peakCount;
       return Tuple.Create(amplitude, peakCount); // amplitude of oscillation i.e. difference between min and max values
   }
 
 
 
-  public static Tuple<double, double, int> Periodicity_MeanAndSD(double[] values)
+        public static Tuple<double, double, int> Periodicity_MeanAndSD(double[] values)
   {
       int L = values.Length;
       double[] smooth = filterMovingAverage(values, 3);
@@ -4076,6 +5032,7 @@ namespace TowseyLibrary
       {
           if(peaks[i]) {previousPeakLocation = i; break;}
       }
+
       //int index = previousPeakLocation;
       List<int> periods = new List<int>();
       for (int i = previousPeakLocation+1; i < L; i++)
@@ -4086,6 +5043,7 @@ namespace TowseyLibrary
               previousPeakLocation = i;
           }
       }
+
       double mean, sd;
       NormalDist.AverageAndSD(periods.ToArray(), out mean, out sd);
       return Tuple.Create(mean, sd, peakCount);
@@ -4093,13 +5051,14 @@ namespace TowseyLibrary
 
   //============================================================================================================================
 
-  public static string Time_ConvertSecs2Mins(double seconds)
+        public static string Time_ConvertSecs2Mins(double seconds)
   {
       int mins = (int)Math.Floor(seconds / 60);
       double remainder = seconds % 60;
       string str = string.Format("{0}m {1:f3}s", mins, remainder);
       return str;
   }
+
         /// <summary>
         /// assumes date string has following 8 digit strcture YYYYMMDD
         /// </summary>
@@ -4116,7 +5075,7 @@ namespace TowseyLibrary
   //    return dt;
   //}
 
-  public static string[] MonthNames = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+        public static string[] MonthNames = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
 
 
         /// <summary>
@@ -4124,20 +5083,21 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="dateString"></param>
         /// <returns></returns>
-    public static DateTime Time_ConvertDateString2DateTime(string dateString)
+        public static DateTime Time_ConvertDateString2DateTime(string dateString)
     {
         // file name has following structure:  SERF_20130314.SpectralIndices.PivotTable.csv
         var yr = dateString.Substring(0, 4);
-            var mn = dateString.Substring(4, 2);
-            var dy = dateString.Substring(6, 2);
+        var mn = dateString.Substring(4, 2);
+        var dy = dateString.Substring(6, 2);
 
-            var hur = dateString.Substring(9, 2);
-            var min = dateString.Substring(11, 2);
-            var sec = dateString.Substring(13, 2);
+        var hur = dateString.Substring(9, 2);
+        var min = dateString.Substring(11, 2);
+        var sec = dateString.Substring(13, 2);
 
         var dt = new DateTime(int.Parse(yr), int.Parse(mn), int.Parse(dy), int.Parse(hur), int.Parse(min), int.Parse(sec));
         return dt;
     }
+
         //============================================================================================================================
 
 
@@ -4153,19 +5113,28 @@ namespace TowseyLibrary
    * @param str the string
    * @return formatted string.
    */
-  public static string padString_pre(string str, int width)
+        public static string padString_pre(string str, int width)
   {
-      while (str.Length < width) str = " " + str;
+      while (str.Length < width)
+            {
+                str = " " + str;
+            }
+
       return str;
   }
+
   /**
    * Pads a string to given length.
    * @param str the string
    * @return formatted string.
    */
-  public static string padString_post(string str, int width)
+        public static string padString_post(string str, int width)
   {
-      while (str.Length < width) str = str + " ";
+      while (str.Length < width)
+            {
+                str = str + " ";
+            }
+
       return str;
   }
 
@@ -4175,10 +5144,14 @@ namespace TowseyLibrary
    * @param places - maximum number of decimal places
    * @return formatted string.
    */
-  public static double roundDouble(double d, int places)
+        public static double roundDouble(double d, int places)
   {
       int n = 10;
-      for (int i = 1; i < places; i++) n *= 10;
+      for (int i = 1; i < places; i++)
+            {
+                n *= 10;
+            }
+
       double rd = ((double)(Math.Round(d * n))) / n;
       return rd;
   }
@@ -4196,7 +5169,7 @@ namespace TowseyLibrary
 /// <param name="upperIndex"></param>
 /// <returns></returns>
 
-  public static int WhichSideOfCentre(double[] array, double refValue, int lowerIndex, int upperIndex)
+        public static int WhichSideOfCentre(double[] array, double refValue, int lowerIndex, int upperIndex)
   {
       int distance = upperIndex - lowerIndex;
       int centre = new int();
@@ -4204,13 +5177,25 @@ namespace TowseyLibrary
 
       if (distance <= 1)
       {
-          if (refValue < array[lowerIndex]) return lowerIndex;
-          else return upperIndex;
-      }
+          if (refValue < array[lowerIndex])
+                {
+                    return lowerIndex;
+                }
+                else
+                {
+                    return upperIndex;
+                }
+            }
+
       if (refValue >= array[centre])
-          centre = WhichSideOfCentre(array, refValue, centre, upperIndex);
-      else
-          centre = WhichSideOfCentre(array, refValue, lowerIndex, centre);
+            {
+                centre = WhichSideOfCentre(array, refValue, centre, upperIndex);
+            }
+            else
+            {
+                centre = WhichSideOfCentre(array, refValue, lowerIndex, centre);
+            }
+
       return centre;
   }
 
@@ -4220,7 +5205,10 @@ namespace TowseyLibrary
 
             // create list to handle non-resplacement of samples
             List<int> list = new List<int>();
-            for (int i = 0; i < distribution.Length; i++) list.Add(i);
+            for (int i = 0; i < distribution.Length; i++)
+            {
+                list.Add(i);
+            }
 
             int[] returnSampleArray = new int[sampleCount];
             for (int i = 0; i < sampleCount; i++)
@@ -4235,6 +5223,7 @@ namespace TowseyLibrary
                 returnSampleArray[i] = list[newIndex];
                 list.RemoveAt(newIndex);
             }
+
             return returnSampleArray;
         }
 

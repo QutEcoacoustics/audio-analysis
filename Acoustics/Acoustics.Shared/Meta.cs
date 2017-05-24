@@ -11,8 +11,6 @@ namespace Acoustics.Shared
 
     public static class Meta
     {
-        private static readonly string Tag = Copyright + " " + DateTime.Now.Year + " " + Organization;
-
         public static string Organization { get; } = "QUT";
 
         public static string Copyright { get; } = "©";
@@ -21,7 +19,7 @@ namespace Acoustics.Shared
 
         public static string Website { get; } = "http://research.ecosounds.org/";
 
-        public static string OrganizationTag { get; } = Tag;
+        public static string OrganizationTag => Copyright + " " + DateTime.Now.Year + " " + Organization;
 
         public static string Repository { get; } = "https://github.com/QutBioacoustics/audio-analysis";
     }

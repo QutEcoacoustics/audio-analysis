@@ -7,7 +7,7 @@ namespace AudioAnalysisTools.DSP
     using System;
     using System.IO;
 
-    public class WavWriter
+    public static class WavWriter
     {
         /// <summary>
         /// The basic WAV file format follows the Interchange File Format specification.
@@ -147,23 +147,6 @@ namespace AudioAnalysisTools.DSP
 
             return data;
         }//end Perfect5th();
-
-        public static void Main()
-        {
-            LoggedConsole.WriteLine("RUNNING FROM TowseyLib.Main()");
-
-            const string wavDirName = @"C:\SensorNetworks\WavFiles\temp\";
-            const string fName = "SineSignal.wav";
-            string path = wavDirName + fName;
-
-            int sampleRate = 22050;
-            double duration = 30.245; // sig duration in seconds
-            int[] harmonics = { 500, 1000, 2000, 4000 };
-            double[] signal = DSP_Filters.GetSignal(sampleRate, duration, harmonics);
-            Write16BitWavFile(signal, sampleRate, path);
-            LoggedConsole.WriteLine("FINISHED!");
-            Console.ReadLine();
-        } //end Main method
 
         public static void Write(string path)
         {
