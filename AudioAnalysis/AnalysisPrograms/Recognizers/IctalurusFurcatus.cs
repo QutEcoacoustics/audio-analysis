@@ -122,7 +122,7 @@ namespace AnalysisPrograms.Recognizers
 
                 // Amplify 40dB and clip to +/-1.0;
                 double factor = 100; // equiv to 20dB
-                highPassFilteredSignal = DSP_Filters.AmplifyAndClip(highPassFilteredSignal, factor);
+                highPassFilteredSignal = DspFilters.AmplifyAndClip(highPassFilteredSignal, factor);
 
                 //low pass filter
                 string filterName = "Chebyshev_Lowpass_5000, scale*5";

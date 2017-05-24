@@ -160,7 +160,7 @@ namespace AnalysisPrograms.Recognizers
             bool[] peakArray = new bool[rowCount];
 
             // remove baseline from amplitude array
-            var highPassFilteredSignal = DSP_Filters.SubtractBaseline(amplitudeArray, 7);
+            var highPassFilteredSignal = DspFilters.SubtractBaseline(amplitudeArray, 7);
             // remove hi freq content from amplitude array
             var lowPassFilteredSignal = DataTools.filterMovingAverageOdd(amplitudeArray, 11);
 
