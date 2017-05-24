@@ -126,7 +126,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // assume default linear Herz scale
             this.FrameWidth = SpectrogramConstants.FRAME_LENGTH;
-            this.FreqScale = new FrequencyScale(nyquist: this.SampleRate / 2, frameSize: this.FrameWidth, herzInterval: 1000);
+            this.FreqScale = new FrequencyScale(nyquist: this.SampleRate / 2, frameSize: this.FrameWidth, herzLinearGridInterval: 1000);
 
             // set the X and Y axis scales for the spectrograms
             this.XTicInterval = xScale;
@@ -181,7 +181,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             switch (config.FreqScale)
             {
                 case "Linear":
-                    this.FreqScale = new FrequencyScale(nyquist, frameSize, herzInterval: 1000);
+                    this.FreqScale = new FrequencyScale(nyquist, frameSize, herzLinearGridInterval: 1000);
                     break;
                 case "Mel":
                     fst = FreqScaleType.Mel;
@@ -1051,7 +1051,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// Frames a false-colourspectrogram.
         /// Creates the title bar and the time scale. Also adds frequency grid lines to the image.
-        /// Note that the 'nyquist' and 'herzInterval' arguments are used ONLY if the cs.Freqscale field==null.
+        /// Note that the 'nyquist' and 'herzLinearGridInterval' arguments are used ONLY if the cs.Freqscale field==null.
         /// Also note that in this case, the frequency scale will be linear.
         /// </summary>
         public static Image FrameLDSpectrogram(Image bmp1, Image titleBar, LDSpectrogramRGB cs, int nyquist, int herzInterval)

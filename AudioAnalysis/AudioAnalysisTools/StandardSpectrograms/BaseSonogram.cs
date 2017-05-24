@@ -251,6 +251,10 @@ namespace AudioAnalysisTools
             this.Duration = duration;
         }
 
+        /// <summary>
+        /// This method assumes that the spectrogram has linear Herz scale
+        /// </summary>
+        /// <param name="title">title to be added to spectrogram</param>
         public Image GetImageFullyAnnotated(string title)
         {
             var image = this.GetImage();

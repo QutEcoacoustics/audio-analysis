@@ -34,13 +34,13 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// Extracts summary and spectral acoustic indices from the entire segment of the passed recording or a subsegment of it.
         /// </summary>
-        /// <param name="recording"> an audio recording </param>
+        /// <param name="recording"> an audio recording. IMPORTANT NOTE: This is a segment of the larger total recording.</param>
         /// <param name="subsegmentOffsetTimeSpan">
         /// The start time of the required subsegment relative to start of SOURCE audio recording.
         ///     i.e. SegmentStartOffset + time duration from Segment start to subsegment start. </param>
         /// <param name="indicesPropertiesConfig">file containing info about index value distributions. Used when drawing false-colour spectrograms. </param>
         /// <param name="sampleRateOfOriginalAudioFile"> That is, prior to being resample to the default of 22050.</param>
-        /// <param name="segmentStartOffset"> Time elapsed between start of recording and start of this recording segment. </param>
+        /// <param name="segmentStartOffset"> Time elapsed from absolute start of total recording and start of the passed recording segment i.e. line37. </param>
         /// <param name="config"> dynamic variable containing info about the configuration for index calculation</param>
         /// <param name="returnSonogramInfo"> boolean with default value = false </param>
         /// <returns> An IndexCalculateResult </returns>
@@ -144,7 +144,7 @@ namespace AudioAnalysisTools.Indices
             var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(subsegmentRecording, frameSize, frameStep);
 
             // Linear or Octave frequency scale? Set Linear as default.
-            var freqScale = new FrequencyScale(nyquist: nyquist, frameSize: frameSize, herzInterval: 1000);
+            var freqScale = new FrequencyScale(nyquist: nyquist, frameSize: frameSize, herzLinearGridInterval: 1000);
             var freqScaleType = config.GetTypeOfFreqScale();
             bool octaveScale = freqScaleType == FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
             if (octaveScale)
