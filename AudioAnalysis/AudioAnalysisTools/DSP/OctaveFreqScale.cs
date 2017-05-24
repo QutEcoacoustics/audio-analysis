@@ -77,8 +77,8 @@ namespace AudioAnalysisTools.DSP
             scale.WindowSize = frameSize; // = 2*8192   or 4*4096
             scale.FinalBinCount = finalBinCount;
             scale.ToneCount = octaveDivisions;
-            scale.OctaveBinBounds = LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, scale.LinearBound, scale.Nyquist, scale.ToneCount);
-            scale.GridLineLocations = GetGridLineLocations(fst, scale.OctaveBinBounds);
+            scale.BinBounds = LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, scale.LinearBound, scale.Nyquist, scale.ToneCount);
+            scale.GridLineLocations = GetGridLineLocations(fst, scale.BinBounds);
         }
 
         public static double[,] ConvertAmplitudeSpectrogramToDecibelOctaveScale(double[,] inputSpgram, FrequencyScale freqScale)
@@ -112,7 +112,7 @@ namespace AudioAnalysisTools.DSP
             }
 
             // get the octave bin bounds for this octave scale type
-            var octaveBinBounds = freqScale.OctaveBinBounds;
+            var octaveBinBounds = freqScale.BinBounds;
 
             //var octaveBinBounds = GetOctaveScale(freqScale.ScaleType);
 
@@ -553,7 +553,7 @@ namespace AudioAnalysisTools.DSP
         public static void TestOctaveScale(FreqScaleType fst)
         {
             var freqScale = new FrequencyScale(fst);
-            var octaveBinBounds = freqScale.OctaveBinBounds;
+            var octaveBinBounds = freqScale.BinBounds;
 
             // now test the octave scale using a test spectrum
             int sr = 22050;

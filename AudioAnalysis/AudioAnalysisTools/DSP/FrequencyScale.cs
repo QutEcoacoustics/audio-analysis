@@ -31,6 +31,62 @@ namespace AudioAnalysisTools.DSP
     public class FrequencyScale
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="FrequencyScale"/> class.
+        /// CONSTRUCTOR
+        /// Calling this constructor assumes a full-scale linear freq scale is required
+        /// </summary>
+        public FrequencyScale(int nyquist, int frameSize, int herzLinearGridInterval)
+        {
+            this.ScaleType = FreqScaleType.Linear;
+            this.Nyquist = nyquist;
+            this.WindowSize = frameSize;
+            this.FinalBinCount = frameSize / 2;
+            this.HerzLinearGridInterval = herzLinearGridInterval;
+            this.LinearBound = nyquist;
+            this.BinBounds = this.GetLinearBinBounds();
+            this.GridLineLocations = GetLinearGridLineLocations(nyquist, this.HerzLinearGridInterval, this.FinalBinCount);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FrequencyScale"/> class.
+        /// CONSTRUCTOR
+        /// </summary>
+        public FrequencyScale(FreqScaleType fst)
+        {
+            this.ScaleType = fst;
+            if (fst == FreqScaleType.Linear)
+            {
+                LoggedConsole.WriteErrorLine("WARNING: Assigning DEFAULT parameters for Linear FREQUENCY SCALE.");
+                LoggedConsole.WriteErrorLine("         Call other CONSTUCTOR to control linear scale.");
+                this.Nyquist = 11025;
+                this.WindowSize = 512;
+                this.FinalBinCount = 256;
+                this.HerzLinearGridInterval = 1000;
+                this.LinearBound = this.Nyquist;
+                this.BinBounds = this.GetLinearBinBounds();
+                this.GridLineLocations = GetLinearGridLineLocations(this.Nyquist, this.HerzLinearGridInterval, 256);
+            }
+            else if (fst == FreqScaleType.Mel)
+            {
+                // Do not have Mel scale working yet.
+                LoggedConsole.WriteErrorLine("WARNING: Mel Scale needs to be debugged.");
+                LoggedConsole.WriteErrorLine("         Assigning parameters for DEFAULT Linear FREQUENCY SCALE.");
+                LoggedConsole.WriteErrorLine("         Call other CONSTUCTOR to control linear scale.");
+                this.Nyquist = 11025;
+                this.WindowSize = 512;
+                this.FinalBinCount = 256;
+                this.HerzLinearGridInterval = 1000;
+                this.LinearBound = this.Nyquist;
+                this.GridLineLocations = GetLinearGridLineLocations(this.Nyquist, this.HerzLinearGridInterval, 256);
+            }
+            else
+            {
+                // assume octave scale is only other option
+                OctaveFreqScale.GetOctaveScale(this);
+            }
+        }
+
+        /// <summary>
         /// Gets or sets half the sample rate
         /// </summary>
         public int Nyquist { get; set; }
@@ -58,7 +114,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Gets or sets herz interval between gridlines when using a linear scale
         /// </summary>
-        public int HerzInterval { get; set; }
+        public int HerzLinearGridInterval { get; set; }
 
         /// <summary>
         /// Gets or sets top end of the linear part of an Octave Scale spectrogram
@@ -77,8 +133,9 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// Gets or sets the bin bounds of the frequency bands for octave scale
+        /// bin id in first column and the Hz value in second column of matrix
         /// </summary>
-        public int[,] OctaveBinBounds { get; set; }
+        public int[,] BinBounds { get; set; }
 
         /// <summary>
         /// Gets or sets the location of gridlines (first column) and the Hz value for the grid lines (second column of matrix)
@@ -86,76 +143,41 @@ namespace AudioAnalysisTools.DSP
         public int[,] GridLineLocations { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FrequencyScale"/> class.
-        /// CONSTRUCTOR
-        /// Calling this constructor assumes a full-scale linear freq scale is required
-        /// </summary>
-        public FrequencyScale(int nyquist, int frameSize, int herzInterval)
-        {
-            this.ScaleType = FreqScaleType.Linear;
-            this.Nyquist = nyquist;
-            this.WindowSize = frameSize;
-            this.FinalBinCount = frameSize/2;
-            this.HerzInterval = herzInterval;
-            this.LinearBound = nyquist;
-            this.GridLineLocations = GetLinearGridLineLocations(nyquist, this.HerzInterval, this.FinalBinCount);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FrequencyScale"/> class.
-        /// CONSTRUCTOR
-        /// </summary>
-        public FrequencyScale(FreqScaleType fst)
-        {
-            this.ScaleType = fst;
-            if (fst == FreqScaleType.Linear)
-            {
-                LoggedConsole.WriteErrorLine("WARNING: Assigning DEFAULT parameters for Linear FREQUENCY SCALE.");
-                LoggedConsole.WriteErrorLine("         Call other CONSTUCTOR to control linear scale.");
-                this.Nyquist = 11025;
-                this.WindowSize = 512;
-                this.FinalBinCount = 256;
-                this.HerzInterval = 1000;
-                this.LinearBound = this.Nyquist;
-                this.GridLineLocations = GetLinearGridLineLocations(this.Nyquist, this.HerzInterval, 256);
-            }
-            else if (fst == FreqScaleType.Mel)
-            {
-                // Do not have Mel scale working yet.
-                LoggedConsole.WriteErrorLine("WARNING: Mel Scale needs to be debugged.");
-                LoggedConsole.WriteErrorLine("         Assigning parameters for DEFAULT Linear FREQUENCY SCALE.");
-                LoggedConsole.WriteErrorLine("         Call other CONSTUCTOR to control linear scale.");
-                this.Nyquist = 11025;
-                this.WindowSize = 512;
-                this.FinalBinCount = 256;
-                this.HerzInterval = 1000;
-                this.LinearBound = this.Nyquist;
-                this.GridLineLocations = GetLinearGridLineLocations(this.Nyquist, this.HerzInterval, 256);
-            }
-            else // assume octave scale is only other option.
-            {
-                OctaveFreqScale.GetOctaveScale(this);
-            }
-        }
-
-        /// <summary>
         /// returns the binId for the grid line closest to the passed frequency
         /// </summary>
         public int GetBinIdForHerzValue(int herzValue)
         {
             int binId = 0;
-            int gridCount = this.GridLineLocations.GetLength(0);
+            int binCount = this.BinBounds.GetLength(0);
 
-            for (int i = 0; i < gridCount; i++)
+            for (int i = 1; i < binCount; i++)
             {
-                if (this.GridLineLocations[i, 1] >= herzValue)
+                if (this.BinBounds[i, 1] >= herzValue)
                 {
-                    binId = this.GridLineLocations[i, 0];
+                    binId = this.BinBounds[i, 0];
                     break;
                 }
             }
 
-            return binId;
+            // subtract 1 because have actually extracted the upper bin bound
+            return binId - 1;
+        }
+
+        /// <summary>
+        /// Returns an [N, 2] matrix with bin ID in column 1 and lower Herz bound in column 2
+        /// </summary>
+        public int[,] GetLinearBinBounds()
+        {
+            double herzInterval = this.Nyquist / (double)this.FinalBinCount;
+            var binBounds = new int[this.FinalBinCount, 2];
+
+            for (int i = 0; i < this.FinalBinCount; i++)
+            {
+                binBounds[i, 0] = i;
+                binBounds[i, 1] = (int)Math.Round(i * herzInterval);
+            }
+
+            return binBounds;
         }
 
         /// <summary>
@@ -228,7 +250,7 @@ namespace AudioAnalysisTools.DSP
             // assume mel scale grid lines will only go up to 10 kHz.
             var vScale = new int[10, 2];
 
-            //LoggedConsole.WriteLine("minMel=" + minMel.ToString("F1") + " melRange=" + melRange + " herzInterval=" + herzInterval + " imageHt=" + imageHt + " pixelPerMel=" + pixelPerMel);
+            //LoggedConsole.WriteLine("minMel=" + minMel.ToString("F1") + " melRange=" + melRange + " herzLinearGridInterval=" + herzLinearGridInterval + " imageHt=" + imageHt + " pixelPerMel=" + pixelPerMel);
 
             for (int f = minFreq + 1; f < maxFreq; f++)
             {
@@ -287,7 +309,7 @@ namespace AudioAnalysisTools.DSP
                     x += 2;
                 }
 
-                g.DrawString(gridLineLocations[b, 1] + $"", new Font("Thachoma", 8), txtColour, 1, y);
+                g.DrawString($"{gridLineLocations[b, 1]}", new Font("Thachoma", 8), txtColour, 1, y);
             }
         } //end AddHzGridLines()
 
@@ -411,10 +433,12 @@ namespace AudioAnalysisTools.DSP
         {
             var recordingPath = @"G:\SensorNetworks\WavFiles\LewinsRail\FromLizZnidersic\Lewinsrail_TasmanIs_Tractor_SM304253_0151119_0640_1minMono.wav";
             var outputDir = @"C:\SensorNetworks\Output\LewinsRail\LewinsRail_ThreeCallTypes".ToDirectoryInfo();
+
             //var recordingPath = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC\BAC2_20071008-085040.wav";
             //var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
             //var expectedResultsDir = Path.Combine(outputDir.FullName, TestTools.ExpectedResultsDir).ToDirectoryInfo();
             var outputImagePath = Path.Combine(outputDir.FullName, "octaveFrequencyScale1NoNoiseReduciton.png");
+
             //var opFileStem = "Lewinsrail_TasmanIs_Tractor";
 
             var recording = new AudioRecording(recordingPath);

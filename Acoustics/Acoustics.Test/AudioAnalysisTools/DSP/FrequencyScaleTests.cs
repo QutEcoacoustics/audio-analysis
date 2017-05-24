@@ -5,9 +5,11 @@
 namespace Acoustics.Test.AudioAnalysisTools.DSP
 {
     using System;
+    using System.Collections.Generic;
     using System.Drawing.Imaging;
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Tools.Wav;
     using EcoSounds.Mvc.Tests;
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
@@ -15,6 +17,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
+    using TowseyLibrary;
 
     /// <summary>
     /// Test methods for the various Frequency Scales
@@ -237,7 +240,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             }
 
             var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
-            Json.Serialise(resultFile1, freqScale.OctaveBinBounds);
+            Json.Serialise(resultFile1, freqScale.BinBounds);
             FileEqualityHelpers.TextFileEqual(expectedFile1, resultFile1);
 
             // Check that freqScale.GridLineLocations are correct
@@ -272,7 +275,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var recordingPath = PathHelper.ResolveAsset(@"Recordings\MarineJasco_AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit-60sec.wav");
             var opFileStem = "JascoMarineGBR1";
             var outputDir = this.outputDirectory;
-            var outputImagePath = Path.Combine(outputDir.FullName, "Octave2ScaleSonogram.png");
+            var outputImagePath = Path.Combine(this.outputDirectory.FullName, "Octave2ScaleSonogram.png");
 
             var recording = new AudioRecording(recordingPath);
             var fst = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
@@ -310,7 +313,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             }
 
             var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
-            Json.Serialise(resultFile1, freqScale.OctaveBinBounds);
+            Json.Serialise(resultFile1, freqScale.BinBounds);
             FileEqualityHelpers.TextFileEqual(expectedFile1, resultFile1);
 
             // Check that freqScale.GridLineLocations are correct
@@ -329,6 +332,128 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             // Check that image dimensions are correct
             Assert.AreEqual(201, image.Width);
+            Assert.AreEqual(310, image.Height);
+        }
+
+        /// <summary>
+        /// Tests linear freq scale using an artificial recording containing five sine waves.
+        /// </summary>
+        [TestMethod]
+        public void TestFreqScaleOnArtificialSignal1()
+        {
+            int sampleRate = 22050;
+            double duration = 20; // signal duration in seconds
+            int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
+            int windowSize = 512;
+            var freqScale = new FrequencyScale(sampleRate / 2, windowSize, 1000);
+            var outputImagePath = Path.Combine(this.outputDirectory.FullName, "SineSignal1_LinearFreqScale.png");
+
+            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics);
+            var sonoConfig = new SonogramConfig
+            {
+                WindowSize = freqScale.WindowSize,
+                WindowOverlap = 0.0,
+                SourceFName = "SineSignal1",
+                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionParameter = 0.12,
+            };
+
+            var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+
+            // pick a row, any row
+            var oneSpectrum = MatrixTools.GetRow(sonogram.Data, 40);
+            oneSpectrum = DataTools.filterMovingAverage(oneSpectrum, 5);
+            var peaks = DataTools.GetPeaks(oneSpectrum);
+            for (int i = 5; i < peaks.Length - 5; i++)
+            {
+                if (peaks[i])
+                {
+                    LoggedConsole.WriteLine($"bin ={freqScale.BinBounds[i, 0]},  Herz={freqScale.BinBounds[i, 1]}-{freqScale.BinBounds[i + 1, 1]}  ");
+                }
+            }
+
+            foreach (int h in harmonics)
+            {
+                LoggedConsole.WriteLine($"Harmonic {h}Herz  should be in bin  {freqScale.GetBinIdForHerzValue(h)}");
+            }
+
+            // spectrogram without framing, annotation etc
+            var image = sonogram.GetImage();
+            string title = $"Spectrogram of Harmonics: {DataTools.Array2String(harmonics)}   SR={sampleRate}  Window={windowSize}";
+            image = sonogram.GetImageFullyAnnotated(image, title, freqScale.GridLineLocations);
+            image.Save(outputImagePath);
+
+            // Check that image dimensions are correct
+            Assert.AreEqual(861, image.Width);
+            Assert.AreEqual(310, image.Height);
+
+            Assert.IsTrue(peaks[11]);
+            Assert.IsTrue(peaks[22]);
+            Assert.IsTrue(peaks[45]);
+            Assert.IsTrue(peaks[92]);
+            Assert.IsTrue(peaks[185]);
+        }
+
+        /// <summary>
+        /// Tests octave freq scale using an artificial recording containing five sine waves.
+        /// </summary>
+        [TestMethod]
+        public void TestFreqScaleOnArtificialSignal2()
+        {
+            int sampleRate = 64000;
+            double duration = 30; // signal duration in seconds
+            int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
+            var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
+            var outputImagePath = Path.Combine(this.outputDirectory.FullName, "SineSignal2_OctaveFreqScale.png");
+            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics);
+
+            // init the default sonogram config
+            var sonoConfig = new SonogramConfig
+            {
+                WindowSize = freqScale.WindowSize,
+                WindowOverlap = 0.2,
+                SourceFName = "SineSignal2",
+                NoiseReductionType = NoiseReductionType.None,
+                NoiseReductionParameter = 0.0,
+            };
+            var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
+
+            // pick a row, any row
+            var oneSpectrum = MatrixTools.GetRow(sonogram.Data, 40);
+            oneSpectrum = DataTools.filterMovingAverage(oneSpectrum, 5);
+            var peaks = DataTools.GetPeaks(oneSpectrum);
+
+            var peakIds = new List<int>();
+            for (int i = 5; i < peaks.Length - 5; i++)
+            {
+                if (peaks[i])
+                {
+                    int peakId = freqScale.BinBounds[i, 0];
+                    peakIds.Add(peakId);
+                    LoggedConsole.WriteLine($"Spectral peak located in bin {peakId},  Herz={freqScale.BinBounds[i, 1]}");
+                }
+            }
+
+            foreach (int h in harmonics)
+            {
+                LoggedConsole.WriteLine($"Harmonic {h}Herz should be in bin {freqScale.GetBinIdForHerzValue(h)}");
+            }
+
+            Assert.AreEqual(5, peakIds.Count);
+            Assert.AreEqual(129, peakIds[0]);
+            Assert.AreEqual(257, peakIds[1]);
+            Assert.AreEqual(513, peakIds[2]);
+            Assert.AreEqual(1025, peakIds[3]);
+            Assert.AreEqual(2049, peakIds[4]);
+
+            var image = sonogram.GetImage();
+            string title = $"Spectrogram of Harmonics: {DataTools.Array2String(harmonics)}   SR={sampleRate}  Window={freqScale.WindowSize}";
+            image = sonogram.GetImageFullyAnnotated(image, title, freqScale.GridLineLocations);
+            image.Save(outputImagePath);
+
+            // Check that image dimensions are correct
+            Assert.AreEqual(146, image.Width);
             Assert.AreEqual(310, image.Height);
         }
     }
