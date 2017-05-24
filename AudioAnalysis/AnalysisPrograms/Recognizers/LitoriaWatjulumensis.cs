@@ -229,7 +229,7 @@ namespace AnalysisPrograms.Recognizers
 
 
             double[] amplitudeScores = DataTools.SumMinusDifference(lowerArray, upperArray);
-            double[] differenceScores = DSP_Filters.SubtractBaseline(amplitudeScores, 7);
+            double[] differenceScores = DspFilters.SubtractBaseline(amplitudeScores, 7);
 
             // Could smooth here rather than above. Above seemed slightly better?
             //amplitudeScores = DataTools.filterMovingAverage(amplitudeScores, 7);

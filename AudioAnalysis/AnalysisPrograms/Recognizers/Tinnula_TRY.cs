@@ -169,7 +169,7 @@ namespace AnalysisPrograms.Recognizers
             double[] amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, binMin, (rowCount - 1),
                 binMax);
 
-            var highPassFilteredSignal = DSP_Filters.SubtractBaseline(amplitudeArray, 7);
+            var highPassFilteredSignal = DspFilters.SubtractBaseline(amplitudeArray, 7);
 
             // We now have a list of potential hits for C. tinnula. This needs to be filtered.
             double[] prunedScores;
