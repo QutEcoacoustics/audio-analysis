@@ -44,55 +44,17 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         public IndexCalculateConfig()
         {
-            // default values
-            this.AnalysisName = "Towsey.Analysis";
-            this.SegmentDuration = TimeSpan.FromSeconds(60);
-            this.SegmentOverlap = TimeSpan.Zero;
             this.IndexCalculationDuration = TimeSpan.FromSeconds(DefaultIndexCalculationDurationInSeconds);
             this.BgNoiseBuffer = TimeSpan.FromSeconds(5);
 
             this.FrameLength = DefaultWindowSize;
 
-            // this framestep gives an exact 20ms frame when doing hi-resolution zooming spectrograms.
-            this.FrameStep = 441;
             this.ResampleRate = DefaultResampleRate;
 
             this.LowFreqBound = DefaultLowFreqBound;
             this.MidFreqBound = DefaultMidFreqBound;
             this.SetTypeOfFreqScale(DefaultFrequencyScaleType);
-
-            this.SaveIntermediateFiles = "Never";
-            this.SaveSonogramImages = "Never";
-
-            this.SaveSonogramData = false;
-            this.DisplayCsvImage = false;
-            this.IndexPropertiesConfig = @"./IndexPropertiesConfig.yml";
-
-            this.ParallelProcessing = false;
-            this.TileImageOutput = false;
-            this.RequireDateInFilename = false;
         }
-
-        /// <summary>
-        /// Gets or sets the Analysis name
-        /// The default = Towsey.Acoustic
-        /// </summary>
-        public string AnalysisName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the SegmentDuration
-        /// 60 seconds; use 0.2 for zooming spectrogram tiles
-        /// Default value = 1.0
-        /// Units=minutes
-        /// </summary>
-        public TimeSpan SegmentDuration { get; set; }
-
-        /// <summary>
-        /// Gets or sets the SegmentOverlap
-        /// Default value = 0.
-        /// Units=seconds
-        /// </summary>
-        public TimeSpan SegmentOverlap { get; set; }
 
         /// <summary>
         /// Gets or sets the Timespan (in seconds) over which summary and spectral indices are calculated
@@ -172,96 +134,12 @@ namespace AudioAnalysisTools.Indices
             return this.frequencyScaleType;
         }
 
-        /// <summary>
-        /// Gets or sets the options to SaveIntermediatefiles
-        /// Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-        /// The default = "Never"
-        /// </summary>
-        public string SaveIntermediateFiles { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether one-minute spectrograms can be saved in any analysis task.
-        /// Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-        /// The default = false
-        /// </summary>
-        public string SaveSonogramImages { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to TileImageOutput
-        /// Default value: false
-        /// </summary>
-        public bool ParallelProcessing { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to do ParallelProcessing
-        /// If true, an additional set of images will be produced that are tiles
-        /// If true, RequireDateInFilename must be set
-        /// Default value: false
-        /// </summary>
-        public bool TileImageOutput { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether RequireDateInFilename
-        /// If true, an unambiguous date time must be provided in the source file's name.
-        /// If true, an exception will be thrown if no such date is found
-        /// If false, and a valid date is still found in file name, it will still be parsed
-        /// Supports formats like:
-        ///         prefix_20140101T235959+1000.mp3
-        ///         prefix_20140101T235959+Z.mp3
-        ///         prefix_20140101-235959+1000.mp3
-        ///         prefix_20140101-235959+Z.mp3
-        /// Default value: false
-        /// </summary>
-        public bool RequireDateInFilename { get; set; }
-
-        /// <summary>
-        /// Gets or sets location of the IndexPropertiesConfig file
-        /// Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-        /// The default = './IndexPropertiesConfig.yml'
-        /// </summary>
-        public string IndexPropertiesConfig { get; set; }
 
         public static IndexCalculateConfig GetDefaultConfig()
         {
             return new IndexCalculateConfig();
         }
-
-        // ##############################################################################################################################
-        // THE FOLLOWING THREE PROPERITIES SHOULD BE REMOVED
-
-        /// <summary>
-        /// Gets a value indicating whether to DisplayCsvImage
-        /// DisplayCsvImage is obsolete - ensure it remains set to: false
-        /// </summary>
-        public bool DisplayCsvImage { get; }
-
-        /// <summary>
-        /// Gets the FrameStep.
-        /// FrameWidth is used WITHOUT overlap to calculate the spectral indices.
-        /// Default step value when calculating summary and spectral indices = FrameLength = 512.
-        /// Default step value when calculating spectral indices for ZOOMING spectrograms = 441.
-        /// Units=samples
-        /// IMPORTANT NOTE: The value for FrameStep is used ONLY when calculating a standard spectrogram within the ZOOMING spectrogram function.
-        /// FrameStep is NOT used when calculating Summary and Spectral indices.
-        /// However the FrameStep entry must NOT be deleted from the config. Must keep its value for when it is required.
-        /// The value 441 should NOT be changed because it has been calculated specifically for current ZOOMING spectrogram set-up.
-        /// TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
-        /// </summary>
-        private int FrameStep { get; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to SaveSonogramData
-        /// SAVE SONOGRAM DATA FILES FOR SUBSEQUENT ZOOMING SPECTROGRAMS
-        /// Next two parameters are used only when creating images for zooming spectrograms.
-        /// WARNING: IndexCalculationDuration must be set = 0.2  when SaveSonogramData = true
-        /// # TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
-        /// The default = false
-        /// </summary>
-        private bool SaveSonogramData { get; set; }
-
-        // ##############################################################################################################################
-        // THE FOLLOWING STATIC METHODS RETURN CONFIG FILES
-
+        
         /// <summary>
         /// Link method to one which does the real work.
         /// </summary>
@@ -284,24 +162,10 @@ namespace AudioAnalysisTools.Indices
         {
             var config = new IndexCalculateConfig
             {
-                AnalysisName = (string)dynamicConfig[AnalysisKeys.AnalysisName] ?? "Towsey.Acoustic",
-
-                // SegmentDuration, //Should ever need to change
-                // SegmentOverlap,  //Should ever need to change
                 ResampleRate = (int?)dynamicConfig[AnalysisKeys.ResampleRate] ?? DefaultResampleRate,
                 FrameLength = (int?)dynamicConfig[AnalysisKeys.FrameLength] ?? DefaultWindowSize,
                 MidFreqBound = (int?)dynamicConfig[AnalysisKeys.MidFreqBound] ?? DefaultMidFreqBound,
                 LowFreqBound = (int?)dynamicConfig[AnalysisKeys.LowFreqBound] ?? DefaultLowFreqBound,
-
-                SaveIntermediateFiles = (string)dynamicConfig["SaveIntermediateFiles"] ?? "Never",
-                SaveSonogramImages = (string)dynamicConfig["SaveIntermediateFiles"] ?? "Never",
-
-                //SaveCsvFile,       //Should ever need to change
-                //SaveSonogramData,  //Should ever need to change
-
-                ParallelProcessing = (bool?)dynamicConfig["ParallelProcessing"] ?? false,
-                TileImageOutput = (bool?)dynamicConfig["TileImageOutput"] ?? false,
-                RequireDateInFilename = (bool?)dynamicConfig["RequireDateInFilename"] ?? false,
             };
 
             double duration = (double?)dynamicConfig[AnalysisKeys.IndexCalculationDuration] ?? DefaultIndexCalculationDurationInSeconds;
