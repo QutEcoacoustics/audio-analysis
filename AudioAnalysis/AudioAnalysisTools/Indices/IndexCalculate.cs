@@ -273,8 +273,11 @@ namespace AudioAnalysisTools.Indices
                 // the above frequency bin bounds do not apply with octave scale. Need to recalculate them suitable for Octave scale recording.
                 lowFreqBound = freqScale.LinearBound;
                 lowerBinBound = freqScale.GetBinIdForHerzValue(lowFreqBound);
+
                 midFreqBound = 8000; // This value appears suitable for Jasco Marine recordings. Not much happens above 8kHz.
-                middleBinBound = freqScale.GetBinIdForHerzValue(midFreqBound);
+
+                //middleBinBound = freqScale.GetBinIdForHerzValue(midFreqBound);
+                middleBinBound = freqScale.GetBinIdInReducedSpectrogramForHerzValue(midFreqBound);
                 midBandBinCount = middleBinBound - lowerBinBound + 1;
             }
 

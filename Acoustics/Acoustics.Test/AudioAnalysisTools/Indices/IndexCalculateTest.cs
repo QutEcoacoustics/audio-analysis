@@ -15,6 +15,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
     using TowseyLibrary;
+    using global::AudioAnalysisTools.StandardSpectrograms;
 
     // using TestHelpers;
 
@@ -271,9 +272,25 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         [TestMethod]
         public void TestOfSpectralIndices_Octave()
         {
-            var sourceRecording = PathHelper.ResolveAsset(@"C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit.wav");
-            var configFile = PathHelper.ResolveConfigFile(@"Towsey.AcousticMarine.yml");
-            var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesMarineConfig.yml");
+            // create a two-minute artificial recording containing five harmonics.
+            int sampleRate = 64000;
+            double duration = 120; // signal duration in seconds
+            int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
+            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics);
+
+            // writing to disk did not work
+            //string path = @"C:\SensorNetworks\WavFiles\temp\tempfile.wav";
+            //WavWriter.Write16bitWavFile(wr.Samples, smapleRateOfOriginalRecording, path);
+
+            // cut out one minute from 30 - 90 seconds and incorporate into AudioRecording
+            int startSample = sampleRate * 30; // start two minutews into recording
+            int subsegmentSampleCount = sampleRate * 60; // get 60 seconds
+            double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, startSample, subsegmentSampleCount);
+            var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
+            var subsegmentRecording = new AudioRecording(wr);
+
+            var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
+            var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
             var resourcesDir = PathHelper.ResolveAssetPath("Indices");
 
             // var outputDir = this.outputDirectory;
@@ -283,39 +300,53 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
                 this.outputDirectory.Create();
             }
 
-            int smapleRateOfOriginalRecording = 64000;
-            int startSample = smapleRateOfOriginalRecording * 120; // start two minutews into recording
-            int subsegmentSampleCount = smapleRateOfOriginalRecording * 60; // get the third minute
-            var recording = new AudioRecording(sourceRecording);
-            double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, startSample, subsegmentSampleCount);
-            var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, smapleRateOfOriginalRecording);
-            var subsegmentRecording = new AudioRecording(wr);
-            //string path = @"C:\SensorNetworks\WavFiles\temp\tempfile.wav";
-            //WavWriter.Write16bitWavFile(wr.Samples, smapleRateOfOriginalRecording, path);
-
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
             var indexCalculateConfig = IndexCalculateConfig.GetConfig(configFile);
             indexCalculateConfig.SetTypeOfFreqScale("Octave");
+            var freqScale = new FrequencyScale(indexCalculateConfig.GetTypeOfFreqScale());
+            indexCalculateConfig.FrameLength = freqScale.WindowSize;
 
             var results = IndexCalculate.Analysis(
                 subsegmentRecording,
                 TimeSpan.Zero,
                 indexPropertiesConfig,
-                smapleRateOfOriginalRecording,
+                sampleRate,
                 TimeSpan.Zero,
                 indexCalculateConfig,
                 returnSonogramInfo: true);
 
             var spectralIndices = results.SpectralIndexValues;
 
-            // TEST the SPECTRAL INDICES
-            // After serialising the expected vector, comment the Binary.Serialise line and copy file to dir TestResources\Indices.
+            // TEST the ACI SPECTRAL INDICES
+            Assert.AreEqual(256, spectralIndices.ACI.Length);
 
-            // ACI
             var expectedSpectrumFile = new FileInfo(resourcesDir + "\\ACI_OctaveScale.bin");
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.ACI);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.ACI);
+
+            // it is necessary to visualise the output spectrogram to ensure that we are not producing rubbish.
+            // therefore init the default sonogram config
+            var sonoConfig = new SonogramConfig
+            {
+                WindowSize = freqScale.WindowSize,
+                WindowOverlap = 0.2,
+                SourceFName = "SineSignal2_OctaveScale",
+                NoiseReductionType = NoiseReductionType.None,
+                NoiseReductionParameter = 0.0,
+            };
+            var sonogram = new AmplitudeSonogram(sonoConfig, subsegmentRecording.WavReader);
+            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
+
+            var image = sonogram.GetImage();
+            string title = $"Spectrogram of Harmonics: {DataTools.Array2String(harmonics)}   SR={sampleRate}  Window={freqScale.WindowSize}";
+            image = sonogram.GetImageFullyAnnotated(image, title, freqScale.GridLineLocations);
+            var outputImagePath = Path.Combine(this.outputDirectory.FullName, "SineSignal2_OctaveScale.png");
+            image.Save(outputImagePath);
+
+            // Check that image dimensions are correct
+            Assert.AreEqual(292, image.Width);
+            Assert.AreEqual(310, image.Height);
         }
     }
 }

@@ -160,7 +160,30 @@ namespace AudioAnalysisTools.DSP
             }
 
             // subtract 1 because have actually extracted the upper bin bound
-            return binId - 1;
+            // return binId - 1;
+            return binId;
+        }
+
+        /// <summary>
+        /// returns the binId for the grid line closest to the passed frequency
+        /// </summary>
+        public int GetBinIdInReducedSpectrogramForHerzValue(int herzValue)
+        {
+            int binId = 0;
+            int binCount = this.BinBounds.GetLength(0);
+
+            for (int i = 1; i < binCount; i++)
+            {
+                if (this.BinBounds[i, 1] >= herzValue)
+                {
+                    binId = i;
+                    break;
+                }
+            }
+
+            // subtract 1 because have actually extracted the upper bin bound
+            // return binId - 1;
+            return binId;
         }
 
         /// <summary>
