@@ -40,13 +40,13 @@ namespace Acoustics.Test
         [TestInitialize]
         public void Setup()
         {
-            this.outputDirectory = TestHelper.GetTempDir();
+            this.outputDirectory = PathHelper.GetTempDir();
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            TestHelper.DeleteTempDir(this.outputDirectory);
+            PathHelper.DeleteTempDir(this.outputDirectory);
         }
 
         [TestMethod]
@@ -69,7 +69,7 @@ namespace Acoustics.Test
 
             // Example: modifying a default config file.
             // get the default config file
-            var defaultConfigFile = ConfigsHelper.ResolveConfigFilePath("SpectrogramFalseColourConfig.yml");
+            var defaultConfigFile = PathHelper.ResolveConfigFilePath("SpectrogramFalseColourConfig.yml");
             var config = Yaml.Deserialise<LdSpectrogramConfig>(defaultConfigFile);
 
             // make changes to config file as required for test

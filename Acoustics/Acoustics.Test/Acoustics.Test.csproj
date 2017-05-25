@@ -115,6 +115,10 @@
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\AudioAnalysis\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="PowerArgs, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Extra Assemblies\PowerArgs\PowerArgs.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core">
@@ -140,6 +144,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnalysisPrograms\AnalyseLongRecordings\TestAnalyseLongRecording.cs" />
     <Compile Include="AnalysisPrograms\Concatenation\ConcatenationTests.cs" />
     <Compile Include="AnalysisPrograms\SourcePreparers\LocalSourcePreparerTests.cs" />
     <Compile Include="ArrayExtensionsTests.cs" />
