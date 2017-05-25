@@ -6,6 +6,7 @@ namespace AudioAnalysisTools.DSP
 {
     using System;
     using System.IO;
+    using Acoustics.Tools.Wav;
 
     public static class WavWriter
     {
@@ -146,7 +147,20 @@ namespace AudioAnalysisTools.DSP
             }
 
             return data;
-        }//end Perfect5th();
+        }
+
+        public static WavReader SineWave(double freq, double amp, double phase, TimeSpan length, int sampleRate)
+        {
+            int n = (int)Math.Floor(length.TotalSeconds * sampleRate);
+            double[] data = new double[n];
+
+            for (int i = 0; i < n; i++)
+            {
+                data[i] = amp * Math.Sin(phase + 2.0 * Math.PI * freq * i / sampleRate);
+            }
+
+            return new WavReader(data, 1, 16, sampleRate);
+        }
 
         public static void Write(string path)
         {

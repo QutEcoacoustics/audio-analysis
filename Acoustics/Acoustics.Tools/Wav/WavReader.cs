@@ -165,56 +165,6 @@ namespace Acoustics.Tools.Wav
         #endregion
 
         /// <summary>
-        /// Generate a sine wave.
-        /// </summary>
-        /// <param name="freq">
-        /// The frequency.
-        /// </param>
-        /// <param name="amp">
-        /// The amplitude.
-        /// </param>
-        /// <param name="phase">
-        /// The audio phase.
-        /// </param>
-        /// <param name="length">
-        /// The audio duration.
-        /// </param>
-        /// <param name="sampleRate">
-        /// The sample rate.
-        /// </param>
-        /// <returns>
-        /// New WavReader.
-        /// </returns>
-        public static WavReader SineWave(double freq, double amp, double phase, TimeSpan length, int sampleRate)
-        {
-            int n = (int)Math.Floor(length.TotalSeconds * sampleRate);
-            double[] data = new double[n];
-
-            for (int i = 0; i < n; i++)
-            {
-                data[i] = amp * Math.Sin(phase + 2.0 * Math.PI * freq * i / sampleRate);
-            }
-
-            return new WavReader(data, 1, 16, sampleRate);
-        }
-
-        public static FileInfo CreateTemporaryAudioFile(FileInfo sourceRecording, DirectoryInfo outDir, int resampleRate)
-        {
-            // put temp FileSegment in same directory as the required output image.
-            var tempAudioSegment = new FileInfo(Path.Combine(outDir.FullName, "tempWavFile.wav"));
-
-            // delete the temp audio file if it already exists.
-            if (File.Exists(tempAudioSegment.FullName))
-            {
-                File.Delete(tempAudioSegment.FullName);
-            }
-
-            // This line creates a temporary version of the source file downsampled as per entry in the config file
-            MasterAudioUtility.SegmentToWav(sourceRecording, tempAudioSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
-            return tempAudioSegment;
-        }
-
-        /// <summary>
         /// Subsamples audio.
         /// </summary>
         /// <param name="interval">
@@ -226,14 +176,19 @@ namespace Acoustics.Tools.Wav
             Contract.Requires<InvalidOperationException>(this.Channels == 1);
 
             if (interval <= 1)
+            {
                 return; //do not change anything!
+            }
 
             int L = this.samples.Length;
             int newL = L / interval; // the new length
             double[] newSamples = new double[newL];
             L = newL * interval; //want L to be exact multiple of interval
             for (int i = 0; i < newL; i++)
+            {
                 newSamples[i] = this.samples[i * interval];
+            }
+
             this.samples = null;
             this.samples = newSamples;
             this.SampleRate /= interval;
@@ -266,6 +221,27 @@ namespace Acoustics.Tools.Wav
         }
 
         /// <summary>
+        /// Get the zero-indexed channel data from channel <c>c</c>.
+        /// </summary>
+        /// <param name="c">The zero-indexed channel to get.</param>
+        /// <returns>the requested channel</returns>
+        public double[] GetChannel(int c)
+        {
+            Contract.Requires<IndexOutOfRangeException>(c >= 0);
+            Contract.Requires<IndexOutOfRangeException>(c < this.Channels);
+
+            double[] channelSignal = new double[this.BlockCount];
+            int j, cc = this.Channels;
+            for (int i = 0; i < channelSignal.Length; i++)
+            {
+                j = (i * cc) + c;
+                channelSignal[i] = this.samples[j];
+            }
+
+            return channelSignal;
+        }
+
+        /// <summary>
         /// Dispose this WavReader.
         /// </summary>
         public void Dispose()
@@ -293,19 +269,27 @@ namespace Acoustics.Tools.Wav
 
             // http://technology.niagarac.on.ca/courses/ctec1631/WavFileFormat.html
             if (!BitConverter.IsLittleEndian)
+            {
                 throw new NotSupportedException("System.BitConverter expects little endian.");
+            }
 
             // "RIFF"
             if (data[0] != 0x52 || data[1] != 0x49 || data[2] != 0x46 || data[3] != 0x46)
+            {
                 throw new InvalidOperationException("Cannot parse WAV header. Error: RIFF");
+            }
 
             // Total Length Of Package To Follow
             if (BitConverter.ToUInt32(data, 4) < 36u)
+            {
                 throw new InvalidOperationException("Cannot parse WAV header. Error: Length");
+            }
 
             // "WAVE"
             if (data[8] != 0x57 || data[9] != 0x41 || data[10] != 0x56 || data[11] != 0x45)
+            {
                 throw new InvalidOperationException("Cannot parse WAV header. Error: WAVE");
+            }
 
             // Chunks
             // --------
@@ -345,7 +329,10 @@ namespace Acoustics.Tools.Wav
                         {
                             // Length Of FORMAT Chunk (16, 18 or 40)
                             int p = cksize - 16;
-                            if (p < 0) throw new InvalidOperationException("Cannot parse WAV header. Error: fmt chunk.");
+                            if (p < 0)
+                            {
+                                throw new InvalidOperationException("Cannot parse WAV header. Error: fmt chunk.");
+                            }
 
                             // Common Wave Compression Codes
                             // Code 	        Description
@@ -450,27 +437,6 @@ namespace Acoustics.Tools.Wav
                         break;
                 }
             }
-        }
-
-        /// <summary>
-        /// Get the zero-indexed channel data from channel <c>c</c>.
-        /// </summary>
-        /// <param name="c">The zero-indexed channel to get.</param>
-        /// <returns>the requested channel</returns>
-        public double[] GetChannel(int c)
-        {
-            Contract.Requires<IndexOutOfRangeException>(c >= 0);
-            Contract.Requires<IndexOutOfRangeException>(c < this.Channels);
-
-            double[] channelSignal = new double[this.BlockCount];
-            int j, cc = this.Channels;
-            for (int i = 0; i < channelSignal.Length; i++)
-            {
-                j = (i * cc) + c;
-                channelSignal[i] = this.samples[j];
-            }
-
-            return channelSignal;
         }
     }
 }
