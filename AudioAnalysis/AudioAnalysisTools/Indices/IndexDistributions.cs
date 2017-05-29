@@ -9,28 +9,24 @@
 
 namespace AudioAnalysisTools.Indices
 {
-    using System;
     using System.Collections.Generic;
     using System.Drawing;
-    using System.Linq;
-    using System.Text;
-    using LongDurationSpectrograms;
-    using TowseyLibrary;
     using System.IO;
+    using System.Linq;
     using Acoustics.Shared;
+    using TowseyLibrary;
 
     public static class IndexDistributions
     {
-        public const string SummaryIndexStatisticsFilenameFragment     = "SummaryIndexStatistics";
-        public const string SummaryIndexDistributionsFilenameFragment  = "SummaryIndexDistributions";
-        public const string SpectralIndexStatisticsFilenameFragment    = "SpectralIndexStatistics";
+        public const string SummaryIndexStatisticsFilenameFragment = "SummaryIndexStatistics";
+        public const string SummaryIndexDistributionsFilenameFragment = "SummaryIndexDistributions";
+        public const string SpectralIndexStatisticsFilenameFragment = "SpectralIndexStatistics";
         public const string SpectralIndexDistributionsFilenameFragment = "SpectralIndexDistributions";
 
         // This constant sets the upper percentile bound for RGB normalisation (0-255) of spectral indices.
         // The relevant distribution is derived from the index distribution statistics file.
-        public const int  UPPER_PERCENTILE_DEFAULT = 98;
-        public const string UPPER_PERCENTILE_LABEL = "98%"; // corresponding label
-
+        public const int UpperPercentileDefault = 98;
+        public const string UpperPercentileLabel = "98%"; // corresponding label
 
         public class SpectralStats
         {
@@ -50,14 +46,10 @@ namespace AudioAnalysisTools.Indices
 
             public int Count { get; set; }
 
-            //public double GetValueOfThresholdPercentile()
-            //{
-            //    return this.GetValueOfNthPercentile(this.UpperPercentile);
-            //}
             public double GetValueOfNthPercentile(int percentile)
             {
                 int length = this.Distribution.Length;
-                double threshold = percentile / (double)100;
+                double threshold = percentile / 100D;
                 double[] probs = DataTools.NormaliseArea(this.Distribution);
                 double[] cumProb = DataTools.ConvertProbabilityDistribution2CummulativeProbabilites(probs);
                 int percentileBin = 0;
@@ -69,12 +61,12 @@ namespace AudioAnalysisTools.Indices
                         break;
                     }
                 }
+
                 this.UpperPercentileBin = percentileBin;
-                double binWidth = (this.Maximum - this.Minimum) / (double)length;
+                double binWidth = (this.Maximum - this.Minimum) / length;
                 double value = this.Minimum + (binWidth * percentileBin);
                 return value;
             }
-
         }
 
         public static Dictionary<string, SpectralStats> ReadSummaryIndexDistributionStatistics(DirectoryInfo opDir, string fileStem)
@@ -107,20 +99,19 @@ namespace AudioAnalysisTools.Indices
             var imageList = new List<Image>();
             Dictionary<string, SpectralStats> indexDistributionStatistics = new Dictionary<string, SpectralStats>();
 
-            double[,] matrix;
             string[] spectrogramKeys = spectrogramMatrices.Keys.ToArray();
 
             foreach (string key in spectrogramKeys)
             {
                 if (spectrogramMatrices.ContainsKey(key))
                 {
-                    matrix = spectrogramMatrices[key];
-                    SpectralStats stats = GetModeAndOneTailedStandardDeviation(matrix, width, UPPER_PERCENTILE_DEFAULT);
+                    var matrix = spectrogramMatrices[key];
+                    SpectralStats stats = GetModeAndOneTailedStandardDeviation(matrix, width, UpperPercentileDefault);
                     indexDistributionStatistics.Add(key, stats); // add index statistics
-                    double value = stats.GetValueOfNthPercentile(UPPER_PERCENTILE_DEFAULT);
+                    double value = stats.GetValueOfNthPercentile(UpperPercentileDefault);
 
                     imageList.Add(
-                        ImageTools.DrawHistogram(
+                        GraphsAndCharts.DrawHistogram(
                             key,
                             stats.Distribution,
                             stats.UpperPercentileBin,
@@ -129,9 +120,9 @@ namespace AudioAnalysisTools.Indices
                                 { "min",  stats.Minimum },
                                 { "max",  stats.Maximum },
                                 { "mode", stats.Mode },
-                                { "sd",   stats.StandardDeviation},
-                                { UPPER_PERCENTILE_LABEL,  value},
-                                { "count",  stats.Count},
+                                { "sd",   stats.StandardDeviation },
+                                { UpperPercentileLabel,  value },
+                                { "count",  stats.Count },
                             },
                             width,
                             height));
@@ -148,21 +139,13 @@ namespace AudioAnalysisTools.Indices
             return indexDistributionStatistics;
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <param name="label"></param>
-        /// <returns></returns>
         public static Image DrawImageOfDistribution(double[,] matrix, int width, int height, string label)
         {
-            SpectralStats stats = GetModeAndOneTailedStandardDeviation(matrix, width, UPPER_PERCENTILE_DEFAULT);
-            double value = stats.GetValueOfNthPercentile(UPPER_PERCENTILE_DEFAULT);
+            SpectralStats stats = GetModeAndOneTailedStandardDeviation(matrix, width, UpperPercentileDefault);
+            double value = stats.GetValueOfNthPercentile(UpperPercentileDefault);
 
             var image =
-                ImageTools.DrawHistogram(
+                GraphsAndCharts.DrawHistogram(
                     label,
                     stats.Distribution,
                     stats.UpperPercentileBin,
@@ -171,19 +154,16 @@ namespace AudioAnalysisTools.Indices
                                 { "min",  stats.Minimum },
                                 { "max",  stats.Maximum },
                                 { "mode", stats.Mode },
-                                { "sd",   stats.StandardDeviation},
-                                { UPPER_PERCENTILE_LABEL,  value},
-                                { "count",  stats.Count},
+                                { "sd",   stats.StandardDeviation },
+                                { UpperPercentileLabel,  value },
+                                { "count",  stats.Count },
                     },
                     width,
                     height);
             return image;
         }
 
-
-
-
-    public static Dictionary<string, SpectralStats> WriteSummaryIndexDistributionStatistics(Dictionary<string, double[]> summaryIndices, DirectoryInfo outputDirectory, string fileStem)
+        public static Dictionary<string, SpectralStats> WriteSummaryIndexDistributionStatistics(Dictionary<string, double[]> summaryIndices, DirectoryInfo outputDirectory, string fileStem)
         {
             // to accumulate the images
             int width = 100;  // pixels
@@ -198,12 +178,12 @@ namespace AudioAnalysisTools.Indices
                 if (summaryIndices.ContainsKey(key))
                 {
                     double[] array = summaryIndices[key];
-                    SpectralStats stats = GetModeAndOneTailedStandardDeviation(array, width, UPPER_PERCENTILE_DEFAULT);
+                    SpectralStats stats = GetModeAndOneTailedStandardDeviation(array, width, UpperPercentileDefault);
                     indexDistributionStatistics.Add(key, stats); // add index statistics
-                    double value = stats.GetValueOfNthPercentile(UPPER_PERCENTILE_DEFAULT);
+                    double value = stats.GetValueOfNthPercentile(UpperPercentileDefault);
 
                     imageList.Add(
-                        ImageTools.DrawHistogram(
+                        GraphsAndCharts.DrawHistogram(
                             key,
                             stats.Distribution,
                             stats.UpperPercentileBin,
@@ -212,9 +192,9 @@ namespace AudioAnalysisTools.Indices
                                 { "min",  stats.Minimum },
                                 { "max",  stats.Maximum },
                                 { "mode", stats.Mode },
-                                { "sd",   stats.StandardDeviation},
-                                { UPPER_PERCENTILE_LABEL,  value},
-                                { "count",  stats.Count},
+                                { "sd",   stats.StandardDeviation },
+                                { UpperPercentileLabel,  value },
+                                { "count",  stats.Count },
                             },
                             width,
                             height));
@@ -231,39 +211,38 @@ namespace AudioAnalysisTools.Indices
             return indexDistributionStatistics;
         }
 
-
-        public static SpectralStats GetModeAndOneTailedStandardDeviation(double[,] M)
+        public static SpectralStats GetModeAndOneTailedStandardDeviation(double[,] matrix)
         {
             int binCount = 100;
             int upperPercentile = 0;
-            double[] values = DataTools.Matrix2Array(M);
-            const bool DisplayHistogram = false;
-            double min, max, mode, SD;
-            DataTools.GetModeAndOneTailedStandardDeviation(values, DisplayHistogram, out min, out max, out mode, out SD);
-            int[] histogram = Histogram.Histo(M, binCount);
+            double[] values = DataTools.Matrix2Array(matrix);
+            const bool displayHistogram = false;
+            double min, max, mode, sd;
+            DataTools.GetModeAndOneTailedStandardDeviation(values, displayHistogram, out min, out max, out mode, out sd);
+            int[] histogram = Histogram.Histo(matrix, binCount);
 
             return new SpectralStats()
             {
                 Minimum = min,
                 Maximum = max,
                 Mode = mode,
-                StandardDeviation = SD,
+                StandardDeviation = sd,
                 UpperPercentile = upperPercentile,
                 Distribution = histogram,
             };
         }
 
-        public static SpectralStats GetModeAndOneTailedStandardDeviation(double[,] M, int binCount, int upperPercentile)
+        public static SpectralStats GetModeAndOneTailedStandardDeviation(double[,] matrix, int binCount, int upperPercentile)
         {
-            double[] values = DataTools.Matrix2Array(M);
+            double[] values = DataTools.Matrix2Array(matrix);
             return GetModeAndOneTailedStandardDeviation(values, binCount, upperPercentile);
         }
 
         public static SpectralStats GetModeAndOneTailedStandardDeviation(double[] values, int binCount, int upperPercentile)
         {
-            const bool DisplayHistogram = false;
-            double min, max, mode, SD;
-            DataTools.GetModeAndOneTailedStandardDeviation(values, DisplayHistogram, out min, out max, out mode, out SD);
+            const bool displayHistogram = false;
+            double min, max, mode, sd;
+            DataTools.GetModeAndOneTailedStandardDeviation(values, displayHistogram, out min, out max, out mode, out sd);
             int[] histogram = Histogram.Histo(values, binCount);
 
             return new SpectralStats()
@@ -271,7 +250,7 @@ namespace AudioAnalysisTools.Indices
                 Minimum = min,
                 Maximum = max,
                 Mode = mode,
-                StandardDeviation = SD,
+                StandardDeviation = sd,
                 UpperPercentile = upperPercentile,
                 Distribution = histogram,
                 Count = values.Length,
@@ -302,7 +281,5 @@ namespace AudioAnalysisTools.Indices
         {
             return Json.Deserialise<Dictionary<string, SpectralStats>>(file);
         }
-
-
     }
 }
