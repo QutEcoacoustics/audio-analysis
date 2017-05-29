@@ -314,7 +314,7 @@
                 recordingDurations[secDuration]++;
             }
             string title = "Recording Duration: Width = " + histogramWidth + "secs";
-            Image histoImage = ImageTools.DrawHistogram(title, recordingDurations, 95, null, histogramWidth, 50);
+            Image histoImage = GraphsAndCharts.DrawHistogram(title, recordingDurations, 95, null, histogramWidth, 50);
             histoImage.Save(histoPath);
 
         } // HiRes2() produces spectrogram images

@@ -779,7 +779,7 @@ namespace AnalysisPrograms
                         DataTools.Normalise(indexArray, 2, out normalisedScores, out normalisedThreshold);
 
                         //var plot = new Plot("Cane Toad", normalisedScores, normalisedThreshold);
-                        var recognizerTrack = ImageTools.DrawGraph("Canetoad events", normalisedScores, 32);
+                        var recognizerTrack = GraphsAndCharts.DrawGraph("Canetoad events", normalisedScores, 32);
                         var imageFilePath = Path.Combine(resultsDir.FullName, opFileStem + "_" + dateString + "__2Maps" + ".png");
                         var twoMaps = ImageTools.ReadImage2Bitmap(imageFilePath);
                         var imageList = new List<Image> { twoMaps, recognizerTrack };
@@ -949,7 +949,7 @@ namespace AnalysisPrograms
             Console.WriteLine($"Max Value in any minute = {maxValue}");
             indexArray = DataTools.normalise(indexArray);
 
-            var image = ImageTools.DrawGraph("Canetoad events", indexArray, 100);
+            var image = GraphsAndCharts.DrawGraph("Canetoad events", indexArray, 100);
 
             string title = $"Canetoad events: {opFileStem}                       Max value={maxValue:f0}";
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, indexArray.Length);

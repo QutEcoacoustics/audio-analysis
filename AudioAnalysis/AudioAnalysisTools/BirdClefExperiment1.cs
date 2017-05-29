@@ -449,7 +449,7 @@
                     vector = DataTools.Normalise2Probabilites(vector);
                     vector = DataTools.filterMovingAverage(vector, 3);
                     string label = string.Format("{0} {1} ({2})", (r + 1), key, output.InstanceNumbersPerSpecies[r]);
-                    Image image = ImageTools.DrawGraph(label, vector, output.ReducedSpectralLength, imageHeight, scalingFactor);
+                    Image image = GraphsAndCharts.DrawGraph(label, vector, output.ReducedSpectralLength, imageHeight, scalingFactor);
                     images.Add(image);
                 }
                 Image combinedImage = ImageTools.CombineImagesVertically(images);
