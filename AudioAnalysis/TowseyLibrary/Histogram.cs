@@ -403,7 +403,7 @@
 
             string title = "wpd";
             int[] histogram = Histo(matrix, width);
-            Image image = ImageTools.DrawHistogram(title, histogram, upperPercentileBin,
+            Image image = GraphsAndCharts.DrawHistogram(title, histogram, upperPercentileBin,
                         new Dictionary<string, double>()
                             {
                                 { "min", min },
