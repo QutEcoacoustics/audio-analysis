@@ -7,6 +7,7 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
+    using System.Drawing;
     using Acoustics.Shared;
     using AnalysisBase.ResultBases;
     using Fasterflect;
@@ -293,6 +294,58 @@ namespace AudioAnalysisTools.Indices
             {
                 return CachedSettersInternal;
             }
+        }
+
+        public static Image CreateImageOfSpectralIndices(SpectralIndexValues spectralIndices)
+        {
+            string[] keys = { "ACI", "BGN", "CVR", "ENT", "EVN", "PMN", "POW", "RHZ", "R3D", "SPT" };
+            var images = new List<Image>();
+            foreach (var key in keys)
+            {
+                double[] normalisedIndex = null;
+
+                switch (key)
+                {
+                    case "ACI":
+                        normalisedIndex = DataTools.normalise(spectralIndices.ACI);
+                        break;
+                    case "BGN":
+                        normalisedIndex = DataTools.normalise(spectralIndices.BGN);
+                        break;
+                    case "CVR":
+                        normalisedIndex = DataTools.normalise(spectralIndices.CVR);
+                        break;
+                    case "ENT":
+                        normalisedIndex = DataTools.normalise(spectralIndices.ENT);
+                        break;
+                    case "EVN":
+                        normalisedIndex = DataTools.normalise(spectralIndices.EVN);
+                        break;
+                    case "PMN":
+                        normalisedIndex = DataTools.normalise(spectralIndices.PMN);
+                        break;
+                    case "POW":
+                        normalisedIndex = DataTools.normalise(spectralIndices.POW);
+                        break;
+                    case "RHZ":
+                        normalisedIndex = DataTools.normalise(spectralIndices.RHZ);
+                        break;
+                    case "R3D":
+                        normalisedIndex = DataTools.normalise(spectralIndices.R3D);
+                        break;
+                    case "SPT":
+                        normalisedIndex = DataTools.normalise(spectralIndices.SPT);
+                        break;
+                    default:
+                        break;
+                }
+
+                var image = GraphsAndCharts.DrawGraph(key, normalisedIndex, 100);
+                images.Add(image);
+            }
+
+            var combinedImage = ImageTools.CombineImagesVertically(images.ToArray());
+            return combinedImage;
         }
 
         public double[] ACI { get; set; }

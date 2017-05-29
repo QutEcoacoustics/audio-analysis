@@ -255,6 +255,7 @@
     <Compile Include="ConfigDict.cs" />
     <Compile Include="ConfigDictionary.cs" />
     <Compile Include="CubeHelix.cs" />
+    <Compile Include="GraphsAndCharts.cs" />
     <Compile Include="HoughTransform.cs" />
     <Compile Include="Matrix3D.cs" />
     <Compile Include="OtsuThresholder.cs" />
