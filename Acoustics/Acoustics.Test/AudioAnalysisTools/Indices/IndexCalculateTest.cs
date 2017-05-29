@@ -5,6 +5,7 @@
 namespace Acoustics.Test.AudioAnalysisTools.Indices
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using Acoustics.Shared;
     using EcoSounds.Mvc.Tests;
@@ -16,6 +17,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using TestHelpers;
     using TowseyLibrary;
     using global::AudioAnalysisTools.StandardSpectrograms;
+    using System.Drawing;
 
     // using TestHelpers;
 
@@ -218,6 +220,10 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.SPT);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.SPT);
+
+            var outputImagePath1 = Path.Combine(this.outputDirectory.FullName, "SpectralIndices.png");
+            var image = SpectralIndexValues.CreateImageOfSpectralIndices(spectralIndices);
+            image.Save(outputImagePath1);
         }
 
         /// <summary>
@@ -229,7 +235,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
             var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
             var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
-            var resourcesDir = PathHelper.ResolveAssetPath("Indices");
 
             // var outputDir = this.outputDirectory;
             // Create temp directory to store output
@@ -256,18 +261,25 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             var spectralIndices = results.SpectralIndexValues;
 
             // TEST the SPECTRAL INDICES
-            // After serialising the expected vector, comment the Binary.Serialise line and copy file to dir TestResources\Indices.
-
-            // ACI
-            var expectedSpectrumFile = new FileInfo(resourcesDir + "\\ACI_ICD20.bin");
-            // Binary.Serialize(expectedSpectrumFile, spectralIndices.ACI);
+            var resourcesDir = PathHelper.ResolveAssetPath("Indices");
+            var expectedSpectrumFile = new FileInfo(resourcesDir + "\\BGN_ICD20.bin");
+            // Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.ACI);
+            CollectionAssert.AreEqual(expectedVector, spectralIndices.BGN);
+
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\CVR_ICD20.bin");
+            // Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
+            expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
+            CollectionAssert.AreEqual(expectedVector, spectralIndices.CVR);
+
+            var outputImagePath1 = Path.Combine(this.outputDirectory.FullName, "SpectralIndices_ICD20.png");
+            var image = SpectralIndexValues.CreateImageOfSpectralIndices(spectralIndices);
+            image.Save(outputImagePath1);
         }
 
         /// <summary>
         /// Test index calculation when the Herz FreqScaleType = Octave.
-        /// Only test the ACI spectral index as reasonable to assume that the rest will work if ACI works.
+        /// Only test the BGN spectral index as reasonable to assume that the rest will work if ACI works.
         /// </summary>
         [TestMethod]
         public void TestOfSpectralIndices_Octave()
@@ -291,9 +303,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
             var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
-            var resourcesDir = PathHelper.ResolveAssetPath("Indices");
 
-            // var outputDir = this.outputDirectory;
             // Create temp directory to store output
             if (!this.outputDirectory.Exists)
             {
@@ -317,36 +327,23 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             var spectralIndices = results.SpectralIndexValues;
 
-            // TEST the ACI SPECTRAL INDICES
-            Assert.AreEqual(256, spectralIndices.ACI.Length);
+            // TEST the BGN SPECTRAL INDEX
+            Assert.AreEqual(256, spectralIndices.BGN.Length);
 
-            var expectedSpectrumFile = new FileInfo(resourcesDir + "\\ACI_OctaveScale.bin");
-            // Binary.Serialize(expectedSpectrumFile, spectralIndices.ACI);
+            var resourcesDir = PathHelper.ResolveAssetPath("Indices");
+            var expectedSpectrumFile = new FileInfo(resourcesDir + "\\BGN_OctaveScale.bin");
+            // Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.ACI);
+            CollectionAssert.AreEqual(expectedVector, spectralIndices.BGN);
 
-            // it is necessary to visualise the output spectrogram to ensure that we are not producing rubbish.
-            // therefore init the default sonogram config
-            var sonoConfig = new SonogramConfig
-            {
-                WindowSize = freqScale.WindowSize,
-                WindowOverlap = 0.2,
-                SourceFName = "SineSignal2_OctaveScale",
-                NoiseReductionType = NoiseReductionType.None,
-                NoiseReductionParameter = 0.0,
-            };
-            var sonogram = new AmplitudeSonogram(sonoConfig, subsegmentRecording.WavReader);
-            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\CVR_OctaveScale.bin");
+            // Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
+            expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
+            CollectionAssert.AreEqual(expectedVector, spectralIndices.CVR);
 
-            var image = sonogram.GetImage();
-            string title = $"Spectrogram of Harmonics: {DataTools.Array2String(harmonics)}   SR={sampleRate}  Window={freqScale.WindowSize}";
-            image = sonogram.GetImageFullyAnnotated(image, title, freqScale.GridLineLocations);
-            var outputImagePath = Path.Combine(this.outputDirectory.FullName, "SineSignal2_OctaveScale.png");
-            image.Save(outputImagePath);
-
-            // Check that image dimensions are correct
-            Assert.AreEqual(292, image.Width);
-            Assert.AreEqual(310, image.Height);
+            var outputImagePath1 = Path.Combine(this.outputDirectory.FullName, "SpectralIndices_Octave.png");
+            var image = SpectralIndexValues.CreateImageOfSpectralIndices(spectralIndices);
+            image.Save(outputImagePath1);
         }
     }
 }

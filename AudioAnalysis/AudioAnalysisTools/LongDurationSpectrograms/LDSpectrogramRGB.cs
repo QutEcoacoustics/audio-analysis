@@ -473,7 +473,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 if (indexProperties.CalculateNormMax)
                 {
-                    max = this.IndexStats[key].GetValueOfNthPercentile(IndexDistributions.UPPER_PERCENTILE_DEFAULT);
+                    max = this.IndexStats[key].GetValueOfNthPercentile(IndexDistributions.UpperPercentileDefault);
                 }
             }
 
