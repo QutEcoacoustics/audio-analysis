@@ -41,21 +41,19 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //audio2csv  "C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\Test1"
 
             // TSHERING DEMA BHUTAN RECORDINGS
-            //string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\SecondDeployment\WBH12HOURS-D_20160403_120000.wav";
-            //    @"Y:\Tshering\WBH_Walaytar\201505 - second deployment\Site2_Waklaytar\24Hours WBH_28032016\WBH12HOURS-D_20160403_120000.wav";
-            //string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\WBH12HOURS-N_20160403_000000.wav";   //This recording contains lots of heron calls.
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TsheringDema\WBH12HOURS-D_20160403_120000.wav";
+            //    @"Y:\Tshering\WBH_Walaytar\201505 - second deployment\Site2_Waklaytar\24Hours WBH_28032016\WBH12HOURS-D_20160403_120000.wav";
             // string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\WBH12HOURS-N_20160403_064548.wav";
             // string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\Heron_commonCall_downsampled.wav";
-            //string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.ArdeaInsignis.yml";
+
             //string outputPath    = @"C:\SensorNetworks\Output\TsheringDema";
-            //Y:\Results\2016Dec06-094005 - Tshering, Towsey.Indices, ICD=10.0, #133\Tshering\WBH_Walaytar\201505 - second deployment\Site2_Waklaytar\24Hours WBH_28032016
+            //    @Y:\Results\2016Dec06-094005 - Tshering, Towsey.Indices, ICD=10.0, #133\Tshering\WBH_Walaytar\201505 - second deployment\Site2_Waklaytar\24Hours WBH_28032016
 
             // BHUTAN: Tsherng Dema: This file contains lots of white heron calls.     WBH12HOURS-N_20160403_000000.wav
             // This is a six-hour recording and quite good for debugging calculation of acoustic indices
-            //string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\SecondDeployment\WBH12HOURS-N_20160403_000000.wav";
-            //string outputPath = @"C:\SensorNetworks\Output\TsheringDema";
-            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
+            string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\SecondDeployment\WBH12HOURS-N_20160403_000000.wav";
+            string outputPath = @"C:\SensorNetworks\Output\TsheringDema";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.ArdeaInsignis.yml";
 
@@ -127,20 +125,15 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.KoalaMale.cfg";
 
             // TUI TERRACE RECORDINGS
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_Farmstay_ECLIPSE3_20121114-060001+1000.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\Kiwi\TEST_TUITCE_20091215_220004.wav";
-            //string outputPath    = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013";
-            //string outputPath    = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014";
-            //string outputPath = @"C:\SensorNetworks\Output\Test\TestKiwi";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\Kiwi\TEST_TUITCE_20091215_220004.wav";
 
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav";
-            //string recordingPath = @"Y:\Eclipise 2012\Eclipse\Site 4 - Farmstay\ECLIPSE3_20121115_040001.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Eclipse2012\Farmstay_ECLIPSE3_20121114_060001TEST.wav";
-            //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
-            string outputPath = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017";
+            //string outputPath = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013";
+            //string outputPath = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014";
+            //string outputPath = @"C:\SensorNetworks\Output\Test\TestKiwi";
+            //string outputPath = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017";
 
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // COMMAND LINE FOR  LITTLE SPOTTED KIWI3
             // audio2csv  "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg" C:\SensorNetworks\Output\LSKiwi3\
@@ -176,9 +169,9 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string outputPath    = @"C:\SensorNetworks\Output\Frogs\SamfordTest";
 
             // ECLIPSE FARMSTAY
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_Farmstay_ECLIPSE3_20121114-060001+1000.wav";
             //string recordingPath = @"Y:\Eclipise 2012\Eclipse\Site 4 - Farmstay\ECLIPSE3_20121115_040001.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Eclipse2012\Farmstay_ECLIPSE3_20121114_060001TEST.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_Farmstay_ECLIPSE3_20121114-060001+1000.wav";
             //string outputPath    = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\ZoomImages2";
 
             // ST BEES KOALA RECORDING TWO HOURS

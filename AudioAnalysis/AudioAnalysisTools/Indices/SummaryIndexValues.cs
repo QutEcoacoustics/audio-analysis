@@ -298,7 +298,7 @@ namespace AudioAnalysisTools.Indices
 
         public static Image CreateImageOfSpectralIndices(SpectralIndexValues spectralIndices)
         {
-            string[] keys = { "ACI", "BGN", "CVR", "ENT", "EVN", "PMN", "POW", "RHZ", "R3D", "SPT" };
+            string[] keys = { "ACI", "BGN", "CVR", "ENT", "EVN", "PMN", "POW", "RHZ", "RNG", "RPS", "RVT", "R3D", "SPT" };
             var images = new List<Image>();
             foreach (var key in keys)
             {
@@ -329,6 +329,15 @@ namespace AudioAnalysisTools.Indices
                         break;
                     case "RHZ":
                         normalisedIndex = DataTools.normalise(spectralIndices.RHZ);
+                        break;
+                    case "RNG":
+                        normalisedIndex = DataTools.normalise(spectralIndices.RNG);
+                        break;
+                    case "RPS":
+                        normalisedIndex = DataTools.normalise(spectralIndices.RPS);
+                        break;
+                    case "RVT":
+                        normalisedIndex = DataTools.normalise(spectralIndices.RVT);
                         break;
                     case "R3D":
                         normalisedIndex = DataTools.normalise(spectralIndices.R3D);

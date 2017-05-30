@@ -38,11 +38,12 @@ namespace AudioAnalysisTools.DSP
                 NoiseReductionParameter = 0.12,
             };
             var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+
             // pick a row, any row
             var oneSpectrum = MatrixTools.GetRow(sonogram.Data, 40);
-            oneSpectrum = DataTools.filterMovingAverage(oneSpectrum, 5);
-            var peaks = DataTools.GetPeaks(oneSpectrum);
-            for (int i = 5; i < peaks.Length - 5; i++)
+            oneSpectrum = DataTools.normalise(oneSpectrum);
+            var peaks = DataTools.GetPeaks(oneSpectrum, 0.5);
+            for (int i = 2; i < peaks.Length - 2; i++)
             {
                 if (peaks[i])
                 {
@@ -94,8 +95,8 @@ namespace AudioAnalysisTools.DSP
 
             // pick a row, any row
             var oneSpectrum = MatrixTools.GetRow(sonogram.Data, 40);
-            oneSpectrum = DataTools.filterMovingAverage(oneSpectrum, 5);
-            var peaks = DataTools.GetPeaks(oneSpectrum);
+            oneSpectrum = DataTools.normalise(oneSpectrum);
+            var peaks = DataTools.GetPeaks(oneSpectrum, 0.5);
 
             var peakIds = new List<int>();
             for (int i = 5; i < peaks.Length - 5; i++)
