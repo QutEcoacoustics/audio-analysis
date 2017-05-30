@@ -5,19 +5,14 @@
 namespace Acoustics.Test.AudioAnalysisTools.Indices
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using Acoustics.Shared;
-    using EcoSounds.Mvc.Tests;
-    using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
     using TowseyLibrary;
-    using global::AudioAnalysisTools.StandardSpectrograms;
-    using System.Drawing;
 
     // using TestHelpers;
 
@@ -221,9 +216,9 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.SPT);
 
-            var outputImagePath1 = Path.Combine(this.outputDirectory.FullName, "SpectralIndices.png");
+            var outputImagePath = Path.Combine(this.outputDirectory.FullName, "SpectralIndices.png");
             var image = SpectralIndexValues.CreateImageOfSpectralIndices(spectralIndices);
-            image.Save(outputImagePath1);
+            image.Save(outputImagePath);
         }
 
         /// <summary>

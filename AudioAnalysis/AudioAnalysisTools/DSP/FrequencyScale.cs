@@ -152,7 +152,7 @@ namespace AudioAnalysisTools.DSP
 
             for (int i = 1; i < binCount; i++)
             {
-                if (this.BinBounds[i, 1] >= herzValue)
+                if (this.BinBounds[i, 1] > herzValue)
                 {
                     binId = this.BinBounds[i, 0];
                     break;
@@ -160,8 +160,7 @@ namespace AudioAnalysisTools.DSP
             }
 
             // subtract 1 because have actually extracted the upper bin bound
-            // return binId - 1;
-            return binId;
+            return binId - 1;
         }
 
         /// <summary>
@@ -174,7 +173,7 @@ namespace AudioAnalysisTools.DSP
 
             for (int i = 1; i < binCount; i++)
             {
-                if (this.BinBounds[i, 1] >= herzValue)
+                if (this.BinBounds[i, 1] > herzValue)
                 {
                     binId = i;
                     break;
@@ -182,8 +181,7 @@ namespace AudioAnalysisTools.DSP
             }
 
             // subtract 1 because have actually extracted the upper bin bound
-            // return binId - 1;
-            return binId;
+            return binId - 1;
         }
 
         /// <summary>
