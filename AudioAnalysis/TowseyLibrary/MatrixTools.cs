@@ -16,23 +16,6 @@ namespace TowseyLibrary
 
     public class MatrixTools
     {
-        protected static void PrintMatrix(double[,] matrix)
-        {
-            var rowLength = matrix.GetLength(1);
-            for (var i = 0; i < matrix.GetLength(0); i++)
-            {
-                var row = new StringBuilder(rowLength * 6);
-
-                for (int j = 0; j < rowLength; j++)
-                {
-                    row.Append(matrix[i, j]);
-                    row.Append(" | ");
-                }
-
-                Debug.WriteLine(rowLength);
-            }
-        }
-
         /// <summary>
         /// TODO: This method concatenates time-sequence data but does not check that the files are in temporal sequence.
         ///       Nor does it check for temporal gaps.
@@ -49,7 +32,7 @@ namespace TowseyLibrary
             }
 
             var opMatrix = new double[rowCount, colCount];
-            int thisRowID = 0;
+            int thisRowId = 0;
 
             // loop through the matrices
             for (int m = 0; m < list.Count; m++)
@@ -61,10 +44,10 @@ namespace TowseyLibrary
                 {
                     for (int c = 0; c < colCount; c++)
                     {
-                        opMatrix[thisRowID, c] = list[m][r, c];
+                        opMatrix[thisRowId, c] = list[m][r, c];
                     }
 
-                    thisRowID++;
+                    thisRowId++;
                 }
             }
 
@@ -74,18 +57,18 @@ namespace TowseyLibrary
         /// <summary>
         /// Method assumes that the column count for two matrices is the same
         /// </summary>
-        public static double[,] ConcatenateMatrixRows(double[,] M1, double[,] M2)
+        public static double[,] ConcatenateMatrixRows(double[,] m1, double[,] m2)
         {
-            int colCount = M1.GetLength(1);
-            int m1RowCount = M1.GetLength(0);
-            int m2RowCount = M2.GetLength(0);
+            int colCount = m1.GetLength(1);
+            int m1RowCount = m1.GetLength(0);
+            int m2RowCount = m2.GetLength(0);
 
             var opMatrix = new double[m1RowCount + m2RowCount, colCount];
             for (int r = 0; r < m1RowCount; r++)
             {
                 for (int c = 0; c < colCount; c++)
                 {
-                    opMatrix[r, c] = M1[r, c];
+                    opMatrix[r, c] = m1[r, c];
                 }
             }
 
@@ -94,7 +77,7 @@ namespace TowseyLibrary
                 int row = m1RowCount + r;
                 for (int c = 0; c < colCount; c++)
                 {
-                    opMatrix[row, c] = M2[r, c];
+                    opMatrix[row, c] = m2[r, c];
                 }
             }
 
@@ -104,9 +87,6 @@ namespace TowseyLibrary
         /// <summary>
         /// Subtract matrix m2 from matrix m1
         /// </summary>
-        /// <param name="m1"></param>
-        /// <param name="m2"></param>
-        /// <returns></returns>
         public static bool MatrixDimensionsAreEqual(double[,] m1, double[,] m2)
         {
             if ((m1.GetLength(0) == m2.GetLength(0)) && (m1.GetLength(1) == m2.GetLength(1)))
@@ -142,7 +122,7 @@ namespace TowseyLibrary
             }
 
             sum -= centreValue;
-            double av = sum / (double)(count - 1);
+            double av = sum / (count - 1);
             if ((centreValue - av) < threshold)
             {
                 return false;
@@ -155,13 +135,12 @@ namespace TowseyLibrary
         /// <summary>
         /// Adds a frame around a matrix by adding row and columns of zeros.
         /// </summary>
-        /// <param name="M"></param>
+        /// <param name="matrix">matrix</param>
         /// <param name="frameWidth">The number of rows/columns of zeros to be added</param>
-        /// <returns></returns>
-        public static double[,] FrameMatrixWithZeros(double[,] M, int frameWidth)
+        public static double[,] FrameMatrixWithZeros(double[,] matrix, int frameWidth)
         {
-            int inRowCount = M.GetLength(0);
-            int inColCount = M.GetLength(1);
+            int inRowCount = matrix.GetLength(0);
+            int inColCount = matrix.GetLength(1);
 
             int outRowCount = inRowCount + (2 * frameWidth);
             int outColCount = inColCount + (2 * frameWidth);
@@ -172,7 +151,7 @@ namespace TowseyLibrary
             {
                 for (int c = 0; c < inColCount; c++)
                 {
-                    outputMatrix[r + frameWidth, c + frameWidth] = M[r, c];
+                    outputMatrix[r + frameWidth, c + frameWidth] = matrix[r, c];
                 }
             }
 
@@ -222,7 +201,7 @@ namespace TowseyLibrary
                 for (int j = 0; j < subColCount; j++)
                 {
                     sum += m[r1 + i, c1 + j];
-                    array[i] = sum / (double)subColCount;
+                    array[i] = sum / subColCount;
                 }
             }
 
@@ -249,22 +228,22 @@ namespace TowseyLibrary
         /// This method assumes that the passed matrix of double already takes values between 0.0 and 1.0
         /// </summary>
         public static byte[,] ConvertMatrixOfDouble2Byte(double[,] matrix)
-    {
-        int rows = matrix.GetLength(0);
-        int cols = matrix.GetLength(1);
-        var outM = new byte[rows, cols];
-        var maxValue = byte.MaxValue;
-
-        for (int r = 0; r < rows; r++)
         {
-            for (int c = 0; c < cols; c++)
-            {
-                outM[r, c] = (byte)(matrix[r, c] * maxValue);
-            }
-        }
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            var outM = new byte[rows, cols];
+            var maxValue = byte.MaxValue;
 
-        return outM;
-    }
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    outM[r, c] = (byte)(matrix[r, c] * maxValue);
+                }
+            }
+
+            return outM;
+        }
 
         public static double[,] ConvertMatrixOfByte2Double(byte[,] matrix)
         {
@@ -286,37 +265,38 @@ namespace TowseyLibrary
         /*
          * converts a matrix to a vector by concatenating columns.
          */
-        public static double[] Matrix2Array(double[,] M)
+        public static double[] Matrix2Array(double[,] matrix)
         {
-            int ht = M.GetLength(0);
-            int width = M.GetLength(1);
+            int ht = matrix.GetLength(0);
+            int width = matrix.GetLength(1);
             double[] v = new double[ht * width];
 
             int id = 0;
             for (int col = 0; col < width; col++)
             {
                 for (int row = 0; row < ht; row++)
-                { v[id++] = M[row, col];
+                {
+                    v[id++] = matrix[row, col];
                 }
             }
 
             return v;
         }
 
-        /*
-         * converts a matrix of doubles to binary using passed threshold
-         */
-        public static int[,] ThresholdMatrix2Binary(double[,] M, double threshold)
+        /// <summary>
+        /// Converts a matrix of doubles to binary using passed threshold
+        /// </summary>
+        public static int[,] ThresholdMatrix2Binary(double[,] matrix, double threshold)
         {
-            int rowCount = M.GetLength(0);
-            int colCount = M.GetLength(1);
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
             var op = new int[rowCount, colCount];
 
             for (int r = 0; r < rowCount; r++)
             {
                 for (int c = 0; c < colCount; c++)
                 {
-                    if (M[r, c] > threshold)
+                    if (matrix[r, c] > threshold)
                     {
                         op[r, c] = 1;
                     }
@@ -326,20 +306,20 @@ namespace TowseyLibrary
             return op;
         }
 
-        /*
-         * converts a matrix of doubles to binary using passed threshold
-         */
-        public static double[,] ThresholdMatrix2RealBinary(double[,] M, double threshold)
+        /// <summary>
+        /// Converts a matrix of doubles to binary using passed threshold
+        /// </summary>
+        public static double[,] ThresholdMatrix2RealBinary(double[,] matrix, double threshold)
         {
-            int rowCount = M.GetLength(0);
-            int colCount = M.GetLength(1);
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
             var op = new double[rowCount, colCount];
 
             for (int r = 0; r < rowCount; r++)
             {
                 for (int c = 0; c < colCount; c++)
                 {
-                    if (M[r, c] > threshold)
+                    if (matrix[r, c] > threshold)
                     {
                         op[r, c] = 1.0;
                     }
@@ -421,9 +401,6 @@ namespace TowseyLibrary
         /// <summary>
         /// truncate values below threshold to zero.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="threshold"></param>
-        /// <returns></returns>
         public static double[,] Truncate2Zero(double[,] matrix, double threshold)
         {
             int rows = matrix.GetLength(0);
@@ -444,17 +421,17 @@ namespace TowseyLibrary
             return outM;
         }
 
-        public static double[,] Matrix2LogValues(double[,] M)
+        public static double[,] Matrix2LogValues(double[,] matrix)
         {
-            int rowCount = M.GetLength(0);
-            int colCount = M.GetLength(1);
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
             double[,] op = new double[rowCount, colCount];
 
             for (int r = 0; r < rowCount; r++)
             {
                 for (int c = 0; c < colCount; c++)
                 {
-                    op[r, c] = Math.Log10(M[r, c]);
+                    op[r, c] = Math.Log10(matrix[r, c]);
                 }
             }
 
@@ -466,6 +443,8 @@ namespace TowseyLibrary
         /// Assume that all values are positive
         /// </summary>
         /// <param name="m">matrix of positive power values</param>
+        /// <param name="min">min value to be return by out</param>
+        /// <param name="max">max value to be return by out</param>
         public static double[,] Power2DeciBels(double[,] m, out double min, out double max)
         {
             min = double.MaxValue;
@@ -514,40 +493,40 @@ namespace TowseyLibrary
         /// Squares the values in a matrix.
         /// Primarily used when converting FFT coefficients in amplitude spectrogram to power values
         /// </summary>
-        public static double[,] SquareValues(double[,] M)
+        public static double[,] SquareValues(double[,] matrix)
         {
-            int rows = M.GetLength(0);
-            int cols = M.GetLength(1);
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
             double[,] newM = new double[rows, cols];
 
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    newM[i, j] = M[i, j] * M[i, j];
+                    newM[i, j] = matrix[i, j] * matrix[i, j];
                 }
             }
 
             return newM;
         }
 
-        public static double[,] LogTransform(double[,] M)
+        public static double[,] LogTransform(double[,] matrix)
         {
-            int rows = M.GetLength(0);
-            int cols = M.GetLength(1);
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
             double[,] newM = new double[rows, cols];
 
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    if (M[i, j] <= 0.0)
+                    if (matrix[i, j] <= 0.0)
                     {
                         newM[i, j] = 0.0;
                     }
                     else
                     {
-                        newM[i, j] = Math.Log(1 + M[i, j]);
+                        newM[i, j] = Math.Log(1 + matrix[i, j]);
                     }
                 }
             }
@@ -555,17 +534,17 @@ namespace TowseyLibrary
             return newM;
         }
 
-        public static double[,] SquareRootOfValues(double[,] M)
+        public static double[,] SquareRootOfValues(double[,] matrix)
         {
-            int rows = M.GetLength(0);
-            int cols = M.GetLength(1);
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
             double[,] newM = new double[rows, cols];
 
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    newM[i, j] = Math.Sqrt(M[i, j]);
+                    newM[i, j] = Math.Sqrt(matrix[i, j]);
                 }
             }
 
@@ -581,12 +560,13 @@ namespace TowseyLibrary
         /// When filterCoeff = 0.0, the matrix remains unchanged, that is, y=x.
         /// When filterCoeff =-1.0, small values are maximally de-emphasized, i.e. y=x^2.
         /// Generally usage suggests that a value of -0.25 is suitable. i.e. a slight de-emphasis.
-        ///
+        /// ..
         /// Visual example https://www.wolframalpha.com/input/?i=plot+y+%3D+%5B(1%2Fc+-+1)+*+x%5E2+%2B+x%5D+*+c+,+x%3D0..1,+c%3D0.0..2.0
         /// </summary>
         public static double[,] FilterBackgroundValues(double[,] m, double filterCoeff)
         {
-            if (filterCoeff == 0.0)
+            double tolerance = 0.000001;
+            if (Math.Abs(filterCoeff) < tolerance)
             {
                 // no change
                 return m;
@@ -605,7 +585,7 @@ namespace TowseyLibrary
             }
 
             // shift the coefficient
-            double param = 1 / (double)(filterCoeff + 1);
+            double param = 1 / (filterCoeff + 1);
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
             double[,] newM = new double[rows, cols];
@@ -625,31 +605,30 @@ namespace TowseyLibrary
         /// bounds a matrix of numbers between a minimum and a maximum.
         /// Numbers that fall outside the bound are truncated to the bound.
         /// </summary>
-        /// <param name="M">the matrix to be bound</param>
+        /// <param name="matrix">the matrix to be bound</param>
         /// <param name="min">The minimum bound</param>
         /// <param name="max">The maximum bound</param>
-        /// <returns></returns>
-        public static double[,] boundMatrix(double[,] M, double min, double max)
+        public static double[,] BoundMatrix(double[,] matrix, double min, double max)
         {
-            int rows = M.GetLength(0);
-            int cols = M.GetLength(1);
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
             double[,] newM = new double[rows, cols];
 
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    if (M[i, j] <= min)
+                    if (matrix[i, j] <= min)
                     {
                         newM[i, j] = min;
                     }
-                    else if (M[i, j] >= max)
+                    else if (matrix[i, j] >= max)
                     {
                         newM[i, j] = max;
                     }
                     else
                     {
-                        newM[i, j] = M[i, j];
+                        newM[i, j] = matrix[i, j];
                     }
                 }
             }
@@ -676,22 +655,21 @@ namespace TowseyLibrary
                     }
 
                     total++;
-                    if ( (m[r, c + 1] == 0.0) && (m[r - 1, c + 1] == 0.0) && (m[r - 1, c] == 0.0) && (m[r - 1, c - 1] == 0.0)
-                      && (m[r, c - 1] == 0.0) && (m[r + 1, c - 1] == 0.0) && (m[r + 1, c] == 0.0) && (m[r + 1, c + 1] == 0.0))
+                    if ((m[r, c + 1] == 0.0) && (m[r - 1, c + 1] == 0.0) && (m[r - 1, c] == 0.0) && (m[r - 1, c - 1] == 0.0)
+                     && (m[r, c - 1] == 0.0) && (m[r + 1, c - 1] == 0.0) && (m[r + 1, c] == 0.0) && (m[r + 1, c + 1] == 0.0))
                     {
                         m[r, c] = 0.0;
                         count++;
                     }
                 }
-            } // for loop
+            }
 
             Console.WriteLine("Zeroed {0} of {1} non-zero cells.", count, total);
-        } // SetSingletonsToZero
+        }
 
         /// <summary>
         /// Sets any element in matrix with value> 0.0 to zero if all surrounding elements also = zero
         /// </summary>
-        /// <param name="m"></param>
         public static void SetDoubletsToZero(double[,] m)
         {
             int rows = m.GetLength(0);
@@ -791,10 +769,8 @@ namespace TowseyLibrary
         /// Must have previously calculated the min and max values in the matrix.
         /// </summary>
         /// <param name="matrix">the matrix</param>
-        /// <param name="min">min power value in matrix</param>
-        /// <param name="max">max power value in matrix</param>
-        /// <param name="minPercentile"></param>
-        /// <param name="maxPercentile"></param>
+        /// <param name="minPercentile">minPercentile</param>
+        /// <param name="maxPercentile">maxPercentile</param>
         /// <param name="minCut">power value equivalent to minPercentile</param>
         /// <param name="maxCut">power value equivalent to maxPercentile</param>
         public static void PercentileCutoffs(double[,] matrix, double minPercentile, double maxPercentile, out double minCut, out double maxCut)
@@ -839,7 +815,8 @@ namespace TowseyLibrary
             for (int i = 0; i < M; i++)
             {
                 for (int j = 0; j < N; j++)
-                { //normalise power for given min and max
+                {
+                    //normalise power for given min and max
                     int k = (int)Math.Floor(n * (matrix[i, j] - min) / range);//normalise
                     if (k < 0)
                     {
@@ -862,7 +839,7 @@ namespace TowseyLibrary
                 minThres -= bins[k];
                 if (minThres < 0.0)
                 {
-                    minCut = min + k * range / n;
+                    minCut = min + (k * range / n);
                     break;
                 }
             }
@@ -874,292 +851,278 @@ namespace TowseyLibrary
                 maxThres -= bins[k - 1];
                 if (maxThres < 0.0)
                 {
-                    maxCut = min + k * range / n;
+                    maxCut = min + (k * range / n);
                     break;
                 }
             }
-        }// end of GetPercentileCutoffs()
+        }
 
         //=============================================================================
 
-        public static void writeMatrix(double[,] matrix, string format)
+        public static void WriteMatrix(double[,] matrix, string format)
         {
-          int rowCount = matrix.GetLength(0);//height
-          int colCount = matrix.GetLength(1);//width
-          for (int i = 0; i < rowCount; i++)
-          {
-              for (int j = 0; j < colCount; j++)
-              {
-                  LoggedConsole.Write(" " + matrix[i, j].ToString(format));
-                  if (j < colCount - 1)
-                        {
-                            LoggedConsole.Write(",");
-                        }
+            int rowCount = matrix.GetLength(0); //height
+            int colCount = matrix.GetLength(1); //width
+            for (int i = 0; i < rowCount; i++)
+            {
+                for (int j = 0; j < colCount; j++)
+                {
+                    LoggedConsole.Write(" " + matrix[i, j].ToString(format));
+                    if (j < colCount - 1)
+                    {
+                        LoggedConsole.Write(",");
                     }
+                }
 
-              LoggedConsole.WriteLine();
-          }
+                LoggedConsole.WriteLine();
+            }
         }
 
-        public static void writeMatrix(double[,] matrix)
+        public static void WriteMatrix(double[,] matrix)
+        {
+            WriteMatrix(matrix, "F2");
+        }
+
+        public static void WriteMatrix(int[,] matrix)
+        {
+            int rowCount = matrix.GetLength(0); //height
+            int colCount = matrix.GetLength(1); //width
+            for (int i = 0; i < rowCount; i++)
+            {
+                for (int j = 0; j < colCount; j++)
+                {
+                    LoggedConsole.Write(" " + matrix[i, j]);
+                    if (j < colCount - 1)
+                    {
+                        LoggedConsole.Write(",");
+                    }
+                }
+
+                LoggedConsole.WriteLine();
+            }
+        }
+
+        public static void WriteMatrix2File(double[,] matrix, string fPath)
           {
-              writeMatrix(matrix, "F2");
+              int rowCount = matrix.GetLength(0);//height
+              int colCount = matrix.GetLength(1);//width
+              for (int i = 0; i < rowCount; i++)
+              {
+                  for (int j = 0; j < colCount; j++)
+                  {
+                      LoggedConsole.Write(" " + matrix[i, j].ToString("F2"));
+                      if (j < colCount - 1)
+                            {
+                                LoggedConsole.Write(",");
+                            }
+                        }
+
+                  LoggedConsole.WriteLine();
+              }
           }
 
-        public static void writeMatrix(int[,] matrix)
-  {
-      int rowCount = matrix.GetLength(0);//height
-      int colCount = matrix.GetLength(1);//width
-      for (int i = 0; i < rowCount; i++)
-      {
-          for (int j = 0; j < colCount; j++)
-          {
-              LoggedConsole.Write(" " + matrix[i, j]);
-              if (j < colCount - 1)
-                    {
-                        LoggedConsole.Write(",");
-                    }
-                }
-
-          LoggedConsole.WriteLine();
-      }
-  }
-
-        public static void writeMatrix2File(double[,] matrix, string fPath)
-  {
-      int rowCount = matrix.GetLength(0);//height
-      int colCount = matrix.GetLength(1);//width
-      for (int i = 0; i < rowCount; i++)
-      {
-          for (int j = 0; j < colCount; j++)
-          {
-              LoggedConsole.Write(" " + matrix[i, j].ToString("F2"));
-              if (j < colCount - 1)
-                    {
-                        LoggedConsole.Write(",");
-                    }
-                }
-
-          LoggedConsole.WriteLine();
-      }
-  }
-
-  /// <summary>
-  /// ADD matrix m2 to matrix m1
-  /// </summary>
+        /// <summary>
+        /// ADD matrix m2 to matrix m1
+        /// </summary>
         public static double[,] AddMatrices(double[,] m1, double[,] m2)
-  {
-      if (m1 == null)
-            {
-                return m2;
-            }
-
-      if (m2 == null)
-            {
-                return m1;
-            }
-
-      int m1Rows = m1.GetLength(0);
-      int m1Cols = m1.GetLength(1);
-      int m2Rows = m2.GetLength(0);
-      int m2Cols = m2.GetLength(1);
-      if (!(m1Rows == m2Rows))
-            {
-                throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
-            }
-
-      if (!(m1Cols == m2Cols))
-            {
-                throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
-            }
-
-      double[,] newMatrix = (double[,])m1.Clone();
-      for (int i = 0; i < m1Rows; i++)
-            {
-                for (int j = 0; j < m1Cols; j++)
           {
-              newMatrix[i, j] = m1[i, j] + m2[i, j];
+              if (m1 == null)
+                    {
+                        return m2;
+                    }
+
+              if (m2 == null)
+                    {
+                        return m1;
+                    }
+
+              int m1Rows = m1.GetLength(0);
+              int m1Cols = m1.GetLength(1);
+              int m2Rows = m2.GetLength(0);
+              int m2Cols = m2.GetLength(1);
+              if (m1Rows != m2Rows)
+                {
+                    throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+                }
+
+              if (m1Cols != m2Cols)
+                {
+                    throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+                }
+
+              double[,] newMatrix = (double[,])m1.Clone();
+              for (int i = 0; i < m1Rows; i++)
+              {
+                  for (int j = 0; j < m1Cols; j++)
+                  {
+                      newMatrix[i, j] = m1[i, j] + m2[i, j];
+                  }
+              }
+
+              return newMatrix;
           }
-            }
 
-      return newMatrix;
-  }
-
-  /// <summary>
-  /// adds two matrices using weighted sum
-  /// Typically expected that that w1 + w2 = 0 and both matrices are normalised.
-  /// </summary>
-  /// <param name="m1"></param>
-  /// <param name="w1"></param>
-  /// <param name="m2"></param>
-  /// <param name="w2"></param>
-  /// <returns></returns>
+          /// <summary>
+          /// adds two matrices using weighted sum
+          /// Typically expected that that w1 + w2 = 0 and both matrices are normalised.
+          /// </summary>
         public static double[,] AddMatricesWeightedSum(double[,] m1, double w1, double[,] m2, double w2)
-  {
-      if (m1 == null)
-            {
-                return m2;
-            }
-
-      if (m2 == null)
-            {
-                return m1;
-            }
-
-      int m1Rows = m1.GetLength(0);
-      int m1Cols = m1.GetLength(1);
-      int m2Rows = m2.GetLength(0);
-      int m2Cols = m2.GetLength(1);
-      if (!(m1Rows == m2Rows))
-            {
-                throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
-            }
-
-      if (!(m1Cols == m2Cols))
-            {
-                throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
-            }
-
-      double[,] newMatrix = new double[m1Rows, m1Cols];
-      for (int i = 0; i < m1Rows; i++)
-      {
-          for (int j = 0; j < m1Cols; j++)
           {
-              newMatrix[i, j] = (w1 * m1[i, j]) + (w2 * m2[i, j]);
+              if (m1 == null)
+                    {
+                        return m2;
+                    }
+
+              if (m2 == null)
+                    {
+                        return m1;
+                    }
+
+              int m1Rows = m1.GetLength(0);
+              int m1Cols = m1.GetLength(1);
+              int m2Rows = m2.GetLength(0);
+              int m2Cols = m2.GetLength(1);
+              if (m1Rows != m2Rows)
+                    {
+                        throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+                    }
+
+              if (m1Cols != m2Cols)
+                    {
+                        throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+                    }
+
+              double[,] newMatrix = new double[m1Rows, m1Cols];
+              for (int i = 0; i < m1Rows; i++)
+              {
+                  for (int j = 0; j < m1Cols; j++)
+                  {
+                      newMatrix[i, j] = (w1 * m1[i, j]) + (w2 * m2[i, j]);
+                  }
+              }
+
+              return newMatrix;
           }
-      }
 
-      return newMatrix;
-  }
-
-  /// <summary>
-  /// DIVIDE matrix m1 by factor
-  /// </summary>
-  /// <param name="m1"></param>
-  /// <param name="m2"></param>
-  /// <returns></returns>
+          /// <summary>
+          /// DIVIDE matrix m1 by factor
+          /// </summary>
         public static double[,] DivideMatrix(double[,] m1, double factor)
-  {
-      if (m1 == null)
-            {
-                return m1;
-            }
-
-      int m1Rows = m1.GetLength(0);
-      int m1Cols = m1.GetLength(1);
-
-      double[,] newMatrix = (double[,])m1.Clone();
-      for (int i = 0; i < m1Rows; i++)
-      {
-          for (int j = 0; j < m1Cols; j++)
           {
-              newMatrix[i, j] = m1[i, j] / factor;
-          }
-      }
+              if (m1 == null)
+                    {
+                        return m1;
+                    }
 
-      return newMatrix;
-  }
+              int m1Rows = m1.GetLength(0);
+              int m1Cols = m1.GetLength(1);
+
+              double[,] newMatrix = (double[,])m1.Clone();
+              for (int i = 0; i < m1Rows; i++)
+              {
+                  for (int j = 0; j < m1Cols; j++)
+                  {
+                      newMatrix[i, j] = m1[i, j] / factor;
+                  }
+              }
+
+              return newMatrix;
+          }
 
   /// <summary>
   /// Subtract matrix m2 from matrix m1
   /// </summary>
-  /// <param name="m1"></param>
-  /// <param name="m2"></param>
-  /// <returns></returns>
         public static double[,] SubtractMatrices(double[,] m1, double[,] m2)
-  {
-      int m1Rows = m1.GetLength(0);
-      int m1Cols = m1.GetLength(1);
-      int m2Rows = m2.GetLength(0);
-      int m2Cols = m2.GetLength(1);
-      if (!(m1Rows == m2Rows))
-            {
-                throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
-            }
-
-      if (!(m1Cols == m2Cols))
-            {
-                throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
-            }
-
-      double[,] newMatrix = (double[,])m1.Clone();
-      for (int i = 0; i < m1Rows; i++)
-            {
-                for (int j = 0; j < m1Cols; j++)
           {
-              newMatrix[i, j] = m1[i, j] - m2[i, j];
+              int m1Rows = m1.GetLength(0);
+              int m1Cols = m1.GetLength(1);
+              int m2Rows = m2.GetLength(0);
+              int m2Cols = m2.GetLength(1);
+              if (m1Rows != m2Rows)
+                {
+                    throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+                }
+
+              if (m1Cols != m2Cols)
+                {
+                    throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+                }
+
+              double[,] newMatrix = (double[,])m1.Clone();
+              for (int i = 0; i < m1Rows; i++)
+              {
+                        for (int j = 0; j < m1Cols; j++)
+                  {
+                      newMatrix[i, j] = m1[i, j] - m2[i, j];
+                  }
+              }
+
+              return newMatrix;
           }
-            }
 
-      return newMatrix;
-  }
-
-        public static double[,] RemoveLastNRows(double[,] m1, int N)
-  {
-      int m1Rows = m1.GetLength(0);
-      int m1Cols = m1.GetLength(1);
-      int newRowCount = m1Rows - N;
-
-      double[,] newMatrix = new double[newRowCount, m1Cols];
-      for (int r = 0; r < newRowCount; r++)
-      {
-          for (int c = 0; c < m1Cols; c++)
+        public static double[,] RemoveLastNRows(double[,] m1, int number)
           {
-              newMatrix[r, c] = m1[r, c];
+              int m1Rows = m1.GetLength(0);
+              int m1Cols = m1.GetLength(1);
+              int newRowCount = m1Rows - number;
+
+              double[,] newMatrix = new double[newRowCount, m1Cols];
+              for (int r = 0; r < newRowCount; r++)
+              {
+                  for (int c = 0; c < m1Cols; c++)
+                  {
+                      newMatrix[r, c] = m1[r, c];
+                  }
+              }
+
+              return newMatrix;
           }
-      }
 
-      return newMatrix;
-  }
-
-  /// <summary>
-  /// Add rows of nan to pad out a matrix.
-  /// </summary>
-  /// <param name="m1"></param>
-  /// <param name="N"></param>
-  /// <returns></returns>
-        public static double[,] AddBlankRows(double[,] m1, int N)
-  {
-      int m1Rows = m1.GetLength(0);
-      int m1Cols = m1.GetLength(1);
-      int newRowCount = m1Rows + N;
-
-      double[,] newMatrix = new double[newRowCount, m1Cols];
-      for (int r = 0; r < m1Rows; r++)
-      {
-          for (int c = 0; c < m1Cols; c++)
+          /// <summary>
+          /// Add rows of nan to pad out a matrix.
+          /// </summary>
+        public static double[,] AddBlankRows(double[,] m1, int number)
           {
-              newMatrix[r, c] = m1[r, c];
-          }
-      }
+              int m1Rows = m1.GetLength(0);
+              int m1Cols = m1.GetLength(1);
+              int newRowCount = m1Rows + number;
 
-      for (int r = 0; r < N; r++)
-      {
-          for (int c = 0; c < m1Cols; c++)
-          {
-              newMatrix[m1Rows + r, c] = double.NaN;
-          }
-      }
+              double[,] newMatrix = new double[newRowCount, m1Cols];
+              for (int r = 0; r < m1Rows; r++)
+              {
+                  for (int c = 0; c < m1Cols; c++)
+                  {
+                      newMatrix[r, c] = m1[r, c];
+                  }
+              }
 
-      return newMatrix;
-  }
+              for (int r = 0; r < number; r++)
+              {
+                  for (int c = 0; c < m1Cols; c++)
+                  {
+                      newMatrix[m1Rows + r, c] = double.NaN;
+                  }
+              }
+
+              return newMatrix;
+          }
 
         public static double[,] SubtractValuesFromOne(double[,] m)
-    {
-        int rows = m.GetLength(0);
-        int cols = m.GetLength(1);
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
 
-        double[,] newMatrix = new double[rows, cols];
-        for (int r = 0; r < rows; r++)
-            {
-                for (int c = 0; c < cols; c++)
-            {
-                newMatrix[r, c] = 1 - m[r, c];
-            }
-            }
+            double[,] newMatrix = new double[rows, cols];
+            for (int r = 0; r < rows; r++)
+                {
+                    for (int c = 0; c < cols; c++)
+                {
+                    newMatrix[r, c] = 1 - m[r, c];
+                }
+                }
 
-        return newMatrix;
-    }
+            return newMatrix;
+        }
 
         public static byte[] GetColumn(byte[,] m, int columnIndex)
         {
@@ -1186,121 +1149,120 @@ namespace TowseyLibrary
         }
 
         public static void SetColumn(double[,] m, int colID, double[] array)
-  {
-      int rows = m.GetLength(0);
-      for (int r = 0; r < rows; r++)
+          {
+              int rows = m.GetLength(0);
+              for (int r = 0; r < rows; r++)
             {
                 m[r, colID] = array[r];
             }
         }
 
-        public static int SumColumn(int[,] m, int colID)
+        public static int SumColumn(int[,] m, int colId)
+          {
+              int rows = m.GetLength(0);
+              int sum = 0;
+              for (int i = 0; i < rows; i++)
+                {
+                    sum += m[i, colId];
+                }
+
+              return sum;
+          }
+
+        public static int SumColumn(byte[,] m, int colId)
   {
       int rows = m.GetLength(0);
       int sum = 0;
       for (int i = 0; i < rows; i++)
             {
-                sum += m[i, colID];
+                sum += m[i, colId];
             }
 
       return sum;
   }
 
-        public static int SumColumn(byte[,] m, int colID)
-  {
-      int rows = m.GetLength(0);
-      int sum = 0;
-      for (int i = 0; i < rows; i++)
+        public static double[] GetRow(double[,] m, int rowId)
+          {
+              int cols = m.GetLength(1);
+              double[] row = new double[cols];
+              for (int i = 0; i < cols; i++)
+                    {
+                        row[i] = m[rowId, i];
+                    }
+
+              return row;
+          }
+
+        public static void SetRow(double[,] m, int rowId, double[] array)
+          {
+              int cols = m.GetLength(1);
+              for (int c = 0; c < cols; c++)
             {
-                sum += m[i, colID];
-            }
-
-      return sum;
-  }
-
-        public static double[] GetRow(double[,] m, int rowID)
-  {
-      int cols = m.GetLength(1);
-      double[] row = new double[cols];
-      for (int i = 0; i < cols; i++)
-            {
-                row[i] = m[rowID, i];
-            }
-
-      return row;
-  }
-
-        public static void SetRow(double[,] m, int rowID, double[] array)
-  {
-      int cols = m.GetLength(1);
-      for (int c = 0; c < cols; c++)
-            {
-                m[rowID, c] = array[c];
+                m[rowId, c] = array[c];
             }
         }
 
-        public static double GetRowSum(double[,] m, int rowID)
-  {
-      double[] row = GetRow(m, rowID);
-      return row.Sum();
-  }
+        public static double GetRowSum(double[,] m, int rowId)
+          {
+              double[] row = GetRow(m, rowId);
+              return row.Sum();
+          }
 
-        public static int SumRow(int[,] m, int rowID)
-  {
-      int cols = m.GetLength(1);
-      int sum = 0;
-      for (int i = 0; i < cols; i++)
-            {
-                sum += m[rowID, i];
-            }
+        public static int SumRow(int[,] m, int rowId)
+          {
+              int cols = m.GetLength(1);
+              int sum = 0;
+              for (int i = 0; i < cols; i++)
+                    {
+                        sum += m[rowId, i];
+                    }
 
-      return sum;
-  }
+              return sum;
+          }
 
         public static double[] SumRows(double[,] m)
-  {
-      int rows = m.GetLength(0);
-      int cols = m.GetLength(1);
-      double[] rowSums = new double[rows];
-      for (int r = 0; r < rows; r++)
-      {
-          double sum = 0.0;
-          for (int c = 0; c < cols; c++)
           {
-              sum += m[r, c];
+              int rows = m.GetLength(0);
+              int cols = m.GetLength(1);
+              double[] rowSums = new double[rows];
+              for (int r = 0; r < rows; r++)
+              {
+                  double sum = 0.0;
+                  for (int c = 0; c < cols; c++)
+                  {
+                      sum += m[r, c];
+                  }
+
+                  rowSums[r] = sum;
+              }
+
+              //sum = 0.0;
+              //for (int j = 0; j < cols; j++) sum += colSums[j];
+              //LoggedConsole.WriteLine("sum="+sum.ToString("F5"));
+              return rowSums;
           }
-
-          rowSums[r] = sum;
-      }
-
-      //sum = 0.0;
-      //for (int j = 0; j < cols; j++) sum += colSums[j];
-      //LoggedConsole.WriteLine("sum="+sum.ToString("F5"));
-      return rowSums;
-  }
 
         public static double[] SumColumns(double[,] m)
-  {
-      int rows = m.GetLength(0);
-      int cols = m.GetLength(1);
-      double sum = 0.0;
-      double[] colSums = new double[cols];
-      for (int j = 0; j < cols; j++)
-      {
-          sum = 0.0;
-          for (int i = 0; i < rows; i++)
+        {
+          int rows = m.GetLength(0);
+          int cols = m.GetLength(1);
+          double[] colSums = new double[cols];
+          for (int j = 0; j < cols; j++)
           {
-              sum += m[i, j];
+               double sum = 0.0;
+               for (int i = 0; i < rows; i++)
+              {
+                  sum += m[i, j];
+              }
+
+               colSums[j] = sum;
           }
 
-          colSums[j] = sum;
-      }
-
-      //sum = 0.0;
-      //for (int j = 0; j < cols; j++) sum += colSums[j];
-      //LoggedConsole.WriteLine("sum="+sum.ToString("F5"));
-      return colSums;
-  }
+              //sum = 0.0;
+              //for (int j = 0; j < cols; j++) sum += colSums[j];
+              //LoggedConsole.WriteLine("sum="+sum.ToString("F5"));
+          return colSums;
+        }
 
         public static double[] GetColumnMedians(double[,] m)
         {
@@ -1309,54 +1271,89 @@ namespace TowseyLibrary
             double[] colMedians = new double[cols];
             for (int j = 0; j < cols; j++)
             {
-
                 double[] column = GetColumn(m, j);
-                System.Tuple<int[], double[]> tuple = DataTools.SortArray(column);
+                Tuple<int[], double[]> tuple = DataTools.SortArray(column);
                 colMedians[j] = tuple.Item2[rows / 2];
             }
 
             return colMedians;
         }
 
-        public static double[] GetColumnsAverages(double[,] m)
-  {
-      int rows = m.GetLength(0);
-      int cols = m.GetLength(1);
-      double sum = 0.0;
-      double[] colSums = new double[cols];
-      for (int j = 0; j < cols; j++)
-      {
-          sum = 0.0;
-          for (int i = 0; i < rows; i++)
-          {
-              sum += m[i, j];
-          }
+        public static double[] GetColumnSums(double[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            double[] colSums = new double[cols];
+            for (int j = 0; j < cols; j++)
+            {
+                double sum = 0.0;
+                for (int i = 0; i < rows; i++)
+                {
+                    sum += m[i, j];
+                }
 
-          colSums[j] = sum / rows;
-      }
+                colSums[j] = sum;
+            }
 
-      return colSums;
-  }
+            return colSums;
+        }
+
+        public static double[] GetRowSums(double[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            double[] rowSums = new double[rows];
+            for (int r = 0; r < rows; r++)
+            {
+                double sum = 0.0;
+                for (int c = 0; c < cols; c++)
+                {
+                    sum += m[r, c];
+                }
+
+                rowSums[r] = sum;
+            }
+
+            return rowSums;
+        }
+
+        public static double[] GetColumnAverages(double[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            double[] colSums = new double[cols];
+            for (int j = 0; j < cols; j++)
+            {
+                double sum = 0.0;
+                for (int i = 0; i < rows; i++)
+                {
+                    sum += m[i, j];
+                }
+
+                colSums[j] = sum / rows;
+            }
+
+            return colSums;
+        }
 
         public static double[] GetRowAverages(double[,] m)
-  {
-      int rows = m.GetLength(0);
-      int cols = m.GetLength(1);
-      double sum = 0.0;
-      double[] rowSums = new double[rows];
-      for (int r = 0; r < rows; r++)
-      {
-          sum = 0.0;
-          for (int c = 0; c < cols; c++)
-          {
-              sum += m[r, c];
-          }
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            double[] rowSums = new double[rows];
+            for (int r = 0; r < rows; r++)
+            {
+                double sum = 0.0;
+                for (int c = 0; c < cols; c++)
+                {
+                    sum += m[r, c];
+                }
 
-          rowSums[r] = sum / cols;
-      }
+                rowSums[r] = sum / cols;
+            }
 
-      return rowSums;
-  }
+            return rowSums;
+        }
 
         public static double SumPositiveDiagonal(double[,] m)
   {
@@ -1423,14 +1420,14 @@ namespace TowseyLibrary
   }
 
         public static void AverageValuesInTriangleAboveAndBelowPositiveDiagonal(double[,] m, out double upperAv, out double lowerAv)
-  {
-      int count;
-      double sum;
-      SumTriangleAbovePositiveDiagonal(m, out sum, out count);
-      upperAv = sum / (double)count;
-      SumTriangleBelowPositiveDiagonal(m, out sum, out count);
-      lowerAv = sum / (double)count;
-  }
+          {
+              int count;
+              double sum;
+              SumTriangleAbovePositiveDiagonal(m, out sum, out count);
+              upperAv = sum / count;
+              SumTriangleBelowPositiveDiagonal(m, out sum, out count);
+              lowerAv = sum / count;
+          }
 
         public static double SumNegativeDiagonal(double[,] m)
   {
@@ -1506,18 +1503,18 @@ namespace TowseyLibrary
       lowerAv = sum / (double)count;
   }
 
-		/// <summary>
-		/// Normalises matrix values so that the min and max values become [0,1], respectively.
-		/// </summary>
+        /// <summary>
+        /// Normalises matrix values so that the min and max values become [0,1], respectively.
+        /// </summary>
         public static double[,] normalise(double[,] m)
-		{
-			double min = double.MaxValue;
-			double max = -double.MaxValue;
+        {
+            double min = double.MaxValue;
+            double max = -double.MaxValue;
 
-			int rows = m.GetLength(0);
-			int cols = m.GetLength(1);
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
 
-			for (int i = 0; i < rows; i++)
+            for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
                 {
@@ -1533,15 +1530,15 @@ namespace TowseyLibrary
                 }
             }
 
-			double range = max - min;
+            double range = max - min;
 
-			double[,] ret = new double[rows, cols];
-			if (range == 0.0)
+            double[,] ret = new double[rows, cols];
+            if (range == 0.0)
             {
                 return ret;
             }
 
-			for (int i = 0; i < rows; i++)
+            for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
                 {
@@ -1549,17 +1546,15 @@ namespace TowseyLibrary
                 }
             }
 
-			return ret;
-		}
+            return ret;
+        }
 
         /// <summary>
         /// Rotates a matrix 90 degrees clockwise.
         /// Used for Syntactic pattern recognition
         /// Converts Image matrix to Spectrogram data orientation
         /// </summary>
-        /// <param name="M">the matrix to rotate</param>
-        /// <returns></returns>
-
+        /// <param name="m">the matrix to rotate</param>
         public static char[,] MatrixRotate90Clockwise(char[,] m)
         {
             int rows = m.GetLength(0);
@@ -1580,7 +1575,7 @@ namespace TowseyLibrary
         /// Turns a matrix upside-down and back-to-front!
         /// This is  a rotation NOT a transpose.
         /// </summary>
-        /// <param name="M">the matrix to rotate</param>
+        /// <param name="m">the matrix to rotate</param>
         /// <returns></returns>
 
         public static double[,] MatrixRotate180(double[,] m)
@@ -1602,9 +1597,7 @@ namespace TowseyLibrary
         /// <summary>
         /// Rotates a matrix 90 degrees clockwise.
         /// </summary>
-        /// <param name="M">the matrix to rotate</param>
-        /// <returns></returns>
-
+        /// <param name="m">the matrix to rotate</param>
         public static double[,] MatrixRotate90Clockwise(double[,] m)
         {
             int rows = m.GetLength(0);
@@ -1637,11 +1630,10 @@ namespace TowseyLibrary
             return ret;
         }
 
+        /// <summary>
         /// Rotates a matrix 90 degrees clockwise.
         /// </summary>
-        /// <param name="M">the matrix to rotate</param>
-        /// <returns></returns>
-
+        /// <param name="m">the matrix to rotate</param>
         public static int[,] MatrixRotate90Clockwise(int[,] m)
         {
             int rows = m.GetLength(0);
@@ -1663,9 +1655,7 @@ namespace TowseyLibrary
         /// Used for Syntactic pattern recognition
         /// Converts Image matrix to Spectrogram data orientation
         /// </summary>
-        /// <param name="M">the matrix to rotate</param>
-        /// <returns></returns>
-
+        /// <param name="m">the matrix to rotate</param>
         public static double[,] MatrixRotate90Anticlockwise(double[,] m)
         {
             int rows = m.GetLength(0);
@@ -1685,19 +1675,18 @@ namespace TowseyLibrary
         /// <summary>
         /// performs a matrix transform
         /// </summary>
-        /// <param name="M">the matrix to transform</param>
-        /// <returns></returns>
-        public static double[,] MatrixTranspose(double[,] M)
+        /// <param name="m">the matrix to transform</param>
+        public static double[,] MatrixTranspose(double[,] m)
         {
-            int rows = M.GetLength(0);
-            int cols = M.GetLength(1);
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
             double[,] Mt = new double[cols, rows];
 
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    Mt[c, r] = M[r, c];
+                    Mt[c, r] = m[r, c];
                 }
             }
 
@@ -1708,9 +1697,7 @@ namespace TowseyLibrary
         /// transforms a matrix of char.
         /// Used for Syntatctic pttern recognition
         /// </summary>
-        /// <param name="M">the matrix to transform</param>
-        /// <returns></returns>
-
+        /// <param name="m">the matrix to transform</param>
         public static char[,] MatrixTranspose(char[,] m)
         {
             int rows = m.GetLength(0);
@@ -1730,19 +1717,18 @@ namespace TowseyLibrary
         /// <summary>
         /// performs a matrix transform
         /// </summary>
-        /// <param name="M">the matrix to transform</param>
-        /// <returns></returns>
-        public static byte[,] MatrixTranspose(byte[,] M)
+        /// <param name="m">the matrix to transform</param>
+        public static byte[,] MatrixTranspose(byte[,] m)
         {
-            int rows = M.GetLength(0);
-            int cols = M.GetLength(1);
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
             byte[,] Mt = new byte[cols, rows];
 
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    Mt[c, r] = M[r, c];
+                    Mt[c, r] = m[r, c];
                 }
             }
 
@@ -1750,7 +1736,7 @@ namespace TowseyLibrary
         }
 
         public static double[,] ScaleMatrix(double[,] matrix, int newRowCount, int newColCount)
-    {
+        {
             int mrows = matrix.GetLength(0);
             int mcols = matrix.GetLength(1);
             var newMatrix = new double[newRowCount, newColCount];
@@ -1758,79 +1744,59 @@ namespace TowseyLibrary
             double colScale = newColCount / (double)matrix.GetLength(1);
             for (int r = 0; r < mrows; r++)
             {
-                    for (int c = 0; c < mcols; c++)
-                    {
-                        if (matrix[r, c] == 0.0)
-                    {
-                        continue;
-                    }
+                for (int c = 0; c < mcols; c++)
+                {
+                    if (matrix[r, c] == 0.0)
+                {
+                    continue;
+                }
 
-                        int newRow = (int)Math.Round(r * rowScale);
-                        int newCol = (int)Math.Round(c * colScale);
-                        newCol = (int)Math.Round(c * 4.1);
+                    int newRow = (int)Math.Round(r * rowScale);
 
-                        //newCol = 1;
-                        if (newRow >= newRowCount)
+                    // int newCol = (int)Math.Round(c * colScale);
+                    int newCol = (int)Math.Round(c * 4.1);
+
+                    //newCol = 1;
+                    if (newRow >= newRowCount)
                     {
                         newRow = newRowCount - 1;
                     }
 
-                        if (newCol >= newColCount)
+                    if (newCol >= newColCount)
                     {
                         newCol = newColCount - 1;
                     }
 
                     //if (newMatrix[newRow, newCol] < matrix[r, c])
-                        newMatrix[newRow, newCol] = matrix[r, c];
-                    }
+                    newMatrix[newRow, newCol] = matrix[r, c];
+                }
             }
 
             return newMatrix;
-    }
+        }
 
         /// <summary>
         /// a difference filter over the rows from row 0.
         /// To be used to remove background noise from sonogram
         /// </summary>
-        /// <param name="m"></param>
-        /// <returns></returns>
         public static double[,] FilterMatrixRows(double[,] m)
-    {
-        int rowCount = m.GetLength(0);
-        int colCount = m.GetLength(1);
-        double[,] returnMatrix = new double[rowCount, colCount];
-
-        for (int r = 0; r < rowCount; r++)
         {
-            for (int c = 1; c < colCount; c++)
+            int rowCount = m.GetLength(0);
+            int colCount = m.GetLength(1);
+            double[,] returnMatrix = new double[rowCount, colCount];
+
+            for (int r = 0; r < rowCount; r++)
             {
-                returnMatrix[r, c] = m[r, c] - m[r, c - 1];
+                for (int c = 1; c < colCount; c++)
+                {
+                    returnMatrix[r, c] = m[r, c] - m[r, c - 1];
+                }
             }
+
+            return returnMatrix;
         }
 
-        return returnMatrix;
-    }
-
 //===========================================================================================================================================================
-
-        /// <summary>
-        /// shift values by their mean.
-        /// </summary>
-        //public static double[,] DiffFromMean(double[,] m)
-        //{
-        //    int rows = m.GetLength(0);
-        //    int cols = m.GetLength(1);
-        //    double av; double sd;
-        //    NormalDist.AverageAndSD(m, out av, out sd);
-
-        //    double[,] ret = new double[rows,cols];
-
-        //    for (int i = 0; i < rows; i++)
-        //        for (int j = 0; j < cols; j++)
-        //            ret[i, j] = m[i, j] - av;
-
-        //    return ret;
-        //}
 
         /// <summary>
         /// returns EUCLIDIAN DISTANCE BETWEEN two matrices
@@ -1864,14 +1830,11 @@ namespace TowseyLibrary
             }
 
             return Math.Sqrt(sum);
-        } //end
+        }
 
         /// <summary>
         /// Multiplies two matrices by summing m1[r,c]*m2[r,c]
         /// </summary>
-        /// <param name="m1"></param>
-        /// <param name="m2"></param>
-        /// <returns></returns>
         public static double DotProduct(double[,] m1, double[,] m2)
         {
             //check m1 and m2 have same dimensions
@@ -1904,13 +1867,8 @@ namespace TowseyLibrary
         /// <summary>
         /// Rescales the values of a matrix so that its in and max values are those passed.
         /// </summary>
-        /// <param name="m"></param>
-        /// <param name="normMin"></param>
-        /// <param name="normMax"></param>
-        /// <returns></returns>
         public static double[,] RescaleMatrixBetweenMinAndMax(double[,] m, double normMin, double normMax)
         {
-            //m = normalise(m);
             double min = double.MaxValue;
             double max = -double.MaxValue;
 
@@ -1982,8 +1940,6 @@ namespace TowseyLibrary
         /// <summary>
         /// Normalises a matrix so that all values lie between 0 and 1.
         /// </summary>
-        /// <param name="m"></param>
-        /// <returns></returns>
         public static double[,] NormaliseInZeroOne(double[,] m)
         {
             int rows = m.GetLength(0);
@@ -2016,10 +1972,6 @@ namespace TowseyLibrary
         /// <summary>
         /// Normalises a matrix so that all values lie between 0 and 1.
         /// </summary>
-        /// <param name="m"></param>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
-        /// <returns></returns>
         public static double[,] NormaliseInZeroOne(double[,] m, out double min, out double max)
         {
             int rows = m.GetLength(0);
@@ -2053,11 +2005,7 @@ namespace TowseyLibrary
         /// Truncate thos original values that are below the edge average.
         /// This method is used to normalise image templates where there should be no power at the edge
         /// </summary>
-        /// <param name="m"></param>
-        /// <param name="normMin"></param>
-        /// <param name="normMax"></param>
-        /// <returns></returns>
-        public static double[,] normalise_zeroEdge(double[,] m, double normMin, double normMax)
+        public static double[,] Normalise_zeroEdge(double[,] m, double normMin, double normMax)
         {
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
@@ -2225,14 +2173,14 @@ namespace TowseyLibrary
         /// <summary>
         /// REMOVE ORPHAN PEAKS
         /// </summary>
-        /// <param name="binary"></param>
-        /// <returns></returns>
         public static byte[,] RemoveOrphanOnesInBinaryMatrix(byte[,] binary)
         {
             int rows = binary.GetLength(0);
             int cols = binary.GetLength(1);
             byte[,] newM = new byte[rows, cols];
-            for (int r = 1; r < rows - 1; r++) //row at a time, each row = one frame.
+
+            //row at a time, each row = one frame.
+            for (int r = 1; r < rows - 1; r++)
             {
                 for (int c = 1; c < cols - 1; c++)
                 {
@@ -2259,7 +2207,9 @@ namespace TowseyLibrary
             int rows = binary.GetLength(0);
             int cols = binary.GetLength(1);
             byte[,] mOut = new byte[rows, cols];
-            for (int r = 1; r < rows - 1; r++) //row at a time, each row = one frame.
+
+            //row at a time, each row = one frame.
+            for (int r = 1; r < rows - 1; r++)
             {
                 for (int c = 1; c < cols - 1; c++)
                 {
@@ -2273,7 +2223,10 @@ namespace TowseyLibrary
                     {
                         mOut[r, c] = 0;
                     }
-                    else mOut[r, c] = 1;
+                    else
+                    {
+                        mOut[r, c] = 1;
+                    }
                 }
             }
 
@@ -2320,13 +2273,15 @@ namespace TowseyLibrary
                 LV90[0, side + i] = i + 1;
             }
 
-            int[,] Lp45 = { { 3, 2, 1, -1, -2, -3 }, { -3, -2, -1, 1, 2, 3 } };
-            int[,] Lm45 = { { -3, -2, -1, 1, 2, 3 }, { -3, -2, -1, 1, 2, 3 } };
+            // int[,] Lp45 = { { 3, 2, 1, -1, -2, -3 }, { -3, -2, -1, 1, 2, 3 } };
+            // int[,] Lm45 = { { -3, -2, -1, 1, 2, 3 }, { -3, -2, -1, 1, 2, 3 } };
             int rows = binary.GetLength(0);
             int cols = binary.GetLength(1);
 
             byte[,] op = new byte[rows, cols];
-            for (int r = side; r < rows - side; r++) //row at a time, each row = one frame.
+
+            //row at a time, each row = one frame.
+            for (int r = side; r < rows - side; r++)
             {
                 for (int c = side; c < cols - side; c++)
                 {
@@ -2347,8 +2302,8 @@ namespace TowseyLibrary
                             VL90sum++;
                         }
 
-                        //      if (binary[r + Lm45[0, i], c + Lm45[1, i]] == 1) Lm45sum++;
-                        //      if (binary[r + Lp45[0, i], c + Lp45[1, i]] == 1) Lp45sum++;
+                        // if (binary[r + Lm45[0, i], c + Lm45[1, i]] == 1) Lm45sum++;
+                        // if (binary[r + Lp45[0, i], c + Lp45[1, i]] == 1) Lp45sum++;
                     }
 
                     int[] scores = new int[4];
@@ -2356,8 +2311,7 @@ namespace TowseyLibrary
                     scores[1] = Lp45sum;
                     scores[2] = VL90sum;
                     scores[3] = Lm45sum;
-                    int maxIndex = 0;
-                    DataTools.getMaxIndex(scores, out maxIndex);
+                    DataTools.getMaxIndex(scores, out int maxIndex);
 
                     if ((maxIndex == 0) && (HL00sum >= threshold))
                     {
@@ -2389,23 +2343,23 @@ namespace TowseyLibrary
             return op;
         }
 
-        /*
-         * writes the r, c location of the maximum valuesin the matrix
-         */
-        public static void WriteLocationOfMaximumValues(double[,] M)
+        /// <summary>
+        /// Writes the r, c location of the maximum valuesin the matrix
+        /// </summary>
+        public static void WriteLocationOfMaximumValues(double[,] m)
         {
-            int rowCount = M.GetLength(0);
-            int colCount = M.GetLength(1);
+            int rowCount = m.GetLength(0);
+            int colCount = m.GetLength(1);
             double max = -double.MaxValue;
 
             for (int r = 0; r < rowCount; r++)
             {
                 for (int c = 0; c < colCount; c++)
                 {
-                    if (M[r, c] > max)
+                    if (m[r, c] > max)
                     {
-                        max = M[r, c];
-                        Console.WriteLine("Max value to now at r={0}, c={1},  value={2}", r, c, M[r, c]);
+                        max = m[r, c];
+                        Console.WriteLine("Max value to now at r={0}, c={1},  value={2}", r, c, m[r, c]);
                     }
                 }
             }
@@ -2461,6 +2415,23 @@ namespace TowseyLibrary
             }
 
             return returnV;
+        }
+
+        protected static void PrintMatrix(double[,] matrix)
+        {
+            var rowLength = matrix.GetLength(1);
+            for (var i = 0; i < matrix.GetLength(0); i++)
+            {
+                var row = new StringBuilder(rowLength * 6);
+
+                for (int j = 0; j < rowLength; j++)
+                {
+                    row.Append(matrix[i, j]);
+                    row.Append(" | ");
+                }
+
+                Debug.WriteLine(rowLength);
+            }
         }
     }
 }
