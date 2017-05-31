@@ -14,6 +14,7 @@ namespace AnalysisPrograms
     using Acoustics.Shared.Csv;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.EventStatistics;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -92,8 +93,9 @@ namespace AnalysisPrograms
 
                 // experiments with clustering the spectra within spectrograms
                 // SpectralClustering.TESTMETHOD_SpectralClustering();
-                DspFilters.TestMethod_GenerateSignal1();
-                DspFilters.TestMethod_GenerateSignal2();
+                // DspFilters.TestMethod_GenerateSignal1();
+                // DspFilters.TestMethod_GenerateSignal2();
+                EventStatsticsCalculate.TestCalculateEventStatistics();
             }
 
             if (false)

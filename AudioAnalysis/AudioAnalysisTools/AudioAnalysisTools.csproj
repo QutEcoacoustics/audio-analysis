@@ -230,7 +230,9 @@
     <Compile Include="DSP\MFCCStuff.cs" />
     <Compile Include="DSP\WavInfo.cs" />
     <Compile Include="DSP\WavWriter.cs" />
-    <Compile Include="EventStatistics.cs" />
+    <Compile Include="EventStatistics\EventStatistics.cs" />
+    <Compile Include="EventStatistics\EventStatisticsConfiguration.cs" />
+    <Compile Include="EventStatistics\EventStatsticsCalculate.cs" />
     <Compile Include="FrommoltProject.cs" />
     <Compile Include="Indices\ErroneousIndexSegments.cs" />
     <Compile Include="Indices\IndexCalculate.cs" />

@@ -1860,80 +1860,92 @@ namespace TowseyLibrary
     LoggedConsole.WriteLine();
   }
 
-  /// <summary>
-  /// Logical AND of two vectors vector v2 to v1
-  /// </summary>
-  /// <param name="v1"></param>
-  /// <param name="v2"></param>
-  /// <returns></returns>
+          /// <summary>
+          /// Logical AND of two vectors vector v2 to v1
+          /// </summary>
         public static byte[] LogicalORofTwoVectors(byte[] v1, byte[] v2)
-  {
-      int L1 = v1.Length;
-      int L2 = v2.Length;
-      if (L1 != L2)
+          {
+              int L1 = v1.Length;
+              int L2 = v2.Length;
+              if (L1 != L2)
+                    {
+                        throw new Exception("ERROR! Vectors must be of same length.");
+                    }
+
+              byte[] addition = new byte[L1];
+              for (int i = 0; i < L1; i++)
+              {
+                  if ((v1[i] >= 1) || (v2[i] >= 1))
+                        {
+                            addition[i] = 1;
+                        }
+                    }
+
+              return addition;
+          }
+
+        public static double[] ConcatenateVectors(List<double[]> list)
+        {
+            int length = 0;
+            foreach (double[] v in list)
             {
-                throw new Exception("ERROR! Vectors must be of same length.");
+                length += v.Length;
             }
 
-      byte[] addition = new byte[L1];
-      for (int i = 0; i < L1; i++)
-      {
-          if ((v1[i] >= 1) || (v2[i] >= 1))
+            var outputVector = new double[length];
+
+            int id = 0;
+            foreach (double[] v in list)
+            {
+                for (int i = 0; i < v.Length; i++)
                 {
-                    addition[i] = 1;
+                    outputVector[id] = v[i];
+                    id++;
                 }
             }
 
-      return addition;
-  }
+            return outputVector;
+        }
 
-  /// <summary>
-  /// Add vector v2 to v1
-  /// </summary>
-  /// <param name="v1"></param>
-  /// <param name="v2"></param>
-  /// <returns></returns>
+        /// <summary>
+        /// Add vector v2 to v1
+        /// </summary>
         public static double[] AddVectors(double[] v1, double[] v2)
-  {
-      int L1 = v1.Length;
-      int L2 = v2.Length;
-      if (L1 != L2)
-            {
-                throw new Exception("ERROR! Vectors must be of same length.");
-            }
-
-      double[] addition = new double[L1];
-      for (int i = 0; i < L1; i++)
           {
-              addition[i] = v1[i] + v2[i];
+              if (v1.Length != v2.Length)
+                {
+                    throw new Exception("ERROR! Vectors must be of same length.");
+                }
+
+              double[] addition = new double[v1.Length];
+              for (int i = 0; i < v1.Length; i++)
+                  {
+                      addition[i] = v1[i] + v2[i];
+                  }
+
+              return addition;
           }
 
-      return addition;
-  }
-
-  /// <summary>
-  /// Subtract vector v2 from vector v1
-  /// </summary>
-  /// <param name="v1"></param>
-  /// <param name="v2"></param>
-  /// <returns></returns>
+          /// <summary>
+          /// Subtract vector v2 from vector v1
+          /// </summary>
         public static double[] SubtractVectors(double[] v1, double[] v2)
-  {
-      int L1 = v1.Length;
-      int L2 = v2.Length;
-      if (L1 != L2)
-            {
-                throw new Exception("ERROR! Vectors must be of same length.");
-            }
+          {
+              int L1 = v1.Length;
+              int L2 = v2.Length;
+              if (L1 != L2)
+                    {
+                        throw new Exception("ERROR! Vectors must be of same length.");
+                    }
 
-      double[] difference = new double[L1];
-      for (int i = 0; i < L1; i++)
-      {
-          difference[i] = v1[i] - v2[i];
-      }
+              double[] difference = new double[L1];
+              for (int i = 0; i < L1; i++)
+              {
+                  difference[i] = v1[i] - v2[i];
+              }
 
-      return difference;
-  }
+              return difference;
+          }
 
   /// <summary>
   /// ADD matrix m2 to matrix m1
