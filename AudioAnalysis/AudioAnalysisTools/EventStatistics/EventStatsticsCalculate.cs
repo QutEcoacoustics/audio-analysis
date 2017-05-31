@@ -73,9 +73,9 @@ namespace AudioAnalysisTools.EventStatistics
             int nyquist = dspOutput1.NyquistFreq;
             var spectrogram = dspOutput1.AmplitudeSpectrogram;
             var frameDuration = TimeSpan.FromSeconds(config.FrameSize / (double)sampleRate);
-            var stepDuration = TimeSpan.FromSeconds(config.FrameStep / (double)sampleRate);
-            var startFrame = (int)Math.Floor(temporalTarget.start.TotalSeconds / stepDuration.TotalSeconds);
-            var endFrame = (int)Math.Ceiling(temporalTarget.end.TotalSeconds / stepDuration.TotalSeconds);
+            var stepDurationInSeconds = config.FrameStep / (double)sampleRate;
+            var startFrame = (int)Math.Ceiling(temporalTarget.start.TotalSeconds / stepDurationInSeconds);
+            var endFrame = (int)Math.Floor(temporalTarget.end.TotalSeconds / stepDurationInSeconds);
 
             var bottomBin = (int)Math.Floor(spectralTarget.start / herzPerBin);
             var topBin = (int)Math.Ceiling(spectralTarget.end / herzPerBin);
@@ -97,6 +97,15 @@ namespace AudioAnalysisTools.EventStatistics
             int maxColumnId = DataTools.GetMaxIndex(columnSums);
             var rowSums = MatrixTools.GetRowSums(eventMatrix);
             int maxRowId = DataTools.GetMaxIndex(rowSums);
+
+            var normalisedIndex = DataTools.normalise(columnSums);
+            var image4 = GraphsAndCharts.DrawGraph("columnSums", normalisedIndex, 100);
+            string path4 = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\columnSums.png";
+            image4.Save(path4);
+            normalisedIndex = DataTools.normalise(rowSums);
+            image4 = GraphsAndCharts.DrawGraph("rowSums", normalisedIndex, 100);
+            path4 = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\rowSums.png";
+            image4.Save(path4);
 
             // TODO
             NormalDist.AverageAndSD(spectrogram, out double av, out double sd);
