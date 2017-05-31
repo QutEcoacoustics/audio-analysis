@@ -28,6 +28,16 @@ namespace AudioAnalysisTools.EventStatistics
 
         public TimeSpan Duration { get; set; }
 
+        public double TemporalMean { get; set; }
+
+        public double TemporalStdDev { get; set; }
+
+        /// <summary>
+        /// Gets or sets the relative location of the temporal max within the acoustic event.
+        /// E.g. if temporal max is half way through the event then TemporalMaxRelative = 0.5
+        /// </summary>
+        public double TemporalMaxRelative { get; set; }
+
         /// <summary>
         /// Gets or sets the bottom frequency bound of the acoustic event in Herz
         /// </summary>
@@ -42,6 +52,31 @@ namespace AudioAnalysisTools.EventStatistics
 
         public int DominantFrequency { get; set; }
 
-        public double AverageAmplitude { get; set; }
+        public double FreqMean { get; set; }
+
+        public double FreqStdDev { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SpectralCentroid.
+        /// The SpectralCentroid is a measure of the "brightness" of a sound event, that is, the relative amount of high freq content compared to low freq content.
+        /// Note that this SpectralCentroid is calculated from a weighted average of decibel values and NOT power values
+        /// </summary>
+        public int SpectralCentroid { get; set; }
+
+        /// <summary>
+        /// Gets or sets a measure of the distribution of energy over the time frames of the event.
+        /// TemporalEnergyDistribution = 1 - Ht, where Ht is the temporal entropy calculated as for acoustic indices.
+        /// Minimum value = 0.0, when energy is unifrom over all time frames.
+        /// Maximum value = 1.0, when all the acoustic energy is concentrated in a single time frame.
+        /// </summary>
+        public double TemporalEnergyDistribution { get; set; }
+
+        /// <summary>
+        /// Gets or sets a measure of the distribution of energy over the frequency bins of the event.
+        /// SpectralEnergyDistribution = 1 - Hf, where Hf is the spectral entropy calculated as for acoustic indices.
+        /// Minimum value = 0.0, when energy is unifrom over all frequency bins.
+        /// Maximum value = 1.0, when all the acoustic energy is concentrated in a single frequency bin.
+        /// </summary>
+        public double SpectralEnergyDistribution { get; set; }
     }
 }
