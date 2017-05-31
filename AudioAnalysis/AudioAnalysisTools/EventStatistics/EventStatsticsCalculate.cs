@@ -6,14 +6,11 @@ namespace AudioAnalysisTools.EventStatistics
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
     using Acoustics.Tools.Wav;
     using DSP;
+    using StandardSpectrograms;
     using TowseyLibrary;
     using WavTools;
-    using AudioAnalysisTools.StandardSpectrograms;
 
     public static class EventStatsticsCalculate
     {
@@ -56,6 +53,7 @@ namespace AudioAnalysisTools.EventStatistics
             var stats = new EventStatistics
             {
                 EventStart = temporalTarget.start,
+                EventStartSeconds = temporalTarget.start.TotalSeconds,
                 EventEnd = temporalTarget.end,
                 Duration = temporalTarget.end - temporalTarget.start,
                 FreqLow = spectralTarget.start,
@@ -69,10 +67,11 @@ namespace AudioAnalysisTools.EventStatistics
 
             // extract the spectrogram
             var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(recording, config.FrameSize, config.FrameStep);
+
+            //int nyquist = dspOutput1.NyquistFreq;
+            //var spectrogram = dspOutput1.AmplitudeSpectrogram;
+            //var frameDuration = TimeSpan.FromSeconds(config.FrameSize / (double)sampleRate);
             double herzPerBin = dspOutput1.FreqBinWidth;
-            int nyquist = dspOutput1.NyquistFreq;
-            var spectrogram = dspOutput1.AmplitudeSpectrogram;
-            var frameDuration = TimeSpan.FromSeconds(config.FrameSize / (double)sampleRate);
             var stepDurationInSeconds = config.FrameStep / (double)sampleRate;
             var startFrame = (int)Math.Ceiling(temporalTarget.start.TotalSeconds / stepDurationInSeconds);
             var endFrame = (int)Math.Floor(temporalTarget.end.TotalSeconds / stepDurationInSeconds);
@@ -90,14 +89,34 @@ namespace AudioAnalysisTools.EventStatistics
             // extract the required acoustic event
             var eventMatrix = MatrixTools.Submatrix(decibelSpectrogram, startFrame, bottomBin, endFrame, topBin);
 
-            // Assume linear scale.
-            var freqScale = new FrequencyScale(nyquist: nyquist, frameSize: config.FrameSize, herzLinearGridInterval: 1000);
-
             var columnSums = MatrixTools.GetColumnSums(eventMatrix);
             int maxColumnId = DataTools.GetMaxIndex(columnSums);
             var rowSums = MatrixTools.GetRowSums(eventMatrix);
             int maxRowId = DataTools.GetMaxIndex(rowSums);
 
+            // calculate the temporal mean and standard deviation
+            NormalDist.AverageAndSD(rowSums, out double mean, out double stddev);
+            stats.TemporalMean = mean;
+            stats.TemporalStdDev = stddev;
+
+            // calculate the frequency mean and standard deviation
+            NormalDist.AverageAndSD(columnSums, out mean, out stddev);
+            stats.FreqMean = mean;
+            stats.FreqStdDev = stddev;
+
+            // calculate relative location of the temporal maximum
+            stats.TemporalMaxRelative = maxRowId / (double)rowSums.Length;
+
+            // calculate the entropy dispersion/concentration indices
+            stats.TemporalEnergyDistribution = 1 - DataTools.Entropy_normalised(rowSums);
+            stats.SpectralEnergyDistribution = 1 - DataTools.Entropy_normalised(columnSums);
+
+            // calculate the spectral centroid and the dominant frequency
+            int binId = CalculateSpectralCentroid(columnSums);
+            stats.SpectralCentroid = (int)Math.Round(herzPerBin * binId) + spectralTarget.start;
+            stats.DominantFrequency = (int)Math.Round(herzPerBin * maxColumnId) + spectralTarget.start;
+
+            // remainder of this method is to produce debugging images. Can comment out when not debugging.
             var normalisedIndex = DataTools.normalise(columnSums);
             var image4 = GraphsAndCharts.DrawGraph("columnSums", normalisedIndex, 100);
             string path4 = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\columnSums.png";
@@ -106,11 +125,6 @@ namespace AudioAnalysisTools.EventStatistics
             image4 = GraphsAndCharts.DrawGraph("rowSums", normalisedIndex, 100);
             path4 = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\rowSums.png";
             image4.Save(path4);
-
-            // TODO
-            NormalDist.AverageAndSD(spectrogram, out double av, out double sd);
-            stats.AverageAmplitude = av;
-            stats.DominantFrequency = (int)Math.Round(herzPerBin * maxColumnId) + spectralTarget.start;
 
             return stats;
         }
@@ -124,10 +138,12 @@ namespace AudioAnalysisTools.EventStatistics
             var recording1 = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics1);
             var recording2 = DspFilters.GenerateTestSignal(sampleRate, 4, harmonics2);
             var recording3 = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics1);
-            var list = new List<double[]>();
-            list.Add(recording1.WavReader.Samples);
-            list.Add(recording2.WavReader.Samples);
-            list.Add(recording3.WavReader.Samples);
+            var list = new List<double[]>
+            {
+                recording1.WavReader.Samples,
+                recording2.WavReader.Samples,
+                recording3.WavReader.Samples,
+            };
             var signal = DataTools.ConcatenateVectors(list);
             var wr = new WavReader(signal, 1, 16, sampleRate);
             var recording = new AudioRecording(wr);
@@ -144,6 +160,11 @@ namespace AudioAnalysisTools.EventStatistics
             };
 
             EventStatistics stats = AnalyzeAudioEvent(recording, (start, end), (lowFreq, topFreq), statsConfig);
+
+            LoggedConsole.WriteLine($"Stats: Temporal entropy = {stats.TemporalEnergyDistribution}");
+            LoggedConsole.WriteLine($"Stats: Spectral entropy = {stats.SpectralEnergyDistribution}");
+            LoggedConsole.WriteLine($"Stats: Spectral centroid= {stats.SpectralCentroid}");
+            LoggedConsole.WriteLine($"Stats: DominantFrequency= {stats.DominantFrequency}");
 
             // Assume linear scale.
             int nyquist = sampleRate / 2;
@@ -170,7 +191,15 @@ namespace AudioAnalysisTools.EventStatistics
             var image2 = GraphsAndCharts.DrawGraph("SPECTRUM", normalisedIndex, 100);
             string path2 = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\Spectrum3.png";
             image2.Save(path2);
+        }
 
+        /// <summary>
+        /// Returns the id of the bin which contains the spectral centroid.
+        /// </summary>
+        public static int CalculateSpectralCentroid(double[] spectrum)
+        {
+            int bin = 0;
+            return bin;
         }
     }
 }

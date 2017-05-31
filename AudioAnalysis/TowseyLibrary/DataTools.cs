@@ -3679,67 +3679,65 @@ namespace TowseyLibrary
   }
 
         public static double Entropy(double[,] matrixDistr)
-  {
-      double H = 0.0;
-      int RowCount = matrixDistr.GetLength(0);
-      int ColCount = matrixDistr.GetLength(1);
-
-      for (int i = 0; i < RowCount; i++)
-      {
-          for (int j = 0; j < ColCount; j++)
           {
-              if (matrixDistr[i, j] != 0.00)
-                    {
-                        H -= matrixDistr[i,j] * Math.Log(matrixDistr[i,j]);
-                    }
-                }
-      }
+              double H = 0.0;
+              int RowCount = matrixDistr.GetLength(0);
+              int ColCount = matrixDistr.GetLength(1);
 
-      return H / ln2;
-  }
+              for (int i = 0; i < RowCount; i++)
+              {
+                  for (int j = 0; j < ColCount; j++)
+                  {
+                      if (matrixDistr[i, j] != 0.00)
+                            {
+                                H -= matrixDistr[i,j] * Math.Log(matrixDistr[i,j]);
+                            }
+                        }
+              }
 
-    /// <summary>
-    /// returns the entropy of a vector of values normalized for vector length
-    /// </summary>
-    /// <param name="distr"></param>
-    /// <returns></returns>
+              return H / ln2;
+          }
+
+        /// <summary>
+        /// returns the entropy of a vector of values normalized for vector length
+        /// </summary>
         public static double Entropy_normalised(double[] v)
-    {
-        //some safety checks but unlikely to happen
-        int posCount = v.Count(p => p > 0.0);
-        if (posCount == 0)
+        {
+            //some safety checks but unlikely to happen
+            int posCount = v.Count(p => p > 0.0);
+            if (posCount == 0)
             {
                 return double.NaN; // cannot calculate entropy
             }
 
-        if (posCount == 1)
+            if (posCount == 1)
             {
-                return 0.0;        // energy concentrated in one value - i.e. zero entropy
+                return 0.0; // energy concentrated in one value - i.e. zero entropy
             }
 
-        double[] pmf2 = Normalise2Probabilites(v); //pmf = probability mass funciton
-        double normFactor = Math.Log(v.Length) / ln2; //normalize for length of the array
-        return Entropy(pmf2) / normFactor;
-    }
+            double[] pmf2 = Normalise2Probabilites(v); //pmf = probability mass funciton
+            double normFactor = Math.Log(v.Length) / ln2; //normalize for length of the array
+            return Entropy(pmf2) / normFactor;
+        }
 
         public static double Entropy_normalised(int[] v)
-    {
-        //some safety checks but unlikely to happen
-        int posCount = v.Count(p => p > 0.0);
-        if (posCount == 0)
-            {
-                return double.NaN; // cannot calculate entropy
-            }
+        {
+            //some safety checks but unlikely to happen
+            int posCount = v.Count(p => p > 0.0);
+            if (posCount == 0)
+                {
+                    return double.NaN; // cannot calculate entropy
+                }
 
-        if (posCount == 1)
-            {
-                return 0.0;        // energy concentrated in one value - i.e. zero entropy
-            }
+            if (posCount == 1)
+                {
+                    return 0.0;        // energy concentrated in one value - i.e. zero entropy
+                }
 
-        double[] pmf2 = NormaliseArea(v); //pmf = probability mass funciton
-        double normFactor = Math.Log(v.Length) / ln2; //normalize for length of the array
-        return Entropy(pmf2) / normFactor;
-    }
+            double[] pmf2 = NormaliseArea(v); //pmf = probability mass funciton
+            double normFactor = Math.Log(v.Length) / ln2; //normalize for length of the array
+            return Entropy(pmf2) / normFactor;
+        }
 
         public static double MutualInformation(int[,] counts)
         {
