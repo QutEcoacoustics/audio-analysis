@@ -580,7 +580,7 @@ namespace AnalysisPrograms
                 double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, Tframe - Tbuffer, 0, Tframe + Tbuffer, F1bin);
                 double F1power = subMatrix[Tbuffer, F1bin];
                 // convert to vector
-                var spectrum = MatrixTools.GetColumnsAverages(subMatrix);
+                var spectrum = MatrixTools.GetColumnAverages(subMatrix);
 
                 // use the following code to get estimate of background noise
                 double[,] powerMatrix = MatrixTools.Submatrix(sonogram.Data, Tframe - 3, 10, Tframe + 3, F1bin);

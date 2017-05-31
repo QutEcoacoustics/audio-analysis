@@ -30,8 +30,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
     public static class ZoomFocusedSpectrograms
     {
-        public static void DrawStackOfZoomedSpectrograms(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory,
-                                                         ZoomCommonArguments common,
+        public static void DrawStackOfZoomedSpectrograms(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory, ZoomCommonArguments common,
                                                          TimeSpan focalTime, int imageWidth)
         {
             var zoomConfig = common.SuperTilingConfig;
@@ -240,7 +239,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             if (indexGenerationData.SampleRateResampled > 0)
                 nyquist = indexGenerationData.SampleRateResampled / 2;
             int herzInterval = 1000;
-            if (config != null) herzInterval = config.YAxisTicInterval;
+            if (config != null)
+            {
+                herzInterval = config.YAxisTicInterval;
+            }
+
             string title = string.Format("SCALE={0}s/px.  Duration={1} ",  imageScale.TotalSeconds, spectrogramDuration);
 
             //add chrome
@@ -396,18 +399,25 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// This method can add in the absolute recording start time. However currently disabled.
         /// </summary>
-        /// <param name="config"></param>
-        /// <param name="indexGenerationData"></param>
-        /// <param name="startTimeOfData"></param>
-        /// <param name="compressionFactor"></param>
-        /// <param name="frameData"></param>
-        /// <param name="indexData"></param>
-        /// <param name="focalTime"></param>
-        /// <param name="frameScale"></param>
-        /// <param name="imageWidth"></param>
-        /// <returns></returns>
-        public static Image DrawFrameSpectrogramAtScale(LdSpectrogramConfig config, IndexGenerationData indexGenerationData, TimeSpan startTimeOfData, int compressionFactor,
-                                                        List<double[]> frameData, double[,] indexData, TimeSpan focalTime, TimeSpan frameScale, int imageWidth)
+        /// <param name="config">v</param>
+        /// <param name="indexGenerationData">indexGenerationData</param>
+        /// <param name="startTimeOfData">startTimeOfData</param>
+        /// <param name="compressionFactor">compressionFactor</param>
+        /// <param name="frameData">frameData</param>
+        /// <param name="indexData">indexData</param>
+        /// <param name="focalTime">focalTime</param>
+        /// <param name="frameScale">frameScale</param>
+        /// <param name="imageWidth">imageWidth</param>
+        public static Image DrawFrameSpectrogramAtScale(
+            LdSpectrogramConfig config,
+            IndexGenerationData indexGenerationData,
+            TimeSpan startTimeOfData,
+            int compressionFactor,
+            List<double[]> frameData,
+            double[,] indexData,
+            TimeSpan focalTime,
+            TimeSpan frameScale,
+            int imageWidth)
         {
             if ((frameData == null) || (frameData.Count == 0))
             {
@@ -415,8 +425,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 return null;
             }
 
-            TimeSpan recordingStartTime = TimeSpan.Zero; // default = zero minute of day i.e. midnight
-            recordingStartTime = TimeTools.DateTimePlusTimeSpan(indexGenerationData.RecordingStartDate, indexGenerationData.MinuteOffset);
+            // var recordingStartTime = TimeSpan.Zero; // default = zero minute of day i.e. midnight
+            // var recordingStartTime = TimeTools.DateTimePlusTimeSpan(indexGenerationData.RecordingStartDate, indexGenerationData.MinuteOffset);
 
             TimeSpan imageScale = TimeSpan.FromTicks(frameScale.Ticks * compressionFactor);
             TimeSpan imageDuration = TimeSpan.FromTicks(imageWidth * imageScale.Ticks);
@@ -434,7 +444,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // compress spectrograms to correct scale
             if (compressionFactor > 1)
+            {
                 spectralSelection = TemporalMatrix.CompressFrameSpectrograms(spectralSelection, compressionFactor);
+            }
 
             Image spectrogramImage =  DrawStandardSpectrogramInFalseColour(spectralSelection);
 
@@ -451,7 +463,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             int nyquist = 22050 / 2; // default
             if (indexGenerationData.SampleRateResampled > 0)
+            {
                 nyquist = indexGenerationData.SampleRateResampled / 2;
+            }
+
             int herzInterval = config.YAxisTicInterval;
             string title = string.Format("ZOOM SCALE={0}ms/pixel   Image duration={1} ", imageScale.TotalMilliseconds, imageDuration);
             Image titleBar = DrawTitleBarOfZoomSpectrogram(title, spectrogramImage.Width);
@@ -459,7 +474,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // add the recording start time ONLY IF WANT ABSOLUTE TIME SCALE - obtained from info in file name
             // startTime += recordingStartTime;
             spectrogramImage = FrameZoomSpectrogram(spectrogramImage, titleBar, startTime, imageScale, config.XAxisTicInterval, nyquist, herzInterval);
-
 
             // MAY WANT THESE CLIPPING TRACKS AT SOME POINT
             // read high amplitude and clipping info into an image
@@ -469,15 +483,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //Image imageX = DrawSummaryIndices.DrawHighAmplitudeClippingTrack(indicesFile.ToFileInfo());
             //if (null != imageX) imageX.Save(Path.Combine(outputDirectory.FullName, fileStem + ".ClipHiAmpl.png"));
 
-
             // create the base image
             Image image = new Bitmap(imageWidth, spectrogramImage.Height);
             Graphics g1 = Graphics.FromImage(image);
             g1.Clear(Color.DarkGray);
 
-            //int Xoffset = (int)(startTime.Ticks / imageScale.Ticks);
-            int Xoffset = (imageWidth / 2) - x1;
-            g1.DrawImage(spectrogramImage, Xoffset, 0);
+            //int xOffset = (int)(startTime.Ticks / imageScale.Ticks);
+            int xOffset = (imageWidth / 2) - x1;
+            g1.DrawImage(spectrogramImage, xOffset, 0);
 
             return image;
         }
@@ -606,7 +619,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             truncateMax = 50;
             double[,] nrSpectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(nrSpectrogramData, truncateMin, truncateMax, filterCoefficient);
             //nrSpectrogramNorm = DataTools.normalise(nrSpectrogramNorm);
-            nrSpectrogramNorm = MatrixTools.boundMatrix(nrSpectrogramNorm, 0.0, 0.9);
+            nrSpectrogramNorm = MatrixTools.BoundMatrix(nrSpectrogramNorm, 0.0, 0.9);
             nrSpectrogramNorm = MatrixTools.SquareRootOfValues(nrSpectrogramNorm);
             nrSpectrogramNorm = DataTools.normalise(nrSpectrogramNorm);
 

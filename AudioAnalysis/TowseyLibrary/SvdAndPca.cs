@@ -219,14 +219,14 @@
             // svd.U returns the LEFT singular vectors in matrix
             Matrix<double> UMatrix = svd.U();
             Console.WriteLine("\n\n");
-            MatrixTools.writeMatrix(UMatrix.ToArray());
+            MatrixTools.WriteMatrix(UMatrix.ToArray());
             string path1 = @"C:\SensorNetworks\Output\Test\testMatrixSVD_U.png";
             ImageTools.DrawReversedMDNMatrix(UMatrix, path1);
 
             // svd.VT returns the RIGHT singular values
             Matrix<double> VMatrix = svd.VT();
             Console.WriteLine("\n\n");
-            MatrixTools.writeMatrix(VMatrix.ToArray());
+            MatrixTools.WriteMatrix(VMatrix.ToArray());
             string path2 = @"C:\SensorNetworks\Output\Test\testMatrixSVD_VT.png";
             ImageTools.DrawReversedMDNMatrix(VMatrix, path2);
 
