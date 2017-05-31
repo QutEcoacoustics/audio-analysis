@@ -168,11 +168,11 @@ namespace AudioAnalysisTools
             frameStep *= 16;
 
             var dspOutputL = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(channelL, sampleRate, epsilon, frameSize, frameStep);
-            var avSpectrumL = MatrixTools.GetColumnsAverages(dspOutputL.AmplitudeSpectrogram);
+            var avSpectrumL = MatrixTools.GetColumnAverages(dspOutputL.AmplitudeSpectrogram);
             //var medianSpectrumL = MatrixTools.GetColumnMedians(dspOutputL.amplitudeSpectrogram);
 
             var dspOutputR = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(channelR, sampleRate, epsilon, frameSize, frameStep);
-            var avSpectrumR = MatrixTools.GetColumnsAverages(dspOutputR.AmplitudeSpectrogram);
+            var avSpectrumR = MatrixTools.GetColumnAverages(dspOutputR.AmplitudeSpectrogram);
             //var medianSpectrumR = MatrixTools.GetColumnMedians(dspOutputR.amplitudeSpectrogram);
 
             similarityIndex   = 0.0;
