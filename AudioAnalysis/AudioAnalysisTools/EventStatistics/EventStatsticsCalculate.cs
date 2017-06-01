@@ -6,6 +6,7 @@ namespace AudioAnalysisTools.EventStatistics
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using Acoustics.Tools.Wav;
     using DSP;
     using StandardSpectrograms;
@@ -26,16 +27,23 @@ namespace AudioAnalysisTools.EventStatistics
         /// For the following meausres of k-central moments, the freq and time values are normalised in 0,1 to width of the event.
         /// 2. freq-mean
         /// 3. freq-variance
-        /// 4. freq-skew
+        /// 4. freq-skew and kurtosis
         /// 5. time-mean
         /// 6. time-variance
-        /// 7. time-skew
+        /// 7. time-skew and kurtosis
         /// 8. freq-max (normalised)
         /// 9. time-max (normalised)
+        /// 10. Briggs et al also calculate a 16 value histogram of gradients for each event mask. We do not do that here although we could.
+        /// ...
+        /// NOTE 1: There are differences between our method of noise reduction and Briggs. Briggs does not convert to decibels
+        /// and intead works with power values. He obtains a noise profile from the 20% of frames having the lowest energy sum.
+        /// NOTE 2: To normalise for noise, they divide the actual energy by the noise value. This is equivalent to subtraction when working in decibels.
+        ///         There are advantages and disadvantages to Briggs method versus ours. In our case, we hve to convert decibel values back to
+        ///         energy values when calculating the statistics for the extracted acoustic event.
+        /// NOTE 3: We do not calculate the higher central moments of the time/frequency profiles, i.e. skew and kurtosis.
+        ///         Ony mean and standard deviation.
         /// ..
-        /// Briggs et al also calculate a 16 value histogram of gradients for each event mask. We do not do that here although we could.
-        /// ..
-        /// NOTE: This method assumes that the passed event occurs totally within the passed recording,
+        /// NOTE 4: This method assumes that the passed event occurs totally within the passed recording,
         /// AND that the passed recording is of sufficient duration to obtain reliable BGN noise profile
         /// BUT not so long as to cause memory constipation.
         /// </summary>
@@ -68,13 +76,12 @@ namespace AudioAnalysisTools.EventStatistics
             // extract the spectrogram
             var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(recording, config.FrameSize, config.FrameStep);
 
-            //int nyquist = dspOutput1.NyquistFreq;
-            //var spectrogram = dspOutput1.AmplitudeSpectrogram;
-            //var frameDuration = TimeSpan.FromSeconds(config.FrameSize / (double)sampleRate);
             double herzPerBin = dspOutput1.FreqBinWidth;
             var stepDurationInSeconds = config.FrameStep / (double)sampleRate;
             var startFrame = (int)Math.Ceiling(temporalTarget.start.TotalSeconds / stepDurationInSeconds);
-            var endFrame = (int)Math.Floor(temporalTarget.end.TotalSeconds / stepDurationInSeconds);
+
+            // subtract 1 frame because want to end before start of end point.
+            var endFrame = (int)Math.Floor(temporalTarget.end.TotalSeconds / stepDurationInSeconds) - 1;
 
             var bottomBin = (int)Math.Floor(spectralTarget.start / herzPerBin);
             var topBin = (int)Math.Ceiling(spectralTarget.end / herzPerBin);
@@ -89,43 +96,50 @@ namespace AudioAnalysisTools.EventStatistics
             // extract the required acoustic event
             var eventMatrix = MatrixTools.Submatrix(decibelSpectrogram, startFrame, bottomBin, endFrame, topBin);
 
-            var columnSums = MatrixTools.GetColumnSums(eventMatrix);
-            int maxColumnId = DataTools.GetMaxIndex(columnSums);
-            var rowSums = MatrixTools.GetRowSums(eventMatrix);
-            int maxRowId = DataTools.GetMaxIndex(rowSums);
+            // Get the SNR of the event. This is just the max value in the matrix because noise reduced
+            MatrixTools.MinMax(eventMatrix, out _, out double max);
+            stats.SnrDecibels = max;
 
-            // calculate the temporal mean and standard deviation
-            NormalDist.AverageAndSD(rowSums, out double mean, out double stddev);
-            stats.TemporalMean = mean;
-            stats.TemporalStdDev = stddev;
+            // Now need to convert event matrix back to energy values before calculating other statistics
+            eventMatrix = MatrixTools.Decibels2Power(eventMatrix);
 
-            // calculate the frequency mean and standard deviation
-            NormalDist.AverageAndSD(columnSums, out mean, out stddev);
-            stats.FreqMean = mean;
-            stats.FreqStdDev = stddev;
+            var columnAverages = MatrixTools.GetColumnAverages(eventMatrix);
+            var rowAverages = MatrixTools.GetRowAverages(eventMatrix);
+
+            // calculate the mean and temporal standard deviation in decibels
+            NormalDist.AverageAndSD(rowAverages, out double mean, out double stddev);
+            stats.MeanDecibel = 10 * Math.Log10(mean);
+            stats.TemporalStdDevDb = 10 * Math.Log10(stddev);
+
+            // calculate the frequency standard deviation in decibels
+            NormalDist.AverageAndSD(columnAverages, out mean, out stddev);
+            stats.FreqBinStdDevDb = 10 * Math.Log10(stddev);
 
             // calculate relative location of the temporal maximum
-            stats.TemporalMaxRelative = maxRowId / (double)rowSums.Length;
+            int maxRowId = DataTools.GetMaxIndex(rowAverages);
+            stats.TemporalMaxRelative = maxRowId / (double)rowAverages.Length;
 
             // calculate the entropy dispersion/concentration indices
-            stats.TemporalEnergyDistribution = 1 - DataTools.Entropy_normalised(rowSums);
-            stats.SpectralEnergyDistribution = 1 - DataTools.Entropy_normalised(columnSums);
+            stats.TemporalEnergyDistribution = 1 - DataTools.Entropy_normalised(rowAverages);
+            stats.SpectralEnergyDistribution = 1 - DataTools.Entropy_normalised(columnAverages);
 
             // calculate the spectral centroid and the dominant frequency
-            int binId = CalculateSpectralCentroid(columnSums);
-            stats.SpectralCentroid = (int)Math.Round(herzPerBin * binId) + spectralTarget.start;
+            double binCentroid = CalculateSpectralCentroid(columnAverages);
+            stats.SpectralCentroid = (int)Math.Round(herzPerBin * binCentroid) + spectralTarget.start;
+            int maxColumnId = DataTools.GetMaxIndex(columnAverages);
             stats.DominantFrequency = (int)Math.Round(herzPerBin * maxColumnId) + spectralTarget.start;
 
             // remainder of this method is to produce debugging images. Can comment out when not debugging.
-            var normalisedIndex = DataTools.normalise(columnSums);
+            /*
+            var normalisedIndex = DataTools.normalise(columnAverages);
             var image4 = GraphsAndCharts.DrawGraph("columnSums", normalisedIndex, 100);
             string path4 = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\columnSums.png";
             image4.Save(path4);
-            normalisedIndex = DataTools.normalise(rowSums);
+            normalisedIndex = DataTools.normalise(rowAverages);
             image4 = GraphsAndCharts.DrawGraph("rowSums", normalisedIndex, 100);
             path4 = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\rowSums.png";
             image4.Save(path4);
-
+            */
             return stats;
         }
 
@@ -161,8 +175,8 @@ namespace AudioAnalysisTools.EventStatistics
 
             EventStatistics stats = AnalyzeAudioEvent(recording, (start, end), (lowFreq, topFreq), statsConfig);
 
-            LoggedConsole.WriteLine($"Stats: Temporal entropy = {stats.TemporalEnergyDistribution}");
-            LoggedConsole.WriteLine($"Stats: Spectral entropy = {stats.SpectralEnergyDistribution}");
+            LoggedConsole.WriteLine($"Stats: Temporal entropy = {stats.TemporalEnergyDistribution:f4}");
+            LoggedConsole.WriteLine($"Stats: Spectral entropy = {stats.SpectralEnergyDistribution:f4}");
             LoggedConsole.WriteLine($"Stats: Spectral centroid= {stats.SpectralCentroid}");
             LoggedConsole.WriteLine($"Stats: DominantFrequency= {stats.DominantFrequency}");
 
@@ -196,10 +210,18 @@ namespace AudioAnalysisTools.EventStatistics
         /// <summary>
         /// Returns the id of the bin which contains the spectral centroid.
         /// </summary>
-        public static int CalculateSpectralCentroid(double[] spectrum)
+        public static double CalculateSpectralCentroid(double[] spectrum)
         {
-            int bin = 0;
-            return bin;
+            double centroidBin = 0;
+
+            double powerSum = spectrum.Sum();
+
+            for (int bin = 0; bin < spectrum.Length; bin++)
+            {
+                centroidBin += bin * spectrum[bin] / powerSum;
+            }
+
+            return centroidBin;
         }
     }
 }

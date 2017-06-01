@@ -28,9 +28,9 @@ namespace AudioAnalysisTools.EventStatistics
 
         public TimeSpan Duration { get; set; }
 
-        public double TemporalMean { get; set; }
+        public double MeanDecibel { get; set; }
 
-        public double TemporalStdDev { get; set; }
+        public double TemporalStdDevDb { get; set; }
 
         /// <summary>
         /// Gets or sets the relative location of the temporal max within the acoustic event.
@@ -52,9 +52,7 @@ namespace AudioAnalysisTools.EventStatistics
 
         public int DominantFrequency { get; set; }
 
-        public double FreqMean { get; set; }
-
-        public double FreqStdDev { get; set; }
+        public double FreqBinStdDevDb { get; set; }
 
         /// <summary>
         /// Gets or sets the SpectralCentroid.
@@ -78,5 +76,10 @@ namespace AudioAnalysisTools.EventStatistics
         /// Maximum value = 1.0, when all the acoustic energy is concentrated in a single frequency bin.
         /// </summary>
         public double SpectralEnergyDistribution { get; set; }
+
+        /// <summary>
+        /// Gets or sets the event's signal-to-noise ratio in decibels.
+        /// </summary>
+        public double SnrDecibels { get; set; }
     }
 }

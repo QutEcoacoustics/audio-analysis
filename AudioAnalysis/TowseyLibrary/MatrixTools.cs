@@ -439,8 +439,9 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// convert values to Decibels.
-        /// Assume that all values are positive
+        /// Convert the power values in a matrix of spectrogram values to Decibels.
+        /// Assume that all matrix values are positive i.e. due to prior noise removal.
+        /// NOTE: This method also returns the min and max decibel values in the passed matrix.
         /// </summary>
         /// <param name="m">matrix of positive power values</param>
         /// <param name="min">min value to be return by out</param>
@@ -460,16 +461,47 @@ namespace TowseyLibrary
                 {
                     double dBels = 10 * Math.Log10(m[i, j]); //convert power to decibels
 
-                    //NOTE: the decibels calculation should be a ratio.
+                    //NOTE: the decibel calculation should be a ratio.
                     // Here the ratio is implied ie relative to the power in the original normalised signal
-                    //        if (dBels <= min) min = dBels;
-                    //        else
-                    //        if (dBels >= max) max = dBels;
+                    if (dBels <= min)
+                    {
+                        min = dBels;
+                    }
+                    else
+                    if (dBels >= max)
+                    {
+                        max = dBels;
+                    }
+
                     ret[i, j] = dBels;
                 }
             }
 
             return ret;
+        }
+
+        /// <summary>
+        /// Convert the power values in a matrix of spectrogram values to Decibels.
+        /// Assume that all matrix values are positive due to prior noise removal.
+        /// </summary>
+        /// <param name="m">matrix of positive Decibel values</param>
+        public static double[,] Decibels2Power(double[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            double[,] retM = new double[rows, cols];
+
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    //convert decibels to power
+                    double power = Math.Exp(m[i, j] / 10 * Math.Log(10));
+                    retM[i, j] = power;
+                }
+            }
+
+            return retM;
         }
 
         public static double[,] Matrix2ZScores(double[,] matrix, double av, double sd)
