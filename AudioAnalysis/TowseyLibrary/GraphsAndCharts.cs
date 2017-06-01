@@ -197,7 +197,7 @@ namespace TowseyLibrary
             //g.DrawLine(pen4, modeBin, height - 1, modeBin, 0);
             //g.DrawLine(pen4, upperBound, height - 1, upperBound, 0);
 
-            int previousY = 0;
+            int previousY = (int)Math.Ceiling(normalisedData[0] * imageHeight);
             for (int x = 1; x < imageWidth; x++)
             {
                 int y = (int)Math.Ceiling(normalisedData[x] * imageHeight);
