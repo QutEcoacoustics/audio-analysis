@@ -84,36 +84,36 @@
         {
             if (source == null)
             {
-                throw new ArgumentNullException("source");
+                throw new ArgumentNullException(nameof(source));
             }
 
             if (string.IsNullOrEmpty(sourceMimeType))
             {
-                throw new ArgumentNullException("sourceMimeType");
+                throw new ArgumentNullException(nameof(sourceMimeType));
             }
 
             if (output == null)
             {
-                throw new ArgumentNullException("output");
+                throw new ArgumentNullException(nameof(output));
             }
 
             if (string.IsNullOrEmpty(outputMimeType))
             {
-                throw new ArgumentNullException("outputMimeType");
+                throw new ArgumentNullException(nameof(outputMimeType));
             }
 
             if (!this.CheckMimeTypeExtension(source, sourceMimeType))
             {
                 throw new ArgumentException(
                     string.Format(this.MimeTypeExtensionErrorFormatString, sourceMimeType, source.Extension),
-                    "sourceMimeType");
+                    nameof(sourceMimeType));
             }
 
             if (!this.CheckMimeTypeExtension(output, outputMimeType))
             {
                 throw new ArgumentException(
                     string.Format(this.MimeTypeExtensionErrorFormatString, outputMimeType, output.Extension),
-                    "outputMimeType");
+                    nameof(outputMimeType));
             }
         }
 
@@ -133,19 +133,19 @@
         {
             if (source == null)
             {
-                throw new ArgumentNullException("source");
+                throw new ArgumentNullException(nameof(source));
             }
 
             if (string.IsNullOrEmpty(sourceMimeType))
             {
-                throw new ArgumentNullException("sourceMimeType");
+                throw new ArgumentNullException(nameof(sourceMimeType));
             }
 
             if (!this.CheckMimeTypeExtension(source, sourceMimeType))
             {
                 throw new ArgumentException(
                     string.Format(this.MimeTypeExtensionErrorFormatString, sourceMimeType, source.Extension),
-                    "sourceMimeType");
+                    nameof(sourceMimeType));
             }
 
             var ext = this.GetExtension(source);
@@ -499,9 +499,13 @@
                 {
                     if (this.Log.IsDebugEnabled)
                     {
-                        this.Log.DebugFormat("Property '{0}' value '{1}' was found in '{2}', returning null.",
-                            propertyName, text, string.Join(", ", expectedNonNumeric));
+                        this.Log.DebugFormat(
+                            "Property '{0}' value '{1}' was found in '{2}', returning null.",
+                            propertyName,
+                            text,
+                            string.Join(", ", expectedNonNumeric));
                     }
+
                     return null;
                 }
 

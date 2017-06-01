@@ -1,845 +1,319 @@
 ﻿namespace Acoustics.Test.Tools
 {
     using System;
-
+    using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Tools;
 
     using EcoSounds.Mvc.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using MSTestExtensions;
     using TestHelpers;
 
     [TestClass]
     public class AudioUtilityInfoTests
     {
-        [TestMethod]
-        public void InfoAsfMaster()
+        [DataTestMethod]
+        [DataRow("06Sibylla.asf")]
+        [DataRow("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3")]
+        [DataRow("A French Fiddle Speaks.mp3")]
+        [DataRow("ocioncosta-lindamenina.ogg")]
+        [DataRow("Lewins Rail Kekkek.wav")]
+        [DataRow("FemaleKoala MaleKoala.wav")]
+        [DataRow("geckos.wav")]
+        [DataRow("Lewins Rail Kekkek.webm")]
+        [DataRow("06Sibylla.wma")]
+        [DataRow("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv")]
+        [DataRow("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv")]
+        [DataRow("4channelsPureTones.wav")]
+        [DataRow("4channelsPureTones.flac")]
+        [DataRow("4channelsPureTones.ogg")]
+        [DataRow("4channelsPureTones.wv")]
+        [DataRow("different_channels_tone.wav")]
+        [DataRow("different_channels_tone.mp3")]
+        [DataRow("4min test.mp3")]
+        public void InfoWorksForMaster(string file)
         {
             var util = TestHelper.GetAudioUtility();
 
-            var source = TestHelper.GetAudioFile("06Sibylla.asf");
+            var source = TestHelper.GetAudioFile(file);
             var info = util.Info(source);
 
-            var expected = TestHelper.AudioDetails["06Sibylla.asf"];
+            var expected = TestHelper.AudioDetails[file];
 
             TestHelper.CheckAudioUtilityInfo(expected, info);
         }
 
-        [TestMethod]
-        public void InfoMp3Master()
+        [DataTestMethod]
+        [DataRow("4channelsPureTones.raw", typeof(NotImplementedException), "Raw formats inherently have no information to gather")]
+        public void InfoFailsForMaster(string file, Type exception, string message)
         {
             var util = TestHelper.GetAudioUtility();
 
-            var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            var info = util.Info(source);
+            var source = TestHelper.GetAudioFile(file);
 
-            var expected = TestHelper.AudioDetails["Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
+            TestHelper.ExceptionMatches(
+                exception,
+                () =>
+                {
+                    util.Info(source);
+                },
+                message);
         }
 
-        [TestMethod]
-        public void InfoMp32Master()
-        {
-            var util = TestHelper.GetAudioUtility();
-
-            var source = TestHelper.GetAudioFile("A French Fiddle Speaks.mp3");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["A French Fiddle Speaks.mp3"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoOggMaster()
-        {
-            var util = TestHelper.GetAudioUtility();
-
-            var source = TestHelper.GetAudioFile("ocioncosta-lindamenina.ogg");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["ocioncosta-lindamenina.ogg"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWavMaster()
-        {
-            var util = TestHelper.GetAudioUtility();
-
-            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["Lewins Rail Kekkek.wav"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWav2Master()
-        {
-            var util = TestHelper.GetAudioUtility();
-
-            var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["FemaleKoala MaleKoala.wav"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWav3Master()
-        {
-            var util = TestHelper.GetAudioUtility();
-
-            var source = TestHelper.GetAudioFile("geckos.wav");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["geckos.wav"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWav4Master()
-        {
-            var util = TestHelper.GetAudioUtility();
-
-            var source = TestHelper.GetAudioFile("4channelsPureTones.wav");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["4channelsPureTones.wav"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWebmMaster()
-        {
-            var util = TestHelper.GetAudioUtility();
-
-            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.webm");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["Lewins Rail Kekkek.webm"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWmaMaster()
-        {
-            var util = TestHelper.GetAudioUtility();
-
-            var source = TestHelper.GetAudioFile("06Sibylla.wma");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["06Sibylla.wma"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWvMaster()
-        {
-            var util = TestHelper.GetAudioUtility();
-
-            var source = TestHelper.GetAudioFile("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWv2Master()
-        {
-            var util = TestHelper.GetAudioUtility();
-
-            var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoAsfShntool()
+        [DataTestMethod]
+        [DataRow("Lewins Rail Kekkek.wav")]
+        [DataRow("FemaleKoala MaleKoala.wav")]
+        [DataRow("geckos.wav")]
+        [DataRow("4channelsPureTones.wav")]
+        [DataRow("different_channels_tone.wav")]
+        public void InfoWorksShnTool(string file)
         {
             var util = TestHelper.GetAudioUtilityShntool();
 
-            var source = TestHelper.GetAudioFile("06Sibylla.asf");
+            var source = TestHelper.GetAudioFile(file);
+            var info = util.Info(source);
+
+            var expected = TestHelper.AudioDetails[file];
+
+            TestHelper.CheckAudioUtilityInfo(expected, info);
+        }
+
+        [DataTestMethod]
+        [DataRow("06Sibylla.asf")]
+        [DataRow("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3")]
+        [DataRow("A French Fiddle Speaks.mp3")]
+        [DataRow("ocioncosta-lindamenina.ogg")]
+        [DataRow("Lewins Rail Kekkek.webm")]
+        [DataRow("06Sibylla.wma")]
+        [DataRow("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv")]
+        [DataRow("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv")]
+        [DataRow("4channelsPureTones.flac")]
+        [DataRow("4channelsPureTones.ogg")]
+        [DataRow("4channelsPureTones.raw")]
+        [DataRow("4channelsPureTones.wv")]
+        [DataRow("different_channels_tone.mp3")]
+        [DataRow("4min test.mp3")]
+        public void InfoFailsForShnTool(string file)
+        {
+            var util = TestHelper.GetAudioUtilityShntool();
+
+            var source = TestHelper.GetAudioFile(file);
             TestHelper.ExceptionMatches<NotSupportedException>(
                 () => util.Info(source),
                 "cannot be processed.  Valid formats are: wav (audio/x-wav).");
         }
 
-        [TestMethod]
-        public void InfoMp3Shntool()
-        {
-            var util = TestHelper.GetAudioUtilityShntool();
-
-            var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wav (audio/x-wav).");
-        }
-
-        [TestMethod]
-        public void InfoMp32Shntool()
-        {
-            var util = TestHelper.GetAudioUtilityShntool();
-
-            var source = TestHelper.GetAudioFile("A French Fiddle Speaks.mp3");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wav (audio/x-wav).");
-        }
-
-        [TestMethod]
-        public void InfoOggShntool()
-        {
-            var util = TestHelper.GetAudioUtilityShntool();
-
-            var source = TestHelper.GetAudioFile("ocioncosta-lindamenina.ogg");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wav (audio/x-wav).");
-        }
-
-        [TestMethod]
-        public void InfoWavShntool()
-        {
-            var util = TestHelper.GetAudioUtilityShntool();
-
-            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["Lewins Rail Kekkek.wav"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWav2Shntool()
-        {
-            var util = TestHelper.GetAudioUtilityShntool();
-
-            var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["FemaleKoala MaleKoala.wav"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWav3Shntool()
-        {
-            var util = TestHelper.GetAudioUtilityShntool();
-
-            var source = TestHelper.GetAudioFile("geckos.wav");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["geckos.wav"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWav4Shntool()
-        {
-            var util = TestHelper.GetAudioUtilityShntool();
-
-            var source = TestHelper.GetAudioFile("4channelsPureTones.wav");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["4channelsPureTones.wav"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWebmShntool()
-        {
-            var util = TestHelper.GetAudioUtilityShntool();
-
-            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.webm");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wav (audio/x-wav).");
-        }
-
-        [TestMethod]
-        public void InfoWmaShntool()
-        {
-            var util = TestHelper.GetAudioUtilityShntool();
-
-            var source = TestHelper.GetAudioFile("06Sibylla.wma");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wav (audio/x-wav).");
-        }
-
-        [TestMethod]
-        public void InfoWvShntool()
-        {
-            var util = TestHelper.GetAudioUtilityShntool();
-
-            var source = TestHelper.GetAudioFile("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wav (audio/x-wav).");
-        }
-
-        [TestMethod]
-        public void InfoAsfSox()
+        [DataTestMethod]
+        [DataRow("A French Fiddle Speaks.mp3")]
+        [DataRow("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3")]
+        [DataRow("Lewins Rail Kekkek.wav")]
+        [DataRow("FemaleKoala MaleKoala.wav")]
+        [DataRow("geckos.wav")]
+        [DataRow("4channelsPureTones.wav")]
+        [DataRow("different_channels_tone.wav")]
+        [DataRow("different_channels_tone.mp3")]
+        [DataRow("4min test.mp3")]
+        public void InfoWorksSoxTool(string file)
         {
             var util = TestHelper.GetAudioUtilitySox();
 
-            var source = TestHelper.GetAudioFile("06Sibylla.asf");
+            var source = TestHelper.GetAudioFile(file);
+            var info = util.Info(source);
+
+            var expected = TestHelper.AudioDetails[file];
+
+            TestHelper.CheckAudioUtilityInfo(expected, info);
+        }
+
+        [TestMethod]
+        [DataRow("06Sibylla.asf")]
+        [DataRow("ocioncosta-lindamenina.ogg")]
+        [DataRow("Lewins Rail Kekkek.webm")]
+        [DataRow("06Sibylla.wma")]
+        [DataRow("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv")]
+        [DataRow("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv")]
+        [DataRow("4channelsPureTones.flac")]
+        [DataRow("4channelsPureTones.ogg")]
+        [DataRow("4channelsPureTones.raw")]
+        [DataRow("4channelsPureTones.wv")]
+        public void InfoFailsForSoxTool(string file)
+        {
+            var util = TestHelper.GetAudioUtilitySox();
+
+            var source = TestHelper.GetAudioFile(file);
             TestHelper.ExceptionMatches<NotSupportedException>(
                 () => util.Info(source),
                 "cannot be processed.  Valid formats are: wav (audio/x-wav), mp3 (audio/mpeg).");
         }
 
-        [TestMethod]
-        public void InfoMp3Sox()
+        [DataTestMethod]
+        [DataRow("06Sibylla.asf")]
+        [DataRow("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3")]
+        [DataRow("A French Fiddle Speaks.mp3")]
+        [DataRow("ocioncosta-lindamenina.ogg")]
+        [DataRow("Lewins Rail Kekkek.wav")]
+        [DataRow("FemaleKoala MaleKoala.wav")]
+        [DataRow("geckos.wav")]
+        [DataRow("Lewins Rail Kekkek.webm")]
+        [DataRow("06Sibylla.wma")]
+        [DataRow("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv")]
+        [DataRow("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv")]
+        [DataRow("4channelsPureTones.wav")]
+        [DataRow("4channelsPureTones.flac")]
+        [DataRow("4channelsPureTones.ogg")]
+        [DataRow("4channelsPureTones.wv")]
+        [DataRow("different_channels_tone.wav")]
+        [DataRow("different_channels_tone.mp3")]
+        [DataRow("4min test.mp3")]
+        public void InfoWorksForFfmpeg(string file)
         {
-            var util = TestHelper.GetAudioUtilitySox();
+            var util = TestHelper.GetAudioUtilityFfmpeg();
 
-            var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
+            var source = TestHelper.GetAudioFile(file);
             var info = util.Info(source);
 
-            var expected = TestHelper.AudioDetails["Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3"];
+            var expected = TestHelper.AudioDetails[file];
 
             TestHelper.CheckAudioUtilityInfo(expected, info);
         }
 
-        [TestMethod]
-        public void InfoMp32Sox()
+        [DataTestMethod]
+        [DataRow("4channelsPureTones.raw")]
+        public void InfoFailsForFfmpeg(string file)
         {
-            var util = TestHelper.GetAudioUtilitySox();
+            var util = TestHelper.GetAudioUtilityFfmpeg();
 
-            var source = TestHelper.GetAudioFile("A French Fiddle Speaks.mp3");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["A French Fiddle Speaks.mp3"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoOggSox()
-        {
-            var util = TestHelper.GetAudioUtilitySox();
-
-            var source = TestHelper.GetAudioFile("ocioncosta-lindamenina.ogg");
+            var source = TestHelper.GetAudioFile(file);
             TestHelper.ExceptionMatches<NotSupportedException>(
                 () => util.Info(source),
-                "cannot be processed.  Valid formats are: wav (audio/x-wav), mp3 (audio/mpeg).");
+                "cannot be processed.  Invalid formats are: raw (audio/pcm)");
         }
 
-        [TestMethod]
-        public void InfoWavSox()
+        [DataTestMethod]
+        [DataRow("06Sibylla.asf")]
+        [DataRow("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3")]
+        [DataRow("A French Fiddle Speaks.mp3")]
+        [DataRow("ocioncosta-lindamenina.ogg")]
+        [DataRow("Lewins Rail Kekkek.wav")]
+        [DataRow("FemaleKoala MaleKoala.wav")]
+        [DataRow("geckos.wav")]
+        [DataRow("Lewins Rail Kekkek.webm")]
+        [DataRow("06Sibylla.wma")]
+        [DataRow("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv")]
+        [DataRow("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv")]
+        [DataRow("4channelsPureTones.wav")]
+        [DataRow("4channelsPureTones.flac")]
+        [DataRow("4channelsPureTones.ogg")]
+        [DataRow("4channelsPureTones.wv")]
+        [DataRow("different_channels_tone.wav")]
+        [DataRow("different_channels_tone.mp3")]
+        [DataRow("4min test.mp3")]
+        public void InfoWorksForFfmpegRawPcm(string file)
         {
-            var util = TestHelper.GetAudioUtilitySox();
+            var util = TestHelper.GetAudioUtilityFfmpegRawPcm();
 
-            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["Lewins Rail Kekkek.wav"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWav2Sox()
-        {
-            var util = TestHelper.GetAudioUtilitySox();
-
-            var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["FemaleKoala MaleKoala.wav"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWav3Sox()
-        {
-            var util = TestHelper.GetAudioUtilitySox();
-
-            var source = TestHelper.GetAudioFile("geckos.wav");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["geckos.wav"];
-        }
-
-
-        [TestMethod]
-        public void InfoWav4Sox()
-        {
-            var util = TestHelper.GetAudioUtilitySox();
-
-            var source = TestHelper.GetAudioFile("4channelsPureTones.wav");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["4channelsPureTones.wav"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWebmSox()
-        {
-            var util = TestHelper.GetAudioUtilitySox();
-
-            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.webm");
+            var source = TestHelper.GetAudioFile(file);
             TestHelper.ExceptionMatches<NotSupportedException>(
                 () => util.Info(source),
-                "cannot be processed.  Valid formats are: wav (audio/x-wav), mp3 (audio/mpeg).");
+                "cannot be processed.  Valid formats are: raw (audio/pcm)");
         }
 
-        [TestMethod]
-        public void InfoWmaSox()
+        [DataTestMethod]
+        [DataRow("4channelsPureTones.raw")]
+        public void InfoFailsForFfmpegRawPcm(string file)
         {
-            var util = TestHelper.GetAudioUtilitySox();
+            var util = TestHelper.GetAudioUtilityFfmpegRawPcm();
 
-            var source = TestHelper.GetAudioFile("06Sibylla.wma");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wav (audio/x-wav), mp3 (audio/mpeg).");
-        }
-
-        [TestMethod]
-        public void InfoWvSox()
-        {
-            var util = TestHelper.GetAudioUtilitySox();
-
-            var source = TestHelper.GetAudioFile("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wav (audio/x-wav), mp3 (audio/mpeg).");
-        }
-
-        [TestMethod]
-        public void InfoWv2Sox()
-        {
-            var util = TestHelper.GetAudioUtilitySox();
-
-            var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wav (audio/x-wav), mp3 (audio/mpeg).");
-        }
-
-        [TestMethod]
-        public void InfoAsfFfmpeg()
-        {
-            var util = TestHelper.GetAudioUtilityFfmpeg();
-
-            var source = TestHelper.GetAudioFile("06Sibylla.asf");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["06Sibylla.asf"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoMp3Ffmpeg()
-        {
-            var util = TestHelper.GetAudioUtilityFfmpeg();
-
-            var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoMp32Ffmpeg()
-        {
-            var util = TestHelper.GetAudioUtilityFfmpeg();
-
-            var source = TestHelper.GetAudioFile("A French Fiddle Speaks.mp3");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["A French Fiddle Speaks.mp3"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoOggFfmpeg()
-        {
-            var util = TestHelper.GetAudioUtilityFfmpeg();
-
-            var source = TestHelper.GetAudioFile("ocioncosta-lindamenina.ogg");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["ocioncosta-lindamenina.ogg"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWavFfmpeg()
-        {
-            var util = TestHelper.GetAudioUtilityFfmpeg();
-
-            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["Lewins Rail Kekkek.wav"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWav2Ffmpeg()
-        {
-            var util = TestHelper.GetAudioUtilityFfmpeg();
-
-            var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["FemaleKoala MaleKoala.wav"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWav3Ffmpeg()
-        {
-            var util = TestHelper.GetAudioUtilityFfmpeg();
-
-            var source = TestHelper.GetAudioFile("geckos.wav");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["geckos.wav"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWav4Ffmpeg()
-        {
-            var util = TestHelper.GetAudioUtilityFfmpeg();
-
-            var source = TestHelper.GetAudioFile("4channelsPureTones.wav");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["4channelsPureTones.wav"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWebmFfmpeg()
-        {
-            var util = TestHelper.GetAudioUtilityFfmpeg();
-
-            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.webm");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["Lewins Rail Kekkek.webm"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWmaFfmpeg()
-        {
-            var util = TestHelper.GetAudioUtilityFfmpeg();
-
-            var source = TestHelper.GetAudioFile("06Sibylla.wma");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["06Sibylla.wma"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
-        }
-
-        [TestMethod]
-        public void InfoWvFfmpeg()
-        {
-            var util = TestHelper.GetAudioUtilityFfmpeg();
-
-            var source = TestHelper.GetAudioFile("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv");
-
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv"];
-
-        }
-
-        [TestMethod]
-        public void InfoAsfMp3Splt()
-        {
-            var util = TestHelper.GetAudioUtilityMp3Splt();
-
-            var source = TestHelper.GetAudioFile("06Sibylla.asf");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
-        }
-
-        [TestMethod]
-        public void InfoMp3Mp3Splt()
-        {
-            var util = TestHelper.GetAudioUtilityMp3Splt();
-
-            var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
+            var source = TestHelper.GetAudioFile(file);
             TestHelper.ExceptionMatches<NotImplementedException>(
                 () => util.Info(source),
-                "The method or operation is not implemented.");
-
-
-
+                "Raw formats inherently have no information to gather");
         }
 
-        [TestMethod]
-        public void InfoMp32Mp3Splt()
+        [DataTestMethod]
+        [DataRow("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3")]
+        [DataRow("A French Fiddle Speaks.mp3")]
+        [DataRow("different_channels_tone.mp3")]
+        [DataRow("4min test.mp3")]
+        public void InfoWorksForMp3Splt(string file)
         {
             var util = TestHelper.GetAudioUtilityMp3Splt();
 
-            var source = TestHelper.GetAudioFile("A French Fiddle Speaks.mp3");
+            var source = TestHelper.GetAudioFile(file);
             TestHelper.ExceptionMatches<NotImplementedException>(
                 () => util.Info(source),
                 "The method or operation is not implemented.");
         }
 
-        [TestMethod]
-        public void InfoOggMp3Splt()
+        [DataTestMethod]
+        [DataRow("06Sibylla.asf")]
+        [DataRow("4channelsPureTones.raw")]
+        [DataRow("Lewins Rail Kekkek.wav")]
+        [DataRow("FemaleKoala MaleKoala.wav")]
+        [DataRow("geckos.wav")]
+        [DataRow("Lewins Rail Kekkek.webm")]
+        [DataRow("ocioncosta-lindamenina.ogg")]
+        [DataRow("06Sibylla.wma")]
+        [DataRow("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv")]
+        [DataRow("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv")]
+        [DataRow("4channelsPureTones.wav")]
+        [DataRow("4channelsPureTones.flac")]
+        [DataRow("4channelsPureTones.ogg")]
+        [DataRow("4channelsPureTones.wv")]
+        [DataRow("different_channels_tone.wav")]
+        public void InfoFailsForMp3Splt(string file)
         {
             var util = TestHelper.GetAudioUtilityMp3Splt();
 
-            var source = TestHelper.GetAudioFile("ocioncosta-lindamenina.ogg");
+            var source = TestHelper.GetAudioFile(file);
             TestHelper.ExceptionMatches<NotSupportedException>(
                 () => util.Info(source),
                 "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
         }
 
-        [TestMethod]
-        public void InfoWavMp3Splt()
-        {
-            var util = TestHelper.GetAudioUtilityMp3Splt();
-
-            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
-        }
-
-        [TestMethod]
-        public void InfoWav2Mp3Splt()
-        {
-            var util = TestHelper.GetAudioUtilityMp3Splt();
-
-            var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
-        }
-
-        [TestMethod]
-        public void InfoWav3Mp3Splt()
-        {
-            var util = TestHelper.GetAudioUtilityMp3Splt();
-
-            var source = TestHelper.GetAudioFile("geckos.wav");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
-        }
-
-        [TestMethod]
-        public void InfoWav4Mp3Splt()
-        {
-            var util = TestHelper.GetAudioUtilityMp3Splt();
-
-            var source = TestHelper.GetAudioFile("4channelsPureTones.wav");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
-        }
-
-        [TestMethod]
-        public void InfoWebmMp3Splt()
-        {
-            var util = TestHelper.GetAudioUtilityMp3Splt();
-
-            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.webm");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
-        }
-
-        [TestMethod]
-        public void InfoWmaMp3Splt()
-        {
-            var util = TestHelper.GetAudioUtilityMp3Splt();
-
-            var source = TestHelper.GetAudioFile("06Sibylla.wma");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
-        }
-
-        [TestMethod]
-        public void InfoWvMp3Splt()
-        {
-            var util = TestHelper.GetAudioUtilityMp3Splt();
-
-            var source = TestHelper.GetAudioFile("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
-        }
-
-        [TestMethod]
-        public void InfoAsfWavunpack()
+        [DataTestMethod]
+        [DataRow("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv")]
+        [DataRow("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv")]
+        [DataRow("4channelsPureTones.wv")]
+        public void InfoWorksFoWavunpack(string file)
         {
             var util = TestHelper.GetAudioUtilityWavunpack();
 
-            var source = TestHelper.GetAudioFile("06Sibylla.asf");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
-
-        }
-
-        [TestMethod]
-        public void InfoMp3Wavunpack()
-        {
-            var util = TestHelper.GetAudioUtilityWavunpack();
-
-            var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
-
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
-        }
-
-        [TestMethod]
-        public void InfoMp32Wavunpack()
-        {
-            var util = TestHelper.GetAudioUtilityWavunpack();
-
-            var source = TestHelper.GetAudioFile("A French Fiddle Speaks.mp3");
-
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
-        }
-
-        [TestMethod]
-        public void InfoOggWavunpack()
-        {
-            var util = TestHelper.GetAudioUtilityWavunpack();
-
-            var source = TestHelper.GetAudioFile("ocioncosta-lindamenina.ogg");
-
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
-        }
-
-        [TestMethod]
-        public void InfoWavWavunpack()
-        {
-            var util = TestHelper.GetAudioUtilityWavunpack();
-
-            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
-        }
-
-        [TestMethod]
-        public void InfoWav2Wavunpack()
-        {
-            var util = TestHelper.GetAudioUtilityWavunpack();
-
-            var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
-        }
-
-        [TestMethod]
-        public void InfoWav3Wavunpack()
-        {
-            var util = TestHelper.GetAudioUtilityWavunpack();
-
-            var source = TestHelper.GetAudioFile("geckos.wav");
-
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
-        }
-
-        [TestMethod]
-        public void InfoWebmWavunpack()
-        {
-            var util = TestHelper.GetAudioUtilityWavunpack();
-
-            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.webm");
-
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
-        }
-
-        [TestMethod]
-        public void InfoWmaWavunpack()
-        {
-            var util = TestHelper.GetAudioUtilityWavunpack();
-
-            var source = TestHelper.GetAudioFile("06Sibylla.wma");
-
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () =>util.Info(source),
-                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
-        }
-
-        [TestMethod]
-        public void InfoWvWavunpack()
-        {
-            var util = TestHelper.GetAudioUtilityWavunpack();
-
-            var source = TestHelper.GetAudioFile("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv");
+            var source = TestHelper.GetAudioFile(file);
             var info = util.Info(source);
 
-            var expected = TestHelper.AudioDetails["Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv"];
+            var expected = TestHelper.AudioDetails[file];
 
             TestHelper.CheckAudioUtilityInfo(expected, info);
         }
 
-        [TestMethod]
-        public void InfoWv2Wavunpack()
+        [DataTestMethod]
+        [DataRow("06Sibylla.asf")]
+        [DataRow("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3")]
+        [DataRow("A French Fiddle Speaks.mp3")]
+        [DataRow("ocioncosta-lindamenina.ogg")]
+        [DataRow("Lewins Rail Kekkek.wav")]
+        [DataRow("FemaleKoala MaleKoala.wav")]
+        [DataRow("geckos.wav")]
+        [DataRow("Lewins Rail Kekkek.webm")]
+        [DataRow("06Sibylla.wma")]
+        [DataRow("4channelsPureTones.wav")]
+        [DataRow("4channelsPureTones.flac")]
+        [DataRow("4channelsPureTones.ogg")]
+        [DataRow("4channelsPureTones.raw")]
+        [DataRow("different_channels_tone.wav")]
+        [DataRow("different_channels_tone.mp3")]
+        [DataRow("4min test.mp3")]
+        public void InfoFailsForWavunpack(string file)
         {
             var util = TestHelper.GetAudioUtilityWavunpack();
 
-            var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            var info = util.Info(source);
-
-            var expected = TestHelper.AudioDetails["f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv"];
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
+            var source = TestHelper.GetAudioFile(file);
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => util.Info(source),
+                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
         }
     }
 }

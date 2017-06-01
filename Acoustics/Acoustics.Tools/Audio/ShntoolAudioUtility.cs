@@ -228,6 +228,12 @@
         protected override void CheckRequestValid(
             FileInfo source, string sourceMediaType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
         {
+            if (request.BitDepth.NotNull())
+            {
+                const string message = "Haven't added support for changing bit depth in" + nameof(ShntoolAudioUtility);
+                throw new BitDepthOperationNotImplemented(message);
+            }
+
             if (request.Channels.NotNull())
             {
                 throw new ChannelSelectionOperationNotImplemented("Shntool cannot modify the channels.");

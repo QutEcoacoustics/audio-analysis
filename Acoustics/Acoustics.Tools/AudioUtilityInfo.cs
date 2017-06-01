@@ -33,6 +33,10 @@
         /// <summary>
         /// Gets or sets the bits per second (bits/second).
         /// format:bit_rate.
+        /// NOTE: this is the format bit rate which includes the header.
+        /// For very short files this will be signficantly different from the theoretical bit rate
+        /// because averaging the value over many seconds will eventually smooth out the extra bits in
+        /// the first frame so that the average bit rate approaches the theoretical bit rate.
         /// </summary>
         public int? BitsPerSecond { get; set; }
 

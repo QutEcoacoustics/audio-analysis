@@ -1,4 +1,8 @@
-﻿namespace Acoustics.Tools.Audio
+﻿// <copyright file="FfmpegAudioUtility.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace Acoustics.Tools.Audio
 {
     using System;
     using System.Collections.Generic;
@@ -16,14 +20,11 @@
     /// </summary>
     public class FfmpegAudioUtility : AbstractAudioUtility, IAudioUtility
     {
-        private const string Format = "hh\\:mm\\:ss\\.fff";
-
-        private const string NotApplicable = "N/A";
-
         // -y answer yes to overwriting "Overwrite output files without asking."
         // BUG:050211: added -y arg
 
         // -i input file.  extension used to determine filetype.
+        internal const string ArgsSource = " -i \"{0}\" ";
 
         // -nostdin ‘-stdin’
         // Enable interaction on standard input. On by default unless standard input is used as an input.
@@ -34,7 +35,18 @@
         // ‘-stats (global)’ Print encoding progress/statistics.
         // It is on by default, to explicitly disable it you need to specify -nostats.
 
-        private const string ArgsOverwriteSource = " -nostdin -y -i \"{0}\" ";
+        internal const string ArgsOverwrite = " -nostdin -y ";
+
+        // -ac[:stream_specifier] channels (input/output,per-stream)
+        // Set the number of audio channels. For output streams it is set by default to the number of input audio channels.
+        // ‘-ac[:stream_specifier] integer (input/output,audio)
+        // set number of audio channels
+        // Note that ffmpeg integrates a default down-mix (and up-mix) system that should be preferred (see "-ac" option) unless you have very specific needs.
+        internal const string ArgsChannelCount = " -ac {0} ";
+
+        private const string Format = "hh\\:mm\\:ss\\.fff";
+
+        private const string NotApplicable = "N/A";
 
         // -ar Set the audio sampling frequency (default = 44100 Hz).
         // eg,  -ar 22050
@@ -46,7 +58,7 @@
         private const string ArgsBitRate = " -ab {0} ";
 
         // -t Restrict the transcoded/captured video sequence to the duration specified in seconds. hh:mm:ss[.xxx] syntax is also supported.
-        private const string ArgsDuration = "-t {0} ";
+        private const string ArgsDuration = " -t {0} ";
 
         // -ss Seek to given time position in seconds. hh:mm:ss[.xxx] syntax is also supported.
         private const string ArgsSeek = " -ss {0} ";
@@ -61,13 +73,6 @@
         // input_file_id, stream_specifier, and channel_id are indexes starting from 0.
         // assumes that the audio file has one stream.
         private const string ArgsMapChannel = " -map_channel 0.0.{0} ";
-
-        // -ac[:stream_specifier] channels (input/output,per-stream)
-        // Set the number of audio channels. For output streams it is set by default to the number of input audio channels.
-        // ‘-ac[:stream_specifier] integer (input/output,audio)
-        // set number of audio channels
-        // Note that ffmpeg integrates a default down-mix (and up-mix) system that should be preferred (see "-ac" option) unless you have very specific needs.
-        private const string ArgsChannelCount = " -ac {0} ";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FfmpegAudioUtility"/> class.
@@ -122,13 +127,7 @@
         /// <summary>
         /// Gets the invalid source media types.
         /// </summary>
-        protected override IEnumerable<string> InvalidSourceMediaTypes
-        {
-            get
-            {
-                return null;// new[] { MediaTypes.MediaTypeWavpack };
-            }
-        }
+        protected override IEnumerable<string> InvalidSourceMediaTypes => new[] { MediaTypes.MediaTypePcmRaw };
 
         /// <summary>
         /// Gets the valid output media types.
@@ -139,6 +138,23 @@
         /// Gets the invalid output media types.
         /// </summary>
         protected override IEnumerable<string> InvalidOutputMediaTypes => new[] { MediaTypes.MediaTypeWavpack };
+
+        internal static void FormatFfmpegOffsetArgs(AudioUtilityRequest request, StringBuilder args)
+        {
+            if (request.OffsetStart.HasValue && request.OffsetStart.Value > TimeSpan.Zero)
+            {
+                args.AppendFormat(ArgsSeek, FormatTimeSpan(request.OffsetStart.Value));
+            }
+
+            if (request.OffsetEnd.HasValue && request.OffsetEnd.Value > TimeSpan.Zero)
+            {
+                var duration = request.OffsetStart.HasValue
+                    ? FormatTimeSpan(request.OffsetEnd.Value - request.OffsetStart.Value)
+                    : FormatTimeSpan(request.OffsetEnd.Value - TimeSpan.Zero);
+
+                args.AppendFormat(ArgsDuration, duration);
+            }
+        }
 
         /// <summary>
         /// The construct modify args.
@@ -182,7 +198,7 @@
             }
 
             var args = new StringBuilder()
-                .AppendFormat(ArgsOverwriteSource, source.FullName);
+                .AppendFormat(ArgsOverwrite + ArgsSource, source.FullName);
 
             if (request.TargetSampleRate.HasValue)
             {
@@ -201,19 +217,7 @@
                 args.AppendFormat(ArgsMapChannel, request.Channels.Single() - 1);
             }
 
-            if (request.OffsetStart.HasValue && request.OffsetStart.Value > TimeSpan.Zero)
-            {
-                args.AppendFormat(ArgsSeek, FormatTimeSpan(request.OffsetStart.Value));
-            }
-
-            if (request.OffsetEnd.HasValue && request.OffsetEnd.Value > TimeSpan.Zero)
-            {
-                var duration = request.OffsetStart.HasValue
-                                   ? FormatTimeSpan(request.OffsetEnd.Value - request.OffsetStart.Value)
-                                   : FormatTimeSpan(request.OffsetEnd.Value - TimeSpan.Zero);
-
-                args.AppendFormat(ArgsDuration, duration);
-            }
+            FormatFfmpegOffsetArgs(request, args);
 
             args.AppendFormat(ArgsCodecOutput, codec, output.FullName);
 
@@ -283,7 +287,7 @@
             var keySampleRate = "STREAM sample_rate";
             var keyChannels = "STREAM channels";
             var keyBitsPerSample = "STREAM bits_per_sample";
-
+            var keyBitsPerRawSample = "STREAM bits_per_raw_sample";
 
             if (result.RawData.ContainsKey(keyDuration))
             {
@@ -321,7 +325,24 @@
 
             if (result.RawData.ContainsKey(keyBitsPerSample))
             {
-                result.BitsPerSample = this.ParseIntStringWithException(result.RawData[keyBitsPerSample], "ffmpeg.bitspersample", new string[] { NotApplicable });
+                result.BitsPerSample = this.ParseIntStringWithException(
+                    result.RawData[keyBitsPerSample],
+                    "ffmpeg.bitspersample",
+                    new[] { NotApplicable });
+
+                if (result.BitsPerSample < 1)
+                {
+                    result.BitsPerSample = null;
+                }
+
+                if (result.BitsPerSample == null)
+                {
+                    result.BitsPerSample = this.ParseIntStringWithException(
+                        result.RawData[keyBitsPerRawSample],
+                        "ffmpeg.bitsperrawsample",
+                        new[] { NotApplicable });
+                }
+
                 if (result.BitsPerSample < 1)
                 {
                     result.BitsPerSample = null;
@@ -355,6 +376,12 @@
         protected override void CheckRequestValid(FileInfo source, string sourceMimeType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
         {
             AudioUtilityInfo info = null;
+
+            if (request?.BitDepth != null)
+            {
+                const string message = "Haven't added support for changing bit depth in" + nameof(FfmpegAudioUtility);
+                throw new BitDepthOperationNotImplemented(message);
+            }
 
             // check that if output is mp3, the bit rate and sample rate are set valid amounts.
             if (request != null && outputMediaType == MediaTypes.MediaTypeMp3)
@@ -397,6 +424,32 @@
         }
 
         #endregion
+
+        // Non functional / not used / not tested - jkust an idea
+        private static string FormatChannelSelection(AudioUtilityRequest request)
+        {
+            throw new NotImplementedException();
+
+            // -map_channel [input_file_id.stream_specifier.channel_id|-1][:output_file_id.stream_specifier]
+            // each -map_channel corresponds to an **output** channel. order is important.
+            // -ac 1 is a general mix down to mono
+
+            var map = string.Empty;
+            if (request.Channels.NotNull())
+            {
+                // minus 1 because ffmpeg channel specification starts at zero but our specification starts at 1
+                map = string.Join(string.Empty, request.Channels.Select(c => $" -map_channel 0.0.{c - 1}"));
+            }
+
+            var mixDown = request.MixDownToMono.HasValue && request.MixDownToMono.Value;
+            if (mixDown)
+            {
+                // mix down to mono
+                map = " -ac 1";
+            }
+
+            return map;
+        }
 
         private static string FormatTimeSpan(TimeSpan value)
         {
@@ -652,6 +705,16 @@
                   formatName == "ogg" && formatLongName == "Ogg")
                 {
                     return MediaTypes.MediaTypeOggAudio;
+                }
+                else if (codecName == "flac" && codecLongName == "FLAC (Free Lossless Audio Codec)" &&
+                  formatName == "ogg" && formatLongName == "Ogg")
+                {
+                    return MediaTypes.MediaTypeOggAudio;
+                }
+                else if (codecName == "flac" && codecLongName == "FLAC (Free Lossless Audio Codec)" &&
+                  formatName == "flac" && formatLongName == "raw FLAC")
+                {
+                    return MediaTypes.MediaTypeFlacAudio1;
                 }
                 else if (codecName == "wavpack" && codecLongName == "WavPack" &&
                   formatName == "wv" && formatLongName == "WavPack")

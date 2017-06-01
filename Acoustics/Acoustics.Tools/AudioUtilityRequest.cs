@@ -1,11 +1,14 @@
-﻿namespace Acoustics.Tools
+﻿// <copyright file="AudioUtilityRequest.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace Acoustics.Tools
 {
     using System;
     using System.Globalization;
     using System.Linq;
-
-    using Shared;
     using Audio;
+    using Shared;
 
     /// <summary>
     /// Audio Utility request.
@@ -26,6 +29,11 @@
         /// Gets or sets the target Sample Rate in hertz.
         /// </summary>
         public int? TargetSampleRate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the bit depth. Valid values = 8, 16, 24, 32
+        /// </summary>
+        public int? BitDepth { get; set; }
 
         /// <summary>
         /// Gets or sets the target channel numbers (eg. 1,2,3,{1,2},{1,2,3,4} ... ).
@@ -179,6 +187,17 @@
                 return false;
             }*/
 
+            int[] validBitDepths = { 8, 16, 24, 32 };
+            if (this.BitDepth.NotNull() && !validBitDepths.Contains(this.BitDepth.Value))
+            {
+                if (throwExceptions)
+                {
+                    throw new ArgumentException("BitDepth number should be 8, 16, or 24, 32");
+                }
+
+                return false;
+            }
+
             return true;
         }
 
@@ -218,7 +237,6 @@
                 channels = " Using channel numbers " + string.Join(", ", this.Channels) + ".";
             }
 
-
             var sampleRate = this.TargetSampleRate.HasValue
                                  ? " Sample rate of " + this.TargetSampleRate.Value + " hertz."
                                  : string.Empty;
@@ -227,7 +245,9 @@
 
             var channel = this.Channels.NotNull() ? "Extract channels " + string.Join(", ", this.Channels) + "." : string.Empty;
 
-            return segment + channels + sampleRate + mixDown + channel;
+            var bitDepth = this.BitDepth.NotNull() ? " BitDepth is " + this.BitDepth.Value : string.Empty;
+
+            return segment + channels + sampleRate + mixDown + channel + bitDepth;
         }
 
         private bool ValidateBandPass(bool throwExceptions)
@@ -251,7 +271,6 @@
 
                 return false;
             }
-
 
             if (this.BandpassLow.HasValue || this.BandpassHigh.HasValue)
             {
@@ -308,8 +327,6 @@
             return true;
         }
     }
-
-
 
     public enum BandPassType
     {
