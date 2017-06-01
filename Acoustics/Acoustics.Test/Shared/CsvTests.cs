@@ -192,10 +192,7 @@ namespace Acoustics.Test.Shared
         public void TestTimeSpanRoundTrip()
         {
             int randomDataCount = 30;
-            int seed = Environment.TickCount;
-            var random = new Random(seed);
-
-            LoggedConsole.WriteWarnLine($"Random seed: {seed}");
+            var random = TestHelpers.Random.GetRandom();
 
             // we'll create 30 timespans, across 30 orders of magnitude to test all possible versions of timespan
             // encoding

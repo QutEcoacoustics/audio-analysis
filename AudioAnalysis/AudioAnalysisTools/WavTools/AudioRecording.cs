@@ -136,7 +136,7 @@ namespace AudioAnalysisTools.WavTools
             {
                 if (this.wavReader != null)
                 {
-                    return Math.Pow(0.5, this.wavReader.BitsPerSample - 1);
+                    return this.wavReader.Epsilon;
                 }
 
                 return -double.MaxValue;

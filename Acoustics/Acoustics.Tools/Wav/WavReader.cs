@@ -10,30 +10,34 @@
 namespace Acoustics.Tools.Wav
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
-    using Shared.Contracts;
+    using System.Text;
     using Audio;
+    using Shared.Contracts;
 
     /// <summary>
     /// Wave Reader.
     /// </summary>
     public class WavReader : IDisposable
     {
-        private double[] samples;
-
         /// <summary>
         /// Wav file extension.
         /// </summary>
         public const string WavFileExtension = ".wav";
 
+        private double[] samples;
+
         public WavReader(string path)
         {
             this.ParseData(File.ReadAllBytes(path));
-            this.Time = TimeSpan.FromSeconds((double)this.samples.Length / this.Channels / this.SampleRate);
+
+            this.SetDuration();
         }
 
-        public WavReader(FileInfo file) : this(file.FullName)
+        public WavReader(FileInfo file)
+            : this(file.FullName)
         {
         }
 
@@ -46,15 +50,16 @@ namespace Acoustics.Tools.Wav
         public WavReader(byte[] wavData)
         {
             this.ParseData(wavData);
-            long ticks = (long)(this.samples.Length / (double)this.SampleRate * 10000000);
-            this.Time = new TimeSpan(ticks);
+
+            this.SetDuration();
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WavReader"/> class.
+        /// This method assumes channel samples are interleaved!
         /// </summary>
         /// <param name="rawData">
-        /// The raw data.
+        /// The raw data with interleaved samples from each channel.
         /// </param>
         /// <param name="channels">
         /// The channels.
@@ -71,21 +76,70 @@ namespace Acoustics.Tools.Wav
             this.BitsPerSample = bitsPerSample;
             this.SampleRate = sampleRate;
             this.samples = rawData;
-            long ticks = (long)(rawData.Length / (double)channels / (double)sampleRate * 10000000);
-            this.Time = new TimeSpan(ticks);
+
+            this.SetDuration();
         }
 
-        #region Properties
-
         /// <summary>
-        /// Gets or sets Channels.
+        ///  Common Wave Compression Codes
+        /// Code            Description
+        /// -------------------------------------------
+        /// 0 (0x0000)      Unknown
+        /// 1 (0x0001)      PCM/uncompressed
+        /// 2 (0x0002)      Microsoft ADPCM
+        /// 3 (0x0003)      PCM data in IEEE floating-point format.
+        /// 6 (0x0006)      ITU G.711 a-law
+        /// 7 (0x0007)      ITU G.711 Âµ-law
+        /// 17 (0x0011)     IMA ADPCM
+        /// 20 (0x0016)     ITU G.723 ADPCM (Yamaha)
+        /// 49 (0x0031)     GSM 6.10
+        /// 64 (0x0040)     ITU G.721 ADPCM
+        /// 80 (0x0050)     MPEG
+        /// 65,534 (0xFFFE) WAVE_FORMAT_EXTENSIBLE
+        /// 65,535 (0xFFFF) Experimental
         /// </summary>
-        public int Channels { get; protected set; }
+        public enum WaveFormat : ushort
+        {
+            // ReSharper disable InconsistentNaming
+            WAVE_FORMAT_UNKNOWN = 0x0000,
 
-        /// <summary>
-        /// Gets or sets SampleRate.
-        /// </summary>
-        public int SampleRate { get; protected set; }
+            /// <summary>
+            /// PCM/uncompressed
+            /// </summary>
+            WAVE_FORMAT_PCM = 0x0001,
+
+            /// <summary>
+            /// Microsoft ADPCM
+            /// </summary>
+            WAVE_FORMAT_ADPCM = 0x0002,
+
+            /// <summary>
+            /// IEEE Float
+            /// </summary>
+            WAVE_FORMAT_IEEE_FLOAT = 0x0003,
+
+            /// <summary>
+            /// 8-bit ITU-T G.711 A-law
+            /// </summary>
+            WAVE_FORMAT_ALAW = 0x0006,
+
+            /// <summary>
+            /// 8-bit ITU-T G.711 µ-law
+            /// </summary>
+            WAVE_FORMAT_MULAW = 0x0007,
+
+            /// <summary>
+            /// Determined by SubFormat
+            /// </summary>
+            WAVE_FORMAT_EXTENSIBLE = 0xFFFE,
+
+            /// <summary>
+            /// Experimental
+            /// </summary>
+            WAVE_FORMAT_EXPERIMENTAL = 0xFFFF,
+
+            // ReSharper restore InconsistentNaming
+        }
 
         /// <summary>
         /// Gets or sets BitsPerSample as if were a single channel.
@@ -106,7 +160,37 @@ namespace Acoustics.Tools.Wav
         public int BlockCount => this.samples.Length / this.Channels;
 
         /// <summary>
-        /// Gets Samples.
+        /// Gets or sets Channels.
+        /// </summary>
+        public int Channels { get; protected set; }
+
+        /// <summary>
+        /// Gets the Epsilon (smallest distinguishable value) for this format.
+        /// </summary>
+        public double Epsilon => CalculateEpsilonForRescaledInteger(this.BitsPerSample);
+
+        /// <summary>
+        /// Gets the ExactDurationSeconds of the data.
+        /// This calculation should be accurate down to the nanosecond.
+        /// Note this is a new value and SHOULD NOT be used for any real calculations.
+        /// </summary>
+        public decimal ExactDurationSeconds { get; private set; }
+
+        public WaveFormat Format { get; private set; }
+
+        /// <summary>
+        /// Gets the total number of samples for each channel.
+        /// An alias for BlockCount
+        /// </summary>
+        public int Length => this.BlockCount;
+
+        /// <summary>
+        /// Gets or sets SampleRate.
+        /// </summary>
+        public int SampleRate { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets the samples.
         /// Have removed protection from setter to allow replacing samples with filtered signal.
         /// </summary>
         public double[] Samples
@@ -120,6 +204,7 @@ namespace Acoustics.Tools.Wav
 
                 return this.samples;
             }
+
             set
             {
                 this.samples = value;
@@ -127,29 +212,31 @@ namespace Acoustics.Tools.Wav
         }
 
         /// <summary>
-        /// Gets or sets Time.
+        /// Gets Time - the duration of the data.
+        /// NOTE: this value has been rounded to the nearest millisecond!
         /// </summary>
-        public TimeSpan Time { get; protected set; }
+        public TimeSpan Time { get; private set; }
 
         /// <summary>
-        /// Gets Epsilon.
+        /// Gets ValaidBitsPerSample. Only set when Format is WAVE_FORMAT_EXTENSIBLE.
+        /// wValidBitsPerSample specifies the precision of the sample in bits.
         /// </summary>
-        public double Epsilon => Math.Pow(0.5, this.BitsPerSample - 1);
+        public ushort? ValidBitsPerSample { get; private set; } = null;
 
         /// <summary>
         /// Gets or sets values from samples.
         /// </summary>
-        /// <param name="sample">The sample to operate on</param>
+        /// <param name="index">The sample to operate on</param>
         /// <param name="channel">The channel to operate on</param>
-        /// <returns></returns>
-        public double this[int sample, int channel]
+        /// <returns>A sanmple for the selected indec and channel</returns>
+        public double this[int index, int channel]
         {
             get
             {
                 Contract.Requires<IndexOutOfRangeException>(channel >= 0);
                 Contract.Requires<IndexOutOfRangeException>(channel < this.Channels);
 
-                int j = sample * this.Channels + channel;
+                int j = (index * this.Channels) + channel;
                 return this.samples[j];
             }
             set
@@ -157,12 +244,22 @@ namespace Acoustics.Tools.Wav
                 Contract.Requires<IndexOutOfRangeException>(channel >= 0);
                 Contract.Requires<IndexOutOfRangeException>(channel < this.Channels);
 
-                int j = sample * this.Channels + channel;
+                int j = (index * this.Channels) + channel;
                 this.samples[j] = value;
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Calculates the smallest possible respresentable value for an integer of size <c>bitDepth</c>
+        /// hat has been rescaled to the range [-1,1].
+        /// </summary>
+        /// <param name="bitDepth">The bitdepth of the integer the range was represented in before rescaling</param>
+        /// 
+        /// <returns>The smallest distinguishable value for data that was stored as an integer before rescaling</returns>
+        public static double CalculateEpsilonForRescaledInteger(int bitDepth)
+        {
+            return Math.Pow(0.5, bitDepth - 1);
+        }
 
         /// <summary>
         /// Subsamples audio.
@@ -256,7 +353,7 @@ namespace Acoustics.Tools.Wav
         /// The audio data.
         /// </param>
         /// <exception cref="NotSupportedException">
-        /// Bits per sample other than 8, 16 and 24.
+        /// Bits per sample other than 8, 16, 24 and 32.
         /// </exception>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
@@ -264,10 +361,14 @@ namespace Acoustics.Tools.Wav
         {
             if (data.Length < 12)
             {
-                throw new ArgumentException("Data is not long enough: " + data.Length, "data");
+                throw new ArgumentException("Data is not long enough: " + data.Length, nameof(data));
             }
 
             // http://technology.niagarac.on.ca/courses/ctec1631/WavFileFormat.html
+            // http://soundfile.sapp.org/doc/WaveFormat/
+            // http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
+            // https://msdn.microsoft.com/en-us/library/windows/hardware/ff538802(v=vs.85).aspx
+            // https://sourceforge.net/u/earnie/winapi/winapi/ci/winsup-w32api/tree/include/mmreg.h#l79
             if (!BitConverter.IsLittleEndian)
             {
                 throw new NotSupportedException("System.BitConverter expects little endian.");
@@ -318,44 +419,52 @@ namespace Acoustics.Tools.Wav
             int offset = 12;
             while (offset < data.Length)
             {
-                string ckID = new string(new char[] { (char)data[offset], (char)data[offset + 1], (char)data[offset + 2], (char)data[offset + 3] });
-                int cksize = (int)BitConverter.ToUInt32(data, offset + 4);
+                //string ckID = new string(new[]
+                //   { (char)data[offset], (char)data[offset + 1], (char)data[offset + 2], (char)data[offset + 3] });
+                string chunkId = Encoding.ASCII.GetString(data, offset, 4);
+
+                //Debug.Assert(ckID == chunkId, $"New chunk id string should match old {ckID} != {chunkId}");
+
+                // cksize
+                int chunkSize = (int)BitConverter.ToUInt32(data, offset + 4);
                 offset += 8;
 
-                switch (ckID)
+                switch (chunkId)
                 {
                     case "fmt ":
                         #region Format Chunk
                         {
                             // Length Of FORMAT Chunk (16, 18 or 40)
-                            int p = cksize - 16;
-                            if (p < 0)
+                            // Tag or start spot so we can reset offset at the end of the format chunk
+                            int formatOffset = offset;
+
+                            // Always PCM or Extensible (but even then still require sub-chunk to be PCM)
+                            var format = this.Format = (WaveFormat)BitConverter.ToUInt16(data, offset);
+                            //Debug.Assert(
+                            //    BitConverter.GetBytes(
+                            //        (ushort)format)[0] == data[offset] &&
+                            //        BitConverter.GetBytes((ushort)format)[1] == data[offset + 1],
+                            //    $"New format conversion 0x{format:X} should match old");
+
+                            if (format == WaveFormat.WAVE_FORMAT_PCM)
                             {
-                                throw new InvalidOperationException("Cannot parse WAV header. Error: fmt chunk.");
+                                // valid, simple PCM format - contine
+                            }
+                            else if (format == WaveFormat.WAVE_FORMAT_EXTENSIBLE)
+                            {
+                                // WAVE_FORMAT_EXTENSIBLE needed for advanced formats that have more than 2-channels
+                                // or a SampleSize/BitDepth greater than 16
+                                // We're still only going to allow basic PCM though
+
+                                // The check that the SubFormat is still WAVE_FORMAT_PCM occurs below
+                            }
+                            else
+                            {
+                                var message = "Cannot parse WAV header." +
+                                              $" Error: Only takes 0x0001 was: 0x{format:X}";
+                                throw new InvalidOperationException(message);
                             }
 
-                            // Common Wave Compression Codes
-                            // Code 	        Description
-                            // -------------------------------------------
-                            // 0 (0x0000) 	    Unknown
-                            // 1 (0x0001) 	    PCM/uncompressed
-                            // 2 (0x0002) 	    Microsoft ADPCM
-                            // 6 (0x0006) 	    ITU G.711 a-law
-                            // 7 (0x0007) 	    ITU G.711 Âµ-law
-                            // 17 (0x0011) 	    IMA ADPCM
-                            // 20 (0x0016) 	    ITU G.723 ADPCM (Yamaha)
-                            // 49 (0x0031) 	    GSM 6.10
-                            // 64 (0x0040) 	    ITU G.721 ADPCM
-                            // 80 (0x0050) 	    MPEG
-                            // 65,534 (0xFFFE)  WAVE_FORMAT_EXTENSIBLE
-                            // 65,535 (0xFFFF) 	Experimental
-
-                            // Always 0x01 - PCM
-                            if (data[offset] != 0x01 || data[offset + 1] != 0x00)
-                            {
-                                var format = BitConverter.ToUInt16(data, offset);
-                                throw new InvalidOperationException("Cannot parse WAV header. Error: Only takes 0x0001, was: 0x" + format.ToString("X"));
-                            }
                             offset += 2;
 
                             // Channel Numbers
@@ -375,11 +484,66 @@ namespace Acoustics.Tools.Wav
                             offset += 2;
 
                             // Bits Per Sample - as if was a single channel
+                            // NOTE: when format is WAVE_FORMAT_EXTENSIBLE the wBitsPerSample field is actually part of
+                            // the WAVEFORMATEX. However as near as I can tell they occur at the same offset... *shrug*
                             this.BitsPerSample = BitConverter.ToUInt16(data, offset);
                             offset += 2;
 
+                            // NOTE: not used
+                            // cbSize: Size of the extension (0 or 22)
+                            // Specifies the size, in bytes, of extra format information appended to the end of
+                            // the WAVEFORMATEX structure. This information can be used by non-PCM formats to
+                            // store extra attributes for the wFormatTag
+                            if (chunkSize > 16)
+                            {
+                                var extensionSize = BitConverter.ToUInt16(data, offset);
+                                offset += 2;
+                            }
+
+                            if (format == WaveFormat.WAVE_FORMAT_EXTENSIBLE)
+                            {
+                                var validLayout = this.BitsPerSample == 8 * this.BlockAlign / this.Channels;
+                                if (!validLayout)
+                                {
+                                    throw new InvalidOperationException("BitsPerSample must be a multiple of 8");
+                                }
+
+                                // wValidBitsPerSample specifies the precision of the sample in bits.
+                                // The value of this member should be less than or equal to the container size
+                                // specified in the Format.wBitsPerSample member.
+                                this.ValidBitsPerSample = BitConverter.ToUInt16(data, offset);
+                                offset += 2;
+
+                                // NOTE: not used
+                                // dwChannelMask
+                                // Specifies the assignment of channels in the multichannel stream to speaker 
+                                // positions. The encoding is the same as that used for the ActiveSpeakerPositions
+                                uint channelMask = BitConverter.ToUInt32(data, offset);
+                                offset += 4;
+
+                                // subformat
+                                // The first two bytes of the GUID form the sub-code specifying the data format code,
+                                // e.g. WAVE_FORMAT_PCM. The remaining 14 bytes contain a fixed string,
+                                // \x00\x00\x00\x00\x10\x00\x80\x00\x00\xAA\x00\x38\x9B\x71.
+                                // KSDATAFORMAT_SUBTYPE_PCM
+                                const string KS_PCM = "00-00-00-00-10-00-80-00-00-AA-00-38-9B-71";
+                                var subformat = (WaveFormat)BitConverter.ToUInt16(data, offset);
+                                offset += 2;
+                                var guidRemainder = BitConverter.ToString(data, offset, 14);
+                                offset += 14;
+
+                                if (subformat != WaveFormat.WAVE_FORMAT_PCM || guidRemainder != KS_PCM)
+                                {
+                                    var error = "The SubFormat of WAVE_FORMAT_EXTENSIBLE was not WAVE_FORMAT_PCM " +
+                                                $"Expected format 0x{WaveFormat.WAVE_FORMAT_PCM:X} and guid {KS_PCM}" +
+                                                $" got 0x{subformat:X} and {guidRemainder}";
+                                    throw new InvalidOperationException(error);
+                                }
+                            }
+
                             // skip the rest
-                            offset += p;
+                            //Debug.Assert(offset == formatOffset + chunkSize, "offset == formatOffset + p should be true if we counted all bytes correctly");
+                            offset = formatOffset + chunkSize;
                         }
                         #endregion
                         break;
@@ -387,7 +551,7 @@ namespace Acoustics.Tools.Wav
                     case "data":
                         #region Data Chunk
                         {
-                            int dataLength = cksize;
+                            int dataLength = chunkSize;
                             if (dataLength == 0 || dataLength > data.Length - offset)
                             {
                                 dataLength = data.Length - offset;
@@ -404,13 +568,18 @@ namespace Acoustics.Tools.Wav
                             this.samples = new double[numberOfSamples];
 
                             // http://soundfile.sapp.org/doc/WaveFormat/
+                            // http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Docs/riffmci.pdf
+
                             switch (this.BitsPerSample)
                             {
                                 case 8:
                                     for (int i = 0; i < numberOfSamples; i++, offset += bytesPerSample)
                                     {
+                                        // 8-bit values are not stored as 2-complements signed integers
+                                        // rather just are unsigned bytes
                                         this.samples[i] = data[offset] == 0xFF ? 1.0 : (data[offset] - 127) / 127.0;
                                     }
+
                                     break;
                                 case 16:
                                     for (int i = 0; i < numberOfSamples; i++, offset += bytesPerSample)
@@ -418,6 +587,29 @@ namespace Acoustics.Tools.Wav
                                         short sample = BitConverter.ToInt16(data, offset);
                                         this.samples[i] = sample == short.MinValue ? -1.0 : sample / (double)short.MaxValue; //32767.0
                                     }
+
+                                    break;
+                                case 24:
+                                    for (int i = 0; i < numberOfSamples; i++, offset += bytesPerSample)
+                                    {
+                                        // resize 24-bit bytes into a 32-bit int (most signficant bits win)
+                                        // shift all the way into the end to get the 2's-complement negative bit to work
+                                        // then shift back to the right 8 bits to get back to the desired range
+                                        int sample = (data[offset + 2] << 24 | data[offset + 1] << 16 | data[offset + 0] << 8) >> 8;
+
+                                        // int24.Min = -8_388_608 = 0x800000
+                                        // int24.Max = 8_388_607 = 0x7FFFFF
+                                        this.samples[i] = sample == -8_388_608 ? -1.0 : sample / 8_388_607D;
+                                    }
+
+                                    break;
+                                case 32:
+                                    for (int i = 0; i < numberOfSamples; i++, offset += bytesPerSample)
+                                    {
+                                        int sample = BitConverter.ToInt32(data, offset);
+                                        this.samples[i] = sample == int.MinValue ? -1.0 : sample / (double)int.MaxValue;
+                                    }
+
                                     break;
                                 default:
                                     throw new NotSupportedException("Bits per sample other than 8 and 16.");
@@ -433,10 +625,17 @@ namespace Acoustics.Tools.Wav
                         break;
 
                     default:
-                        offset += cksize;
+                        offset += chunkSize;
                         break;
                 }
             }
+        }
+
+        private void SetDuration()
+        {
+            decimal duration = (decimal)this.samples.Length / this.Channels / this.SampleRate;
+            this.Time = TimeSpan.FromSeconds((double)duration);
+            this.ExactDurationSeconds = duration;
         }
     }
 }

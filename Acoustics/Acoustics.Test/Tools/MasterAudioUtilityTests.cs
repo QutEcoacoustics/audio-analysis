@@ -129,6 +129,23 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         /// The converts wav to wav corectly.
         /// </summary>
         [TestMethod]
+        public void ConvertsRawToWavCorectly()
+        {
+            ConvertsCorrectly(
+                "4channelsPureTones.raw",
+                MediaTypes.MediaTypePcmRaw,
+                MediaTypes.MediaTypeWav,
+                TimeSpan.FromSeconds(60.00),
+                TimeSpan.FromMilliseconds(5),
+                new AudioUtilityRequest()
+                {
+                    BitDepth = 16,
+                    TargetSampleRate = 44100,
+                    Channels = new[] { 1, 2, 3, 4 },
+                });
+        }
+
+        [TestMethod]
         public void ConvertsWavToWavCorectly()
         {
             ConvertsCorrectly(
@@ -210,7 +227,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         [TestMethod]
         public void RejectsNotExistingFile()
         {
-            var combined = GetAudioUtility();
+            var combined = TestHelper.GetAudioUtility();
 
             TestHelper.ExceptionMatches<ArgumentException>(
                 () => combined.Info(PathHelper.GetTestAudioFile("does not exist.wav")),
@@ -310,7 +327,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         [TestMethod]
         public void TestSox()
         {
-            GetAudioUtility().Info(PathHelper.GetTestAudioFile("TorresianCrow.wav"));
+            TestHelper.GetAudioUtility().Info(PathHelper.GetTestAudioFile("TorresianCrow.wav"));
         }
 
         /// <summary>
@@ -363,20 +380,10 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
             return exe;
         }
 
-        public static IAudioUtility GetAudioUtility()
-        {
-            var ffmpeg = new FfmpegAudioUtility(new FileInfo(AppConfigHelper.FfmpegExe), new FileInfo(AppConfigHelper.FfprobeExe));
-            var mp3Splt = new Mp3SpltAudioUtility(new FileInfo(AppConfigHelper.Mp3SpltExe));
-            var wvunpack = new WavPackAudioUtility(new FileInfo(AppConfigHelper.WvunpackExe));
-            var sox = new SoxAudioUtility(new FileInfo(AppConfigHelper.SoxExe));
-
-            return new MasterAudioUtility(ffmpeg, mp3Splt, wvunpack, sox);
-        }
-
         private static void CalculatesCorrectDurationTest(
             string filename, string mediatype, TimeSpan expectedDuration, TimeSpan range)
         {
-            foreach (var combined in new[] { GetAudioUtility() })
+            foreach (var combined in new[] { TestHelper.GetAudioUtility() })
             {
                 var utilInfo = combined.Info(PathHelper.GetTestAudioFile(filename));
                 var info = GetDurationInfo(utilInfo);
@@ -398,27 +405,23 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         }
 
         private static void ConvertsCorrectly(
-            string filename, string mimetype, string outputMimeType, TimeSpan expectedDuration, TimeSpan maxVariance)
+            string filename, string mimetype, string outputMimeType, TimeSpan expectedDuration, TimeSpan maxVariance, AudioUtilityRequest customRequest = null)
         {
-            foreach (var util in new[] { GetAudioUtility() })
+            foreach (var util in new[] { TestHelper.GetAudioUtility() })
             {
                 var dir = PathHelper.GetTempDir();
-                var output =
-                    new FileInfo(
-                        Path.Combine(
-                            dir.FullName,
-                            Path.GetFileNameWithoutExtension(filename) + "_converted."
-                            + MediaTypes.GetExtension(outputMimeType)));
+                var output = dir.CombineFile(
+                    Path.GetFileNameWithoutExtension(filename) +
+                    "_converted." +
+                    MediaTypes.GetExtension(outputMimeType));
 
-                var audioUtilRequest = new AudioUtilityRequest { };
+                var audioUtilRequest = customRequest ?? new AudioUtilityRequest { };
 
                 var input = PathHelper.GetTestAudioFile(filename);
 
                 util.Modify(input, mimetype, output, outputMimeType, audioUtilRequest);
 
-                var utilInfoInput = util.Info(input);
                 var utilInfoOutput = util.Info(output);
-                var infoInput = GetDurationInfo(util.Info(input));
                 var infoOutput = GetDurationInfo(util.Info(output));
 
                 var compareResult = "Expected duration " + expectedDuration + " actual duration "
@@ -434,10 +437,10 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                     LoggedConsole.WriteLine(compareResult);
                 }
 
+                var message = $"{compareResult}.{Environment.NewLine}Info output: {infoOutput}";
                 Assert.IsTrue(
                     TestHelper.CompareTimeSpans(expectedDuration, utilInfoOutput.Duration.Value, maxVariance),
-                    compareResult + ". Info input: " + infoInput + "." + Environment.NewLine + "Info output: "
-                    + infoOutput);
+                    message);
 
                 var info = util.Info(output);
                 PathHelper.DeleteTempDir(dir);
@@ -450,7 +453,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                 }
                 */
 
-                if (info != null && info.RawData != null && info.RawData.ContainsKey("STREAM codec_long_name"))
+                if (info?.RawData != null && info.RawData.ContainsKey("STREAM codec_long_name"))
                 {
                     var codec = info.RawData["STREAM codec_long_name"];
 
@@ -503,7 +506,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         private static void SegmentsCorrectly(
             string filename, string mimetype, TimeSpan start, TimeSpan end, TimeSpan maxVariance)
         {
-            foreach (var util in new[] { GetAudioUtility()})
+            foreach (var util in new[] { TestHelper.GetAudioUtility()})
             {
                 var dir = PathHelper.GetTempDir();
 
@@ -561,7 +564,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
             var destExtension = MediaTypes.GetExtension(outputMimeType);
             var outputFilename = Path.GetFileNameWithoutExtension(filename) + "_modified." + destExtension;
 
-            foreach (var util in new[] { GetAudioUtility() })
+            foreach (var util in new[] { TestHelper.GetAudioUtility() })
             {
                 var dir = PathHelper.GetTempDir();
                 var output = new FileInfo(Path.Combine(dir.FullName, outputFilename));

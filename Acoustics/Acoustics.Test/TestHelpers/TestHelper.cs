@@ -3,10 +3,12 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using Acoustics.Tools.Wav;
@@ -20,7 +22,8 @@
     /// </summary>
     public static class TestHelper
     {
-        public static Dictionary<string, AudioUtilityInfo> AudioDetails = new Dictionary<string, AudioUtilityInfo> {
+        public static Dictionary<string, AudioUtilityInfo> AudioDetails = new Dictionary<string, AudioUtilityInfo>
+        {
                 {
                     "06Sibylla.asf",
                     new AudioUtilityInfo
@@ -28,7 +31,7 @@
                             Duration = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(49.6),
                             SampleRate = 44100,
                             ChannelCount = 2,
-                            BitsPerSecond = 128000,
+                            BitsPerSecond = 130000,
                             MediaType = MediaTypes.MediaTypeAsf,
                         }
                 },
@@ -72,7 +75,7 @@
                             Duration = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(0.245),
                             SampleRate = 22050,
                             ChannelCount = 1,
-                            BitsPerSecond = 352000,
+                            BitsPerSecond = 353000,
                             MediaType = MediaTypes.MediaTypeWav,
                             BitsPerSample = 16,
                         }
@@ -84,7 +87,7 @@
                             Duration = TimeSpan.FromMinutes(2) + TimeSpan.FromSeconds(0),
                             SampleRate = 22050,
                             ChannelCount = 1,
-                            BitsPerSecond = 352000,
+                            BitsPerSecond = 353000,
                             MediaType = MediaTypes.MediaTypeWav,
                             BitsPerSample = 16,
                         }
@@ -108,7 +111,7 @@
                             Duration = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(0.257),
                             SampleRate = 22050,
                             ChannelCount = 1,
-                            BitsPerSecond = 66000,
+                            BitsPerSecond = 66400,
                             MediaType = MediaTypes.MediaTypeWebMAudio,
                             //BitsPerSample = 32 // only relevant to PCM data
                         }
@@ -120,7 +123,7 @@
                             Duration = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(49.6),
                             SampleRate = 44100,
                             ChannelCount = 2,
-                            BitsPerSecond = 128000,
+                            BitsPerSecond = 130000,
                             MediaType = MediaTypes.MediaTypeWma,
                         }
                 },
@@ -133,7 +136,7 @@
                             ChannelCount = 1,
                             BitsPerSecond = 171000,
                             MediaType = MediaTypes.MediaTypeWavpack,
-                            BitsPerSample = 16,
+                            //BitsPerSample = 16,
                         }
                 },
                 {
@@ -145,7 +148,7 @@
                             ChannelCount = 1,
                             BitsPerSecond = 158000,
                             MediaType = MediaTypes.MediaTypeWavpack,
-                            BitsPerSample = 16,
+                            //BitsPerSample = 16,
                         }
                 },
                 {
@@ -168,7 +171,7 @@
                             SampleRate = 44100,
                             ChannelCount = 4,
                             BitsPerSecond = 693000,
-                            MediaType = MediaTypes.MediaTypeFlacAudio,
+                            MediaType = MediaTypes.MediaTypeFlacAudio1,
                             BitsPerSample = 16,
                         }
                 },
@@ -181,7 +184,7 @@
                             ChannelCount = 4,
                             BitsPerSecond = 125000,
                             MediaType = MediaTypes.MediaTypeMp3,
-                            BitsPerSample = 16,
+                            //BitsPerSample = 16,
                         }
                 },
                 {
@@ -191,10 +194,24 @@
                             Duration = TimeSpan.FromSeconds(60.0),
                             SampleRate = 44100,
                             ChannelCount = 4,
-                            BitsPerSecond = 693000,
+                            BitsPerSecond = 694989,
                             MediaType = MediaTypes.MediaTypeOggAudio,
                             BitsPerSample = 16,
                         }
+                },
+                {
+                    "4channelsPureTones.raw",
+                    new AudioUtilityInfo()
+                    {
+                        // We can't actually determine this information from the file (since it is headerless)
+                        // but this is the 'true' information of the file that generated this raw file.
+                        Duration = TimeSpan.FromSeconds(60.0),
+                        SampleRate = 44100,
+                        ChannelCount = 4,
+                        BitsPerSecond = 2822400,
+                        MediaType = MediaTypes.MediaTypeWav1,
+                        BitsPerSample = 16,
+                    }
                 },
                 {
                     "4channelsPureTones.wv",
@@ -205,7 +222,7 @@
                             ChannelCount = 4,
                             BitsPerSecond = 1275000,
                             MediaType = MediaTypes.MediaTypeWavpack,
-                            BitsPerSample = 16,
+                            //BitsPerSample = 16,
                         }
                 },
                 {
@@ -215,7 +232,7 @@
                             Duration = TimeSpan.FromSeconds(30.0),
                             SampleRate = 22050,
                             ChannelCount = 2,
-                            BitsPerSecond = 705000,
+                            BitsPerSecond = 706000,
                             MediaType = MediaTypes.MediaTypeWav,
                             BitsPerSample = 16,
                         }
@@ -227,9 +244,9 @@
                             Duration = TimeSpan.FromSeconds(30.07),
                             SampleRate = 22050,
                             ChannelCount = 2,
-                            BitsPerSecond = 64000,
+                            BitsPerSecond = 64100,
                             MediaType = MediaTypes.MediaTypeMp3,
-                            BitsPerSample = 16,
+                            //BitsPerSample = 16,
                         }
                 },
                 {
@@ -241,20 +258,10 @@
                             ChannelCount = 1,
                             BitsPerSecond = 128000,
                             MediaType = MediaTypes.MediaTypeMp3,
-                            BitsPerSample = 16,
+                            //BitsPerSample = 16,
                         }
                 },
             };
-
-        /// <summary>
-        /// Used by the Throws and DoesNotThrow methods.
-        /// </summary>
-        public delegate void ThrowsDelegate();
-
-        /// <summary>
-        /// Used by the Throws and DoesNotThrow methods.
-        /// </summary>
-        public delegate object ThrowsDelegateWithReturn();
 
         /// <summary>
         /// Tests that an exception is thrown, and that it is of
@@ -273,7 +280,9 @@
         /// <returns>
         /// Actual Exception, if any.
         /// </returns>
-        public static T ExceptionMatches<T>(ThrowsDelegate testCode, string expectedExceptionPartialString) where T : Exception
+        [DebuggerHidden]
+        public static T ExceptionMatches<T>(Action testCode, string expectedExceptionPartialString)
+            where T : Exception
         {
             try
             {
@@ -295,6 +304,45 @@
         /// the correct type, with the correct error message.
         /// If anything does not match what is supplied, the test fails.
         /// </summary>
+        /// <param name="exceptionType">
+        /// Expected Exception Type.
+        /// </param>
+        /// <param name="testCode">
+        /// The test code.
+        /// </param>
+        /// <param name="expectedExceptionPartialString">
+        /// The expected exception partial string.
+        /// </param>
+        /// <returns>
+        /// Actual Exception, if any.
+        /// </returns>
+        public static object ExceptionMatches(Type exceptionType, Action testCode, string expectedExceptionPartialString)
+        {
+            Contract.Requires<ArgumentException>(
+                exceptionType.IsSubclassOf(typeof(Exception)) || exceptionType == typeof(Exception),
+                "must be a TypeInfo for an Exception type",
+                nameof(exceptionType));
+
+            try
+            {
+                testCode();
+            }
+            catch (Exception exception)
+            {
+                Check(exception, exceptionType, expectedExceptionPartialString);
+
+                return exception;
+            }
+
+            Assert.Fail("Did not throw " + exceptionType);
+            return null;
+        }
+
+        /// <summary>
+        /// Tests that an exception is thrown, and that it is of
+        /// the correct type, with the correct error message.
+        /// If anything does not match what is supplied, the test fails.
+        /// </summary>
         /// <param name="testCode">
         /// The test code.
         /// </param>
@@ -307,7 +355,8 @@
         /// <returns>
         /// Actual Exception, if any.
         /// </returns>
-        public static T ExceptionMatches<T>(ThrowsDelegateWithReturn testCode, string expectedExceptionPartialString) where T : Exception
+        public static T ExceptionMatches<T>(Func<object> testCode, string expectedExceptionPartialString)
+            where T : Exception
         {
             try
             {
@@ -450,17 +499,20 @@
 
             if (expected.BitsPerSample.HasValue && !actual.BitsPerSample.HasValue)
             {
-                Assert.Fail("BitsPerSample");
+                Assert.Fail($"BitsPerSample failed. Expected: {expected.BitsPerSample}, actual: {actual.BitsPerSample}");
             }
 
             if (expected.BitsPerSecond.HasValue && actual.BitsPerSecond.HasValue)
             {
-                Assert.AreEqual(expected.BitsPerSecond.Value, actual.BitsPerSecond.Value, 1700);
+                // Sox only reports three decimal places and rounds other things
+                var actualBps = (int)((double)actual.BitsPerSecond.Value).RoundToSignficantDigits(3);
+                var expectedBps = (int)((double)expected.BitsPerSecond.Value).RoundToSignficantDigits(3);
+                Assert.AreEqual(expectedBps, actualBps, 0);
             }
 
             if (expected.BitsPerSecond.HasValue && !actual.BitsPerSecond.HasValue)
             {
-                Assert.Fail("BitsPerSecond");
+                Assert.Fail($"BitsPerSecond failed. Expected: {expected.BitsPerSecond}, actual: {actual.BitsPerSecond}");
             }
 
             Assert.IsTrue(!string.IsNullOrWhiteSpace(expected.MediaType));
@@ -487,12 +539,15 @@
 
         public static IAudioUtility GetAudioUtility()
         {
-            var ffmpeg = new FfmpegAudioUtility(new FileInfo(AppConfigHelper.FfmpegExe),new FileInfo( AppConfigHelper.FfprobeExe));
+            var ffmpegExe = new FileInfo(AppConfigHelper.FfmpegExe);
+
+            var ffmpeg = new FfmpegAudioUtility(ffmpegExe, new FileInfo( AppConfigHelper.FfprobeExe));
+            var ffmpegRawPcm = new FfmpegRawPcmAudioUtility(ffmpegExe);
             var mp3Splt = new Mp3SpltAudioUtility(new FileInfo(AppConfigHelper.Mp3SpltExe));
             var wvunpack = new WavPackAudioUtility(new FileInfo(AppConfigHelper.WvunpackExe));
             var sox = new SoxAudioUtility(new FileInfo(AppConfigHelper.SoxExe));
 
-            return new MasterAudioUtility(ffmpeg, mp3Splt, wvunpack, sox);
+            return new MasterAudioUtility(ffmpeg, mp3Splt, wvunpack, sox, ffmpegRawPcm);
         }
 
         public static IAudioUtility GetAudioUtilitySox()
@@ -510,6 +565,15 @@
             var ffprobeExe = PathHelper.GetExe(AppConfigHelper.FfprobeExe);
 
             var ffmpeg = new FfmpegAudioUtility(ffmpegExe, ffprobeExe);
+
+            return ffmpeg;
+        }
+
+        public static IAudioUtility GetAudioUtilityFfmpegRawPcm()
+        {
+            var ffmpegExe = PathHelper.GetExe(AppConfigHelper.FfmpegExe);
+
+            var ffmpeg = new FfmpegRawPcmAudioUtility(ffmpegExe);
 
             return ffmpeg;
         }
@@ -582,7 +646,11 @@
         public static void WavReaderAssertions(WavReader reader, AudioUtilityInfo info)
         {
             BaseTest.Assert.AreEqual(info.ChannelCount.Value, reader.Channels);
-            BaseTest.Assert.AreEqual(info.BitsPerSample.Value, reader.BitsPerSample);
+            if (info.BitsPerSample.HasValue)
+            {
+                BaseTest.Assert.AreEqual(info.BitsPerSample.Value, reader.BitsPerSample);
+            }
+
             BaseTest.Assert.AreEqual(info.SampleRate.Value, reader.SampleRate);
             BaseTest.Assert.AreEqual(info.Duration.Value.TotalMilliseconds, reader.Time.TotalMilliseconds, 150);
             BaseTest.Assert.AreEqual(
@@ -593,19 +661,29 @@
 
         private static void Check(Exception thrownException, Type expectedException, string expectedExceptionPartialString)
         {
+            string FormatException(Exception actual)
+            {
+                var type = actual.GetType();
+                var message = actual.Message;
+                var stack = actual.StackTrace;
+                return $"{type}: {message}\n{stack}";
+            }
+
+            var error = $"Exception type did not match expected type. Expected: {expectedException}" +
+                    " Actual: " + FormatException(thrownException);
             Assert.AreEqual(
                 expectedException,
                 thrownException.GetType(),
-                $"Exception type did not match expected type. Expected: {expectedException}",
-                " Actual: " + thrownException.GetType());
+                error);
 
             Assert.IsFalse(
                 string.IsNullOrWhiteSpace(expectedExceptionPartialString),
                 "Parameter 'expectedExceptionPartialString' was null, empty or white space.");
 
-            Assert.IsTrue(
-                thrownException.ToString().Contains(expectedExceptionPartialString),
-                $"Exception did not contain expected exception partial string.  Expected: {expectedExceptionPartialString} Actual: {thrownException}");
+            StringAssert.Contains(
+                thrownException.Message,
+                expectedExceptionPartialString,
+                $"\nException did not contain expected actual partial string.\nExpected: {expectedExceptionPartialString}");
         }
     }
 }

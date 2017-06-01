@@ -36,7 +36,7 @@ namespace System
             }
 
             decimal scale = (decimal)Math.Pow(10, Math.Floor(Math.Log10((double)Math.Abs(dec))) + 1);
-            return (double)(scale * Math.Round(dec / scale, digits));
+            return (double)(scale * Math.Round(dec / scale, digits, MidpointRounding.AwayFromZero));
         }
     }
 }

@@ -182,8 +182,11 @@
     <Compile Include="Audio\AbstractAudioUtility.cs" />
     <Compile Include="Audio\AbstractSpectrogramUtility.cs" />
     <Compile Include="Audio\AbstractUtility.cs" />
+    <Compile Include="Audio\BitDepthOperationNotImplemented.cs" />
+    <Compile Include="Audio\ChannelNotAvailableException.cs" />
     <Compile Include="Audio\ChannelSelectionOperationNotImplemented.cs" />
     <Compile Include="Audio\CustomSpectrogramUtility.cs" />
+    <Compile Include="Audio\FfmpegRawPcmAudioUtility.cs" />
     <Compile Include="Audio\ISpectrogramUtility.cs" />
     <Compile Include="Audio\MasterAudioUtility.cs" />
     <Compile Include="Audio\FfmpegAudioUtility.cs" />

@@ -669,7 +669,7 @@
                 SampleRate = 17460,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 280000,
+                BitsPerSecond = 279000,
             };
 
             var request = new AudioUtilityRequest

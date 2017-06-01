@@ -36,6 +36,27 @@ namespace Acoustics.Shared.Contracts
 
         /// <summary>
         /// Require the supplied boolean to be true, otherwise throw an exception.
+        /// </summary>
+        /// <typeparam name="T">The type of exception to throw</typeparam>
+        /// <param name="result">Whether or not the exception should be thrown</param>
+        /// <param name="args">The arguments to supply to the excpetion's constructor</param>
+        [DebuggerHidden]
+        public static void Requires<T>(bool result, params object[] args)
+            where T : Exception
+        {
+            if (!result)
+            {
+                if (args.IsNullOrEmpty())
+                {
+                    args = new object[] { "Precondition failed" };
+                }
+
+                throw (T)Activator.CreateInstance(typeof(T), args);
+            }
+        }
+
+        /// <summary>
+        /// Require the supplied boolean to be true, otherwise throw an exception.
         /// This is a mirror of <see cref="Requires{T}"/> and behaves identically.
         /// If you wish to check a condition at the end of your method, move the <see cref="Ensures{T}"/> call there.
         /// </summary>

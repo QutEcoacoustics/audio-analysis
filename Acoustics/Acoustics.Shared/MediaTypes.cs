@@ -6,6 +6,7 @@
 
 namespace Acoustics.Shared
 {
+    using System;
     using System.Collections.Generic;
     using System.Drawing.Imaging;
     using System.IO;
@@ -213,6 +214,11 @@ namespace Acoustics.Shared
         public const string ExtOggAudio = "oga";
 
         /// <summary>
+        /// The ext pcm.
+        /// </summary>
+        public const string ExtPcm = "pcm";
+
+        /// <summary>
         /// The ext pjpeg.
         /// </summary>
         public const string ExtPjpeg = "pjpeg";
@@ -226,6 +232,11 @@ namespace Acoustics.Shared
         /// The ext ra.
         /// </summary>
         public const string ExtRa = "ra";
+
+        /// <summary>
+        /// The ext raw.
+        /// </summary>
+        public const string ExtRaw = "raw";
 
         /// <summary>
         /// The ext rm.
@@ -308,6 +319,7 @@ namespace Acoustics.Shared
         /// <summary>
         /// The media type asf.
         /// </summary>
+        [Obsolete("All 'x-' prefixes have been deprecated by https://tools.ietf.org/html/rfc6648")]
         public const string MediaTypeAsf = "video/x-ms-asf";
 
         /// <summary>
@@ -373,6 +385,7 @@ namespace Acoustics.Shared
         /// <summary>
         /// The media type json 1 : application/x-javascript.
         /// </summary>
+        [Obsolete("All 'x-' prefixes have been deprecated by https://tools.ietf.org/html/rfc6648")]
         public const string MediaTypeJson1 = "application/x-javascript";
 
         /// <summary>
@@ -383,11 +396,13 @@ namespace Acoustics.Shared
         /// <summary>
         /// The media type json 3.
         /// </summary>
+        [Obsolete("All 'x-' prefixes have been deprecated by https://tools.ietf.org/html/rfc6648")]
         public const string MediaTypeJson3 = "text/x-javascript";
 
         /// <summary>
         /// The media type json 4: text/x-json.
         /// </summary>
+        [Obsolete("All 'x-' prefixes have been deprecated by https://tools.ietf.org/html/rfc6648")]
         public const string MediaTypeJson4 = "text/x-json";
 
         /// <summary>
@@ -420,11 +435,12 @@ namespace Acoustics.Shared
         /// The media type ogg audio.
         /// </summary>
         public const string MediaTypeOggAudio = "audio/ogg";
-                            // : Ogg Vorbis, Speex, Flac and other audio; Defined in RFC 5334
+        // : Ogg Vorbis, Speex, Flac and other audio; Defined in RFC 5334
 
         /// <summary>
         /// The media type for flac audio.
         /// </summary>
+        [Obsolete("All 'x-' prefixes have been deprecated by https://tools.ietf.org/html/rfc6648")]
         public const string MediaTypeFlacAudio = "audio/x-flac";
 
         /// <summary>
@@ -442,6 +458,11 @@ namespace Acoustics.Shared
         /// The media type pcm.
         /// </summary>
         public const string MediaTypePcm = "audio/L16";
+
+        /// <summary>
+        /// The media type for PCM - paritcularly raw bytes in a file with no header.
+        /// </summary>
+        public const string MediaTypePcmRaw = "audio/pcm";
 
         /// <summary>
         /// The media type pjpeg.
@@ -496,6 +517,7 @@ namespace Acoustics.Shared
         /// <summary>
         /// The media type wav.
         /// </summary>
+        [Obsolete("All 'x-' prefixes have been deprecated by https://tools.ietf.org/html/rfc6648")]
         public const string MediaTypeWav = "audio/x-wav";
 
         /// <summary>
@@ -511,6 +533,7 @@ namespace Acoustics.Shared
         /// <summary>
         /// The media type wavpack.
         /// </summary>
+        [Obsolete("All 'x-' prefixes have been deprecated by https://tools.ietf.org/html/rfc6648")]
         public const string MediaTypeWavpack = "audio/x-wv";
 
         /// <summary>
@@ -526,11 +549,13 @@ namespace Acoustics.Shared
         /// <summary>
         /// The media type wma.
         /// </summary>
+        [Obsolete("All 'x-' prefixes have been deprecated by https://tools.ietf.org/html/rfc6648")]
         public const string MediaTypeWma = "audio/x-ms-wma"; // : Windows Media Audio; Documented in Microsoft KB 288102
 
         /// <summary>
         /// The media type wmv.
         /// </summary>
+        [Obsolete("All 'x-' prefixes have been deprecated by https://tools.ietf.org/html/rfc6648")]
         public const string MediaTypeWmv = "video/x-ms-wmv"; // : Windows Media Video; Documented in Microsoft KB 288102
 
         /// <summary>
@@ -595,7 +620,7 @@ namespace Acoustics.Shared
                     {
                        MediaType = MediaTypeWavpack, Extension = ExtWavpack, Group = MediaTypeGroup.Audio
                     },
-                new MediaTypeExtGroup { MediaType = MediaTypePcm, Extension = ExtWav, Group = MediaTypeGroup.Audio },
+                new MediaTypeExtGroup { MediaType = MediaTypePcmRaw, Extension = ExtRaw, Group = MediaTypeGroup.Audio },
                 new MediaTypeExtGroup { MediaType = MediaTypeAsf, Extension = ExtAsf, Group = MediaTypeGroup.Video },
                 new MediaTypeExtGroup { MediaType = MediaTypeAsf1, Extension = ExtAsf, Group = MediaTypeGroup.Video },
                 new MediaTypeExtGroup { MediaType = MediaTypeMpg, Extension = ExtMpg, Group = MediaTypeGroup.Video },
