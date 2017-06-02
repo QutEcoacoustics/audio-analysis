@@ -22,7 +22,18 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// This is a _slow_ but reliable way to write a Wav file by using ffmpeg to do all
         /// the hard work.
-        /// This method assumes all signal values are in [0, 1]
+        /// This method assumes all signal values are in [-1, 1]
+        /// </summary>
+        /// <remarks>This overload assumes a mono signal is supplied in a WavReader</remarks>
+        public static void WriteWavFileViaFfmpeg(FileInfo destination, WavReader reader)
+        {
+            WriteWavFileViaFfmpeg(destination, new[] { reader.Samples }, reader.BitsPerSample, reader.SampleRate);
+        }
+
+        /// <summary>
+        /// This is a _slow_ but reliable way to write a Wav file by using ffmpeg to do all
+        /// the hard work.
+        /// This method assumes all signal values are in [-1, 1]
         /// </summary>
         public static void WriteWavFileViaFfmpeg(
             FileInfo destination,

@@ -258,12 +258,12 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             // TEST the SPECTRAL INDICES
             var resourcesDir = PathHelper.ResolveAssetPath("Indices");
             var expectedSpectrumFile = new FileInfo(resourcesDir + "\\BGN_ICD20.bin");
-            // Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
+            //Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.BGN);
 
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\CVR_ICD20.bin");
-            // Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
+            //Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.CVR);
 
@@ -273,7 +273,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Test index calculation when the Herz FreqScaleType = Octave.
+        /// Test index calculation when the Hertz FreqScaleType = Octave.
         /// Only test the BGN spectral index as reasonable to assume that the rest will work if ACI works.
         /// </summary>
         [TestMethod]
@@ -285,12 +285,13 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
             var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics);
 
-            // writing to disk did not work
-            //string path = @"C:\SensorNetworks\WavFiles\temp\tempfile.wav";
-            //WavWriter.Write16bitWavFile(wr.Samples, smapleRateOfOriginalRecording, path);
+            // NOTE: writing the WAV file noe works, but it seems it is not necessary to write a file at all! This test
+            // passes fine without writing a file!
+            //var generatedFile = this.outputDirectory.CombineFile("generated_high_sample_rate.wav");
+            //WavWriter.WriteWavFileViaFfmpeg(generatedFile, recording.WavReader);
 
             // cut out one minute from 30 - 90 seconds and incorporate into AudioRecording
-            int startSample = sampleRate * 30; // start two minutews into recording
+            int startSample = sampleRate * 30; // start two minutes into recording
             int subsegmentSampleCount = sampleRate * 60; // get 60 seconds
             double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, startSample, subsegmentSampleCount);
             var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
@@ -327,12 +328,12 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             var resourcesDir = PathHelper.ResolveAssetPath("Indices");
             var expectedSpectrumFile = new FileInfo(resourcesDir + "\\BGN_OctaveScale.bin");
-            // Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
+            //Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.BGN);
 
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\CVR_OctaveScale.bin");
-            // Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
+            //Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.CVR);
 
