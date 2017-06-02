@@ -93,9 +93,9 @@ namespace AudioAnalysisTools.DSP
                     throw new InvalidOperationException();
             }
 
+            // dump the raw bytes in the file
             using (var writer = new BinaryWriter(file))
             {
-                // dump the raw bytes in the file
                 for (int i = 0; i < signalLength; i++)
                 {
                     for (int c = 0; c < channels; c++)
@@ -112,7 +112,7 @@ namespace AudioAnalysisTools.DSP
                             value = -1.0;
                         }
 
-                        // bit depth of 8 is special - unsigned ints should be stored instead
+                        // bit depth of 8 is special - unsigned integers should be stored instead
                         if (bitDepth == 8)
                         {
                             byte sample8;
@@ -145,7 +145,7 @@ namespace AudioAnalysisTools.DSP
                         var bytes = BitConverter.GetBytes(sample);
 
                         // finally write the correct number of bytes to the stream
-                        // the magic here is only writing the most signficant bytes allows us automatic conversion
+                        // the magic here is only writing the most significant bytes allows us automatic conversion
                         // to 24 and 16 bit sample sizes
                         writer.Write(bytes, 4 - bytesPerSample, bytesPerSample);
                     }

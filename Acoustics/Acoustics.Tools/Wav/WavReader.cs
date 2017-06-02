@@ -218,7 +218,7 @@ namespace Acoustics.Tools.Wav
         public TimeSpan Time { get; private set; }
 
         /// <summary>
-        /// Gets ValaidBitsPerSample. Only set when Format is WAVE_FORMAT_EXTENSIBLE.
+        /// Gets ValidBitsPerSample. Only set when Format is WAVE_FORMAT_EXTENSIBLE.
         /// wValidBitsPerSample specifies the precision of the sample in bits.
         /// </summary>
         public ushort? ValidBitsPerSample { get; private set; } = null;
@@ -228,7 +228,7 @@ namespace Acoustics.Tools.Wav
         /// </summary>
         /// <param name="index">The sample to operate on</param>
         /// <param name="channel">The channel to operate on</param>
-        /// <returns>A sanmple for the selected indec and channel</returns>
+        /// <returns>A sample for the selected index and channel</returns>
         public double this[int index, int channel]
         {
             get
@@ -239,6 +239,7 @@ namespace Acoustics.Tools.Wav
                 int j = (index * this.Channels) + channel;
                 return this.samples[j];
             }
+
             set
             {
                 Contract.Requires<IndexOutOfRangeException>(channel >= 0);
@@ -250,11 +251,10 @@ namespace Acoustics.Tools.Wav
         }
 
         /// <summary>
-        /// Calculates the smallest possible respresentable value for an integer of size <c>bitDepth</c>
+        /// Calculates the smallest possible representable value for an integer of size <c>bitDepth</c>
         /// hat has been rescaled to the range [-1,1].
         /// </summary>
-        /// <param name="bitDepth">The bitdepth of the integer the range was represented in before rescaling</param>
-        /// 
+        /// <param name="bitDepth">The bit depth of the integer the range was represented in before rescaling</param>
         /// <returns>The smallest distinguishable value for data that was stored as an integer before rescaling</returns>
         public static double CalculateEpsilonForRescaledInteger(int bitDepth)
         {
@@ -262,7 +262,7 @@ namespace Acoustics.Tools.Wav
         }
 
         /// <summary>
-        /// Subsamples audio.
+        /// Sub-samples audio.
         /// </summary>
         /// <param name="interval">
         /// Keeps every <paramref name="interval"/> sample.
@@ -355,8 +355,8 @@ namespace Acoustics.Tools.Wav
         /// <exception cref="NotSupportedException">
         /// Bits per sample other than 8, 16, 24 and 32.
         /// </exception>
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="ArgumentException">Thrown if the data provided is less than 12 bytes</exception>
+        /// <exception cref="InvalidOperationException">For various unsupported or erroneous WAV formats</exception>
         private void ParseData(byte[] data)
         {
             if (data.Length < 12)
@@ -419,11 +419,8 @@ namespace Acoustics.Tools.Wav
             int offset = 12;
             while (offset < data.Length)
             {
-                //string ckID = new string(new[]
-                //   { (char)data[offset], (char)data[offset + 1], (char)data[offset + 2], (char)data[offset + 3] });
+                // ckid
                 string chunkId = Encoding.ASCII.GetString(data, offset, 4);
-
-                //Debug.Assert(ckID == chunkId, $"New chunk id string should match old {ckID} != {chunkId}");
 
                 // cksize
                 int chunkSize = (int)BitConverter.ToUInt32(data, offset + 4);
@@ -440,15 +437,11 @@ namespace Acoustics.Tools.Wav
 
                             // Always PCM or Extensible (but even then still require sub-chunk to be PCM)
                             var format = this.Format = (WaveFormat)BitConverter.ToUInt16(data, offset);
-                            //Debug.Assert(
-                            //    BitConverter.GetBytes(
-                            //        (ushort)format)[0] == data[offset] &&
-                            //        BitConverter.GetBytes((ushort)format)[1] == data[offset + 1],
-                            //    $"New format conversion 0x{format:X} should match old");
+                            offset += 2;
 
                             if (format == WaveFormat.WAVE_FORMAT_PCM)
                             {
-                                // valid, simple PCM format - contine
+                                // valid, simple PCM format - continue
                             }
                             else if (format == WaveFormat.WAVE_FORMAT_EXTENSIBLE)
                             {
@@ -464,8 +457,6 @@ namespace Acoustics.Tools.Wav
                                               $" Error: Only takes 0x0001 was: 0x{format:X}";
                                 throw new InvalidOperationException(message);
                             }
-
-                            offset += 2;
 
                             // Channel Numbers
                             this.Channels = BitConverter.ToUInt16(data, offset);
@@ -485,7 +476,9 @@ namespace Acoustics.Tools.Wav
 
                             // Bits Per Sample - as if was a single channel
                             // NOTE: when format is WAVE_FORMAT_EXTENSIBLE the wBitsPerSample field is actually part of
-                            // the WAVEFORMATEX. However as near as I can tell they occur at the same offset... *shrug*
+                            // the WAVE_FORMAT_EXTENSIBLE structure because WAVE_FORMAT_EXTENSIBLE includes the
+                            // WAVE_FORMAT_EX structure.
+                            // However as near as I can tell they occur at the same offset... *shrug*
                             this.BitsPerSample = BitConverter.ToUInt16(data, offset);
                             offset += 2;
 
@@ -542,7 +535,6 @@ namespace Acoustics.Tools.Wav
                             }
 
                             // skip the rest
-                            //Debug.Assert(offset == formatOffset + chunkSize, "offset == formatOffset + p should be true if we counted all bytes correctly");
                             offset = formatOffset + chunkSize;
                         }
                         #endregion
@@ -592,7 +584,7 @@ namespace Acoustics.Tools.Wav
                                 case 24:
                                     for (int i = 0; i < numberOfSamples; i++, offset += bytesPerSample)
                                     {
-                                        // resize 24-bit bytes into a 32-bit int (most signficant bits win)
+                                        // resize 24-bit bytes into a 32-bit int (most significant bits win)
                                         // shift all the way into the end to get the 2's-complement negative bit to work
                                         // then shift back to the right 8 bits to get back to the desired range
                                         int sample = (data[offset + 2] << 24 | data[offset + 1] << 16 | data[offset + 0] << 8) >> 8;
