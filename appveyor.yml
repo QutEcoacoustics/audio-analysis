@@ -76,7 +76,7 @@ after_build:
   - cd %APPVEYOR_BUILD_FOLDER%
   - ps: . .\package.ps1 "Debug"
   - ps: . .\package.ps1 "Release"
-  - ps: 'ls env:'
+  #- ps: 'ls env:'
 
 test:
   assemblies:
@@ -93,6 +93,8 @@ artifacts:
 
 before_deploy:
   # Enable git credential store
+  - ps: $env:SHOULD_RELEASE = $env:APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED -ilike "*[release]*" -or $env:APPVEYOR_SCHEDULED_BUILD; 
+  - ps: ls env:SHOULD_RELEASE; ls env:APPVEYOR_SCHEDULED_BUILD
   - git config --global credential.helper store
   - ps: git config --global user.email "$($env:APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL)"
   - ps: git config --global user.name "$($env:APPVEYOR_REPO_COMMIT_AUTHOR)"
@@ -105,7 +107,7 @@ before_deploy:
   - ps: . .\tag.ps1 $env:ApVersion
   # prepare release strings: $env:ApReleaseMessage, $env:ApReleaseTitle
   - ps: . .\release.ps1 $env:ApTagName $true
-  - ps: 'ls env:'
+  #- ps: 'ls env:'
   
 deploy:
   - provider: GitHub
@@ -118,7 +120,8 @@ deploy:
     on:
       # Do not create new releases unless this is the master branch
       branch: master
-    
+      # Do not create a new release unless this was a scheduled build or a forced build
+      SHOULD_RELEASE: True
       
 
 notifications:

@@ -6,7 +6,11 @@ The audio analysis source base for the QUT Bioacoustics Research Group
 
 [![Build status](https://ci.appveyor.com/api/projects/status/ntf6vtuy5wnlww37?svg=true)](https://ci.appveyor.com/project/QUTEcoacousticsResearchGroup/audio-analysis)
 
-**NEW**: Up to date versions of AnalysisPrograms.exe are now built automatically. You can get copies from the [Releases](https://github.com/QutBioacoustics/audio-analysis/releases) page.
+**NEW**: Weekly versions of AnalysisPrograms.exe are now built automatically. You can get copies from the [Releases](https://github.com/QutBioacoustics/audio-analysis/releases) page.
+
+**NEW*: Per-commit builds can be found from the AppVeyor
+[artifacts](https://ci.appveyor.com/project/QUTEcoacousticsResearchGroup/audio-analysis/build/artifacts)
+page.
 
 ## Licence
 
