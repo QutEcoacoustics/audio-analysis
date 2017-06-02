@@ -136,7 +136,7 @@ namespace AudioAnalysisTools.WavTools
             {
                 if (this.wavReader != null)
                 {
-                    return Math.Pow(0.5, this.wavReader.BitsPerSample - 1);
+                    return this.wavReader.Epsilon;
                 }
 
                 return -double.MaxValue;
@@ -404,6 +404,22 @@ namespace AudioAnalysisTools.WavTools
                         ////Channel = 2 // set channel number or mixdowntomono=true  BUT NOT BOTH!!!
                         ////MixDownToMono  =true
                     });
+        }
+
+        public static FileInfo CreateTemporaryAudioFile(FileInfo sourceRecording, DirectoryInfo outDir, int resampleRate)
+        {
+            // put temp FileSegment in same directory as the required output image.
+            var tempAudioSegment = new FileInfo(Path.Combine(outDir.FullName, "tempWavFile.wav"));
+
+            // delete the temp audio file if it already exists.
+            if (File.Exists(tempAudioSegment.FullName))
+            {
+                File.Delete(tempAudioSegment.FullName);
+            }
+
+            // This line creates a temporary version of the source file downsampled as per entry in the config file
+            MasterAudioUtility.SegmentToWav(sourceRecording, tempAudioSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
+            return tempAudioSegment;
         }
 
         /// <summary>

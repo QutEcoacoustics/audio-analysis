@@ -298,7 +298,11 @@
 
             if (result.RawData.ContainsKey(KeyChannels))
             {
-                result.ChannelCount = this.ParseIntStringWithException(result.RawData[KeyChannels].Replace("(mono)", string.Empty).Trim(), "wavPack.Channels");
+                // multi channel will attempt to print the channel names "4 (FL,FR,FC,LFE)"
+                string channels = result.RawData[KeyChannels];
+                channels = Regex.Replace(channels, "\\(.*\\).*", string.Empty).Trim();
+
+                result.ChannelCount = this.ParseIntStringWithException(channels, "wavPack.Channels");
             }
 
             if (result.RawData.ContainsKey(KeyPrecision))
@@ -334,6 +338,13 @@
         /// </exception>
         protected override void CheckRequestValid(FileInfo source, string sourceMimeType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
         {
+
+            if (request.BitDepth.NotNull())
+            {
+                const string message = "Haven't added support for changing bit depth in" + nameof(WavPackAudioUtility);
+                throw new BitDepthOperationNotImplemented(message);
+            }
+
             if (request.Channels.NotNull())
             {
                 throw new ChannelSelectionOperationNotImplemented("Wvunpack cannot modify the channel.");

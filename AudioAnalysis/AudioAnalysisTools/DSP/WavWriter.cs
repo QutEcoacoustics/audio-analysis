@@ -5,10 +5,155 @@
 namespace AudioAnalysisTools.DSP
 {
     using System;
+    using System.ComponentModel;
     using System.IO;
+    using System.Linq;
+    using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
+    using Acoustics.Tools.Wav;
 
     public static class WavWriter
     {
+        private static readonly FfmpegRawPcmAudioUtility Utility =
+            new FfmpegRawPcmAudioUtility(new FileInfo(AppConfigHelper.FfmpegExe));
+
+        /// <summary>
+        /// This is a _slow_ but reliable way to write a Wav file by using ffmpeg to do all
+        /// the hard work.
+        /// This method assumes all signal values are in [0, 1]
+        /// </summary>
+        public static void WriteWavFileViaFfmpeg(
+            FileInfo destination,
+            double[][] signals,
+            int bitDepth,
+            int sampleRate,
+            DirectoryInfo tempDirectory = null)
+        {
+            Contract.Requires(signals != null, "Signals must not be null");
+            int channels = signals.Length;
+            Contract.Requires(channels > 0, "Signal must have at least one channel");
+            int signalLength = signals[0].Length;
+            Contract.Requires(signals.All(c => c.Length == signalLength), "All signals must be the same length");
+            Contract.Requires(bitDepth == 8 || bitDepth == 16 || bitDepth == 24 || bitDepth == 32);
+            Contract.Requires(BitConverter.IsLittleEndian);
+
+            var temp = TempFileHelper.NewTempFile(tempDirectory ?? destination.Directory, MediaTypes.ExtRaw);
+            using (var file = temp.OpenWrite())
+            {
+                DumpPcmBytes(signals, bitDepth, file, signalLength, channels);
+            }
+
+            try
+            {
+                Utility.Modify(
+                    temp,
+                    MediaTypes.MediaTypePcmRaw,
+                    destination,
+                    MediaTypes.MediaTypeWav1,
+                    new AudioUtilityRequest
+                    {
+                        BitDepth = bitDepth,
+                        Channels = Enumerable.Range(1, channels).ToArray(),
+                        TargetSampleRate = sampleRate,
+                    });
+            }
+            finally
+            {
+                temp.Delete();
+            }
+        }
+
+        private static void DumpPcmBytes(double[][] signals, int bitDepth, Stream file, int signalLength, int channels)
+        {
+            int bytesPerSample = bitDepth / 8;
+            int min, max;
+            switch (bytesPerSample)
+            {
+                case 1:
+                    min = byte.MinValue - 128;
+                    max = byte.MaxValue - 128;
+                    break;
+                case 2:
+                    min = short.MinValue;
+                    max = short.MaxValue;
+                    break;
+                case 3:
+                    // int24.Min = -8_388_608 = 0x80 0x00 0x00
+                    // int24.Max = 8_368_607 = 0x7F 0xFF 0xFF
+                    min = -8_388_608;
+                    max = 8_388_607;
+                    break;
+                case 4:
+                    min = int.MinValue;
+                    max = int.MaxValue;
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+
+            // dump the raw bytes in the file
+            using (var writer = new BinaryWriter(file))
+            {
+                for (int i = 0; i < signalLength; i++)
+                {
+                    for (int c = 0; c < channels; c++)
+                    {
+                        double value = signals[c][i];
+
+                        // clamp value
+                        if (value > 1.0)
+                        {
+                            value = 1.0;
+                        }
+                        else if (value < -1.0)
+                        {
+                            value = -1.0;
+                        }
+
+                        // bit depth of 8 is special - unsigned integers should be stored instead
+                        if (bitDepth == 8)
+                        {
+                            byte sample8;
+                            if (value == 1.0)
+                            {
+                                sample8 = (byte)(max + max);
+                            }
+                            else
+                            {
+                                sample8 = (byte)(Math.Round(value * max) + max);
+                            }
+
+                            writer.Write(sample8);
+                            continue;
+                        }
+
+                        // convert from double [0,1] to int32 [int.Min, int.Max]
+                        int sample;
+                        if (value == -1.0)
+                        {
+                            sample = min;
+                        }
+                        else
+                        {
+                            sample = (int)Math.Round(value * max);
+                        }
+
+                        // Now convert to bytes
+                        sample = sample << (32 - bitDepth);
+                        var bytes = BitConverter.GetBytes(sample);
+
+                        // finally write the correct number of bytes to the stream
+                        // the magic here is only writing the most significant bytes allows us automatic conversion
+                        // to 24 and 16 bit sample sizes
+                        writer.Write(bytes, 4 - bytesPerSample, bytesPerSample);
+                    }
+                }
+            }
+        }
+
+        /*
         /// <summary>
         /// The basic WAV file format follows the Interchange File Format specification.
         /// An IFF file consists of a series of "chunks" where chunks can contain other chunks.
@@ -96,6 +241,7 @@ namespace AudioAnalysisTools.DSP
 
             Write16BitWavFile(newSamples, samplesPerSecond, path);
         }
+        */
 
         public static short[] PerfectFifth(int samples, int samplesPerSecond)
         {
@@ -123,8 +269,6 @@ namespace AudioAnalysisTools.DSP
                 double t = i / (double)samplesPerSecond;
                 short s = (short)(ampl * Math.Sin(t * freq * 2.0 * Math.PI));
                 data[id++] = s;
-
-                // writer.Write(s);
             }
 
             for (int i = 0; i < samples / 4; i++)
@@ -132,8 +276,6 @@ namespace AudioAnalysisTools.DSP
                 double t = i / (double)samplesPerSecond;
                 short s = (short)(ampl * (Math.Sin(t * freq * 2.0 * Math.PI) + Math.Sin(t * freq * perfect * 2.0 * Math.PI)));
                 data[id++] = s;
-
-                //                writer.Write(s);
             }
 
             for (int i = 0; i < samples / 4; i++)
@@ -141,13 +283,25 @@ namespace AudioAnalysisTools.DSP
                 double t = i / (double)samplesPerSecond;
                 short s = (short)(ampl * (Math.Sin(t * freq * 2.0 * Math.PI) + Math.Sin(t * freq * concert * 2.0 * Math.PI)));
                 data[id++] = s;
-
-                //writer.Write(s);
             }
 
             return data;
-        }//end Perfect5th();
+        }
 
+        public static WavReader SineWave(double freq, double amp, double phase, TimeSpan length, int sampleRate)
+        {
+            int n = (int)Math.Floor(length.TotalSeconds * sampleRate);
+            double[] data = new double[n];
+
+            for (int i = 0; i < n; i++)
+            {
+                data[i] = amp * Math.Sin(phase + 2.0 * Math.PI * freq * i / sampleRate);
+            }
+
+            return new WavReader(data, 1, 16, sampleRate);
+        }
+
+        /*
         public static void Write(string path)
         {
             using (FileStream fileStream = File.Open(path, FileMode.Create, FileAccess.Write, FileShare.None))
@@ -225,9 +379,9 @@ namespace AudioAnalysisTools.DSP
         {
             BinaryWriter writer = new BinaryWriter(stream);
 
-            /*
-             * Chunk - RIFF
-             */
+            // 
+            // Chunk - RIFF
+            // 
 
             // RIFF
             int chunkIdRiff = 0x46464952;
@@ -238,9 +392,7 @@ namespace AudioAnalysisTools.DSP
             //WAVE
             int riffTypeWave = 0x45564157;
 
-            /*
-             * Chunk - format
-             */
+            // Chunk - format
 
             // "fmt " Note the chunk ID string
             // ends with the space character (0x20).
@@ -293,9 +445,9 @@ namespace AudioAnalysisTools.DSP
             // is rounded up to the nearest byte size and the unused bytes are set to 0 and ignored.
             short bitsPerSample = wavInfo.BitsPerSample;
 
-            /*
-             * Chunk - data
-             */
+            // 
+            // Chunk - data
+            // 
             int chunkIdData = 0x61746164;
 
             // don't know this yet.
@@ -327,13 +479,13 @@ namespace AudioAnalysisTools.DSP
         {
             // need to write file size and data size.
 
-            /*
-            data chunk size == NumSamples * NumChannels * BitsPerSample/8
-            This is the number of bytes in the data.
-            You can also think of this as the size
-            of the read of the subchunk following this
-            number.
-            */
+            // 
+            // data chunk size == NumSamples * NumChannels * BitsPerSample/8
+            // This is the number of bytes in the data.
+            // You can also think of this as the size
+            // of the read of the subchunk following this
+            // number.
+            // 
 
             // size = sample rate * number of channels * (bits per sample /8) * time in seconds.
 
@@ -343,15 +495,15 @@ namespace AudioAnalysisTools.DSP
             writer.Seek(chunkDataSizeDataOffset, SeekOrigin.Begin);
             writer.Write(chunkDataSizeData);
 
-            /*
-           file size = 36 + SubChunk2Size, or more precisely:
-            4 + (8 + SubChunk1Size) + (8 + SubChunk2Size)
-            This is the size of the rest of the chunk
-            following this number.  This is the size of the
-            entire file in bytes minus 8 bytes for the
-            two fields not included in this count:
-            ChunkID and ChunkSize.
-            */
+            // 
+            // file size = 36 + SubChunk2Size, or more precisely:
+            // 4 + (8 + SubChunk1Size) + (8 + SubChunk2Size)
+            // This is the size of the rest of the chunk
+            // following this number.  This is the size of the
+            // entire file in bytes minus 8 bytes for the
+            // two fields not included in this count:
+            // ChunkID and ChunkSize.
+            // 
 
             int chunkDataSizeRiff = 4 + (8 + 16) + (8 + chunkDataSizeData);
 
@@ -359,5 +511,6 @@ namespace AudioAnalysisTools.DSP
             writer.Seek(chunkDataSizeRiffOffset, SeekOrigin.Begin);
             writer.Write(chunkDataSizeRiff);
         }
+        */
     }
 }

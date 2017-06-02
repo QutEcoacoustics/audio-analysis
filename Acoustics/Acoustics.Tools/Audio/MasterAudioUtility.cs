@@ -29,6 +29,8 @@ namespace Acoustics.Tools.Audio
 
         private readonly SoxAudioUtility soxUtility;
 
+        private readonly FfmpegRawPcmAudioUtility ffmpegRawPcmUtility;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MasterAudioUtility"/> class.
         /// Creates a new audio utility that can be used to convert and segment audio, and to get information about audio.
@@ -38,6 +40,7 @@ namespace Acoustics.Tools.Audio
             this.wvunpackUtility = new WavPackAudioUtility(new FileInfo(AppConfigHelper.WvunpackExe));
             this.mp3SpltUtility = new Mp3SpltAudioUtility(new FileInfo(AppConfigHelper.Mp3SpltExe));
             this.ffmpegUtility = new FfmpegAudioUtility(new FileInfo(AppConfigHelper.FfmpegExe), new FileInfo(AppConfigHelper.FfprobeExe));
+            this.ffmpegRawPcmUtility = new FfmpegRawPcmAudioUtility(new FileInfo(AppConfigHelper.FfmpegExe));
             this.soxUtility = new SoxAudioUtility(new FileInfo(AppConfigHelper.SoxExe));
 
             this.TemporaryFilesDirectory = TempFileHelper.TempDir();
@@ -67,38 +70,23 @@ namespace Acoustics.Tools.Audio
         /// </param>
         /// <param name="soxUtility">sox utility.
         /// </param>
-        public MasterAudioUtility(FfmpegAudioUtility ffmpegUtility, Mp3SpltAudioUtility mp3SpltUtility, WavPackAudioUtility wvunpackUtility, SoxAudioUtility soxUtility)
-        {
-            this.wvunpackUtility = wvunpackUtility;
-            this.mp3SpltUtility = mp3SpltUtility;
-            this.ffmpegUtility = ffmpegUtility;
-            this.soxUtility = soxUtility;
-
-            this.TemporaryFilesDirectory = TempFileHelper.TempDir();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MasterAudioUtility"/> class.
-        /// Creates a new audio utility that can be used to convert and segment audio, and to get information about audio.
-        /// The given audio utility instances will be used.
-        /// </summary>
-        /// <param name="ffmpegUtility">ffmpeg utility.
-        /// </param>
-        /// <param name="mp3SpltUtility">mp3splt utility.
-        /// </param>
-        /// <param name="wvunpackUtility">wxunpack utility.
-        /// </param>
-        /// <param name="soxUtility">sox utility.
-        /// </param>
+        /// <param name="ffmpegRawPcmUtility">The ffmpeg utility for converting raw PCM data</param>
         /// <param name="temporaryFilesDirectory">Directory for temporary files.</param>
-        public MasterAudioUtility(FfmpegAudioUtility ffmpegUtility, Mp3SpltAudioUtility mp3SpltUtility, WavPackAudioUtility wvunpackUtility, SoxAudioUtility soxUtility, DirectoryInfo temporaryFilesDirectory)
+        public MasterAudioUtility(
+            FfmpegAudioUtility ffmpegUtility,
+            Mp3SpltAudioUtility mp3SpltUtility,
+            WavPackAudioUtility wvunpackUtility,
+            SoxAudioUtility soxUtility,
+            FfmpegRawPcmAudioUtility ffmpegRawPcmUtility,
+            DirectoryInfo temporaryFilesDirectory = null)
         {
             this.wvunpackUtility = wvunpackUtility;
             this.mp3SpltUtility = mp3SpltUtility;
             this.ffmpegUtility = ffmpegUtility;
+            this.ffmpegRawPcmUtility = ffmpegRawPcmUtility;
             this.soxUtility = soxUtility;
 
-            this.TemporaryFilesDirectory = temporaryFilesDirectory;
+            this.TemporaryFilesDirectory = temporaryFilesDirectory ?? TempFileHelper.TempDir();
         }
 
         /// <summary>
@@ -231,6 +219,23 @@ namespace Acoustics.Tools.Audio
                 soxRequest.OffsetStart = null;
                 soxRequest.OffsetEnd = null;
             }
+            else if (sourceMediaType == MediaTypes.MediaTypePcmRaw)
+            {
+                // transform (and segment) raw PCM file
+                // the raw file needs additional information to proceed
+                segmentRequest.BitDepth = request.BitDepth;
+                segmentRequest.Channels = request.Channels;
+                segmentRequest.TargetSampleRate = request.TargetSampleRate;
+
+                soxSourceFile = this.SegmentRawPcmToWav(source, segmentRequest);
+
+                // should probably null Channels & TargetSampleRate but they should equivalently be noops
+                // sox does not support bit depth - it must be nulled
+                soxRequest.BitDepth = null;
+
+                soxRequest.OffsetStart = null;
+                soxRequest.OffsetEnd = null;
+            }
             else if (sourceMediaType != MediaTypes.MediaTypeWav && sourceMediaType != MediaTypes.MediaTypeMp3)
             {
                 // convert to wav using ffmpeg
@@ -312,6 +317,10 @@ namespace Acoustics.Tools.Audio
             else if (mediaType == MediaTypes.MediaTypeMp3 || mediaType == MediaTypes.MediaTypeWav)
             {
                 info = this.Combine(this.soxUtility.Info(source), this.ffmpegUtility.Info(source));
+            }
+            else if (mediaType == MediaTypes.MediaTypePcmRaw)
+            {
+                info = this.ffmpegRawPcmUtility.Info(source);
             }
             else
             {
@@ -411,6 +420,23 @@ namespace Acoustics.Tools.Audio
             return wavunpackTempFile;
         }
 
+        private FileInfo SegmentRawPcmToWav(FileInfo source, AudioUtilityRequest request)
+        {
+            // use a temp file for wvunpack.
+            var extension = MediaTypes.GetExtension(MediaTypes.MediaTypeWav1);
+            var rawFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, extension);
+
+            if (this.Log.IsDebugEnabled)
+            {
+                this.Log.Debug("Converting/segmenting raw file " + source.FullName + " to wav " + rawFile.FullName + " using ffmpeg. Settings: " + request);
+            }
+
+            // use ffmpeg to segment and convert to wav.
+            this.ffmpegRawPcmUtility.Modify(source, MediaTypes.MediaTypePcmRaw, rawFile, MediaTypes.MediaTypeWav, request);
+
+            return rawFile;
+        }
+
         private FileInfo SegmentMp3(FileInfo source, string sourceMimeType, AudioUtilityRequest request)
         {
             // use a temp file to segment.
@@ -434,7 +460,8 @@ namespace Acoustics.Tools.Audio
 
             if (this.Log.IsDebugEnabled)
             {
-                this.Log.Debug("Converting " + sourceMimeType + " file " + source.FullName + " to wav " + ffmpegTempFile.FullName + " using ffmpeg. Settings: " + request);
+                this.Log.Debug("Converting " + sourceMimeType + " file " + source.FullName + " to wav " +
+                               ffmpegTempFile.FullName + " using ffmpeg. Settings: " + request);
             }
 
             // use ffmpeg to segment.

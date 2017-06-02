@@ -144,7 +144,7 @@ namespace AnalysisPrograms
 
             // 3: GET TEMPORARY RECORDING
             int resampleRate = Convert.ToInt32(configDict[AnalysisKeys.ResampleRate]);
-            var tempAudioSegment = WavReader.CreateTemporaryAudioFile(sourceRecording, output, resampleRate);
+            var tempAudioSegment = AudioRecording.CreateTemporaryAudioFile(sourceRecording, output, resampleRate);
 
             // 4: GET 4 sonogram images
             string sourceName = configDict[ConfigKeys.Recording.Key_RecordingFileName];
@@ -375,7 +375,7 @@ namespace AnalysisPrograms
 
                 // 2. Create temp copy of recording
                 int resampleRate = Convert.ToInt32(configDict[AnalysisKeys.ResampleRate]);
-                var tempAudioSegment = WavReader.CreateTemporaryAudioFile(sourceRecording, output, resampleRate);
+                var tempAudioSegment = AudioRecording.CreateTemporaryAudioFile(sourceRecording, output, resampleRate);
 
                 // 3. GET composite image of 4 sonograms
                 var sourceName = Path.GetFileNameWithoutExtension(sourceRecording.Name);

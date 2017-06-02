@@ -246,16 +246,17 @@
             var mixDown = request.MixDownToMono.HasValue && request.MixDownToMono.Value;
             if (mixDown && request.Channels.NotNull())
             {
+                // select a subset of channels
                 remix = "remix " + string.Join(",", request.Channels);
             }
-            // mix down to mono
             else if (mixDown)
             {
+                // mix down to mono
                 remix = "remix -";
             }
-            // get a channels but don't mix down
             else if (request.Channels.NotNull())
             {
+                // get channels but don't mix down
                 remix = "remix " + string.Join(" ", request.Channels);
             }
 
@@ -415,21 +416,23 @@
 
                 result.BitsPerSecond = Convert.ToInt32(value);
 
-                if (result.MediaType == MediaTypes.MediaTypeWav)
-                {
-                    // deal with inaccuracy - calculate it a second way
-                    var estimatedBitRate = result.SampleRate * result.ChannelCount * (result.BitsPerSample);
-                    int roundedBitRate = (int)((double)estimatedBitRate).RoundToSignficantDigits(3);
-                    if (roundedBitRate != result.BitsPerSecond.Value)
-                    {
-                        throw new InvalidOperationException(
-                            $"SoxAudioUtlity could not accurately predict BitPerSecond. Parsed BitsPerSecond: {result.BitsPerSecond}, predicted: {estimatedBitRate}");
-                    }
-
-                    // use estimated bit rate
-                    result.BitsPerSecond = estimatedBitRate;
-                }
-
+                // Further investigation reveals the 'error' I was chasing down was in fact the diffeence
+                // between the FormatBitRate (averaged inc. header) and the StreamBitRate.
+                // For long files this difference approaches 0, for short files the difference is signficiant
+                //if (result.MediaType == MediaTypes.MediaTypeWav)
+                //{
+                //    // deal with inaccuracy - calculate it a second way
+                //    var estimatedBitRate = result.SampleRate * result.ChannelCount * result.BitsPerSample;
+                //    int roundedBitRate = (int)((double)estimatedBitRate).RoundToSignficantDigits(3);
+                //    if (roundedBitRate != result.BitsPerSecond.Value)
+                //    {
+                //        throw new InvalidOperationException(
+                //            $"SoxAudioUtlity could not accurately predict BitPerSecond. Parsed BitsPerSecond: {result.BitsPerSecond}, predicted: {estimatedBitRate}");
+                //    }
+                //
+                //    // use estimated bit rate
+                //    result.BitsPerSecond = estimatedBitRate;
+                //}
             }
 
             return result;
@@ -438,6 +441,12 @@
         protected override void CheckRequestValid(FileInfo source, string sourceMimeType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
         {
             AudioUtilityInfo info = null;
+
+            if (request?.BitDepth != null)
+            {
+                const string message = "Haven't added support for changing bit depth in" + nameof(SoxAudioUtility);
+                throw new BitDepthOperationNotImplemented(message);
+            }
 
             // check that if output is mp3, the bit rate and sample rate are set valid amounts.
             if (request != null && outputMediaType == MediaTypes.MediaTypeMp3)

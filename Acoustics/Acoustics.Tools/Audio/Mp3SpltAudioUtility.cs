@@ -235,6 +235,12 @@
         /// <exception cref="ArgumentException">Mp3Splt cannot perform this type of request.</exception>
         protected override void CheckRequestValid(FileInfo source, string sourceMimeType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
         {
+            if (request.BitDepth.NotNull())
+            {
+                const string message = "Haven't added support for changing bit depth in" + nameof(Mp3SpltAudioUtility);
+                throw new BitDepthOperationNotImplemented(message);
+            }
+
             if (request.Channels.NotNull())
             {
                 throw new ChannelSelectionOperationNotImplemented("Mp3Splt cannot modify the channel.");
