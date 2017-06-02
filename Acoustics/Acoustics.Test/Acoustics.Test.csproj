@@ -150,7 +150,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnalysisPrograms\AnalyseLongRecordings\TestAnalyseLongRecording.cs" />
+    <Compile Include="AnalysisPrograms\AnalyzeLongRecordings\TestAnalyzeLongRecording.cs" />
     <Compile Include="AnalysisPrograms\Concatenation\ConcatenationTests.cs" />
     <Compile Include="AnalysisPrograms\SourcePreparers\LocalSourcePreparerTests.cs" />
     <Compile Include="ArrayExtensionsTests.cs" />

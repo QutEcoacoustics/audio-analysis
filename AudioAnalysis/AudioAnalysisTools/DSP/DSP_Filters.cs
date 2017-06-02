@@ -141,15 +141,15 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// returns a digital signal having sample rate, duration and harmonic content passed by user.
-        /// Harmonics array should contain Herz values of harmonics. i.e. int[] harmonics = { 500, 1000, 2000, 4000 };
+        /// Harmonics array should contain Hertz values of harmonics. i.e. int[] harmonics = { 500, 1000, 2000, 4000 };
         /// Phase is not taken into account.
         /// </summary>
         /// <param name="sampleRate">sr of output signal</param>
         /// <param name="duration">signal duration in seconds</param>
-        /// <param name="freq">frequency in Herz</param>
+        /// <param name="freq">frequency in Hertz</param>
         public static double[] GetSignal(int sampleRate, double duration, int[] freq)
         {
-            double ampl = 10000;
+            double amplitude = 10000;
             int length = (int)(sampleRate * duration);
             double[] data = new double[length];
             int count = freq.Length;
@@ -159,7 +159,7 @@ namespace AudioAnalysisTools.DSP
                 //for (int f = 0; f < count; f++) data[i] += Math.Sin(omega[f] * i);
                 for (int f = 0; f < count; f++)
                 {
-                    data[i] += ampl * Math.Sin(2.0 * Math.PI * freq[f] * i / sampleRate);
+                    data[i] += amplitude * Math.Sin(2.0 * Math.PI * freq[f] * i / sampleRate);
                 }
             }
 
