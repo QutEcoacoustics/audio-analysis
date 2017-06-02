@@ -46,7 +46,7 @@ init:
   - echo Starting Build
   # Determine whether or not we should tag and release
   - ps: $env:SHOULD_RELEASE = $env:APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED -ilike "*[release]*" -or $env:APPVEYOR_SCHEDULED_BUILD; 
-  - ps: ls env:SHOULD_RELEASE; ls env:APPVEYOR_SCHEDULED_BUILD
+  - ps: ls env:SHOULD_RELEASE; ls env:APPVEYOR_SCHEDULED_BUILD -ErrorAction Ignore
   #- git lfs install --skip-smudge
 
 before_build:
