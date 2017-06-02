@@ -69,7 +69,10 @@ namespace AudioAnalysisTools.Indices
                     continue;
                 }
 
+                Log.Debug("Reading of file started: " + files[i].FullName);
                 var rowsOfCsvFile = Csv.ReadFromCsv<SummaryIndexValues>(files[i], throwOnMissingField: false);
+                Log.Trace("Reading of file finished: " + files[i].FullName);
+
                 summaryIndices.AddRange(rowsOfCsvFile);
 
                 // track the row counts
