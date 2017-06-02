@@ -7,7 +7,6 @@ namespace Acoustics.Test.Shared
     using System;
     using System.IO;
     using Acoustics.Shared;
-    using EcoSounds.Mvc.Tests;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
 
@@ -31,7 +30,7 @@ namespace Acoustics.Test.Shared
         [TestMethod]
         public void TestBinarySerializationRoundTrip()
         {
-            var random = new Random();
+            var random = TestHelpers.Random.GetRandom();
 
             var numbers = new double[100];
             for (int i = 0; i < numbers.Length; i++)

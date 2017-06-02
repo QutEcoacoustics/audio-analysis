@@ -9,6 +9,8 @@ namespace System
 // ReSharper restore CheckNamespace
 {
     using Collections.Generic;
+    using Diagnostics.Contracts;
+    using JetBrains.Annotations;
     using Linq.Expressions;
 
     using Newtonsoft.Json;
@@ -98,7 +100,6 @@ namespace System
             return body.Member.Name;
         }
 
-
         public static T JsonClone<T>(this T source)
         {
             // No settings actually set elsewhere in solution
@@ -108,6 +109,7 @@ namespace System
             return JsonConvert.DeserializeObject<T>(serialized);
         }
 
+        [ContractAnnotation("obj:null => false; obj:notnull => true")]
         public static bool NotNull(this object obj) => obj != null;
 
         public static T[] AsArray<T>(this T item)

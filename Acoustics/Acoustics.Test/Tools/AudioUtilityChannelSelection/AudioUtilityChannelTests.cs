@@ -5,25 +5,21 @@
 // <summary>
 //   Defines the AudioUtilityChannelTests type.
 //
-//   Our SoX implementation supports advanced functionality for processing channels. Here add tests to make sure they behave as expected
+//   Our SoX implementations supports advanced functionality for processing channels. 
+//   Here add tests to make sure they behave as expected
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Acoustics.Test.Tools
+namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
 {
     using System;
     using System.IO;
-
     using Acoustics.Shared;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using Acoustics.Tools.Wav;
-
-    using EcoSounds.Mvc.Tests;
     using EcoSounds.Mvc.Tests.AcousticsTools;
-
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-
     using MSTestExtensions;
     using TestHelpers;
 
@@ -34,26 +30,30 @@ namespace Acoustics.Test.Tools
         private const string FourChannelFileOgg = "4channelsPureTones.ogg";
         private const string FourChannelFileWavPack = "4channelsPureTones.wv";
         private const string FourChannelFileFlac = "4channelsPureTones.flac";
+        private const string FourChannelFileRaw = "4channelsPureTones.raw";
 
         private const string TwoChannelFile = "different_channels_tone.wav";
         private const string TwoChannelFileMp3 = "different_channels_tone.mp3";
 
         [TestMethod]
-        public void SoxDoesNoChannelManiuplationByDefault()
+        public void SoxDoesNoChannelManiuplationByDefault4()
         {
             // array of channels of frequencies (expected in each channel)
             // expect 4 channels
             var expectedFrequencies = new[] { 4000.AsArray(), 3000.AsArray(), 2000.AsArray(), 1000.AsArray() };
 
-
             ChannelTest(FourChannelFile, null, null, expectedFrequencies);
+        }
 
+        [TestMethod]
+        public void SoxDoesNoChannelManiuplationByDefault2()
+        {
             // array of channels of frequencies (expected in each channel)
             // expect 2 channels
             var expectedFrequencies2 = new[]
-                {
-                    2000.AsArray(), 500.AsArray(),
-                };
+            {
+                2000.AsArray(), 500.AsArray(),
+            };
 
             ChannelTest(TwoChannelFile, null, null, expectedFrequencies2);
         }
@@ -301,6 +301,24 @@ namespace Acoustics.Test.Tools
         }
 
         [TestMethod]
+        public void AdvancedChannelSelectionMasterRaw()
+        {
+            // array of channels of frequencies (expected in each channel)
+            var expectedFrequencies = new[]
+            {
+                new[] { 4000 },
+                new[] { 3000 },
+                new[] { 2000 },
+                new[] { 1000 },
+            };
+
+            // raw conversions need extra information to work
+            var request = new AudioUtilityRequest() { BitDepth = 16, TargetSampleRate = 44100 };
+
+            ChannelTest(FourChannelFileRaw, new[] { 1, 2, 3, 4 }, false, expectedFrequencies, request);
+        }
+
+        [TestMethod]
         public void AdvancedChannelSelectionFfmpegFails()
         {
             AssertAdvancedChannelConversionFails(
@@ -310,7 +328,6 @@ namespace Acoustics.Test.Tools
                 MediaTypes.MediaTypeMp3,
                 skipMonoCheck: true);
         }
-
 
         [TestMethod]
         public void AdvancedChannelSelectionWavPackFails()
@@ -350,11 +367,118 @@ namespace Acoustics.Test.Tools
                 TestHelper.GetAudioUtilityShntool());
         }
 
+        [TestMethod]
+        public void FfmpegRawPcmFailsFailsWithoutChannelSpecification()
+        {
+            Assert.Throws<InvalidOperationException>(
+                () =>
+                {
+                    // array of channels of frequencies (expected in each channel)
+                    // expect 4 channels
+                    var expectedFrequencies = new[] { 4000.AsArray(), 3000.AsArray(), 2000.AsArray(), 1000.AsArray() };
+
+                    // raw conversions need extra information to work
+                    var request = new AudioUtilityRequest() { BitDepth = 16, TargetSampleRate = 44100 };
+
+                    ChannelTest(FourChannelFileRaw, null, null, expectedFrequencies, request);
+                },
+                "Channels must be set",
+                ExceptionMessageCompareOptions.Contains);
+        }
+
+        [TestMethod]
+        public void FfmpegRawPcmFailsSelectsAllChannelsCorrectly()
+        {
+            // array of channels of frequencies (expected in each channel)
+            // expect 4 channels
+            var expectedFrequencies = new[] { 4000.AsArray(), 3000.AsArray(), 2000.AsArray(), 1000.AsArray() };
+
+            // raw conversions need extra information to work
+            var request = new AudioUtilityRequest() { BitDepth = 16, TargetSampleRate = 44100 };
+
+            ChannelTest(FourChannelFileRaw, new[] { 1, 2, 3, 4 }, null, expectedFrequencies, request);
+        }
+
+        [TestMethod]
+        public void FfmpegRawPcmFailsMixesDown1234Correctly()
+        {
+            // array of channels of frequencies (expected in each channel)
+            var expectedFrequencies = new[]
+            {
+                new[] { 4000 },
+                new[] { 3000 },
+                new[] { 2000 },
+                new[] { 1000 },
+            };
+
+            // raw conversions need extra information to work
+            var request = new AudioUtilityRequest() { BitDepth = 16, TargetSampleRate = 44100 };
+
+            ChannelTest(FourChannelFileRaw, new[] { 1, 2, 3, 4 }, false, expectedFrequencies, request);
+        }
+
+        [DataTestMethod]
+        [DataRow(new[] { 4, 3, 2, 1 })]
+        [DataRow(new[] { 1, 2, 3, 5 })]
+        public void AdvancedChannelSelectionFfmpegRawPcmFails(int[] channelMap)
+        {
+            var audioUtilityRequest = new AudioUtilityRequest
+            {
+                Channels = channelMap,
+                MixDownToMono = false,
+                TargetSampleRate = 22050,
+                BitDepth = 16,
+            };
+
+            var mediaType = MediaTypes.MediaTypePcmRaw;
+            var otherMediaType = MediaTypes.MediaTypeWav1;
+            var utility = TestHelper.GetAudioUtilityFfmpegRawPcm();
+            var file = FourChannelFileRaw;
+
+            Assert.Throws<ChannelSelectionOperationNotImplemented>(
+                () =>
+                {
+                    utility.Modify(
+                        TestHelper.GetAudioFile(file),
+                        mediaType,
+                        TempFileHelper.NewTempFile(MediaTypes.GetExtension(otherMediaType)),
+                        otherMediaType,
+                        audioUtilityRequest);
+                });
+
+            audioUtilityRequest.MixDownToMono = true;
+
+            Assert.Throws<ChannelSelectionOperationNotImplemented>(
+                () =>
+                {
+                    utility.Modify(
+                        TestHelper.GetAudioFile(file),
+                        mediaType,
+                        TempFileHelper.NewTempFile(MediaTypes.GetExtension(otherMediaType)),
+                        otherMediaType,
+                        audioUtilityRequest);
+                });
+
+            audioUtilityRequest.Channels = null;
+
+            Assert.Throws<InvalidOperationException>(
+                () =>
+                {
+                    utility.Modify(
+                        TestHelper.GetAudioFile(file),
+                        mediaType,
+                        TempFileHelper.NewTempFile(MediaTypes.GetExtension(otherMediaType)),
+                        otherMediaType,
+                        audioUtilityRequest);
+                });
+        }
+
         private static void ChannelTest(
             string sourceFile,
             int[] channels,
             bool? mixDownToMono,
-            int[][] expectedFrequencies)
+            int[][] expectedFrequencies,
+            AudioUtilityRequest customRequest = null)
         {
             // adjust params for this test
             var sourceInfo = TestHelper.AudioDetails[sourceFile];
@@ -362,7 +486,9 @@ namespace Acoustics.Test.Tools
             var expected = sourceInfo.JsonClone();
             expected.ChannelCount = expectedFrequencies.Length;
 
-            var audioUtilityRequest = new AudioUtilityRequest { Channels = channels, MixDownToMono = mixDownToMono };
+            var audioUtilityRequest = customRequest ?? new AudioUtilityRequest();
+            audioUtilityRequest.MixDownToMono = mixDownToMono;
+            audioUtilityRequest.Channels = channels;
 
             var outputMimeType = MediaTypes.MediaTypeWav;
             var source = PathHelper.GetTestAudioFile(sourceFile);
@@ -370,7 +496,7 @@ namespace Acoustics.Test.Tools
             var destExtension = MediaTypes.GetExtension(outputMimeType);
             var outputFilename = Path.GetFileNameWithoutExtension(FourChannelFile) + "_modified." + destExtension;
 
-            var util = MasterAudioUtilityTests.GetAudioUtility();
+            var util = TestHelper.GetAudioUtility();
 
             var dir = PathHelper.GetTempDir();
             var output = new FileInfo(Path.Combine(dir.FullName, outputFilename));
@@ -398,7 +524,6 @@ namespace Acoustics.Test.Tools
                 TestHelper.AssertFrequencyInSignal(reader, samples, expectedFrequencies[channel]);
             }
         }
-
 
         private static void AssertAdvancedChannelConversionFails(string file, string mediaType, IAudioUtility utility, string otherMediaType = null, bool skipMonoCheck = false)
         {

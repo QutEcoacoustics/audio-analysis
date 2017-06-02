@@ -225,7 +225,7 @@
                 SampleRate = 11025,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 16000,
+                BitsPerSecond = 16100,
             };
 
             var request = new AudioUtilityRequest
