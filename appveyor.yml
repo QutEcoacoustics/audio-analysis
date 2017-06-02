@@ -44,6 +44,9 @@ environment:
 init:
   #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - echo Starting Build
+  # Determine whether or not we should tag and release
+  - ps: $env:SHOULD_RELEASE = $env:APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED -ilike "*[release]*" -or $env:APPVEYOR_SCHEDULED_BUILD; 
+  - ps: ls env:SHOULD_RELEASE; ls env:APPVEYOR_SCHEDULED_BUILD
   #- git lfs install --skip-smudge
 
 before_build:
@@ -93,8 +96,6 @@ artifacts:
 
 before_deploy:
   # Enable git credential store
-  - ps: $env:SHOULD_RELEASE = $env:APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED -ilike "*[release]*" -or $env:APPVEYOR_SCHEDULED_BUILD; 
-  - ps: ls env:SHOULD_RELEASE; ls env:APPVEYOR_SCHEDULED_BUILD
   - git config --global credential.helper store
   - ps: git config --global user.email "$($env:APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL)"
   - ps: git config --global user.name "$($env:APPVEYOR_REPO_COMMIT_AUTHOR)"
