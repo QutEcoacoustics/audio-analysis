@@ -389,36 +389,35 @@
             {
                 var stringValue = result.RawData[keyBitRate];
 
-                var hadK = false;
+                int magnitude = 1;
+
                 if (stringValue.Contains("k"))
                 {
                     stringValue = stringValue.Replace("k", string.Empty);
-                    hadK = true;
+                    magnitude = 1000;
                 }
 
-                var hadM = false;
                 if (stringValue.Contains("M"))
                 {
                     stringValue = stringValue.Replace("M", string.Empty);
-                    hadM = true;
+                    magnitude = 1_000_000;
+                }
+
+                if (stringValue.Contains("G") || stringValue.Contains("T"))
+                {
+                    throw new NotSupportedException(
+                        $"The file {source.FullName} reported a bit rate of {stringValue} which is not supported");
                 }
 
                 var value = double.Parse(stringValue);
-                if (hadK)
-                {
-                    value = value * 1000;
-                }
 
-                if (hadM)
-                {
-                    value = value * 1000 * 1000;
-                }
+                value = value * magnitude;
 
                 result.BitsPerSecond = Convert.ToInt32(value);
 
-                // Further investigation reveals the 'error' I was chasing down was in fact the diffeence
+                // Further investigation reveals the 'error' I was chasing down was in fact the difference
                 // between the FormatBitRate (averaged inc. header) and the StreamBitRate.
-                // For long files this difference approaches 0, for short files the difference is signficiant
+                // For long files this difference approaches 0, for short files the difference is significant
                 //if (result.MediaType == MediaTypes.MediaTypeWav)
                 //{
                 //    // deal with inaccuracy - calculate it a second way

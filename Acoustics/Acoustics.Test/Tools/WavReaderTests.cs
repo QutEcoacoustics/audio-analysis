@@ -506,7 +506,6 @@ namespace Acoustics.Test.Tools
         }
 
         [TestMethod]
-
         public void WavReaderSupportsWaveExtensibleButOnlyPcm()
         {
             var source = PathHelper.GetTestAudioFile("WAVE_FORMAT_EXTENSIBLE_ULaw.wav");
