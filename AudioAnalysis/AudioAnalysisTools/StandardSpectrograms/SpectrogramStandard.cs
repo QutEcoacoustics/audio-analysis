@@ -78,7 +78,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //for (int i = 0; i < frameCount; i++) this.DecibelsInSubband[i] = sg.DecibelsInSubband[startFrame + i];
             */
 
-            this.DecibelReference = sg.DecibelReference; // Used to normalise the dB values for MFCCs
+            this.DecibelReference = sg.DecibelReference; // Used to NormaliseMatrixValues the dB values for MFCCs
             this.DecibelsNormalised = new double[frameCount];
             for (int i = 0; i < frameCount; i++) this.DecibelsNormalised[i] = sg.DecibelsNormalised[startFrame + i];
 

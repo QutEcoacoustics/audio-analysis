@@ -423,9 +423,9 @@
             var plots = new List<Plot>();
             //plots.Add(new Plot("lowerArray", DataTools.Normalise(lowerArray, 0, 100), 10.0));
             //plots.Add(new Plot("lowerArray", DataTools.Normalise(lowerArray, 0, 100), 10.0));
-            //plots.Add(new Plot("lowerArray", DataTools.normalise(lowerArray), 0.25));
-            //plots.Add(new Plot("upperArray", DataTools.normalise(upperArray), 0.25));
-            //plots.Add(new Plot("intensity",  DataTools.normalise(intensity), intensityThreshold));
+            //plots.Add(new Plot("lowerArray", DataTools.NormaliseMatrixValues(lowerArray), 0.25));
+            //plots.Add(new Plot("upperArray", DataTools.NormaliseMatrixValues(upperArray), 0.25));
+            //plots.Add(new Plot("intensity",  DataTools.NormaliseMatrixValues(intensity), intensityThreshold));
             plots.Add(new Plot("intensity", intensity, intensityThreshold));
 
             return Tuple.Create(sonogram, hits, plots, predictedEvents, tsRecordingtDuration);
@@ -662,9 +662,9 @@
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
                     newHeaders[i] = headers[i] + "  (-50..-5dB)";
                 }
-                else //default is to normalise in [0,1]
+                else //default is to NormaliseMatrixValues in [0,1]
                 {
-                    newColumns.Add(DataTools.normalise(values)); //normalise all values in [0,1]
+                    newColumns.Add(DataTools.normalise(values)); //NormaliseMatrixValues all values in [0,1]
                     newHeaders[i] = headers[i];
                 }
             } //for loop

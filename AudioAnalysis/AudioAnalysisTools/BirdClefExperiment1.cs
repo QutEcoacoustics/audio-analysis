@@ -523,7 +523,7 @@
                 // NOTE: HERE WE HAVE THREE OPTIONS  ###############################################
                 //subvector = DataTools.Normalise2Probabilites(subvector);
                 subvector = DataTools.normalise2UnitLength(subvector);
-                //subvector = DataTools.normalise(subvector);
+                //subvector = DataTools.NormaliseMatrixValues(subvector);
 
                 for (int j = 0; j < partialLength; j++)
                 {

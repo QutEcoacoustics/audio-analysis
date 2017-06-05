@@ -76,7 +76,7 @@
 
         public static void DrawDFTImage(string outputImagePath, double[,] imageData, Bitmap bitmap)
         {
-            //imageData = MatrixTools.normalise(imageData);
+            //imageData = MatrixTools.NormaliseMatrixValues(imageData);
 
             for (var i = 0; i < imageData.GetLength(0); i++)
             {

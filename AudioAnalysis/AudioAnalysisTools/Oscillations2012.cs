@@ -132,7 +132,7 @@
                         dctCoeff[i] = 0.0;
 
                     dctCoeff = DataTools.normalise2UnitLength(dctCoeff);
-                    //dct = DataTools.normalise(dct); //another option to normalise
+                    //dct = DataTools.NormaliseMatrixValues(dct); //another option to NormaliseMatrixValues
                     int indexOfMaxValue = DataTools.GetMaxIndex(dctCoeff);
                     //double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
 
@@ -211,7 +211,7 @@
                     dctCoeff[i] = 0.0;
 
                 dctCoeff = DataTools.normalise2UnitLength(dctCoeff);
-                //dct = DataTools.normalise(dct); //another option to normalise
+                //dct = DataTools.NormaliseMatrixValues(dct); //another option to NormaliseMatrixValues
                 int indexOfMaxValue = DataTools.GetMaxIndex(dctCoeff);
                 //double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
 
@@ -295,7 +295,7 @@
                 {
                     if (hits[r, c] > 0) score++;
                 }
-                scores[r] = score / hitRange; //normalise the hit score in [0,1]
+                scores[r] = score / hitRange; //NormaliseMatrixValues the hit score in [0,1]
                 if (scores[r] > 1.0) scores[r] = 1.0;
             }
             return scores;

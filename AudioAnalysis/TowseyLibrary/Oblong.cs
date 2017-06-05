@@ -964,7 +964,7 @@ namespace TowseyLibrary
 
         public double[] FeaturesNormalised()
         {
-            int maxRows = 54; // to normalise rowWidth.  27 rows/sec. ie row width is the fraction of 2 seconds
+            int maxRows = 54; // to NormaliseMatrixValues rowWidth.  27 rows/sec. ie row width is the fraction of 2 seconds
             double[] features = this.Features(); // get raw feature values
 
             // features[0] /= (double)maxCols; //column centroid

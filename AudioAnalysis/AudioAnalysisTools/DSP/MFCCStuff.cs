@@ -31,7 +31,7 @@ namespace AudioAnalysisTools.DSP
             //array = DataTools.SubtractMean(array);
             array = DataTools.normalise2UnitLength(array);
 
-            //array = DataTools.normalise(array);
+            //array = DataTools.NormaliseMatrixValues(array);
             DataTools.writeBarGraph(array);
 
             double[] dct = DCT(array, cosines);
@@ -63,7 +63,7 @@ namespace AudioAnalysisTools.DSP
         /// </summary>
         /// <param name="amplitudeM"> the amplitude spectra </param>
         /// <param name="windowPower">value for window power normalisation</param>
-        /// <param name="sampleRate">to normalise for the sampling rate</param>
+        /// <param name="sampleRate">to NormaliseMatrixValues for the sampling rate</param>
         /// <param name="epsilon">small value to avoid log of zero.</param>
         /// <returns>a spectrogram of decibel values</returns>
         public static double[,] DecibelSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon)
@@ -939,7 +939,7 @@ namespace AudioAnalysisTools.DSP
 
                 for (int i = offset; i < offset + coeffcount; i++)
                 {
-                    fv[i] = (fv[i] + 1) / 2;   //normalise values that potentially range from -1 to +1
+                    fv[i] = (fv[i] + 1) / 2;   //NormaliseMatrixValues values that potentially range from -1 to +1
 
                     //if (fv[i] < 0.0) fv[i] = 0.0;
                     //if (fv[i] > 1.0) fv[i] = 1.0;
@@ -967,7 +967,7 @@ namespace AudioAnalysisTools.DSP
 
                 for (int i = offset; i < offset + coeffcount; i++)
                 {
-                    fv[i] = (fv[i] + 2) / 4;   //normalise values that potentially range from -2 to +2
+                    fv[i] = (fv[i] + 2) / 4;   //NormaliseMatrixValues values that potentially range from -2 to +2
 
                     //if (fv[i] < 0.0) fv[i] = 0.0;
                     //if (fv[i] > 1.0) fv[i] = 1.0;
@@ -1025,7 +1025,7 @@ namespace AudioAnalysisTools.DSP
 
                 for (int i = offset; i < offset + mfccCount + 1; i++)
                 {
-                    fv[i] = (fv[i] + 1) / 2;    //normalise values that potentially range from -1 to +1
+                    fv[i] = (fv[i] + 1) / 2;    //NormaliseMatrixValues values that potentially range from -1 to +1
                 }
             }
 
@@ -1051,7 +1051,7 @@ namespace AudioAnalysisTools.DSP
 
                 for (int i = offset; i < offset + mfccCount + 1; i++)
                 {
-                    fv[i] = (fv[i] + 2) / 4;   //normalise values that potentially range from -2 to +2
+                    fv[i] = (fv[i] + 2) / 4;   //NormaliseMatrixValues values that potentially range from -2 to +2
 
                     //if (fv[i] < 0.0) fv[i] = 0.0;
                     //if (fv[i] > 1.0) fv[i] = 1.0;

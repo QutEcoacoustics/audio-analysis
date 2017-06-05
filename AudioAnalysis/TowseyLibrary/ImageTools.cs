@@ -616,7 +616,7 @@ namespace TowseyLibrary
         /// this method assumes that all the values in the passed matrix are between zero & one.
         /// Will truncate all values > 1 to 1.0.
         /// Spurious results will occur if have negative values or values > 1.
-        /// Should normalise matrix first if these conditions do not apply.
+        /// Should NormaliseMatrixValues matrix first if these conditions do not apply.
         /// </summary>
         /// <param name="M"></param>
         /// <param name="fractionalStretching"></param>
@@ -625,7 +625,7 @@ namespace TowseyLibrary
         {
             int rowCount = M.GetLength(0);
             int colCount = M.GetLength(1);
-            double[,] norm = MatrixTools.normalise(M);
+            double[,] norm = MatrixTools.NormaliseMatrixValues(M);
 
             int binCount = 100;
             double binWidth = 0.01;
@@ -1495,7 +1495,7 @@ namespace TowseyLibrary
                 tmpCol = col % ncbbc;  // determine col relative to current band
                 if ((tmpCol == 0) && (!(col == 0)))
                 {
-                    //normalise existing submatrix and transfer to the output matrix, outM
+                    //NormaliseMatrixValues existing submatrix and transfer to the output matrix, outM
                     tmpM = DataTools.normalise(tmpM);
                     for (int y = 0; y < height; y++)
                     {
@@ -3407,7 +3407,7 @@ namespace TowseyLibrary
                     //repeat this bin if pixel rows per bin>1
                     for (int x = 0; x < width; x++)
                     {
-                        //for pixels in the line - normalise and bound the value - use min bound, max and 255 image intensity range
+                        //for pixels in the line - NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                         double value = (data[x, y] - min) / (double)range;
                         int c = 255 - (int)Math.Floor(255.0 * value); //original version
                         if (c < 0)

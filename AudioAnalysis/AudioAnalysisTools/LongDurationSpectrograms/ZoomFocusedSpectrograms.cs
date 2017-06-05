@@ -618,7 +618,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             truncateMin = 0;
             truncateMax = 50;
             double[,] nrSpectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(nrSpectrogramData, truncateMin, truncateMax, filterCoefficient);
-            //nrSpectrogramNorm = DataTools.normalise(nrSpectrogramNorm);
+            //nrSpectrogramNorm = DataTools.NormaliseMatrixValues(nrSpectrogramNorm);
             nrSpectrogramNorm = MatrixTools.BoundMatrix(nrSpectrogramNorm, 0.0, 0.9);
             nrSpectrogramNorm = MatrixTools.SquareRootOfValues(nrSpectrogramNorm);
             nrSpectrogramNorm = DataTools.normalise(nrSpectrogramNorm);

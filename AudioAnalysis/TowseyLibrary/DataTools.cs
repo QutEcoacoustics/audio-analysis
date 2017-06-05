@@ -41,7 +41,7 @@ namespace TowseyLibrary
                 writeMatrix(sub);
             }//end test ReadDoubles2Matrix(string fName)
 
-            if (true) //test normalise(double[,] m, double normMin, double normMax)
+            if (true) //test NormaliseMatrixValues(double[,] m, double normMin, double normMax)
             {
                 string fName = testDir + "testOfReadingMatrixFile.txt";
                 double[,] matrix = FileTools.ReadDoubles2Matrix(fName);
@@ -56,7 +56,7 @@ namespace TowseyLibrary
                 LoggedConsole.WriteLine("\n\n");
                 writeMatrix(matrix);
 
-            }//end test normalise(double[,] m, double normMin, double normMax)
+            }//end test NormaliseMatrixValues(double[,] m, double normMin, double normMax)
 
             //COPY THIS TEST TEMPLATE
             if (false) //test Method(parameters)
@@ -1013,8 +1013,8 @@ namespace TowseyLibrary
             for (int i = 0; i < M; i++)
             {
                 for (int j = 0; j < N; j++)
-                { //normalise power for given min and max
-                    int k = (int)Math.Floor(n * (matrix[i, j] - min) / range);//normalise
+                { //NormaliseMatrixValues power for given min and max
+                    int k = (int)Math.Floor(n * (matrix[i, j] - min) / range);//NormaliseMatrixValues
                     if (k < 0)
                     {
                         k = 0;      //range check
@@ -2945,7 +2945,7 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static double[,] Normalise(double[,] m, double normMin, double normMax)
         {
-            //m = normalise(m);
+            //m = NormaliseMatrixValues(m);
             double min = double.MaxValue;
             double max = -double.MaxValue;
 
@@ -2993,7 +2993,7 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static double[] Normalise(double[] v, double normMin, double normMax)
         {
-            //m = normalise(m);
+            //m = NormaliseMatrixValues(m);
             double min = double.MaxValue;
             double max = -double.MaxValue;
 
@@ -3268,7 +3268,7 @@ namespace TowseyLibrary
             double tolerance = 0.00000000001;
             if (Math.Abs(diff) < tolerance)
             {
-                LoggedConsole.WriteErrorLine("Cannot normalise vector in method DataTools.Normalise(). Min = Max.");
+                LoggedConsole.WriteErrorLine("Cannot NormaliseMatrixValues vector in method DataTools.Normalise(). Min = Max.");
                 return;
             }
 
@@ -3393,7 +3393,7 @@ namespace TowseyLibrary
         /// normalises the values in a matrix such that the minimum value
         /// is the average of the edge values.
         /// Truncate thos original values that are below the edge average.
-        /// This method is used to normalise image templates where there should be no power at the edge
+        /// This method is used to NormaliseMatrixValues image templates where there should be no power at the edge
         /// </summary>
         /// <param name="m"></param>
         /// <param name="normMin"></param>
@@ -3522,7 +3522,7 @@ namespace TowseyLibrary
       return ret;
   }
 
-  //normalise and compress/bound the values
+  //NormaliseMatrixValues and compress/bound the values
         public static double[,] Clip(double[,] m, double minPercentile, double maxPercentile)
   {
       double minCut;

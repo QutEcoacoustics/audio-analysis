@@ -186,7 +186,7 @@
                     for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
                     dct[0] = 0.0; dct[1] = 0.0; dct[2] = 0.0; dct[3] = 0.0; dct[4] = 0.0;//remove low freq oscillations from consideration
                     dct = DataTools.normalise2UnitLength(dct);
-                    //dct = DataTools.normalise(dct); //another option to normalise
+                    //dct = DataTools.NormaliseMatrixValues(dct); //another option to NormaliseMatrixValues
                     int indexOfMaxValue = DataTools.GetMaxIndex(dct);
                     double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
 

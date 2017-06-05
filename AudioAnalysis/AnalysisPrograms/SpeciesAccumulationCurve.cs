@@ -673,7 +673,7 @@
 
             int wtCount = weights.Length;
             var columns = DataTableTools.ListOfColumnValues(table); // extract columns from table as list
-            columns = DataTableTools.NormaliseColumnValues(columns, minValues, maxValues); // normalise column value
+            columns = DataTableTools.NormaliseColumnValues(columns, minValues, maxValues); // NormaliseMatrixValues column value
             int rowCount = columns[0].Length;
             // reverse those column values as required - to do with entropy.
             //for (int r = 0; r < rowCount; r++)
@@ -714,7 +714,7 @@
             double[] maxValues = { 1.0, -5.0, 30.0, 1.0, -5.0, 1.0, 200, 500, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 20.0, 200.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
 
             var columns = DataTableTools.ListOfColumnValues(table); // extract columns from table as list
-            columns = DataTableTools.NormaliseColumnValues(columns, minValues, maxValues); // normalise column value
+            columns = DataTableTools.NormaliseColumnValues(columns, minValues, maxValues); // NormaliseMatrixValues column value
             int rowCount = columns[0].Length;
             // reverse those column values as required - to do with entropy.
             //for (int r = 0; r < rowCount; r++)

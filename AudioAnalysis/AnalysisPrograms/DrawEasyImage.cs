@@ -331,7 +331,7 @@ namespace AnalysisPrograms
                 var grnArray = arrays[grnID];
                 var bluArray = arrays[bluID];
 
-                // normalise the indices
+                // NormaliseMatrixValues the indices
                 redArray = DataTools.NormaliseInZeroOne(redArray, redIndexProps.NormMin, redIndexProps.NormMax);
                 grnArray = DataTools.NormaliseInZeroOne(grnArray, grnIndexProps.NormMin, grnIndexProps.NormMax);
                 bluArray = DataTools.NormaliseInZeroOne(bluArray, bluIndexProps.NormMin, bluIndexProps.NormMax);

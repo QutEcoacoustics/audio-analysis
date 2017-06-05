@@ -126,7 +126,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //(iv) calculate cepstral coefficients
             m = MFCCStuff.Cepstra(m, ccCount);
 
-            //(v) normalise
+            //(v) NormaliseMatrixValues
             m = DataTools.normalise(m);
 
             //(vi) Calculate the full range of MFCC coefficients ie including decibel and deltas, etc

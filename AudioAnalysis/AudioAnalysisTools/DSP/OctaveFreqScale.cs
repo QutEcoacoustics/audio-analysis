@@ -170,7 +170,7 @@ namespace AudioAnalysisTools.DSP
         /// </summary>
         /// <param name="amplitudeM"> the amplitude spectra </param>
         /// <param name="windowPower">value for window power normalisation</param>
-        /// <param name="sampleRate">to normalise for the sampling rate</param>
+        /// <param name="sampleRate">to NormaliseMatrixValues for the sampling rate</param>
         /// <param name="epsilon">small value to avoid log of zero.</param>
         /// <param name="freqScale">the kind of frequency scale</param>
         public static double[,] PowerSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon, FrequencyScale freqScale)
@@ -515,7 +515,7 @@ namespace AudioAnalysisTools.DSP
                 }
             }
 
-            // normalise to area of the triangular filter
+            // NormaliseMatrixValues to area of the triangular filter
             integral /= area;
             return integral;
         }

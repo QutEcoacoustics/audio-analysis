@@ -600,7 +600,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             string[] rgbMap = colorMap.Split('-');
 
-            // normalise spectrogram values and de-emphasize the low background values
+            // NormaliseMatrixValues spectrogram values and de-emphasize the low background values
             var redMatrix = this.GetNormalisedSpectrogramMatrix(rgbMap[0]);
             var grnMatrix = this.GetNormalisedSpectrogramMatrix(rgbMap[1]);
             var bluMatrix = this.GetNormalisedSpectrogramMatrix(rgbMap[2]);

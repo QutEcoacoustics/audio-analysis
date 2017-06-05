@@ -447,7 +447,7 @@ namespace AnalysisPrograms.Recognizers
                     }
                 }
             }
-            //scores = DataTools.normalise(scores);
+            //scores = DataTools.NormaliseMatrixValues(scores);
             //scores = DataTools.filterMovingAverageOdd(scores, 3);
             return scores;
         }

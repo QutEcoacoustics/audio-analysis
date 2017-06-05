@@ -177,7 +177,7 @@
             //double dBThreshold = 3.0; // SPECTRAL dB THRESHOLD for smoothing background
             //deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, dBThreshold);
 
-            deciBelSpectrogram = MatrixTools.normalise(deciBelSpectrogram);
+            deciBelSpectrogram = MatrixTools.NormaliseMatrixValues(deciBelSpectrogram);
             //DataTools.WriteMinMaxOfArray(MatrixTools.Matrix2Array(deciBelSpectrogram));
 
 
