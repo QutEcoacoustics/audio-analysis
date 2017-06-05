@@ -292,7 +292,7 @@
             double maxOD = 1.0;
             odScores = SNR.NormaliseDecibelArray_ZeroOne(odScores, maxOD);
             odScores = DataTools.filterMovingAverage(odScores, 5);
-            //odScores = DataTools.normalise(odScores); //normalise 0 - 1
+            //odScores = DataTools.NormaliseMatrixValues(odScores); //NormaliseMatrixValues 0 - 1
             //double odThreshold = (10 * SD) / maxOD;   //set od threshold to 2xSD above background noise
             //double odThreshold = dctThreshold;
             double odThreshold = 0.4;
@@ -306,7 +306,7 @@
             // vii: LOOK FOR GROUND PARROTS USING TEMPLATE
             var template = GroundParrotRecogniser.ReadGroundParrotTemplateAsList(sonogram);
             double[] gpScores = DetectEPR(template, sonogram, odScores, odThreshold);
-            gpScores = DataTools.normalise(gpScores); //normalise 0 - 1
+            gpScores = DataTools.normalise(gpScores); //NormaliseMatrixValues 0 - 1
 
             // #############################################################################################################################################
 

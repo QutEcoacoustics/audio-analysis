@@ -301,7 +301,7 @@ namespace Dong.Felt
                             }
                         }
                     }
-                    // on average to normalise the value for 5 * 5 ridge detection
+                    // on average to NormaliseMatrixValues the value for 5 * 5 ridge detection
                     result.Item1[row, col] = sumX / 20;
                     result.Item2[row, col] = sumY / 20;
                 }

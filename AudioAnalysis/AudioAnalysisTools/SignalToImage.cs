@@ -591,7 +591,7 @@
         /// </summary>
         /// <param name="amplitudeM">the amplitude spectra.</param>
         /// <param name="windowPower">value for window power normalisation.</param>
-        /// <param name="sampleRate">to normalise for the sampling rate.</param>
+        /// <param name="sampleRate">to NormaliseMatrixValues for the sampling rate.</param>
         /// <param name="epsilon">small value to avoid log of zero.</param>
         /// <returns>Decibel Spectra.</returns>
         private static double[,] DecibelSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon)
@@ -946,7 +946,7 @@
                         // required to render spectrogram correct way up
                         int spectrogramY = heightOffset - 1;
 
-                        // normalise and bound the value - use min bound, max and 255 image intensity range
+                        // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                         // this is the amplitude
                         double value = (audioData[x, spectrogramY] - min) / (double)range;
                         double colour = 255.0 - Math.Floor(255.0 * value);

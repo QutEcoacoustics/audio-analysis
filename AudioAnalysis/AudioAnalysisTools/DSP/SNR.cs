@@ -141,13 +141,13 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// normalise the power values using the passed reference decibel level.
+        /// NormaliseMatrixValues the power values using the passed reference decibel level.
         /// NOTE: This method assumes that the energy values are in decibels and that they have been scaled
         /// so that the modal noise value = 0 dB. Simply truncate all values below this to zero dB
         /// </summary>
         public static double[] NormaliseDecibelArray_ZeroOne(double[] dB, double maxDecibels)
         {
-            //normalise power between 0.0 decibels and max decibels.
+            //NormaliseMatrixValues power between 0.0 decibels and max decibels.
             int L = dB.Length;
             double[] E = new double[L];
             for (int i = 0; i < L; i++)
@@ -187,20 +187,20 @@ namespace AudioAnalysisTools.DSP
                     sum += Math.Pow(signal[frameIDs[i, 0] + j], 2); //sum the energy = amplitude squared
                 }
 
-                double e = sum / (double)N; //normalise to frame size i.e. average energy per sample
+                double e = sum / (double)N; //NormaliseMatrixValues to frame size i.e. average energy per sample
                 //LoggedConsole.WriteLine("e=" + e);
                 //if (e > 0.25) LoggedConsole.WriteLine("e > 0.25 = " + e);
 
                 if (e == double.MinValue) //to guard against log(0) but this should never happen!
                 {
                     LoggedConsole.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
-                    logEnergy[i] = MinLogEnergyReference - MaxLogEnergyReference; //normalise to absolute scale
+                    logEnergy[i] = MinLogEnergyReference - MaxLogEnergyReference; //NormaliseMatrixValues to absolute scale
                     continue;
                 }
 
                 double logE = Math.Log10(e);
 
-                //normalise to ABSOLUTE energy value i.e. as defined in header of Sonogram class
+                //NormaliseMatrixValues to ABSOLUTE energy value i.e. as defined in header of Sonogram class
                 if (logE < MinLogEnergyReference)
                 {
                     logEnergy[i] = MinLogEnergyReference - MaxLogEnergyReference;
@@ -208,7 +208,7 @@ namespace AudioAnalysisTools.DSP
                 else logEnergy[i] = logE - MaxLogEnergyReference;
             }
 
-            //could alternatively normalise to RELATIVE energy value i.e. max frame energy in the current signal
+            //could alternatively NormaliseMatrixValues to RELATIVE energy value i.e. max frame energy in the current signal
             //double maxEnergy = logEnergy[DataTools.getMaxIndex(logEnergy)];
             //for (int i = 0; i < frameCount; i++) //foreach time step
             //{
@@ -263,7 +263,7 @@ namespace AudioAnalysisTools.DSP
                     sum += (frames[i, j] * frames[i, j]); //sum the energy = amplitude squared
                 }
 
-                double e = sum / (double)N; //normalise to frame size i.e. average energy per sample
+                double e = sum / (double)N; //NormaliseMatrixValues to frame size i.e. average energy per sample
 
                 //LoggedConsole.WriteLine("e=" + e);
                 //if (e > 0.25) LoggedConsole.WriteLine("e > 0.25 = " + e);
@@ -271,12 +271,12 @@ namespace AudioAnalysisTools.DSP
                 if (e == double.MinValue) //to guard against log(0) but this should never happen!
                 {
                     LoggedConsole.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
-                    logEnergy[i] = MinLogEnergyReference - MaxLogEnergyReference; //normalise to absolute scale
+                    logEnergy[i] = MinLogEnergyReference - MaxLogEnergyReference; //NormaliseMatrixValues to absolute scale
                     continue;
                 }
                 double logE = Math.Log10(e);
 
-                //normalise to ABSOLUTE energy value i.e. as defined in header of Sonogram class
+                //NormaliseMatrixValues to ABSOLUTE energy value i.e. as defined in header of Sonogram class
                 if (logE < MinLogEnergyReference)
                 {
                     logEnergy[i] = MinLogEnergyReference - MaxLogEnergyReference;

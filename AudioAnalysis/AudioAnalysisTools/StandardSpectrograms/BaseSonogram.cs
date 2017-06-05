@@ -89,7 +89,7 @@ namespace AudioAnalysisTools
         public double[] DecibelsNormalised { get; set; }
 
         /// <summary>
-        /// Gets or sets decibel reference with which to normalise the dB values for MFCCs
+        /// Gets or sets decibel reference with which to NormaliseMatrixValues the dB values for MFCCs
         /// </summary>
         public double DecibelReference { get; protected set; }
 
@@ -392,7 +392,7 @@ namespace AudioAnalysisTools
                 // over all freq bins
                 for (int y = 0; y < data.GetLength(1); y++)
                 {
-                    // normalise and bound the value - use min bound, max and 255 image intensity range
+                    // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                     double value = (data[maxId, y] - min) / range;
                     int c = 255 - (int)Math.Floor(255.0 * value); //original version
                     if (c < 0)
@@ -475,7 +475,7 @@ namespace AudioAnalysisTools
             {
                 for (int t = 0; t < width; t++)
                 {
-                    // normalise and bound the value - use 0-255 image intensity range
+                    // NormaliseMatrixValues and bound the value - use 0-255 image intensity range
                     double value = (matrix[t, f] - min) / range;
                     int c = 255 - (int)Math.Floor(255.0 * value); //original version
                     if (c < 0)
@@ -545,7 +545,7 @@ namespace AudioAnalysisTools
                     // for all pixels in line
                     for (int x = 0; x < width; x++)
                     {
-                        // normalise and bound the value - use min bound, max and 255 image intensity range
+                        // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                         double value = (data[x, y] - min) / (double)range;
                         int c = 255 - (int)Math.Floor(255.0 * value); //original version
                         if (c < 0)
@@ -600,7 +600,7 @@ namespace AudioAnalysisTools
                     // for pixels in the line
                     for (int x = 0; x < width; x++)
                     {
-                        // normalise and bound the value - use min bound, max and 255 image intensity range
+                        // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                         double value = (data[x, y] - min) / range;
                         int c = 255 - (int)Math.Floor(255.0 * value); //original version
                         if (c < 0)

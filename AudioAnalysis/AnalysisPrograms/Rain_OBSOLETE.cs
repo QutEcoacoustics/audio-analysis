@@ -532,9 +532,9 @@
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
                     newHeaders[i] = headers[i] + "  (-50..-5dB)";
                 }
-                else //default is to normalise in [0,1]
+                else //default is to NormaliseMatrixValues in [0,1]
                 {
-                    newColumns.Add(DataTools.normalise(values)); //normalise all values in [0,1]
+                    newColumns.Add(DataTools.normalise(values)); //NormaliseMatrixValues all values in [0,1]
                     newHeaders[i] = headers[i];
                 }
             }
@@ -637,9 +637,9 @@
         //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
         //            newHeaders[i] = headers[i] + "  (0.2..1.0)";
         //        }
-        //        else //default is to normalise in [0,1]
+        //        else //default is to NormaliseMatrixValues in [0,1]
         //        {
-        //            newColumns.Add(DataTools.normalise(values)); //normalise all values in [0,1]
+        //            newColumns.Add(DataTools.NormaliseMatrixValues(values)); //NormaliseMatrixValues all values in [0,1]
         //            newHeaders[i] = headers[i];
         //        }
         //    } //for loop

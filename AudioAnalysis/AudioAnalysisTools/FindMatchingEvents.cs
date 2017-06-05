@@ -373,7 +373,7 @@
         /// Use this method when want to match defined shape in target using cross-correlation.
         /// This was the method used by Stewart Gage.
         /// First set target and source to same dynamic range.
-        /// Then normalise target and source to unit-length.
+        /// Then NormaliseMatrixValues target and source to unit-length.
         /// </summary>
         /// <param name="target"></param>
         /// <param name="dynamicRange"></param>

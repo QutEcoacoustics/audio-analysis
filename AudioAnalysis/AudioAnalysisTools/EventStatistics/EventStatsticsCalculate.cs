@@ -37,7 +37,7 @@ namespace AudioAnalysisTools.EventStatistics
         /// ...
         /// NOTE 1: There are differences between our method of noise reduction and Briggs. Briggs does not convert to decibels
         /// and intead works with power values. He obtains a noise profile from the 20% of frames having the lowest energy sum.
-        /// NOTE 2: To normalise for noise, they divide the actual energy by the noise value. This is equivalent to subtraction when working in decibels.
+        /// NOTE 2: To NormaliseMatrixValues for noise, they divide the actual energy by the noise value. This is equivalent to subtraction when working in decibels.
         ///         There are advantages and disadvantages to Briggs method versus ours. In our case, we hve to convert decibel values back to
         ///         energy values when calculating the statistics for the extracted acoustic event.
         /// NOTE 3: We do not calculate the higher central moments of the time/frequency profiles, i.e. skew and kurtosis.
@@ -131,11 +131,11 @@ namespace AudioAnalysisTools.EventStatistics
 
             // remainder of this method is to produce debugging images. Can comment out when not debugging.
             /*
-            var normalisedIndex = DataTools.normalise(columnAverages);
+            var normalisedIndex = DataTools.NormaliseMatrixValues(columnAverages);
             var image4 = GraphsAndCharts.DrawGraph("columnSums", normalisedIndex, 100);
             string path4 = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\columnSums.png";
             image4.Save(path4);
-            normalisedIndex = DataTools.normalise(rowAverages);
+            normalisedIndex = DataTools.NormaliseMatrixValues(rowAverages);
             image4 = GraphsAndCharts.DrawGraph("rowSums", normalisedIndex, 100);
             path4 = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\rowSums.png";
             image4.Save(path4);

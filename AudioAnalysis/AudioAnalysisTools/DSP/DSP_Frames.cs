@@ -195,7 +195,7 @@ namespace AudioAnalysisTools.DSP
             var fractionOfHighEnergyFrames = snrdata.FractionHighEnergyFrames(EndpointDetectionConfiguration.K2Threshold);
 
             // double[] decibelsNormalised = snrdata.NormaliseDecibelArray_ZeroOne(decibelReference);
-            // double decibelReference = snrdata.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
+            // double decibelReference = snrdata.MaxReference_dBWrtNoise;  // Used to NormaliseMatrixValues the dB values for feature extraction
 
             // set up the FFT parameters
             if (windowName == null)
