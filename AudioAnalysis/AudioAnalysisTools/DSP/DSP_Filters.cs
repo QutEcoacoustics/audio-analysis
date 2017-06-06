@@ -133,7 +133,7 @@ namespace AudioAnalysisTools.DSP
 
         public static AudioRecording GenerateTestSignal(int sampleRate, double duration, int[] harmonics)
         {
-            double[] signal = GetSignal(sampleRate, duration, harmonics);
+            double[] signal = GetSignalOfAddedCosines(sampleRate, duration, harmonics);
             var wr = new WavReader(signal, 1, 16, sampleRate);
             var recording = new AudioRecording(wr);
             return recording;
@@ -143,23 +143,24 @@ namespace AudioAnalysisTools.DSP
         /// returns a digital signal having sample rate, duration and harmonic content passed by user.
         /// Harmonics array should contain Hertz values of harmonics. i.e. int[] harmonics = { 500, 1000, 2000, 4000 };
         /// Phase is not taken into account.
+        /// Generate Cos waves rather than Sin because amplitude should return to 1.0 if done correctly.
         /// </summary>
         /// <param name="sampleRate">sr of output signal</param>
         /// <param name="duration">signal duration in seconds</param>
-        /// <param name="freq">frequency in Hertz</param>
-        public static double[] GetSignal(int sampleRate, double duration, int[] freq)
+        /// <param name="freq">an array of frequency harmonics in Hertz</param>
+        public static double[] GetSignalOfAddedCosines(int sampleRate, double duration, int[] freq)
         {
-            double amplitude = 10000;
+            double amplitude = 0.999 / freq.Length;
             int length = (int)(sampleRate * duration);
             double[] data = new double[length];
             int count = freq.Length;
 
             for (int i = 0; i < length; i++)
             {
-                //for (int f = 0; f < count; f++) data[i] += Math.Sin(omega[f] * i);
                 for (int f = 0; f < count; f++)
                 {
-                    data[i] += amplitude * Math.Sin(2.0 * Math.PI * freq[f] * i / sampleRate);
+                    //data[i] +=           Math.Cos(omega[f] * i);
+                    data[i] += amplitude * Math.Cos(2.0 * Math.PI * freq[f] * i / sampleRate);
                 }
             }
 
