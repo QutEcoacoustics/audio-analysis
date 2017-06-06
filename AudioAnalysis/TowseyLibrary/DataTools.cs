@@ -88,6 +88,31 @@ namespace TowseyLibrary
         }
 
         /// <summary>
+        /// Returns a subarray of the passed array of any type
+        /// </summary>
+        /// <param name="array">an array of any type</param>
+        /// <param name="start">the first element of the subarray</param>
+        /// <param name="length">number of elements in subarray</param>
+        public static T[] Subarray<T>(T[] array, int start, int length)
+        {
+            int end = start + length - 1;
+            if (end >= array.Length)
+            {
+                //LoggedConsole.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
+                return null;
+            }
+
+            var sa = new T[length];
+
+            for (int i = 0; i < length; i++)
+            {
+                sa[i] = array[start + i];
+            }
+
+            return sa;
+        }
+
+        /// <summary>
         ///
         /// </summary>
         /// <param name="A"></param>
@@ -237,6 +262,18 @@ namespace TowseyLibrary
                 {
                     op[i, j] = list[i][j];
                 }
+            }
+
+            return op;
+        }
+
+        public static double[] ConvertStringArrayToDoubles(string[] list)
+        {
+            int length = list.Length;
+            var op = new double[length];
+            for (int i = 0; i < length; i++)
+            {
+                    op[i] = double.Parse(list[i]);
             }
 
             return op;
