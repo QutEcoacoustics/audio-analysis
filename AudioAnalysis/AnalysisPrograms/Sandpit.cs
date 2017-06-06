@@ -7,11 +7,13 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using System.Drawing;
+    using System.Drawing.Imaging;
     using System.Globalization;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+    using AnalyseLongRecordings;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.EventStatistics;
@@ -72,7 +74,7 @@ namespace AnalysisPrograms
                 int partialRowCount = rowsOfCsvFile.Count();
             }
 
-            if (true)
+            if (false)
             {
                 // The following are test methods to confirm that the frequency scale code is working
                 // They are also good tests for the making of standard sonograms.
@@ -96,6 +98,78 @@ namespace AnalysisPrograms
                 // DspFilters.TestMethod_GenerateSignal1();
                 // DspFilters.TestMethod_GenerateSignal2();
                 EventStatsticsCalculate.TestCalculateEventStatistics();
+            }
+
+            if (true)
+            {
+                int sampleRate = 22050;
+                double duration = 420; // signal duration in seconds = 7 minutes
+                int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
+                var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics);
+                var outputDirectory = new DirectoryInfo(@"C:\SensorNetworks\SoftwareTests\TestLongDurationRecordings");
+                var recordingPath = outputDirectory.CombineFile("TemporaryRecording.wav");
+                WavWriter.WriteWavFileViaFfmpeg(recordingPath, recording.WavReader);
+                var configPath = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml");
+
+                // draw the signal as spectrogram just for debugging purposes
+                /*
+                var fst = FreqScaleType.Linear;
+                var freqScale = new FrequencyScale(fst);
+                var sonoConfig = new SonogramConfig
+                {
+                    WindowSize = 512,
+                    WindowOverlap = 0.0,
+                    SourceFName = recording.BaseName,
+                    NoiseReductionType = NoiseReductionType.Standard,
+                    NoiseReductionParameter = 2.0,
+                };
+                var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+                var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM", freqScale.GridLineLocations);
+                var outputImagePath = outputDirectory.CombineFile("Signal1_LinearFreqScale.png");
+                image.Save(outputImagePath.FullName, ImageFormat.Png);
+                */
+
+                var argumentsForAlr = new AnalyseLongRecording.Arguments
+                {
+                    Source = recordingPath,
+                    Config = configPath,
+                    Output = outputDirectory,
+                    MixDownToMono = true,
+                };
+
+                AnalyseLongRecording.Execute(argumentsForAlr);
+                var resultsDirectory = outputDirectory.Combine("Towsey.Acoustic");
+                var listOfFiles = resultsDirectory.EnumerateFiles();
+                int count = listOfFiles.Count();
+                var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
+                var jsonCount = listOfFiles.Count(f => f.Name.EndsWith(".json"));
+                var pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
+
+                var twoMapsImagePath = resultsDirectory.CombineFile("TemporaryRecording__2Maps.png");
+                var twoMapsImage = ImageTools.ReadImage2Bitmap(twoMapsImagePath.FullName);
+
+                // image is 7 * 652
+                int width = twoMapsImage.Width;
+                int height = twoMapsImage.Height;
+
+                // test integrity of BGN file
+                var bgnFile = resultsDirectory.CombineFile("TemporaryRecording__Towsey.Acoustic.BGN.csv");
+                var bgnFileSize = bgnFile.Length;
+
+                // cannot get following line or several variants to work, so resort to the subsequent four lines
+                //var bgnArray = Csv.ReadMatrixFromCsv<string[]>(bgnFile);
+                var lines = FileTools.ReadTextFile(bgnFile.FullName);
+                var lineCount = lines.Count;
+                var secondLine = lines[1].Split(',');
+                var subarray = DataTools.Subarray(secondLine, 1, secondLine.Length - 2);
+                var array = DataTools.ConvertStringArrayToDoubles(subarray);
+                var columnCount = array.Length;
+
+                // draw array just to check peaks are in correct places.
+                var normalisedIndex = DataTools.normalise(array);
+                var image2 = GraphsAndCharts.DrawGraph("LD BGN SPECTRUM", normalisedIndex, 100);
+                var ldsBgnSpectrumFile = outputDirectory.CombineFile("Spectrum2.png");
+                image2.Save(ldsBgnSpectrumFile.FullName);
             }
 
             if (false)

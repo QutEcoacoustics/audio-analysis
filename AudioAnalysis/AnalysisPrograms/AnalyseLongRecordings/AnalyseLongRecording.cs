@@ -198,7 +198,6 @@ Output  to  directory: {1}
                 Log.Warn("Can't read SegmentOverlapDuration from config file (exceptions squashed, default value of " + analysisSettings.SegmentOverlapDuration + " used)");
             }
 
-
             // set target sample rate
             try
             {
