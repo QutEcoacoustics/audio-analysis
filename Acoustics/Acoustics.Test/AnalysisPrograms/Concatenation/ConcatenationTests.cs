@@ -8,7 +8,6 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
     using System.Drawing;
     using System.IO;
     using Acoustics.Shared;
-    using EcoSounds.Mvc.Tests;
     using global::AnalysisPrograms;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;

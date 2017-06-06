@@ -9,8 +9,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using System.Drawing.Imaging;
     using System.IO;
     using Acoustics.Shared;
-    using Acoustics.Tools.Wav;
-    using EcoSounds.Mvc.Tests;
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.StandardSpectrograms;

@@ -8,14 +8,11 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace Acoustics.Test.Shared
 {
-    using System;
     using System.IO;
 
     using Acoustics.Shared;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-    using YamlDotNet.Serialization;
 
     [TestClass]
     public class YamlTests

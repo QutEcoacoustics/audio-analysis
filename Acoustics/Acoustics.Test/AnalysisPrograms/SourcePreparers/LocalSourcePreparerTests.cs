@@ -1,17 +1,14 @@
-﻿namespace Analysis.Test
+﻿namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Text;
     using Acoustics.Shared;
-    using Acoustics.Test.TestHelpers;
     using AnalysisBase;
-    using AnalysisPrograms.SourcePreparers;
-    using EcoSounds.Mvc.Tests;
+    using global::AnalysisPrograms.SourcePreparers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using MSTestExtensions;
+    using TestHelpers;
 
     [TestClass]
     public class LocalSourcePreparerTests : BaseTest

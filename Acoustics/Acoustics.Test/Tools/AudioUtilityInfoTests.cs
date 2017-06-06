@@ -1,14 +1,7 @@
 ﻿namespace Acoustics.Test.Tools
 {
     using System;
-    using System.Reflection;
-    using Acoustics.Shared;
-    using Acoustics.Tools;
-
-    using EcoSounds.Mvc.Tests;
-
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using MSTestExtensions;
     using TestHelpers;
 
     [TestClass]

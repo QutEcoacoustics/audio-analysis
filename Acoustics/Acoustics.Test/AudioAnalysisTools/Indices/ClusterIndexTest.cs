@@ -7,7 +7,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using System;
     using System.IO;
     using Acoustics.Shared;
-    using EcoSounds.Mvc.Tests;
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;

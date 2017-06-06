@@ -5,18 +5,12 @@
 namespace Acoustics.Test.Tools
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Reflection;
-    using System.Text;
     using Acoustics.Shared;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
-    using EcoSounds.Mvc.Tests;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
-    using YamlDotNet.Core.Tokens;
 
     /// <summary>
     /// The audio utility wavpack tests.

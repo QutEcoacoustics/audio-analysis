@@ -6,7 +6,6 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
 {
     using System.IO;
     using Acoustics.Shared;
-    using EcoSounds.Mvc.Tests;
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.StandardSpectrograms;

@@ -2,12 +2,11 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-namespace Acoustics.Test
+namespace Acoustics.Test.AudioAnalysisTools.DSP
 {
     using System;
     using System.IO;
     using Acoustics.Shared;
-    using EcoSounds.Mvc.Tests;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -19,7 +18,7 @@ namespace Acoustics.Test
     /// Notes on TESTS: (from Anthony in email @ 05/04/2017)
     /// (1) small tests are better
     /// (2) simpler tests are better
-    /// (3) use an appropriate serialisation format
+    /// (3) use an appropriate serialization format
     /// (4) for binary large objects(BLOBs) make sure git-lfs is tracking them
     /// See this commit for dealing with BLOBs: https://github.com/QutBioacoustics/audio-analysis/commit/55142089c8eb65d46e2f96f1d2f9a30d89b62710
     /// </summary>

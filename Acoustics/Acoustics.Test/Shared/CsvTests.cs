@@ -10,15 +10,12 @@
 namespace Acoustics.Test.Shared
 {
     using System;
-    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using CsvHelper.TypeConversion;
-    using EcoSounds.Mvc.Tests;
-    using global::AudioAnalysisTools.Indices;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
     using TowseyLibrary;
