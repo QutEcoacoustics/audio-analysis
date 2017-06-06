@@ -5,22 +5,13 @@
 namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
 {
     using System;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
-    using Acoustics.Shared;
-    using Acoustics.Shared.Csv;
-    using EcoSounds.Mvc.Tests;
     using global::AnalysisPrograms.AnalyseLongRecordings;
-    using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
-    using global::AudioAnalysisTools.LongDurationSpectrograms;
-    using global::AudioAnalysisTools.StandardSpectrograms;
-    using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
     using TowseyLibrary;
-    using static global::AnalysisPrograms.Acoustic;
 
     /// <summary>
     /// Test methods for the various standard Sonograms or Spectrograms

@@ -6,7 +6,6 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.IO;
-    using System.Linq;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;

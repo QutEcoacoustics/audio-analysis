@@ -6,20 +6,13 @@
 namespace Acoustics.Test.AudioAnalysisTools
 {
     using System;
-    using System.CodeDom;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Drawing;
     using System.IO;
     using System.Linq;
-    using System.Text;
-
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::AudioAnalysisTools.TileImage;
-
-    using EcoSounds.Mvc.Tests;
-
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using Moq;

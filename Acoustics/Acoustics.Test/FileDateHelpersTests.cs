@@ -9,7 +9,6 @@ namespace Acoustics.Test
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.IO;
     using System.Linq;
     using Acoustics.Shared;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
