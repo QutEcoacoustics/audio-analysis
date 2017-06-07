@@ -5,13 +5,18 @@
 namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
 {
     using System;
+    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
+    using Acoustics.Shared;
     using global::AnalysisPrograms.AnalyseLongRecordings;
+    using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
+    using global::AudioAnalysisTools.StandardSpectrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
     using TowseyLibrary;
+    using global::AudioAnalysisTools.Indices;
 
     /// <summary>
     /// Test methods for the various standard Sonograms or Spectrograms
@@ -59,17 +64,6 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var recordingPath = this.outputDirectory.CombineFile("TemporaryRecording.wav");
             WavWriter.WriteWavFileViaFfmpeg(recordingPath, recording.WavReader);
 
-            var configPath = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
-            var arguments = new AnalyseLongRecording.Arguments
-            {
-                Source = recordingPath,
-                Config = configPath,
-                Output = this.outputDirectory,
-                MixDownToMono = true,
-            };
-
-            AnalyseLongRecording.Execute(arguments);
-
             // draw the signal as spectrogram just for debugging purposes
             /*
             var fst = FreqScaleType.Linear;
@@ -87,6 +81,18 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var outputImagePath = this.outputDirectory.CombineFile("Signal1_LinearFreqScale.png");
             image.Save(outputImagePath.FullName, ImageFormat.Png);
             */
+
+            var configPath = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
+
+            var arguments = new AnalyseLongRecording.Arguments
+            {
+                Source = recordingPath,
+                Config = configPath,
+                Output = this.outputDirectory,
+                MixDownToMono = true,
+            };
+
+            AnalyseLongRecording.Execute(arguments);
 
             var resultsDirectory = this.outputDirectory.Combine("Towsey.Acoustic");
             var listOfFiles = resultsDirectory.EnumerateFiles();
@@ -113,6 +119,17 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             // test integrity of BGN file
             var bgnFile = resultsDirectory.CombineFile("TemporaryRecording__Towsey.Acoustic.BGN.csv");
             Assert.AreEqual(34_080, bgnFile.Length);
+            var actualByteArray = File.ReadAllBytes(bgnFile.FullName);
+
+            var resourcesDir = PathHelper.ResolveAssetPath("LongDuration");
+            var expectedSpectrumFile = new FileInfo(resourcesDir + "\\BgnMatrix.LinearScale.bin");
+
+            // uncomment the following line when first produce the array
+            // File.WriteAllBytes(expectedSpectrumFile.FullName, actualByteArray);
+
+            // compare actual BGN file with expected file.
+            var expectedByteArray = File.ReadAllBytes(expectedSpectrumFile.FullName);
+            CollectionAssert.AreEqual(expectedByteArray, actualByteArray);
 
             // cannot get following line or several variants to work, so resort to the subsequent four lines
             //var bgnArray = Csv.ReadMatrixFromCsv<string[]>(bgnFile);
@@ -125,44 +142,115 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             Assert.AreEqual(256, array.Length);
 
             // draw array just to check peaks are in correct places - just for debugging purposes
-            /*
-            var normalisedIndex = DataTools.normalise(array);
-            var image2 = GraphsAndCharts.DrawGraph("LD BGN SPECTRUM", normalisedIndex, 100);
-            var ldsBgnSpectrumFile = this.outputDirectory.CombineFile("Spectrum2.png");
-            image2.Save(ldsBgnSpectrumFile.FullName);
-            */
+            var ldsBgnSpectrumFile = this.outputDirectory.CombineFile("Spectrum1.png");
+            GraphsAndCharts.DrawGraph(array, "LD BGN SPECTRUM Linear", ldsBgnSpectrumFile);
         }
 
         /// <summary>
         /// Tests the analysis of an artificial seven minute long recording consisting of five harmonics.
-        /// Acoustic indices as calculated from Octave frequency scale spectrogram.
+        /// NOTE: The Acoustic indices are calculated from an Octave frequency scale spectrogram.
+        /// TODO: There is a bug in this unit test - still working on it.
         /// </summary>
         [TestMethod]
         public void TestAnalyzeSr64000Recording()
         {
             int sampleRate = 64000;
             double duration = 420; // signal duration in seconds = 7 minutes
+            // double duration = 240; // signal duration in seconds = 4 minutes
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
             var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics);
             var recordingPath = this.outputDirectory.CombineFile("TemporaryRecording.wav");
-
             WavWriter.WriteWavFileViaFfmpeg(recordingPath, recording.WavReader);
 
+            // draw the signal as spectrogram just for debugging purposes
+            // but can only draw a four minute spectrogram when sr=64000 - change duration above.
+            /*
+            var fst = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
+            var sonogram = OctaveFreqScale.ConvertRecordingToOctaveScaleSonogram(recording, fst);
+
+            // Get sonogram image and save
+            var freqScale = new FrequencyScale(fst);
+            var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM", freqScale.GridLineLocations);
+            var outputImagePath = this.outputDirectory.CombineFile("SignalSpectrogram_OctaveFreqScale.png");
+            image.Save(outputImagePath.FullName, ImageFormat.Png);
+            */
+
+            // Now need to rewrite the config file file with new parameter settings
             var configPath = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
-            var outputImagePath = Path.Combine(this.outputDirectory.FullName, "SineSignal1_LinearFreqScale.png");
+
+            // Convert the dynamic config to IndexCalculateConfig class and merge in the unnecesary parameters.
+            //dynamic configuration = Yaml.Deserialise(configPath);
+            //IndexCalculateConfig config = IndexCalculateConfig.GetConfig(configuration, false);
+
+            // because of difficulties in dealing with dynamic config files, just edit the text file!!!!!
+            var configLines = File.ReadAllLines(configPath.FullName);
+            configLines[configLines.IndexOf(x => x.StartsWith("IndexCalculationDuration: "))] = "IndexCalculationDuration: 15.0";
+            //configLines[configLines.IndexOf(x => x.StartsWith("BgNoiseBuffer: "))] = "BgNoiseBuffer: 5.0";
+            configLines[configLines.IndexOf(x => x.StartsWith("FrequencyScale: Linear"))] = "FrequencyScale: Octave";
+
+            var newConfigPath = this.outputDirectory.CombineFile("Towsey.Acoustic.yml");
+            File.WriteAllLines(newConfigPath.FullName, configLines);
 
             var arguments = new AnalyseLongRecording.Arguments
             {
                 Source = recordingPath,
-                Config = configPath,
+                Config = newConfigPath,
                 Output = this.outputDirectory,
                 MixDownToMono = true,
             };
 
             AnalyseLongRecording.Execute(arguments);
 
-            // TODO: @towsey needs to actually write the assertions
-            Assert.Inconclusive("Not implemented");
+            var resultsDirectory = this.outputDirectory.Combine("Towsey.Acoustic");
+            var listOfFiles = resultsDirectory.EnumerateFiles();
+
+            int count = listOfFiles.Count();
+            Assert.AreEqual(33, count);
+
+            var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
+            Assert.AreEqual(16, csvCount);
+
+            var jsonCount = listOfFiles.Count(f => f.Name.EndsWith(".json"));
+            Assert.AreEqual(2, jsonCount);
+
+            var pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
+            Assert.AreEqual(15, pngCount);
+
+            var twoMapsImagePath = resultsDirectory.CombineFile("TemporaryRecording__2Maps.png");
+            var twoMapsImage = ImageTools.ReadImage2Bitmap(twoMapsImagePath.FullName);
+
+            // image is 7 * 652
+            Assert.AreEqual(7, twoMapsImage.Width);
+            Assert.AreEqual(632, twoMapsImage.Height);
+
+            // test integrity of BGN file
+            var bgnFile = resultsDirectory.CombineFile("TemporaryRecording__Towsey.Acoustic.BGN.csv");
+            Assert.AreEqual(34_129, bgnFile.Length);
+            var actualByteArray = File.ReadAllBytes(bgnFile.FullName);
+
+            var resourcesDir = PathHelper.ResolveAssetPath("LongDuration");
+            var expectedSpectrumFile = new FileInfo(resourcesDir + "\\BgnMatrix.OctaveScale.bin");
+
+            // uncomment the following line when first produce the array
+            //File.WriteAllBytes(expectedSpectrumFile.FullName, actualByteArray);
+
+            // compare actual BGN file with expected file.
+            var expectedByteArray = File.ReadAllBytes(expectedSpectrumFile.FullName);
+            CollectionAssert.AreEqual(expectedByteArray, actualByteArray);
+
+            // cannot get following line or several variants to work, so resort to the subsequent four lines
+            //var bgnArray = Csv.ReadMatrixFromCsv<string[]>(bgnFile);
+            var lines = FileTools.ReadTextFile(bgnFile.FullName);
+            var secondLine = lines[1].Split(',');
+            var subarray = DataTools.Subarray(secondLine, 1, secondLine.Length - 1);
+            var array = DataTools.ConvertStringArrayToDoubles(subarray);
+
+            Assert.AreEqual(8, lines.Count);
+            Assert.AreEqual(256, array.Length);
+
+            // draw array just to check peaks are in correct places - just for debugging purposes
+            var ldsBgnSpectrumFile = this.outputDirectory.CombineFile("Spectrum2.png");
+            GraphsAndCharts.DrawGraph(array, "LD BGN SPECTRUM Octave", ldsBgnSpectrumFile);
         }
     }
 }

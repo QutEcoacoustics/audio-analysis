@@ -2,15 +2,10 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace AudioAnalysisTools.Indices
 {
+    using System;
     using System.IO;
-    using System.Runtime.CompilerServices;
     using Acoustics.Shared;
     using DSP;
 
@@ -107,7 +102,7 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// Frequency scale is Linear or OCtave
         /// </summary>
-        private FreqScaleType frequencyScaleType;
+        public FreqScaleType frequencyScaleType;
 
         /// <summary>
         /// Gets or sets the type of Herz frequency scale
@@ -134,12 +129,11 @@ namespace AudioAnalysisTools.Indices
             return this.frequencyScaleType;
         }
 
-
         public static IndexCalculateConfig GetDefaultConfig()
         {
             return new IndexCalculateConfig();
         }
-        
+
         /// <summary>
         /// Link method to one which does the real work.
         /// </summary>
@@ -186,6 +180,11 @@ namespace AudioAnalysisTools.Indices
             }
 
             return config;
+        }
+
+        public static void WriteConfig(IndexCalculateConfig config, FileInfo configFile)
+        {
+            Yaml.Serialise<IndexCalculateConfig>(configFile, config);
         }
     }
 }
