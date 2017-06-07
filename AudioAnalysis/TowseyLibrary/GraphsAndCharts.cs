@@ -8,6 +8,7 @@ namespace TowseyLibrary
     using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
+    using System.IO;
     using System.Linq;
 
     public static class GraphsAndCharts
@@ -164,6 +165,13 @@ namespace TowseyLibrary
             Image[] images = { bmp2, bmp1 };
             Image bmp = ImageTools.CombineImagesVertically(images);
             return bmp;
+        }
+
+        public static void DrawGraph(double[] rawdata, string label, FileInfo file)
+        {
+            var normalisedIndex = DataTools.normalise(rawdata);
+            var image2 = GraphsAndCharts.DrawGraph(label, normalisedIndex, 100);
+            image2.Save(file.FullName);
         }
 
         /// <summary>
