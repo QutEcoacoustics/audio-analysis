@@ -12,11 +12,11 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
     using global::AnalysisPrograms.AnalyseLongRecordings;
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
+    using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.StandardSpectrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
     using TowseyLibrary;
-    using global::AudioAnalysisTools.Indices;
 
     /// <summary>
     /// Test methods for the various standard Sonograms or Spectrograms
@@ -188,6 +188,11 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             //configLines[configLines.IndexOf(x => x.StartsWith("BgNoiseBuffer: "))] = "BgNoiseBuffer: 5.0";
             configLines[configLines.IndexOf(x => x.StartsWith("FrequencyScale: Linear"))] = "FrequencyScale: Octave";
 
+            // the is the only octave scale currently functioning for IndexCalculate class
+            var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
+            configLines[configLines.IndexOf(x => x.StartsWith("FrameLength"))] = $"FrameLength: {freqScale.WindowSize}";
+
+            // write the edited Config file to temporary output directory
             var newConfigPath = this.outputDirectory.CombineFile("Towsey.Acoustic.yml");
             File.WriteAllLines(newConfigPath.FullName, configLines);
 
