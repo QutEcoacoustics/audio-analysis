@@ -15,6 +15,7 @@
     using global::AudioAnalysisTools.StandardSpectrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using MSTestExtensions;
+    using static System.Environment;
 
     /// <summary>
     /// The test helper.
@@ -289,7 +290,7 @@
             }
             catch (Exception exception)
             {
-                Check(exception, typeof(T), expectedExceptionPartialString);
+                Check(typeof(T), expectedExceptionPartialString, exception);
 
                 return (T)exception;
             }
@@ -328,7 +329,7 @@
             }
             catch (Exception exception)
             {
-                Check(exception, exceptionType, expectedExceptionPartialString);
+                Check(exceptionType, expectedExceptionPartialString, exception);
 
                 return exception;
             }
@@ -363,7 +364,7 @@
             }
             catch (Exception exception)
             {
-                Check(exception, typeof(T), expectedExceptionPartialString);
+                Check(typeof(T), expectedExceptionPartialString, exception);
 
                 return (T)exception;
             }
@@ -658,7 +659,8 @@
                 100);
         }
 
-        private static void Check(Exception thrownException, Type expectedException, string expectedExceptionPartialString)
+        //[DebuggerHidden]
+        private static void Check(Type expectedException, string expectedExceptionPartialString, Exception actualException)
         {
             string FormatException(Exception actual)
             {
@@ -668,19 +670,29 @@
                 return $"{type}: {message}\n{stack}";
             }
 
-            var error = $"Exception type did not match expected type. Expected: {expectedException}" +
-                    " Actual: " + FormatException(thrownException);
-            Assert.AreEqual(
-                expectedException,
-                thrownException.GetType(),
-                error);
+            var formattedException = FormatException(actualException);
 
-            Assert.IsFalse(
-                string.IsNullOrWhiteSpace(expectedExceptionPartialString),
-                "Parameter 'expectedExceptionPartialString' was null, empty or white space.");
+            var error = $"Exception type did not match expected type. Expected: {expectedException}" +
+                    " Actual: " + formattedException;
+
+            Assert.AreEqual(expectedException, actualException.GetType(), error);
+
+            if (string.IsNullOrWhiteSpace(actualException.Message))
+            {
+                Assert.Fail("Exception was thrown with an empty message - this is not allowed." + formattedException);
+            }
+
+            if (string.IsNullOrWhiteSpace(expectedExceptionPartialString))
+            {
+                var messageEmpty =
+                    "Parameter \'expectedExceptionPartialString\' was null, empty or white space." +
+                    $"{NewLine}Actual: {formattedException}{NewLine}";
+
+                throw new ArgumentException(messageEmpty, nameof(expectedExceptionPartialString));
+            }
 
             StringAssert.Contains(
-                thrownException.Message,
+                actualException.Message,
                 expectedExceptionPartialString,
                 $"\nException did not contain expected actual partial string.\nExpected: {expectedExceptionPartialString}");
         }

@@ -271,6 +271,7 @@
     <Compile Include="SunAndMoon.cs" />
     <Compile Include="SURFFeatures.cs" />
     <Compile Include="TileImage\AbsoluteDateTillingProfile.cs" />
+    <Compile Include="TileImage\DuplicateTileException.cs" />
     <Compile Include="TileImage\ImageComponent.cs" />
     <Compile Include="TileImage\ISuperTile.cs" />
     <Compile Include="TileImage\Layer.cs" />
