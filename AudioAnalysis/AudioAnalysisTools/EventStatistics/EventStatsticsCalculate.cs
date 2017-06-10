@@ -149,9 +149,9 @@ namespace AudioAnalysisTools.EventStatistics
             double duration = 28; // signal duration in seconds = 7 minutes
             int[] harmonics1 = { 500 };
             int[] harmonics2 = { 500, 1000, 2000, 4000, 8000 };
-            var recording1 = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics1);
-            var recording2 = DspFilters.GenerateTestSignal(sampleRate, 4, harmonics2);
-            var recording3 = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics1);
+            var recording1 = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics1, "sin");
+            var recording2 = DspFilters.GenerateTestSignal(sampleRate, 4, harmonics2, "sin");
+            var recording3 = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics1, "sin");
             var list = new List<double[]>
             {
                 recording1.WavReader.Samples,

@@ -344,14 +344,14 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
             int windowSize = 512;
             var freqScale = new FrequencyScale(sampleRate / 2, windowSize, 1000);
-            var outputImagePath = Path.Combine(this.outputDirectory.FullName, "SineSignal1_LinearFreqScale.png");
+            var outputImagePath = Path.Combine(this.outputDirectory.FullName, "Signal1_LinearFreqScale.png");
 
-            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics);
+            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics, "cos");
             var sonoConfig = new SonogramConfig
             {
                 WindowSize = freqScale.WindowSize,
                 WindowOverlap = 0.0,
-                SourceFName = "SineSignal1",
+                SourceFName = "Signal1",
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = 0.12,
             };
@@ -402,15 +402,15 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             double duration = 30; // signal duration in seconds
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
             var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
-            var outputImagePath = Path.Combine(this.outputDirectory.FullName, "SineSignal2_OctaveFreqScale.png");
-            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics);
+            var outputImagePath = Path.Combine(this.outputDirectory.FullName, "Signal2_OctaveFreqScale.png");
+            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics, "cos");
 
             // init the default sonogram config
             var sonoConfig = new SonogramConfig
             {
                 WindowSize = freqScale.WindowSize,
                 WindowOverlap = 0.2,
-                SourceFName = "SineSignal2",
+                SourceFName = "Signal2",
                 NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
             };
