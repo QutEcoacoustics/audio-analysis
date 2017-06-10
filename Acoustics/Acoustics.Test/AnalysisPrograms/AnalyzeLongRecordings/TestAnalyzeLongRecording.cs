@@ -5,6 +5,7 @@
 namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
 {
     using System;
+    using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
@@ -13,6 +14,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.Indices;
+    using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::AudioAnalysisTools.StandardSpectrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
@@ -61,7 +63,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             double duration = 420; // signal duration in seconds = 7 minutes
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
             var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics, "cos");
-            var recordingPath = this.outputDirectory.CombineFile("TemporaryRecording.wav");
+            var recordingPath = this.outputDirectory.CombineFile("TemporaryRecording1.wav");
             WavWriter.WriteWavFileViaFfmpeg(recordingPath, recording.WavReader);
 
             // draw the signal as spectrogram just for debugging purposes
@@ -159,7 +161,8 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             // double duration = 240; // signal duration in seconds = 4 minutes
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
             var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics, "cos");
-            var recordingPath = this.outputDirectory.CombineFile("TemporaryRecording.wav");
+            string recordingName = "TemporaryRecording2";
+            var recordingPath = this.outputDirectory.CombineFile(recordingName + ".wav");
             WavWriter.WriteWavFileViaFfmpeg(recordingPath, recording.WavReader);
 
             // draw the signal as spectrogram just for debugging purposes
@@ -175,7 +178,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             image.Save(outputImagePath.FullName, ImageFormat.Png);
             */
 
-            // Now need to rewrite the config file file with new parameter settings
+            // Now need to rewrite the config file with new parameter settings
             var configPath = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
 
             // Convert the dynamic config to IndexCalculateConfig class and merge in the unnecesary parameters.
@@ -191,6 +194,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             // the is the only octave scale currently functioning for IndexCalculate class
             var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
             configLines[configLines.IndexOf(x => x.StartsWith("FrameLength"))] = $"FrameLength: {freqScale.WindowSize}";
+            configLines[configLines.IndexOf(x => x.StartsWith("ResampleRate: "))] = "ResampleRate: 64000";
 
             // write the edited Config file to temporary output directory
             var newConfigPath = this.outputDirectory.CombineFile("Towsey.Acoustic.yml");
@@ -210,7 +214,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var listOfFiles = resultsDirectory.EnumerateFiles();
 
             int count = listOfFiles.Count();
-            Assert.AreEqual(33, count);
+            Assert.AreEqual(20, count);
 
             var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
             Assert.AreEqual(16, csvCount);
@@ -219,26 +223,18 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             Assert.AreEqual(2, jsonCount);
 
             var pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
-            Assert.AreEqual(15, pngCount);
-
-            var twoMapsImagePath = resultsDirectory.CombineFile("TemporaryRecording__2Maps.png");
-            var twoMapsImage = ImageTools.ReadImage2Bitmap(twoMapsImagePath.FullName);
-
-            // image is 7 * 652
-            Assert.AreEqual(7, twoMapsImage.Width);
-            Assert.AreEqual(632, twoMapsImage.Height);
+            Assert.AreEqual(2, pngCount);
 
             // test integrity of BGN file
-            var bgnFile = resultsDirectory.CombineFile("TemporaryRecording__Towsey.Acoustic.BGN.csv");
-            Assert.AreEqual(34_129, bgnFile.Length);
+            var bgnFile = resultsDirectory.CombineFile(recordingName + "__Towsey.Acoustic.BGN.csv");
+            Assert.AreEqual(131_013, bgnFile.Length);
             var actualByteArray = File.ReadAllBytes(bgnFile.FullName);
 
             var resourcesDir = PathHelper.ResolveAssetPath("LongDuration");
             var expectedSpectrumFile = new FileInfo(resourcesDir + "\\BgnMatrix.OctaveScale.bin");
 
             // uncomment the following line when first produce the array
-            //File.WriteAllBytes(expectedSpectrumFile.FullName, actualByteArray);
-
+            // File.WriteAllBytes(expectedSpectrumFile.FullName, actualByteArray);
             // compare actual BGN file with expected file.
             var expectedByteArray = File.ReadAllBytes(expectedSpectrumFile.FullName);
             CollectionAssert.AreEqual(expectedByteArray, actualByteArray);
@@ -250,12 +246,54 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var subarray = DataTools.Subarray(secondLine, 1, secondLine.Length - 1);
             var array = DataTools.ConvertStringArrayToDoubles(subarray);
 
-            Assert.AreEqual(8, lines.Count);
+            Assert.AreEqual(29, lines.Count);
             Assert.AreEqual(256, array.Length);
 
             // draw array just to check peaks are in correct places - just for debugging purposes
             var ldsBgnSpectrumFile = this.outputDirectory.CombineFile("Spectrum2.png");
             GraphsAndCharts.DrawGraph(array, "LD BGN SPECTRUM Octave", ldsBgnSpectrumFile);
+
+            // ##########################################
+            // SECOND part of test is to create the LD spectrograms because they are not created when IndexCalcDuration < 60 seconds
+            // first read in the index generation data
+            var icdPath = resultsDirectory.CombineFile(recordingName + "__IndexGenerationData.json");
+            var indexConfigData = Json.Deserialise<IndexGenerationData>(icdPath);
+
+            var indexPropertiesConfig = PathHelper.ResolveAssetPath("ConfigFiles");
+
+            var ldSpectrogramConfig = new LdSpectrogramConfig();
+
+            // finally read in the dictionary of spectra
+            string analysisType = "Towsey.Acoustic";
+            var keys = LDSpectrogramRGB.GetArrayOfAvailableKeys();
+            var dictionaryOfSpectra = IndexMatrices.ReadCsvFiles(resourcesDir.ToDirectoryInfo(), recordingName + "__" + analysisType, keys);
+
+            Tuple<Image, string>[] images = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+                    inputDirectory: resultsDirectory,
+                    outputDirectory: resultsDirectory,
+                    ldSpectrogramConfig: ldSpectrogramConfig,
+                    indexPropertiesConfigPath: indexPropertiesConfig.ToFileInfo(),
+                    indexGenerationData: indexConfigData,
+                    basename: recordingName,
+                    analysisType: analysisType,
+                    indexSpectrograms: dictionaryOfSpectra
+                    //indexStatistics: indexDistributions
+                    //imageChrome: (!tileOutput).ToImageChrome()
+                    );
+
+            foreach (var item in images)
+            {
+                var image = item.Item1;
+                var imagePath = resultsDirectory.CombineFile(recordingName + "__" + item.Item2, ".png");
+                image.Save(imagePath.FullName);
+            }
+
+            var twoMapsImagePath = resultsDirectory.CombineFile(recordingName + "__2Maps.png");
+            var twoMapsImage = ImageTools.ReadImage2Bitmap(twoMapsImagePath.FullName);
+
+            // image is 7 * 652
+            Assert.AreEqual(7, twoMapsImage.Width);
+            Assert.AreEqual(632, twoMapsImage.Height);
         }
     }
 }
