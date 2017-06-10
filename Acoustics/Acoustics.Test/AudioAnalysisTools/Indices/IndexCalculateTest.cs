@@ -282,7 +282,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             int sampleRate = 64000;
             double duration = 120; // signal duration in seconds
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
-            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics);
+            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics, "sin");
 
             // cut out one minute from 30 - 90 seconds and incorporate into AudioRecording
             int startSample = sampleRate * 30; // start two minutes into recording
@@ -317,6 +317,11 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             var spectralIndices = results.SpectralIndexValues;
 
+            // draw the output image of all spectral indices
+            var outputImagePath1 = Path.Combine(this.outputDirectory.FullName, "SpectralIndices_Octave.png");
+            var image = SpectralIndexValues.CreateImageOfSpectralIndices(spectralIndices);
+            image.Save(outputImagePath1);
+
             // TEST the BGN SPECTRAL INDEX
             Assert.AreEqual(256, spectralIndices.BGN.Length);
 
@@ -330,10 +335,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             //Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.CVR);
-
-            var outputImagePath1 = Path.Combine(this.outputDirectory.FullName, "SpectralIndices_Octave.png");
-            var image = SpectralIndexValues.CreateImageOfSpectralIndices(spectralIndices);
-            image.Save(outputImagePath1);
         }
     }
 }

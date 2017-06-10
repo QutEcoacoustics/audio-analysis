@@ -60,7 +60,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             int sampleRate = 22050;
             double duration = 420; // signal duration in seconds = 7 minutes
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
-            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics);
+            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics, "cos");
             var recordingPath = this.outputDirectory.CombineFile("TemporaryRecording.wav");
             WavWriter.WriteWavFileViaFfmpeg(recordingPath, recording.WavReader);
 
@@ -158,7 +158,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             double duration = 420; // signal duration in seconds = 7 minutes
             // double duration = 240; // signal duration in seconds = 4 minutes
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
-            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics);
+            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics, "cos");
             var recordingPath = this.outputDirectory.CombineFile("TemporaryRecording.wav");
             WavWriter.WriteWavFileViaFfmpeg(recordingPath, recording.WavReader);
 
