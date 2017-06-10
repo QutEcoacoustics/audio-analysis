@@ -172,18 +172,16 @@ namespace AnalysisPrograms.Recognizers.Base
                 OutputDirectory = outputDirectory.Combine("SpectrogramImages"),
                 SpectrogramConfigPath = spectrogramConfig,
                 IndexPropertiesConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile,
-                ColourMap1 = "BGN-POW-EVN",
-                ColourMap2 = "PHN-RVT-SPT", //PHN is new derived index
-                                            //ColourMap2 = "RHZ-RPS-RNG",
-
+                ColourMap1 = "BGN-DMN-EVN",
+                ColourMap2 = "R3D-RVT-SPT", //R3D replaces PHN as new derived index
                 TemporalScale = hiResTimeScale,
             };
+
             // Create output directory if it does not exist
             if (!ldfcSpectrogramArguments.OutputDirectory.Exists)
             {
                 ldfcSpectrogramArguments.OutputDirectory.Create();
             }
-
 
             bool saveRidgeSpectrograms = (bool?)highResolutionConfiguration["SaveRidgeSpectrograms"] ?? false;
             if (saveRidgeSpectrograms)
