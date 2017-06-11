@@ -111,7 +111,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
             Assert.AreEqual(15, pngCount);
 
-            var twoMapsImagePath = resultsDirectory.CombineFile("TemporaryRecording__2Maps.png");
+            var twoMapsImagePath = resultsDirectory.CombineFile("TemporaryRecording1__2Maps.png");
             var twoMapsImage = ImageTools.ReadImage2Bitmap(twoMapsImagePath.FullName);
 
             // image is 7 * 652
@@ -119,7 +119,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             Assert.AreEqual(632, twoMapsImage.Height);
 
             // test integrity of BGN file
-            var bgnFile = resultsDirectory.CombineFile("TemporaryRecording__Towsey.Acoustic.BGN.csv");
+            var bgnFile = resultsDirectory.CombineFile("TemporaryRecording1__Towsey.Acoustic.BGN.csv");
             Assert.AreEqual(34_080, bgnFile.Length);
             var actualByteArray = File.ReadAllBytes(bgnFile.FullName);
 
@@ -158,24 +158,23 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
         {
             int sampleRate = 64000;
             double duration = 420; // signal duration in seconds = 7 minutes
-            // double duration = 240; // signal duration in seconds = 4 minutes
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
             var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics, "cos");
             string recordingName = "TemporaryRecording2";
             var recordingPath = this.outputDirectory.CombineFile(recordingName + ".wav");
             WavWriter.WriteWavFileViaFfmpeg(recordingPath, recording.WavReader);
 
-            // draw the signal as spectrogram just for debugging purposes
-            // but can only draw a four minute spectrogram when sr=64000 - change duration above.
-            /*
             var fst = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
-            var sonogram = OctaveFreqScale.ConvertRecordingToOctaveScaleSonogram(recording, fst);
-
-            // Get sonogram image and save
             var freqScale = new FrequencyScale(fst);
-            var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM", freqScale.GridLineLocations);
+
+            /*
+            // draw the signal as spectrogram just for debugging purposes
+            // but can only draw a two minute spectrogram when sr=64000 - change duration above.
+            duration = 120; // if drawing sonogram, then set signal duration = 2 minutes
+            var sonogram = OctaveFreqScale.ConvertRecordingToOctaveScaleSonogram(recording, fst);
+            var sonogramImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM", freqScale.GridLineLocations);
             var outputImagePath = this.outputDirectory.CombineFile("SignalSpectrogram_OctaveFreqScale.png");
-            image.Save(outputImagePath.FullName, ImageFormat.Png);
+            sonogramImage.Save(outputImagePath.FullName, ImageFormat.Png);
             */
 
             // Now need to rewrite the config file with new parameter settings
@@ -189,10 +188,9 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var configLines = File.ReadAllLines(configPath.FullName);
             configLines[configLines.IndexOf(x => x.StartsWith("IndexCalculationDuration: "))] = "IndexCalculationDuration: 15.0";
             //configLines[configLines.IndexOf(x => x.StartsWith("BgNoiseBuffer: "))] = "BgNoiseBuffer: 5.0";
-            configLines[configLines.IndexOf(x => x.StartsWith("FrequencyScale: Linear"))] = "FrequencyScale: Octave";
+            configLines[configLines.IndexOf(x => x.StartsWith("FrequencyScale: Linear"))] = "FrequencyScale: " + fst;
 
             // the is the only octave scale currently functioning for IndexCalculate class
-            var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
             configLines[configLines.IndexOf(x => x.StartsWith("FrameLength"))] = $"FrameLength: {freqScale.WindowSize}";
             configLines[configLines.IndexOf(x => x.StartsWith("ResampleRate: "))] = "ResampleRate: 64000";
 
@@ -259,20 +257,22 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var icdPath = resultsDirectory.CombineFile(recordingName + "__IndexGenerationData.json");
             var indexConfigData = Json.Deserialise<IndexGenerationData>(icdPath);
 
-            var indexPropertiesConfig = PathHelper.ResolveAssetPath("ConfigFiles");
+            var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
 
-            var ldSpectrogramConfig = new LdSpectrogramConfig();
+            var ldSpectrogramConfigFile = PathHelper.ResolveConfigFile("SpectrogramFalseColourConfig.yml");
+            var ldSpectrogramConfig = LdSpectrogramConfig.ReadYamlToConfig(ldSpectrogramConfigFile);
+            ldSpectrogramConfig.FreqScale = fst.ToString();
 
             // finally read in the dictionary of spectra
             string analysisType = "Towsey.Acoustic";
             var keys = LDSpectrogramRGB.GetArrayOfAvailableKeys();
-            var dictionaryOfSpectra = IndexMatrices.ReadCsvFiles(resourcesDir.ToDirectoryInfo(), recordingName + "__" + analysisType, keys);
+            var dictionaryOfSpectra = IndexMatrices.ReadCsvFiles(resultsDirectory, recordingName + "__" + analysisType, keys);
 
-            Tuple<Image, string>[] images = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
                     inputDirectory: resultsDirectory,
                     outputDirectory: resultsDirectory,
                     ldSpectrogramConfig: ldSpectrogramConfig,
-                    indexPropertiesConfigPath: indexPropertiesConfig.ToFileInfo(),
+                    indexPropertiesConfigPath: indexPropertiesConfig,
                     indexGenerationData: indexConfigData,
                     basename: recordingName,
                     analysisType: analysisType,
@@ -281,19 +281,17 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
                     //imageChrome: (!tileOutput).ToImageChrome()
                     );
 
-            foreach (var item in images)
-            {
-                var image = item.Item1;
-                var imagePath = resultsDirectory.CombineFile(recordingName + "__" + item.Item2, ".png");
-                image.Save(imagePath.FullName);
-            }
+            // test number of images - should now be 15
+            listOfFiles = resultsDirectory.EnumerateFiles();
+            pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
+            Assert.AreEqual(16, pngCount);
 
             var twoMapsImagePath = resultsDirectory.CombineFile(recordingName + "__2Maps.png");
             var twoMapsImage = ImageTools.ReadImage2Bitmap(twoMapsImagePath.FullName);
 
-            // image is 7 * 652
-            Assert.AreEqual(7, twoMapsImage.Width);
-            Assert.AreEqual(632, twoMapsImage.Height);
+            // image is (7*4) * 652
+            Assert.AreEqual(28, twoMapsImage.Width);
+            Assert.AreEqual(652, twoMapsImage.Height);
         }
     }
 }
