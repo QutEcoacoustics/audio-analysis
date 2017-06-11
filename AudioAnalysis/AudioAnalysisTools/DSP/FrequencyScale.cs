@@ -297,8 +297,14 @@ namespace AudioAnalysisTools.DSP
 
         public static void DrawFrequencyLinesOnImage(Bitmap bmp, int[,] gridLineLocations)
         {
+            if (bmp.Width < 4)
+            {
+                // there is no point drawing grid lines on a very narrow image.
+                return;
+            }
+
             // attempt to determine background colour of spectrogram i.e. dark false-colour or light.
-            Color bgnColour = bmp.GetPixel(2, 2);
+            var bgnColour = bmp.GetPixel(2, 2);
             float brightness = bgnColour.GetBrightness();
             var txtColour = Brushes.White;
             if (brightness > 0.5)
@@ -312,7 +318,7 @@ namespace AudioAnalysisTools.DSP
 
             var g = Graphics.FromImage(bmp);
 
-            // for each band
+            // draw the grid line for each frequency band
             for (int b = 0; b < bandCount; b++)
             {
                 int y = height - gridLineLocations[b, 0];
@@ -329,8 +335,22 @@ namespace AudioAnalysisTools.DSP
                     bmp.SetPixel(x, y, Color.Black);
                     x += 2;
                 }
+            }
 
-                g.DrawString($"{gridLineLocations[b, 1]}", new Font("Thachoma", 8), txtColour, 1, y);
+            if (bmp.Width < 30)
+            {
+                // there is no point placing Hertz label on a narrow image. It obscures too much spectrogram.
+                return;
+            }
+
+            // draw Hertz label on each band
+            for (int b = 0; b < bandCount; b++)
+            {
+                int y = height - gridLineLocations[b, 0];
+                if (y > 1)
+                {
+                    g.DrawString($"{gridLineLocations[b, 1]}", new Font("Thachoma", 8), txtColour, 1, y);
+                }
             }
         } //end AddHzGridLines()
 

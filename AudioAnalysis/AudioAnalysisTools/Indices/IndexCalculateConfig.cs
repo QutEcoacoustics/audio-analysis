@@ -114,6 +114,11 @@ namespace AudioAnalysisTools.Indices
                 this.frequencyScaleType = FreqScaleType.Linear;
             }
             else
+            if (scaleName == "Linear125Octaves7Tones28Nyquist32000")
+            {
+                this.frequencyScaleType = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
+            }
+            else
             if (scaleName == "Octave")
             {
                 this.frequencyScaleType = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
