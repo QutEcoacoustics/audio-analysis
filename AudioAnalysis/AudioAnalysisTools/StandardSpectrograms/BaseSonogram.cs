@@ -163,13 +163,13 @@ namespace AudioAnalysisTools
             // currently DoSnr = true by default
             if (config.DoSnr)
             {
-                if (fftdata.FractionOfHighEnergyFrames > SNR.FRACTIONAL_BOUND_FOR_MODE)
+                if (fftdata.FractionOfHighEnergyFrames > SNR.FractionalBoundForMode)
                 {
                     Log.WriteIfVerbose("\nWARNING ##############");
                     Log.WriteIfVerbose(
                         $"\t################### BaseSonogram(): This is a high energy recording. Percent of high energy frames = {0:f0} > {1:f0}%",
                         fftdata.FractionOfHighEnergyFrames * 100,
-                        SNR.FRACTIONAL_BOUND_FOR_MODE * 100);
+                        SNR.FractionalBoundForMode * 100);
                     Log.WriteIfVerbose("\t################### Noise reduction algorithm may not work well in this instance!\n");
                 }
 
@@ -238,7 +238,7 @@ namespace AudioAnalysisTools
 
             //RECALCULATE DecibelsNormalised and dB REFERENCE LEVEL - need for MFCCs
             this.DecibelsInSubband = SnrSubband.Decibels;
-            this.DecibelReference = SnrSubband.MaxReference_dBWrtNoise;
+            this.DecibelReference = SnrSubband.MaxReferenceDecibelsWrtNoise;
             this.DecibelsNormalised = SnrSubband.NormaliseDecibelArray_ZeroOne(this.DecibelReference);
 
             //RECALCULATE ENDPOINTS OF VOCALISATIONS

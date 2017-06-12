@@ -95,12 +95,12 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             Assert.AreEqual(expectedSR, sr);
             Assert.AreEqual("00:01:00.2450000", duration.ToString());
             Assert.AreEqual(2594, frameCount);
-            Assert.AreEqual(0.880878951426369, fractionOfHighEnergyFrames, 0.000000001);
             int expectedBitsPerSample = 16;
             double expectedEpsilon = Math.Pow(0.5, expectedBitsPerSample - 1);
             Assert.AreEqual(expectedEpsilon, epislon);
             double expectedWindowPower = 203.0778;
             Assert.AreEqual(expectedWindowPower, windowPower, 0.0001);
+            Assert.AreEqual(0.0304548959, fractionOfHighEnergyFrames, 0.0000001);
 
             // Test sonogram data matrix by comparing the vector of column sums.
             double[] columnSums = MatrixTools.SumColumns(amplSpectrogram);

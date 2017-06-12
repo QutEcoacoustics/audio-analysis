@@ -9,19 +9,38 @@ namespace AudioAnalysisTools.DSP
     using System.IO;
     using Acoustics.Shared;
     using StandardSpectrograms;
-    using WavTools;
     using TowseyLibrary;
+    using WavTools;
 
-    // IMPORTANT NOTE: If you are converting Herz to Mel scale, this conversion must be done BEFORE noise reduction
+    // IMPORTANT NOTE: If you are converting Hertz to Mel scale, this conversion must be done BEFORE noise reduction
 
-    public enum NoiseReductionType { None, Standard, Modal, Binary, FixedDynamicRange, Mean, Median, LowestPercentile, BriggsPercentile, ShortRecording, FlattenAndTrim }
+    public enum NoiseReductionType
+    {
+        None,
+        Standard,
+        Modal,
+        Binary,
+        FixedDynamicRange,
+        Mean,
+        Median,
+        LowestPercentile,
+        BriggsPercentile,
+        ShortRecording,
+        FlattenAndTrim
+    }
 
     public class SNR
     {
-        public const double FRACTIONAL_BOUND_FOR_MODE = 0.95;          // used when removing modal noise from a signal waveform
-        public const double FRACTIONAL_BOUND_FOR_LOW_PERCENTILE = 0.2; // used when removing lowest percentile noise from a signal waveform
+        public struct KeySnr
+        {
+            public const string key_NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
+            public const string key_DYNAMIC_RANGE = "DYNAMIC_RANGE";
+        }
 
-                                                                       //reference dB levels for different signals
+        public const double FractionalBoundForMode = 0.95;          // used when removing modal noise from a signal waveform
+        public const double FractionalBoundForLowPercentile = 0.2; // used when removing lowest percentile noise from a signal waveform
+
+        //reference dB levels for different signals
         public const double MinimumDbBoundForZeroSignal = -80; // used as minimum bound when normalising dB values. Calculated from actual zero signal.
         public const double MinimumDbBoundForEnvirNoise = -70; // might also be used as minimum bound. Calculated from actual silent environmental recording.
 
@@ -38,35 +57,8 @@ namespace AudioAnalysisTools.DSP
         //SETS MINIMUM DECIBEL BOUND when removing local backgroundnoise
         public const double DefaultNhBgThreshold = 2.0;
 
-        public struct KeySnr
-        {
-            public const string key_NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
-            public const string key_DYNAMIC_RANGE = "DYNAMIC_RANGE";
-        }
-
-        public double[] LogEnergy { get; set; }
-
-        public double[] Decibels { get; set; }
-
-        public double Min_dB { get; set; }
-
-        public double Max_dB { get; set; }
-
-        public double minEnergyRatio { get; set; }
-
-        public double NoiseSubtracted { get; set; }
-
-        //the modal noise in dB
-        public double Snr { get; set; }
-
-        //sig/noise ratio i.e. max dB - modal noise
-        public double NoiseRange { get; set; }
-
-        //difference between min_dB and the modal noise dB
-        public double MaxReference_dBWrtNoise { get; set; }
-
-        //max reference dB wrt modal noise = 0.0dB. Used for normalisaion
-        public double[] ModalNoiseProfile { get; set; }
+        // default high energy threshold when measuring fraction of high energy frames - AFTER noise removal
+        public const double DefaultHighEnergyThresholdInDecibels = 20.0;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SNR"/> class.
@@ -78,11 +70,11 @@ namespace AudioAnalysisTools.DSP
             this.LogEnergy = SignalLogEnergy(frames);
             this.Decibels = ConvertLogEnergy2Decibels(this.LogEnergy); // convert logEnergy to decibels.
             this.SubtractBackgroundNoise_dB();
-            this.NoiseRange = this.Min_dB - this.NoiseSubtracted;
+            this.NoiseRange = this.MinDb - this.NoiseSubtracted;
 
             // need an appropriate dB reference level for normalising dB arrays.
-            ////this.MaxReference_dBWrtNoise = this.Snr;                        // OK
-            this.MaxReference_dBWrtNoise = this.Max_dB - this.Min_dB; // BEST BECAUSE TAKES NOISE LEVEL INTO ACCOUNT
+            ////this.MaxReferenceDecibelsWrtNoise = this.Snr;                        // OK
+            this.MaxReferenceDecibelsWrtNoise = this.MaxDb - this.MinDb; // BEST BECAUSE TAKES NOISE LEVEL INTO ACCOUNT
         }
 
         /// <summary>
@@ -96,9 +88,33 @@ namespace AudioAnalysisTools.DSP
             this.LogEnergy = Signal2LogEnergy(signal, frameIDs);
             this.Decibels = ConvertLogEnergy2Decibels(this.LogEnergy); //convert logEnergy to decibels.
             this.SubtractBackgroundNoise_dB();
-            this.NoiseRange = this.Min_dB - this.NoiseSubtracted;
-            this.MaxReference_dBWrtNoise = this.Max_dB - this.Min_dB; // BEST BECAUSE TAKES NOISE LEVEL INTO ACCOUNT
+            this.NoiseRange = this.MinDb - this.NoiseSubtracted;
+            this.MaxReferenceDecibelsWrtNoise = this.MaxDb - this.MinDb; // BEST BECAUSE TAKES NOISE LEVEL INTO ACCOUNT
         }
+
+        public double[] LogEnergy { get; set; }
+
+        public double[] Decibels { get; set; }
+
+        public double MinDb { get; set; }
+
+        public double MaxDb { get; set; }
+
+        public double MinEnergyRatio { get; set; }
+
+        public double NoiseSubtracted { get; set; }
+
+        //the modal noise in dB
+        public double Snr { get; set; }
+
+        //sig/noise ratio i.e. max dB - modal noise
+        public double NoiseRange { get; set; }
+
+        //difference between min_dB and the modal noise dB
+        public double MaxReferenceDecibelsWrtNoise { get; set; }
+
+        //max reference dB wrt modal noise = 0.0dB. Used for normalisaion
+        public double[] ModalNoiseProfile { get; set; }
 
         /// <summary>
         /// subtract background noise to produce a decibels array in which zero dB = modal noise
@@ -109,8 +125,8 @@ namespace AudioAnalysisTools.DSP
             var results = SubtractBackgroundNoiseFromWaveform_dB(this.Decibels, DefaultStddevCount);
             this.Decibels = results.NoiseReducedSignal;
             this.NoiseSubtracted = results.NoiseSd; //Q
-            this.Min_dB = results.MinDb; //min decibels of all frames
-            this.Max_dB = results.MaxDb; //max decibels of all frames
+            this.MinDb = results.MinDb; //min decibels of all frames
+            this.MaxDb = results.MaxDb; //max decibels of all frames
             this.Snr = results.Snr; // = max_dB - Q;
         }
 
@@ -130,14 +146,17 @@ namespace AudioAnalysisTools.DSP
 
         public static double FractionHighEnergyFrames(double[] dbArray, double dbThreshold)
         {
-            int L = dbArray.Length;
+            int length = dbArray.Length;
             int count = 0;
-            for (int i = 0; i < L; i++) //foreach time step
+            for (int i = 0; i < length; i++)
             {
-                if (dbArray[i] > dbThreshold) count++;
+                if (dbArray[i] > dbThreshold)
+                {
+                    count++;
+                }
             }
 
-            return (count / (double)L);
+            return count / (double)length;
         }
 
         /// <summary>
@@ -148,17 +167,27 @@ namespace AudioAnalysisTools.DSP
         public static double[] NormaliseDecibelArray_ZeroOne(double[] dB, double maxDecibels)
         {
             //NormaliseMatrixValues power between 0.0 decibels and max decibels.
-            int L = dB.Length;
-            double[] E = new double[L];
-            for (int i = 0; i < L; i++)
+            int length = dB.Length;
+            double[] e = new double[length];
+            for (int i = 0; i < length; i++)
             {
-                E[i] = dB[i];
-                if (E[i] <= 0.0) E[i] = 0.0;
-                else E[i] = dB[i] / maxDecibels;
-                if (E[i] > 1.0) E[i] = 1.0;
+                e[i] = dB[i];
+                if (e[i] <= 0.0)
+                {
+                    e[i] = 0.0;
+                }
+                else
+                {
+                    e[i] = dB[i] / maxDecibels;
+                }
+
+                if (e[i] > 1.0)
+                {
+                    e[i] = 1.0;
+                }
             }
 
-            return E;
+            return e;
         }
 
         /// <summary>
@@ -177,21 +206,26 @@ namespace AudioAnalysisTools.DSP
         public static double[] Signal2LogEnergy(double[] signal, int[,] frameIDs)
         {
             int frameCount = frameIDs.GetLength(0);
-            int N = frameIDs[0, 1] + 1; //window or frame width
+
+            //window or frame width
+            int N = frameIDs[0, 1] + 1;
             double[] logEnergy = new double[frameCount];
-            for (int i = 0; i < frameCount; i++) //foreach frame
+            for (int i = 0; i < frameCount; i++)
             {
+                // foreach sample in frame
                 double sum = 0.0;
-                for (int j = 0; j < N; j++) //foreach sample in frame
+                for (int j = 0; j < N; j++)
                 {
                     sum += Math.Pow(signal[frameIDs[i, 0] + j], 2); //sum the energy = amplitude squared
                 }
 
                 double e = sum / (double)N; //NormaliseMatrixValues to frame size i.e. average energy per sample
+
                 //LoggedConsole.WriteLine("e=" + e);
                 //if (e > 0.25) LoggedConsole.WriteLine("e > 0.25 = " + e);
 
-                if (e == double.MinValue) //to guard against log(0) but this should never happen!
+                //to guard against log(0) but this should never happen!
+                if (e == double.MinValue)
                 {
                     LoggedConsole.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
                     logEnergy[i] = MinLogEnergyReference - MaxLogEnergyReference; //NormaliseMatrixValues to absolute scale
@@ -205,7 +239,10 @@ namespace AudioAnalysisTools.DSP
                 {
                     logEnergy[i] = MinLogEnergyReference - MaxLogEnergyReference;
                 }
-                else logEnergy[i] = logE - MaxLogEnergyReference;
+                else
+                {
+                    logEnergy[i] = logE - MaxLogEnergyReference;
+                }
             }
 
             //could alternatively NormaliseMatrixValues to RELATIVE energy value i.e. max frame energy in the current signal
@@ -219,11 +256,12 @@ namespace AudioAnalysisTools.DSP
 
         public static double[] Signal2Power(double[] signal)
         {
-            int L = signal.Length;
-            double[] energy = new double[L];
-            for (int i = 0; i < L; i++) //foreach signal sample
+            int length = signal.Length;
+            double[] energy = new double[length];
+            for (int i = 0; i < length; i++)
             {
-                energy[i] = signal[i] * signal[i]; //energy = amplitude squared
+                //energy = amplitude squared
+                energy[i] = signal[i] * signal[i];
             }
 
             return energy;
@@ -236,11 +274,12 @@ namespace AudioAnalysisTools.DSP
 
         public static double[] Signal2Decibels(double[] signal)
         {
-            int L = signal.Length;
-            double[] dB = new double[L];
-            for (int i = 0; i < L; i++) //foreach signal sample
+            int length = signal.Length;
+            double[] dB = new double[length];
+            for (int i = 0; i < length; i++)
             {
-                dB[i] = 20 * Math.Log10(signal[i]); //10 times log of amplitude squared
+                // 10 times log of amplitude squared
+                dB[i] = 20 * Math.Log10(signal[i]);
             }
 
             return dB;
@@ -274,6 +313,7 @@ namespace AudioAnalysisTools.DSP
                     logEnergy[i] = MinLogEnergyReference - MaxLogEnergyReference; //NormaliseMatrixValues to absolute scale
                     continue;
                 }
+
                 double logE = Math.Log10(e);
 
                 //NormaliseMatrixValues to ABSOLUTE energy value i.e. as defined in header of Sonogram class
@@ -281,7 +321,10 @@ namespace AudioAnalysisTools.DSP
                 {
                     logEnergy[i] = MinLogEnergyReference - MaxLogEnergyReference;
                 }
-                else logEnergy[i] = logE - MaxLogEnergyReference;
+                else
+                {
+                    logEnergy[i] = logE - MaxLogEnergyReference;
+                }
             }
 
             return logEnergy;
@@ -345,16 +388,20 @@ namespace AudioAnalysisTools.DSP
                     {
                         sum += inSpectro[i, b]; // sum the spectral values
                     }
+
                     outSpectro[i, j] = sum;
                 }
+
                 //now do the top most freq band
                 startBin = (subbandCount - 1) * binWidth;
                 for (int b = startBin; b < N; b++) // foreach output band
                 {
                     sum += inSpectro[i, b]; // sum the spectral values
                 }
+
                 outSpectro[i, subbandCount - 1] = sum;
             }
+
             return outSpectro;
         }
 
@@ -791,7 +838,7 @@ namespace AudioAnalysisTools.DSP
         public static void GetModeAndOneStandardDeviation(double[] histo, out int indexOfMode, out int indexOfOneSD)
         {
             // this Constant sets an upper limit on the value returned as the modal noise.
-            int upperBoundOfMode = (int)(histo.Length * FRACTIONAL_BOUND_FOR_MODE);
+            int upperBoundOfMode = (int)(histo.Length * FractionalBoundForMode);
             indexOfMode = DataTools.GetMaxIndex(histo);
             if (indexOfMode > upperBoundOfMode)
             {
@@ -884,6 +931,7 @@ namespace AudioAnalysisTools.DSP
                         // parameter = nhBackgroundThreshold
                         m = NoiseReduce_Standard(m, bgNoiseProfile, parameter); // parameter = nhBackgroundThreshold
                     }
+
                     break;
                 case NoiseReductionType.Modal:
                     {
@@ -892,6 +940,7 @@ namespace AudioAnalysisTools.DSP
                         bgNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 5); //smooth the modal profile
                         m = TruncateBgNoiseFromSpectrogram(m, bgNoiseProfile);
                     }
+
                     break;
                 case NoiseReductionType.LowestPercentile:
                     {
@@ -899,6 +948,7 @@ namespace AudioAnalysisTools.DSP
                         bgNoiseProfile = DataTools.filterMovingAverage(bgNoiseProfile, 5); //smooth the modal profile
                         m = TruncateBgNoiseFromSpectrogram(m, bgNoiseProfile);
                     }
+
                     break;
                 case NoiseReductionType.ShortRecording:
                     {
@@ -906,6 +956,7 @@ namespace AudioAnalysisTools.DSP
                         bgNoiseProfile = DataTools.filterMovingAverage(bgNoiseProfile, 5); //smooth the modal profile
                         m = TruncateBgNoiseFromSpectrogram(m, bgNoiseProfile);
                     }
+
                     break;
                 case NoiseReductionType.BriggsPercentile:
                     // Briggs filters twice
@@ -919,6 +970,7 @@ namespace AudioAnalysisTools.DSP
                         m = NoiseReduce_Standard(m, bgNoiseProfile, parameter); // parameter = nhBackgroundThreshold
                         m = DataTools.Matrix2Binary(m, 2 * parameter);             //convert to binary with backgroundThreshold = 2*parameter
                     }
+
                     break;
                 case NoiseReductionType.FixedDynamicRange:
                     Log.WriteIfVerbose("\tNoise reduction: FIXED DYNAMIC RANGE = " + parameter); //parameter should have value = 50 dB approx
@@ -936,7 +988,6 @@ namespace AudioAnalysisTools.DSP
                     Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING. Dynamic range= " + parameter);
                     m = NoiseReduce_Median(m, parameter);
                     break;
-                case NoiseReductionType.None:
                 default:
                     Log.WriteIfVerbose("No noise reduction applied");
                     break;
@@ -1064,8 +1115,6 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Subtracts the supplied noise profile from spectorgram AND sets negative values to ZERO.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="noiseProfile"></param>
         public static double[,] TruncateBgNoiseFromSpectrogram(double[,] matrix, double[] noiseProfile)
         {
             double backgroundThreshold = 0.0;
@@ -1075,9 +1124,6 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Subtracts the supplied modal noise value for each freq bin BUT DOES NOT set negative values to zero.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="noiseProfile"></param>
-        /// <returns></returns>
         public static double[,] SubtractBgNoiseFromSpectrogram(double[,] matrix, double[] noiseProfile)
         {
             int rowCount = matrix.GetLength(0);
