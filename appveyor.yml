@@ -45,7 +45,7 @@ init:
   #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - echo Starting Build
   # Determine whether or not we should tag and release
-  - ps: $env:RELEASE_COMMIT = $env:APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED -ilike "*[release]*"; $env:SHOULD_RELEASE = ($env:RELEASE_COMMIT -ieq "true") -or $env:APPVEYOR_SCHEDULED_BUILD; 
+  - ps: $env:RELEASE_COMMIT = $env:APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED -ilike "*\[release\]*"; $env:SHOULD_RELEASE = ($env:RELEASE_COMMIT -ieq "true") -or $env:APPVEYOR_SCHEDULED_BUILD; 
   - ps: ls env:* -Include SHOULD*,APPVEYOR_SCHEDULED_BUILD*,APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED*,RELEASE_COMMIT
   #- git lfs install --skip-smudge
 
