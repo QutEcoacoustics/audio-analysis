@@ -100,7 +100,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             Assert.AreEqual(expectedEpsilon, epislon);
             double expectedWindowPower = 203.0778;
             Assert.AreEqual(expectedWindowPower, windowPower, 0.0001);
-            Assert.AreEqual(0.0304548959, fractionOfHighEnergyFrames, 0.0000001);
+            Assert.AreEqual(0.0, fractionOfHighEnergyFrames, 0.0000001);
 
             // Test sonogram data matrix by comparing the vector of column sums.
             double[] columnSums = MatrixTools.SumColumns(amplSpectrogram);
@@ -150,7 +150,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // The below info is only used when calculating spectral and summary indices
             // energy level information
             int clipCount = fftdata.ClipCount;
-            int maxAmpCount = fftdata.MaxAmplitudeCount;
+            int maxAmpCount = fftdata.HighAmplitudeCount;
             double maxSig = fftdata.MaxSignalValue;
             double minSig = fftdata.MinSignalValue;
 

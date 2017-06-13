@@ -163,6 +163,8 @@ namespace AudioAnalysisTools
             // currently DoSnr = true by default
             if (config.DoSnr)
             {
+                // If the FractionOfHighEnergyFrames PRIOR to noise removal exceeds SNR.FractionalBoundForMode,
+                // then Lamel's noise removal algorithm may not work well.
                 if (fftdata.FractionOfHighEnergyFrames > SNR.FractionalBoundForMode)
                 {
                     Log.WriteIfVerbose("\nWARNING ##############");

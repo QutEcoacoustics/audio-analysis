@@ -216,7 +216,7 @@ namespace AudioAnalysisTools.Indices
             }
 
             // i. Check for clipping and high amplitude rates per second
-            summaryIndices.HighAmplitudeIndex = dspOutput1.MaxAmplitudeCount / subsegmentDurationInSeconds;
+            summaryIndices.HighAmplitudeIndex = dspOutput1.HighAmplitudeCount / subsegmentDurationInSeconds;
             summaryIndices.ClippingIndex = dspOutput1.ClipCount / subsegmentDurationInSeconds;
 
             // ii. Calculate bg noise in dB
