@@ -119,7 +119,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </returns>
         public static LdSpectrogramConfig ReadYamlToConfig(FileInfo path)
         {
-            return Yaml.Deserialise<LdSpectrogramConfig>(path);
+            var config = Yaml.Deserialise<LdSpectrogramConfig>(path);
+            return config;
         }
 
         /// <summary>

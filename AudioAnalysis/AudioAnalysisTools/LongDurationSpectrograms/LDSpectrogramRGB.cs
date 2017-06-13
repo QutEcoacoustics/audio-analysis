@@ -78,7 +78,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         // Since May 2017, all the likely available matrices are incorporated into a dictionary. Note the new names for PMN and R3D, previously POW and HPN respectively.
         // Note 1: This default array will be subsequently over-written by the indices in the IndexPropertiesConfig file if one is available.
         // Note 1: RHZ, SPT and CVR are correlated with POW and do not add much. CLS is not particularly useful. Currently using R3D
-        private static readonly string[] DefaultKeys = { "ACI", "BGN", "CLS", "CVR", "ENT", "EVN", "PMN", "POW", "RHZ", "RVT", "RPS", "RNG", "R3D", "SPT" };
+        private static readonly string[] DefaultKeys = { "ACI", "BGN", "CLS", "CVR", "ENT", "EVN", "DMN", "POW", "RHZ", "RVT", "RPS", "RNG", "R3D", "SPT" };
 
         public static string[] GetArrayOfAvailableKeys()
         {

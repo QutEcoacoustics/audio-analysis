@@ -74,7 +74,7 @@ namespace AnalysisPrograms
                 int partialRowCount = rowsOfCsvFile.Count();
             }
 
-            if (false)
+            if (true)
             {
                 // The following are test methods to confirm that the frequency scale code is working
                 // They are also good tests for the making of standard sonograms.
@@ -90,18 +90,19 @@ namespace AnalysisPrograms
                 // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest1();
                 // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest2();
                 // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest3();
-                // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest4();
+                 ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest4();
                 // SpectrogramTools.AverageAnArrayOfDecibelValues(null);
 
                 // experiments with clustering the spectra within spectrograms
                 // SpectralClustering.TESTMETHOD_SpectralClustering();
                 // DspFilters.TestMethod_GenerateSignal1();
                 // DspFilters.TestMethod_GenerateSignal2();
-                EventStatsticsCalculate.TestCalculateEventStatistics();
+                // EventStatsticsCalculate.TestCalculateEventStatistics();
             }
 
-            if (true)
+            if (false)
             {
+                // Unit test of AnalyseLongRecording()
                 int sampleRate = 22050;
                 double duration = 420; // signal duration in seconds = 7 minutes
                 int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
