@@ -9,30 +9,42 @@ namespace AudioAnalysisTools.DSP
 
     /// <summary>
     /// TODO: This class should be Unit tested on a variety of clipped recordings.
+    /// TODO: The calculations employed in this class to estimate clipping need to be revisted. Not clear what to do due to resampling.
+    /// Estimates of clipping are complicated by the fact that down sampling greatly reduces the degree of clipping in a recording.
+    ///  Therefore it is difficult to know how much of the original recording was clipped after it has been downsampled.
+    ///  The assumption in the current calculations is that we want to know that a recording was clipped before it was subsequently processed.
     /// </summary>
     public static class Clipping
     {
-        public static void GetClippingCount(double[] signal, double[] envelope, int frameStepSize, double epsilon, out int maxAmplitudeCount, out int clipCount)
+        /// <summary>
+        /// This method attempts to estimate clipping in a recording.
+        /// What should have been simple was made apparently complicated because downsampling very much affects clipping rate.
+        /// Downsampling reduces the maximum signal value and removes a lot of clipping.
+        /// This method was debugged on a highly clipped recording but hwich had been downsampled.
+        /// </summary>
+        /// <param name="signal">the original signal</param>
+        /// <param name="envelope">and its envelope</param>
+        /// <param name="frameStepSize">frame step originally used to calcualte the envelope</param>
+        /// <param name="epsilon">used to estimate how close wave form must be to max in order to be clipped.</param>
+        /// <param name="highAmplitudeCount">returned high amplitude count</param>
+        /// <param name="clipCount">returned clip count</param>
+        public static void GetClippingCount(double[] signal, double[] envelope, int frameStepSize, double epsilon, out int highAmplitudeCount, out int clipCount)
         {
-            maxAmplitudeCount = 0;
+            // initialise values
+            highAmplitudeCount = 0;
             clipCount = 0;
 
             // FIRST get maximum amplitude of signal envelope
             double maximumAmplitude = envelope.Max();
 
-            // assume no clipping if max absolute amplitude in entire audio segment is < 0.6
+            // assume no clipping and no high amplitude, if max absolute amplitude in entire audio segment is < 0.6
             if (maximumAmplitude < 0.6)
             {
-                maxAmplitudeCount = 0;
-                clipCount = 0;
                 return;
             }
 
             // establish a gapThreshold based on value of epsilon.
-            // This method was debugged on a highly clipped recording.
-            // What should have been simple was made apparently complicated because downsampling very much affects clipping rate.
-            //double bigEpsilon    = epsilon * 10;
-            //double littleEpsilon = epsilon * 4;
+            // Tried values of epsilon*10 and epsilon*4. When downsampling, we require 10.
             double gapThreshold = epsilon * 10;
 
             // loop through the envelope. Only check frames where amplitude is too close to signal max.
@@ -55,8 +67,10 @@ namespace AudioAnalysisTools.DSP
                     // check if sample reached clipping ceiling (max - gapThreshold)
                     if (gap < gapThreshold)
                     {
-                        maxAmplitudeCount++;
-                        if (gap < gapThreshold && delta < gapThreshold)
+                        highAmplitudeCount++;
+
+                        // if in addition, delta < gapthreshold
+                        if (delta < gapThreshold)
                         {
                             clipCount++; // a clip has occurred
                         }
@@ -67,6 +81,7 @@ namespace AudioAnalysisTools.DSP
             }
         }
 
+        /*
         /// <summary>
         /// This Method has ZERO REferences.
         /// Should probably be depracated!
@@ -96,5 +111,6 @@ namespace AudioAnalysisTools.DSP
 
             return clipCount;
         }
+        */
     }
 }

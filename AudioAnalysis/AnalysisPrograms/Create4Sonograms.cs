@@ -149,7 +149,7 @@
             // double[] frameEnergy = dspOutput.FrameEnergy;
 
             double totalSeconds = wavDuration.TotalSeconds;
-            double highAmplIndex = dspOutput.MaxAmplitudeCount / totalSeconds;
+            double highAmplIndex = dspOutput.HighAmplitudeCount / totalSeconds;
 
             int nyquistFreq = dspOutput.NyquistFreq;
             ////double binWidth = dspOutput.BinWidth;
@@ -180,12 +180,10 @@
             deciBelSpectrogram = MatrixTools.NormaliseMatrixValues(deciBelSpectrogram);
             //DataTools.WriteMinMaxOfArray(MatrixTools.Matrix2Array(deciBelSpectrogram));
 
-
             var list = new List<Image>();
             Image image1 = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(amplitudeSpectrogram));
 
             Image image2 = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(deciBelSpectrogram));
-
 
             //BaseSonogram sonogram = SpectrogramTools.Audio2Sonogram(fiAudio, configDict);
             //var mti = Sonogram2MultiTrackImage(sonogram, configDict);
@@ -200,17 +198,13 @@
             int bandCount = config.mfccConfig.FilterbankCount;
             bool doMelScale = config.mfccConfig.DoMelScale;
             int ccCount = config.mfccConfig.CcCount;
-            int FFTbins = config.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
+            int fftBins = config.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
             int minHz = config.MinFreqBand ?? 0;
             int maxHz = config.MaxFreqBand ?? nyquistFreq;
 
-
-            AmplitudeSonogram amplitudeSonogram = new AmplitudeSonogram(config, amplitudeSpectrogram);
+            var amplitudeSonogram = new AmplitudeSonogram(config, amplitudeSpectrogram);
             amplitudeSonogram.SampleRate = recording.SampleRate;
             Image image3 = amplitudeSonogram.GetImage();
-
-
-
 
             SpectrogramCepstral cepSng = new SpectrogramCepstral(amplitudeSonogram);
             double[,] cepstralCoefficients = cepSng.Data;
@@ -223,11 +217,8 @@
             //var mti = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
             //var image = mti.GetImage();
 
-
             //Image image = SpectrogramTools.Matrix2SonogramImage(deciBelSpectrogram, config);
             //Image image = SpectrogramTools.Audio2SonogramImage(FileInfo fiAudio, Dictionary<string, string> configDict);
-
-
 
             list.Add(image1);
             list.Add(image2);

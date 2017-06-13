@@ -151,7 +151,6 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
         /// <summary>
         /// Tests the analysis of an artificial seven minute long recording consisting of five harmonics.
         /// NOTE: The Acoustic indices are calculated from an Octave frequency scale spectrogram.
-        /// TODO: There is a bug in this unit test - still working on it.
         /// </summary>
         [TestMethod]
         public void TestAnalyzeSr64000Recording()

@@ -6,8 +6,8 @@ namespace AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
-    using WavTools;
     using TowseyLibrary;
+    using WavTools;
 
     // using MathNet.Numerics;using MathNet.Numerics.Transformations;
 
@@ -30,6 +30,11 @@ namespace AudioAnalysisTools.DSP
 
             public double MaxSignalValue { get; set; }
 
+            /// <summary>
+            /// Gets or sets the fraction of high energy signal frames PRIOR to noise removal.
+            /// This value is used only when doing noise removal. If the value exceeds SNR.FractionalBoundForMode,
+            /// then Lamel's noise removal algorithm may not work well.
+            /// </summary>
             public double FractionOfHighEnergyFrames { get; set; }
 
             public int FrameCount { get; set; }
@@ -52,7 +57,7 @@ namespace AudioAnalysisTools.DSP
 
             public int NyquistBin { get; set; }
 
-            public int MaxAmplitudeCount { get; set; }
+            public int HighAmplitudeCount { get; set; }
 
             public int ClipCount { get; set; }
         }
@@ -185,18 +190,6 @@ namespace AudioAnalysisTools.DSP
 
             int frameCount = frameIDs.GetLength(0);
 
-            double[] average = new double[frameCount];
-            double[] envelope = new double[frameCount];
-            double[] frameEnergy = new double[frameCount];
-            double[] frameDecibels = new double[frameCount];
-
-            // get SNR data
-            var snrdata = new SNR(signal, frameIDs);
-            var fractionOfHighEnergyFrames = snrdata.FractionHighEnergyFrames(SNR.DefaultHighEnergyThresholdInDecibels);
-
-            // double[] decibelsNormalised = snrdata.NormaliseDecibelArray_ZeroOne(decibelReference);
-            // double decibelReference = snrdata.MaxReferenceDecibelsWrtNoise;  // Used to NormaliseMatrixValues the dB values for feature extraction
-
             // set up the FFT parameters
             if (windowName == null)
             {
@@ -208,6 +201,11 @@ namespace AudioAnalysisTools.DSP
             double[,] spectrogram = new double[frameCount, fft.CoeffCount]; // init amplitude sonogram
             double minSignalValue = double.MaxValue;
             double maxSignalValue = double.MinValue;
+
+            double[] average = new double[frameCount];
+            double[] envelope = new double[frameCount];
+            double[] frameEnergy = new double[frameCount];
+            double[] frameDecibels = new double[frameCount];
 
             // for all frames
             for (int i = 0; i < frameCount; i++)
@@ -283,7 +281,10 @@ namespace AudioAnalysisTools.DSP
             double[,] amplSpectrogram = MatrixTools.Submatrix(spectrogram, 0, 1, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
 
             // check the envelope for clipping. Accept a clip if two consecutive frames have max value = 1,0
-            Clipping.GetClippingCount(signal, envelope, frameStep, epsilon, out int maxAmplitudeCount, out int clipCount);
+            Clipping.GetClippingCount(signal, envelope, frameStep, epsilon, out int highAmplitudeCount, out int clipCount);
+
+            // get SNR data
+            var snrdata = new SNR(signal, frameIDs);
 
             return new EnvelopeAndFft
             {
@@ -292,14 +293,14 @@ namespace AudioAnalysisTools.DSP
                 Epsilon = epsilon,
                 SampleRate = sampleRate,
                 FrameCount = frameCount,
-                FractionOfHighEnergyFrames = fractionOfHighEnergyFrames,
+                FractionOfHighEnergyFrames = snrdata.FractionOfHighEnergyFrames,
                 WindowPower = fft.WindowPower,
                 AmplitudeSpectrogram = amplSpectrogram,
 
                 // The below 11 variables are only used when calculating spectral and summary indices
                 // energy level information
                 ClipCount = clipCount,
-                MaxAmplitudeCount = maxAmplitudeCount,
+                HighAmplitudeCount = highAmplitudeCount,
                 MinSignalValue = minSignalValue,
                 MaxSignalValue = maxSignalValue,
 
