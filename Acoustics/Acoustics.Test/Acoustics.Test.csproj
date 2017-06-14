@@ -156,6 +156,7 @@
     <Compile Include="ArrayExtensionsTests.cs" />
     <Compile Include="AudioAnalysisTools\DSP\EnvelopeAndFftTests.cs" />
     <Compile Include="AudioAnalysisTools\DSP\FrequencyScaleTests.cs" />
+    <Compile Include="AudioAnalysisTools\DSP\NoiseRemovalTests.cs" />
     <Compile Include="AudioAnalysisTools\Indices\ClusterIndexTest.cs" />
     <Compile Include="AudioAnalysisTools\Indices\IndexCalculateTest.cs" />
     <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\LdSpectrogramConfigTests.cs" />
