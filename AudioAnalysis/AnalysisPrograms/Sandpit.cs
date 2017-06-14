@@ -89,7 +89,7 @@ namespace AnalysisPrograms
                 // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest1();
                 // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest2();
                 // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest3();
-                 ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest4();
+                // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest4();
                 // SpectrogramTools.AverageAnArrayOfDecibelValues(null);
 
                 // experiments with clustering the spectra within spectrograms
