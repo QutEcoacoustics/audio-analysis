@@ -359,7 +359,7 @@ namespace AudioAnalysisTools.Indices
             int fontVerticalPosition = (height / 2) - 7;
             var g = Graphics.FromImage(bmp);
 
-            g.Clear(this.ErrorDescription.Equals(errorMissingData) ? Color.LightGray : Color.Pink);
+            g.Clear(this.ErrorDescription.Equals(errorMissingData) ? Color.LightGray : Color.HotPink);
 
             // Draw black cross over error patch only if is wider than arbitrary 10 pixels.
             if (width > 10)

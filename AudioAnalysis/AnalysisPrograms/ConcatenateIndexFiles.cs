@@ -1266,14 +1266,19 @@ namespace AnalysisPrograms
             // Set the drive: work = G; home = E
             string drive = "G";
 
+            var zipFile = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2Reduced.zip");
+            var dataDir = new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Delete");
+            ZipUnzip.UnZip(dataDir.FullName, zipFile.FullName, true);
+
             // top level directory
             DirectoryInfo[] dataDirs =
             {
-                new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2Reduced"),
+                new DirectoryInfo(dataDir.FullName + "\\Indonesia_2Reduced"),
+                //new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2Reduced"),
                 //new DirectoryInfo($"{drive}:\\Work\\GitHub\\audio-analysis\\Acoustics\\Acoustics.Test\\TestResources\\Concatenation\\Indonesia20160726"),
             };
 
-            var outputDir = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Test6_Output".ToDirectoryInfo();
+            var outputDir = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Test7_Output".ToDirectoryInfo();
             var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_SpectrogramFalseColourConfig.yml");
 
             var arguments = new Arguments
