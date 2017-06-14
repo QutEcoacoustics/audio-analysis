@@ -5,17 +5,13 @@
 namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
 {
     using System;
-    using System.Drawing;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
     using global::AnalysisPrograms.AnalyseLongRecordings;
-    using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
-    using global::AudioAnalysisTools.StandardSpectrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
     using TowseyLibrary;
@@ -34,11 +30,6 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
     public class TestAnalyzeLongRecording
     {
         private DirectoryInfo outputDirectory;
-
-        public TestAnalyzeLongRecording()
-        {
-            // setup logic here
-        }
 
         [TestInitialize]
         public void Setup()
@@ -97,10 +88,9 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             AnalyseLongRecording.Execute(arguments);
 
             var resultsDirectory = this.outputDirectory.Combine("Towsey.Acoustic");
-            var listOfFiles = resultsDirectory.EnumerateFiles();
+            var listOfFiles = resultsDirectory.EnumerateFiles().ToArray();
 
-            int count = listOfFiles.Count();
-            Assert.AreEqual(33, count);
+            Assert.AreEqual(33, listOfFiles.Length);
 
             var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
             Assert.AreEqual(16, csvCount);
@@ -186,6 +176,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             // because of difficulties in dealing with dynamic config files, just edit the text file!!!!!
             var configLines = File.ReadAllLines(configPath.FullName);
             configLines[configLines.IndexOf(x => x.StartsWith("IndexCalculationDuration: "))] = "IndexCalculationDuration: 15.0";
+
             //configLines[configLines.IndexOf(x => x.StartsWith("BgNoiseBuffer: "))] = "BgNoiseBuffer: 5.0";
             configLines[configLines.IndexOf(x => x.StartsWith("FrequencyScale: Linear"))] = "FrequencyScale: " + fst;
 
@@ -196,6 +187,8 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             // write the edited Config file to temporary output directory
             var newConfigPath = this.outputDirectory.CombineFile("Towsey.Acoustic.yml");
             File.WriteAllLines(newConfigPath.FullName, configLines);
+
+            PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml").CopyTo(this.outputDirectory.CombineFile("IndexPropertiesConfig.yml").FullName);
 
             var arguments = new AnalyseLongRecording.Arguments
             {
@@ -208,10 +201,9 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             AnalyseLongRecording.Execute(arguments);
 
             var resultsDirectory = this.outputDirectory.Combine("Towsey.Acoustic");
-            var listOfFiles = resultsDirectory.EnumerateFiles();
+            var listOfFiles = resultsDirectory.EnumerateFiles().ToArray();
 
-            int count = listOfFiles.Count();
-            Assert.AreEqual(20, count);
+            Assert.AreEqual(20, listOfFiles.Length);
 
             var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
             Assert.AreEqual(16, csvCount);
@@ -275,13 +267,10 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
                     indexGenerationData: indexConfigData,
                     basename: recordingName,
                     analysisType: analysisType,
-                    indexSpectrograms: dictionaryOfSpectra
-                    //indexStatistics: indexDistributions
-                    //imageChrome: (!tileOutput).ToImageChrome()
-                    );
+                    indexSpectrograms: dictionaryOfSpectra);
 
             // test number of images - should now be 15
-            listOfFiles = resultsDirectory.EnumerateFiles();
+            listOfFiles = resultsDirectory.EnumerateFiles().ToArray();
             pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
             Assert.AreEqual(16, pngCount);
 
