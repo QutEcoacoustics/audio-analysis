@@ -157,6 +157,9 @@ namespace AudioAnalysisTools
             this.Configuration.WindowPower = fftdata.WindowPower;
             this.FrameCount = fftdata.FrameCount;
             this.DecibelsPerFrame = fftdata.FrameDecibels;
+
+            //init normalised signal energy array but do nothing with it. This has to be done from outside
+            this.DecibelsNormalised = new double[this.FrameCount];
             this.Data = fftdata.AmplitudeSpectrogram;
 
             // ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
