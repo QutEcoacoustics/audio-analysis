@@ -7,7 +7,6 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using System.Drawing;
-    using System.Drawing.Imaging;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -16,7 +15,6 @@ namespace AnalysisPrograms
     using AnalyseLongRecordings;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.EventStatistics;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -68,7 +66,8 @@ namespace AnalysisPrograms
                 }
 
                 var rowsOfCsvFile = Csv.ReadFromCsv<SummaryIndexValues>(file, throwOnMissingField: false);
-                //summaryIndices.AddRange(rowsOfCsvFile);
+
+                // summaryIndices.AddRange(rowsOfCsvFile);
 
                 // track the row counts
                 int partialRowCount = rowsOfCsvFile.Count();
@@ -203,12 +202,12 @@ namespace AnalysisPrograms
                 ConcatenateIndexFiles.ConcatenateAcousticEventFiles(dataDirs, pattern, outputDirectory, opFileStem);
             }
 
-            // experiments with Mitchell-Aide ARBIMON segmentation algorithm
-            // Three steps: (1) Flattening spectrogram by subtracting the median bin value from each freq bin.
-            //              (2) Recalculate the spectrogram using local range. Trim off the 5 percentiles.
-            //              (3) Set a global threshold.
             if (false)
             {
+                // experiments with Mitchell-Aide ARBIMON segmentation algorithm
+                // Three steps: (1) Flattening spectrogram by subtracting the median bin value from each freq bin.
+                //              (2) Recalculate the spectrogram using local range. Trim off the 5 percentiles.
+                //              (3) Set a global threshold.
                 var outputPath = @"G:\SensorNetworks\Output\temp\AEDexperiments";
                 var outputDirectory = new DirectoryInfo(outputPath);
                 string recordingPath = @"G:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
@@ -252,11 +251,13 @@ namespace AnalysisPrograms
                     //cluster events
                     var clusters = AcousticEvent.ClusterEvents(events);
                     AcousticEvent.AssignClusterIds(clusters);
+
                     // see line 415 of AcousticEvent.cs for drawing the cluster ID into the sonogram image.
 
                     var image = Aed.DrawSonogram(sonogram, events);
                     imageList.Add(image);
                 }
+
                 var compositeImage = ImageTools.CombineImagesVertically(imageList);
                 var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, "AedExperiment_ThresholdStack", "png");
                 compositeImage.Save(debugPath);
@@ -267,9 +268,9 @@ namespace AnalysisPrograms
                 LDSpectrogramClusters.ExtractSOMClusters2();
             }
 
-            // // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
             if (false)
             {
+                // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
                 LDSpectrogramClusters.ExtractSOMClusters2();
             }
 
@@ -278,33 +279,36 @@ namespace AnalysisPrograms
                 CubeHelix.DrawTestImage();
             }
 
-            if (false)  // construct 3Dimage of audio
+            if (false)
             {
+                // construct 3Dimage of audio
                 //TowseyLibrary.Matrix3D.TestMatrix3dClass();
                 LdSpectrogram3D.Main(null);
             }
 
-            if (false)  // call SURF image Feature extraction
+            if (false)
             {
+                // call SURF image Feature extraction
                 //SURFFeatures.SURF_TEST();
                 SURFAnalysis.Main(null);
             }
 
-            if (false)  // do test of SNR calculation
-            {
-                //Audio2InputForConvCNN.Main(null);
-                Audio2InputForConvCNN.ProcessMeriemsDataset();
-                //SNR.Calculate_SNR_ofXueyans_data();
-            }
-
-            // // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
             if (false)
             {
+                // do test of SNR calculation
+                //Audio2InputForConvCNN.Main(null);
+                Audio2InputForConvCNN.ProcessMeriemsDataset();
+            }
+
+            if (false)
+            {
+                // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
                 ChannelIntegrity.Execute(null);
             }
 
-            if (false)  // do test of new moving average method
+            if (false)
             {
+                // do test of new moving average method
                 DataTools.TEST_FilterMovingAverage();
             }
 
@@ -319,35 +323,36 @@ namespace AnalysisPrograms
                 HoughTransform.Test2HoughTransform();
             }
 
-            // used to test structure tensor code.
             if (false)
             {
+                // used to test structure tensor code.
                 StructureTensor.Test1StructureTensor();
                 StructureTensor.Test2StructureTensor();
             }
 
-            // used to caluclate eigen values and singular valuse
             if (false)
             {
+                // used to caluclate eigen values and singular valuse
                 SvdAndPca.TestEigenValues();
             }
 
-            // test examples of wavelets
             if (false)
             {
+                // test examples of wavelets
                 // WaveletPacketDecomposition.ExampleOfWavelets_1();
                 WaveletTransformContinuous.ExampleOfWavelets_1();
             }
 
-            // do 2D-FFT of an image.
             if (false)
             {
+                // do 2D-FFT of an image.
                 FFT2D.TestFFT2D();
             }
 
-            // quickie to calculate entropy of some matrices - used for Yvonne acoustic transition matrices
             if (false)
             {
+                // quickie to calculate entropy of some matrices - used for Yvonne acoustic transition matrices
+
                 string dir = @"H:\Documents\SensorNetworks\MyPapers\2016_EcoAcousticCongress_Abstract\TransitionMatrices";
                 string filename = @"transition_matrix_BYR4_16Oct.csv";
                 //string filename = @"transition_matrix_SE_13Oct.csv";
@@ -369,9 +374,10 @@ namespace AnalysisPrograms
                 double entropy = DataTools.Entropy_normalised(v);
             } // end if (true)
 
-            // code to merge all files of acoustic indeces derived from 24 hours of recording,
             if (false)
             {
+                // code to merge all files of acoustic indeces derived from 24 hours of recording,
+
                 //LDSpectrogramStitching.ConcatenateSpectralIndexFiles1(); //DEPRACATED
                 LdSpectrogramStitching.ConcatenateFalsecolourSpectrograms();
                 //LDSpectrogramClusters.ExtractSOMClusters();
