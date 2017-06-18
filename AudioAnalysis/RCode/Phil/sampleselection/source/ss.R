@@ -110,7 +110,7 @@ SS.fixedwidth <- function () {
     ExtractSDF()
     
     # Step 4
-    # discard silent minutes
+    # discard silent segments
     RemoveSilentSegments()
     
     # Step 5
