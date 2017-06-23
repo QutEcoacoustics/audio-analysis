@@ -1,10 +1,10 @@
 #' Create a html file based on a template and a dataframe of data to insert
 #'
-#' @param df dataframe; contains the data that will be inserted in a reapeater
-#' @param template.file: string; The name of the file that will be used as the template,
+#' @param template.path: string; The name of the file that will be used as the template,
 #'                          which is basically a html file with some specially delimeted flags
 #'                          showing where the data should be inserted.
-#' @param output.fn: string; where the html file should be saved
+#' @param output.path: string; where the html file should be saved
+#' @param df dataframe; contains the data that will be inserted in a reapeater
 #' @param singles: list; extra data that is not contained in the data.frame that will be inserted as singles (e.g. page title)
 #' @return string; The path where the html file was saved
 #' @export
@@ -124,7 +124,9 @@ HtmlInspector <- function (template.path, output.path, df = NULL,  singles = lis
     include.paths <- file.path(path, placeholder.names)
     verify = file.exists(include.paths)
     if (!all(verify)) {
-        warning('some flags from templage were not in the replacement list')
+      msg <- c('some include paths were missing:',
+               paste(include.paths[verify], collapse = ','))
+      warning(msg)
     }
     placeholders <- placeholders[verify]
     include.paths <- include.paths[verify]
@@ -144,21 +146,29 @@ HtmlInspector <- function (template.path, output.path, df = NULL,  singles = lis
 .InsertIntoTemplate <- function (template, vals) {
 
     vals <- as.data.frame(vals)
+   
     if (nrow(vals) == 0) {
         return(template)
     }
+    print("- - - - - - -")
+    print(vals)
     placeholder.name.ex <- '[0-9a-zA-Z._]+'
     placeholders.ex <- paste0("<##",placeholder.name.ex,"##>")
     placeholders <- unique(unlist(str_extract_all(template, placeholders.ex)))
     placeholder.names <- unlist(str_extract_all(placeholders, placeholder.name.ex))
     verify <- placeholder.names %in% colnames(vals)
     if (!all(verify)) {
-        warning('some flags from templage were not in the replacement list')
+        msg <- c('some flags from template were not in the replacement list :',
+                  paste(placeholder.names[verify], collapse = ','))
+        warning(msg)
+        print(msg)
+        print(placeholder.names)
+        print(colnames(vals))        
     }
     placeholders <- placeholders[verify]
     placeholder.names <- placeholder.names[verify]
     for(i in 1:length(placeholders)) {
-        template <- str_replace_all(template, placeholders[i], vals[,placeholder.names[i]])
+        template <- str_replace_all(template, placeholders[i], as.character(vals[,placeholder.names[i]]))
     }
     return(template)
 }

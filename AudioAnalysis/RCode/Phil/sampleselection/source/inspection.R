@@ -14,8 +14,8 @@ InspectClusters <- function (cluster.groups = NA, duration.per.group = 30, max.g
     #    each clustergroup will have its own row
     #
 
-    events <- ReadOutput('events') # contains events including bounds
-    clustered.events <- ReadOutput('clustered.events')  # contains only group and event id
+    events <- datatrack::ReadDataobject('events') # contains events including bounds
+    clustered.events <- datatrack::ReadDataobject('clustered.events')  # contains only group and event id
     
     # get the different clusterings for different number of clusters
     clusterings <- colnames(clustered.events)
@@ -127,8 +127,8 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     #    each clustergroup will have its own row
     #
     
-    events <- ReadOutput('filtered.segment.events') #
-    clustered.events <- ReadOutput('clustered.events')  # contains only group and event id and min id
+    events <- datatrack::ReadDataobject('filtered.segment.events') #
+    clustered.events <- datatrack::ReadDataobject('clustered.events')  # contains only group and event id and min id
     
     
     # double check that the event ids match correctly
@@ -197,7 +197,7 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     }
     
     
-    
+    temp.dir <- TempDirectory()
     
     spectro.list <- SaveSpectroImgsForInspection(selected.events, temp.dir)
 
@@ -223,15 +223,18 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
                             margin = 2)
     
     
-    html.file <- paste0('inspect.segments.', format(Sys.time(), format="%y%m%d_%H%M%S"), '.html')
+    html.file <- file.path(temp.dir,paste0('inspect.segments.', format(Sys.time(), format="%y%m%d_%H%M%S"), '.html'))
     
-    HtmlInspector(selected.events, template.file = 'segment.event.inspector.html', output.fn =  html.file)
+    templator::HtmlInspector(template.path = file.path('templates','segment.event.inspector.html'), output.path =  html.file, selected.events, list(title = "inspect segments"))
+    
+    print(paste("output saved to ", temp.dir))
+    
     
 }
 
 
 
-SaveSpectroImgsForInspection <- function (events, temp.dir, use.parallel = FALSE) {
+SaveSpectroImgsForInspection <- function (events, temp.dir = NULL, use.parallel = FALSE) {
     # given a list of events/segments with at least the columns:
     #   event.id, file.path, file.sec, segment.duration
     # OR
@@ -242,9 +245,10 @@ SaveSpectroImgsForInspection <- function (events, temp.dir, use.parallel = FALSE
     
     events$spectro.fn <- ''
     
+    if (is.null(temp.dir)) {
+        temp.dir <- TempDirectory()
+    }
 
-    
-    temp.dir <- TempDirectory()
     
     temp.fns <- paste(events$event.id, 'png', sep = '.')
     events$spectro.fn <- file.path(temp.dir, temp.fns)
@@ -371,8 +375,8 @@ CreateSampleSpectrograms <- function (samples, num.clusters, temp.dir) {
     
     
     
-    events <- ReadOutput('events')
-    groups <- ReadOutput('clusters', level = 2)
+    events <- datatrack::ReadDataobject('events')
+    groups <- datatrack::ReadDataobject('clusters', level = 2)
     group.col.name <- paste0('group.', num.clusters)
     
     # need to filter events by the selected minutes
@@ -401,7 +405,7 @@ CreateSampleSpectrograms <- function (samples, num.clusters, temp.dir) {
 InspectEvents <- function (min.ids = 405) {
     FilterEvents1(min.ids)
  
-    all.events <- ReadOutput('events')
+    all.events <- datatrack::ReadDataobject('events')
     events <- all.events[all.events$min.id %in% min.ids, ]
     rects <- events[, c('start.sec', 'duration', 'bottom.f', 'top.f')]
     #rects$label.tl <- events$event.id
@@ -474,8 +478,8 @@ InspectSamples <- function (samples = NA, output.fns = NA) {
     # draws the ranked n samples as spectrograms
     # with events marked and colour coded by cluster group
     
-    rankings <- ReadObject('ranked.samples')
-    min.ids <- ReadOutput('target.min.ids')
+    rankings <- datatrack::ReadDataobject('ranked.samples')
+    min.ids <- datatrack::ReadDataobject('target.min.ids')
     d.names <- dimnames(rankings$data)
     num.clusters.choices <- d.names$num.clusters
     num.clusters.choice <- GetUserChoice(num.clusters.choices, 'number of clusters', default = floor(length(num.clusters.choices)/2))

@@ -30,7 +30,7 @@ install.my.packages()
 
 
 
-# setwd("/Users/n8933464/Documents/github/audio-analysis/AudioAnalysis/RCode/Phil/sampleselection/source")
+# setwd("~/Documents/github/audio-analysis/AudioAnalysis/RCode/Phil/sampleselection/source")
 
 
 

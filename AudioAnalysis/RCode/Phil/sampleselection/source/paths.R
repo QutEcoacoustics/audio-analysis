@@ -7,15 +7,22 @@ paths <- list(
     audio = c("/Volumes/passport/phil/SERF/serf_audio",
              "/Volumes/files/qut_data/SERF/serf_audio",
              "D:/phil/SERF/serf_audio",
-             "/Users/eichinsp/Desktop/SERF/serf_audio"),
+             "~/Desktop/SERF/serf_audio"),
     cache = c('/Volumes/PACKARDBELL/qut_spectrogram_cache',
               '/Volumes/files/qut_data/cache',
-              '/Users/n8933464/Documents/sample_selection_output/cache',
-              '/Users/eichinsp/Documents/sample_selection_output/cache'),
-    indices.1.sec = c("/Users/n8933464/Documents/SERF/indices_1_sec",
-                      "/Users/eichinsp/Documents/SERF/indices_1_sec")
+              '~/Documents/sample_selection_output/cache'),
+    output = c('/Users/eichinsp/Documents/sample_selection_output',
+               '/Users/n8933464/Documents/sample_selection_output'),
+    source = c("/Users/eichinsp/Documents/SERF",
+               "/Users/n8933464/Documents/SERF")
     )
-    
+
+#todo: fix so multiple subdirectory alternatives can be sepecified. 
+sub.paths <- list(
+    lines = c('source','lines'),
+    events = c('source','events'),
+    indices.1.sec = c('source','indices_1_sec')
+)   
 
 
 TestPaths <- function () {
@@ -43,20 +50,39 @@ Path <- function (path.name) {
     # this is used so that different hard drives can be used (for home and work)
     
     
-    first.match <- match(TRUE, file.exists(paths[[path.name]]))
-    
-    
-    if (!is.na(first.match)) {
-        path <- paths[[path.name]][first.match]
-        return(path)
+    #not a primary path, check subpath
+    if (path.name %in% names(sub.paths)) {
+        
+        sub.dir.of <- sub.paths[[path.name]][1]
+        sub.dir.path <- sub.paths[[path.name]][2]
+        path <- file.path(Path(sub.dir.of), sub.dir.path)
+        
     } else {
-        msg1 <- paste('defined paths for', path.name, "don't exist. ", paste(paths[[path.name]], collapse = ", "))
-        stop(msg1)
+        
+        first.match <- match(TRUE, file.exists(paths[[path.name]]))
+        
+        
+        if (!is.na(first.match)) {
+            path <- paths[[path.name]][first.match]
+            
+        } else {
+            
+            msg1 <- paste('defined paths for', path.name, "don't exist. ", paste(paths[[path.name]], collapse = ", "))
+            stop(msg1)
+        } 
+        
     }
+    
+    # use full path, not home directory path - useful for html src, which don't work with ~/path
+    
+    return(path)
+
 
 }
 
 
+
+#isn't there an existing R function that does this?
 BasePath <- function (full.path, ds = "/") {
     # hack to get around full.names bug
     # TODO: maybe use platform file sepatartor like this: split <- strsplit(path, .Platform$file.sep)

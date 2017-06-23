@@ -18,7 +18,7 @@ GetFrequencyDistributions <- function (sp = NULL, bins = 256) {
     dists <- bfs <- tfs <- as.data.frame(matrix(NA, nrow = bins, ncol = nrow(species.list)))
     colnames(dists) <- colnames(bfs) <- colnames(tfs) <- species.list$id
     
-    save.path <- "/Users/n8933464/Documents/papers/species_fdists"
+    save.path <- "~/Documents/papers/species_fdists"
     for (i in 1:nrow(species.list)) { 
         res <- GetFreqDist(sp = species.list$id[i], save.path = save.path, bins = bins)
         dists[, i] <- res$f.dist

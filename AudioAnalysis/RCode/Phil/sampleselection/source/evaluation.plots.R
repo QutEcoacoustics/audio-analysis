@@ -1,4 +1,4 @@
-g.plot.path <- '/Users/n8933464/Documents/sample_selection_output/plots'
+g.plot.path <- '~/Documents/sample_selection_output/plots'
 
 
 
