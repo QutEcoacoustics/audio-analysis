@@ -16,22 +16,18 @@ namespace AnalysisPrograms.Production
     using System.Linq;
     using System.Reflection;
     using System.Text;
-
     using AnalyseLongRecordings;
-    using Recognizers.Base;
-
     using AudioAnalysisTools;
-
     using Dong.Felt;
-
+    using Draw.Zooming;
     using PowerArgs;
+    using Recognizers.Base;
 
     /// <summary>
     /// Defines the various actions (sub programs) that we can run.
     /// </summary>
     [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder", Justification = "Reviewed. Suppression is OK here.")]
     [SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1516:ElementsMustBeSeparatedByBlankLine", Justification = "Reviewed. Suppression is OK here.")]
-    [SuppressMessage("ReSharper", "StyleCop.SA1516", Justification = "Reviewed. OK here")]
     [ArgAllowNullActions]
     public partial class MainEntryArguments
     {
@@ -97,14 +93,6 @@ namespace AnalysisPrograms.Production
             // Signed off: Michael Towsey 27th July 2012
             return DrawSummaryIndexTracks.Main;
         }
-
-        //public DrawSummaryIndices.Arguments IndicesCsv2ImageArgs { get; set; }
-        //public static Action<DrawSummaryIndices.Arguments> IndicesCsv2Image()
-        //{
-        //    // 4. Produces a tracks image of summary indices in a csv file - one track per summary index.
-        //    // Signed off: Michael Towsey 29th April 2014
-        //    return DrawSummaryIndices.Main;
-        //}
 
         #endregion
 

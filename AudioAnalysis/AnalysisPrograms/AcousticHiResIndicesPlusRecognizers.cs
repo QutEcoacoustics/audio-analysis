@@ -43,7 +43,7 @@ namespace AnalysisPrograms
     using PowerArgs;
 
     using TowseyLibrary;
-
+    /*
     [Obsolete("This is the old way of doing a multi recognizer!")]
     public class AcousticHiResIndicesPlusRecognizers : IAnalyser2
     {
@@ -395,7 +395,7 @@ namespace AnalysisPrograms
             {
                 var subsegmentOffset = (analysisSettings.SegmentStartOffset ?? TimeSpan.Zero) + TimeSpan.FromSeconds(i * subsegmentDuration);
 
-                /* ###################################################################### */
+                // ###################################################################### //
 
                 // OBSOLETE: INTENTIONALLY BROKEN
                 IndexCalculateResult indexCalculateResult = null; /*IndexCalculate.Analysis(
@@ -403,9 +403,9 @@ namespace AnalysisPrograms
                     subsegmentOffset,
                     acousticIndicesParsedConfiguration.IndexCalculationDuration,
                     acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
-                    acousticIndicesParsedConfiguration.IndexPropertiesFile, TODO, TODO, analysisSettings.Configuration, TODO);*/
+                    acousticIndicesParsedConfiguration.IndexPropertiesFile, TODO, TODO, analysisSettings.Configuration, TODO);
 
-                /* ###################################################################### */
+                // ###################################################################### 
 
                 summaryIndices[i] = indexCalculateResult.SummaryIndexValues;
                 spectralIndices[i] = indexCalculateResult.SpectralIndexValues;
@@ -650,13 +650,13 @@ namespace AnalysisPrograms
             FileTools.WriteTextFile(destination, lines);
         }
 
-/*
+
         public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
         {
             Csv.WriteToCsv(destination, results);
         }
 
-*/
+
 
         public void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
         {
@@ -711,9 +711,9 @@ namespace AnalysisPrograms
             // output to disk (so other analysers can use the data,
             // only data - configuration settings that generated these indices
             // this data can then be used by post-process analyses
-            /* NOTE: The value for FrameStep is used only when calculating a standard spectrogram
-             * FrameStep is NOT used when calculating Summary and Spectral indices.
-             */
+            // NOTE: The value for FrameStep is used only when calculating a standard spectrogram
+            // * FrameStep is NOT used when calculating Summary and Spectral indices.
+             
             var indexConfigData = new IndexGenerationData()
                                       {
                                           RecordingType  = inputFileSegment.TargetFile.Extension,
@@ -903,5 +903,5 @@ namespace AnalysisPrograms
 
 
     }
-
+*/
 }
