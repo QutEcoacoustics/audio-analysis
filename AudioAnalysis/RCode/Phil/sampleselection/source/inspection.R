@@ -117,7 +117,7 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     #  for some given clusters, shows some segment events belonging to each of those clusters
     #  
     #  Args:
-    #    cluster.groups: vector of ints; which clusters
+    #    clusters: vector of ints; which clusters
     #    num.segments: int; number of segments to show for each cluster
     #    max.groups: if clusters is not provided it will be set to either the number of clusters or max.groups (whichever is smaller)
     #
@@ -129,6 +129,8 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     
     events <- datatrack::ReadDataobject('filtered.segment.events') #
     clustered.events <- datatrack::ReadDataobject('clustered.events')  # contains only group and event id and min id
+    clustering <- datatrack::ReadDataobject('clustering.kmeans')
+
     
     
     # double check that the event ids match correctly
@@ -150,6 +152,9 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     } else {
         which.k <- 1
     }
+    
+    distance.matrix <- as.matrix(dist(clustering$data[[which.k]]$centers))
+    
     
     group.col <- clusterings[which.k]
     
@@ -180,12 +185,14 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     selected.events <- clustered.events.data[clustered.events.data[,group.col] %in% clusters,]
     
     selected.events$segment.duration <- segment.duration
+    selected.events$dist.from.first <- NA
+    selected.events$dist.from.prev <- NA
     
 
     
     # for each cluster, limit the number of segments shown
     for (group in clusters) {
-        subset <- selected.events[group.col] == group
+        subset <- selected.events[,group.col] == group
         num.before <- sum(subset)
         if (num.before > num.segments) {
             # select some random segments
@@ -194,6 +201,10 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
         num.after <- sum(subset)
         Report(4, 'Selecting', num.after, 'spectrograms for group', group, 'out of a total of', num.before)
         selected.events <- selected.events[selected.events[group.col] != group | subset,]
+        if (group > 1) {
+            selected.events$dist.from.prev[subset] <- distance.matrix[group-1,group] 
+        }
+        selected.events$dist.from.prev[subset] <- distance.matrix[1,group]
     }
     
     
@@ -221,6 +232,9 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
                             start.sec = seg.sec.of.day, 
                             end.sec = seg.sec.of.day + 1, 
                             margin = 2)
+    
+    
+    
     
     
     html.file <- file.path(temp.dir,paste0('inspect.segments.', format(Sys.time(), format="%y%m%d_%H%M%S"), '.html'))

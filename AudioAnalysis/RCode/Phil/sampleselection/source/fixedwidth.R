@@ -243,6 +243,7 @@ ExtractSDFForMin <- function (min.vals,
     segment.duration <- 1 # seconds
     
     # width of segment should be rounded down to the nearest power of 2 (for fft)
+    # todo: linear interpolation to preserve full duration of second ?
     width.before <- floor(segment.duration * cur.spectro$frames.per.sec)
     width <- RoundToPow2(width.before, floor = TRUE)
     
