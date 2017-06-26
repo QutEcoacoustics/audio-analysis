@@ -8,8 +8,8 @@ skip_commits:
   message: '/\[chore\]|\[no_ci\]|\[ci_skip\]|\[skip_ci\]/'
   # Do not trigger a build for anything not .NET
   files:
-    - 'AudioAnalysis/Matlab/*'
-    - 'AudioAnalysis/RCode/*'
+    - 'AudioAnalysis/Matlab/**/*'
+    - 'AudioAnalysis/RCode/**/*'
     - '**/*.md'
 
 # Do not run a build on new tags - we use tags to create releases, which can
