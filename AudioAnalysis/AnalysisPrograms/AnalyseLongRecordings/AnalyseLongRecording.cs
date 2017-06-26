@@ -275,7 +275,7 @@ Output  to  directory: {1}
             Debug.Assert(analysisSettings.AnalysisInstanceOutputDirectory == instanceOutputDirectory, "The instance result directory should be the same as the base analysis directory");
             Debug.Assert(analysisSettings.SourceFile == fileSegment.TargetFile);
 
-            // 11. IMPORTANT - this is where IAnalyser2's post processer gets called.
+            // 11. IMPORTANT - this is where IAnalyser2's post processor gets called.
             // Produces all spectrograms and images of SPECTRAL INDICES.
             // Long duration spectrograms are drawn IFF analysis type is Towsey.Acoustic
             analyser.SummariseResults(analysisSettings, fileSegment, mergedEventResults, mergedIndicesResults, mergedSpectralIndexResults, analyserResults);

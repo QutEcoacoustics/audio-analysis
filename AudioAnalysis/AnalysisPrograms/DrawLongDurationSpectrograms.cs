@@ -201,9 +201,9 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine();
             }
 
-            FileInfo indexGenerationDataFile;
-            FileInfo indexDistributionsFile;
-            ZoomCommonArguments.CheckForNeededFiles(arguments.InputDataDirectory, out indexGenerationDataFile, out indexDistributionsFile);
+            (FileInfo indexGenerationDataFile, FileInfo indexDistributionsFile) =
+                ZoomArguments.CheckNeededFilesExist(arguments.InputDataDirectory);
+
             var indexGenerationData = Json.Deserialise<IndexGenerationData>(indexGenerationDataFile);
 
             // spectral distribution statistics is required only when calcualting difference spectrograms.
@@ -221,7 +221,7 @@ namespace AnalysisPrograms
             }
             else
             {
-                //config = Yaml.Deserialise<SuperTilingConfig>(arguments.SpectrogramConfigPath).LdSpectrogramConfig;
+                //config = Yaml.Deserialise<SpectrogramZoomingConfig>(arguments.SpectrogramConfigPath).LdSpectrogramConfig;
                 config = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath);
             }
 

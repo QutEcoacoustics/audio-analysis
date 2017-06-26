@@ -81,7 +81,7 @@ namespace AudioAnalysisTools.Indices
             Dictionary<string, IndexProperties> indexProperties)
         {
             return indexProperties
-                .Where((kvp, i) => kvp.Value.IsSpectralIndex)
+                .Where(kvp => kvp.Value.IsSpectralIndex)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
 

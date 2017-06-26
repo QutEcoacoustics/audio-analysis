@@ -23,18 +23,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
     using DSP;
     using Indices;
     using StandardSpectrograms;
     using TowseyLibrary;
+    using Zooming;
 
     public static class ZoomFocusedSpectrograms
     {
-        public static void DrawStackOfZoomedSpectrograms(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory, ZoomCommonArguments common,
+        public static void DrawStackOfZoomedSpectrograms(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory, ZoomArguments common,
                                                          TimeSpan focalTime, int imageWidth)
         {
-            var zoomConfig = common.SuperTilingConfig;
-            LdSpectrogramConfig ldsConfig = common.SuperTilingConfig.LdSpectrogramConfig;
+            var zoomConfig = common.SpectrogramZoomingConfig;
+            LdSpectrogramConfig ldsConfig = common.SpectrogramZoomingConfig.LdSpectrogramConfig;
             var distributions = IndexDistributions.Deserialize(common.IndexDistributionsFile);
             var indexGeneration = Json.Deserialise<IndexGenerationData>(common.IndexGenerationDataFile);
             var indexProperties = common.IndexProperties;
@@ -105,7 +107,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 startTimeOfMaxImage = focalTime - halfMaxImageDuration;
             TimeSpan startTimeOfData = TimeSpan.FromMinutes(Math.Floor(startTimeOfMaxImage.TotalMinutes));
 
-            List<double[]> frameData = ReadFrameData(inputDirectory, fileStem, startTimeOfMaxImage, maxImageDuration, zoomConfig);
+            List<double[]> frameData = ReadFrameData(inputDirectory, fileStem, startTimeOfMaxImage, maxImageDuration, zoomConfig, indexGeneration.SegmentDuration);
 
             // get the index data to add into the
             TimeSpan imageScale1 = TimeSpan.FromSeconds(0.1);
@@ -206,7 +208,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int spectrogramWidth = (int)(spectrogramDuration.Ticks / imageScale.Ticks);
 
             // get the plain unchromed spectrogram
-            Image LDSpectrogram = DrawIndexSpectrogramCommon(
+            Image LDSpectrogram = ZoomCommon.DrawIndexSpectrogramCommon(
                 config,
                 indexGenerationData,
                 indexProperties,
@@ -270,131 +272,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return image;
         }
 
-
-
-        public static Image DrawIndexSpectrogramCommon(
-            LdSpectrogramConfig config,
-            IndexGenerationData indexGenerationData,
-            Dictionary<string, IndexProperties> indexProperties,
-            TimeSpan startTime, TimeSpan endTime, TimeSpan dataScale, TimeSpan imageScale,
-            int imageWidth,
-            Dictionary<string, double[,]> spectra,
-            string basename)
-        {
-            // check that scalingFactor >= 1.0
-            double scalingFactor = Math.Round(imageScale.TotalMilliseconds / dataScale.TotalMilliseconds);
-            if (scalingFactor < 1.0)
-            {
-                LoggedConsole.WriteLine("WARNING: Scaling Factor < 1.0");
-                return null;
-            }
-
-            // calculate data duration from column count of abitrary matrix
-            var matrix = spectra["ACI"]; // assume this key will always be present!!
-            TimeSpan dataDuration = TimeSpan.FromSeconds(matrix.GetLength(1) * dataScale.TotalSeconds);
-            int columnCount = matrix.GetLength(1);
-
-            var startIndex = (int)(startTime.Ticks / dataScale.Ticks);
-            var endIndex = (int)(endTime.Ticks / dataScale.Ticks);
-//            if (endIndex >= columnCount)
-//            {
-//                endIndex = columnCount - 1;
-//            }
-
-            var spectralSelection = new Dictionary<string, double[,]>();
-            foreach (string key in spectra.Keys)
-            {
-                matrix = spectra[key];
-                int rowCount = matrix.GetLength(0);
-
-                spectralSelection[key] = MatrixTools.Submatrix(matrix, 0, startIndex, rowCount - 1, endIndex - 1);
-                Debug.Assert(spectralSelection[key].GetLength(1) == (endTime - startTime).Ticks / dataScale.Ticks, "The expected number of frames should be extracted.");
-            }
-
-            // compress spectrograms to correct scale
-            if (scalingFactor > 1)
-            {
-                spectralSelection = IndexMatrices.CompressIndexSpectrograms(
-                    spectralSelection,
-                    imageScale,
-                    dataScale);
-            }
-            // check that have not compressed matrices to zero length
-            // Assume that will always have an ACI matrix
-            if((spectralSelection["ACI"].GetLength(0) == 0)||(spectralSelection["ACI"].GetLength(1) == 0))
-                return null;
-
-
-            // DEFINE the DEFAULT colour maps for the false-colour spectrograms
-            // Then obtain values from spectrogramDrawingConfig. NOTE: WE REQUIRE LENGTH = 11 chars.
-            string colorMap1 = "ACI-ENT-EVN";
-            if ((config.ColorMap1 != null) && (config.ColorMap1.Length == 11))
-            {
-                colorMap1 = config.ColorMap1;
-            }
-            string colorMap2 = "BGN-POW-EVN";
-            if ((config.ColorMap2 != null) && (config.ColorMap2.Length == 11))
-            {
-                colorMap2 = config.ColorMap2;
-            }
-
-
-            double backgroundFilterCoeff = indexGenerationData.BackgroundFilterCoeff;
-
-            // double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
-            var cs1 = new LDSpectrogramRGB(config, indexGenerationData, colorMap1)
-                {
-                    FileName = basename,
-                    BackgroundFilter = backgroundFilterCoeff,
-                };
-            cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
-            cs1.LoadSpectrogramDictionary(spectralSelection);
-
-            var imageScaleInMsPerPixel = (int)imageScale.TotalMilliseconds;
-            double blendWt1 = 0.1;
-            double blendWt2 = 0.9;
-
-            if (imageScaleInMsPerPixel > 15000)
-            {
-                blendWt1 = 1.0;
-                blendWt2 = 0.0;
-            }
-            else if (imageScaleInMsPerPixel > 10000)
-            {
-                blendWt1 = 0.9;
-                blendWt2 = 0.1;
-            }
-            else if (imageScaleInMsPerPixel > 5000)
-            {
-                blendWt1 = 0.8;
-                blendWt2 = 0.2;
-            }
-            else if (imageScaleInMsPerPixel > 1000)
-            {
-                blendWt1 = 0.6;
-                blendWt2 = 0.4;
-            }
-            else if (imageScaleInMsPerPixel > 500)
-            {
-                blendWt1 = 0.3;
-                blendWt2 = 0.7;
-            }
-
-            Image LDSpectrogram = cs1.DrawBlendedFalseColourSpectrogram(
-                "NEGATIVE",
-                colorMap1,
-                colorMap2,
-                blendWt1,
-                blendWt2);
-
-            if (LDSpectrogram == null)
-            {
-                throw new NullReferenceException(
-                    "Null Image of LDSpectrogram @ line 440 of class ZoomTiledSpectrograms.cs");
-            }
-
-            return LDSpectrogram;
-        }
 
         /// <summary>
         /// This method can add in the absolute recording start time. However currently disabled.
@@ -497,14 +374,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
-        public static List<double[]> ReadFrameData(DirectoryInfo dataDir, string fileStem, TimeSpan starttime, TimeSpan maxDuration, SuperTilingConfig tilingConfig)
+        public static List<double[]> ReadFrameData(DirectoryInfo dataDir, string fileStem, TimeSpan startTime, TimeSpan maxDuration, SpectrogramZoomingConfig zoomingConfig, TimeSpan indexGenerationSegmentDuration)
         {
-            TimeSpan endtime = starttime + maxDuration;
-            int startMinute = (int)Math.Floor(starttime.TotalMinutes);
-            int endMinute   = (int)Math.Ceiling(endtime.TotalMinutes);
+            TimeSpan endTime = startTime + maxDuration;
+            int startMinute = (int)Math.Floor(startTime.TotalMinutes);
+            int endMinute   = (int)Math.Ceiling(endTime.TotalMinutes);
 
-            int expectedDataDurationInSeconds = (int)tilingConfig.SegmentDuration.TotalSeconds;
-            int expectedFrameCount = (int)Math.Round(expectedDataDurationInSeconds / tilingConfig.SpectralFrameDuration);
+            int expectedDataDurationInSeconds = (int)indexGenerationSegmentDuration.TotalSeconds;
+            int expectedFrameCount = (int)Math.Round(expectedDataDurationInSeconds / zoomingConfig.SpectralFrameDuration);
 
             string name = fileStem + "_" + startMinute + "min.csv";
             string csvPath = Path.Combine(dataDir.FullName, name);
