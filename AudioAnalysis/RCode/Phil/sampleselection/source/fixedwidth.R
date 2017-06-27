@@ -72,7 +72,7 @@ RemoveWavePathFromSegmentEvents <- function () {
 
 }
 
-
+# entry point function for TDCC (time domain cepstral coefficients) AKA SDF (spectral dynamic features)
 ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coefficients = 16, parallel = 5) {
     # extracts "spectral dynamic features" of each segemnt in segment list
     # spectral dynamic features are fft coefficients of the spectrogram values in the time domain of each 
@@ -183,6 +183,7 @@ ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coeffici
 
     
 }
+
 
 
 ExtractSDFForMin <- function (min.vals, 
@@ -346,6 +347,188 @@ ExtractTDCCs <- function (seg.spectro, window, num.coefficients) {
 }
 
 
+
+ExtractAverageSpectrums <- function (num.bands = 16, max.f = 8000, min.f = 200, parallel = 5) {
+
+    segment.events <- datatrack::ReadDataobject('segment.events')
+    segment.list <- segment.events$data
+    segment.length = 60 / segment.events$params$num.per.min
+    segment.list$wave.path <- GetAudioFileBatch(segment.list)
+    
+    # 1 file per min
+    files <- unique(segment.list[,c('site', 'date', 'min')])
+    
+    # todo: calculate this from wave length and segment length
+    num.segments.per.file <- 60
+    #todo: set 'outfile' param to get messages
+    
+    SetReportMode() # reset to console only
+    if (parallel > 1) {
+        SetReportMode(socket = TRUE)
+        cl <- makeCluster(parallel)
+        registerDoParallel(cl)
+        res <- foreach(f = 1:nrow(files), 
+                       .combine='rbind', 
+                       .export=ls(envir=globalenv())) %dopar% ExtractAverageSpectrumForMin(files[f,], 
+                                                                               segments = segment.list,
+                                                                               num.fbands = num.bands,
+                                                                               max.f = max.f, 
+                                                                               min.f = min.f)  
+        
+    } else {
+        SetReportMode(socket = FALSE)
+        res <- data.frame()
+        for (f in 1:nrow(files)) {
+            row.res <- ExtractAverageSpectrumForMin(files[f,], 
+                                                    segments = segment.list,
+                                                    num.fbands = num.bands,
+                                                    max.f = max.f, 
+                                                    min.f = min.f) 
+            
+            
+            res <- rbind(res, row.res)
+        }
+    }
+    SetReportMode() # reset to console only
+    
+    res[,-1] <- round(res[,-1], 4)
+    
+    # double check that foreach has put things back in the correct order after doparallel
+    (sum(segment.list$event.id == res[,1]) == length(segment.list$event.id))
+
+    
+    # colnames, eg frequency band 3 coefficient 6 will be "b03.c06"
+    feature.names <- paste0("band.", 1:num.bands)
+    colnames(res) <- c('event.id', feature.names)
+    
+    #cbind(segment.list[,c('event.id', 'min.id')])
+    
+    # remove missing audio segments from features and segments
+    contains.na <- apply(res, 1, function (x) { 
+        any(is.na(x))
+    })
+    res <- res[!contains.na,]
+    segment.list <- segment.list[!contains.na,]
+    
+    # output
+    dependencies <- list(segment.events = segment.events$version)
+    params <- list(num.bands = num.bands, max.f = max.f, min.f = min.f)
+    datatrack::WriteDataobject(x = res, name = 'averageSpectrum', params = params, dependencies = dependencies)
+    
+}
+
+
+#todo: refactor to be dry by merging some of this function with ExtractSDFForMin
+ExtractAverageSpectrumForMin <- function (min.vals, 
+                                          segments,
+                                          num.fbands = 16, 
+                                          max.f = 8000, 
+                                          min.f = 400, 
+                                          use.cached = FALSE) {
+    
+    
+    # given the path to an audio file, will create a spectrogram, then split it into the appropriate 
+    # segments, then calculate TDCCs 
+    #
+    # Args:
+    #   path: string; the path to the audio file
+    #   segments: data.frame; contains column: wave.path, min.id, 
+    Report(1, 'start ExtractAverageSpectrumForMin')  
+    Report(1, paste(min.vals))
+    
+    require('digest')
+    
+    site <- as.character(min.vals['site'])
+    date <- as.character(min.vals['date'])
+    min <- as.numeric(min.vals['min'])
+    
+    cache.id <- paste0(paste(site, date, min, num.fbands, max.f, min.f, sep = "_"),'.avSpec')
+    if (use.cached) {
+        retrieved.from.cache <- ReadCache(cache.id)
+        if (retrieved.from.cache != FALSE) {
+            Report(4, 'using cached', cache.id)
+            return(retrieved.from.cache)
+        }
+    }
+
+    cur.segments <- segments[segments$site == site & segments$date == date & segments$min == min,]
+
+    this.file <- GetAudioFile(site,  date,  min)
+    Report(1, "extracting TDCCs for events", cur.segments$event.id[1],"-", cur.segments$event.id[nrow(cur.segments)], 'in file ', this.file)
+    
+    # create the spectrogram
+    cur.spectro <- Sp.CreateFromFile(this.file, frame.width = 256)
+    
+    # Noise Reduction !!!!
+    spectro.vals <- DoNoiseReduction(cur.spectro$vals)
+    
+    spectro.vals <- ReduceSpectrogram2(cur.spectro$vals, num.bands = num.fbands, min.f, max.f)
+    
+    segment.duration <- 1 # seconds
+    
+    ## width of segment should be rounded down to the nearest power of 2 (for fft)
+    ## todo: linear interpolation to preserve full duration of second
+    width.before <- floor(segment.duration * cur.spectro$frames.per.sec)
+    width <- width.before
+    # width <- RoundToPow2(width.before, floor = TRUE)
+    #Report(5, width.before - width, 'out of', width.before, 'time-frames were discarded to acheive power of 2')
+    
+    # TODO: update to allow different files to have different sample rates 
+    # if files are different sample rates, this will stuff everything up, because the frequency bands will represent different frequencies
+    # also, the width will represent a different length of time because of the rounding down
+    # currently we know they are all the same
+    
+    
+    # add the start.sec.in.file
+    file.duration.minutes <- round(cur.spectro$duration / 60)
+    start.sec.in.file <- (cur.segments$min %% file.duration.minutes) * 60 + cur.segments$start.sec
+    
+    # add the start.col.in.file
+    start.col.in.file <- round(start.sec.in.file * cur.spectro$frames.per.sec + 1)
+    
+    # add one col for event.id
+    num.features <- num.fbands
+    AvSpec <- matrix(NA, nrow = nrow(cur.segments), ncol = num.fbands + 1)
+    
+    
+    for (s in 1:nrow(cur.segments)) {
+        
+        seg <- cur.segments[s, ]
+        start.col <- start.col.in.file[s]
+        end.col <- start.col + width - 1
+        
+        if (end.col <= ncol(spectro.vals)) {
+            # in case some files are too short. E.g. the original 24 hour recordings finish before midnight
+            
+            seg.spectro <- spectro.vals[,start.col:end.col]
+            AvSpec[s,1:num.features+1] <- ExtractAverageSpectrumForSegment(seg.spectro)  
+        }
+        
+    }
+    
+    num.segments.processed <- sum(!is.na(AvSpec[,2]))
+    Report(5, 'features extracted for', num.segments.processed, '/', nrow(AvSpec), 'segments')
+    
+    AvSpec <- as.data.frame(AvSpec)
+    
+    # 1st col is event .id
+    AvSpec[,1] <- cur.segments$event.id
+    
+    WriteCache(AvSpec, cache.id)
+    
+    return(AvSpec)
+    
+    
+    
+    
+}
+
+
+
+ExtractAverageSpectrumForSegment <- function (seg.spectro) {
+    av <- apply(seg.spectro, 1, mean)
+    return(av)
+}
 
 
 RoundToPow2 <- function (x, ceil = FALSE, floor = FALSE) {

@@ -113,7 +113,7 @@ InspectClusters <- function (cluster.groups = NA, duration.per.group = 30, max.g
 
 
 
-InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clusters = 5, segment.duration = 1) {
+InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clusters = 5, segment.duration = 1, noise.reduction = 0.5) {
     #  for some given clusters, shows some segment events belonging to each of those clusters
     #  
     #  Args:
@@ -130,7 +130,6 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     events <- datatrack::ReadDataobject('filtered.segment.events') #
     clustered.events <- datatrack::ReadDataobject('clustered.events')  # contains only group and event id and min id
     clustering <- datatrack::ReadDataobject('clustering.kmeans')
-
     
     
     # double check that the event ids match correctly
@@ -144,6 +143,9 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     
     # combine the event columns to the clustered event data frame
     clustered.events.data <- cbind(clustered.events$data, events$data[,-(which(colnames(events$data) == 'event.id'))])
+    
+    
+    clustered.events.data$species.id <- AttachSpeciesId(clustered.events.data)
     
 
     
@@ -200,17 +202,23 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
         }
         num.after <- sum(subset)
         Report(4, 'Selecting', num.after, 'spectrograms for group', group, 'out of a total of', num.before)
-        selected.events <- selected.events[selected.events[group.col] != group | subset,]
+        
+        # add information about the cluster centroid distance for this group from the previous group and from the first group
         if (group > 1) {
-            selected.events$dist.from.prev[subset] <- distance.matrix[group-1,group] 
+            selected.events$dist.from.prev[subset] <- round(distance.matrix[group-1,group], 2)
+        } else {
+            selected.events$dist.from.prev[subset] <- 0
         }
-        selected.events$dist.from.prev[subset] <- distance.matrix[1,group]
+        selected.events$dist.from.first[subset] <- round(distance.matrix[1,group], 2)
+        
+        # remove events that were not selected from this subset
+        selected.events <- selected.events[selected.events[group.col] != group | subset,]
     }
     
     
     temp.dir <- TempDirectory()
     
-    spectro.list <- SaveSpectroImgsForInspection(selected.events, temp.dir)
+    spectro.list <- SaveSpectroImgsForInspection(selected.events, temp.dir, noise.reduction = noise.reduction)
 
     
 
@@ -234,7 +242,9 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
                             margin = 2)
     
     
-    
+    # sort by cluster so that the distance from previous makes sense
+    # secondary sorting by eventID for the order of segments in each row
+    selected.events <- selected.events[order(selected.events$group, selected.events$event.id),]
     
     
     html.file <- file.path(temp.dir,paste0('inspect.segments.', format(Sys.time(), format="%y%m%d_%H%M%S"), '.html'))
@@ -248,7 +258,7 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
 
 
 
-SaveSpectroImgsForInspection <- function (events, temp.dir = NULL, use.parallel = FALSE) {
+SaveSpectroImgsForInspection <- function (events, temp.dir = NULL, use.parallel = FALSE, noise.reduction = 0) {
     # given a list of events/segments with at least the columns:
     #   event.id, file.path, file.sec, segment.duration
     # OR
@@ -262,7 +272,7 @@ SaveSpectroImgsForInspection <- function (events, temp.dir = NULL, use.parallel 
     if (is.null(temp.dir)) {
         temp.dir <- TempDirectory()
     }
-
+    
     
     temp.fns <- paste(events$event.id, 'png', sep = '.')
     events$spectro.fn <- file.path(temp.dir, temp.fns)
@@ -275,30 +285,6 @@ SaveSpectroImgsForInspection <- function (events, temp.dir = NULL, use.parallel 
     if (!use.parallel) {
         SetReportMode(socket = FALSE) 
         
-    if (all(c('site', 'date', 'min', 'start.sec') %in% colnames(events))) {
-        for (i in 1:nrow(events)) { 
-            Sp.CreateTargeted(site = events$site[i], 
-                              start.date = events$date[i], 
-                              start.sec = events$min[i] * 60 + events$start.sec[i], 
-                              duration = events$segment.duration[i], 
-                              img.path = events$spectro.fn[i],
-                              msg = nums[i])
-        } 
-        
-    } else if (all(c('file.path', 'file.sec', 'segment.duration') %in% colnames(events))) {
-            for (i in 1:nrow(events)) {
-                sp.path <- Sp.CreateFromFile(path = events$file.path[i], 
-                                             offset = events$file.sec[i], 
-                                             duration = events$segment.duration[i],
-                                             filename = events$spectro.fn[i],
-                                             msg = nums[i]) 
-                
-            }
-
-            
-        } else {
-            stop('wrong columns for SaveSpectroImgsForInspection')
-        }
         
         
     } else {
@@ -311,21 +297,21 @@ SaveSpectroImgsForInspection <- function (events, temp.dir = NULL, use.parallel 
         cl <- makeCluster(3)
         registerDoParallel(cl)
         
-    if (all(c('site', 'date', 'min', 'start.sec') %in% colnames(events))) {
-        # method 1: create targeted
-        
-        res <- foreach(site = events$site, 
-                       start.date = events$date,
-                       start.sec = events$min * 60 + events$start.sec,
-                       duration = events$segment.duration,
-                       img.path = events$spectro.fn,
-                       num = nums, .combine='c', .export=ls(envir=globalenv())) %dopar% Sp.CreateTargeted(site = site, 
-                                                                                                          start.date = start.date, 
-                                                                                                          start.sec = start.sec, 
-                                                                                                          duration = duration, 
-                                                                                                          img.path = img.path,
-                                                                                                          msg = num)         
-    } else  if (all(c('file.path', 'file.sec', 'segment.duration') %in% colnames(events))) {
+        if (all(c('site', 'date', 'min', 'start.sec') %in% colnames(events))) {
+            # method 1: create targeted
+            
+            res <- foreach(site = events$site, 
+                           start.date = events$date,
+                           start.sec = events$min * 60 + events$start.sec,
+                           duration = events$segment.duration,
+                           img.path = events$spectro.fn,
+                           num = nums, .combine='c', .export=ls(envir=globalenv())) %dopar% Sp.CreateTargeted(site = site, 
+                                                                                                              start.date = start.date, 
+                                                                                                              start.sec = start.sec, 
+                                                                                                              duration = duration, 
+                                                                                                              img.path = img.path,
+                                                                                                              msg = num)         
+        } else  if (all(c('file.path', 'file.sec', 'segment.duration') %in% colnames(events))) {
             # method 2: create from audio file
             
             res <- foreach(path = events$file.path, 
@@ -339,7 +325,7 @@ SaveSpectroImgsForInspection <- function (events, temp.dir = NULL, use.parallel 
                                                                                                               msg = num)  
             
             
-
+            
         } else {
             stop('wrong columns for SaveSpectroImgsForInspection')
         }
@@ -348,9 +334,42 @@ SaveSpectroImgsForInspection <- function (events, temp.dir = NULL, use.parallel 
     
     return(events$spectro.fn)
     
-
-
+    
+    
 }
+
+# TODO, inspection with noise reduction. 
+SaveSpectroImgForInspection <- function (df.row, noise.reduction = 0) {
+    
+    # if noise reduction is > 0, we need to get the whole minute, 
+    # then do noise reduction, then subset that minute
+    
+    
+    if (all(c('site', 'date', 'min', 'start.sec') %in% colnames(events))) {
+ 
+            Sp.CreateTargeted(site = events$site[i], 
+                              start.date = events$date[i], 
+                              start.sec = events$min[i] * 60 + events$start.sec[i], 
+                              duration = events$segment.duration[i], 
+                              img.path = events$spectro.fn[i],
+                              msg = nums[i])
+        
+        
+    } else if (all(c('file.path', 'file.sec', 'segment.duration') %in% colnames(events))) {
+
+            sp.path <- Sp.CreateFromFile(path = events$file.path[i], 
+                                         offset = events$file.sec[i], 
+                                         duration = events$segment.duration[i],
+                                         filename = events$spectro.fn[i],
+                                         msg = nums[i]) 
+        
+    } else {
+        stop('wrong columns for SaveSpectroImgsForInspection')
+    }
+    
+    
+}
+
 
 
 

@@ -24,7 +24,16 @@ example.2 <- function () {
   output.path <-  paste0('inst/example_output/segments_',output.suffix,'.html')
   data <- read.csv("/Users/eichinsp/Documents/github/audio-analysis/AudioAnalysis/RCode/Phil/sampleselection/source/test.segments.for.output.csv")
   
-  HtmlInspector(template.path = template, output.path =  output.path, data, "inspect segments")  
+  HtmlInspector(template.path = template, output.path =  output.path, data, "inspect segments")
   
+}
+
+example.3 <- function () {
+  output.suffix <- gsub(" ", "_", date());
+  template <- "/Users/eichinsp/Documents/github/audio-analysis/AudioAnalysis/RCode/Phil/sampleselection/source/templates/segment.event.inspector.html"
+  output.path <-  paste0('inst/example_output/segments_',output.suffix,'.html')
+  data <- read.csv("/Users/eichinsp/Documents/github/audio-analysis/AudioAnalysis/RCode/Phil/sampleselection/source/test.segments.for.output.3.csv")
+  
+  HtmlInspector(template.path = template, output.path =  output.path, data, "inspect segments")
   
 }

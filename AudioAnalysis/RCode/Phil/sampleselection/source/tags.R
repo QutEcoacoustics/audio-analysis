@@ -75,6 +75,8 @@ ReadTargetTagsFromDb <- function (fields = c('start_date',
         # until the end of the last partQ
         # TODO: this is broken!
         range <- GetTargetRange()
+    } else if (is.data.frame(target)) {
+        range <- GetTargetRange(target)
     } else if (study.only) {
         range <- list()
         range$start.min <- g.study.start.min
@@ -82,9 +84,11 @@ ReadTargetTagsFromDb <- function (fields = c('start_date',
         range$start.date <- g.study.start.date
         range$end.date <- g.study.end.date
         range$sites <- g.study.sites 
+    } else {
+        range <- FALSE
     }
     
-    if (target || study.only) {
+    if (is.list(range)) {
         
         start.time <- MinToTime(range$start.min)
         end.time <- MinToTime(range$end.min + 1) # target is inclusive of end min
@@ -104,13 +108,10 @@ ReadTargetTagsFromDb <- function (fields = c('start_date',
         sites <- NULL
     }
     
-    
-    if (target) {
-        # TODO
-        # we have searched for all tags between the first and last row of the target
-        # but we need to remove any mins that are not present in the target
-        # for now it doesn't matter, because we are only looking at one full day 
-    }
+    # TODO
+    # we have searched for all tags between the first and last row of the target
+    # but we need to remove any mins that are not present in the target
+    # for now it doesn't matter, because we are only looking at one full day   
 
     data <- ReadTagsFromDb(fields, sites, start.date.time, end.date.time, no.duplicates)
     
@@ -358,4 +359,58 @@ GetSpeciesMinutesMatrix <- function () {
     
     
 }
+
+
+
+AttachSpeciesToEvents <- function (events) {
+    # adds the species to each segment 
+    #
+    # Args:
+    #   events is a data frame containing
+    #      - site, date, min
+    #      - optionally max frequency and min frequency
+    
+    tags <- ReadTargetTagsFromDb(fields  = c('start_date', 
+                                                     'start_time', 
+                                                     'site', 
+                                                     'species_id',
+                                                     'start_date_time_char',
+                                                     'duration'), target = fse)
+    
+    time <- str_extract(str_extract(tags$start_date_time_char, " [0-9:.]+"), "[0-9:.]+")
+    time.split <- strsplit(time, ":")
+    hour <- as.integer(time.split[1])
+    min1 <- as.integer(time.split[2])
+    sec <- as.integer(time.split[3])
+    millisec <- as.integer(str_extract(sec, "[0-9]+$"))
+    sec <- as.integer(str_extract(sec, "^[0-9]+"))
+    min <- (hour*60) + min1
+    
+    # any annotation that starts very close to the end of a second, round the start up to the next second
+    threshold <- 100
+    is.close <- millisec > 1000-threshold & tags$duration > threshold
+    sec[is.close] <- sec[is.close] + 1
+    tags$duration[is.close] <- tags$duration[is.close] - (1000 - millisec[is.close])
+    millisec[is.close] <- 0
+    
+    # bump up the relevant minutes where rounding up pushed it into the next minute
+    min[is.close][sec[is.close] == 60] = min[is.close][sec[is.close] == 60] + 1
+    
+    # probably should bump up the hours the same way, but not going to make much difference
+    
+    
+    
+    
+    
+    tags$min <- min
+    tags$sec <- sec
+    tags$millisec <- millisec
+    
+    return(tags)
+    
+    
+}
+
+
+
 
