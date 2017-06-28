@@ -375,38 +375,91 @@ AttachSpeciesToEvents <- function (events) {
                                                      'site', 
                                                      'species_id',
                                                      'start_date_time_char',
-                                                     'duration'), target = fse)
+                                                     'duration'), target = events)
     
+    # remove date keep time only in the form hh:mm:ss.nnn
     time <- str_extract(str_extract(tags$start_date_time_char, " [0-9:.]+"), "[0-9:.]+")
-    time.split <- strsplit(time, ":")
-    hour <- as.integer(time.split[1])
-    min1 <- as.integer(time.split[2])
-    sec <- as.integer(time.split[3])
-    millisec <- as.integer(str_extract(sec, "[0-9]+$"))
-    sec <- as.integer(str_extract(sec, "^[0-9]+"))
-    min <- (hour*60) + min1
+    
+    # split by colon to hour, min, sec (seconds have 3 decimal places)
+    # cast from list of vectors of length 3 to a 3 column dataframe
+    time <- as.data.frame(matrix(as.numeric(unlist(strsplit(time, ":"))), ncol = 3, byrow = TRUE))
+    colnames(time) = c('hour', 'min1', 'sec')
+    # add millisecond column
+    time$millisec <- as.integer(str_extract(time$sec, "[0-9]+$"))
+    # replace sec column to not have milliseconds
+    time$sec <- as.integer(str_extract(time$sec, "^[0-9]+"))
+    # add min in day column
+    time$min <- (time$hour*60) + time$min1
+    
+    tags <- cbind(tags, time)
     
     # any annotation that starts very close to the end of a second, round the start up to the next second
     threshold <- 100
-    is.close <- millisec > 1000-threshold & tags$duration > threshold
-    sec[is.close] <- sec[is.close] + 1
-    tags$duration[is.close] <- tags$duration[is.close] - (1000 - millisec[is.close])
-    millisec[is.close] <- 0
     
-    # bump up the relevant minutes where rounding up pushed it into the next minute
-    min[is.close][sec[is.close] == 60] = min[is.close][sec[is.close] == 60] + 1
+    # boolean vector of which tags start close to the end of the segment
+    is.close <- tags$millisec > 1000-threshold & tags$duration > threshold
+    
+    # for that subset:
+    
+    
+    # function to round the start millisecond up to the start of the next second
+    bump.up.to.next.sec <- function (tags) {
+        
+        # add one to the sec column (move to next second)
+        tags$sec <- tags$sec + 1
+        # reduce the duration by the difference
+        tags$duration <- tags$duration - (1000 - tags$millisec)
+        # change the millisec to 0
+        tags$millisec <- 0
+        
+        # bump up the relevant minutes where rounding up pushed it into the next minute
+        tags$min[tags$sec == 60] = tags$min[tags$sec == 60] + 1
+        
+        return(tags)
+    }
+    
+    tags[is.close,] <- bump.up.to.next.sec(tags[is.close,])
+    
+    # filter out very long annotations, because they are probably rubbish
+    max.length <- 8000
+    tags <- tags[tags$duration <= max.length, ]
+    
+
     
     # probably should bump up the hours the same way, but not going to make much difference
     
     
+    # if duration is > 1000 - start millisecond + threshold, it also includes the next second
     
+    add.overlapping <- function(tags) {
+        
+        overlaps.if.duration.over <- 1000 + threshold - tags$millisec
+        
+        subset <- tags$duration > overlaps.if.duration.over
+        
+        if (sum(subset) > 1) {
+        
+            overlaps.to.next.sec <- tags[subset,]
+            overlaps.to.next.sec <- bump.up.to.next.sec(overlaps.to.next.sec)
+        
+            # cutoff the ones we duplicated to the end of the second
+            tags$duration[subset] <- overlaps.if.duration.over[subset] - 1
+            
+            overlaps.to.next.sec <- add.overlapping(overlaps.to.next.sec)
+            
+            tags <- rbind(tags, overlaps.to.next.sec)
+            
+        }
+        
+        return(tags)
+        
+        
+    }
     
+    tags.extended <- add.overlapping(tags)
+
     
-    tags$min <- min
-    tags$sec <- sec
-    tags$millisec <- millisec
-    
-    return(tags)
+    return(tags.extended)
     
     
 }
