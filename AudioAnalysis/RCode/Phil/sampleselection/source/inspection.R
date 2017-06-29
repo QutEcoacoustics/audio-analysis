@@ -128,6 +128,7 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     #
     
     events <- datatrack::ReadDataobject('filtered.segment.events') #
+    
     clustered.events <- datatrack::ReadDataobject('clustered.events')  # contains only group and event id and min id
     clustering <- datatrack::ReadDataobject('clustering.kmeans')
     
@@ -145,8 +146,9 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     clustered.events.data <- cbind(clustered.events$data, events$data[,-(which(colnames(events$data) == 'event.id'))])
     
     
-    clustered.events.data$species.id <- AttachSpeciesId(clustered.events.data)
-    
+    clustered.events.data <- AttachSpeciesToEvents(clustered.events.data)
+    # only use events that have a species id
+    clustered.events.data <- clustered.events.data[!is.na(clustered.events.data$species.id),]
 
     
     if (length(clusterings) > 1) {
@@ -190,10 +192,40 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     selected.events$dist.from.first <- NA
     selected.events$dist.from.prev <- NA
     
+ 
+    homogeneity <- function () {
+        
+        #unfinished
+        
+        # for cluster quality evaluation
+        # https://aclweb.org/anthology/D/D07/D07-1043.pdf
+        C <- unique(selected.events$species.id)
+        K <- unique(selected.events[,group.col])
+        contingency.table <- table(C,K)
+        
+        homogenity.group <- function (group, C, K, contingency.table) {
+            N <- sum(contingency.table)
+            #vector of the number of times each class appears in this group
+            Ack <- contingency.table[,as.character(group)]
+            num.in.this.group <- sum(Ack)
+            H <- (Ack / N) * log(Ack / num.in.this.group)
+        } 
+        
+        
+    }
+    
 
     
-    # for each cluster, limit the number of segments shown
+
+    
+    # for each cluster, 
+    # calculate homogeneity 
+    # limit the number of segments shown
     for (group in clusters) {
+        
+        # todo: homogeneity
+        
+        
         subset <- selected.events[,group.col] == group
         num.before <- sum(subset)
         if (num.before > num.segments) {
@@ -216,6 +248,10 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     }
     
     
+
+    
+    
+    
     temp.dir <- TempDirectory()
     
     spectro.list <- SaveSpectroImgsForInspection(selected.events, temp.dir, noise.reduction = noise.reduction)
@@ -232,7 +268,13 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     
     
     selected.events$spectro.img.path <- spectro.list
-    selected.events$img.title <- paste(selected.events$event.id, selected.events$site, selected.events$date, seg.time, selected.events$min, sep = ' : ')
+    
+    selected.events$img.title <- paste(selected.events$event.id, 
+                                       selected.events$site, 
+                                       selected.events$date, 
+                                       seg.time, 
+                                       selected.events$min, 
+                                       paste0('species.id:', selected.events$species.id), sep = ' | ')
     
     
     selected.events$link <- BawLink(site = selected.events$site, 
@@ -285,6 +327,30 @@ SaveSpectroImgsForInspection <- function (events, temp.dir = NULL, use.parallel 
     if (!use.parallel) {
         SetReportMode(socket = FALSE) 
         
+        if (all(c('site', 'date', 'min', 'start.sec') %in% colnames(events))) {
+            # method 1: create targeted
+            
+            for (i in 1:nrow(events)) { 
+                Sp.CreateTargeted(site = events$site[i], 
+                                  start.date = events$date[i], 
+                                  start.sec = events$min[i] * 60 + events$start.sec[i], 
+                                  duration = events$segment.duration[i], 
+                                  img.path = events$spectro.fn[i],
+                                   msg = nums[i])
+             } 
+                   
+         } else if (all(c('file.path', 'file.sec', 'segment.duration') %in% colnames(events))) {
+             for (i in 1:nrow(events)) {
+                 sp.path <- Sp.CreateFromFile(path = events$file.path[i], 
+                                              offset = events$file.sec[i], 
+                                              duration = events$segment.duration[i],
+                                              filename = events$spectro.fn[i],
+                                              msg = nums[i]) 
+             }
+    
+         } else {
+             stop('wrong columns for SaveSpectroImgsForInspection')
+         }
         
         
     } else {
