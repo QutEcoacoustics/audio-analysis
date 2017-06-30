@@ -58,6 +58,36 @@ RankSamplesBatch <- function (events.versions, clustered.events.versions, target
     }
 }
 
+# temp test to see if combining different clusterd events into the one ranking works
+RankSamplesCombo <- function () {
+    
+    # clustered events version 3 (AED)
+    # clustered events version 15 (filtered one-second)
+    
+    
+    clustered.events.15 <- datatrack::ReadDataobject('clustered.events', version = 15, use.last.accessed = FALSE)
+    
+    clustered.events.3 <- datatrack::ReadDataobject('clustered.events', version = 3, use.last.accessed = FALSE)
+    #v3 doesn't have min id attached
+    ev <- datatrack::ReadDataobject('events')
+    clustered.events.3$data$min.id <- ev$data$min.id
+    
+    #add num clusteres in v15 to groupid in v3, so that the clusters don't get mixed
+    
+    clustered.events.3$data$X240 <- clustered.events.3$data$X240 + max(clustered.events.15$data$X240)
+    combined.clustered.events <- rbind(clustered.events.15$data, clustered.events.3$data)
+    
+    params <- list(clustered.events.versions = c(3,15))
+    dependencies <- list(clustereing.kmeans = 17,
+                         events = 12,
+                         features = 9)
+    
+    datatrack::WriteDataobject(combined.clustered.events, 'clustered.events',dependencies = dependencies, params = params)
+    
+    
+    
+}
+
 
 
 RankSamples <- function (mins = NULL, clustered.events = NULL) {

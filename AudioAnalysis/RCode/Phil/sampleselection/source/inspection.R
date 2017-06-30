@@ -201,7 +201,7 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
         # https://aclweb.org/anthology/D/D07/D07-1043.pdf
         C <- unique(selected.events$species.id)
         K <- unique(selected.events[,group.col])
-        contingency.table <- table(C,K)
+        contingency.table <- table(selected.events$species.id,selected.events[,group.col])
         
         homogenity.group <- function (group, C, K, contingency.table) {
             N <- sum(contingency.table)
