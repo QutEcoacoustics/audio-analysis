@@ -18,30 +18,31 @@ namespace Acoustics.Shared
     /// <typeparam name="T">
     /// Type of range.
     /// </typeparam>
-    public class Range<T> : IEquatable<Range<T>> where T : struct
+    public struct Range<T> : IEquatable<Range<T>>, IComparable<Range<T>>
+        where T : struct, IComparable<T>
     {
-        /// <summary>
-        /// Gets or sets Minimum.
-        /// </summary>
-        public T Minimum { get; set; }
+        public Range(T minimum, T maximum)
+        {
+            this.Minimum = minimum;
+            this.Maximum = maximum;
+        }
 
         /// <summary>
-        /// Gets or sets Maximum.
+        /// Gets or Minimum.
         /// </summary>
-        public T Maximum { get; set; }
+        public T Minimum { get; }
+
+        /// <summary>
+        /// Gets Maximum.
+        /// </summary>
+        public T Maximum { get; }
 
         /// <summary>
         /// Equals operator.
         /// </summary>
-        /// <param name="first">
-        /// The first.
-        /// </param>
-        /// <param name="second">
-        /// The second.
-        /// </param>
-        /// <returns>
-        /// True if equsl, otherwise false.
-        /// </returns>
+        /// <param name="first">The first range.</param>
+        /// <param name="second">The second range.</param>
+        /// <returns>True if equal, otherwise false.</returns>
         public static bool operator ==(Range<T> first, Range<T> second)
         {
             return first.Equals(second);
@@ -75,11 +76,6 @@ namespace Acoustics.Shared
         /// </param>
         public bool Equals(Range<T> other)
         {
-            if ((object)other == null)
-            {
-                return false;
-            }
-
             return EqualityComparer<T>.Default.Equals(this.Maximum, other.Maximum) &&
                    EqualityComparer<T>.Default.Equals(this.Minimum, other.Minimum);
         }
@@ -101,9 +97,14 @@ namespace Acoustics.Shared
             }
 
             // If parameter cannot be cast return false.
-            var p = obj as Range<T>;
+            if (!(obj is Range<T>))
+            {
+                return false;
+            }
 
-            return (object)p != null && this.Equals(p);
+            var other = (Range<T>)obj;
+
+            return this.Equals(other);
         }
 
         /// <summary>
@@ -128,64 +129,16 @@ namespace Acoustics.Shared
             return this.Minimum + " - " + this.Maximum;
         }
 
-        /// <summary>
-        /// Get count number of randoms ranges of rangeAmount between rangeOverMin and rangeOverMax.
-        /// </summary>
-        /// <param name="rangeOverMin">
-        /// The range over min.
-        /// </param>
-        /// <param name="rangeOverMax">
-        /// The range over max.
-        /// </param>
-        /// <param name="rangeAmount">
-        /// The range amount.
-        /// </param>
-        /// <param name="count">
-        /// The number of ranges.
-        /// </param>
-        /// <returns>
-        /// Enumerable of ranges.
-        /// </returns>
-        /// <exception cref="ArgumentException">
-        /// The rangeOverMin must be less than rangeOverMax.
-        /// </exception>
-        /// <exception cref="ArgumentException">
-        /// The rangeAmount must be larger than the difference between rangeOverMin and rangeOverMax.
-        /// </exception>
-        public static IEnumerable<Range<int>> GetRandomRanges(int rangeOverMin, int rangeOverMax, int rangeAmount, int count)
+        public int CompareTo(Range<T> other)
         {
-            if (rangeOverMin >= rangeOverMax)
+            var minimumComparison = this.Minimum.CompareTo(other.Minimum);
+
+            if (minimumComparison != 0)
             {
-                throw new ArgumentException("The rangeOverMin must be less than rangeOverMax.", "rangeOverMin");
+                return minimumComparison;
             }
 
-            if (rangeAmount > rangeOverMax - rangeOverMin)
-            {
-                throw new ArgumentException("The rangeAmount must be less than or equal to the difference between rangeOverMin and rangeOverMax.", "rangeAmount");
-            }
-
-            var random = new Random();
-
-            for (var index = 0; index < count; index++)
-            {
-                var randomPoint = random.Next(rangeOverMin, rangeOverMax);
-                var lowerRange = randomPoint - rangeAmount;
-
-                if (lowerRange < 0)
-                {
-                    lowerRange = 0;
-                }
-
-                var upperRange = lowerRange + rangeAmount;
-
-                if (upperRange > rangeOverMax)
-                {
-                    upperRange = rangeOverMax;
-                    lowerRange = rangeOverMax - rangeAmount;
-                }
-
-                yield return new Range<int> { Minimum = lowerRange, Maximum = upperRange };
-            }
+            return this.Maximum.CompareTo(other.Maximum);
         }
     }
 }

@@ -96,7 +96,7 @@ namespace AnalysisPrograms
                 // SpectralClustering.TESTMETHOD_SpectralClustering();
                 // DspFilters.TestMethod_GenerateSignal1();
                 // DspFilters.TestMethod_GenerateSignal2();
-                // EventStatsticsCalculate.TestCalculateEventStatistics();
+                // EventStatisticsCalculate.TestCalculateEventStatistics();
             }
 
             if (false)
@@ -105,7 +105,7 @@ namespace AnalysisPrograms
                 int sampleRate = 22050;
                 double duration = 420; // signal duration in seconds = 7 minutes
                 int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
-                var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics, "cosine");
+                var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Consine);
                 var outputDirectory = new DirectoryInfo(@"C:\SensorNetworks\SoftwareTests\TestLongDurationRecordings");
                 var recordingPath = outputDirectory.CombineFile("TemporaryRecording.wav");
                 WavWriter.WriteWavFileViaFfmpeg(recordingPath, recording.WavReader);
@@ -981,8 +981,6 @@ namespace AnalysisPrograms
             } // CALCULATE MUTUAL INFORMATION
 
             Console.WriteLine("# Finished Sandpit Task!");
-            Console.ReadLine();
-            Environment.Exit(0);
         }
     }
 }

@@ -62,9 +62,10 @@ namespace AnalysisBase.ResultBases
         }
 
         /// <summary>
-        /// AudioAnalysisTools.Keys.MIN_HZ
+        /// Gets or sets the bottom frequency bound of the acoustic event.
         /// NOTE: When MinHz is set to null, this indicates that the event is broad band or has undefined frequency. The event is an instant.
         ///       When MinHz has a value, this indicates the event is a point in time/frequency space.
+        ///       Implementers may implement their own MaxHz if needed.
         /// </summary>
         public double? MinHz { get; protected set; }
 

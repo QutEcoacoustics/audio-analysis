@@ -16,6 +16,7 @@ namespace Acoustics.Test.Shared
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using CsvHelper.TypeConversion;
+    using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
     using TowseyLibrary;
@@ -248,6 +249,26 @@ namespace Acoustics.Test.Shared
             Assert.IsNotNull(actual.InnerException);
             StringAssert.Contains(actual.Message, "Row");
             StringAssert.Contains(actual.Message, "Field Name");
+        }
+
+        [TestMethod]
+        public void ReaderHookIsExposed()
+        {
+            var file = Path.GetRandomFileName().ToFileInfo();
+
+            var testString = @"SomeNumber,SomeTimeSpan,A,B,C,D
+123,0:0:0.456,1,2,3,4";
+
+            File.WriteAllText(file.FullName, testString);
+
+            string[] headers = null;
+            var result = Csv.ReadFromCsv<CsvTestClass>(file, false, (reader) =>
+            {
+                headers = reader.FieldHeaders;
+            });
+
+            var expected = new[] { "SomeNumber", "SomeTimeSpan", "A", "B", "C", "D" };
+            CollectionAssert.AreEqual(expected, headers);
         }
 
         private void AssertCsvEqual(string expected, FileInfo actual)

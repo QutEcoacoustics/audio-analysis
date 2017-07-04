@@ -40,7 +40,7 @@ Output  to  directory: {1}
 ##### FINISHED FILE ###################################################
 ";
 
-        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(nameof(AnalyseLongRecording));
 
         public static void Execute(Arguments arguments)
         {

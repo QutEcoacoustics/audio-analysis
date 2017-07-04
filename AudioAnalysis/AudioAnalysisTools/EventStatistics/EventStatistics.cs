@@ -5,6 +5,7 @@
 namespace AudioAnalysisTools.EventStatistics
 {
     using System;
+    using AcousticWorkbench;
     using AnalysisBase.ResultBases;
     using DSP;
     using TowseyLibrary;
@@ -22,15 +23,41 @@ namespace AudioAnalysisTools.EventStatistics
     /// </summary>
     public class EventStatistics : EventBase
     {
-        public TimeSpan EventStart { get; set; }
+        public EventStatistics()
+        {
+            base.MinHz = 0;
+        }
 
-        public TimeSpan EventEnd { get; set; }
+        public int? AudioRecordingId { get; set; }
 
-        public TimeSpan Duration { get; set; }
+        public string ListenUrl
+        {
+            get
+            {
+                if (this.AudioRecordingId.HasValue)
+                {
+                    return Api.Default.GetListenUri(
+                        this.AudioRecordingId.Value,
+                        this.StartOffset.TotalSeconds).ToString();
+                }
 
-        public double MeanDecibel { get; set; }
+                return string.Empty;
+            }
+        }
 
-        public double TemporalStdDevDb { get; set; }
+        public DateTimeOffset? AudioRecordingDateTime { get; set; }
+
+        // Note: EventStartSeconds is in base class
+
+        public double EventEndSeconds { get; set; }
+
+        public double DurationSeconds => this.EventEndSeconds - this.EventStartSeconds;
+
+        public DateTimeOffset? StartDateTime => this.AudioRecordingDateTime?.Add(this.StartOffset);
+
+        public double MeanDecibels { get; set; }
+
+        public double TemporalStdDevDecibels { get; set; }
 
         /// <summary>
         /// Gets or sets the relative location of the temporal max within the acoustic event.
@@ -38,17 +65,19 @@ namespace AudioAnalysisTools.EventStatistics
         /// </summary>
         public double TemporalMaxRelative { get; set; }
 
-        /// <summary>
-        /// Gets or sets the bottom frequency bound of the acoustic event in Herz
-        /// </summary>
-        public int FreqLow { get; set; }
+        // Note: MinHz implemented in base class.
+        public new double MinHz
+        {
+            get => base.MinHz.Value;
+            set => base.MinHz = value;
+        }
 
         /// <summary>
-        /// Gets or sets the Top frequency bound of the acoustic event in Herz
+        /// Gets or sets the top frequency bound of the acoustic event in Hertz
         /// </summary>
-        public int FreqTop { get; set; }
+        public double MaxHz { get; set; }
 
-        public int BandWidth { get; set; }
+        public double BandWidth => this.MaxHz - this.MinHz;
 
         public int DominantFrequency { get; set; }
 

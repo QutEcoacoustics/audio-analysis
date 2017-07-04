@@ -280,11 +280,9 @@ namespace AnalysisPrograms.SourcePreparers
                     end = Math.Min(end, fileSegmentDuration);
 
                     offsetsFromEntireFile.Add(
-                        new Range<TimeSpan>
-                            {
-                                Minimum = TimeSpan.FromMilliseconds(start) + startOffset,
-                                Maximum = TimeSpan.FromMilliseconds(end) + startOffset,
-                            });
+                        new Range<TimeSpan>(
+                                TimeSpan.FromMilliseconds(start) + startOffset,
+                                TimeSpan.FromMilliseconds(end) + startOffset));
 
                     currentPostion = end;
                 }
@@ -296,8 +294,8 @@ namespace AnalysisPrograms.SourcePreparers
                     var secondLast = offsetsFromEntireFile.Skip(offsetsFromEntireFile.Count - 2).First();
 
                     ////var totalDuration = (secondLast.Maximum - secondLast.Minimum) + (last.Upper - last.Lower);
-                    var newLast = new Range<TimeSpan> { Maximum = endOffset, Minimum = endOffset - segmentMinDuration };
-                    var newSecondLast = new Range<TimeSpan> { Maximum = newLast.Minimum, Minimum = secondLast.Minimum };
+                    var newLast = new Range<TimeSpan>(endOffset - segmentMinDuration, endOffset);
+                    var newSecondLast = new Range<TimeSpan>(secondLast.Minimum, newLast.Minimum);
 
                     offsetsFromEntireFile[offsetsFromEntireFile.Count - 1] = newLast;
                     offsetsFromEntireFile[offsetsFromEntireFile.Count - 2] = newSecondLast;

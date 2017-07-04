@@ -54,7 +54,6 @@ namespace AnalysisBase.ResultBases
         /// This is recording because there is typically some error in cutting out segments of an audio file.
         /// This property was previously aliased "SEGMENT_TIMESPAN" and "SegTimeSpan".
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
         public TimeSpan SegmentDuration { get; set; }
 
         /// <summary>

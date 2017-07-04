@@ -338,8 +338,8 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
                 return new SplitFileInfo
                 {
                     File = f,
-                    Start = range.Minimum,
-                    End = range.Maximum,
+                    Start = range.Value.Minimum,
+                    End = range.Value.Maximum,
                 };
             });
 
@@ -512,7 +512,7 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
         /// </summary>
         /// <param name="file">File name to parse.</param>
         /// <returns>Range containing start and end.</returns>
-        private Range<long> ParseFileName(FileInfo file)
+        private Range<long>? ParseFileName(FileInfo file)
         {
             var name = Path.GetFileNameWithoutExtension(file.Name);
 
@@ -541,11 +541,9 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
             var endSec = int.Parse(matches[0].Groups["ends"].Value) * 1000;
             var endH = int.Parse(matches[0].Groups["endh"].Value) * 10;
 
-            var range = new Range<long>
-            {
-                Minimum = startMin + startSec + startH,
-                Maximum = endMin + endSec + endH,
-            };
+            var range = new Range<long>(
+                startMin + startSec + startH,
+                endMin + endSec + endH);
 
             return range;
         }

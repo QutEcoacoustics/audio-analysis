@@ -1921,6 +1921,22 @@ namespace TowseyLibrary
               return addition;
           }
 
+        public static double[] ConcatenateVectors(params double[][] vectors)
+        {
+            int length = vectors.Sum(x => x.Length);
+
+            var output = new double[length];
+
+            int index = 0;
+            foreach (var vector in vectors)
+            {
+                Buffer.BlockCopy(vector, 0, output, index * sizeof(double), vector.Length * sizeof(double));
+                index += vector.Length;
+            }
+
+            return output;
+        }
+
         public static double[] ConcatenateVectors(List<double[]> list)
         {
             int length = 0;
