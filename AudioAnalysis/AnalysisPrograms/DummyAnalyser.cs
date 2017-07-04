@@ -60,7 +60,6 @@ namespace AnalysisPrograms
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private static readonly TimeSpan LogEvery = TimeSpan.FromSeconds(10);
 
-
         public static void Execute(Arguments arguments)
         {
             if (arguments == null)
@@ -68,14 +67,13 @@ namespace AnalysisPrograms
                 arguments = new Arguments()
                 {
                     DurationSeconds = 20.0,
-                    Jitter = 0.0,
+                    Jitter = 0.2,
                     Parallel = true,
                     Seed = null,
                 };
             }
 
             Log.Info("Starting dummy analysis");
-
 
             Random random;
             if (arguments.Seed.HasValue)
@@ -104,10 +102,21 @@ namespace AnalysisPrograms
             }
 
             Log.InfoFormat("Starting {0} threads", tasks);
+            var task = TaskEx.WhenAll(durations.Select((d, i) => ConcurrentTask(d, i)));
+            LoggedConsole.WriteWaitingLine(task);
 
-            Parallel.ForEach(durations, ParallelTask);
+            //Parallel.ForEach(durations, ParallelTask);
 
             Log.Info("Completed all work");
+        }
+
+        private static Task<long> ConcurrentTask(TimeSpan timeSpan, long index)
+        {
+            return TaskEx.Run(() =>
+            {
+                ParallelTask(timeSpan, null, index);
+                return timeSpan.Ticks;
+            });
         }
 
         private static void ParallelTask(TimeSpan timeSpan, ParallelLoopState parallelLoopState, long index)
@@ -120,7 +129,7 @@ namespace AnalysisPrograms
             {
                 // Like Thread.Sleep but does not give thread control to others
                 // approx 0.54 seconds at ~2.7Ghz
-                Thread.SpinWait(100000000);
+                Thread.SpinWait(100_000_000);
 
                 var now = DateTime.Now;
                 if ((now - lastLog) > LogEvery)
@@ -129,7 +138,6 @@ namespace AnalysisPrograms
                     Log.InfoFormat("Branch {0}, {1:##0.00%} completed", index, percentage);
                     lastLog = now;
                 }
-
             }
 
             Log.Info("Completed branch " + index);

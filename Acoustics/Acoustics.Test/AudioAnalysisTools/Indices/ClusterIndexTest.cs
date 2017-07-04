@@ -9,6 +9,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using Acoustics.Shared;
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.WavTools;
+    using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
     using TowseyLibrary;

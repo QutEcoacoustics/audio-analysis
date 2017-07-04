@@ -20,6 +20,7 @@ namespace AnalysisPrograms.Production
     using AudioAnalysisTools;
     using Dong.Felt;
     using Draw.Zooming;
+    using EventStatistics;
     using PowerArgs;
     using Recognizers.Base;
 
@@ -92,6 +93,13 @@ namespace AnalysisPrograms.Production
             // 4. Produces a tracks image of column values in a csv file - one track per csv column.
             // Signed off: Michael Towsey 27th July 2012
             return DrawSummaryIndexTracks.Main;
+        }
+
+        [ArgDescription("Event statistics accepts a list of events to analyze and returns a data file of statistics")]
+        public EventStatistics.EventStatisticsAnalysis.Arguments EventStatisticsArgs { get; set; }
+        public static Action<EventStatisticsAnalysis.Arguments> EventStatistics()
+        {
+            return EventStatisticsAnalysis.Execute;
         }
 
         #endregion

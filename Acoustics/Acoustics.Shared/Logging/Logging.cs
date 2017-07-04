@@ -12,8 +12,11 @@
 namespace System
 {
     using System;
-
+    using DotSpinners;
     using log4net;
+    using Text;
+    using Threading;
+    using Threading.Tasks;
 
     public static class NoConsole
     {
@@ -28,6 +31,11 @@ namespace System
     public static class LoggedConsole
     {
         public static readonly ILog Log = LogManager.GetLogger("CleanLogger");
+        private static readonly TimeSpan PromptTimeout = TimeSpan.FromSeconds(60);
+
+        public static bool SuppressInteractive { get; set; } = false;
+
+        public static bool IsInteractive => !SuppressInteractive && Environment.UserInteractive;
 
         public static void Write(string str)
         {
@@ -72,7 +80,6 @@ namespace System
             Log.Info(obj);
         }
 
-
         public static void WriteError(string str)
         {
             Log.Error(str);
@@ -98,6 +105,85 @@ namespace System
         public static void WriteFatalLine(string str, Exception exception)
         {
             Log.Fatal(str, exception);
+        }
+
+        public static void WriteWaitingLine<T>(Task<T> task, string message = null)
+        {
+            WriteLine(message ?? "Waiting...");
+            if (IsInteractive)
+            {
+                var spinner = new DotSpinner(task);
+                spinner.Start();
+            }
+        }
+
+        public static string Prompt(string prompt, bool forPassword = false, TimeSpan? timeout = null)
+        {
+            if (IsInteractive)
+            {
+                WriteLine(prompt);
+
+                var t = TaskEx.Run(() =>
+                {
+                    if (forPassword)
+                    {
+                        return ReadHiddenLine();
+                    }
+
+                    return Console.ReadLine();
+                });
+
+                var success = t.Wait(timeout ?? PromptTimeout);
+                if (!success)
+                {
+                    throw new TimeoutException($"Timed out waiting for user input to prompt: \"{prompt}\"");
+                }
+
+                return t.Result;
+            }
+            else
+            {
+                Log.Warn("User prompt \"" + prompt + "\" suppressed because session is not interactive");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Reads a line from the console while hiding input - good for passwords.
+        /// </summary>
+        private static string ReadHiddenLine()
+        {
+            if (!IsInteractive)
+            {
+                throw new InvalidOperationException("ReadHiddenLine cannot be used when console is not interactive");
+            }
+
+            StringBuilder sb = new StringBuilder();
+            while (true)
+            {
+                ConsoleKeyInfo cki = Console.ReadKey(true);
+                if (cki.Key == ConsoleKey.Enter)
+                {
+                    Console.WriteLine();
+                    break;
+                }
+
+                if (cki.Key == ConsoleKey.Backspace)
+                {
+                    if (sb.Length > 0)
+                    {
+                        Console.Write("\b\0\b");
+                        sb.Length--;
+                    }
+
+                    continue;
+                }
+
+                Console.Write('*');
+                sb.Append(cki.KeyChar);
+            }
+
+            return sb.ToString();
         }
     }
 

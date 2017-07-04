@@ -10,6 +10,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.WavTools;
+    using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
     using TowseyLibrary;
@@ -282,7 +283,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             int sampleRate = 64000;
             double duration = 120; // signal duration in seconds
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
-            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics, "sin");
+            var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Sine);
 
             // cut out one minute from 30 - 90 seconds and incorporate into AudioRecording
             int startSample = sampleRate * 30; // start two minutes into recording

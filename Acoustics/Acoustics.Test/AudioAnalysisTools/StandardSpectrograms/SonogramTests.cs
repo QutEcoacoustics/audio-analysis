@@ -73,7 +73,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
             var recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
 
             // specfied linear scale
-            var freqScale = new FrequencyScale(nyquist: 11025, frameSize: 1024, herzLinearGridInterval: 1000);
+            var freqScale = new FrequencyScale(nyquist: 11025, frameSize: 1024, hertzLinearGridInterval: 1000);
 
             var sonoConfig = new SonogramConfig
             {
@@ -103,7 +103,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
             var recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
 
             // specfied linear scale
-            var freqScale = new FrequencyScale(nyquist: 11025, frameSize: 1024, herzLinearGridInterval: 1000);
+            var freqScale = new FrequencyScale(nyquist: 11025, frameSize: 1024, hertzLinearGridInterval: 1000);
 
             var sonoConfig = new SonogramConfig
             {
@@ -138,7 +138,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
             var recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
 
             // specfied linear scale
-            var freqScale = new FrequencyScale(nyquist: 11025, frameSize: 1024, herzLinearGridInterval: 1000);
+            var freqScale = new FrequencyScale(nyquist: 11025, frameSize: 1024, hertzLinearGridInterval: 1000);
 
             var sonoConfig = new SonogramConfig
             {

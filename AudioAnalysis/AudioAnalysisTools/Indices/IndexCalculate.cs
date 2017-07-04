@@ -144,7 +144,7 @@ namespace AudioAnalysisTools.Indices
             var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(subsegmentRecording, frameSize, frameStep);
 
             // Linear or Octave frequency scale? Set Linear as default.
-            var freqScale = new FrequencyScale(nyquist: nyquist, frameSize: frameSize, herzLinearGridInterval: 1000);
+            var freqScale = new FrequencyScale(nyquist: nyquist, frameSize: frameSize, hertzLinearGridInterval: 1000);
             var freqScaleType = config.GetTypeOfFreqScale();
             bool octaveScale = freqScaleType == FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
             if (octaveScale)

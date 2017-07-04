@@ -157,7 +157,6 @@ namespace AnalysisPrograms
             Contract.Requires(arguments != null);
             Contract.Requires(arguments.ActionArgsProperty != null);
 
-
             // just a pointer for executing dev methods
             // however, actions with no args get a plain old Object, so don't log in that case
             if (arguments.EmptyArgActionValue && arguments.ActionArgsProperty.PropertyType != typeof(object))
@@ -168,7 +167,7 @@ namespace AnalysisPrograms
                     throw new ArgumentException("Must provide arguments to an analysis in a RELEASE build.");
                 }
 
-                Log.Warn("Empty (null) analysis arguments recieved. A Dev method should be executed.");
+                Log.Warn("Empty (null) analysis arguments received. A Dev method should be executed.");
             }
 
             arguments.Invoke();
