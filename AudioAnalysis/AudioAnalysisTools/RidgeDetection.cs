@@ -1,26 +1,26 @@
-﻿namespace AudioAnalysisTools
+﻿// <copyright file="RidgeDetection.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AudioAnalysisTools
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
-    using StandardSpectrograms;
     using TowseyLibrary;
 
     public class RidgeDetection
     {
-        public static double ridgeDetectionmMagnitudeThreshold = 0.2;
-        public static int ridgeMatrixLength = 5;
-        public static int filterRidgeMatrixLength = 5;
-        public static int minimumNumberInRidgeInMatrix = 6;
-
+        // private static double ridgeDetectionMagnitudeThreshold = 0.2;
+        // private static int ridgeMatrixLength = 5;
+        // private static int filterRidgeMatrixLength = 5;
+        // private static int minimumNumberInRidgeInMatrix = 6;
 
         public class RidgeDetectionConfiguration
         {
             public double RidgeDetectionmMagnitudeThreshold { get; set; }
 
             /// <summary>
-            /// dimension of NxN matrix to use for ridge detection, must be odd number.
+            /// Gets or sets dimension of NxN matrix to use for ridge detection, must be odd number.
             /// </summary>
             public int RidgeMatrixLength { get; set; }
 
@@ -29,15 +29,12 @@
             public int MinimumNumberInRidgeInMatrix { get; set; }
         }
 
-
-
         //public static List<PointOfInterest> PostRidgeDetection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfig)
         //{
         //    var instance = new POISelection(new List<PointOfInterest>());
         //    instance.FourDirectionsRidgeDetection(spectrogram, ridgeConfig);
         //    return instance.poiList;
         //}
-
 
         public static byte[,] Sobel5X5RidgeDetectionVersion1(double[,] matrix, double magnitudeThreshold)
         {
@@ -46,29 +43,31 @@
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             int halfLength = 2;
+
             //double halfThreshold = magnitudeThreshold * 1.0;
 
             //A: Init MATRIX FOR INDICATING SPECTRAL RIDGES
             var hits = new byte[rows, cols];
 
-
-
-            for (int r = halfLength + 1; r < rows - halfLength-1; r++)
+            for (int r = halfLength + 1; r < rows - halfLength - 1; r++)
             {
                 for (int c = halfLength + 1; c < cols - halfLength - 1; c++)
                 {
-                    if (hits[r, c] > 0) continue;
+                    if (hits[r, c] > 0)
+                    {
+                        continue;
+                    }
 
                     var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
                     double magnitude;
-                    // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4.
-                    double direction;
+
                     bool isRidge = false;
 
                     // magnitude is dB
+                    // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4.
                     //ImageTools.MexicanHat5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
-                    ImageTools.Sobel5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
-                    if ((magnitude > magnitudeThreshold) && (isRidge == true))
+                    ImageTools.Sobel5X5RidgeDetection(subM, out isRidge, out magnitude, out int direction);
+                    if (magnitude > magnitudeThreshold && isRidge == true)
                     {
                         // now get average of 7x7 matrix as second check.
                         double av, sd;
@@ -83,7 +82,7 @@
                         if (direction == 1)
                         {
                             hits[r - 1, c + 1] = (byte)(direction + 1);
-                            hits[r + 1, c - 1]   = (byte)(direction + 1);
+                            hits[r + 1, c - 1] = (byte)(direction + 1);
 
                             //hits[r - 2, c + 2] = (byte)(direction + 1);
                             //hits[r + 2, c - 2] = (byte)(direction + 1);
@@ -116,7 +115,7 @@
                 }
             }
 
-            /// filter out some redundant ridges
+            // filter out some redundant ridges
             //var prunedPoiList = ImageTools.PruneAdjacentTracks(poiList, rows, cols);
             //var prunedPoiList1 = ImageTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
             ////var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
@@ -127,8 +126,6 @@
         /// <summary>
         /// returns four matrices containing the values of ridges in four directions
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
         public static List<double[,]> Sobel5X5RidgeDetection_Version2(double[,] matrix)
         {
             //int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
@@ -145,33 +142,41 @@
             var rvt = new double[rows, cols];
             var rng = new double[rows, cols];
 
-
-
             for (int r = edgeBuffer; r < rows - edgeBuffer; r++)
             {
                 for (int c = edgeBuffer; c < cols - edgeBuffer; c++)
                 {
-                    var subM = MatrixTools.Submatrix(matrix, r - edgeBuffer, c - edgeBuffer, r + edgeBuffer, c + edgeBuffer); // extract NxN submatrix
-                    // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4.
+                    // extract NxN submatrix
+                    var subM = MatrixTools.Submatrix(matrix, r - edgeBuffer, c - edgeBuffer, r + edgeBuffer, c + edgeBuffer);
 
-                    // ridge magnitudes are in decibels
+                    // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4.
+                    // ridge magnitudes are in decibels, derived from mask whose gain = 1.0.
                     double[] ridgeMagnitudes = ImageTools.Sobel5X5RidgeDetection(subM);
+
                     // remove small values
                     for (int j = 0; j < ridgeMagnitudes.Length; j++)
                     {
-                        if (ridgeMagnitudes[j] < 0.1) ridgeMagnitudes[j] = 0.0;
+                        if (ridgeMagnitudes[j] < 0.1)
+                        {
+                            ridgeMagnitudes[j] = 0.0;
+                        }
                     }
+
                     // want ridge direction to have at least 1/3 of all ridge energy
                     double ridgeThreshold = ridgeMagnitudes.Sum() * 0.333;
 
-                    //// now get average of 7x7 matrix as second check.
+                    // now get average of 7x7 matrix as second check.
                     //double av, sd;
                     //var subM2 = MatrixTools.Submatrix(matrix, r - edgeBuffer - 1, c - edgeBuffer - 1, r + edgeBuffer + 1, c + edgeBuffer + 1); // extract NxN submatrix
                     //NormalDist.AverageAndSD(subM2, out av, out sd);
                     //double localThreshold = sd * 0.9;
                     //if ((subM[edgeBuffer, edgeBuffer] - av) < localThreshold) continue;
 
-                    // if (direction == 0)
+                    // Now transfer the ridge information to a ridge matrix.
+                    // Because have 5x5 ridge mask, therefore, for each detection, add fill five cells of the matrix
+                    // with magnitude info in the direction of the ridge.
+
+                    // if (direction == 0, i.e. horizontal ridge) then add five magnitude values in a row
                     if (ridgeMagnitudes[0] >= ridgeThreshold)
                     {
                         rhz[r, c] = ridgeMagnitudes[0];
@@ -181,7 +186,7 @@
                         if (rhz[r, c - 2] < ridgeMagnitudes[0]) { rhz[r, c - 2] = ridgeMagnitudes[0]; }
                     }
 
-                    // if (direction == 1)
+                    // if (direction == 1, i.e. pos slope ridge) then add five magnitude values on a diagonal
                     if (ridgeMagnitudes[1] >= ridgeThreshold)
                     {
                         rps[r, c] = ridgeMagnitudes[1];
@@ -212,11 +217,12 @@
                     }
                 }
             }
-            /// filter out some redundant ridges
-            //var prunedPoiList = ImageTools.PruneAdjacentTracks(poiList, rows, cols);
-            //var prunedPoiList1 = ImageTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
-            ////var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
-            //var filteredPoiList = ImageTools.FilterRidges(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
+
+            // filter out some redundant ridges
+            // var prunedPoiList = ImageTools.PruneAdjacentTracks(poiList, rows, cols);
+            // var prunedPoiList1 = ImageTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
+            // var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
+            // var filteredPoiList = ImageTools.FilterRidges(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
 
             List<double[,]> list = new List<double[,]>();
             list.Add(rhz);
@@ -226,8 +232,6 @@
             return list;
         }
 
-
-
         /// <summary>
         /// Returns a byte matrix of ridge directions
         /// 0 = no ridge detected or below magnitude threshold.
@@ -236,9 +240,6 @@
         /// 3 = ridge is vertical or pi/2
         /// 4 = ridge is negative slope or 3pi/4.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="magnitudeThreshold"></param>
-        /// <returns></returns>
         public static byte[,] Sobel5X5RidgeDetectionExperiment(double[,] matrix, double magnitudeThreshold)
         {
             int rows = matrix.GetLength(0);
@@ -249,8 +250,6 @@
             var directions = new byte[rows, cols];
             var scores = new double[rows, cols];
 
-
-
             for (int r = halfLength + 1; r < rows - halfLength - 1; r++)
             {
                 for (int c = halfLength + 1; c < cols - halfLength - 1; c++)
@@ -258,21 +257,19 @@
                     //if (hits[r, c] > 0) continue;
 
                     var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
-                    double magnitude;
-                    // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4.
-                    double direction;
-                    bool isRidge = false;
 
                     // magnitude is dB
+                    // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4.
                     //ImageTools.MexicanHat5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
-                    ImageTools.Sobel5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
+                    bool isRidge = false;
+                    ImageTools.Sobel5X5RidgeDetection(subM, out isRidge, out double magnitude, out int direction);
 
                     scores[r, c] = magnitude;
                     directions[r, c] = (byte)(direction + 1);
                 }
             }
 
-            double  av, sd;
+            double av, sd;
             NormalDist.AverageAndSD(scores, out av, out sd);
             double threshold = av + (sd * 2.5);
 
@@ -331,6 +328,7 @@
                     }
                 }
             }
+
             return hits;
         }
 
@@ -356,8 +354,6 @@
 
             //A: CONVERT MATRIX to BINARY FORM INDICATING SPECTRAL RIDGES
             var hits = new byte[rows, cols];
-
-
 
             for (int r = halfLength; r < rows - halfLength; r++)
             {
@@ -450,6 +446,7 @@
                     }
                 } //end for every col
             } //end for every row
+
             return binary;
         }
 
@@ -487,9 +484,9 @@
 
                 } //end for every col
             } //end for every row
+
             return binary;
         }
-
 
         /// <summary>
         ///JOINS DISCONNECTED RIDGES
@@ -538,7 +535,6 @@
                     //if (hits[r + 2, c - 3] > 0) newM[r + 1, c - 2] = hits[r, c]; //fill gap
                     //if (hits[r + 2, c + 3] > 0) newM[r + 1, c + 2] = hits[r, c]; //fill gap
 
-
                     //SECOND fill in pixels in the same row
                     // skip if adjacent pixels in next column also > zero
                     if (hits[r, c + 1] > 0) continue;
@@ -562,6 +558,7 @@
 
                 }
             }
+
             return newM;
         }
 
@@ -610,10 +607,9 @@
                     } //end local NH
                 }
             }
+
             return outM;
         }
-
-
 
         public static double[,] IdentifySpectralPeaks(double[,] matrix)
         {
@@ -647,8 +643,10 @@
                         binary[r - 1, c] = 1.0; // maxIntensity;
                         binary[r + 1, c] = 1.0; // maxIntensity;
                     }
+
                     //else binary[r, c] = 0.0; // minIntensity;
                 } //end for every col
+
                 //binary[r, 0] = 0; // minIntensity;
                 //binary[r, 1] = 0; // minIntensity;
                 //binary[r, cols - 2] = 0; //minIntensity;
@@ -657,7 +655,6 @@
 
             return binary;
         }
-
 
     }
 
