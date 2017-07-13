@@ -224,7 +224,7 @@
     <Compile Include="DSP\LocalContrastNormalisation.cs" />
     <Compile Include="DSP\NoiseProfile.cs" />
     <Compile Include="DSP\NoiseRemoval_Briggs.cs" />
-    <Compile Include="DSP\NoiseRemoval_Modal.cs" />
+    <Compile Include="DSP\NoiseRemovalModal.cs" />
     <Compile Include="DSP\OctaveFreqScale.cs" />
     <Compile Include="DSP\SNR.cs" />
     <Compile Include="DSP\MFCCStuff.cs" />
