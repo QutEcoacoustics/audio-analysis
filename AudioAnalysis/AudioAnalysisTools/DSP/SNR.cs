@@ -44,6 +44,7 @@ namespace AudioAnalysisTools.DSP
         //reference logEnergies for signal segmentation, energy normalisation etc
         public const double MinLogEnergyReference = -6.0;    // = -60dB. Typical noise value for BAC2 recordings = -4.5 = -45dB
         public const double MaxLogEnergyReference = 0.0;     // = Math.Log10(1.00) which assumes max frame amplitude = 1.0
+
         //public const double MaxLogEnergyReference = -0.602;// = Math.Log10(0.25) which assumes max average frame amplitude = 0.5
         //public const double MaxLogEnergyReference = -0.310;// = Math.Log10(0.49) which assumes max average frame amplitude = 0.7
         //note that the cicada recordings reach max average frame amplitude = 0.55
@@ -59,12 +60,10 @@ namespace AudioAnalysisTools.DSP
         // The value has been chosen somewhat arbitrarily. It is relevant only when doing noise removal using Lamel et al algorithm
         public const double DefaultHighEnergyThresholdInDecibels = -10.0;
 
-        public struct KeySnr
-        {
-            public const string key_NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
-            public const string key_DYNAMIC_RANGE = "DYNAMIC_RANGE";
-        }
+        public const string KeyNoiseReductionType = "NOISE_REDUCTION_TYPE";
+        public const string KeyDynamicRange = "DYNAMIC_RANGE";
 
+        /*
         /// <summary>
         /// Initializes a new instance of the <see cref="SNR"/> class.
         /// CONSTRUCTOR
@@ -75,7 +74,7 @@ namespace AudioAnalysisTools.DSP
         public SNR(double[,] frames)
         {
             var logEnergy = CalculateLogEnergyOfsignalFrames(frames);
-            this.FrameDecibels = ConvertLogEnergy2Decibels(logEnergy); // convert logEnergy to decibels.
+            this.FrameDecibels = ConvertLogEnergy2Decibels(logEnergy); // convert logEnergy to decibels. 
             this.SubtractBackgroundNoise_dB();
             this.NoiseRange = this.MinDb - this.NoiseSubtracted;
 
@@ -83,6 +82,7 @@ namespace AudioAnalysisTools.DSP
             ////this.MaxReferenceDecibelsWrtNoise = this.Snr;                        // OK
             this.MaxReferenceDecibelsWrtNoise = this.MaxDb - this.MinDb; // BEST BECAUSE TAKES NOISE LEVEL INTO ACCOUNT
         }
+        */
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SNR"/> class.
@@ -94,7 +94,7 @@ namespace AudioAnalysisTools.DSP
         public SNR(double[] signal, int[,] frameIDs)
         {
             var logEnergy = CalculateLogEnergyOfsignalFrames(signal, frameIDs);
-            this.FrameDecibels = ConvertLogEnergy2Decibels(logEnergy); //convert logEnergy to decibels.
+            this.FrameDecibels = ConvertLogEnergy2Decibels(logEnergy); //convert logEnergy to decibels. Just x10.
 
             // calculate fraction of high energy frames PRIOR to noise removal.
             double dbThreshold = SNR.DefaultHighEnergyThresholdInDecibels;
@@ -107,6 +107,10 @@ namespace AudioAnalysisTools.DSP
 
         public double FractionOfHighEnergyFrames { get; set; }
 
+        /// <summary>
+        /// Gets or sets the FrameDecibels array. Calculate as dB[i] = 10 x log-energy of frame[i].
+        /// Appears only to be used to determine the fraction of high energy frames.
+        /// </summary>
         public double[] FrameDecibels { get; set; }
 
         public double MinDb { get; set; }
@@ -236,6 +240,8 @@ namespace AudioAnalysisTools.DSP
                 if (e == double.MinValue)
                 {
                     LoggedConsole.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
+
+                    // MaxLogEnergyReference = 0.0, i.e. where amplitude = 1.0.
                     logEnergy[i] = MinLogEnergyReference - MaxLogEnergyReference; //NormaliseMatrixValues to absolute scale
                     continue;
                 }
@@ -243,6 +249,7 @@ namespace AudioAnalysisTools.DSP
                 double logE = Math.Log10(e);
 
                 //NormaliseMatrixValues to ABSOLUTE energy value i.e. as defined in header of Sonogram class
+                // NOTE: MaxLogEnergyReference = 0.0, i.e. where amplitude = 1.0.
                 if (logE < MinLogEnergyReference)
                 {
                     logEnergy[i] = MinLogEnergyReference - MaxLogEnergyReference;
@@ -784,7 +791,7 @@ namespace AudioAnalysisTools.DSP
             double max_dB;
 
             // Implements the algorithm in Lamel et al, 1981.
-            NoiseRemovalModal.CalculateNoise_LamelsAlgorithm(dBarray, out min_dB, out max_dB, out noise_mode, out noise_SD);
+            NoiseRemovalModal.CalculateNoiseUsingLamelsAlgorithm(dBarray, out min_dB, out max_dB, out noise_mode, out noise_SD);
 
             // subtract noise.
             double threshold = noise_mode + (noise_SD * SD_COUNT);
@@ -975,15 +982,15 @@ namespace AudioAnalysisTools.DSP
                         // smooth the noise profile
                         bgNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 5);
 
-                        // parameter = nhBackgroundThreshold
-                        m = NoiseReduce_Standard(m, bgNoiseProfile, parameter); // parameter = nhBackgroundThreshold
+                        // IMPORTANT: parameter = nhBackgroundThreshold
+                        m = NoiseReduce_Standard(m, bgNoiseProfile, parameter);
                     }
 
                     break;
                 case NoiseReductionType.Modal:
                     {
-                        double SD_COUNT = parameter;
-                        var profile = NoiseProfile.CalculateModalNoiseProfile(m, SD_COUNT); //calculate modal profile - any matrix of values
+                        double sdCount = parameter;
+                        var profile = NoiseProfile.CalculateModalNoiseProfile(m, sdCount); //calculate modal profile - any matrix of values
                         bgNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 5); //smooth the modal profile
                         m = TruncateBgNoiseFromSpectrogram(m, bgNoiseProfile);
                     }
