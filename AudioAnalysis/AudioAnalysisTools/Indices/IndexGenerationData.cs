@@ -57,7 +57,7 @@ namespace AudioAnalysisTools.Indices
 
         public TimeSpan MinuteOffset { get; set; }
 
-        public TimeSpan SegmentDuration { get; set; }
+        public TimeSpan? MaximumSegmentDuration { get; set; }
 
         public int SampleRateOriginal { get; set; }
 
