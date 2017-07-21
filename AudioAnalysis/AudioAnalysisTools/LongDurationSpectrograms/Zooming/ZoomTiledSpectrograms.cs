@@ -174,7 +174,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 TimeSpan dataDuration = TimeSpan.FromTicks(spectra["POW"].GetLength(1) *
                                                            indexGeneration.IndexCalculationDuration.Ticks);
-                var segmentDurationInSeconds = (int)indexGeneration.SegmentDuration.TotalSeconds;
+                var segmentDurationInSeconds = (int)indexGeneration.MaximumSegmentDuration.Value.TotalSeconds;
 
                 var minuteCount = (int)Math.Ceiling(dataDuration.TotalMinutes);
 
@@ -558,7 +558,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan indexScale = indexGeneration.IndexCalculationDuration;
             TimeSpan frameScale = TimeSpan.FromSeconds(zoomingConfig.SpectralFrameDuration);
 
-            var expectedDataDurationInSeconds = (int)indexGeneration.SegmentDuration.TotalSeconds;
+            var expectedDataDurationInSeconds = (int)indexGeneration.MaximumSegmentDuration.Value.TotalSeconds;
             var expectedFrameCount = (int)Math.Round(expectedDataDurationInSeconds / zoomingConfig.SpectralFrameDuration);
 
             string fileName = fileStem + "_" + minute + "min.csv";
