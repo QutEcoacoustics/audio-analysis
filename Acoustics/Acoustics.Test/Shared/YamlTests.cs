@@ -52,8 +52,8 @@ InfoC:
 #
 
 AnalysisName: Towsey.Acoustic
-#SegmentDuration: units=minutes;     SegmentOverlap: units=seconds;
-SegmentDuration: 1
+#AnalysisIdealSegmentDuration: units=minutes;     SegmentOverlap: units=seconds;
+AnalysisIdealSegmentDuration: 1
 SegmentOverlap: 0
 
 # IndexCalculationDuration: units=seconds (default=60 seconds; use 0.2 for zooming spectrogram tiles)

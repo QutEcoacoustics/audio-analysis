@@ -30,10 +30,10 @@ namespace AnalysisPrograms
         public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
             // boilerplate Analyzer
-            var audioFile = analysisSettings.AudioFile;
+            var audioFile = analysisSettings.SegmentAudioFile;
             var sampleRate = analysisSettings.SampleRateOfOriginalAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
-            var outputDirectory = analysisSettings.AnalysisInstanceOutputDirectory;
+            var outputDirectory = analysisSettings.SegmentOutputDirectory;
 
             var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
             analysisResults.AnalysisIdentifier = this.Identifier;
@@ -88,18 +88,18 @@ namespace AnalysisPrograms
             analysisResults.SummaryIndices = new SummaryIndexBase[] { result };
             analysisResults.SpectralIndices = new SpectralIndexBase[0];
 
-            if (analysisSettings.SummaryIndicesFile != null)
+            if (analysisSettings.SegmentSummaryIndicesFile != null)
             {
-                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
-                analysisResults.SummaryIndicesFile = analysisSettings.SummaryIndicesFile;
+                this.WriteSummaryIndicesFile(analysisSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
+                analysisResults.SummaryIndicesFile = analysisSettings.SegmentSummaryIndicesFile;
             }
 
-            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
+            if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 throw new NotImplementedException();
             }
 
-            if (analysisSettings.SpectrumIndicesDirectory != null)
+            if (analysisSettings.SegmentSpectrumIndicesDirectory != null)
             {
                 throw new NotImplementedException();
             }

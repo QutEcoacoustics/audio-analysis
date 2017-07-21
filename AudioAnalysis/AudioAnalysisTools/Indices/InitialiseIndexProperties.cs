@@ -36,7 +36,7 @@ namespace AudioAnalysisTools.Indices
         // WARNING!!! DO NOT change the below keys without ALSO changing in the IndexPropertiesConfig.yml file.
         public const string KEYRankOrder = "RankOrder";
         public const string KEYStartMinute = "StartMinute";
-        public const string KEYSegmentDuration = "SegmentDuration";
+        public const string KEYSegmentDuration = "AnalysisIdealSegmentDuration";
         public const string KEYHighAmplitudeIndex = "HighAmplitudeIndex";
         public const string KEYClippingIndex = "ClippingIndex";
         public const string KEYAvSignalAmplitude = "AvSignalAmplitude";
@@ -164,7 +164,7 @@ namespace AudioAnalysisTools.Indices
                 {"IndexCount", "RankOrder" },
                 {"COUNT", "RankOrder" },
                 {"START-MIN", "StartMinute" },
-                {"SEGMENT-DUR", "SegmentDuration" },
+                {"SEGMENT-DUR", "AnalysisIdealSegmentDuration" },
                 {"hiSIG-AMPL", "HighAmplitudeIndex" },
                 {"CLIPPING", "ClippingIndex" },
                 {"SIGNAL-AMPL", "AvSignalAmplitude" },

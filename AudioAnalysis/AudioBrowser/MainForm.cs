@@ -46,7 +46,7 @@
         private FileInfo analysisConfigFile = new FileInfo(@"F:\Projects\QUT\qut-svn-trunk\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg");// this.tabBrowseAudio.ConfigFile,
         private DirectoryInfo outputDir = new DirectoryInfo(@"F:\Projects\test-audio\");// this.tabBrowseAudio.OutputDirectory,
         private FileInfo audioFile = new FileInfo(@"F:\Projects\test-audio\2012-01-20-megaherzzz-no-music.mp3");
-        //this.tabBrowseAudio.AudioFile,
+        //this.tabBrowseAudio.SegmentAudioFile,
         */
 
         // END hard code area (comment this before commiting!)
@@ -431,8 +431,8 @@
                 AnalysisId = this.tabBrowseAudio.AnalysisId,
                 AnalysisConfigFile = analysisConfigFile,// this.tabBrowseAudio.ConfigFile,
                 OutputDir = outputDir,// this.tabBrowseAudio.OutputDirectory,
-                AudioFile = audioFile,
-                //this.tabBrowseAudio.AudioFile,
+                SegmentAudioFile = audioFile,
+                //this.tabBrowseAudio.SegmentAudioFile,
             };
             */
 
@@ -833,11 +833,11 @@
                 int segmentOffsetMinutes;
                 if (int.TryParse(value, out segmentOffsetMinutes))
                 {
-                    settings.SegmentMaxDuration = TimeSpan.FromMinutes(segmentOffsetMinutes);
+                    settings.AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(segmentOffsetMinutes);
                 }
                 else
                 {
-                    settings.SegmentMaxDuration = null;
+                    settings.AnalysisMaxSegmentDuration = null;
                     LoggedConsole.WriteLine("############### WARNING #############");
                     LoggedConsole.WriteLine("ERROR READING USER CONFIGURATION FILE");
                     LoggedConsole.WriteLine("\tINVALID KVP: key={0}, value={1}", keySegmentDuration, value);

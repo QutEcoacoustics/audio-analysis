@@ -5,6 +5,7 @@ namespace AnalysisPrograms.SourcePreparers
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
@@ -44,31 +45,36 @@ namespace AnalysisPrograms.SourcePreparers
         /// these are the path to the segmented file and the duration of the segmented file.
         /// The start and end offsets will not be set.
         /// </returns>
-        public FileSegment PrepareFile(
+        public async Task<FileSegment> PrepareFile(
             DirectoryInfo outputDirectory,
-            FileInfo source,
+            string source,
             string outputMediaType,
             TimeSpan startOffset,
             TimeSpan endOffset,
             int targetSampleRateHz)
         {
-            var request = new AudioUtilityRequest
+            return await new Task<FileSegment>(() =>
+            {
+                FileInfo sourceFileInfo = source.ToFileInfo();
+
+                var request = new AudioUtilityRequest
                 {
                     OffsetStart = startOffset,
                     OffsetEnd = endOffset,
                     TargetSampleRate = targetSampleRateHz,
                 };
-            var preparedFile = AudioFilePreparer.PrepareFile(
-                outputDirectory,
-                source,
-                outputMediaType,
-                request,
-                TempFileHelper.TempDir());
+                var preparedFile = AudioFilePreparer.PrepareFile(
+                    outputDirectory,
+                    sourceFileInfo,
+                    outputMediaType,
+                    request,
+                    TempFileHelper.TempDir());
 
-            return new FileSegment(
-                preparedFile.TargetInfo.SourceFile,
-                preparedFile.TargetInfo.SampleRate.Value,
-                preparedFile.TargetInfo.Duration.Value);
+                return new FileSegment(
+                    preparedFile.TargetInfo.SourceFile,
+                    preparedFile.TargetInfo.SampleRate.Value,
+                    preparedFile.TargetInfo.Duration.Value);
+            });
         }
 
         /// <summary>
@@ -135,9 +141,9 @@ namespace AnalysisPrograms.SourcePreparers
                 // the rest of the duration (excluding the start and end fractions from the time alignment)
                 var fileSegmentDuration = (endOffset - startOffset - startDelta - endDelta).TotalMilliseconds;
 
-                var analysisSegmentMaxDuration = settings.SegmentMaxDuration?.TotalMilliseconds ?? fileSegmentDuration;
+                var analysisSegmentMaxDuration = settings.AnalysisMaxSegmentDuration?.TotalMilliseconds ?? fileSegmentDuration;
 
-                var analysisSegmentMinDuration = settings.SegmentMinDuration?.TotalMilliseconds
+                var analysisSegmentMinDuration = settings.AnalysisMinSegmentDuration?.TotalMilliseconds
                                                  ?? defaultAnalysisSegmentMinDuration.TotalMilliseconds;
 
                 // --------------------------------------------
@@ -264,11 +270,11 @@ namespace AnalysisPrograms.SourcePreparers
 
                 var offsetsFromEntireFile = new List<Range<TimeSpan>>();
 
-                var segmentMaxDuration = analysisSettings.SegmentMaxDuration.HasValue
-                                             ? analysisSettings.SegmentMaxDuration.Value.TotalMilliseconds
+                var segmentMaxDuration = analysisSettings.AnalysisMaxSegmentDuration.HasValue
+                                             ? analysisSettings.AnalysisMaxSegmentDuration.Value.TotalMilliseconds
                                              : fileSegmentDuration;
-                var segmentMinDuration = analysisSettings.SegmentMinDuration.HasValue
-                                             ? analysisSettings.SegmentMinDuration.Value
+                var segmentMinDuration = analysisSettings.AnalysisMinSegmentDuration.HasValue
+                                             ? analysisSettings.AnalysisMinSegmentDuration.Value
                                              : TimeSpan.Zero;
 
                 while (currentPostion < fileSegmentDuration)
@@ -329,7 +335,7 @@ namespace AnalysisPrograms.SourcePreparers
                                 {
                                     OffsetStart = offset.Minimum,
                                     OffsetEnd = offset.Maximum,
-                                    TargetSampleRate = analysisSettings.SegmentTargetSampleRate,
+                                    TargetSampleRate = analysisSettings.AnalysisTargetSampleRate,
                                 });
                     }
 
@@ -367,9 +373,9 @@ namespace AnalysisPrograms.SourcePreparers
         /// these are the path to the segmented file and the duration of the segmented file.
         /// The start and end offsets will not be set.
         /// </returns>
-        public FileSegment PrepareFile(
+        public async Task<FileSegment> PrepareFile(
             DirectoryInfo outputDirectory,
-            FileInfo source,
+            string source,
             string outputMediaType,
             TimeSpan startOffset,
             TimeSpan endOffset,
@@ -378,7 +384,11 @@ namespace AnalysisPrograms.SourcePreparers
             int[] channelSelection = null,
             bool? mixDownToMono = null)
         {
-            var request = new AudioUtilityRequest
+            return await new Task<FileSegment>(() =>
+            {
+                var sourceFileInfo = source.ToFileInfo();
+
+                var request = new AudioUtilityRequest
                 {
                     OffsetStart = startOffset,
                     OffsetEnd = endOffset,
@@ -386,17 +396,18 @@ namespace AnalysisPrograms.SourcePreparers
                     MixDownToMono = mixDownToMono,
                     Channels = channelSelection,
                 };
-            var preparedFile = AudioFilePreparer.PrepareFile(
-                outputDirectory,
-                source,
-                outputMediaType,
-                request,
-                temporaryFilesDirectory);
+                var preparedFile = AudioFilePreparer.PrepareFile(
+                    outputDirectory,
+                    sourceFileInfo,
+                    outputMediaType,
+                    request,
+                    temporaryFilesDirectory);
 
-            return new FileSegment(
-                preparedFile.TargetInfo.SourceFile,
-                preparedFile.TargetInfo.SampleRate.Value,
-                preparedFile.TargetInfo.Duration.Value);
+                return new FileSegment(
+                    preparedFile.TargetInfo.SourceFile,
+                    preparedFile.TargetInfo.SampleRate.Value,
+                    preparedFile.TargetInfo.Duration.Value);
+            });
         }
     }
 }

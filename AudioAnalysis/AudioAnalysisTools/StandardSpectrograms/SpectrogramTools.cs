@@ -55,10 +55,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 var settings = new AnalysisSettings
                 {
                     ConfigDict = config.GetDictionary(),
-                    AudioFile = fiAudio,
+                    SegmentAudioFile = fiAudio,
                     ConfigFile = fiConfig,
-                    ImageFile = fiImage,
-                    AnalysisInstanceOutputDirectory = diOutputDir
+                    SegmentImageFile = fiImage,
+                    SegmentOutputDirectory = diOutputDir
                 };
                 // want to pass SampleRate of the original file.
                 settings.SampleRateOfOriginalAudioFile = int.Parse(settings.ConfigDict[AnalysisKeys.ResampleRate]);

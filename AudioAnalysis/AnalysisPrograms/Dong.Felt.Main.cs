@@ -324,7 +324,7 @@ namespace AnalysisPrograms
     {
         public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
-            var audioFile = analysisSettings.AudioFile;
+            var audioFile = analysisSettings.SegmentAudioFile;
             var startOffset = analysisSettings.SegmentStartOffset ?? TimeSpan.Zero;
 
             var recording = new AudioRecording(audioFile.FullName);
@@ -363,20 +363,20 @@ namespace AnalysisPrograms
                 ((RidgeEvent[])result.Events)[index] = new RidgeEvent(ridges[index], analysisSettings, sonogram);
             }
 
-            if (analysisSettings.EventsFile != null)
+            if (analysisSettings.SegmentEventsFile != null)
             {
-                this.WriteEventsFile(analysisSettings.EventsFile, result.Events);
+                this.WriteEventsFile(analysisSettings.SegmentEventsFile, result.Events);
             }
 
-            if (analysisSettings.SummaryIndicesFile != null)
+            if (analysisSettings.SegmentSummaryIndicesFile != null)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
                 result.SummaryIndices = this.ConvertEventsToSummaryIndices(result.Events, unitTime, result.SegmentAudioDuration, 0);
 
-                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, result.SummaryIndices);
+                this.WriteSummaryIndicesFile(analysisSettings.SegmentSummaryIndicesFile, result.SummaryIndices);
             }
 
-            if (analysisSettings.SegmentSaveBehavior.ShouldSave(result.Events.Length))
+            if (analysisSettings.AnalysisSaveBehavior.ShouldSave(result.Events.Length))
             {
                 throw new NotImplementedException();
             }
@@ -437,11 +437,11 @@ namespace AnalysisPrograms
             {
                 return new AnalysisSettings()
                 {
-                    SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                    SegmentMinDuration = TimeSpan.FromSeconds(20),
+                    AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
+                    AnalysisMinSegmentDuration = TimeSpan.FromSeconds(20),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = 22050,
+                    AnalysisTargetSampleRate = 22050,
                 };
             }
         }

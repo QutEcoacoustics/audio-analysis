@@ -14,8 +14,11 @@ namespace AnalysisPrograms.EventStatistics
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using AcousticWorkbench;
+    using AnalysisBase;
+    using AudioAnalysisTools.EventStatistics;
     using CsvHelper;
     using log4net;
+    using SourcePreparers;
 
     public partial class EventStatisticsAnalysis
     {
@@ -97,32 +100,39 @@ namespace AnalysisPrograms.EventStatistics
             // read events/annotation file
             Log.Info("Now reading input data");
 
-            var importedEventType = typeof(ImportedEvent);
-            
-
             // doing a manual CSV read here to get desired column name flexibility
-            bool hasEventId = false;
-            bool hasSegmentInfo = false;
-            using (var stream = arguments.Source.OpenText())
+            var events = Csv.ReadFromCsv<ImportedEvent>(arguments.Source, throwOnMissingField: false).ToArray();
+
+            if (events.Length == 0)
             {
-                var reader = new CsvReader(stream, Csv.DefaultConfiguration);
-
-                // pump the reader
-                reader.Read();
-
-                Log.Info(reader.FieldHeaders.ToCommaSeparatedList());
-                
-                // validate field names are part of the expected mappings
-
-
+                Log.Warn("No events imported - source file empty. Exiting");
+                return;
             }
 
+            Log.Info($"Events read, {events.Length} read.");
 
-            //Log.Info($"Events read, {events.Length} read. Now verifying columns");
             // need to validate the events
+            var invalidEvents = events.Where(e => !e.Isvalid()).ToArray();
 
+            if (invalidEvents.Length > 0)
+            {
+                throw new InvalidOperationException(
+                    "Invalid event detected."
+                    + $" {invalidEvents.Length} events are not valid. The first invalid event is {invalidEvents[0]}");
+            }
 
+            // finally time to start preparing jobs
 
+            ISourcePreparer preparer = new RemoteSourcePreparer(authenticatedApi);
+
+        }
+
+        public static void Analyze(
+            ImportedEvent[] events,
+            ISourcePreparer preparer,
+            EventStatisticsConfiguration configuration)
+        {
+            
         }
     }
 }

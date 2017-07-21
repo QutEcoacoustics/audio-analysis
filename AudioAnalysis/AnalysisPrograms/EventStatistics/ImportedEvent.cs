@@ -9,52 +9,43 @@ namespace AnalysisPrograms.EventStatistics
     using System.Linq;
     using System.Reflection;
     using System.Text;
+    using CsvHelper.Configuration;
 
     public class ImportedEvent
     {
-        public long AudioEventId { get; set; }
+        public long? AudioEventId { get; set; }
 
-        public long AudioRecordingId { get; set; }
+        public long? AudioRecordingId { get; set; }
 
-        public double EventStartSeconds { get; set; }
+        public double? EventStartSeconds { get; set; }
 
-        public double EventEndSeconds { get; set; }
+        public double? EventEndSeconds { get; set; }
 
-
-        private static Type thisType = typeof(ImportedEvent);
-
-        private Dictionary<PropertyInfo, string[]> columnMappings = new Dictionary<PropertyInfo, string[]>()
+        public bool Isvalid()
         {
-            {
-                thisType.GetProperty(nameof(ImportedEvent.AudioEventId)),
-                eventId
-            },
-            {
-                thisType.GetProperty(nameof(ImportedEvent.AudioRecordingId)),
-                recordingId
-            },
-            {
-                thisType.GetProperty(nameof(ImportedEvent.EventStartSeconds)),
-                start
-            },
-            {
-                thisType.GetProperty(nameof(ImportedEvent.EventEndSeconds)),
-                end
-            },
-        };
+            return this.AudioEventId.HasValue ||
+                   (this.AudioRecordingId.HasValue && this.EventStartSeconds.HasValue && this.EventEndSeconds.HasValue);
+        }
 
-        private static string[] eventId = new[] { "AudioEventId", "audio_event_id" };
-        private static string[] recordingId = new[] { "AudioRecordingId", "audio_recording_id" };
-        private static string[] start = new[] { "EventStartSeconds", "event_start_seconds" };
-        private static string[] end = new[] { "EventEndSeconds", "event_end_seconds" };
-
-        private static readonly string[][] segmentStrings = new string[][]
+        public sealed class ImportedEventNameClassMap : CsvClassMap<ImportedEvent>
         {
-            recordingId,
-            start,
-            end
-        };
+            private static readonly PropertyInfo[] Properties = typeof(ImportedEvent).GetProperties();
 
-        public static void MapColumns
+            public ImportedEventNameClassMap()
+            {
+                // allow each field to be serialized by PascalCase, snake_case, or camelCase
+                foreach (var property in Properties)
+                {
+                    var map = new CsvPropertyMap(property);
+                    var pascalName = property.Name;
+                    var snakeName = pascalName.ToSnakeCase();
+                    var camelName = pascalName.ToCamelCase();
+
+                    map.Name(pascalName, snakeName, camelName);
+
+                    this.PropertyMaps.Add(map);
+                }
+            }
+        }
     }
 }

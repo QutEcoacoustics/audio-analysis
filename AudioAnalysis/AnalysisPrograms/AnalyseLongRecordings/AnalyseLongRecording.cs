@@ -146,7 +146,7 @@ Output  to  directory: {1}
                 // create and delete directories
                 DeleteFinished = true,
                 IsParallel = doParallelProcessing,
-                SubFoldersUnique = false,
+                UniqueDirectoryPerSegment = false,
             };
 
             // 4. get the segment of audio to be analysed
@@ -179,12 +179,12 @@ Output  to  directory: {1}
             try
             {
                 int rawDuration = configuration[AnalysisKeys.SegmentDuration];
-                analysisSettings.SegmentMaxDuration = TimeSpan.FromMinutes(rawDuration);
+                analysisSettings.AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(rawDuration);
             }
             catch (Exception ex)
             {
-                analysisSettings.SegmentMaxDuration = TimeSpan.FromMinutes(1.0);
-                Log.Warn("Can't read SegmentMaxDuration from config file (exceptions squashed, default value of " + analysisSettings.SegmentMaxDuration + " used)");
+                analysisSettings.AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1.0);
+                Log.Warn("Can't read AnalysisMaxSegmentDuration from config file (exceptions squashed, default value of " + analysisSettings.AnalysisMaxSegmentDuration + " used)");
             }
 
             try
@@ -202,11 +202,11 @@ Output  to  directory: {1}
             try
             {
                 int resampleRate = configuration[AnalysisKeys.ResampleRate];
-                analysisSettings.SegmentTargetSampleRate = resampleRate;
+                analysisSettings.AnalysisTargetSampleRate = resampleRate;
             }
             catch (Exception ex)
             {
-                Log.Warn("Can't read SegmentTargetSampleRate from config file (exceptions squashed, default value  of " + analysisSettings.SegmentTargetSampleRate + " used)");
+                Log.Warn("Can't read AnalysisTargetSampleRate from config file (exceptions squashed, default value  of " + analysisSettings.AnalysisTargetSampleRate + " used)");
             }
 
             // Execute a pre analyzer hook
@@ -268,11 +268,11 @@ Output  to  directory: {1}
             // 10. Allow analysers to post-process
 
             // TODO: remove results directory if possible
-            var instanceOutputDirectory = analyserResults.First().SettingsUsed.AnalysisInstanceOutputDirectory;
+            var instanceOutputDirectory = analyserResults.First().SettingsUsed.SegmentOutputDirectory;
 
             // this allows the summariser to write results to the same output directory as each analysis segment
-            analysisSettings.AnalysisInstanceOutputDirectory = instanceOutputDirectory;
-            Debug.Assert(analysisSettings.AnalysisInstanceOutputDirectory == instanceOutputDirectory, "The instance result directory should be the same as the base analysis directory");
+            analysisSettings.SegmentOutputDirectory = instanceOutputDirectory;
+            Debug.Assert(analysisSettings.SegmentOutputDirectory == instanceOutputDirectory, "The instance result directory should be the same as the base analysis directory");
             Debug.Assert(analysisSettings.SourceFile == fileSegment.TargetFile);
 
             // 11. IMPORTANT - this is where IAnalyser2's post processor gets called.

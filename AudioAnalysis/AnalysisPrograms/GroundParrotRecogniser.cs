@@ -276,7 +276,7 @@ namespace AnalysisPrograms
 
         public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
-            FileInfo audioFile = analysisSettings.AudioFile;
+            FileInfo audioFile = analysisSettings.SegmentAudioFile;
 
             var eprNormalizedMinScore = GetEprParametersFromConfigFileOrDefaults(analysisSettings.Configuration);
 
@@ -296,27 +296,27 @@ namespace AnalysisPrograms
                                       };
             BaseSonogram sonogram = results.Item1;
 
-            if (analysisSettings.EventsFile != null)
+            if (analysisSettings.SegmentEventsFile != null)
             {
-                this.WriteEventsFile(analysisSettings.EventsFile, analysisResults.Events);
-                analysisResults.EventsFile = analysisSettings.EventsFile;
+                this.WriteEventsFile(analysisSettings.SegmentEventsFile, analysisResults.Events);
+                analysisResults.EventsFile = analysisSettings.SegmentEventsFile;
             }
 
-            if (analysisSettings.SummaryIndicesFile != null)
+            if (analysisSettings.SegmentSummaryIndicesFile != null)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
                 analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
 
-                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
+                this.WriteSummaryIndicesFile(analysisSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
 
             // save image of sonograms
-            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
+            if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 Image image = Aed.DrawSonogram(sonogram, results.Item2);
-                image.Save(analysisSettings.ImageFile.FullName, ImageFormat.Png);
-                analysisResults.ImageFile = analysisSettings.ImageFile;
+                image.Save(analysisSettings.SegmentImageFile.FullName, ImageFormat.Png);
+                analysisResults.ImageFile = analysisSettings.SegmentImageFile;
             }
 
             return analysisResults;

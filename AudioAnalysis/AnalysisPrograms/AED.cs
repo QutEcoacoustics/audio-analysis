@@ -111,8 +111,8 @@ namespace AnalysisPrograms
             {
                 return new AnalysisSettings
                            {
-                               SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                               SegmentMinDuration = TimeSpan.FromSeconds(20),
+                               AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
+                               AnalysisMinSegmentDuration = TimeSpan.FromSeconds(20),
                                SegmentMediaType = MediaTypes.MediaTypeWav,
                                SegmentOverlapDuration = TimeSpan.Zero,
                            };
@@ -295,7 +295,7 @@ namespace AnalysisPrograms
 
         public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
-            FileInfo audioFile = analysisSettings.AudioFile;
+            FileInfo audioFile = analysisSettings.SegmentAudioFile;
 
             var aedConfig = GetAedParametersFromConfigFileOrDefaults(analysisSettings.Configuration);
 
@@ -306,28 +306,28 @@ namespace AnalysisPrograms
             analysisResults.Events = results.Item1;
             BaseSonogram sonogram = results.Item3;
 
-            if (analysisSettings.EventsFile != null)
+            if (analysisSettings.SegmentEventsFile != null)
             {
-                this.WriteEventsFile(analysisSettings.EventsFile, analysisResults.Events);
-                analysisResults.EventsFile = analysisSettings.EventsFile;
+                this.WriteEventsFile(analysisSettings.SegmentEventsFile, analysisResults.Events);
+                analysisResults.EventsFile = analysisSettings.SegmentEventsFile;
             }
 
-            if (analysisSettings.SummaryIndicesFile != null)
+            if (analysisSettings.SegmentSummaryIndicesFile != null)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
                 analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
 
-                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
-                analysisResults.SummaryIndicesFile = analysisSettings.SummaryIndicesFile;
+                this.WriteSummaryIndicesFile(analysisSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
+                analysisResults.SummaryIndicesFile = analysisSettings.SegmentSummaryIndicesFile;
             }
 
 
             // save image of sonograms
-            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
+            if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 Image image = DrawSonogram(sonogram, results.Item1);
-                image.Save(analysisSettings.ImageFile.FullName, ImageFormat.Png);
-                analysisResults.ImageFile = analysisSettings.ImageFile;
+                image.Save(analysisSettings.SegmentImageFile.FullName, ImageFormat.Png);
+                analysisResults.ImageFile = analysisSettings.SegmentImageFile;
             }
 
             return analysisResults;

@@ -22,6 +22,7 @@ namespace AnalysisBase
     using Acoustics.Shared;
 
     using log4net;
+    using SegmentAnalysis;
 
     /// <summary>
     /// Represents a segment of a target file. It can also store the parent file that a new segment has been derived from.
@@ -29,7 +30,7 @@ namespace AnalysisBase
     /// Other functions can take the segment request, cut out the selected range, and return a new file segment.
     /// New file segments, or so segments that represent a whole file, will not have the segment properties set because they do not represent a request anymore.
     /// </summary>
-    public class FileSegment : ICloneable
+    public class FileSegment : ICloneable, ISegment<FileInfo>
     {
         /// <summary>
         /// How FileSegment should try and parse the file's absolute date.
@@ -270,5 +271,11 @@ namespace AnalysisBase
 
             return null;
         }
+
+        FileInfo ISegment<FileInfo>.Source => this.TargetFile;
+
+        double ISegment<FileInfo>.StartOffsetSeconds => this.SegmentStartOffset.Value.TotalSeconds;
+
+        double ISegment<FileInfo>.EndOffsetSeconds => this.SegmentEndOffset.Value.TotalSeconds;
     }
 }
