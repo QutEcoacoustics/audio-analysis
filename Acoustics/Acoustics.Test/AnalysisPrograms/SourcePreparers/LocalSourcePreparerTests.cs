@@ -25,8 +25,8 @@
             this.preparer = new LocalSourcePreparer();
             this.settings = new AnalysisSettings()
             {
-                SegmentTargetSampleRate = 22050,
-                SegmentDuration = TimeSpan.FromSeconds(60),
+                AnalysisTargetSampleRate = 22050,
+                AnalysisIdealSegmentDuration = TimeSpan.FromSeconds(60),
             };
         }
 

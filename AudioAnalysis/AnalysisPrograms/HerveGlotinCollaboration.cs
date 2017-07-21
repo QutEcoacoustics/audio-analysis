@@ -23,8 +23,8 @@
         /// ############################# IMPORTANT ########################################
         /// In order to analyse the short recordings in BIRD50 dataset, need following change to code:
         /// need to modify    AudioAnalysis.AnalysisPrograms.AcousticIndices.cs #line648
-        /// need to change    SegmentMinDuration = TimeSpan.FromSeconds(20),
-        /// to                SegmentMinDuration = TimeSpan.FromSeconds(1),
+        /// need to change    AnalysisMinSegmentDuration = TimeSpan.FromSeconds(20),
+        /// to                AnalysisMinSegmentDuration = TimeSpan.FromSeconds(1),
         /// THIS iS to analyse BIRD50 short recordings.
 
         /// </summary>

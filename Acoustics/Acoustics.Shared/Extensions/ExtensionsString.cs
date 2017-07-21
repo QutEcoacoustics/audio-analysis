@@ -393,7 +393,7 @@ namespace System
                         int.Parse(hex.Substring(6, 2), NumberStyles.HexNumber));
                     break;
                 default:
-                    throw new FormatException("The color format was not recofnised");
+                    throw new FormatException("The color format was not recognized");
             }
 
 
@@ -425,3 +425,4 @@ namespace System
         }
     }
 }
+

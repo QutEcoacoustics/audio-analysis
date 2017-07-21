@@ -10,12 +10,18 @@
 namespace Acoustics.Test.Shared
 {
     using System;
+    using System.Collections;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Text;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+    using CsvHelper;
     using CsvHelper.TypeConversion;
+    using Fasterflect;
+    using global::AnalysisPrograms.EventStatistics;
+    using global::AudioAnalysisTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
@@ -31,11 +37,25 @@ namespace Acoustics.Test.Shared
                 { 5.0, 6.0, 7.0, 8.0 },
                 { 9.0, 10.0, 11.0, 12.0 },
                 { 13.0, 14.0, 15.0, 16.0 },
-                { 17.0, 18.0, 19.0, 20.0 }
+                { 17.0, 18.0, 19.0, 20.0 },
             };
 
         private DirectoryInfo outputDirectory;
         private FileInfo testFile;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext context)
+        {
+            // pump static class initializers - it seems when running multiple tests that sometimes
+            // these classes are not discovered.
+
+            AcousticEvent aev = new AcousticEvent();
+            ImportedEvent iev = new ImportedEvent();
+
+            var configuration = Csv.DefaultConfiguration;
+            IDictionary csvMaps = (IDictionary)configuration.Maps.GetFieldValue("data");
+            Debug.WriteLine("initializing static types" + aev + iev + csvMaps.Count);
+        }
 
         [TestInitialize]
         public void Setup()
@@ -269,6 +289,62 @@ namespace Acoustics.Test.Shared
 
             var expected = new[] { "SomeNumber", "SomeTimeSpan", "A", "B", "C", "D" };
             CollectionAssert.AreEqual(expected, headers);
+        }
+
+        [TestMethod]
+        public void TestCsvClassMapsAreAutomaticallyRegistered()
+        {
+            // add a spot check of well known class maps to ensure the automatic searcher is finding the class maps
+
+            var partialExpected = new[]
+            {
+                typeof(AcousticEvent.AcousticEventClassMap),
+                typeof(ImportedEvent.ImportedEventNameClassMap),
+            };
+
+            CollectionAssert.IsSubsetOf(partialExpected, Csv.ClassMapsToRegister.Select(x => x.GetType()).ToArray());
+        }
+
+        [TestMethod]
+        public void TestAcousticEventClassMap()
+        {
+            var ae = new AcousticEvent();
+
+            var result = new StringBuilder();
+            using (var str = new StringWriter(result))
+            {
+                var writer = new CsvWriter(str, Csv.DefaultConfiguration);
+
+                writer.WriteRecords(records: new[] { ae });
+            }
+
+            var actual = result.ToString();
+
+            foreach (var property in AcousticEvent.AcousticEventClassMap.IgnoredProperties.Except(new[] { "Duration" }))
+            {
+                Assert.IsFalse(
+                    actual.Contains(property, StringComparison.InvariantCultureIgnoreCase),
+                    $"output CSV should not contain text '{property}'.{Environment.NewLine}Actual: {actual}");
+            }
+
+            StringAssert.Contains(actual, "EventEndSeconds");
+        }
+
+        [TestMethod]
+        public void TestImportedEventClassMap()
+        {
+            string[] names = new[] { "AudioEventId", "audioEventId", "audio_event_id" };
+
+            foreach (var name in names)
+            {
+                int value = Environment.TickCount;
+                string csv = $"{name}{Environment.NewLine}{value}";
+
+                var result = Csv.ReadFromCsv<ImportedEvent>(csv, throwOnMissingField: false).ToArray();
+
+                Assert.AreEqual(1, result.Length);
+                Assert.AreEqual(value, result[0].AudioEventId);
+            }
         }
 
         private void AssertCsvEqual(string expected, FileInfo actual)

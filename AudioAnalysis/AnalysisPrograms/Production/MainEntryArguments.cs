@@ -187,25 +187,25 @@
 
             // ANT: renabled this line because it just makes sense! this is needed by IAnalyser cmd entry points
             analysisSettings.SourceFile = this.Source;
-            analysisSettings.AudioFile = this.Source;
+            analysisSettings.SegmentAudioFile = this.Source;
             analysisSettings.ConfigFile = this.Config;
 
             var resultDirectory = resultSubDirectory.IsNullOrEmpty() ? this.Output : this.Output.Combine(resultSubDirectory);
 
             resultDirectory.Create();
 
-            analysisSettings.AnalysisInstanceOutputDirectory = resultDirectory;
+            analysisSettings.SegmentOutputDirectory = resultDirectory;
             analysisSettings.AnalysisBaseOutputDirectory = this.Output;
             analysisSettings.AnalysisBaseTempDirectory = this.Output;
 
             if (outputIntermediate)
             {
                 string fileNameBase = Path.GetFileNameWithoutExtension(this.Source.Name);
-                analysisSettings.EventsFile = FilenameHelpers.AnalysisResultPath(resultDirectory, fileNameBase, "Events", "csv").ToFileInfo();
-                analysisSettings.SummaryIndicesFile = FilenameHelpers.AnalysisResultPath(resultDirectory, fileNameBase, "Indices", "csv").ToFileInfo();
-                analysisSettings.SpectrumIndicesDirectory = resultDirectory;
-                analysisSettings.ImageFile = FilenameHelpers.AnalysisResultPath(resultDirectory, fileNameBase, "Image", "png").ToFileInfo();
-                analysisSettings.SegmentSaveBehavior = SaveBehavior.Always;
+                analysisSettings.SegmentEventsFile = FilenameHelpers.AnalysisResultPath(resultDirectory, fileNameBase, "Events", "csv").ToFileInfo();
+                analysisSettings.SegmentSummaryIndicesFile = FilenameHelpers.AnalysisResultPath(resultDirectory, fileNameBase, "Indices", "csv").ToFileInfo();
+                analysisSettings.SegmentSpectrumIndicesDirectory = resultDirectory;
+                analysisSettings.SegmentImageFile = FilenameHelpers.AnalysisResultPath(resultDirectory, fileNameBase, "Image", "png").ToFileInfo();
+                analysisSettings.AnalysisSaveBehavior = SaveBehavior.Always;
             }
 
             analysisSettings.Configuration = Yaml.Deserialise(this.Config);
@@ -240,22 +240,22 @@
 
             if (this.TmpWav.IsNotEmpty())
             {
-                analysisSettings.AudioFile = this.Output.CombineFile(this.TmpWav);
+                analysisSettings.SegmentAudioFile = this.Output.CombineFile(this.TmpWav);
             }
 
             if (this.Events.IsNotEmpty())
             {
-                analysisSettings.EventsFile = this.Output.CombineFile(this.Events);
+                analysisSettings.SegmentEventsFile = this.Output.CombineFile(this.Events);
             }
 
             if (this.Indices.IsNotEmpty())
             {
-                analysisSettings.SummaryIndicesFile = this.Output.CombineFile(this.Indices);
+                analysisSettings.SegmentSummaryIndicesFile = this.Output.CombineFile(this.Indices);
             }
 
             if (this.Sgram.IsNotEmpty())
             {
-                analysisSettings.ImageFile = this.Output.CombineFile(this.Sgram);
+                analysisSettings.SegmentImageFile = this.Output.CombineFile(this.Sgram);
             }
 
             return analysisSettings;

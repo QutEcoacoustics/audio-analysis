@@ -214,7 +214,7 @@ namespace AnalysisPrograms.Recognizers
                 // add additional info
                 ae.SpeciesName = speciesName;
                 ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = recordingDuration;
+                ae.AnalysisIdealSegmentDuration = recordingDuration;
                 ae.Name = recognizerConfig.AbbreviatedSpeciesName;
                 prunedEvents.Add(ae);
             }

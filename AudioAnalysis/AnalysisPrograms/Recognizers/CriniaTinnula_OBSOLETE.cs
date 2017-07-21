@@ -142,7 +142,7 @@ namespace AnalysisPrograms.Recognizers
             acousticEvents.ForEach(ae =>
             {
                 ae.SpeciesName = speciesName;
-                ae.SegmentDuration = recordingDuration;
+                ae.AnalysisIdealSegmentDuration = recordingDuration;
                 ae.Name = abbreviatedSpeciesName;
             });
 

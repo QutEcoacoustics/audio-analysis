@@ -193,7 +193,7 @@
 
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT
-            FileInfo tempF = analysisSettings.AudioFile;
+            FileInfo tempF = analysisSettings.SegmentAudioFile;
             if (tempF.Exists)
             {
                 tempF.Delete();
@@ -230,7 +230,7 @@
                     row[InitialiseIndexProperties.KEYSegmentDuration] = result.AudioDuration.TotalSeconds;
                 }
 
-                CsvTools.DataTable2CSV(dt, analysisSettings.SummaryIndicesFile.FullName);
+                CsvTools.DataTable2CSV(dt, analysisSettings.SegmentSummaryIndicesFile.FullName);
                 //DataTableTools.WriteTable2Console(dt);
             }
 
@@ -245,8 +245,8 @@
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
-            var fiAudioF = analysisSettings.AudioFile;
-            var diOutputDir = analysisSettings.AnalysisInstanceOutputDirectory;
+            var fiAudioF = analysisSettings.SegmentAudioFile;
+            var diOutputDir = analysisSettings.SegmentOutputDirectory;
 
             var analysisResults = new AnalysisResult();
             analysisResults.AnalysisIdentifier = this.Identifier;
@@ -277,19 +277,19 @@
             //var sonogram = results.Item3;
             //var scores = results.Item4;
 
-            //if ((sonogram != null) && (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length)))
+            //if ((sonogram != null) && (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Events.Length)))
             //{
-            //    string imagePath = Path.Combine(diOutputDir.FullName, analysisSettings.ImageFile.Name);
+            //    string imagePath = Path.Combine(diOutputDir.FullName, analysisSettings.SegmentImageFile.Name);
             //    var image = DrawSonogram(sonogram, scores);
             //    var fiImage = new FileInfo(imagePath);
             //    if (fiImage.Exists) fiImage.SafeDeleteFile();
             //    image.Save(imagePath, ImageFormat.Png);
-            //    analysisResults.ImageFile = new FileInfo(imagePath);
+            //    analysisResults.SegmentImageFile = new FileInfo(imagePath);
             //}
 
-            if ((analysisSettings.SummaryIndicesFile != null) && (analysisResults.Data != null))
+            if ((analysisSettings.SegmentSummaryIndicesFile != null) && (analysisResults.Data != null))
             {
-                CsvTools.DataTable2CSV(analysisResults.Data, analysisSettings.SummaryIndicesFile.FullName);
+                CsvTools.DataTable2CSV(analysisResults.Data, analysisSettings.SegmentSummaryIndicesFile.FullName);
             }
             return analysisResults;
         }
@@ -727,11 +727,11 @@
             {
                 return new AnalysisSettings
                 {
-                    SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                    SegmentMinDuration = TimeSpan.FromSeconds(30),
+                    AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
+                    AnalysisMinSegmentDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
+                    AnalysisTargetSampleRate = AnalysisTemplate.ResampleRate,
                 };
             }
         }

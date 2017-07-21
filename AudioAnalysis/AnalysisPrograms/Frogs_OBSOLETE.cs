@@ -187,7 +187,7 @@
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT
             FileInfo fiSource = analysisSettings.SourceFile;
-            FileInfo tempF    = analysisSettings.AudioFile;
+            FileInfo tempF    = analysisSettings.SegmentAudioFile;
             if (tempF.Exists) { tempF.Delete(); }
 
             // GET INFO ABOUT THE SOURCE and the TARGET files - esp need the sampling rate
@@ -215,14 +215,14 @@
 
             // ADD IN ADDITIONAL INFO TO RESULTS TABLE
             AddContext2Table(dt, tsStart, result.AudioDuration);
-            CsvTools.DataTable2CSV(dt, analysisSettings.EventsFile.FullName);
+            CsvTools.DataTable2CSV(dt, analysisSettings.SegmentEventsFile.FullName);
             // DataTableTools.WriteTable(augmentedTable);
         }
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
-            var fiAudioF    = analysisSettings.AudioFile;
-            var diOutputDir = analysisSettings.AnalysisInstanceOutputDirectory;
+            var fiAudioF    = analysisSettings.SegmentAudioFile;
+            var diOutputDir = analysisSettings.SegmentOutputDirectory;
 
             var result = new AnalysisResult();
             result.AnalysisIdentifier = this.Identifier;
@@ -258,35 +258,35 @@
                 dataTable = DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
             }
 
-            if ((analysisSettings.EventsFile != null) && (dataTable != null))
+            if ((analysisSettings.SegmentEventsFile != null) && (dataTable != null))
             {
-                CsvTools.DataTable2CSV(dataTable, analysisSettings.EventsFile.FullName);
+                CsvTools.DataTable2CSV(dataTable, analysisSettings.SegmentEventsFile.FullName);
             }
             else
                 result.EventsFile = null;
 
-            if ((analysisSettings.SummaryIndicesFile != null) && (dataTable != null))
+            if ((analysisSettings.SegmentSummaryIndicesFile != null) && (dataTable != null))
             {
                 double scoreThreshold = 0.01;
                 if (analysisSettings.ConfigDict.ContainsKey(AnalysisKeys.IntensityThreshold))
                     scoreThreshold = ConfigDictionary.GetDouble(AnalysisKeys.IntensityThreshold, analysisSettings.ConfigDict);
                 TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of i minute
                 var indicesDT = this.ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
-                CsvTools.DataTable2CSV(indicesDT, analysisSettings.SummaryIndicesFile.FullName);
+                CsvTools.DataTable2CSV(indicesDT, analysisSettings.SegmentSummaryIndicesFile.FullName);
             }
             else
                 result.IndicesFile = null;
 
             //save image of sonograms
-            if (analysisSettings.SegmentSaveBehavior.ShouldSave(result.Data.Rows.Count))
+            if (analysisSettings.AnalysisSaveBehavior.ShouldSave(result.Data.Rows.Count))
             {
-                string imagePath = analysisSettings.ImageFile.FullName;
+                string imagePath = analysisSettings.SegmentImageFile.FullName;
                 Image image = DrawSonogram(sonogram, hits, scores, predictedEvents);
                 image.Save(imagePath, ImageFormat.Png);
             }
 
             result.Data = dataTable;
-            result.ImageFile = analysisSettings.ImageFile;
+            result.ImageFile = analysisSettings.SegmentImageFile;
             result.AudioDuration = recordingTimeSpan;
             //result.DisplayItems = { { 0, "example" }, { 1, "example 2" }, }
             //result.OutputFiles = { { "exmaple file key", new FileInfo("Where's that file?") } }
@@ -910,11 +910,11 @@
             {
                 return new AnalysisSettings
                 {
-                    SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                    SegmentMinDuration = TimeSpan.FromSeconds(30),
+                    AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
+                    AnalysisMinSegmentDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
+                    AnalysisTargetSampleRate = AnalysisTemplate.ResampleRate,
                 };
             }
         }

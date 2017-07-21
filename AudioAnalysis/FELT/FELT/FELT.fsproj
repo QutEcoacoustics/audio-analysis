@@ -119,8 +119,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="CsvHelper">
-      <HintPath>..\..\packages\CsvHelper.2.7.0\lib\net40-client\CsvHelper.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\..\packages\CsvHelper.2.16.3.0\lib\net40\CsvHelper.dll</HintPath>
     </Reference>
     <Reference Include="EPPlus">
       <HintPath>..\..\..\Extra Assemblies\EPPlus 3.0\EPPlus.dll</HintPath>
@@ -179,15 +178,15 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Linq" />
     <Reference Include="System.IO">
-      <HintPath>..\..\packages\Microsoft.Bcl.1.1.8\lib\net40\System.IO.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Bcl.1.1.10\lib\net40\System.IO.dll</HintPath>
     </Reference>
     <Reference Include="System.Net" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime">
-      <HintPath>..\..\packages\Microsoft.Bcl.1.1.8\lib\net40\System.Runtime.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Bcl.1.1.10\lib\net40\System.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Tasks">
-      <HintPath>..\..\packages\Microsoft.Bcl.1.1.8\lib\net40\System.Threading.Tasks.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Bcl.1.1.10\lib\net40\System.Threading.Tasks.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
   </ItemGroup>

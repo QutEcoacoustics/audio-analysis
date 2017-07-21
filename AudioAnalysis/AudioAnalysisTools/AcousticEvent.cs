@@ -11,6 +11,7 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Drawing;
     using System.IO;
     using System.Linq;
@@ -28,16 +29,16 @@ namespace AudioAnalysisTools
     {
         public sealed class AcousticEventClassMap : CsvClassMap<AcousticEvent>
         {
-            private static readonly string[] IgnoredProperties =
+            public static readonly string[] IgnoredProperties =
                 {
-                    "TimeStart", "TimeEnd", "MinFreq", "MaxFreq",
-                    "FreqRange", "IsMelscale", "FrameOffset",
-                    "FramesPerSecond", "Name2", "ScoreComment",
-                    "ScoreNormalised", "Score_MaxPossible",
-                    "Score_MaxInEvent", "Score_TimeOfMaxInEvent",
-                    "Score2Name", "Score2", "Periodicity", "DominantFreq",
-                    "Tag", "Intensity", "Quality", "HitColour", "Points",
-                    "Duration",
+                    nameof(TimeStart), nameof(TimeEnd), nameof(MinFreq), nameof(MaxFreq),
+                    nameof(FreqRange), nameof(IsMelscale), nameof(FrameOffset),
+                    nameof(FramesPerSecond), nameof(Name2), nameof(ScoreComment),
+                    nameof(ScoreNormalised), nameof(Score_MaxPossible),
+                    nameof(Score_MaxInEvent), nameof(Score_TimeOfMaxInEvent),
+                    nameof(Score2Name), nameof(Score2), nameof(Periodicity), nameof(DominantFreq),
+                    nameof(Tag), nameof(Intensity), nameof(Quality), nameof(HitColour),
+                    nameof(Duration),
                 };
 
             public AcousticEventClassMap()

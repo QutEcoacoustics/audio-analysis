@@ -114,7 +114,7 @@
                 if (this.SegmentDurationMinimum >= this.SegmentDuration)
                 {
                     throw new InvalidDurationException(
-                        $"SegmentDurationMinimum {this.SegmentDurationMinimum} must be less than SegmentDuration {this.SegmentDuration}.");
+                        $"SegmentDurationMinimum {this.SegmentDurationMinimum} must be less than AnalysisIdealSegmentDuration {this.SegmentDuration}.");
                 }
 
                 // check that mix down to mono and a a channel haven't both been specified
@@ -145,12 +145,12 @@
             //create analysis settings using arguments
             AnalysisSettings settings = new AnalysisSettings()
             {
-                SegmentMaxDuration = TimeSpan.FromSeconds(arguments.SegmentDuration),
+                AnalysisMaxSegmentDuration = TimeSpan.FromSeconds(arguments.SegmentDuration),
                 SegmentMediaType = MediaTypes.GetMediaType(arguments.SegmentFileExtension),
-                SegmentMinDuration = TimeSpan.FromSeconds(arguments.SegmentDurationMinimum),
+                AnalysisMinSegmentDuration = TimeSpan.FromSeconds(arguments.SegmentDurationMinimum),
                 SegmentOverlapDuration = TimeSpan.FromSeconds(arguments.SegmentOverlap),
-                SegmentTargetSampleRate = arguments.SampleRate,
-                AnalysisInstanceTempDirectory = arguments.TemporaryFilesDir == null ? new DirectoryInfo(Path.GetTempPath()) : arguments.TemporaryFilesDir,
+                AnalysisTargetSampleRate = arguments.SampleRate,
+                SegmentTempDirectory = arguments.TemporaryFilesDir == null ? new DirectoryInfo(Path.GetTempPath()) : arguments.TemporaryFilesDir,
             };
 
             // create segments from file
@@ -215,8 +215,8 @@
                     settings.SegmentMediaType,
                     fileSegment.SegmentStartOffset.Value,
                     fileSegment.SegmentEndOffset.Value,
-                    settings.SegmentTargetSampleRate,
-                    settings.AnalysisInstanceTempDirectory,
+                    settings.AnalysisTargetSampleRate,
+                    settings.SegmentTempDirectory,
                     null,
                     mixDownToMono);
             LoggedConsole.WriteLine("Created segment {0} of {1}: {2}", itemNumber, itemCount, preparedFile.TargetFile.Name);

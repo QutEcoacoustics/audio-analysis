@@ -12,6 +12,7 @@ namespace Acoustics.Shared.Csv
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Drawing;
     using System.IO;
     using System.Linq;
@@ -32,7 +33,7 @@ namespace Acoustics.Shared.Csv
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private static readonly List<CsvClassMap> ClassMapsToRegister = new List<CsvClassMap>();
+        public static ReadOnlyCollection<CsvClassMap> ClassMapsToRegister { get; }
 
         static Csv()
         {
@@ -52,14 +53,20 @@ namespace Acoustics.Shared.Csv
                          .SelectMany(s => s.GetTypes())
                          .Where(type.IsAssignableFrom);
 
-            // initialise and store
+            // initialize and store
+            var classMaps = new List<CsvClassMap>(10);
             foreach (var classMapType in classMapTypes)
             {
                 var instance = classMapType.CreateInstance() as CsvClassMap;
-                ClassMapsToRegister.Add(instance);
+                classMaps.Add(instance);
             }
+
+            ClassMapsToRegister = new ReadOnlyCollection<CsvClassMap>(classMaps);
         }
 
+        /// <summary>
+        /// Registers CsvHelper type converters that can allow serialization of complex types.
+        /// </summary>
         public static void RegisterAnalysisProgramsTypeConverters()
         {
             // This is a manually maintained method
@@ -124,35 +131,54 @@ namespace Acoustics.Shared.Csv
             // using CSV Helper
             using (var stream = source.OpenText())
             {
-                try
+                return ReadFromCsv<T>(readerHook, stream);
+            }
+        }
+
+        public static IEnumerable<T> ReadFromCsv<T>(
+            string csvText, 
+            bool throwOnMissingField = true, 
+            Action<CsvReader> readerHook = null)
+        {
+            Contract.Requires(csvText != null);
+
+            // using CSV Helper
+            using (var stream = new StringReader(csvText))
+            {
+                return ReadFromCsv<T>(readerHook, stream);
+            }
+        }
+
+        private static IEnumerable<T> ReadFromCsv<T>(Action<CsvReader> readerHook, TextReader stream)
+        {
+            try
+            {
+                var configuration = DefaultConfiguration;
+                configuration.WillThrowOnMissingField = false;
+                var reader = new CsvReader(stream, configuration);
+
+                IEnumerable<T> results = reader.GetRecords<T>();
+
+                var readFromCsv = results.ToArray();
+
+                readerHook?.Invoke(reader);
+
+                return readFromCsv;
+            }
+            catch (CsvTypeConverterException ctce)
+            {
+                Log.Debug($"Error doing type conversion - dictionary contains {ctce.Data.Count} entries");
+
+                // The CsvHelper exception messages are particularly unhelpful... let us fix this
+                if (ctce.Data.Count > 0)
                 {
-                    var configuration = DefaultConfiguration;
-                    configuration.WillThrowOnMissingField = false;
-                    var reader = new CsvReader(stream, configuration);
+                    var parserData = ctce.Data.ToDictDebugString();
+                    var newMessage = ctce.Message + Environment.NewLine + parserData;
 
-                    IEnumerable<T> results = reader.GetRecords<T>();
-
-                    var readFromCsv = results.ToArray();
-
-                    readerHook?.Invoke(reader);
-                    
-                    return readFromCsv;
+                    throw new CsvTypeConverterException(newMessage, ctce);
                 }
-                catch (CsvTypeConverterException ctce)
-                {
-                    Log.Debug($"Error doing type conversion - dictionary contains {ctce.Data.Count} entries");
 
-                    // The CsvHelper exception messages are particularly unhelpful... let us fix this
-                    if (ctce.Data.Count > 0)
-                    {
-                        var parserData = ctce.Data.ToDictDebugString();
-                        var newMessage = ctce.Message + Environment.NewLine + parserData;
-
-                        throw new CsvTypeConverterException(newMessage, ctce);
-                    }
-
-                    throw;
-                }
+                throw;
             }
         }
 

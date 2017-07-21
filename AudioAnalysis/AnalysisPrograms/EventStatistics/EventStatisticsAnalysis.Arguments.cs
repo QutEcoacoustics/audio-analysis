@@ -25,7 +25,7 @@ namespace AnalysisPrograms.EventStatistics
             }
 
             [ArgDescription("The source event (annotations) file to operate on")]
-            [Production.ArgExistingFile()]
+            [Production.ArgExistingFile]
             [ArgPosition(1)]
             [ArgRequired]
             public new FileInfo Source { get; set; }

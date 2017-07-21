@@ -234,9 +234,9 @@ namespace AnalysisPrograms
             var acousticConfiguration = AcousticIndicesParsedConfiguration.FromConfigFile(
                 analysisSettings.Configuration,
                 analysisSettings.ConfigFile,
-                analysisSettings.SegmentMaxDuration.Value);
+                analysisSettings.AnalysisMaxSegmentDuration.Value);
 
-            analysisSettings.AnalyzerSpecificConfiguration = acousticConfiguration;
+            analysisSettings.AnalysisAnalyzerSpecificConfiguration = acousticConfiguration;
         }
 
         [Serializable]
@@ -332,11 +332,11 @@ namespace AnalysisPrograms
 
         public AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
-            var acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)analysisSettings.AnalyzerSpecificConfiguration;
+            var acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)analysisSettings.AnalysisAnalyzerSpecificConfiguration;
 
-            var audioFile = analysisSettings.AudioFile;
+            var audioFile = analysisSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
-            var outputDirectory = analysisSettings.AnalysisInstanceOutputDirectory;
+            var outputDirectory = analysisSettings.SegmentOutputDirectory;
 
             var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
             analysisResults.AnalysisIdentifier = this.Identifier;
@@ -345,7 +345,7 @@ namespace AnalysisPrograms
             IndexCalculateResult[] subsegmentResults = CalculateIndicesInSubsegments(
                 recording,
                 analysisSettings.SegmentStartOffset.Value,
-                analysisSettings.SegmentDuration.Value,
+                analysisSettings.AnalysisIdealSegmentDuration.Value,
                 acousticIndicesParsedConfiguration.IndexCalculationDuration,
                 acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
                 acousticIndicesParsedConfiguration.IndexPropertiesFile,
@@ -372,25 +372,25 @@ namespace AnalysisPrograms
                 }
             }
 
-            if (analysisSettings.SummaryIndicesFile != null)
+            if (analysisSettings.SegmentSummaryIndicesFile != null)
             {
-                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
-                analysisResults.SummaryIndicesFile = analysisSettings.SummaryIndicesFile;
+                this.WriteSummaryIndicesFile(analysisSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
+                analysisResults.SummaryIndicesFile = analysisSettings.SegmentSummaryIndicesFile;
             }
 
-            if (analysisSettings.SpectrumIndicesDirectory != null)
+            if (analysisSettings.SegmentSpectrumIndicesDirectory != null)
             {
                 analysisResults.SpectraIndicesFiles =
                     this.WriteSpectrumIndicesFilesCustom(
-                        analysisSettings.SpectrumIndicesDirectory,
-                        Path.GetFileNameWithoutExtension(analysisSettings.AudioFile.Name),
+                        analysisSettings.SegmentSpectrumIndicesDirectory,
+                        Path.GetFileNameWithoutExtension(analysisSettings.SegmentAudioFile.Name),
                         analysisResults.SpectralIndices);
             }
 
             // write the segment spectrogram (typically of one minute duration) to CSV
             // this is required if you want to produced zoomed spectrograms at a resolution greater than 0.2 seconds/pixel
             bool saveSonogramData = (bool?)analysisSettings.Configuration[AnalysisKeys.SaveSonogramData] ?? false;
-            if (saveSonogramData || analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
+            if (saveSonogramData || analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 var sonoConfig = new SonogramConfig(); // default values config
                 sonoConfig.SourceFName = recording.FilePath;
@@ -413,9 +413,9 @@ namespace AnalysisPrograms
                 // remove the DC row of the spectrogram
                 sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
 
-                if (analysisSettings.ImageFile != null)
+                if (analysisSettings.SegmentImageFile != null)
                 {
-                    string imagePath = Path.Combine(outputDirectory.FullName, analysisSettings.ImageFile.Name);
+                    string imagePath = Path.Combine(outputDirectory.FullName, analysisSettings.SegmentImageFile.Name);
 
                     // NOTE: hits (SPT in this case) is intentionally not supported
                     var image = DrawSonogram(sonogram, null, trackScores, tracks);
@@ -472,10 +472,10 @@ namespace AnalysisPrograms
 
         public void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, SummaryIndexBase[] indices, SpectralIndexBase[] spectralIndices, AnalysisResult2[] results)
         {
-            var acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)settings.AnalyzerSpecificConfiguration;
+            var acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)settings.AnalysisAnalyzerSpecificConfiguration;
 
             var sourceAudio = inputFileSegment.TargetFile;
-            var resultsDirectory = settings.AnalysisInstanceOutputDirectory;
+            var resultsDirectory = settings.SegmentOutputDirectory;
             bool tileOutput = acousticIndicesParsedConfiguration.TileOutput;
 
             int frameWidth = 512;
@@ -505,7 +505,7 @@ namespace AnalysisPrograms
                     IndexCalculationDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration,
                     BGNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
                     MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
-                    SegmentDuration = settings.SegmentDuration.Value,
+                    SegmentDuration = settings.AnalysisIdealSegmentDuration.Value,
                     BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
                     LongDurationSpectrogramConfig = ldSpectrogramConfig,
                 };
@@ -693,11 +693,11 @@ namespace AnalysisPrograms
 
         public AnalysisSettings DefaultSettings => new AnalysisSettings
         {
-            SegmentMaxDuration = TimeSpan.FromMinutes(1),
-            SegmentMinDuration = TimeSpan.FromSeconds(1),
+            AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
+            AnalysisMinSegmentDuration = TimeSpan.FromSeconds(1),
             SegmentMediaType = MediaTypes.MediaTypeWav,
             SegmentOverlapDuration = TimeSpan.Zero,
-            SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
+            AnalysisTargetSampleRate = AnalysisTemplate.ResampleRate,
         };
     }
 

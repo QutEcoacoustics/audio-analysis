@@ -274,13 +274,13 @@ namespace AnalysisPrograms.Recognizers.Base
 
             // Enable this if you want the Config file ResampleRate parameter to work.
             // Generally however the ResampleRate should remain at 22050Hz for all recognizers.
-            //analysisSettings.SegmentTargetSampleRate = (int) configuration[AnalysisKeys.ResampleRate];
+            //analysisSettings.AnalysisTargetSampleRate = (int) configuration[AnalysisKeys.ResampleRate];
 
             // get transform input audio file - if needed
             Log.Info("Querying source audio file");
             var audioUtilityRequest = new AudioUtilityRequest()
             {
-                TargetSampleRate = analysisSettings.SegmentTargetSampleRate,
+                TargetSampleRate = analysisSettings.AnalysisTargetSampleRate,
             };
             var preparedFile = AudioFilePreparer.PrepareFile(
                 arguments.Output,
@@ -289,14 +289,14 @@ namespace AnalysisPrograms.Recognizers.Base
                 audioUtilityRequest,
                 arguments.Output);
 
-            analysisSettings.AudioFile = preparedFile.TargetInfo.SourceFile;
+            analysisSettings.SegmentAudioFile = preparedFile.TargetInfo.SourceFile;
             analysisSettings.SampleRateOfOriginalAudioFile = preparedFile.SourceInfo.SampleRate;
             // we don't want segments, thus segment duration == total length of original file
-            analysisSettings.SegmentDuration = preparedFile.TargetInfo.Duration;
-            analysisSettings.SegmentMaxDuration = preparedFile.TargetInfo.Duration;
+            analysisSettings.AnalysisIdealSegmentDuration = preparedFile.TargetInfo.Duration;
+            analysisSettings.AnalysisMaxSegmentDuration = preparedFile.TargetInfo.Duration;
             analysisSettings.SegmentStartOffset = TimeSpan.Zero;
 
-            if (preparedFile.TargetInfo.SampleRate.Value != analysisSettings.SegmentTargetSampleRate)
+            if (preparedFile.TargetInfo.SampleRate.Value != analysisSettings.AnalysisTargetSampleRate)
             {
                 Log.Warn("Input audio sample rate does not match target sample rate");
             }
@@ -311,7 +311,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
             // run summarize code - output data can be written
             Log.Info("Running recognizer summary: " + analysisIdentifier);
-            var fileSegment = new FileSegment(analysisSettings.AudioFile, preparedFile.SourceInfo.SampleRate.Value, preparedFile.SourceInfo.Duration.Value);
+            var fileSegment = new FileSegment(analysisSettings.SegmentAudioFile, preparedFile.SourceInfo.SampleRate.Value, preparedFile.SourceInfo.Duration.Value);
             recognizer.SummariseResults(
                 analysisSettings,
                 fileSegment,
@@ -324,9 +324,9 @@ namespace AnalysisPrograms.Recognizers.Base
             // TODO: Michael, output anything else as you wish.
 
             Log.Debug("Clean up temporary files");
-            if (analysisSettings.SourceFile.FullName != analysisSettings.AudioFile.FullName)
+            if (analysisSettings.SourceFile.FullName != analysisSettings.SegmentAudioFile.FullName)
             {
-                analysisSettings.AudioFile.Delete();
+                analysisSettings.SegmentAudioFile.Delete();
             }
 
             int eventCount = results?.Events?.Length ?? 0;

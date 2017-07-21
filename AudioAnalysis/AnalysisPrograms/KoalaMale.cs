@@ -83,11 +83,11 @@ namespace AnalysisPrograms
             {
                 return new AnalysisSettings
                            {
-                               SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                               SegmentMinDuration = TimeSpan.FromSeconds(30),
+                               AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
+                               AnalysisMinSegmentDuration = TimeSpan.FromSeconds(30),
                                SegmentMediaType = MediaTypes.MediaTypeWav,
                                SegmentOverlapDuration = TimeSpan.Zero,
-                               SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
+                               AnalysisTargetSampleRate = AnalysisTemplate.ResampleRate,
                            };
             }
         }
@@ -385,7 +385,7 @@ namespace AnalysisPrograms
             TimeSpan duration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT
-            FileInfo tempF = analysisSettings.AudioFile;
+            FileInfo tempF = analysisSettings.SegmentAudioFile;
             if (duration == TimeSpan.Zero)
             {
                 // Process entire file
@@ -493,7 +493,7 @@ namespace AnalysisPrograms
 
         public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
-            FileInfo audioFile = analysisSettings.AudioFile;
+            FileInfo audioFile = analysisSettings.SegmentAudioFile;
 
             /* ###################################################################### */
             Dictionary<string, string> configuration = analysisSettings.Configuration;
@@ -511,13 +511,13 @@ namespace AnalysisPrograms
 
             analysisResults.Events = results.Events.ToArray();
 
-            if (analysisSettings.EventsFile != null)
+            if (analysisSettings.SegmentEventsFile != null)
             {
-                this.WriteEventsFile(analysisSettings.EventsFile, analysisResults.Events);
-                analysisResults.EventsFile = analysisSettings.EventsFile;
+                this.WriteEventsFile(analysisSettings.SegmentEventsFile, analysisResults.Events);
+                analysisResults.EventsFile = analysisSettings.SegmentEventsFile;
             }
 
-            if (analysisSettings.SummaryIndicesFile != null)
+            if (analysisSettings.SegmentSummaryIndicesFile != null)
             {
                 TimeSpan unitTime = TimeSpan.FromMinutes(1.0);
                 analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(
@@ -526,16 +526,16 @@ namespace AnalysisPrograms
                     analysisResults.SegmentAudioDuration,
                     0);
 
-                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
+                this.WriteSummaryIndicesFile(analysisSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
-            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
+            if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
-                string imagePath = analysisSettings.ImageFile.FullName;
+                string imagePath = analysisSettings.SegmentImageFile.FullName;
                 const double EventThreshold = 0.1;
                 Image image = DrawSonogram(sonogram, hits, scores, results.Events, EventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
-                analysisResults.ImageFile = analysisSettings.ImageFile;
+                analysisResults.ImageFile = analysisSettings.SegmentImageFile;
             }
 
             return analysisResults;

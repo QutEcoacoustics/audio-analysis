@@ -133,7 +133,7 @@ namespace AnalysisPrograms.Recognizers
                 {
                     ae.SpeciesName = speciesName;
                     ae.Profile = profileName;
-                    ae.SegmentDuration = recordingDuration;
+                    ae.AnalysisIdealSegmentDuration = recordingDuration;
                     ae.Name = abbreviatedSpeciesName;
                 });
 
@@ -173,7 +173,7 @@ namespace AnalysisPrograms.Recognizers
                 {
                     ae.SpeciesName = speciesName;
                     ae.Profile = femaleProfile;
-                    ae.SegmentDuration = recordingDuration;
+                    ae.AnalysisIdealSegmentDuration = recordingDuration;
                     ae.Name = abbreviatedSpeciesName;
                 });
 
