@@ -1,12 +1,38 @@
 ﻿namespace Acoustics.Test.Tools
 {
     using System;
+    using System.Reflection;
+    using Acoustics.Shared;
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
+    using Acoustics.Tools.Wav;
+    using EcoSounds.Mvc.Tests;
+    using log4net;
+    using log4net.Config;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
 
     [TestClass]
     public class AudioUtilityInfoTests
     {
+        [TestMethod]
+        [Timeout(3000)]
+        public void InfoCanTimeout()
+        {
+            var source = PathHelper.GetTestAudioFile("corrupt.wav");
+            AbstractAudioUtility util = (AbstractAudioUtility)TestHelper.GetAudioUtilitySox();
+
+            util.ProcessRunnerTimeout = TimeSpan.FromMilliseconds(300);
+            util.ProcessRunnerMaxRetries = 0;
+
+            TestHelper.ExceptionMatches<ProcessRunner.ProcessMaximumRetriesException>(
+                () =>
+                {
+                    var info = util.Info(source);
+                },
+                "Process had not already terminated after timeout.");
+        }
+
         [DataTestMethod]
         [DataRow("06Sibylla.asf")]
         [DataRow("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3")]
