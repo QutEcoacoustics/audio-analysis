@@ -171,7 +171,7 @@
         /// <param name="normaliseDCT">boolean - default = false</param>
         /// <param name="minOscilRate">lower bound on oscillation rate</param>
         /// <param name="maxOscilRate">upper bound on oscillation rate</param>
-        /// <param name="maxOscilScore">this is obtained from score on training data. Used to normalise osc scores</param>
+        /// <param name="maxOscilScore">this is obtained from score on training data. Used to NormaliseMatrixValues osc scores</param>
         /// <returns></returns>
         public static Tuple<double[], AudioRecording, double[], double[]>
          FrogRibbitRecognizer(AudioRecording recording, string filterName, int midBandFreq, double windowDuration = 5.0, double windowOverlap = 0.5,
@@ -220,7 +220,7 @@
 
             //vii: GET OSCILLATION SCORE AND NORMALIZE
             double[] rawOscillations = Oscillations2010.DetectOscillationsInScoreArray(dBarray, dctDuration, framesPerSecond, dctThreshold, normaliseDCT, minOscilRate, maxOscilRate);
-            //normalise oscillation scores wrt scores obtained on a training.
+            //NormaliseMatrixValues oscillation scores wrt scores obtained on a training.
             //double maxOscillationScore = rawOscillations[DataTools.GetMaxIndex(rawOscillations)];
             //LoggedConsole.WriteLine("maxOscillationScore=" + maxOscillationScore);
             var oscillations = new double[dBarray.Length];

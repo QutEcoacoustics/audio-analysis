@@ -182,6 +182,7 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.ValueTuple, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq">
@@ -212,6 +213,8 @@
     <Compile Include="Audio2Sonogram.cs" />
     <Compile Include="AudioCutter.cs" />
     <Compile Include="AudioFileCheck.cs" />
+    <Compile Include="Draw\Zooming\DrawZoomingSpectrograms.Arguments.cs" />
+    <Compile Include="Draw\Zooming\DrawZoomingSpectrograms.Dev.cs" />
     <Compile Include="LitoriaFallax_OBSOLETE.cs" />
     <Compile Include="LimnodynastesConvex_OBSOLETE.cs" />
     <Compile Include="CanetoadOld_OBSOLETE.cs" />
@@ -219,7 +222,7 @@
     <Compile Include="ChannelIntegrity.cs" />
     <Compile Include="DrawEasyImage.cs" />
     <Compile Include="ConcatenateIndexFiles.cs" />
-    <Compile Include="DrawZoomingSpectrograms.cs" />
+    <Compile Include="Draw\Zooming\DrawZoomingSpectrograms.cs" />
     <Compile Include="HerveGlotinCollaboration.cs" />
     <Compile Include="HighResolutionAcousticIndices.cs" />
     <Compile Include="Recognizers\Base\IEventRecognizer.cs" />
@@ -279,7 +282,6 @@
     <Compile Include="LSKiwiHelper.cs" />
     <Compile Include="LSKiwiROC.cs" />
     <Compile Include="MultiAnalyser_OBSOLETE.cs" />
-    <Compile Include="netfx\System\StringFormatWith.cs" />
     <Compile Include="OscillationRecogniser.cs">
       <SubType>Code</SubType>
     </Compile>

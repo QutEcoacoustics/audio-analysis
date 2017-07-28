@@ -505,6 +505,7 @@ namespace AnalysisPrograms
                     IndexCalculationDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration,
                     BGNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
                     MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
+                    MaximumSegmentDuration = settings.SegmentMaxDuration,
                     BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
                     LongDurationSpectrogramConfig = ldSpectrogramConfig,
                 };

@@ -307,7 +307,7 @@
             //// signal plus noise
             //signal = DataTools.AddVectors(signal, rv);
             //// normalising seems to make little difference to the result
-            //signal = DataTools.normalise(signal);
+            //signal = DataTools.NormaliseMatrixValues(signal);
 
             int maxScale = 6;
 

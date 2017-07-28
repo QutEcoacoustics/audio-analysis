@@ -10,15 +10,9 @@
 namespace AudioAnalysisTools
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Text;
-
     using Acoustics.Shared;
-
     using DSP;
-
     using TowseyLibrary;
 
     /// <summary>
@@ -65,7 +59,6 @@ namespace AudioAnalysisTools
         public struct Mfcc
         {
             public const string Key_WindowFunction   = "WINDOW_FUNCTION";
-            //public const string Key_HammingWindow    = "HAMMING";
             public const string Key_NPointSmoothFFT = "N_POINT_SMOOTH_FFT";
             public const string Key_NyquistFrequency = "NYQUIST_FREQ";
             public const string Key_StartTime        = "START_TIME";
@@ -79,7 +72,6 @@ namespace AudioAnalysisTools
             public const string Key_IncludeDoubleDelta = "INCLUDE_DOUBLEDELTA";
             public const string Key_DeltaT           = "DELTA_T";
         }
-
 
         public struct EndpointDetection
         {
@@ -112,21 +104,18 @@ namespace AudioAnalysisTools
         {
             public const string Key_AddGrid = "ADDGRID";
         }
-
     }
-
 
     [Serializable]
     public class MfccConfiguration
-	{
-        #region Properties
+    {
+       #region Properties
         public int FilterbankCount { get; set; }
         public bool DoMelScale { get; set; }
         public int CcCount { get; set; }     //number of cepstral coefficients
         public bool IncludeDelta { get; set; }
         public bool IncludeDoubleDelta { get; set; }
         #endregion
-
         public MfccConfiguration(ConfigDictionary config)
         {
             this.FilterbankCount = config.GetInt(ConfigKeys.Mfcc.Key_FilterbankCount);
@@ -136,50 +125,47 @@ namespace AudioAnalysisTools
             this.IncludeDoubleDelta = config.GetBoolean(ConfigKeys.Mfcc.Key_IncludeDoubleDelta);
         }
 
-		public void Save(TextWriter writer)
-		{
+        public void Save(TextWriter writer)
+        {
             Json.Serialise(writer, this);
-		}
+        }
     }
-
-
 
     /// <summary>
     /// SETS PARAMETERS CONCERNING ENERGY, END-POINT DETECTION AND SEGMENTATION
     /// </summary>
     [Serializable]
     public static class EndpointDetectionConfiguration
-	{
+    {
         public static void SetDefaultSegmentationConfig()
         {
-		    K1Threshold = 1.0;   // dB threshold for recognition of vocalisations
-		    K2Threshold = 1.0;	 // dB threshold for recognition of vocalisations
-		    K1K2Latency = 0.05;  // Seconds delay between signal reaching k1 and k2 thresholds
-		    VocalGap    = 0.1;	 // Seconds gap required to separate vocalisations
-		    MinPulseDuration = 0.05;	// Minimum length of energy pulse - do not use this
+            K1Threshold = 1.0;   // dB threshold for recognition of vocalisations
+            K2Threshold = 1.0;   // dB threshold for recognition of vocalisations
+            K1K2Latency = 0.05;  // Seconds delay between signal reaching k1 and k2 thresholds
+            VocalGap = 0.1;   // Seconds gap required to separate vocalisations
+            MinPulseDuration = 0.05;    // Minimum length of energy pulse - do not use this
         }
 
-		public static void SetConfig(ConfigDictionary config)
-		{
+        public static void SetConfig(ConfigDictionary config)
+        {
             K1Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold); //dB threshold for recognition of vocalisations
             K2Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold); //dB threshold for recognition of vocalisations
-            K1K2Latency = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1K2Latency);			  //seconds delay between signal reaching k1 and k2 thresholds
-            VocalGap    = (double?)config.GetDouble(ConfigKeys.EndpointDetection.Key_VocalGap) ?? 0.1; //seconds gap required to separate vocalisations
+            K1K2Latency = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1K2Latency);             //seconds delay between signal reaching k1 and k2 thresholds
+            VocalGap = (double?)config.GetDouble(ConfigKeys.EndpointDetection.Key_VocalGap) ?? 0.1; //seconds gap required to separate vocalisations
             MinPulseDuration = config.GetDouble(ConfigKeys.EndpointDetection.Key_MinVocalDuration);   //minimum length of energy pulse - do not use this -
         }
 
-		public static void Save(TextWriter writer)
-		{
+        public static void Save(TextWriter writer)
+        {
             writer.WriteLine("#**************** INFO ABOUT SEGMENTATION");
             writer.WriteConfigValue(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold, K1Threshold);
             writer.WriteConfigValue(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold, K2Threshold);
-			//writer.WriteConfigValue("K1_K2_LATENCY", K1K2Latency);
+            //writer.WriteConfigValue("K1_K2_LATENCY", K1K2Latency);
             writer.WriteConfigValue(ConfigKeys.EndpointDetection.Key_VocalGap, VocalGap);
-			//writer.WriteConfigValue("MIN_VOCAL_DURATION", MinPulseDuration);
+            //writer.WriteConfigValue("MIN_VOCAL_DURATION", MinPulseDuration);
             writer.WriteLine("#");
             writer.Flush();
-		}
-
+        }
 
         /// <summary>
         /// WARNING: calculation of k1 and k2 is faulty.
@@ -201,33 +187,24 @@ namespace AudioAnalysisTools
         /// K1_K2_LATENCY=0.05
         /// VOCAL_DELAY=0.2
         /// </summary>
-        /// <param name="k1"></param>
-        /// <param name="k2"></param>
-        /// <param name="k1_k2delay"></param>
-        /// <param name="syllableDelay"></param>
-        /// <param name="minPulse"></param>
-        /// <returns></returns>
         public static int[] DetermineVocalisationEndpoints(double[] dbArray, double frameStep)
         {
-            var k1_k2delay = (int)(K1K2Latency / frameStep);    //=5  frames delay between signal reaching k1 and k2 thresholds
+            var k1k2Delay = (int)(K1K2Latency / frameStep);    //=5  frames delay between signal reaching k1 and k2 thresholds
             var frameGap = (int)(VocalGap / frameStep);  //=10 frames delay required to separate vocalisations
-            var minPulse   = (int)(MinPulseDuration / frameStep); //=2  frames is min vocal length
-            //LoggedConsole.WriteLine("k1_k2delay=" + k1_k2delay + "  syllableGap=" + syllableGap + "  minPulse=" + minPulse);
-            return MFCCStuff.VocalizationDetection(dbArray, K1Threshold, K2Threshold, k1_k2delay, frameGap, minPulse, null);
+            var minPulse = (int)(MinPulseDuration / frameStep); //=2  frames is min vocal length
+            return MFCCStuff.VocalizationDetection(dbArray, K1Threshold, K2Threshold, k1k2Delay, frameGap, minPulse, null);
         }
 
-
-
-		#region Six Static Properties
         //these should be the same for all threads and processes
         //these k1 and k2 thresholds are dB above the base line minimum value.
-		public static double K1Threshold { get; set; }	// dB threshold for recognition of vocalisations
-		public static double K2Threshold { get; set; }	// dB threshold for recognition of vocalisations
-		public static double K1K2Latency { get; set; }	// Seconds delay between signal reaching k1 and k2 thresholds
-		public static double VocalGap    { get; set; }	// Seconds gap required to separate vocalisations
-		public static double MinPulseDuration { get; set; }		// Minimum length of energy pulse - do not use this
-		#endregion
-	}
+        public static double K1Threshold { get; set; } // dB threshold for recognition of vocalisations
 
+        public static double K2Threshold { get; set; } // dB threshold for recognition of vocalisations
 
+        public static double K1K2Latency { get; set; } // Seconds delay between signal reaching k1 and k2 thresholds
+
+        public static double VocalGap { get; set; } // Seconds gap required to separate vocalisations
+
+        public static double MinPulseDuration { get; set; } // Minimum length of energy pulse - do not use this
+    }
 }

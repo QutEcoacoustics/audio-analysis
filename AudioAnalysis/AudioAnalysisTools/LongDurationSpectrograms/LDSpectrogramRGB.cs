@@ -44,7 +44,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Reflection;
     using Acoustics.Shared;
     using AnalysisBase.ResultBases;
-    using AudioAnalysisTools.DSP;
+    using DSP;
     using Indices;
     using log4net;
     using StandardSpectrograms;
@@ -85,11 +85,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return DefaultKeys;
         }
 
+        // used to save all spectrograms as dictionary of matrices
+        // IMPORTANT: The matrices are stored as they would appear in the LD spectrogram image. i.e. rotated 90 degrees anti-clockwise.
+        public Dictionary<string, double[,]> SpectrogramMatrices = new Dictionary<string, double[,]>();
+
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
-        public string FileName { get; set; }
 
         /// <summary>
         /// Index properties - conatins user defined min and max values for index normalisation - required when drawing images.
@@ -187,12 +189,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     fst = FreqScaleType.Mel;
                     this.FreqScale = new FrequencyScale(fst);
                     throw new ArgumentException("Mel Scale is not yet implemented");
-                    break;
+
+                    //break;
                 case "Linear62Octaves7Tones31Nyquist11025":
                     fst = FreqScaleType.Linear62Octaves7Tones31Nyquist11025;
                     this.FreqScale = new FrequencyScale(fst);
                     throw new ArgumentException("Linear62Octaves7Tones31Nyquist11025 Scale is not yet implemented");
-                    break;
+
+                    //break;
                 case "Linear125Octaves6Tones30Nyquist11025":
                     fst = FreqScaleType.Linear125Octaves6Tones30Nyquist11025;
                     this.FreqScale = new FrequencyScale(fst);
@@ -201,7 +205,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     fst = FreqScaleType.Octaves24Nyquist32000;
                     this.FreqScale = new FrequencyScale(fst);
                     throw new ArgumentException("Octaves24Nyquist32000 Scale is not yet implemented");
-                    break;
+
+                    //break;
                 case "Linear125Octaves7Tones28Nyquist32000":
                     fst = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
                     this.FreqScale = new FrequencyScale(fst);
@@ -214,11 +219,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.ColorMap = colourMap;
         }
 
-        // used to save all spectrograms as dictionary of matrices
-        // IMPORTANT: The matrices are stored as they would appear in the LD spectrogram image. i.e. rotated 90 degrees anti-clockwise.
-        public Dictionary<string, double[,]> SpectrogramMatrices = new Dictionary<string, double[,]>();
-
         public string[] SpectrogramKeys { get; private set; }
+
+        public string FileName { get; set; }
 
         /// <summary>
         /// Gets or sets the date and time at which the current LDspectrogram starts
@@ -381,6 +384,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 return false;
             }
+
             return true;
         }
 
@@ -464,7 +468,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 {
                     min = this.IndexStats[key].Mode;
 
-                    // fix bug if signal is defective &= zero. We do not want ACI min ever set too low.
+                    // fix case where signal is defective &= zero. We do not want ACI min ever set too low.
                     if (key.Equals("ACI") && min < 0.3)
                     {
                         min = indexProperties.NormMin;
@@ -477,7 +481,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 }
             }
 
-            Log.Debug($"GetNormalisedSpectrogramMatrix(key=" + key + "): min bound=" + min + "      max bound=" + max); // check min, max values
+            Log.Debug("GetNormalisedSpectrogramMatrix(key=" + key + "): min bound=" + min + "      max bound=" + max); // check min, max values
             matrix = MatrixTools.NormaliseInZeroOne(matrix, min, max);
 
             // de-demphasize the background small values
@@ -499,10 +503,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName, string[] keys)
         {
-            for (int i = 0; i < keys.Length; i++)
+            foreach (string key in keys)
             {
-                string key = keys[i];
-
                 if (!this.SpectrogramMatrices.ContainsKey(key))
                 {
                     LoggedConsole.WriteErrorLine("\n\nWARNING: From method LDSpectrogram.DrawGreyScaleSpectrograms()");
@@ -600,7 +602,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             string[] rgbMap = colorMap.Split('-');
 
-            // normalise spectrogram values and de-emphasize the low background values
+            // NormaliseMatrixValues spectrogram values and de-emphasize the low background values
             var redMatrix = this.GetNormalisedSpectrogramMatrix(rgbMap[0]);
             var grnMatrix = this.GetNormalisedSpectrogramMatrix(rgbMap[1]);
             var bluMatrix = this.GetNormalisedSpectrogramMatrix(rgbMap[2]);
@@ -980,6 +982,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return image;
         }
 
+        /// <summary>
+        /// This method not currently called but might be useful in future
+        /// </summary>
         public double[] GetSummaryIndicesWeightedAtDistance(double[,] normalisedIndex1, double[,] normalisedIndex2, double[,] normalisedIndex3, int minuteInDay, int distanceInMeters)
         {
             double decayConstant = 20.0;
@@ -993,7 +998,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             indices3 = DataTools.reverseArray(indices3);
             indices3 = CalculateDecayedSpectralIndices(indices3, distanceInMeters, decayConstant);
 
-            // TODO COMBINE THE INDICES IN SOME WAY
             return indices1;
         }
 
@@ -1348,11 +1352,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="ldSpectrogramConfig">config for drawing FCSs</param>
         /// <param name="indexPropertiesConfigPath">The indices Config Path. </param>
         /// <param name="indexGenerationData">indexGenerationData</param>
+        /// <param name="basename">stem name of the original recording</param>
+        /// <param name="analysisType">will usually be "Towsey.Acoustic"</param>
         /// <param name="indexSpectrograms">Optional spectra to pass in. If specified the spectra will not be loaded from disk! </param>
+        /// <param name="summaryIndices">an array of summary index results</param>
         /// <param name="indexStatistics">Info about the distributions of the spectral statistics</param>
         /// <param name="siteDescription">Optionally specify details about the site where the audio was recorded.</param>
+        /// <param name="sunriseDataFile">This is only available for locations near Brisbane, Austalia.</param>
         /// <param name="segmentErrors">Note that these segment errors were derived from previous analysis of the summary indices.</param>
         /// <param name="imageChrome">If true, this method generates and returns separate chromeless images used for tiling website images.</param>
+        /// <param name="verbose">default is false</param>
         public static Tuple<Image, string>[] DrawSpectrogramsFromSpectralIndices(
             DirectoryInfo inputDirectory,
             DirectoryInfo outputDirectory,

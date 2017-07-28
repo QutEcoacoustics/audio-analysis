@@ -495,7 +495,7 @@ namespace AnalysisPrograms
 
             // remove the DC row of the spectrogram
             sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
-            //scores.Add(new Plot("Decibels", DataTools.normalise(dBArray), ActivityAndCover.DefaultActivityThresholdDb));
+            //scores.Add(new Plot("Decibels", DataTools.NormaliseMatrixValues(dBArray), ActivityAndCover.DefaultActivityThresholdDb));
             //scores.Add(new Plot("Active Frames", DataTools.Bool2Binary(activity.activeFrames), 0.0));
 
             // convert spectral peaks to frequency

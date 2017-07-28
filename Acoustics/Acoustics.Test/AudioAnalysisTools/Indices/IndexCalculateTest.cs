@@ -17,7 +17,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     // using TestHelpers;
 
     /// <summary>
-    /// Test methods for the various standard Sonograms or Spectrograms
     /// Notes on TESTS: (from Anthony in email @ 05/04/2017)
     /// (1) small tests are better
     /// (2) simpler tests are better
@@ -136,7 +135,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             var spectralIndices = results.SpectralIndexValues;
 
             // TEST the SPECTRAL INDICES
-            // After serialising the expected vector, comment the Binary.Serialise line and copy file to dir TestResources\Indices.
+            // After serialising the expected vector and writing to the resources directory, comment the Binary.Serialise line.
 
             // ACI
             var expectedSpectrumFile = new FileInfo(resourcesDir + "\\ACI.bin");
@@ -283,12 +282,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             int sampleRate = 64000;
             double duration = 120; // signal duration in seconds
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
-            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics);
-
-            // NOTE: writing the WAV file noe works, but it seems it is not necessary to write a file at all! This test
-            // passes fine without writing a file!
-            //var generatedFile = this.outputDirectory.CombineFile("generated_high_sample_rate.wav");
-            //WavWriter.WriteWavFileViaFfmpeg(generatedFile, recording.WavReader);
+            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics, "sin");
 
             // cut out one minute from 30 - 90 seconds and incorporate into AudioRecording
             int startSample = sampleRate * 30; // start two minutes into recording
@@ -323,6 +317,11 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             var spectralIndices = results.SpectralIndexValues;
 
+            // draw the output image of all spectral indices
+            var outputImagePath1 = Path.Combine(this.outputDirectory.FullName, "SpectralIndices_Octave.png");
+            var image = SpectralIndexValues.CreateImageOfSpectralIndices(spectralIndices);
+            image.Save(outputImagePath1);
+
             // TEST the BGN SPECTRAL INDEX
             Assert.AreEqual(256, spectralIndices.BGN.Length);
 
@@ -336,10 +335,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             //Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, spectralIndices.CVR);
-
-            var outputImagePath1 = Path.Combine(this.outputDirectory.FullName, "SpectralIndices_Octave.png");
-            var image = SpectralIndexValues.CreateImageOfSpectralIndices(spectralIndices);
-            image.Save(outputImagePath1);
         }
     }
 }

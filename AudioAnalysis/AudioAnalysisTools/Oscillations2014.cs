@@ -427,7 +427,7 @@ namespace AudioAnalysisTools
         /// </summary>
         public static double[,] GetXcorrByTimeMatrix(double[] signal, int sampleLength)
         {
-            // normalise freq bin values to z-score. This is required else get spurious results
+            // NormaliseMatrixValues freq bin values to z-score. This is required else get spurious results
             signal = DataTools.Vector2Zscores(signal);
 
             int sampleCount = signal.Length / sampleLength;
@@ -587,7 +587,7 @@ namespace AudioAnalysisTools
 
             for (int i = 0; i < oscillationsVector.Length; i++)
             {
-                // normalise by sample count
+                // NormaliseMatrixValues by sample count
                 //oscillationsVector[i] /= sampleCount;
                 // do log transform
                 if (oscillationsVector[i] < 1.0)
@@ -672,7 +672,7 @@ namespace AudioAnalysisTools
 
             for (int i = 0; i < oscillationsVector.Length; i++)
             {
-                // normalise by sample count
+                // NormaliseMatrixValues by sample count
                 oscillationsVector[i] /= sampleCount;
 
                 // do log transform
@@ -750,7 +750,7 @@ namespace AudioAnalysisTools
 
             for (int i = 0; i < oscillationsVector.Length; i++)
             {
-                // normalise by sample count
+                // NormaliseMatrixValues by sample count
                 oscillationsVector[i] /= sampleCount;
 
                 // do log transform
@@ -827,7 +827,7 @@ namespace AudioAnalysisTools
 
             for (int i = 0; i < oscillationsVector.Length; i++)
             {
-                // normalise by sample count
+                // NormaliseMatrixValues by sample count
                 //oscillationsVector[i] /= sampleCount;
                 // do log transform
                 if (oscillationsVector[i] < 1.0)
@@ -863,7 +863,7 @@ namespace AudioAnalysisTools
 
             dctCoeff = DataTools.normalise2UnitLength(dctCoeff);
 
-            //dct = DataTools.normalise(dctCoeff); //another option to normalise
+            //dct = DataTools.NormaliseMatrixValues(dctCoeff); //another option to NormaliseMatrixValues
             int indexOfMaxValue = DataTools.GetMaxIndex(dctCoeff);
 
             //recalculate DCT duration in seconds

@@ -89,7 +89,7 @@ namespace AudioAnalysisTools
         public double[] DecibelsNormalised { get; set; }
 
         /// <summary>
-        /// Gets or sets decibel reference with which to normalise the dB values for MFCCs
+        /// Gets or sets decibel reference with which to NormaliseMatrixValues the dB values for MFCCs
         /// </summary>
         public double DecibelReference { get; protected set; }
 
@@ -157,19 +157,24 @@ namespace AudioAnalysisTools
             this.Configuration.WindowPower = fftdata.WindowPower;
             this.FrameCount = fftdata.FrameCount;
             this.DecibelsPerFrame = fftdata.FrameDecibels;
+
+            //init normalised signal energy array but do nothing with it. This has to be done from outside
+            this.DecibelsNormalised = new double[this.FrameCount];
             this.Data = fftdata.AmplitudeSpectrogram;
 
             // ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
             // currently DoSnr = true by default
             if (config.DoSnr)
             {
-                if (fftdata.FractionOfHighEnergyFrames > SNR.FRACTIONAL_BOUND_FOR_MODE)
+                // If the FractionOfHighEnergyFrames PRIOR to noise removal exceeds SNR.FractionalBoundForMode,
+                // then Lamel's noise removal algorithm may not work well.
+                if (fftdata.FractionOfHighEnergyFrames > SNR.FractionalBoundForMode)
                 {
                     Log.WriteIfVerbose("\nWARNING ##############");
                     Log.WriteIfVerbose(
                         $"\t################### BaseSonogram(): This is a high energy recording. Percent of high energy frames = {0:f0} > {1:f0}%",
                         fftdata.FractionOfHighEnergyFrames * 100,
-                        SNR.FRACTIONAL_BOUND_FOR_MODE * 100);
+                        SNR.FractionalBoundForMode * 100);
                     Log.WriteIfVerbose("\t################### Noise reduction algorithm may not work well in this instance!\n");
                 }
 
@@ -238,7 +243,7 @@ namespace AudioAnalysisTools
 
             //RECALCULATE DecibelsNormalised and dB REFERENCE LEVEL - need for MFCCs
             this.DecibelsInSubband = SnrSubband.Decibels;
-            this.DecibelReference = SnrSubband.MaxReference_dBWrtNoise;
+            this.DecibelReference = SnrSubband.MaxReferenceDecibelsWrtNoise;
             this.DecibelsNormalised = SnrSubband.NormaliseDecibelArray_ZeroOne(this.DecibelReference);
 
             //RECALCULATE ENDPOINTS OF VOCALISATIONS
@@ -392,7 +397,7 @@ namespace AudioAnalysisTools
                 // over all freq bins
                 for (int y = 0; y < data.GetLength(1); y++)
                 {
-                    // normalise and bound the value - use min bound, max and 255 image intensity range
+                    // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                     double value = (data[maxId, y] - min) / range;
                     int c = 255 - (int)Math.Floor(255.0 * value); //original version
                     if (c < 0)
@@ -475,7 +480,7 @@ namespace AudioAnalysisTools
             {
                 for (int t = 0; t < width; t++)
                 {
-                    // normalise and bound the value - use 0-255 image intensity range
+                    // NormaliseMatrixValues and bound the value - use 0-255 image intensity range
                     double value = (matrix[t, f] - min) / range;
                     int c = 255 - (int)Math.Floor(255.0 * value); //original version
                     if (c < 0)
@@ -545,7 +550,7 @@ namespace AudioAnalysisTools
                     // for all pixels in line
                     for (int x = 0; x < width; x++)
                     {
-                        // normalise and bound the value - use min bound, max and 255 image intensity range
+                        // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                         double value = (data[x, y] - min) / (double)range;
                         int c = 255 - (int)Math.Floor(255.0 * value); //original version
                         if (c < 0)
@@ -600,7 +605,7 @@ namespace AudioAnalysisTools
                     // for pixels in the line
                     for (int x = 0; x < width; x++)
                     {
-                        // normalise and bound the value - use min bound, max and 255 image intensity range
+                        // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                         double value = (data[x, y] - min) / range;
                         int c = 255 - (int)Math.Floor(255.0 * value); //original version
                         if (c < 0)

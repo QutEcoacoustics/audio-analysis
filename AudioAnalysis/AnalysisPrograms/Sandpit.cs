@@ -12,9 +12,9 @@ namespace AnalysisPrograms
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+    using AnalyseLongRecordings;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.EventStatistics;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -66,7 +66,8 @@ namespace AnalysisPrograms
                 }
 
                 var rowsOfCsvFile = Csv.ReadFromCsv<SummaryIndexValues>(file, throwOnMissingField: false);
-                //summaryIndices.AddRange(rowsOfCsvFile);
+
+                // summaryIndices.AddRange(rowsOfCsvFile);
 
                 // track the row counts
                 int partialRowCount = rowsOfCsvFile.Count();
@@ -95,7 +96,80 @@ namespace AnalysisPrograms
                 // SpectralClustering.TESTMETHOD_SpectralClustering();
                 // DspFilters.TestMethod_GenerateSignal1();
                 // DspFilters.TestMethod_GenerateSignal2();
-                EventStatsticsCalculate.TestCalculateEventStatistics();
+                // EventStatsticsCalculate.TestCalculateEventStatistics();
+            }
+
+            if (false)
+            {
+                // Unit test of AnalyseLongRecording()
+                int sampleRate = 22050;
+                double duration = 420; // signal duration in seconds = 7 minutes
+                int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
+                var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics, "cosine");
+                var outputDirectory = new DirectoryInfo(@"C:\SensorNetworks\SoftwareTests\TestLongDurationRecordings");
+                var recordingPath = outputDirectory.CombineFile("TemporaryRecording.wav");
+                WavWriter.WriteWavFileViaFfmpeg(recordingPath, recording.WavReader);
+                var configPath = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml");
+
+                // draw the signal as spectrogram just for debugging purposes
+                /*
+                var fst = FreqScaleType.Linear;
+                var freqScale = new FrequencyScale(fst);
+                var sonoConfig = new SonogramConfig
+                {
+                    WindowSize = 512,
+                    WindowOverlap = 0.0,
+                    SourceFName = recording.BaseName,
+                    NoiseReductionType = NoiseReductionType.Standard,
+                    NoiseReductionParameter = 2.0,
+                };
+                var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+                var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM", freqScale.GridLineLocations);
+                var outputImagePath = outputDirectory.CombineFile("Signal1_LinearFreqScale.png");
+                image.Save(outputImagePath.FullName, ImageFormat.Png);
+                */
+
+                var argumentsForAlr = new AnalyseLongRecording.Arguments
+                {
+                    Source = recordingPath,
+                    Config = configPath,
+                    Output = outputDirectory,
+                    MixDownToMono = true,
+                };
+
+                AnalyseLongRecording.Execute(argumentsForAlr);
+                var resultsDirectory = outputDirectory.Combine("Towsey.Acoustic");
+                var listOfFiles = resultsDirectory.EnumerateFiles();
+                int count = listOfFiles.Count();
+                var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
+                var jsonCount = listOfFiles.Count(f => f.Name.EndsWith(".json"));
+                var pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
+
+                var twoMapsImagePath = resultsDirectory.CombineFile("TemporaryRecording__2Maps.png");
+                var twoMapsImage = ImageTools.ReadImage2Bitmap(twoMapsImagePath.FullName);
+
+                // image is 7 * 652
+                int width = twoMapsImage.Width;
+                int height = twoMapsImage.Height;
+
+                // test integrity of BGN file
+                var bgnFile = resultsDirectory.CombineFile("TemporaryRecording__Towsey.Acoustic.BGN.csv");
+                var bgnFileSize = bgnFile.Length;
+
+                // cannot get following line or several variants to work, so resort to the subsequent four lines
+                //var bgnArray = Csv.ReadMatrixFromCsv<string[]>(bgnFile);
+                var lines = FileTools.ReadTextFile(bgnFile.FullName);
+                var lineCount = lines.Count;
+                var secondLine = lines[1].Split(',');
+                var subarray = DataTools.Subarray(secondLine, 1, secondLine.Length - 2);
+                var array = DataTools.ConvertStringArrayToDoubles(subarray);
+                var columnCount = array.Length;
+
+                // draw array just to check peaks are in correct places.
+                var normalisedIndex = DataTools.normalise(array);
+                var image2 = GraphsAndCharts.DrawGraph("LD BGN SPECTRUM", normalisedIndex, 100);
+                var ldsBgnSpectrumFile = outputDirectory.CombineFile("Spectrum2.png");
+                image2.Save(ldsBgnSpectrumFile.FullName);
             }
 
             if (false)
@@ -128,12 +202,12 @@ namespace AnalysisPrograms
                 ConcatenateIndexFiles.ConcatenateAcousticEventFiles(dataDirs, pattern, outputDirectory, opFileStem);
             }
 
-            // experiments with Mitchell-Aide ARBIMON segmentation algorithm
-            // Three steps: (1) Flattening spectrogram by subtracting the median bin value from each freq bin.
-            //              (2) Recalculate the spectrogram using local range. Trim off the 5 percentiles.
-            //              (3) Set a global threshold.
             if (false)
             {
+                // experiments with Mitchell-Aide ARBIMON segmentation algorithm
+                // Three steps: (1) Flattening spectrogram by subtracting the median bin value from each freq bin.
+                //              (2) Recalculate the spectrogram using local range. Trim off the 5 percentiles.
+                //              (3) Set a global threshold.
                 var outputPath = @"G:\SensorNetworks\Output\temp\AEDexperiments";
                 var outputDirectory = new DirectoryInfo(outputPath);
                 string recordingPath = @"G:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
@@ -177,11 +251,13 @@ namespace AnalysisPrograms
                     //cluster events
                     var clusters = AcousticEvent.ClusterEvents(events);
                     AcousticEvent.AssignClusterIds(clusters);
+
                     // see line 415 of AcousticEvent.cs for drawing the cluster ID into the sonogram image.
 
                     var image = Aed.DrawSonogram(sonogram, events);
                     imageList.Add(image);
                 }
+
                 var compositeImage = ImageTools.CombineImagesVertically(imageList);
                 var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, "AedExperiment_ThresholdStack", "png");
                 compositeImage.Save(debugPath);
@@ -192,9 +268,9 @@ namespace AnalysisPrograms
                 LDSpectrogramClusters.ExtractSOMClusters2();
             }
 
-            // // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
             if (false)
             {
+                // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
                 LDSpectrogramClusters.ExtractSOMClusters2();
             }
 
@@ -203,33 +279,36 @@ namespace AnalysisPrograms
                 CubeHelix.DrawTestImage();
             }
 
-            if (false)  // construct 3Dimage of audio
+            if (false)
             {
+                // construct 3Dimage of audio
                 //TowseyLibrary.Matrix3D.TestMatrix3dClass();
                 LdSpectrogram3D.Main(null);
             }
 
-            if (false)  // call SURF image Feature extraction
+            if (false)
             {
+                // call SURF image Feature extraction
                 //SURFFeatures.SURF_TEST();
                 SURFAnalysis.Main(null);
             }
 
-            if (false)  // do test of SNR calculation
-            {
-                //Audio2InputForConvCNN.Main(null);
-                Audio2InputForConvCNN.ProcessMeriemsDataset();
-                //SNR.Calculate_SNR_ofXueyans_data();
-            }
-
-            // // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
             if (false)
             {
+                // do test of SNR calculation
+                //Audio2InputForConvCNN.Main(null);
+                Audio2InputForConvCNN.ProcessMeriemsDataset();
+            }
+
+            if (false)
+            {
+                // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
                 ChannelIntegrity.Execute(null);
             }
 
-            if (false)  // do test of new moving average method
+            if (false)
             {
+                // do test of new moving average method
                 DataTools.TEST_FilterMovingAverage();
             }
 
@@ -244,35 +323,36 @@ namespace AnalysisPrograms
                 HoughTransform.Test2HoughTransform();
             }
 
-            // used to test structure tensor code.
             if (false)
             {
+                // used to test structure tensor code.
                 StructureTensor.Test1StructureTensor();
                 StructureTensor.Test2StructureTensor();
             }
 
-            // used to caluclate eigen values and singular valuse
             if (false)
             {
+                // used to caluclate eigen values and singular valuse
                 SvdAndPca.TestEigenValues();
             }
 
-            // test examples of wavelets
             if (false)
             {
+                // test examples of wavelets
                 // WaveletPacketDecomposition.ExampleOfWavelets_1();
                 WaveletTransformContinuous.ExampleOfWavelets_1();
             }
 
-            // do 2D-FFT of an image.
             if (false)
             {
+                // do 2D-FFT of an image.
                 FFT2D.TestFFT2D();
             }
 
-            // quickie to calculate entropy of some matrices - used for Yvonne acoustic transition matrices
             if (false)
             {
+                // quickie to calculate entropy of some matrices - used for Yvonne acoustic transition matrices
+
                 string dir = @"H:\Documents\SensorNetworks\MyPapers\2016_EcoAcousticCongress_Abstract\TransitionMatrices";
                 string filename = @"transition_matrix_BYR4_16Oct.csv";
                 //string filename = @"transition_matrix_SE_13Oct.csv";
@@ -294,9 +374,10 @@ namespace AnalysisPrograms
                 double entropy = DataTools.Entropy_normalised(v);
             } // end if (true)
 
-            // code to merge all files of acoustic indeces derived from 24 hours of recording,
             if (false)
             {
+                // code to merge all files of acoustic indeces derived from 24 hours of recording,
+
                 //LDSpectrogramStitching.ConcatenateSpectralIndexFiles1(); //DEPRACATED
                 LdSpectrogramStitching.ConcatenateFalsecolourSpectrograms();
                 //LDSpectrogramClusters.ExtractSOMClusters();

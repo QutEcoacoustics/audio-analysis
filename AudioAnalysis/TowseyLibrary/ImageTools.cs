@@ -130,7 +130,7 @@ namespace TowseyLibrary
         static double[,] Laplace3Kernal = { { 1.0, -2.0, 1.0 }, { -2.0, 4.0, -2.0 }, { 1.0, -2.0, 1.0 } };
         static double[,] Laplace4Kernal = { { -1.0, -1.0, -1.0 }, { -1.0, 9.0, -1.0 }, { -1.0, -1.0, -1.0 } }; //subtracts original
 
-        static double[,] grid2 =          { { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
+        static double[,] grid2 = { { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
                                             { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
 //                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
 //                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
@@ -141,7 +141,7 @@ namespace TowseyLibrary
         //static double[,] grid2Wave =      { { -0.5, 1.0, -1.5, 2.0, -1.5, 1.0, -0.5},
         //                                    { -0.5, 1.0, -1.5, 2.0, -1.5, 1.0, -0.5},
         //                                    { -0.5, 1.0, -1.5, 2.0, -1.5, 1.0, -0.5}};
-        static double[,] grid3 =          { { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
+        static double[,] grid3 = { { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
                                             { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
                                             { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
                                             { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
@@ -149,7 +149,7 @@ namespace TowseyLibrary
                                             { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
                                             { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5}, };
 
-        static double[,] grid4 =          { { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
+        static double[,] grid4 = { { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
                                             { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
                                             { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
                                             { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
@@ -157,29 +157,29 @@ namespace TowseyLibrary
                                             { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
                                             { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375}, };
 
-        static double[,] grid2Wave =      { { -0.5, -0.5, -0.5 },
-                                            {  1.0,  1.0,  1.0 },
+        static double[,] grid2Wave = { { -0.5, -0.5, -0.5 },
+                                            { 1.0,  1.0,  1.0 },
                                             { -1.5, -1.5, -1.5 },
-                                            {  2.0,  2.0,  2.0 },
+                                            { 2.0,  2.0,  2.0 },
                                             { -1.5, -1.5, -1.5 },
-                                            {  1.0,  1.0,  1.0 },
+                                            { 1.0,  1.0,  1.0 },
                                             { -0.5, -0.5, -0.5 }, };
 
-        static double[,] grid3Wave =      { { -0.5, -0.5, -0.5 },
-                                            {  1.0,  1.0,  1.0 },
+        static double[,] grid3Wave = { { -0.5, -0.5, -0.5 },
+                                            { 1.0,  1.0,  1.0 },
                                             { -0.5, -0.5, -0.5 },
                                             { -1.0, -1.0, -1.0 },
-                                            {  2.0,  2.0,  2.0 },
+                                            { 2.0,  2.0,  2.0 },
                                             { -1.0, -1.0, -1.0 },
                                             { -0.5, -0.5, -0.5 },
-                                            {  1.0,  1.0,  1.0 },
+                                            { 1.0,  1.0,  1.0 },
                                             { -0.5, -0.5, -0.5 }, };
 
-        public static double[,] SobelX =         { {-1.0,  0.0,  1.0},
+        public static double[,] SobelX = { {-1.0,  0.0,  1.0},
                                             {-2.0,  0.0,  -2.0},
                                             {-1.0,  0.0,  1.0}, };
 
-        public static double[,] SobelY =         { {1.0,  2.0,  1.0},
+        public static double[,] SobelY = { {1.0,  2.0,  1.0},
                                             {0.0,  0.0,  0.0},
                                             {-1.0, -2.0, -1.0}, };
 
@@ -616,7 +616,7 @@ namespace TowseyLibrary
         /// this method assumes that all the values in the passed matrix are between zero & one.
         /// Will truncate all values > 1 to 1.0.
         /// Spurious results will occur if have negative values or values > 1.
-        /// Should normalise matrix first if these conditions do not apply.
+        /// Should NormaliseMatrixValues matrix first if these conditions do not apply.
         /// </summary>
         /// <param name="M"></param>
         /// <param name="fractionalStretching"></param>
@@ -625,7 +625,7 @@ namespace TowseyLibrary
         {
             int rowCount = M.GetLength(0);
             int colCount = M.GetLength(1);
-            double[,] norm = MatrixTools.normalise(M);
+            double[,] norm = MatrixTools.NormaliseMatrixValues(M);
 
             int binCount = 100;
             double binWidth = 0.01;
@@ -1045,16 +1045,13 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
-        /// which includes C code.
+        /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing which includes C code.
         /// HOWEVER MODIFED TO PROCESS 5x5 matrix
         /// MATRIX must be square with odd number dimensions
         /// </summary>
-        /// <param name="m"></param>
-        /// <returns></returns>
-        public static void Sobel5X5RidgeDetection(double[,] m, out bool isRidge, out double magnitude, out double direction)
+        public static void Sobel5X5RidgeDetection(double[,] m, out bool isRidge, out double magnitude, out int direction)
         {
-            // We have four possible ridges with slopes 0, Pi/4, pi/2, 3Pi/4
+            // We have four possible ridge directions with slopes 0, Pi/4, pi/2, 3Pi/4
             // Slope categories are 0 to 3.
             // We calculate the ridge magnitude for each possible ridge direction using masks.
             // 0 = ridge direction = horizontal or slope = 0;
@@ -1064,11 +1061,12 @@ namespace TowseyLibrary
 
             double[] ridgeMagnitudes = Sobel5X5RidgeDetection(m);
 
-            if (ridgeMagnitudes == null) // something gone wrong
+            if (ridgeMagnitudes == null)
             {
+                // something has gone wrong
                 isRidge = false;
                 magnitude = 0.0;
-                direction = 0.0;
+                direction = 0;
                 return;
             }
 
@@ -1077,9 +1075,8 @@ namespace TowseyLibrary
             DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
 
             double threshold = 0; // dB
-            isRidge = (ridgeMagnitudes[indexMax] > threshold);
+            isRidge = ridgeMagnitudes[indexMax] > threshold;
             magnitude = diffMax / 2;
-            //direction = indexMax * Math.PI / (double)4;
             direction = indexMax;
         }
 
@@ -1095,35 +1092,45 @@ namespace TowseyLibrary
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix
+
+            // must be a square 5X5 matrix
+            if (rows != cols || rows != 5)
             {
                 return null;
             }
 
-            double[,] ridgeDir0Mask = { {-0.1, -0.1, -0.1, -0.1, -0.1},
-                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
-                                        { 0.4, 0.4, 0.4, 0.4, 0.4},
-                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
-                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
-                                      };
-            double[,] ridgeDir1Mask = { {-0.1, -0.1, -0.1, -0.1, 0.4},
-                                        {-0.1, -0.1, -0.1, 0.4, -0.1},
-                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
-                                        {-0.1, 0.4, -0.1, -0.1, -0.1},
-                                        { 0.4, -0.1, -0.1, -0.1, -0.1},
-                                      };
-            double[,] ridgeDir2Mask = { {-0.1, -0.1, 0.4, -0.1, -0.1},
-                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
-                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
-                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
-                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
-                                      };
-            double[,] ridgeDir3Mask = { { 0.4, -0.1, -0.1, -0.1, -0.1},
-                                        {-0.1, 0.4, -0.1, -0.1, -0.1},
-                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
-                                        {-0.1, -0.1, -0.1, 0.4, -0.1},
-                                        {-0.1, -0.1, -0.1, -0.1, 0.4},
-                                      };
+            double[,] ridgeDir0Mask =
+            {
+                { -0.1, -0.1, -0.1, -0.1, -0.1 },
+                { -0.1, -0.1, -0.1, -0.1, -0.1 },
+                { 0.4, 0.4, 0.4, 0.4, 0.4 },
+                { -0.1, -0.1, -0.1, -0.1, -0.1 },
+                { -0.1, -0.1, -0.1, -0.1, -0.1 },
+            };
+            double[,] ridgeDir1Mask =
+            {
+                { -0.1, -0.1, -0.1, -0.1, 0.4 },
+                { -0.1, -0.1, -0.1, 0.4, -0.1 },
+                { -0.1, -0.1, 0.4, -0.1, -0.1 },
+                { -0.1, 0.4, -0.1, -0.1, -0.1 },
+                { 0.4, -0.1, -0.1, -0.1, -0.1 },
+            };
+            double[,] ridgeDir2Mask =
+            {
+                { -0.1, -0.1, 0.4, -0.1, -0.1 },
+                { -0.1, -0.1, 0.4, -0.1, -0.1 },
+                { -0.1, -0.1, 0.4, -0.1, -0.1 },
+                { -0.1, -0.1, 0.4, -0.1, -0.1 },
+                { -0.1, -0.1, 0.4, -0.1, -0.1 },
+            };
+            double[,] ridgeDir3Mask =
+            {
+                { 0.4, -0.1, -0.1, -0.1, -0.1 },
+                { -0.1, 0.4, -0.1, -0.1, -0.1 },
+                { -0.1, -0.1, 0.4, -0.1, -0.1 },
+                { -0.1, -0.1, -0.1, 0.4, -0.1 },
+                { -0.1, -0.1, -0.1, -0.1, 0.4 },
+            };
 
             double[] ridgeMagnitudes = new double[4];
             ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
@@ -1139,9 +1146,7 @@ namespace TowseyLibrary
         /// DoG is used in image processing to find ridges.
         /// MATRIX must be square with odd number dimensions
         /// </summary>
-        /// <param name="m"></param>
-        /// <returns></returns>
-        public static void MexicanHat5X5RidgeDetection(double[,] m, out bool isRidge, out double magnitude, out double direction)
+        public static void MexicanHat5X5RidgeDetection(double[,] m, out bool isRidge, out double magnitude, out int direction)
         {
             // We have four possible ridges with slopes 0, Pi/4, pi/2, 3Pi/4
             // Slope categories are 0 to 3.
@@ -1149,37 +1154,39 @@ namespace TowseyLibrary
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix
+
+            // must be square 5X5 matrix
+            if (rows != cols || rows != 5)
             {
                 isRidge = false;
                 magnitude = 0.0;
-                direction = 0.0;
+                direction = 0;
                 return;
             }
 
-            double[,] ridgeDir0Mask = { {-0.2, -0.2, -0.2, -0.2, -0.2},
-                                        {-0.3, -0.3, -0.3, -0.3, -0.3},
-                                        { 1.0, 1.0, 1.0, 1.0, 1.0},
-                                        {-0.3, -0.3, -0.3, -0.3, -0.3},
-                                        {-0.2, -0.2, -0.2, -0.2, -0.2},
+            double[,] ridgeDir0Mask = { { -0.2, -0.2, -0.2, -0.2, -0.2 },
+                                        { -0.3, -0.3, -0.3, -0.3, -0.3 },
+                                        { 1.0, 1.0, 1.0, 1.0, 1.0 },
+                                        { -0.3, -0.3, -0.3, -0.3, -0.3 },
+                                        { -0.2, -0.2, -0.2, -0.2, -0.2 },
                                       };
-            double[,] ridgeDir1Mask = { {-0.1, -0.2, -0.2, -0.3, 0.8},
-                                        {-0.2, -0.2, -0.3, 1.0, -0.3},
-                                        {-0.2, -0.3, 1.0, -0.3, -0.2},
-                                        {-0.3, 1.0, -0.3, -0.2, -0.2},
-                                        { 0.8, -0.3, -0.2, -0.2, -0.1},
+            double[,] ridgeDir1Mask = { { -0.1, -0.2, -0.2, -0.3, 0.8 },
+                                        { -0.2, -0.2, -0.3, 1.0, -0.3 },
+                                        { -0.2, -0.3, 1.0, -0.3, -0.2 },
+                                        { -0.3, 1.0, -0.3, -0.2, -0.2 },
+                                        { 0.8, -0.3, -0.2, -0.2, -0.1 },
                                       };
-            double[,] ridgeDir2Mask = { {-0.2, -0.3, 1.0, -0.3, -0.2},
-                                        {-0.2, -0.3, 1.0, -0.3, -0.2},
-                                        {-0.2, -0.3, 1.0, -0.3, -0.2},
-                                        {-0.2, -0.3, 1.0, -0.3, -0.2},
-                                        {-0.2, -0.3, 1.0, -0.3, -0.2},
+            double[,] ridgeDir2Mask = { { -0.2, -0.3, 1.0, -0.3, -0.2 },
+                                        { -0.2, -0.3, 1.0, -0.3, -0.2 },
+                                        { -0.2, -0.3, 1.0, -0.3, -0.2 },
+                                        { -0.2, -0.3, 1.0, -0.3, -0.2 },
+                                        { -0.2, -0.3, 1.0, -0.3, -0.2 },
                                       };
-            double[,] ridgeDir3Mask = { { 0.8, -0.3, -0.2, -0.2, -0.1},
-                                        {-0.3, 1.0, -0.3, -0.2, -0.2},
-                                        {-0.2, -0.3, 1.0, -0.3, -0.2},
-                                        {-0.2, -0.2, -0.3, 1.0, -0.3},
-                                        {-0.1, -0.2, -0.2, -0.3, 0.8},
+            double[,] ridgeDir3Mask = { { 0.8, -0.3, -0.2, -0.2, -0.1 },
+                                        { -0.3, 1.0, -0.3, -0.2, -0.2 },
+                                        { -0.2, -0.3, 1.0, -0.3, -0.2 },
+                                        { -0.2, -0.2, -0.3, 1.0, -0.3 },
+                                        { -0.1, -0.2, -0.2, -0.3, 0.8 },
                                       };
 
             double[] ridgeMagnitudes = new double[4];
@@ -1192,10 +1199,10 @@ namespace TowseyLibrary
             double diffMin, diffMax;
             DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
 
-            double threshold = 0; // dB
-            isRidge = (ridgeMagnitudes[indexMax] > threshold);
+            // dB
+            double threshold = 0;
+            isRidge = ridgeMagnitudes[indexMax] > threshold;
             magnitude = diffMax / 2;
-            //direction = indexMax * Math.PI / (double)4;
             direction = indexMax;
         }
 
@@ -1207,7 +1214,9 @@ namespace TowseyLibrary
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix
+
+            // must be square 5X5 matrix
+            if (rows != cols || rows != 5)
             {
                 isCorner = false;
                 magnitude = 0.0;
@@ -1215,53 +1224,53 @@ namespace TowseyLibrary
                 return;
             }
 
-            double[,] ridgeDir0Mask = { {-0.1, -0.1, 0.4, -0.1, -0.1},
-                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
-                                        {-0.1, -0.1, 0.4, 0.4, 0.4},
-                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
-                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
+            double[,] ridgeDir0Mask = { { -0.1, -0.1, 0.4, -0.1, -0.1 },
+                                        { -0.1, -0.1, 0.4, -0.1, -0.1 },
+                                        { -0.1, -0.1, 0.4, 0.4, 0.4 },
+                                        { -0.1, -0.1, -0.1, -0.1, -0.1 },
+                                        { -0.1, -0.1, -0.1, -0.1, -0.1 },
                                       };
-            double[,] ridgeDir1Mask = { { 0.4, -0.1, -0.1, -0.1, 0.4},
-                                        {-0.1, 0.4, -0.1, 0.4, -0.1},
-                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
-                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
-                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
+            double[,] ridgeDir1Mask = { { 0.4, -0.1, -0.1, -0.1, 0.4 },
+                                        { -0.1, 0.4, -0.1, 0.4, -0.1 },
+                                        { -0.1, -0.1, 0.4, -0.1, -0.1 },
+                                        { -0.1, -0.1, -0.1, -0.1, -0.1 },
+                                        { -0.1, -0.1, -0.1, -0.1, -0.1 },
                                       };
-            double[,] ridgeDir2Mask = { {-0.1, -0.1, 0.4, -0.1, -0.1},
-                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
-                                        { 0.4, 0.4, 0.4, -0.1, -0.1},
-                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
-                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
+            double[,] ridgeDir2Mask = { { -0.1, -0.1, 0.4, -0.1, -0.1 },
+                                        { -0.1, -0.1, 0.4, -0.1, -0.1 },
+                                        { 0.4, 0.4, 0.4, -0.1, -0.1 },
+                                        { -0.1, -0.1, -0.1, -0.1, -0.1 },
+                                        { -0.1, -0.1, -0.1, -0.1, -0.1 },
                                       };
-            double[,] ridgeDir3Mask = { { 0.4, -0.1, -0.1, -0.1, -0.1},
-                                        {-0.1, 0.4, -0.1, -0.1, -0.1},
-                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
-                                        {-0.1, 0.4, -0.1, -0.1, -0.1},
-                                        { 0.4, -0.1, -0.1, -0.1, -0.1},
+            double[,] ridgeDir3Mask = { { 0.4, -0.1, -0.1, -0.1, -0.1 },
+                                        { -0.1, 0.4, -0.1, -0.1, -0.1 },
+                                        { -0.1, -0.1, 0.4, -0.1, -0.1 },
+                                        { -0.1, 0.4, -0.1, -0.1, -0.1 },
+                                        { 0.4, -0.1, -0.1, -0.1, -0.1 },
                                       };
-            double[,] ridgeDir4Mask = { {-0.1, -0.1, -0.1, -0.1, -0.1},
-                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
-                                        { 0.4, 0.4, 0.4, -0.1, -0.1},
-                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
-                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
+            double[,] ridgeDir4Mask = { { -0.1, -0.1, -0.1, -0.1, -0.1 },
+                                        { -0.1, -0.1, -0.1, -0.1, -0.1 },
+                                        { 0.4, 0.4, 0.4, -0.1, -0.1 },
+                                        { -0.1, -0.1, 0.4, -0.1, -0.1 },
+                                        { -0.1, -0.1, 0.4, -0.1, -0.1 },
                                       };
-            double[,] ridgeDir5Mask = { {-0.1, -0.1, -0.1, -0.1, -0.1},
-                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
-                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
-                                        {-0.1, 0.4, -0.1, 0.4, -0.1},
-                                        { 0.4, -0.1, -0.1, -0.1, 0.4},
+            double[,] ridgeDir5Mask = { { -0.1, -0.1, -0.1, -0.1, -0.1 },
+                                        { -0.1, -0.1, -0.1, -0.1, -0.1 },
+                                        { -0.1, -0.1, 0.4, -0.1, -0.1 },
+                                        { -0.1, 0.4, -0.1, 0.4, -0.1 },
+                                        { 0.4, -0.1, -0.1, -0.1, 0.4 },
                                       };
-            double[,] ridgeDir6Mask = { {-0.1, -0.1, -0.1, -0.1, -0.1},
-                                        {-0.1, -0.1, -0.1, -0.1, -0.1},
-                                        {-0.1, -0.1, 0.4, 0.4, 0.4},
-                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
-                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
+            double[,] ridgeDir6Mask = { { -0.1, -0.1, -0.1, -0.1, -0.1 },
+                                        { -0.1, -0.1, -0.1, -0.1, -0.1 },
+                                        { -0.1, -0.1, 0.4, 0.4, 0.4 },
+                                        { -0.1, -0.1, 0.4, -0.1, -0.1 },
+                                        { -0.1, -0.1, 0.4, -0.1, -0.1 },
                                       };
-            double[,] ridgeDir7Mask = { {-0.1, -0.1, -0.1, -0.1, 0.4},
-                                        {-0.1, -0.1, -0.1, 0.4, -0.1},
-                                        {-0.1, -0.1, 0.4, -0.1, -0.1},
-                                        {-0.1, -0.1, -0.1, 0.4, -0.1},
-                                        {-0.1, -0.1, -0.1, -0.1, 0.4},
+            double[,] ridgeDir7Mask = { { -0.1, -0.1, -0.1, -0.1, 0.4 },
+                                        { -0.1, -0.1, -0.1, 0.4, -0.1 },
+                                        { -0.1, -0.1, 0.4, -0.1, -0.1 },
+                                        { -0.1, -0.1, -0.1, 0.4, -0.1 },
+                                        { -0.1, -0.1, -0.1, -0.1, 0.4 },
                                       };
 
             double[] cornerMagnitudes = new double[8];
@@ -1278,17 +1287,16 @@ namespace TowseyLibrary
             double diffMin, diffMax;
             DataTools.MinMax(cornerMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
 
-            double threshold = 0; // dB
-            isCorner = (cornerMagnitudes[indexMax] > threshold);
+            // dB
+            double threshold = 0;
+            isCorner = cornerMagnitudes[indexMax] > threshold;
             magnitude = diffMax / 2;
-            direction = indexMax * Math.PI / (double)8;
+            direction = indexMax * Math.PI / 8;
         }
 
         /// <summary>
         /// Reverses a 256 grey scale image
         /// </summary>
-        /// <param name="m"></param>
-        /// <returns></returns>
         public static double[,] Reverse256GreyScale(double[,] m)
         {
             const int scaleMax = 256 - 1;
@@ -1309,9 +1317,8 @@ namespace TowseyLibrary
         /// <summary>
         /// blurs an image using a square neighbourhood
         /// </summary>
-        /// <param name="matrix"></param>
+        /// <param name="matrix">the image ot be blurred</param>
         /// <param name="nh">Note that neighbourhood is distance either side of central pixel.</param>
-        /// <returns></returns>
         public static double[,] Blur(double[,] matrix, int nh)
         {
             if (nh <= 0)
@@ -1323,6 +1330,7 @@ namespace TowseyLibrary
             int N = matrix.GetLength(1);
 
             int cellCount = ((2 * nh) + 1) * ((2 * nh) + 1);
+
             //double[,] newMatrix = new double[M, N];
             double[,] newMatrix = (double[,])matrix.Clone();
 
@@ -1351,34 +1359,34 @@ namespace TowseyLibrary
         /// blurs and image using a rectangular neighbourhood.
         /// Note that in this method neighbourhood dimensions are full side or window.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="cNH">column Window i.e. x-dimension</param>
-        /// <param name="rNH">row Window i.e. y-dimension</param>
-        /// <returns></returns>
+        /// <param name="matrix">image to be blurred</param>
+        /// <param name="cWindow">column Window i.e. x-dimension</param>
+        /// <param name="rWindow">row Window i.e. y-dimension</param>
         public static double[,] Blur(double[,] matrix, int cWindow, int rWindow)
         {
-            if ((cWindow <= 1) && (rWindow <= 1))
+            if (cWindow <= 1 && (rWindow <= 1))
             {
                 return matrix; //no blurring required
             }
 
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
-            int cNH = cWindow / 2;
-            int rNH = rWindow / 2;
+            int cNh = cWindow / 2;
+            int rNh = rWindow / 2;
+
             //LoggedConsole.WriteLine("cNH=" + cNH + ", rNH" + rNH);
-            int area = ((2 * cNH) + 1) * ((2 * rNH) + 1); //area of rectangular neighbourhood
+            int area = ((2 * cNh) + 1) * ((2 * rNh) + 1); //area of rectangular neighbourhood
             double[,] newMatrix = new double[rows, cols]; //init new matrix to return
 
             // fix up the edges first
             for (int r = 0; r < rows; r++)
             {
-                for (int c = 0; c < cNH; c++)
+                for (int c = 0; c < cNh; c++)
                 {
                     newMatrix[r, c] = matrix[r, c];
                 }
 
-                for (int c = (cols - cNH); c < cols; c++)
+                for (int c = cols - cNh; c < cols; c++)
                 {
                     newMatrix[r, c] = matrix[r, c];
                 }
@@ -1387,26 +1395,26 @@ namespace TowseyLibrary
             // fix up other edges
             for (int c = 0; c < cols; c++)
             {
-                for (int r = 0; r < rNH; r++)
+                for (int r = 0; r < rNh; r++)
                 {
                     newMatrix[r, c] = matrix[r, c];
                 }
 
-                for (int r = (rows - rNH); r < rows; r++)
+                for (int r = rows - rNh; r < rows; r++)
                 {
                     newMatrix[r, c] = matrix[r, c];
                 }
             }
 
-            for (int r = rNH; r < (rows - rNH); r++)
+            for (int r = rNh; r < (rows - rNh); r++)
             {
-                for (int c = cNH; c < (cols - cNH); c++)
+                for (int c = cNh; c < (cols - cNh); c++)
                 {
                     double sum = 0.0;
-                    for (int y = (r - rNH); y <= (r + rNH); y++)
+                    for (int y = r - rNh; y <= r + rNh; y++)
                     {
                         //System.LoggedConsole.WriteLine(r+", "+c+ "  y="+y);
-                        for (int x = (c - cNH); x <= (c + cNH); x++)
+                        for (int x = c - cNh; x <= c + cNh; x++)
                         {
                             sum += matrix[y, x];
                         }
@@ -1417,7 +1425,7 @@ namespace TowseyLibrary
             }
 
             return newMatrix;
-        }//end method Blur()
+        } //end method Blur()
 
         // ###################################################################################################################################
 
@@ -1425,19 +1433,15 @@ namespace TowseyLibrary
         /// returns the upper and lower thresholds for the pass upper and lower percentile cuts of matrix M
         /// Used for some of the noise reduciton algorithms
         /// </summary>
-        /// <param name="M"></param>
-        /// <param name="lowerCut"></param>
-        /// <param name="upperCut"></param>
-        /// <param name="lowerThreshold"></param>
-        /// <param name="upperThreshold"></param>
         public static void PercentileThresholds(double[,] M, double lowerCut, double upperCut, out double lowerThreshold, out double upperThreshold)
         {
             int binCount = 50;
             int count = M.GetLength(0) * M.GetLength(1);
             double binWidth;
-            double min; double max;
+            double min;
+            double max;
             int[] powerHisto = Histogram.Histo(M, binCount, out binWidth, out min, out max);
-            powerHisto[binCount - 1] = 0;   //just in case it is the max ????????????????????????????????????? !!!!!!!!!!!!!!!
+            powerHisto[binCount - 1] = 0; //just in case it is the max ????????????????????????????????????? !!!!!!!!!!!!!!!
             double[] smooth = DataTools.filterMovingAverage(powerHisto, 3);
             int maxindex;
             DataTools.getMaxIndex(smooth, out maxindex);
@@ -1463,9 +1467,6 @@ namespace TowseyLibrary
             }
 
             lowerThreshold = min + (j * binWidth);
-
-            //DataTools.writeBarGraph(powerHisto);
-            //LoggedConsole.WriteLine("LowerThreshold=" + lowerThreshold + "  UpperThreshold=" + upperThreshold);
         }
 
         public static double[,] TrimPercentiles(double[,] matrix)
@@ -1480,22 +1481,20 @@ namespace TowseyLibrary
             int width = matrix.GetLength(1);
             int halfWidth = bandWidth / 2;
             int bandCount = width / ncbbc;
-            int bandID = 0;
-            int tmpCol = 0;
 
             double[,] tmpM = new double[height, ncbbc];
             double[,] outM = new double[height, width];
             double[,] thresholdSubatrix = DataTools.Submatrix(matrix, 0, 0, height - 1, bandWidth);
-            double lowerThreshold; double upperThreshold;
+            double lowerThreshold;
+            double upperThreshold;
             PercentileThresholds(thresholdSubatrix, lowerPercentile, upperPercentile, out lowerThreshold, out upperThreshold);
 
-            for (int col = 0; col < width; col++)//for all cols
+            for (int col = 0; col < width; col++)
             {
-                bandID = col / ncbbc;  // determine band ID
-                tmpCol = col % ncbbc;  // determine col relative to current band
+                var tmpCol = col % ncbbc;
                 if ((tmpCol == 0) && (!(col == 0)))
                 {
-                    //normalise existing submatrix and transfer to the output matrix, outM
+                    //NormaliseMatrixValues existing submatrix and transfer to the output matrix, outM
                     tmpM = DataTools.normalise(tmpM);
                     for (int y = 0; y < height; y++)
                     {
@@ -1538,6 +1537,7 @@ namespace TowseyLibrary
                     {
                         tmpM[y, tmpCol] = lowerThreshold;
                     }
+
                     //outM[y, col] = matrix[y, col] - upperThreshold;
                     //if (outM[y, col] < upperThreshold) outM[y, col] = upperThreshold;
 
@@ -1556,9 +1556,6 @@ namespace TowseyLibrary
         /// SNR is defined as local mean / local std dev.
         /// Must check that the local std dev is not too small.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="window"></param>
-        /// <returns></returns>
         public static double[,] Signal2NoiseRatio_Local(double[,] matrix, int window)
         {
 
@@ -1583,7 +1580,8 @@ namespace TowseyLibrary
                         }
                     }
 
-                    double av; double sd;
+                    double av;
+                    double sd;
                     NormalDist.AverageAndSD(values, out av, out sd);
                     if (sd < 0.0001)
                     {
@@ -1607,9 +1605,9 @@ namespace TowseyLibrary
             double[,] M = new double[height, width];
             double[,] subMatrix = DataTools.Submatrix(matrix, 0, 0, height - 1, bandWidth);
 
-            for (int col = 0; col < width; col++)//for all cols
+            for (int col = 0; col < width; col++)
             {
-                int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
+                int start = col - halfWidth; //extend range of submatrix below col for smoother changes
                 if (start < 0)
                 {
                     start = 0;
@@ -1626,7 +1624,8 @@ namespace TowseyLibrary
                     subMatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
                 }
 
-                double av; double sd;
+                double av;
+                double sd;
                 NormalDist.AverageAndSD(subMatrix, out av, out sd);
                 if (sd < 0.0001)
                 {
@@ -1652,7 +1651,7 @@ namespace TowseyLibrary
             double[,] M = new double[height, width];
             double[,] subMatrix = DataTools.Submatrix(matrix, 0, 0, height - 1, bandWidth);
 
-            for (int col = 0; col < width; col++)//for all cols
+            for (int col = 0; col < width; col++)
             {
                 int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
                 if (start < 0)
@@ -1671,8 +1670,10 @@ namespace TowseyLibrary
                     subMatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
                 }
 
-                double av; double sd;
+                double av;
+                double sd;
                 NormalDist.AverageAndSD(subMatrix, out av, out sd);
+
                 //LoggedConsole.WriteLine(0 + "," + start + "," + (height - 1) + "," + stop + "   Threshold " + b + "=" + threshold);
 
                 for (int y = 0; y < height; y++)
@@ -1689,8 +1690,6 @@ namespace TowseyLibrary
         /// The blurring is in 2D, first blurred in x-direction, then in y-direction.
         /// Blurring function is {0.006,0.061, 0.242,0.383,0.242,0.061,0.006}
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
         public static double[,] GaussianBlur_5cell(double[,] matrix)
         {
             double[] bf = {0.006, 0.061, 0.242, 0.382, 0.242, 0.061, 0.006}; //blurring function
@@ -1702,9 +1701,9 @@ namespace TowseyLibrary
 
             // first convolve in x-dimension, i.e. along a row
             double[,] M1 = (double[,])matrix.Clone();
-            for (int r = edge; r < height - edge; r++)//for all rows
+            for (int r = edge; r < height - edge; r++)
             {
-                for (int c = edge; c < width - edge; c++)//for all cols
+                for (int c = edge; c < width - edge; c++)
                 {
                     double sum = 0.0;
                     for (int i = 0; i < bf.Length; i++)
@@ -3323,7 +3322,7 @@ namespace TowseyLibrary
             // double sumThreshold = lineLength * sensitivity;
             int degrees = 0;
 
-            while (degrees < 180)  //loop over 180 degrees in jumps of 10 degrees.
+            while (degrees < 180) //loop over 180 degrees in jumps of 10 degrees.
             {
                 double cosAngle = Math.Cos(Math.PI * degrees / 180);
                 double sinAngle = Math.Sin(Math.PI * degrees / 180);
@@ -3407,7 +3406,7 @@ namespace TowseyLibrary
                     //repeat this bin if pixel rows per bin>1
                     for (int x = 0; x < width; x++)
                     {
-                        //for pixels in the line - normalise and bound the value - use min bound, max and 255 image intensity range
+                        //for pixels in the line - NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                         double value = (data[x, y] - min) / (double)range;
                         int c = 255 - (int)Math.Floor(255.0 * value); //original version
                         if (c < 0)

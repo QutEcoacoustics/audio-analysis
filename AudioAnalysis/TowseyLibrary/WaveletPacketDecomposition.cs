@@ -55,8 +55,8 @@
                 int bin = bv.binNumber;
                 int start = (bin - 1) * bv.binLength;
                 double[] signal = bv.signal;
-                // normalise each row
-                //signal = DataTools.normalise(signal);
+                // NormaliseMatrixValues each row
+                //signal = DataTools.NormaliseMatrixValues(signal);
                 for (int i = 0; i < signal.Length; i++)
                 {
                     wpdTree[level - 1, start + i] = bv.signal[i];
@@ -456,7 +456,7 @@
             //// signal plus noise
             //signal = DataTools.AddVectors(signal, rv);
             //// normalising seems to make little difference to the result
-            //signal = DataTools.normalise(signal);
+            //signal = DataTools.NormaliseMatrixValues(signal);
 
             //int levelNumber = 7;
 

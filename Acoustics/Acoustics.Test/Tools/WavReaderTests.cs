@@ -15,18 +15,9 @@ namespace Acoustics.Test.Tools
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using Acoustics.Tools.Wav;
-
-    using EcoSounds.Mvc.Tests;
-
-    using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
-    using global::AudioAnalysisTools.StandardSpectrograms;
-
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-    using MSTestExtensions;
     using TestHelpers;
-    using TowseyLibrary;
 
     [TestClass]
     public class WavReaderTests

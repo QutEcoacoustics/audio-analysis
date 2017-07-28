@@ -139,12 +139,12 @@ out double[] r)
             //System.LoggedConsole.WriteLine("{0}", alglib.ap.format(f, 3));
             //for (int i = 0; i < op.Length; i++) LoggedConsole.WriteLine("{0}   {1:f2}", i, op[i]);
 
-            //rearrange corr output and normalise
+            //rearrange corr output and NormaliseMatrixValues
             int xcorrLength = 2 * n;
             double[] xCorr = new double[xcorrLength];
             //for (int i = 0; i < n - 1; i++) newOp[i] = r[i + n];   //rearrange corr output
             //for (int i = n - 1; i < opLength-1; i++) newOp[i] = r[i - n + 1];
-            for (int i = 0; i < n - 1; i++) xCorr[i] = r[i + n] / (i + 1);  //rearrange and normalise
+            for (int i = 0; i < n - 1; i++) xCorr[i] = r[i + n] / (i + 1);  //rearrange and NormaliseMatrixValues
             for (int i = n - 1; i < xcorrLength - 1; i++) xCorr[i] = r[i - n + 1] / (xcorrLength - i - 1);
 
 

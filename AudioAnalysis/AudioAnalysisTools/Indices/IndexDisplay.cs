@@ -343,7 +343,7 @@ namespace AudioAnalysisTools.Indices
         //    //int x = values.Count - 1;
         //    //array = values[x];
         //    //bool doNormalise = false;
-        //    //if (doNormalise) array = DataTools.normalise(values[x]);
+        //    //if (doNormalise) array = DataTools.NormaliseMatrixValues(values[x]);
         //    ////if (values[x].Length > 0)
         //    ////    bitmaps.Add(Image_Track.DrawColourScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
         //    //if (values[x].Length > 0)

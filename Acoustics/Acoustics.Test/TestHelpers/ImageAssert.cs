@@ -8,9 +8,6 @@ namespace Acoustics.Test.TestHelpers
     using System.Collections.Generic;
     using System.Drawing;
     using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Acoustics.Shared.Extensions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     public static class ImageAssert

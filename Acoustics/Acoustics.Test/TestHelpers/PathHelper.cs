@@ -7,9 +7,6 @@ namespace Acoustics.Test.TestHelpers
     using System;
     using System.IO;
     using System.Linq;
-    using System.Runtime.CompilerServices;
-    using Acoustics.Shared;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     public static class PathHelper
     {

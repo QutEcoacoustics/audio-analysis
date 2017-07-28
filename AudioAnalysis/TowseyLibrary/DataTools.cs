@@ -41,7 +41,7 @@ namespace TowseyLibrary
                 writeMatrix(sub);
             }//end test ReadDoubles2Matrix(string fName)
 
-            if (true) //test normalise(double[,] m, double normMin, double normMax)
+            if (true) //test NormaliseMatrixValues(double[,] m, double normMin, double normMax)
             {
                 string fName = testDir + "testOfReadingMatrixFile.txt";
                 double[,] matrix = FileTools.ReadDoubles2Matrix(fName);
@@ -56,7 +56,7 @@ namespace TowseyLibrary
                 LoggedConsole.WriteLine("\n\n");
                 writeMatrix(matrix);
 
-            }//end test normalise(double[,] m, double normMin, double normMax)
+            }//end test NormaliseMatrixValues(double[,] m, double normMin, double normMax)
 
             //COPY THIS TEST TEMPLATE
             if (false) //test Method(parameters)
@@ -85,6 +85,31 @@ namespace TowseyLibrary
         public static bool IsPowerOfTwo(ulong x)
         {
             return (x != 0) && ((x & (x - 1)) == 0);
+        }
+
+        /// <summary>
+        /// Returns a subarray of the passed array of any type
+        /// </summary>
+        /// <param name="array">an array of any type</param>
+        /// <param name="start">the first element of the subarray</param>
+        /// <param name="length">number of elements in subarray</param>
+        public static T[] Subarray<T>(T[] array, int start, int length)
+        {
+            int end = start + length - 1;
+            if (end >= array.Length)
+            {
+                //LoggedConsole.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
+                return null;
+            }
+
+            var sa = new T[length];
+
+            for (int i = 0; i < length; i++)
+            {
+                sa[i] = array[start + i];
+            }
+
+            return sa;
         }
 
         /// <summary>
@@ -237,6 +262,18 @@ namespace TowseyLibrary
                 {
                     op[i, j] = list[i][j];
                 }
+            }
+
+            return op;
+        }
+
+        public static double[] ConvertStringArrayToDoubles(string[] list)
+        {
+            int length = list.Length;
+            var op = new double[length];
+            for (int i = 0; i < length; i++)
+            {
+                    op[i] = double.Parse(list[i]);
             }
 
             return op;
@@ -1013,8 +1050,8 @@ namespace TowseyLibrary
             for (int i = 0; i < M; i++)
             {
                 for (int j = 0; j < N; j++)
-                { //normalise power for given min and max
-                    int k = (int)Math.Floor(n * (matrix[i, j] - min) / range);//normalise
+                { //NormaliseMatrixValues power for given min and max
+                    int k = (int)Math.Floor(n * (matrix[i, j] - min) / range);//NormaliseMatrixValues
                     if (k < 0)
                     {
                         k = 0;      //range check
@@ -2945,7 +2982,7 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static double[,] Normalise(double[,] m, double normMin, double normMax)
         {
-            //m = normalise(m);
+            //m = NormaliseMatrixValues(m);
             double min = double.MaxValue;
             double max = -double.MaxValue;
 
@@ -2993,7 +3030,7 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static double[] Normalise(double[] v, double normMin, double normMax)
         {
-            //m = normalise(m);
+            //m = NormaliseMatrixValues(m);
             double min = double.MaxValue;
             double max = -double.MaxValue;
 
@@ -3268,7 +3305,7 @@ namespace TowseyLibrary
             double tolerance = 0.00000000001;
             if (Math.Abs(diff) < tolerance)
             {
-                LoggedConsole.WriteErrorLine("Cannot normalise vector in method DataTools.Normalise(). Min = Max.");
+                LoggedConsole.WriteErrorLine("Cannot NormaliseMatrixValues vector in method DataTools.Normalise(). Min = Max.");
                 return;
             }
 
@@ -3393,7 +3430,7 @@ namespace TowseyLibrary
         /// normalises the values in a matrix such that the minimum value
         /// is the average of the edge values.
         /// Truncate thos original values that are below the edge average.
-        /// This method is used to normalise image templates where there should be no power at the edge
+        /// This method is used to NormaliseMatrixValues image templates where there should be no power at the edge
         /// </summary>
         /// <param name="m"></param>
         /// <param name="normMin"></param>
@@ -3522,7 +3559,7 @@ namespace TowseyLibrary
       return ret;
   }
 
-  //normalise and compress/bound the values
+  //NormaliseMatrixValues and compress/bound the values
         public static double[,] Clip(double[,] m, double minPercentile, double maxPercentile)
   {
       double minCut;

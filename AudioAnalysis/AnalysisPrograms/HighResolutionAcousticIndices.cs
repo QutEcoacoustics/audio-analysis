@@ -20,7 +20,7 @@ namespace AnalysisPrograms
 
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
-
+    using Draw.Zooming;
     using PowerArgs;
 
     using TowseyLibrary;
@@ -246,9 +246,9 @@ namespace AnalysisPrograms
                     LoggedConsole.WriteLine("# Input Directory             : " + zoomingArguments.SourceDirectory);
                     LoggedConsole.WriteLine("# Output Directory            : " + zoomingArguments.Output);
 
-                    var common = new ZoomCommonArguments();
-                    common.SuperTilingConfig = Yaml.Deserialise<SuperTilingConfig>(zoomingArguments.SpectrogramTilingConfig);
-                    var indexPropertiesPath = IndexProperties.Find(common.SuperTilingConfig, zoomingArguments.SpectrogramTilingConfig);
+                    var common = new ZoomArguments();
+                    common.SpectrogramZoomingConfig = Yaml.Deserialise<SpectrogramZoomingConfig>(zoomingArguments.SpectrogramTilingConfig);
+                    var indexPropertiesPath = IndexProperties.Find(common.SpectrogramZoomingConfig, zoomingArguments.SpectrogramTilingConfig);
                     LoggedConsole.WriteLine("Using index properties file: " + indexPropertiesPath.FullName);
                     common.IndexProperties = IndexProperties.GetIndexProperties(indexPropertiesPath);
 

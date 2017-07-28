@@ -386,7 +386,7 @@
                         whistle[j] += mHori[i, minBound_Whistle + j];
                     }
                 }
-                whistleScores[r] = whistle[DataTools.GetMaxIndex(whistle)] / (double)optimumWhistleDuration; //normalise;
+                whistleScores[r] = whistle[DataTools.GetMaxIndex(whistle)] / (double)optimumWhistleDuration; //NormaliseMatrixValues;
                 if (whistleScores[r] > 1.0) whistleScores[r] = 1.0;
 
                 //whip detector
@@ -506,7 +506,7 @@
                 //    double min, max;
                 //    DataTools.MinMax(intensity, out min, out max);
                 //    double threshold_norm = eventThreshold / max; //min = 0.0;
-                //    intensity = DataTools.normalise(intensity);
+                //    intensity = DataTools.NormaliseMatrixValues(intensity);
                 //    image.AddTrack(Image_Track.GetScoreTrack(intensity, 0.0, 1.0, eventThreshold));
                 //}
                 //image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount);

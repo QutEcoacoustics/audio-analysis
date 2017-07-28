@@ -28,12 +28,12 @@ namespace AudioAnalysisTools.DSP
             var freqScale = new FrequencyScale(sampleRate / 2, windowSize, 1000);
             string path = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\SineSignal1.png";
 
-            var recording = GenerateTestSignal(sampleRate, duration, harmonics);
+            var recording = GenerateTestSignal(sampleRate, duration, harmonics, "cos");
             var sonoConfig = new SonogramConfig
             {
                 WindowSize = freqScale.WindowSize,
                 WindowOverlap = 0.0,
-                SourceFName = "SineSignal1",
+                SourceFName = "Signal1",
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = 0.12,
             };
@@ -79,14 +79,14 @@ namespace AudioAnalysisTools.DSP
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
             var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
             string path = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\SineSignal2.png";
-            var recording = GenerateTestSignal(sampleRate, duration, harmonics);
+            var recording = GenerateTestSignal(sampleRate, duration, harmonics, "cos");
 
             // init the default sonogram config
             var sonoConfig = new SonogramConfig
             {
                 WindowSize = freqScale.WindowSize,
                 WindowOverlap = 0.2,
-                SourceFName = "SineSignal2",
+                SourceFName = "Signal2",
                 NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
             };
@@ -131,9 +131,24 @@ namespace AudioAnalysisTools.DSP
             image.Save(path);
         }
 
-        public static AudioRecording GenerateTestSignal(int sampleRate, double duration, int[] harmonics)
+        public static AudioRecording GenerateTestSignal
+            (int sampleRate, double duration, int[] harmonics, string waveType)
         {
-            double[] signal = GetSignal(sampleRate, duration, harmonics);
+            double[] signal = null;
+            if (waveType.ToLower().StartsWith("cos"))
+            {
+                signal = GetSignalOfAddedCosines(sampleRate, duration, harmonics);
+            }
+            else if (waveType.ToLower().StartsWith("sin"))
+            {
+                signal = GetSignalOfAddedSines(sampleRate, duration, harmonics);
+            }
+
+            if (signal == null)
+            {
+                throw new Exception("A signal was not generated. Fatal error!");
+            }
+
             var wr = new WavReader(signal, 1, 16, sampleRate);
             var recording = new AudioRecording(wr);
             return recording;
@@ -143,22 +158,42 @@ namespace AudioAnalysisTools.DSP
         /// returns a digital signal having sample rate, duration and harmonic content passed by user.
         /// Harmonics array should contain Hertz values of harmonics. i.e. int[] harmonics = { 500, 1000, 2000, 4000 };
         /// Phase is not taken into account.
+        /// Generate Cos waves rather than Sin because amplitude should return to 1.0 if done correctly.
         /// </summary>
         /// <param name="sampleRate">sr of output signal</param>
         /// <param name="duration">signal duration in seconds</param>
-        /// <param name="freq">frequency in Hertz</param>
-        public static double[] GetSignal(int sampleRate, double duration, int[] freq)
+        /// <param name="freq">an array of frequency harmonics in Hertz</param>
+        public static double[] GetSignalOfAddedCosines(int sampleRate, double duration, int[] freq)
         {
-            double amplitude = 10000;
+            double amplitude = 0.999 / freq.Length;
             int length = (int)(sampleRate * duration);
             double[] data = new double[length];
             int count = freq.Length;
 
             for (int i = 0; i < length; i++)
             {
-                //for (int f = 0; f < count; f++) data[i] += Math.Sin(omega[f] * i);
                 for (int f = 0; f < count; f++)
                 {
+                    //data[i] +=           Math.Cos(omega[f] * i);
+                    data[i] += amplitude * Math.Cos(2.0 * Math.PI * freq[f] * i / sampleRate);
+                }
+            }
+
+            return data;
+        }
+
+        public static double[] GetSignalOfAddedSines(int sampleRate, double duration, int[] freq)
+        {
+            double amplitude = 1.0 / freq.Length;
+            int length = (int)(sampleRate * duration);
+            double[] data = new double[length];
+            int count = freq.Length;
+
+            for (int i = 0; i < length; i++)
+            {
+                for (int f = 0; f < count; f++)
+                {
+                    //data[i] +=  ampl   * Math.Sin(omega[f] * i);
                     data[i] += amplitude * Math.Sin(2.0 * Math.PI * freq[f] * i / sampleRate);
                 }
             }

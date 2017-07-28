@@ -94,7 +94,7 @@ public class Distribution
     //  make histogram: value=1 goes in histo at index=1, etc etc.
     for (int i=0; i<counts; i++) freq[values[i]] += 1.0;
 
-    // regularise, smooth and normalise
+    // regularise, smooth and NormaliseMatrixValues
     if(regularise) freq = regulariseDistribution(freq);
     //prob = freq;
       this.prob = normalise(freq);
@@ -127,7 +127,7 @@ public class Distribution
       freq[index] += 1.0;
     }
 
-    // regularise, smooth and normalise
+    // regularise, smooth and NormaliseMatrixValues
     if(regularise) freq = regulariseDistribution(freq);
     //prob = freq;
       this.prob = normalise(freq);
@@ -142,7 +142,7 @@ public class Distribution
   }
 
 
-  public static double[] normalise(double[] values) // normalise
+  public static double[] normalise(double[] values) // NormaliseMatrixValues
   { int    length = values.Length;
     double[] prob = new double[length];
     double    sum = 0.0;

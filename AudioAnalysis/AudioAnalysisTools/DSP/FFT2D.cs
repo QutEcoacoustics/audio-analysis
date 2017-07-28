@@ -206,7 +206,7 @@
             string imageFilePath = @"C:\SensorNetworks\Output\FFT2D\test5.png";
             bool reversed = false;
             double[,] matrix = GetImageDataAsGrayIntensity(imageFilePath, reversed);
-            //matrix = MatrixTools.normalise(matrix);
+            //matrix = MatrixTools.NormaliseMatrixValues(matrix);
             double[,] output = FFT2Dimensional(matrix);
             Console.WriteLine("Sum={0}", (MatrixTools.Matrix2Array(output)).Sum());
             //draws matrix after normalisation with white=low and black=high

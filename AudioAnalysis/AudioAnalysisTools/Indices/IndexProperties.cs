@@ -310,52 +310,6 @@ namespace AudioAnalysisTools.Indices
                     return deserialized;
                 }
             }
-
-            /*
-            dynamic configuration = Yaml.Deserialise(configFile);
-
-            var dict = new Dictionary<string, IndexProperties>();
-
-            foreach (dynamic config in configuration.Children)
-            {
-                var ip = new IndexProperties();
-                ip.Key = config.Key;
-                ip.Name = config.Name;
-                string datatype = config.DataType;
-                ip.DataType = typeof(double);
-                if (datatype == "TimeSpan")
-                {
-                    ip.DataType = typeof(TimeSpan);
-                }
-                else if (datatype == "double[]")
-                {
-                    ip.DataType = typeof(double[]);
-                }
-                else if (datatype == "int")
-                {
-                    ip.DataType = typeof(int);
-                }
-
-                ip.Comment = config.Comment;
-                ip.DefaultValue = (double)config.DefaultValue;
-                ip.ProjectID = config.ProjectID;
-
-                // for display purposes only
-                ip.DoDisplay = (bool?)config.DoDisplay ?? false;
-
-                ip.NormMin = (double)config.NormMin;
-                ip.NormMax = (double)config.NormMax;
-                ip.Units = config.Units;
-
-                // use these when calculated combination index.
-                ip.IncludeInComboIndex = (bool?)config.includeInComboIndex ?? false;
-
-                ip.ComboWeight = (double)config.comboWeight;
-
-                dict.Add(ip.Key, ip);
-            }
-
-            return dict;*/
         }
 
         public static FileInfo Find(dynamic configuration, FileInfo originalConfigFile)
@@ -368,6 +322,9 @@ namespace AudioAnalysisTools.Indices
             return Find((string)configuration[AnalysisKeys.KeyIndexPropertiesConfig], originalConfigFile);
         }
 
+        /// <summary>
+        /// Locate and IndexPropertiesConfig.yml file from the IndexPropertiesConfig key in a config file.
+        /// </summary>
         public static FileInfo Find(IIndexPropertyReferenceConfiguration configuration, FileInfo originalConfigFile)
         {
             if (configuration == null)

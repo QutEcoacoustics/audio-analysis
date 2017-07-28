@@ -1,22 +1,22 @@
-﻿namespace AnalysisPrograms
+﻿// <copyright file="Create4Sonograms.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
     using System.Drawing;
-    using System.Drawing;
-    using System.Drawing.Imaging;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
-    using System.Text;
     using Acoustics.Shared;
-    using Acoustics.Shared;
-    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using PowerArgs;
+    using Production;
     using TowseyLibrary;
 
     /// <summary>
@@ -24,8 +24,6 @@
     /// </summary>
     public static class Create4Sonograms
     {
-
-
         [CustomDetailedDescription]
         [CustomDescription]
         public class Arguments : SourceAndConfigArguments
@@ -43,7 +41,6 @@
             //[ArgRange(0, double.MaxValue)]
             //public double? EndOffset { get; set; }
 
-
             public static string Description()
             {
                 return "Does cool stuff";
@@ -57,17 +54,16 @@
 
         private static Arguments Dev()
         {
-
             return new Arguments
             {
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png".ToFileInfo(),
-                Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-085040.wav".ToFileInfo(),
+                Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav".ToFileInfo(),
                 Output = @"C:\SensorNetworks\Output\Sonograms\BAC2Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
             };
 
-            throw new NoDeveloperMethodException();
+            //throw new NoDeveloperMethodException();
         }
 
         public static void Main(Arguments arguments)
@@ -79,7 +75,6 @@
 
             arguments.Output.CreateParentDirectories();
 
-
             string title = "# CREATE FOUR (4) SONOGRAMS FROM AUDIO RECORDING";
             string date = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine(title);
@@ -87,9 +82,8 @@
             LoggedConsole.WriteLine("# Input  audio file: " + arguments.Source.Name);
             LoggedConsole.WriteLine("# Output image file: " + arguments.Output);
 
-
             //1. set up the necessary files
-            DirectoryInfo diSource = arguments.Source.Directory;
+            //DirectoryInfo diSource = arguments.Source.Directory;
             FileInfo fiSourceRecording = arguments.Source;
             FileInfo fiConfig = arguments.Config;
             FileInfo fiImage = arguments.Output;
@@ -104,13 +98,16 @@
 
             //3 transfer conogram parameters to a dictionary to be passed around
             var configDict = new Dictionary<string, string>();
-            configDict["FrameLength"] = configuration[AnalysisKeys.FrameLength] ?? 512;
-            int frameSize             = configuration[AnalysisKeys.FrameLength] ?? 512;
-            // #Frame Overlap as fraction: default=0.0
-            configDict["FrameOverlap"] = configuration[AnalysisKeys.FrameOverlap] ?? 0.0;
-            double windowOverlap       = configuration[AnalysisKeys.FrameOverlap] ?? 0.0;
+
             // #Resample rate must be 2 X the desired Nyquist. Default is that of recording.
             configDict["ResampleRate"] = configuration[AnalysisKeys.ResampleRate] ?? 17640;
+            configDict["FrameLength"] = configuration[AnalysisKeys.FrameLength] ?? 512;
+            int frameSize = configuration[AnalysisKeys.FrameLength] ?? 512;
+
+            // #Frame Overlap as fraction: default=0.0
+            configDict["FrameOverlap"] = configuration[AnalysisKeys.FrameOverlap] ?? 0.0;
+            double windowOverlap = configuration[AnalysisKeys.FrameOverlap] ?? 0.0;
+
             // #MinHz: 500
             // #MaxHz: 3500
             // #NOISE REDUCTION PARAMETERS
@@ -121,21 +118,21 @@
             configDict["AddSegmentationTrack"] = configuration["AddSegmentationTrack"] ?? true;
 
             // 3: GET RECORDING
-            TimeSpan startOffsetMins = TimeSpan.Zero;
-            TimeSpan endOffsetMins = TimeSpan.Zero;
+            var startOffsetMins = TimeSpan.Zero;
+            var endOffsetMins = TimeSpan.Zero;
 
             FileInfo fiOutputSegment = fiSourceRecording;
             if (!((startOffsetMins == TimeSpan.Zero) && (endOffsetMins == TimeSpan.Zero)))
             {
-                TimeSpan buffer = new TimeSpan(0, 0, 0);
+                var buffer = new TimeSpan(0, 0, 0);
                 fiOutputSegment = new FileInfo(Path.Combine(arguments.Output.DirectoryName, "tempWavFile.wav"));
+
                 //This method extracts segment and saves to disk at the location fiOutputSegment.
                 var resampleRate = (int?)configuration[AnalysisKeys.ResampleRate] ?? AppConfigHelper.DefaultTargetSampleRate;
                 AudioRecording.ExtractSegment(fiSourceRecording, startOffsetMins, endOffsetMins, buffer, resampleRate, fiOutputSegment);
             }
 
             var recording = new AudioRecording(fiOutputSegment.FullName);
-            TimeSpan wavDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
 
             // EXTRACT ENVELOPE and SPECTROGRAM
             var dspOutput = DSP_Frames.ExtractEnvelopeAndFfts(recording, frameSize, windowOverlap);
@@ -144,110 +141,91 @@
             ////double[] avAbsolute = dspOutput.Average;
 
             // (A) ################################## EXTRACT INDICES FROM THE SIGNAL WAVEFORM ##################################
-            double[] signalEnvelope = dspOutput.Envelope;
-            double avSignalEnvelope = signalEnvelope.Average();
+            // var wavDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
+            // double totalSeconds = wavDuration.TotalSeconds;
+
+            // double[] signalEnvelope = dspOutput.Envelope;
+            // double avSignalEnvelope = signalEnvelope.Average();
             // double[] frameEnergy = dspOutput.FrameEnergy;
-
-            double totalSeconds = wavDuration.TotalSeconds;
-            double highAmplIndex = dspOutput.MaxAmplitudeCount / totalSeconds;
-
-            int nyquistFreq = dspOutput.NyquistFreq;
-            ////double binWidth = dspOutput.BinWidth;
-            int nyquistBin = dspOutput.NyquistBin;
+            // double highAmplIndex = dspOutput.HighAmplitudeCount / totalSeconds;
+            // double binWidth = dspOutput.BinWidth;
+            // int nyquistBin = dspOutput.NyquistBin;
             // dspOutput.WindowPower,
             // dspOutput.FreqBinWidth
-            // recording.SampleRate
+            int nyquistFreq = dspOutput.NyquistFreq;
+            double epsilon = recording.Epsilon;
 
-            double[,] amplitudeSpectrogram = dspOutput.AmplitudeSpectrogram; // get amplitude spectrogram.
-            //DataTools.WriteMinMaxOfArray(MatrixTools.Matrix2Array(amplitudeSpectrogram));
+            // i: prepare amplitude spectrogram
+            double[,] amplitudeSpectrogramData = dspOutput.AmplitudeSpectrogram; // get amplitude spectrogram.
+            var image1 = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(amplitudeSpectrogramData));
 
-            double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput.AmplitudeSpectrogram, dspOutput.WindowPower, recording.SampleRate, epsilon);
-            //DataTools.WriteMinMaxOfArray(MatrixTools.Matrix2Array(deciBelSpectrogram));
-            //deciBelSpectrogram = MatrixTools.Normalise(deciBelSpectrogram, -80, -30);
-            //DataTools.WriteMinMaxOfArray(MatrixTools.Matrix2Array(deciBelSpectrogram));
+            // ii: prepare decibel spectrogram prior to noise removal
+            double[,] decibelSpectrogramdata = MFCCStuff.DecibelSpectra(dspOutput.AmplitudeSpectrogram, dspOutput.WindowPower, recording.SampleRate, epsilon);
+            decibelSpectrogramdata = MatrixTools.NormaliseMatrixValues(decibelSpectrogramdata);
+            var image2 = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(decibelSpectrogramdata));
 
-            // ii: Calculate background noise spectrum in decibels
+            // iii: Calculate background noise spectrum in decibels
+            // Calculate noise value for each freq bin.
             double sdCount = 0.0; // number of SDs above the mean for noise removal
-            NoiseProfile dBProfile = NoiseProfile.CalculateModalNoiseProfile(deciBelSpectrogram, sdCount);       // calculate noise value for each freq bin.
-            //DataTools.writeBarGraph(dBProfile.NoiseMode);
+            var decibelProfile = NoiseProfile.CalculateModalNoiseProfile(decibelSpectrogramdata, sdCount);
 
+            // DataTools.writeBarGraph(dBProfile.NoiseMode);
 
-            //deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, dBProfile.NoiseThresholds);
-            //double dBThreshold = 3.0; // SPECTRAL dB THRESHOLD for smoothing background
-            //deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, dBThreshold);
+            // iv: Prepare noise reduced spectrogram
+            decibelSpectrogramdata = SNR.TruncateBgNoiseFromSpectrogram(decibelSpectrogramdata, decibelProfile.NoiseThresholds);
+            //double dBThreshold = 1.0; // SPECTRAL dB THRESHOLD for smoothing background
+            //decibelSpectrogramdata = SNR.RemoveNeighbourhoodBackgroundNoise(decibelSpectrogramdata, dBThreshold);
+            var image3 = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(decibelSpectrogramdata));
 
-            deciBelSpectrogram = MatrixTools.normalise(deciBelSpectrogram);
-            //DataTools.WriteMinMaxOfArray(MatrixTools.Matrix2Array(deciBelSpectrogram));
-
-
-            var list = new List<Image>();
-            Image image1 = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(amplitudeSpectrogram));
-
-            Image image2 = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(deciBelSpectrogram));
-
-
-            //BaseSonogram sonogram = SpectrogramTools.Audio2Sonogram(fiAudio, configDict);
-            //var mti = Sonogram2MultiTrackImage(sonogram, configDict);
-            //var image = mti.GetImage();
-            SonogramConfig config = new SonogramConfig();
-            config.MinFreqBand = 0;
-            config.MaxFreqBand = 8800;
-            config.WindowSize = frameSize;
-            config.WindowOverlap = windowOverlap;
+            // prepare new sonogram config and draw second image going down different code pathway
+            var config = new SonogramConfig
+            {
+                MinFreqBand = 0,
+                MaxFreqBand = 10000,
+                NoiseReductionType = SNR.KeyToNoiseReductionType("Standard"),
+                NoiseReductionParameter = 1.0,
+                WindowSize = frameSize,
+                WindowOverlap = windowOverlap,
+            };
 
             //var mfccConfig = new MfccConfiguration(config);
             int bandCount = config.mfccConfig.FilterbankCount;
             bool doMelScale = config.mfccConfig.DoMelScale;
             int ccCount = config.mfccConfig.CcCount;
-            int FFTbins = config.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
+            int fftBins = config.FreqBinCount;  //number of Hz bands = 2^N +1 because includes the DC band
             int minHz = config.MinFreqBand ?? 0;
             int maxHz = config.MaxFreqBand ?? nyquistFreq;
 
+            var standardSonogram = new SpectrogramStandard(config, recording.WavReader);
+            var image4 = standardSonogram.GetImage();
 
-            AmplitudeSonogram amplitudeSonogram = new AmplitudeSonogram(config, amplitudeSpectrogram);
-            amplitudeSonogram.SampleRate = recording.SampleRate;
-            Image image3 = amplitudeSonogram.GetImage();
-
-
-
-
-            SpectrogramCepstral cepSng = new SpectrogramCepstral(amplitudeSonogram);
-            double[,] cepstralCoefficients = cepSng.Data;
-            Image image4 = cepSng.GetImage();
-
-            //BaseSonogram sonogram = new SpectrogramStandard(config, amplitudeSpectrogram);
-            //sonogram.SampleRate = recording.SampleRate;
-            ////Image image1 = sonogram.GetImage();
+            // TODO next line crashes - does not produce cepstral sonogram.
+            //SpectrogramCepstral cepSng = new SpectrogramCepstral(config, recording.WavReader);
+            //Image image5 = cepSng.GetImage();
 
             //var mti = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
             //var image = mti.GetImage();
 
-
             //Image image = SpectrogramTools.Matrix2SonogramImage(deciBelSpectrogram, config);
             //Image image = SpectrogramTools.Audio2SonogramImage(FileInfo fiAudio, Dictionary<string, string> configDict);
 
+            //prepare sonogram images
+            var protoImage6 = new Image_MultiTrack(standardSonogram.GetImage(doHighlightSubband: false, add1KHzLines: true));
+            protoImage6.AddTrack(Image_Track.GetTimeTrack(standardSonogram.Duration, standardSonogram.FramesPerSecond));
+            protoImage6.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, protoImage6.SonogramImage.Width));
+            protoImage6.AddTrack(Image_Track.GetSegmentationTrack(standardSonogram));
+            var image6 = protoImage6.GetImage();
 
+            var list = new List<Image>();
+            list.Add(image1); // amplitude spectrogram
+            list.Add(image2); // decibel spectrogram before noise removal
+            list.Add(image3); // decibel spectrogram after noise removal
+            list.Add(image4); // second version of noise reduced spectrogram
+            //list.Add(image5); // ceptral sonogram
+            list.Add(image6); // multitrack image
 
-            list.Add(image1);
-            list.Add(image2);
-            list.Add(image3);
-            list.Add(image4);
             Image finalImage = ImageTools.CombineImagesVertically(list);
             finalImage.Save(fiImage.FullName, ImageFormat.Png);
-
-            //prepare sonogram images
-            bool doHighlightSubband = false;
-            bool add1kHzLines = true;
-            //Image_MultiTrack image = null;
-
-
-            //image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            //image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.sonogramImage.Width));
-            //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            //image.Save(fn);
-            //LoggedConsole.WriteLine("Ordinary sonogram to file: " + fn);
 
             ////2: NOISE REMOVAL
             //double[,] originalSg = sonogram.Data;
@@ -277,7 +255,6 @@
             //image.Save(fn);
             //LoggedConsole.WriteLine("Spectral tracks sonogram to file: " + fn);
 
-
             //3: prepare image of spectral peaks sonogram
             //sonogram.Data = SNR.NoiseReduce_Peaks(originalSg, dynamicRange);
             //image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
@@ -299,14 +276,9 @@
             //image.Save(fn);
             //LoggedConsole.WriteLine("Sobel sonogram to file: " + fn);
 
-
-
             // I1.txt contains the sonogram matrix produced by matlab
             //string matlabFile = @"C:\SensorNetworks\Software\AudioAnalysis\AED\Test\matlab\GParrots_JB2_20090607-173000.wav_minute_3\I1.txt";
             //double[,] matlabMatrix = Util.fileToMatrix(matlabFile, 256, 5166);
-
-
-
 
             //LoggedConsole.WriteLine(matrix[0, 2] + " vs " + matlabMatrix[254, 0]);
             //LoggedConsole.WriteLine(matrix[0, 3] + " vs " + matlabMatrix[253, 0]);
@@ -361,10 +333,7 @@
             image.Save(outputFolder + wavFileName + ".png");
              */
 
-
-            //LoggedConsole.WriteLine("\nFINISHED!");
+            LoggedConsole.WriteLine("\nFINISHED!");
         }
-
-
     }
 }

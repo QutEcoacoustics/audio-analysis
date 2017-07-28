@@ -281,7 +281,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 for (int x = 0; x < width; x++) //for pixels in the line
                 {
-                    // normalise and bound the value - use min bound, max and 255 image intensity range
+                    // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                     double dbValue = dbSpectrogramNorm[x, y];
                     int c1 = 255 - (int)Math.Floor(255.0 * dbValue); //original version
                     //int c1 = (int)Math.Floor(255.0 * dbValue);
@@ -416,7 +416,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 for (int x = 0; x < width; x++) //for pixels in the line
                 {
-                    // normalise and bound the value - use min bound, max and 255 image intensity range
+                    // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                     double dbValue = spectrogramNorm[x, y];
                     int c1 = 255 - (int)Math.Floor(255.0 * dbValue); //original version
                     //int c1 = (int)Math.Floor(255.0 * dbValue);

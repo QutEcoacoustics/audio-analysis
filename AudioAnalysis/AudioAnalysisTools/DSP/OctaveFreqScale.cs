@@ -7,7 +7,9 @@ namespace AudioAnalysisTools.DSP
     using System;
     using System.Collections.Generic;
     using MathNet.Numerics.NumberTheory;
+    using StandardSpectrograms;
     using TowseyLibrary;
+    using WavTools;
 
     public static class OctaveFreqScale
     {
@@ -81,6 +83,40 @@ namespace AudioAnalysisTools.DSP
             scale.GridLineLocations = GetGridLineLocations(fst, scale.BinBounds);
         }
 
+        /// <summary>
+        /// This method takes an audio recording and returns an octave scale spectrogram.
+        /// At the present time it only works for recordings with 64000 sample rate and returns a 256 bin sonogram.
+        /// TODO: generalise this method for other recordings and octave scales.
+        /// </summary>
+        public static BaseSonogram ConvertRecordingToOctaveScaleSonogram(AudioRecording recording, FreqScaleType fst)
+        {
+            var freqScale = new FrequencyScale(fst);
+            double windowOverlap = 0.75;
+            var sonoConfig = new SonogramConfig
+            {
+                WindowSize = freqScale.WindowSize,
+                WindowOverlap = windowOverlap,
+                SourceFName = recording.BaseName,
+                NoiseReductionType = NoiseReductionType.None,
+                NoiseReductionParameter = 0.0,
+            };
+
+            // Generate amplitude sonogram and then conver to octave scale
+            var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+
+            // THIS IS THE CRITICAL LINE.
+            // TODO: SHOULD DEVELOP A SEPARATE UNIT TEST for this method
+            sonogram.Data = ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
+
+            // DO NOISE REDUCTION
+            var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
+            sonogram.Data = dataMatrix;
+            int windowSize = freqScale.FinalBinCount * 2;
+            sonogram.Configuration.WindowSize = windowSize;
+            sonogram.Configuration.WindowStep = (int)Math.Round(windowSize * (1 - windowOverlap));
+            return sonogram;
+        }
+
         public static double[,] ConvertAmplitudeSpectrogramToDecibelOctaveScale(double[,] inputSpgram, FrequencyScale freqScale)
         {
             //var dataMatrix = MatrixTools.Submatrix(inputSpgram, 0, 1, inputSpgram.GetLength(0) - 1, inputSpgram.GetLength(1) - 1);
@@ -97,6 +133,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Converts a spectrogram having linear freq scale to one having an Octave freq scale.
         /// Note that the sample rate (sr) and the frame size both need to be apporpriate to the choice of FreqScaleType.
+        /// TODO: SHOULD DEVELOP A SEPARATE UNIT TEST for this method
         /// </summary>
         public static double[,] ConvertLinearSpectrogramToOctaveFreqScale(double[,] inputSpgram, FrequencyScale freqScale)
         {
@@ -170,7 +207,7 @@ namespace AudioAnalysisTools.DSP
         /// </summary>
         /// <param name="amplitudeM"> the amplitude spectra </param>
         /// <param name="windowPower">value for window power normalisation</param>
-        /// <param name="sampleRate">to normalise for the sampling rate</param>
+        /// <param name="sampleRate">to NormaliseMatrixValues for the sampling rate</param>
         /// <param name="epsilon">small value to avoid log of zero.</param>
         /// <param name="freqScale">the kind of frequency scale</param>
         public static double[,] PowerSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon, FrequencyScale freqScale)
@@ -306,6 +343,11 @@ namespace AudioAnalysisTools.DSP
                 int lowIndex = octaveBinBounds[i - 1, 0];
                 int centreIndex = octaveBinBounds[i, 0];
                 int highIndex = octaveBinBounds[i + 1, 0];
+                if (highIndex >= linearSpectrum.Length)
+                {
+                    highIndex = linearSpectrum.Length - 1;
+                }
+
                 octaveSpectrum[i] = FilterbankIntegral(linearSpectrum, lowIndex, centreIndex, highIndex);
             }
 
@@ -515,7 +557,7 @@ namespace AudioAnalysisTools.DSP
                 }
             }
 
-            // normalise to area of the triangular filter
+            // NormaliseMatrixValues to area of the triangular filter
             integral /= area;
             return integral;
         }
