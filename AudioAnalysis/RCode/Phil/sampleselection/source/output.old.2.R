@@ -5,7 +5,7 @@
 ##
 
 
-g.output.parent.dir <- "/Users/n8933464/Documents/sample_selection_output"
+g.output.parent.dir <- "~/Documents/sample_selection_output"
 g.output.master.dir <- file.path(g.output.parent.dir, 'master')
 g.hash.dir <- file.path(g.output.parent.dir, 'hash')
 g.output.meta.dir <- file.path(g.output.parent.dir, 'meta')

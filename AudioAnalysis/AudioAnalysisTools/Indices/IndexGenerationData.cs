@@ -7,42 +7,28 @@
 namespace AudioAnalysisTools.Indices
 {
     using System;
-
-    using LongDurationSpectrograms;
     using System.IO;
     using System.Linq;
-
     using Acoustics.Shared;
+    using LongDurationSpectrograms;
 
     public class IndexGenerationData
     {
-        /// <summary>
-        /// Gets or sets the configuration options used to draw long duration spectrograms
-        /// </summary>
-        public LdSpectrogramConfig LongDurationSpectrogramConfig { get; set; }
-
         public const string FileNameFragment = "IndexGenerationData";
 
         public IndexGenerationData()
         {
             /* Ant:
-             *  I Disabled these defaults. They do not make sense.
+             *  I removed these defaults. They do not make sense.
              *  The index generation data is NOT valid if it is missing values.
              *  That is not an error that should be automatically compensated for.
-             *  Left the code in for clarity.
-             *
-            // these are default values only. Must be reset if different
-            this.RecordingType = "undefined";
-            this.IndexCalculationDuration = TimeSpan.FromMinutes(1.0);
-            this.SampleRateOriginal  = SpectrogramConstants.SAMPLE_RATE;
-            this.SampleRateResampled = SpectrogramConstants.SAMPLE_RATE;
-            this.RecordingStartDate       = DateTimeOffset.MinValue;
-            this.MinuteOffset = SpectrogramConstants.MINUTE_OFFSET;
-            this.FrameLength   = SpectrogramConstants.FRAME_LENGTH;
-            this.FrameStep    = SpectrogramConstants.FRAME_LENGTH;
-            this.BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
-            */
+             */
         }
+
+        /// <summary>
+        /// Gets or sets the configuration options used to draw long duration spectrograms
+        /// </summary>
+        public LdSpectrogramConfig LongDurationSpectrogramConfig { get; set; }
 
         /// <summary>
         /// The extension of the original audio file.
@@ -71,6 +57,8 @@ namespace AudioAnalysisTools.Indices
 
         public TimeSpan MinuteOffset { get; set; }
 
+        public TimeSpan? MaximumSegmentDuration { get; set; }
+
         public int SampleRateOriginal { get; set; }
 
         public int SampleRateResampled { get; set; }
@@ -90,18 +78,9 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         public TimeSpan BGNoiseNeighbourhood { get; set; }
 
-
-
-        // ********************************************************************************************************************
-        // STATIC METHODS
-
         /// <summary>
         /// Returns the index generation data from file in passed directory.
         /// </summary>
-        /// <param name="directory">
-        /// </param>
-        /// <returns>
-        /// </returns>
         public static IndexGenerationData GetIndexGenerationData(DirectoryInfo directory)
         {
             return Json.Deserialise<IndexGenerationData>(FindFile(directory));
@@ -112,24 +91,5 @@ namespace AudioAnalysisTools.Indices
             const string Pattern = "*" + FileNameFragment + "*";
             return directory.GetFiles(Pattern).Single();
         }
-
-        public static IndexGenerationData GetIndexGenerationDataAndAddStartTime(DirectoryInfo directory, string fileName, TimeSpan? offsetHint = null)
-        {
-            var indexGenerationData = GetIndexGenerationData(directory);
-
-            // Get the start time from the file name.
-            // DateTimeOffset startTime = IndexMatrices.GetFileStartTime(fileName);   // ##################### CHANGE TO ANTHONY'S METHOD
-            DateTimeOffset startTime;
-            if (!FileDateHelpers.FileNameContainsDateTime(fileName, out startTime, offsetHint))
-            {
-                LoggedConsole.WriteLine("WARNING from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(" + fileName + ") ");
-                LoggedConsole.WriteLine("  File name <{0}> does not contain a valid DateTime = {0}", fileName);
-            }
-
-            indexGenerationData.RecordingStartDate = startTime;
-            return indexGenerationData;
-        }
-
-
     }
 }

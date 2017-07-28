@@ -596,7 +596,7 @@
         public double CompositeTrackScore()
         {
             double score = this.FractionOfSecondsContainingTracks + this.FractionOfFramesContainingTracks;
-            if (score > 1.0) score = 1.0; // normalise
+            if (score > 1.0) score = 1.0; // NormaliseMatrixValues
             return score;
         }
 

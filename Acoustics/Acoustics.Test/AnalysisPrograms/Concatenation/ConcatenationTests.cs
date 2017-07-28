@@ -8,7 +8,6 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
     using System.Drawing;
     using System.IO;
     using Acoustics.Shared;
-    using EcoSounds.Mvc.Tests;
     using global::AnalysisPrograms;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -24,7 +23,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
     /// (4) for binary large objects(BLOBs) make sure git-lfs is tracking them
     /// </summary>
     [TestClass]
-    [Ignore] // TODO:!!!! Michael removed the zip file from our test resource assets.
+    // [Ignore]
     public class ConcatenationTests
     {
         private DirectoryInfo outputDirectory;
@@ -56,7 +55,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         {
             this.outputDirectory = PathHelper.GetTempDir();
 
-            var zippedDataFile = PathHelper.ResolveAsset("Concatenation", "Indonesia20160726.zip");
+            var zippedDataFile = PathHelper.ResolveAsset("Concatenation", "Indonesia_2Reduced.zip");
             ZipUnzip.UnZip(this.outputDirectory.FullName, zippedDataFile.FullName, true);
         }
 
@@ -86,8 +85,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         public void ConcatenateEverythingYouCanLayYourHandsOn()
         {
             // top level directory
-            DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia20160726") };
-            var indexPropertiesConfig = new FileInfo("Configs\\IndexPropertiesConfig.yml");
+            DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia_2Reduced") };
+            var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
             var dateString = "20160725";
 
             // get the default config file
@@ -127,10 +126,9 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
             ImageAssert.IsSize(722, 632, actualImage);
-
             ImageAssert.PixelIsColor(new Point(100, 100), Color.FromArgb(211, 211, 211), actualImage);
-
-            ImageAssert.PixelIsColor(new Point(200, 100), Color.FromArgb(54, 28, 9), actualImage);
+            ImageAssert.PixelIsColor(new Point(200, 100), Color.FromArgb(54, 28, 18), actualImage);
+            ImageAssert.PixelIsColor(new Point(675, 600), Color.FromArgb(255, 105, 180), actualImage);
         }
 
         /// <summary>
@@ -141,8 +139,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         public void ConcatenateIndexFilesTest24Hour()
         {
             // top level directory
-            DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia20160726") };
-            var indexPropertiesConfig = new FileInfo("Configs\\IndexPropertiesConfig.yml");
+            DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia_2Reduced") };
+            var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
             var dateString = "20160726";
 
             // get the default config file
@@ -182,10 +180,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
             ImageAssert.IsSize(512, 632, actualImage);
-
-            ImageAssert.PixelIsColor(new Point(100, 100), Color.FromArgb(32, 24, 17), actualImage);
-
-            ImageAssert.PixelIsColor(new Point(100, 160), Color.FromArgb(0, 22, 38), actualImage);
+            ImageAssert.PixelIsColor(new Point(100, 100), Color.FromArgb(32, 24, 35), actualImage);
+            ImageAssert.PixelIsColor(new Point(100, 160), Color.FromArgb(0, 79, 132), actualImage);
         }
 
         /// <summary>
@@ -199,8 +195,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         public void ConcatenateIndexFilesTest24HourWithDateRange()
         {
             // top level directory
-            DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia20160726") };
-            var indexPropertiesConfig = new FileInfo("Configs\\IndexPropertiesConfig.yml");
+            DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia_2Reduced") };
+            var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
 
             // get the default config file
             var testConfig = PathHelper.ResolveConfigFile("SpectrogramFalseColourConfig.yml");
@@ -240,10 +236,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             var actualImage1 = ImageTools.ReadImage2Bitmap(image1FileInfo.FullName);
             ImageAssert.IsSize(210, 632, actualImage1);
-
             ImageAssert.PixelIsColor(new Point(100, 100), Color.FromArgb(211, 211, 211), actualImage1);
-
-            ImageAssert.PixelIsColor(new Point(50, 50), Color.FromArgb(86, 27, 8), actualImage1);
+            ImageAssert.PixelIsColor(new Point(50, 50), Color.FromArgb(86, 27, 16), actualImage1);
 
             // IMAGE 2: Compare image files - check that image exists and dimensions are correct
             var dateString2 = "20160726";
@@ -254,10 +248,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             var actualImage2 = ImageTools.ReadImage2Bitmap(image2FileInfo.FullName);
             ImageAssert.IsSize(512, 632, actualImage2);
-
             ImageAssert.PixelIsColor(new Point(50, 124), Color.FromArgb(70, 37, 255), actualImage2);
-
-            ImageAssert.PixelIsColor(new Point(460, 600), Color.FromArgb(255, 0, 0), actualImage2);
+            ImageAssert.PixelIsColor(new Point(460, 600), Color.FromArgb(255, 105, 180), actualImage2);
         }
 
         /// <summary>
@@ -267,8 +259,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         public void ConcatenateIndexFilesTestConfigFileChanges()
         {
             // top level directory
-            DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia20160726") };
-            var indexPropertiesConfig = new FileInfo("Configs\\IndexPropertiesConfig.yml");
+            DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia_2Reduced") };
+            var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
             var dateString = "20160726";
 
             // get the default config file

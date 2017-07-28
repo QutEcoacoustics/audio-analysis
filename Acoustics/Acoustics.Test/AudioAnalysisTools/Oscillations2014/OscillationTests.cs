@@ -4,11 +4,9 @@
 
 namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
 {
-    using System;
     using System.Drawing.Imaging;
     using System.IO;
     using Acoustics.Shared;
-    using EcoSounds.Mvc.Tests;
     using global::AudioAnalysisTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;

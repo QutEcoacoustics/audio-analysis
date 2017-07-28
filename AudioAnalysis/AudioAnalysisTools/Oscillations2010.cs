@@ -299,7 +299,7 @@
                     for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
                     dct[0] = 0.0; dct[1] = 0.0; dct[2] = 0.0; dct[3] = 0.0; dct[4] = 0.0;//remove low freq oscillations from consideration
                     dct = DataTools.normalise2UnitLength(dct);
-                    //dct = DataTools.normalise(dct); //another option to normalise
+                    //dct = DataTools.NormaliseMatrixValues(dct); //another option to NormaliseMatrixValues
                     int indexOfMaxValue = DataTools.GetMaxIndex(dct);
                     double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
 
@@ -442,7 +442,7 @@
                 {
                     if (hits[r, c] > 0) score++; //add up number of freq bins where have a hit
                 }
-                scores[r] = score / hitRange; //normalise the hit score in [0,1]
+                scores[r] = score / hitRange; //NormaliseMatrixValues the hit score in [0,1]
                 if (scores[r] > 1.0) scores[r] = 1.0;
             }
             return scores;
@@ -568,7 +568,7 @@
                     count++;
                 }
             }
-            histogram = DataTools.normalise(histogram);
+            histogram = DataTools.NormaliseMatrixValues(histogram);
             histogram = DataTools.Normalise2Probabilites(histogram);
             double normFactor = Math.Log(histogram.Length) / DataTools.ln2;  //normalize for length of the array
             double entropy = DataTools.Entropy(histogram) / normFactor;

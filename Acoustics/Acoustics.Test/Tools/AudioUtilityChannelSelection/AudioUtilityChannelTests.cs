@@ -18,7 +18,6 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using Acoustics.Tools.Wav;
-    using EcoSounds.Mvc.Tests.AcousticsTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using MSTestExtensions;
     using TestHelpers;

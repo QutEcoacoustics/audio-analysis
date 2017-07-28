@@ -31,6 +31,10 @@
         
         <##startforeach{group}##>
         <div class="cluster" title="cluster:', <##group##>, '">
+            <div class="cluster_info">
+                <span>Dist from prev: <##dist.from.prev##></span> | 
+                <span>Dist from first: <##dist.from.first##></span>
+            </div>
              <##startforeach{}##>
                 <a class='sec' href="<##link##>" target="_blank">
                  <img src="<##spectro.img.path##>" title="<##img.title##>" alt="" />

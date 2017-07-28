@@ -2,11 +2,9 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-namespace AudioAnalysisTools
+namespace AudioAnalysisTools.StandardSpectrograms
 {
     using Acoustics.Tools.Wav;
-    using DSP;
-    using StandardSpectrograms;
 
     /// <summary>
     /// This class is designed to produce a full-bandwidth spectrogram of spectral amplitudes
@@ -17,13 +15,6 @@ namespace AudioAnalysisTools
         public AmplitudeSonogram(SonogramConfig config, WavReader wav)
             : base(config, wav, false)
         { }
-
-        public AmplitudeSonogram(SonogramConfig config, double[,] amplitudeData)
-            : base(config, amplitudeData)
-        {
-            var frames = new double[4, 4];
-            this.SnrData = new SNR(frames) { Decibels = new double[amplitudeData.GetLength(0)] };
-        }
 
         /// <summary>
         /// This method does nothing because do not want to change the amplitude sonogram in any way.

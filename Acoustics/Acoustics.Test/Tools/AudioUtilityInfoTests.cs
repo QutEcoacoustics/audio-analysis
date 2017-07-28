@@ -10,7 +10,6 @@
     using log4net;
     using log4net.Config;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using MSTestExtensions;
     using TestHelpers;
 
     [TestClass]

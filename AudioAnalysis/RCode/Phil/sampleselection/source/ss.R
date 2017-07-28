@@ -63,8 +63,9 @@ require('stringr')
 
 
 
-
+source('paths.R')
 source('config.R')  #must be first
+source('output.R')
 source('minutes.R')
 source('aed.events.R')
 source('features.R')
@@ -79,11 +80,9 @@ source('util.R')
 source('time.R')
 source('spectrogram.R')
 source('audio.R')
-# source('output.R') # deprecated. Use datatrack. Function names are not the same, so need to rewrite function calls to this
 source('user.input.R')
 source('indices.R')
 source('lines.R')
-source('paths.R')
 source('label.events.R')
 source('short.indices.R')
 source('fixedwidth.R')
@@ -110,7 +109,7 @@ SS.fixedwidth <- function () {
     ExtractSDF()
     
     # Step 4
-    # discard silent minutes
+    # discard silent segments
     RemoveSilentSegments()
     
     # Step 5

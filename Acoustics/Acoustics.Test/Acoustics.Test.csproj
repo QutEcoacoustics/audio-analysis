@@ -156,13 +156,15 @@
     <Compile Include="ArrayExtensionsTests.cs" />
     <Compile Include="AudioAnalysisTools\DSP\EnvelopeAndFftTests.cs" />
     <Compile Include="AudioAnalysisTools\DSP\FrequencyScaleTests.cs" />
+    <Compile Include="AudioAnalysisTools\DSP\NoiseRemovalTests.cs" />
     <Compile Include="AudioAnalysisTools\Indices\ClusterIndexTest.cs" />
     <Compile Include="AudioAnalysisTools\Indices\IndexCalculateTest.cs" />
     <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\LdSpectrogramConfigTests.cs" />
     <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\LdSpectrogramStitchingTests.cs" />
     <Compile Include="AudioAnalysisTools\Oscillations2014\OscillationTests.cs" />
     <Compile Include="AudioAnalysisTools\StandardSpectrograms\SonogramTests.cs" />
-    <Compile Include="AudioAnalysisTools\TilerTests.cs" />
+    <Compile Include="AudioAnalysisTools\TileImage\AbsoluteDateTimeTilerTests.cs" />
+    <Compile Include="AudioAnalysisTools\TileImage\TilerTests.cs" />
     <Compile Include="FileDateHelpersTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shared\BinaryTests.cs" />

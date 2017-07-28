@@ -1,5 +1,5 @@
 ---
-UnitsOfTime: "second"
+#UnitsOfTime: "second"
 SpectralFrameDuration: 0.02
 TileWidth: 300
 # How to tile, valid values:
@@ -18,9 +18,8 @@ SpectralIndexScale:
     - 0.6
     - 0.4
     - 0.2
-SpectralFrameScale: 
-    - 0.16
-    - 0.08
+SpectralFrameScale:
+    - 0.07
     - 0.04
     - 0.02
 MaxTilesPerSuperTile: 12

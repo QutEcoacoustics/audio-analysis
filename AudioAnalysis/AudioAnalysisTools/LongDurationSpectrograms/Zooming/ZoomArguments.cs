@@ -10,17 +10,33 @@
     using Acoustics.Shared.Contracts;
     using Indices;
 
-    public class ZoomCommonArguments
+    public class ZoomArguments
     {
         public string OriginalBasename { get; set; }
 
-        public SuperTilingConfig SuperTilingConfig { get; set; }
+        public SpectrogramZoomingConfig SpectrogramZoomingConfig { get; set; }
 
         public Dictionary<string, IndexProperties> IndexProperties { get; set; }
 
         public FileInfo IndexGenerationDataFile { get; set; }
 
         public FileInfo IndexDistributionsFile { get; set; }
+
+        /// <summary>
+        /// Read in required files.
+        /// We expect a valid indices output directory (the input directory in this action)
+        /// to contain a SpectralIndexStatistics.json and a IndexGenerationData.json file
+        /// </summary>
+        public static (FileInfo indexGenerationDataFile, FileInfo indexDistributionsFile) CheckNeededFilesExist(
+            DirectoryInfo indicesDirectory)
+        {
+            // NOTE: This file should not be compulsory requirement for this activity. At the most a warning could be 
+            // written to say that file not found.
+            //indicesDirectory.GetFiles("*" + IndexDistributions.SpectralIndexStatisticsFilenameFragment + "*").Single();
+            return (
+                indexGenerationDataFile: IndexGenerationData.FindFile(indicesDirectory),
+                indexDistributionsFile: null);
+        }
 
         public void GuessOriginalBasename()
         {
@@ -43,37 +59,15 @@
         /// we expect a valid indices output directory (the input directory in this action)
         /// to contain a IndexDistributions.json and a IndexGenerationData.json file
         /// </summary>
-        /// <param name="indicesDirectory"></param>
         public void CheckForNeededFiles(DirectoryInfo indicesDirectory)
         {
             Contract.Requires(indicesDirectory != null);
 
-            FileInfo indexDistributionsFile;
-            FileInfo indexGenerationDataFile;
-            CheckForNeededFiles(indicesDirectory, out indexGenerationDataFile, out indexDistributionsFile);
-
-            this.IndexGenerationDataFile = indexGenerationDataFile;
-            this.IndexDistributionsFile = indexDistributionsFile;
+            (this.IndexGenerationDataFile, this.IndexDistributionsFile) = CheckNeededFilesExist(indicesDirectory);
 
             // this also means we can parse out other information from these files
             this.GuessOriginalBasename();
 
-        }
-
-        /// <summary>
-        /// Read in required files.
-        /// We expect a valid indices output directory (the input directory in this action)
-        /// to contain a SpectralIndexStatistics.json and a IndexGenerationData.json file
-        /// </summary>
-        /// <param name="indicesDirectory"></param>
-        /// <param name="indexGenerationDataFile"></param>
-        /// <param name="indexDistributionsFile"></param>
-        public static void CheckForNeededFiles(DirectoryInfo indicesDirectory, out FileInfo indexGenerationDataFile, out FileInfo indexDistributionsFile)
-        {
-            // NOTE: This file should not be compulsory requirement for this activity. At the most a warning could be written to say that file not found.
-            indexDistributionsFile = null;
-            //indexDistributionsFile = indicesDirectory.GetFiles("*" + IndexDistributions.SpectralIndexStatisticsFilenameFragment + "*").Single();
-            indexGenerationDataFile = IndexGenerationData.FindFile(indicesDirectory);
         }
     }
 }

@@ -444,7 +444,7 @@ AudioPath <- function (fn = NULL, input.directory = NULL) {
     # given a filename and the input directory, will create the full path and return it. 
     # if the fn already appears to be a full path, it will just return it. This allows processing
     # of csvs with different formats(i.e. filename only or full path)
-    # "/Users/n8933464/Documents/SERF/mtlewis"
+    # "~/Documents/SERF/mtlewis"
     
     # check if fn includes full path already
     if (!grepl('/',fn[3])) {
@@ -693,7 +693,7 @@ CalculateHasBird <- function (seconds, f = 'bird.cover', t = 0.1) {
     return(seconds)
 }
 
-CalculateAnnotationCover <- function (seconds, input.directory = "/Users/n8933464/Documents/SERF/mtlewis") {
+CalculateAnnotationCover <- function (seconds, input.directory = "~/Documents/SERF/mtlewis") {
     # for each second (row) in the data frame supplied,
     # check the csv to see how much of the second is covered by annotations
     seconds$bird.cover.1 <- 0
@@ -757,7 +757,7 @@ CalculateAnnotationCover <- function (seconds, input.directory = "/Users/n893346
     return(seconds)
 }
 
-BuildSecondList <- function (input.directory = "/Users/n8933464/Documents/SERF/mtlewis") {
+BuildSecondList <- function (input.directory = "~/Documents/SERF/mtlewis") {
     # create a csv of seconds based on the files downloaded from the ecosounds website
 
     

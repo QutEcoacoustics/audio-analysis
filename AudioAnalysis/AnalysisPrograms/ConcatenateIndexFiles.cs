@@ -1101,14 +1101,14 @@ namespace AnalysisPrograms
         */
 
         /// <summary>
-        /// Test data derived from ZuZZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016.
+        /// Test data derived from ZuZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016.
         /// This tests concatenation when ConcatenateEverythingYouCanLayYourHandsOn = true
         /// This test was set up October 2016. The test was transfered to this separate TESTMETHOD in April 2017.
         /// </summary>
         public static void TESTMETHOD_ConcatenateIndexFilesTest1()
         {
             // Set the drive: work = G; home = E
-            string drive = "E";
+            string drive = "G";
 
             // top level directory
             DirectoryInfo[] dataDirs =
@@ -1116,7 +1116,12 @@ namespace AnalysisPrograms
                 new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\"),
             };
 
-            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestConcatenation\Test1_Output".ToDirectoryInfo();
+            var outputDir = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Test3_Output".ToDirectoryInfo();
+            if (!outputDir.Exists)
+            {
+                outputDir.Create();
+            }
+
             var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_SpectrogramFalseColourConfig.yml");
 
             var arguments = new Arguments
@@ -1153,7 +1158,7 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// Test data derived from ZuZZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016.
+        /// Test data derived from ZuZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016.
         /// TEST 2: Do test of CONCATENATE A 24 hour BLOCK of DATA
         ///         That is, ConcatenateEverythingYouCanLayYourHandsOn = false
         /// This test was set up October 2016. The test was transfered to this separate TESTMETHOD in April 2017.
@@ -1161,11 +1166,15 @@ namespace AnalysisPrograms
         public static void TESTMETHOD_ConcatenateIndexFilesTest2()
         {
             // Set the drive: work = G; home = E
-            string drive = "E";
+            string drive = "G";
 
             // top level directory
             DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\"), };
-            var outputDir = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Test2_Output".ToDirectoryInfo();
+            var outputDir = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Test4_Output".ToDirectoryInfo();
+            if (!outputDir.Exists)
+            {
+                outputDir.Create();
+            }
 
             // var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_SpectrogramFalseColourConfig.yml");
             // if set null will use the default for testing.
@@ -1201,19 +1210,21 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// Test data derived from ZuZZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016.
+        /// Test data derived from ZuZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016.
         /// TEST 3: Do test of CONCATENATE A 24 hour BLOCK of DATA
         ///         That is, ConcatenateEverythingYouCanLayYourHandsOn = false
+        /// HOWEVER, NOTE that the start and end dates are set = null.
+        /// In this situation the default behaviour is to concatenate the earliest to the last dates found in 24 hour blocks.
         /// This test was set up October 2016. The test was transfered to this separate TESTMETHOD in April 2017.
         /// </summary>
         public static void TESTMETHOD_ConcatenateIndexFilesTest3()
         {
             // Set the drive: work = G; home = E
-            string drive = "E";
+            string drive = "G";
 
             // top level directory
             DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\"), };
-            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestConcatenation\Test3_Output".ToDirectoryInfo();
+            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestConcatenation\Test5_Output".ToDirectoryInfo();
             var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_SpectrogramFalseColourConfig.yml");
 
             var arguments = new Arguments
@@ -1246,23 +1257,28 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// Test data derived from ZuZZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016.
+        /// Test data derived from ZuZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016.
         /// This tests concatenation when ConcatenateEverythingYouCanLayYourHandsOn = true
-        /// This test was set up to work with a reduced data set that will be used for UNIT TESTING, 13th April 2017.
+        /// It works with a reduced data set that will be used for UNIT TESTING, 13th April 2017.
         /// </summary>
         public static void TESTMETHOD_ConcatenateIndexFilesTest4()
         {
             // Set the drive: work = G; home = E
-            string drive = "E";
+            string drive = "G";
+
+            var zipFile = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2Reduced.zip");
+            var dataDir = new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Delete");
+            ZipUnzip.UnZip(dataDir.FullName, zipFile.FullName, true);
 
             // top level directory
             DirectoryInfo[] dataDirs =
             {
+                new DirectoryInfo(dataDir.FullName + "\\Indonesia_2Reduced"),
+                //new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2Reduced"),
                 //new DirectoryInfo($"{drive}:\\Work\\GitHub\\audio-analysis\\Acoustics\\Acoustics.Test\\TestResources\\Concatenation\\Indonesia20160726"),
-                new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2"),
             };
 
-            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestConcatenation\Test4_Output".ToDirectoryInfo();
+            var outputDir = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Test7_Output".ToDirectoryInfo();
             var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_SpectrogramFalseColourConfig.yml");
 
             var arguments = new Arguments

@@ -403,7 +403,7 @@
             List<double[]> newColumns = new List<double[]>();
             for (int i = 0; i < columns.Count; i++)
             {
-                double[] processedColumn = DataTools.normalise(columns[i]); //normalise all values in [0,1]
+                double[] processedColumn = DataTools.normalise(columns[i]); //NormaliseMatrixValues all values in [0,1]
                 newColumns.Add(processedColumn);
             }
             string[] headers = GetColumnNames(dt);
@@ -445,7 +445,7 @@
             List<double[]> newColumns = new List<double[]>();
             for (int i = 0; i < columns.Count; i++)
             {
-                double[] processedColumn = DataTools.NormaliseInZeroOne(columns[i], minValue[i], maxValue[i]); //normalise all values in [0,1]
+                double[] processedColumn = DataTools.NormaliseInZeroOne(columns[i], minValue[i], maxValue[i]); //NormaliseMatrixValues all values in [0,1]
                 newColumns.Add(processedColumn);
             }
             return newColumns;

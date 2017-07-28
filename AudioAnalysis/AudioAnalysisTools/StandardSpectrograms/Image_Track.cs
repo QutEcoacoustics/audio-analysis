@@ -754,7 +754,7 @@
             double range = maxVal - minVal;
             for (int x = 0; x < imageWidth; x++) //for pixels in the line
             {
-                // normalise and bound the value - use min bound, max and 255 image intensity range
+                // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                 double value = (array[x] - minVal) / range;
                 int c = 255 - (int)Math.Floor(255.0 * value); //original version
                 if (c < threshold) c = 0;
@@ -788,7 +788,7 @@
             double range = maxVal - minVal;
             for (int x = 0; x < imageWidth; x++) //for pixels in the line
             {
-                // normalise and bound the value - use min bound, max and 255 image intensity range
+                // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                 double value = (array[x] - minVal) / range;
                 int c = 255 - (int)Math.Floor(255.0 * value); //original version
                 if (c < threshold) c = 0;
@@ -858,7 +858,7 @@
             for (int i = 0; i < array.Length; i++) //for pixels in the line
             {
                 int x = (int)order[i];
-                // normalise and bound the value - use min bound, max and 255 image intensity range
+                // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                 //double value = (array[i] - minVal) / range;
                 double value = array[i];
                 int barHeight = (int)Math.Round(value * trackHeight);

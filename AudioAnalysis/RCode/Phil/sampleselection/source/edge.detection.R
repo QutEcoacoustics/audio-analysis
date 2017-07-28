@@ -2,8 +2,8 @@ library('adimpro')
 
 source('ss.R')
 
-f <- "/Users/n8933464/Documents/SERF/NW/test/test.wav"
-i <- "/Users/n8933464/Documents/SERF/NW/test/test.wav.png"
+f <- "~/Documents/SERF/NW/test/test.wav"
+i <- "~/Documents/SERF/NW/test/test.wav.png"
 
 spectro <- Sp.Create(f)
 

@@ -408,7 +408,7 @@ namespace TowseyLibrary
         //    }
         //    //    PrintHash(h2);
 
-        //    // normalise the values in the hash preserving the keys
+        //    // NormaliseMatrixValues the values in the hash preserving the keys
         //    h1 = DataUtilities.Normalise(h1);
         //    h2 = DataUtilities.Normalise(h2);
         //    //    VectorLength(h1); // check vector mapLength

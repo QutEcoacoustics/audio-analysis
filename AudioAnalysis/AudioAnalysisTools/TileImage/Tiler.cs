@@ -521,6 +521,11 @@ namespace AudioAnalysisTools.TileImage
             return (int)(Math.Abs(floored - value) < Epsilon ? floored : floored + 2);
         }
 
+        /// <summary>
+        /// Split a region into top, middle, and bottom sections.
+        /// Split along points 1 & 2.
+        /// If resulting rect has zero height it is omitted from the results.
+        /// </summary>
         private static List<ImageComponent> SplitAlongY(
             int x,
             int y,
@@ -531,8 +536,8 @@ namespace AudioAnalysisTools.TileImage
             TileBias xBias)
         {
             Contract.Requires(height != 0);
-            Contract.Requires(ySplit1 > y);
-            Contract.Requires(ySplit2 > y && ySplit2 > ySplit1);
+            Contract.Requires(ySplit1 >= y);
+            Contract.Requires(ySplit2 >= y && ySplit2 > ySplit1);
 
             var split = new List<ImageComponent>(3);
 
@@ -687,18 +692,5 @@ namespace AudioAnalysisTools.TileImage
         }
 
         #endregion
-    }
-
-    public class DuplicateTileException : Exception
-    {
-        public string Name { get; private set; }
-
-        public ISuperTile Current { get; private set; }
-
-        public DuplicateTileException(string name, ISuperTile current)
-        {
-            this.Name = name;
-            this.Current = current;
-        }
     }
 }

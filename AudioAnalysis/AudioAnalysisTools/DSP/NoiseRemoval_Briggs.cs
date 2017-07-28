@@ -135,7 +135,7 @@
             {
                 double[] column = MatrixTools.GetColumn(matrix, col);
                 double[] localVariance = NormalDist.CalculateLocalVariance(column, neighbourhood);
-                // normalise with local column variance
+                // NormaliseMatrixValues with local column variance
                 for (int y = 0; y < rowCount; y++) //for all rows
                 {
                     //outM[y, col] = matrix[y, col] / (contrastLevel + localVariance[y]);
@@ -177,7 +177,7 @@
             {
                 double[] column = MatrixTools.GetColumn(matrix, col);
                 double[] localVariance = NormalDist.CalculateLocalVariance(column, neighbourhood);
-                // normalise with local column variance
+                // NormaliseMatrixValues with local column variance
                 for (int y = 0; y < rowCount; y++) //for all rows
                 {
                     //outM[y, col] = matrix[y, col] / (contrastLevel + localVariance[y]);

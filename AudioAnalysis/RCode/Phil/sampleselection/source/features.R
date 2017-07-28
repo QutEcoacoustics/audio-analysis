@@ -153,8 +153,8 @@ SaveFeatures2 <- function (features.all, rating.features.all, params, dependenci
     fn.f <- paste0('features.',fn)
     fn.rf <- paste0('rf.',fn)
     
-    path.f = '/Users/n8933464/Documents/sample_selection_output/features_parts/features'
-    path.rf = '/Users/n8933464/Documents/sample_selection_output/features_parts/rf'
+    path.f = '~/Documents/sample_selection_output/features_parts/features'
+path.rf = '~/Documents/sample_selection_output/features_parts/rf'
     
     write.csv(features.all, file = file.path(path.f, fn.f), row.names = FALSE)
     write.csv(rating.features.all, file = file.path(path.rf, fn.rf), row.names = FALSE)

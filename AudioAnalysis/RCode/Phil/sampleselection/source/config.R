@@ -6,14 +6,6 @@ g.report.level <- 5
 #####
 # paths for input and output relative to working directory
 
-# directory containing all audio/event source files 
-g.source.dir <- file.path('','Users','n8933464','Documents','SERF')
-
-# audio source directory, containing wav files
-g.audio.dir  <- file.path(g.source.dir, 'mono')
-
-# lines source directory, containing lines files
-g.lines.dir  <- file.path(g.source.dir, 'lines')
 
 # events produced by different parameters of the AED can be stored in 
 # different directories, named by the version number. This is the version
@@ -22,15 +14,9 @@ g.all.events.version <- 4
 #g.all.events.version <- 'a'
 
 # events source directory
-g.events.source.dir  <- file.path(g.source.dir,'events',g.all.events.version)
+g.events.source.dir  <- file.path(Path('events'),g.all.events.version)
 
 
-
-
-
-
-# output parent directory. All output is within this directory
-g.output.parent.dir <- file.path('','Users','n8933464','Documents','sample_selection_output')
 
 #####
 # start dates for study and target

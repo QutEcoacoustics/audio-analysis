@@ -379,7 +379,7 @@ ConvertToMins <- function (replace.existing = FALSE) {
     
     require('stringr')
 
-    #destination <- '/Users/n8933464/Documents/SERF/serf_audio'
+
     destination <- '/Volumes/files/qut_data/SERF/serf_audio' 
     sites <- c('NE', 'NW', 'SE', 'SW')
     dates <- c('2010-10-13', '2010-10-14', '2010-10-15', '2010-10-16', '2010-10-17')

@@ -1,6 +1,6 @@
 TS <- function (s = NA) {
     if (is.na(s)) {
-        s <- Sp.Create('/Users/n8933464/Documents/SERF/NW/test/3.wav')
+        s <- Sp.Create('~/Documents/SERF/NW/test/3.wav')
     }
     s$label = "test label"
     #Sp.Draw(s, 'test.png')

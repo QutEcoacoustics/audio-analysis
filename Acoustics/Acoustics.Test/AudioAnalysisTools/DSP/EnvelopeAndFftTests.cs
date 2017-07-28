@@ -2,12 +2,11 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-namespace Acoustics.Test
+namespace Acoustics.Test.AudioAnalysisTools.DSP
 {
     using System;
     using System.IO;
     using Acoustics.Shared;
-    using EcoSounds.Mvc.Tests;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -19,7 +18,7 @@ namespace Acoustics.Test
     /// Notes on TESTS: (from Anthony in email @ 05/04/2017)
     /// (1) small tests are better
     /// (2) simpler tests are better
-    /// (3) use an appropriate serialisation format
+    /// (3) use an appropriate serialization format
     /// (4) for binary large objects(BLOBs) make sure git-lfs is tracking them
     /// See this commit for dealing with BLOBs: https://github.com/QutBioacoustics/audio-analysis/commit/55142089c8eb65d46e2f96f1d2f9a30d89b62710
     /// </summary>
@@ -96,12 +95,12 @@ namespace Acoustics.Test
             Assert.AreEqual(expectedSR, sr);
             Assert.AreEqual("00:01:00.2450000", duration.ToString());
             Assert.AreEqual(2594, frameCount);
-            Assert.AreEqual(0.880878951426369, fractionOfHighEnergyFrames, 0.000000001);
             int expectedBitsPerSample = 16;
             double expectedEpsilon = Math.Pow(0.5, expectedBitsPerSample - 1);
             Assert.AreEqual(expectedEpsilon, epislon);
             double expectedWindowPower = 203.0778;
             Assert.AreEqual(expectedWindowPower, windowPower, 0.0001);
+            Assert.AreEqual(0.0, fractionOfHighEnergyFrames, 0.0000001);
 
             // Test sonogram data matrix by comparing the vector of column sums.
             double[] columnSums = MatrixTools.SumColumns(amplSpectrogram);
@@ -151,7 +150,7 @@ namespace Acoustics.Test
             // The below info is only used when calculating spectral and summary indices
             // energy level information
             int clipCount = fftdata.ClipCount;
-            int maxAmpCount = fftdata.MaxAmplitudeCount;
+            int maxAmpCount = fftdata.HighAmplitudeCount;
             double maxSig = fftdata.MaxSignalValue;
             double minSig = fftdata.MinSignalValue;
 
