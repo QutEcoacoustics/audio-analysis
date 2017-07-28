@@ -1,0 +1,191 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title><##title##></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+        <style>
+            body, html {
+                margin: 0px;
+                padding: 0px;
+            }
+            
+            .cluster_info {
+                display:none;
+            }
+            
+            .subgroup {
+                display:inline-block;
+                position: relative;
+            }
+            
+            a {
+              display:none;
+            }
+            
+            a:first-child {
+              display:inline-block;
+            }
+            
+            img {
+                width: 50px;
+                height: 100px;
+            } 
+            
+            .subgroupBrowser {
+                display:none;
+                background: rgba(0,0,0,0.8);
+                padding: 5px;
+                border-radius: 3px;
+                position: absolute;
+                top: 100px;
+                z-index: 100;
+                width: 98px;
+            }
+            
+            .subgroup:hover .subgroupBrowser { 
+                display:block;
+            }
+            
+            .subgroup:nth-child(4) .subgroupBrowser { 
+              
+            }
+            
+            .subgroupBrowser a {
+              display:inline-block;
+            }
+            
+            .subgroupBrowser img {    
+                width:25px;
+                height:50px;
+                border: 1px solid #ffffff;
+                margin-left: 2px;
+                margin-right: 2px;
+            }
+            
+            .subgroupBrowser img:hover  { 
+                border: 1px solid #44aa44; 
+            }
+            
+
+			
+			/* triangle and border stuff */
+			
+			.subgroupBrowser {
+				
+				border: 1px solid #fff;
+				position: absolute;
+				padding: 5px;
+				text-align: center;
+				text-shadow: 0 0 1px #000;
+			}
+
+			.subgroupBrowser:after,
+			.subgroupBrowser:before {
+				content: '';
+				display: block;
+				position: absolute;
+				
+				width: 0;
+				height: 0;
+				border-style: solid;
+			}
+
+			.subgroupBrowser:after {
+				left: 10px;
+				top: -20px;
+				border-color: transparent transparent rgba(0,0,0,0.8)  transparent;
+				border-width: 10px;
+			}
+
+			.subgroupBrowser:before {
+				left: 9px;
+				top: -22px;
+				border-color: transparent transparent #fff transparent ;
+				border-width: 11px;
+			}
+			
+			
+        
+        </style>
+        
+        <script type='text/javascript'>
+        
+        function init () {
+        
+            var subgroups = document.getElementsByClassName('subgroup');
+            [].forEach.call(subgroups,attachSubgroupBrowser);
+            
+
+        }
+        
+        
+        function attachSubgroupBrowser (subgroup) {
+            var thumb, main;
+            var subgroupBrowser = document.createElement('div');
+			subgroupBrowser.className = 'subgroupBrowser';
+			subgroup.appendChild(subgroupBrowser);
+			
+			
+// 			var arrow = document.createElement('div');
+// 			arrow.className = 'arrow';
+// 			subgroupBrowser.appendChild(arrow);
+			
+			members = subgroup.getElementsByTagName('a');
+			
+			main = members[0];
+			
+			[].forEach.call(members, function (member, i) {
+			
+			    thumb = member.cloneNode(true);
+			    subgroupBrowser.appendChild(thumb);
+			    thumb.addEventListener("mouseover", function () {
+			        main.firstElementChild.src = this.firstElementChild.src;
+			        main.href = this.href;
+			        console.log('change src',this.firstElementChild.src); 
+			    }, false);
+
+			    
+			});
+			
+		
+			
+        
+        }
+        
+        window.onload = init;
+        
+        </script>
+
+
+    </head>
+    <body>
+
+        
+        <##startforeach{group}##>
+        <div class="cluster" title="cluster:', <##group##>, '">
+            <div class="cluster_info">
+                <span>Dist from prev: <##dist.from.prev##></span> | 
+                <span>Dist from first: <##dist.from.first##></span>
+            </div>
+             <##startforeach{sub.group}##>
+             
+                <div class='subgroup' title="subgroup:', <##sub.group##>, '">
+             
+                <##startforeach{}##>
+                   <a class='sec' href="<##link##>" target="_blank">
+                    <img src="<##spectro.img.path##>" title="<##img.title##>" alt="" />
+                   </a>
+                <##endforeach{}##>
+             
+             </div>
+             
+             <##endforeach{sub.group}##>
+        </div>
+        <##endforeach{group}##>
+        
+    </body>
+</html>

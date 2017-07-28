@@ -4,7 +4,7 @@
 # the paths are checked one by one to find the one that exists
 
 paths <- list(
-    audio = c("/Volumes/passport/phil/SERF/serf_audio",
+    audio = c("/Volumes/passport/serf_audio",
              "/Volumes/files/qut_data/SERF/serf_audio",
              "D:/phil/SERF/serf_audio",
              "~/Desktop/SERF/serf_audio"),

@@ -111,6 +111,197 @@ InspectClusters <- function (cluster.groups = NA, duration.per.group = 30, max.g
     
 }
 
+InspectClusters.segment.nested <- function (clusters = NULL, max.clusters = 5) {
+    #  for some given clusters, shows some segment events belonging to each of those clusters
+    #  
+    #  Args:
+    #    clusters: vector of ints; which clusters
+    #    num.segments: int; number of segments to show for each cluster
+    #    max.groups: if clusters is not provided it will be set to either the number of clusters or max.groups (whichever is smaller)
+    #
+    #  Details:
+    #    Randomply chooses segments from the group 1 by 1 
+    #    It then generates spectrogram of the event plus the padding, and appends them to form a spectrogram of length duration.per.group
+    #    each clustergroup will have its own row
+    #
+    
+    events <- datatrack::ReadDataobject('filtered.segment.events') #
+    
+    clustered.events <- datatrack::ReadDataobject('sub.clustered.events')  # contains only group and event id and min id
+    clustering <- datatrack::ReadDataobject('clustering.kmeans')
+    
+    
+    # double check that the event ids match correctly
+    if (!all(clustered.events$data$event.id == events$data$event.id)) {
+        stop('event id of events and clustered events data don\'t match')
+    }
+    
+    # get the different clusterings for different number of clusters
+    clusterings <- colnames(clustered.events$data)
+    clusterings <- clusterings[!clusterings %in% c('event.id', 'min.id', 'sub.group')]
+    
+    # combine the event columns to the clustered event data frame
+    clustered.events.data <- cbind(clustered.events$data, events$data[,-(which(colnames(events$data) == 'event.id'))])
+    
+    
+    # clustered.events.data <- AttachSpeciesToEvents(clustered.events.data)
+    # only use events that have a species id
+    # clustered.events.data <- clustered.events.data[!is.na(clustered.events.data$species.id),]
+    
+    
+    if (length(clusterings) > 1) {
+        which.k <- GetUserChoice(clusterings, 'which clustering (which size k) for inspection')
+    } else {
+        which.k <- 1
+    }
+    
+    distance.matrix <- as.matrix(dist(clustering$data[[which.k]]$centers))
+
+    group.col <- clusterings[which.k]
+    
+    # this should really just be 1:num.clusters, but to be safe do it like this
+    all.groups <- unique(clustered.events.data[,group.col])
+    all.groups <- all.groups[order(all.groups)]
+    
+    if (is.numeric(clusters)) {
+        # make sure that the cluster groups given as a param are actually real groups
+        groups.that.exist <- clusters %in% all.groups
+        groups.that.dont.exist <- clusters[!groups.that.exist]
+        if (length(groups.that.dont.exist) > 0) {
+            Report(1, 'Clusters specified by user that don\'t exist. Ignoring:', groups.that.dont.exist)
+        }
+        clusters <- clusters[groups.that.exist]
+    } else {
+        # no clusters specified as function param, so 
+        clusters <- all.groups
+    }
+    
+    # make sure max is not exceeded
+    if(length(clusters) > max.clusters) {
+        removed <- clusters[(max.clusters + 1):length(clusters)]
+        clusters <- clusters[1:max.clusters]
+        Report(3, 'Number of clusters to render was greater than max.groups ... Ignoring the following clusters:', paste(removed, collapse = ','))
+    }
+    
+    selected.events <- clustered.events.data[clustered.events.data[,group.col] %in% clusters,]
+    
+    selected.events$segment.duration <- 1
+    selected.events$dist.from.first <- NA
+    selected.events$dist.from.prev <- NA
+    
+    
+    homogeneity <- function () {
+        
+        #unfinished
+        
+        # for cluster quality evaluation
+        # https://aclweb.org/anthology/D/D07/D07-1043.pdf
+        C <- unique(selected.events$species.id)
+        K <- unique(selected.events[,group.col])
+        contingency.table <- table(C,K)
+        
+        homogenity.group <- function (group, C, K, contingency.table) {
+            N <- sum(contingency.table)
+            #vector of the number of times each class appears in this group
+            Ack <- contingency.table[,as.character(group)]
+            num.in.this.group <- sum(Ack)
+            H <- (Ack / N) * log(Ack / num.in.this.group)
+        } 
+        
+        
+    }
+    
+    
+    include.event = rep(TRUE, nrow(selected.events))
+    
+    num.per.subgroup <- 3
+    
+    # for each cluster, 
+    # calculate homogeneity 
+    # limit the number of segments shown
+    for (group in clusters) {
+        
+        group.subset <- selected.events[,group.col] == group
+        
+        sub.groups = unique(selected.events$sub.group[group.subset])
+        
+        for (sub.group in sub.groups) {
+            
+            
+            
+            subgroup.subset <- selected.events$sub.group[group.subset] == sub.group
+            num.in.subgroup <- sum(subgroup.subset)
+            
+            # select some random segments from the subgroup
+            if (num.in.subgroup > num.per.subgroup) {
+                # set seed to save time while developing (don't generate as many spectrograms)
+                set.seed(42)
+                num.to.remove <- num.in.subgroup-num.per.subgroup
+                include.event[group.subset][subgroup.subset][sample(num.in.subgroup,num.to.remove)] <- FALSE
+                Report(4, 'Selecting', paste0(num.per.subgroup,'/',num.in.subgroup), 'for group', paste0(group, '.',  sub.group))
+            }
+            
+        }
+
+        
+        # add information about the cluster centroid distance for this group from the previous group and from the first group
+        if (group > 1) {
+            selected.events$dist.from.prev[group.subset] <- round(distance.matrix[group-1,group], 2)
+        } else {
+            selected.events$dist.from.prev[group.subset] <- 0
+        }
+        selected.events$dist.from.first[group.subset] <- round(distance.matrix[1,group], 2)
+        
+    }
+    
+    selected.events <- selected.events[include.event,]
+
+    
+    temp.dir <- TempDirectory()
+    
+    spectro.list <- SaveSpectroImgsForInspection(selected.events, temp.dir, noise.reduction = noise.reduction)
+    
+    
+    
+    
+    col.names <- colnames(selected.events)
+    col.names[col.names == group.col] <- 'group'
+    colnames(selected.events) <- col.names
+    
+    seg.time <- SetTime(selected.events$min, selected.events$start.sec)
+    seg.sec.of.day <- selected.events$min * 60 + selected.events$start.sec
+    
+    
+    selected.events$spectro.img.path <- spectro.list
+    
+    selected.events$img.title <- paste(selected.events$event.id, 
+                                       selected.events$site, 
+                                       selected.events$date, 
+                                       seg.time, 
+                                       selected.events$min, 
+                                       paste0('species.id:', selected.events$species.id), sep = ' | ')
+    
+    
+    selected.events$link <- BawLink(site = selected.events$site, 
+                                    date = selected.events$date, 
+                                    start.sec = seg.sec.of.day, 
+                                    end.sec = seg.sec.of.day + 1, 
+                                    margin = 2)
+    
+    
+    # sort by cluster so that the distance from previous makes sense
+    # secondary sorting by eventID for the order of segments in each row
+    selected.events <- selected.events[order(selected.events$group, selected.events$event.id),]
+    
+    
+    html.file <- file.path(temp.dir,paste0('inspect.segments.', format(Sys.time(), format="%y%m%d_%H%M%S"), '.html'))
+    
+    templator::HtmlInspector(template.path = file.path('templates','segment.event.subcluster.inspector.html'), output.path =  html.file, selected.events, list(title = "inspect segments"))
+    
+    print(paste("output saved to ", temp.dir))
+    
+    
+}
 
 
 InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clusters = 5, segment.duration = 1, noise.reduction = 0.5) {

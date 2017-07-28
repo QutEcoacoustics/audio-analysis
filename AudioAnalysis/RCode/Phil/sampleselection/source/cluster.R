@@ -81,6 +81,91 @@ ClusterEvents <- function (num.groups = 'auto',
     
 }
 
+
+ClusterForInspection2 <- function () {
+   
+    vals <- GetEventsAndFeaturesTDCC() # todo: fix stuff so that it generalises to use any kind of features
+    event.features <- vals$event.features
+    events <- vals$events
+    params <- list()
+    dependencies <- list()
+    # events could be segment events or AED events
+    dependencies[[events$name]] <- events$version
+    dependencies[[event.features$name]] <- event.features$version
+    
+    # 240 clusters, each clustered into 12 clusters
+    # hierachy of 2 levels
+    num.clusters <- c(240,12)
+    
+    res.1 <- DoClusterKmeans(event.features$data, num.clusters = num.clusters[1])
+    groups.df <- CreateEventGroups.kmeans(events$data, res.1)
+    
+    
+    
+    
+}
+
+
+SubCluster <- function (tdccs = NULL) {
+    
+    
+    clustered.events <- datatrack::ReadDataobject('clustered.events')
+    if (is.null(tdccs)) {
+        tdccs <- datatrack::ReadDataobject('TDCCs')
+    }
+   
+    features <- tdccs$data[tdccs$data$event.id %in% clustered.events$data$event.id,]
+    
+    if (!all(features$event.id == clustered.events$event.id)) {
+        # possibly need to sort
+        stop('event id mismatch')
+    }
+    
+    # remove event id column from features. 
+    # Event id can be found in corresponding row of clustered.events df
+    features <- features[,-(which(colnames(features) == 'event.id'))]
+    
+    # 240 clusters, each clustered into 12 clusters
+    # hierachy of 2 levels
+    num.sub.clusters <- 12
+    clustered.events$data$sub.group <- NA
+    
+    groups <- unique(clustered.events$data$X240)
+    
+    for (g in groups) {
+        
+        subset <- clustered.events$data$X240 == g
+        
+        if (sum(subset) <= num.sub.clusters) {
+            clustered.events$data$sub.group[subset] = 1:sum(subset)
+        } else {
+            group.features <- features[subset,]
+            
+            # this would be more efficient if we calculate 1 distance matrix and subset it as well,
+            # rather than calculating the distance matrix again for each sub clustering
+            res.1 <- DoClusterKmeans(group.features, num.clusters = num.sub.clusters)
+            clustered.events$data$sub.group[subset] <- res.1[[1]]$cluster
+            
+        }
+        
+        
+        
+        
+    }
+    
+    params <- list(num.sub.clusters = num.sub.clusters)
+    dependencies <- list(TDCCs = tdccs$version, clustered.events = clustered.events$version)
+    
+    datatrack::WriteDataobject(clustered.events$data, 'sub.clustered.events', params = params, dependencies = dependencies)
+    
+    return(clustered.events$data)
+    
+    
+    
+    
+}
+
+
 # bug: sometimes returns events and features with different number of rows!
 GetEventsAndFeaturesTDCC <- function () {
     # gets the events and features data frames from saved output
