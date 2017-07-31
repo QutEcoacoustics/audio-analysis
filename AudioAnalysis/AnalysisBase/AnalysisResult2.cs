@@ -116,7 +116,7 @@ namespace AnalysisBase
         /// </summary>
         public TimeSpan SegmentStartOffset
         {
-            get { return this.SettingsUsed.SegmentStartOffset ?? TimeSpan.Zero; }
+            get { return this.SettingsUsed.SegmentSettings.SegmentStartOffset ?? TimeSpan.Zero; }
         }
 
         /// <summary>

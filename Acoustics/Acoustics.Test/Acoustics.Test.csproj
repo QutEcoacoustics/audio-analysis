@@ -137,6 +137,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Extra Assemblies\PowerArgs\PowerArgs.dll</HintPath>
     </Reference>
+    <Reference Include="SmartFormat, Version=2.1.0.1, Culture=neutral, PublicKeyToken=568866805651201f, processorArchitecture=MSIL">
+      <HintPath>..\..\AudioAnalysis\packages\SmartFormat.Net.2.1.0.1\lib\net45\SmartFormat.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core">
@@ -176,6 +179,9 @@
   <ItemGroup>
     <Compile Include="AcousticWorkbench\ApiTests.cs" />
     <Compile Include="AcousticWorkbench\AuthenticationServiceTests.cs" />
+    <Compile Include="AnalysisBase\AnalysisCoordinatorTests.cs" />
+    <Compile Include="AnalysisBase\SegmentSettingsTests.cs" />
+    <Compile Include="AnalysisBase\AnalysisSettingsTests.cs" />
     <Compile Include="AnalysisPrograms\AnalyzeLongRecordings\TestAnalyzeLongRecording.cs" />
     <Compile Include="AnalysisPrograms\Concatenation\ConcatenationTests.cs" />
     <Compile Include="AnalysisPrograms\SourcePreparers\LocalSourcePreparerTests.cs" />
@@ -200,7 +206,10 @@
     <Compile Include="Shared\JsonTests.cs" />
     <Compile Include="Shared\LoggedConsoleTests.cs" />
     <Compile Include="Shared\YamlTests.cs" />
+    <Compile Include="TestHelpers\Assertions.cs" />
     <Compile Include="TestHelpers\ConsoleRedirector.cs" />
+    <Compile Include="TestHelpers\DummyAnalyzer.cs" />
+    <Compile Include="TestHelpers\DummySourcePreparer.cs" />
     <Compile Include="TestHelpers\OutputDirectoryTestClass.cs" />
     <Compile Include="TestHelpers\Random.cs" />
     <Compile Include="TestHelpers\TestHelper.cs" />

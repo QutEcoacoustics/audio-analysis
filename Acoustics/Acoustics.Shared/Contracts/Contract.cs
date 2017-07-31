@@ -10,6 +10,7 @@ namespace Acoustics.Shared.Contracts
     using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Text;
+    using JetBrains.Annotations;
 
     /// <summary>
     /// This is a minimal implementation of the CodeContracts API that represents 90%
@@ -25,6 +26,7 @@ namespace Acoustics.Shared.Contracts
         /// <param name="result">Whether or not the exception should be thrown</param>
         /// <param name="message">The message to add to the exception if the check fails</param>
         [DebuggerHidden]
+        [ContractAnnotation("result:false => halt")]
         public static void Requires<T>(bool result, string message = "Precondition failed")
             where T : Exception
         {
@@ -39,8 +41,9 @@ namespace Acoustics.Shared.Contracts
         /// </summary>
         /// <typeparam name="T">The type of exception to throw</typeparam>
         /// <param name="result">Whether or not the exception should be thrown</param>
-        /// <param name="args">The arguments to supply to the excpetion's constructor</param>
+        /// <param name="args">The arguments to supply to the exception's constructor</param>
         [DebuggerHidden]
+        [ContractAnnotation("result:false => halt")]
         public static void Requires<T>(bool result, params object[] args)
             where T : Exception
         {
@@ -64,6 +67,7 @@ namespace Acoustics.Shared.Contracts
         /// <param name="result">Whether or not the exception should be thrown</param>
         /// <param name="message">The message to add to the exception if the check fails</param>
         [DebuggerHidden]
+        [ContractAnnotation("result:false => halt")]
         public static void Ensures<T>(bool result, string message = "Precondition failed")
             where T : Exception
         {
@@ -79,6 +83,7 @@ namespace Acoustics.Shared.Contracts
         /// <param name="result">Whether or not the exception should be thrown</param>
         /// <param name="message">The message to add to the exception if the check fails</param>
         [DebuggerHidden]
+        [ContractAnnotation("result:false => halt")]
         public static void Requires(bool result, string message = "Precondition failed")
         {
             if (!result)
@@ -95,6 +100,7 @@ namespace Acoustics.Shared.Contracts
         /// <param name="result">Whether or not the exception should be thrown</param>
         /// <param name="message">The message to add to the exception if the check fails</param>
         [DebuggerHidden]
+        [ContractAnnotation("result:false => halt")]
         public static void Ensures(bool result, string message = "Precondition failed")
         {
             if (!result)

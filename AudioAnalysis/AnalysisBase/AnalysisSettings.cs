@@ -41,10 +41,10 @@ namespace AnalysisBase
     /// The working directory may be deleted after the analysis is complete.
     /// </para>
     /// </remarks>
-    public class AnalysisSettingsBase<TSegment> : ICloneable
+    public class AnalysisSettingsBase : ICloneable
     {
         [NonSerialized]
-        private static readonly ILog Log = LogManager.GetLogger(nameof(AnalysisSettingsBase<TSegment>));
+        private static readonly ILog Log = LogManager.GetLogger(nameof(AnalysisSettingsBase));
 
         [NonSerialized]
         private static int instanceCounter = 0;
@@ -55,17 +55,21 @@ namespace AnalysisBase
         [NonSerialized]
         private int? instanceId = null;
 
+        private readonly DirectoryInfo fallbackTempDirectory;
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="AnalysisSettingsBase{TSegment}"/> class.
+        /// Initializes a new instance of the <see cref="AnalysisSettingsBase"/> class.
         /// </summary>
         public AnalysisSettingsBase()
         {
             this.ConfigDict = new Dictionary<string, string>();
+            this.AnalysisMixDownToMono = true;
             this.AnalysisTargetSampleRate = AppConfigHelper.DefaultTargetSampleRate;
             this.AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1);
             this.AnalysisMinSegmentDuration = TimeSpan.FromSeconds(20);
-            this.SegmentMediaType = MediaTypes.MediaTypeWav;
+            this.fallbackTempDirectory = TempFileHelper.TempDir();
             this.SegmentOverlapDuration = TimeSpan.Zero;
+            this.SegmentMediaType = MediaTypes.MediaTypeWav;
         }
 
         /// <summary>
@@ -80,7 +84,6 @@ namespace AnalysisBase
                     // counter increment moved out of constructor because binary serializer does not use constructors
                     instanceCounter++;
                     this.instanceId = instanceCounter;
-
                 }
 
                 return this.instanceId.Value;
@@ -89,115 +92,48 @@ namespace AnalysisBase
 
         /// <summary>
         /// Gets or sets the temp directory that is the base of the folder structure that analyses can use.
-        /// Anything put here will be deleted when the analysis is complete.
+        /// The contents of this directory may be deleted after the analysis is finished
         /// Analysis implementations must not set this.
         /// </summary>
-        public DirectoryInfo AnalysisBaseTempDirectory { get; set; }
+        public DirectoryInfo AnalysisTempDirectory { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether <see cref="AnalysisTempDirectory"/> is not null and exists.
+        /// </summary>
+        public bool IsAnalysisTempDirectoryValid => this.AnalysisTempDirectory?.TryCreate() == true;
 
         /// <summary>
         /// Gets a base temp directory. The directory will exist.
+        /// Anything put here will be deleted when the analysis is complete.
         /// </summary>
-        public DirectoryInfo AnalysisBaseTempDirectoryChecked
+        public DirectoryInfo AnalysisTempDirectoryFallback
         {
             get
             {
-                DirectoryInfo tempDir = null;
-
-                if (this.AnalysisBaseTempDirectory != null && Directory.Exists(this.AnalysisBaseTempDirectory.FullName))
+                if (!Directory.Exists(this.fallbackTempDirectory.FullName))
                 {
-                    tempDir = this.AnalysisBaseTempDirectory;
-                }
-                else
-                {
-                    tempDir = TempFileHelper.TempDir();
+                    this.fallbackTempDirectory.Create();
                 }
 
-                if (!Directory.Exists(tempDir.FullName))
-                {
-                    Directory.CreateDirectory(tempDir.FullName);
-                }
-
-                return tempDir;
+                return this.fallbackTempDirectory;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the ChannelSelection array - a list of channels to extract from the audio.
+        /// </summary>
+        public int[] AnalysisChannelSelection { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to mix all selected channels down into one mono channel.
+        /// </summary>
+        public bool AnalysisMixDownToMono { get; set; }
 
         /// <summary>
         /// Gets or sets the output directory that is the base of the folder structure that analyses can use.
         /// Analysis implementations must not set this.
         /// </summary>
-        public DirectoryInfo AnalysisBaseOutputDirectory { get; set; }
-
-        /// <summary>
-        /// Gets or sets the temp directory for a single analysis run.
-        /// Anything put here will be deleted when the analysis is complete.
-        /// Analysis implementations must not set this.
-        /// </summary>
-        public DirectoryInfo SegmentTempDirectory { get; set; }
-
-        /// <summary>
-        /// Gets a temp directory for a single run. The directory will exist.
-        /// </summary>
-        public DirectoryInfo SegmentTempDirectoryChecked
-        {
-            get
-            {
-                DirectoryInfo tempDir = null;
-
-                if (this.SegmentTempDirectory != null && Directory.Exists(this.SegmentTempDirectory.FullName))
-                {
-                    tempDir = this.SegmentTempDirectory;
-                }
-                else
-                {
-                    tempDir = new DirectoryInfo(Path.Combine(this.AnalysisBaseTempDirectoryChecked.FullName, Path.GetRandomFileName()));
-                }
-
-                if (!Directory.Exists(tempDir.FullName))
-                {
-                    Directory.CreateDirectory(tempDir.FullName);
-                }
-
-                return tempDir;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the output directory for a single analysis run.
-        /// Analysis implementations must not set this.
-        /// </summary>
-        public DirectoryInfo SegmentOutputDirectory { get; set; }
-
-        /// <summary>
-        /// Gets or sets the original source file from which audio segments are extracted for analysis.
-        /// </summary>
-        public ISegment<TSegment> Segment { get; set; }
-
-        /// <summary>
-        /// Gets or sets the audio file for the analysis.
-        /// Analysis implementations must not set this.
-        /// </summary>
-        public FileInfo SegmentAudioFile { get; set; }
-
-        /// <summary>
-        /// Gets or sets the events file for the analysis.
-        /// </summary>
-        public FileInfo SegmentEventsFile { get; set; }
-
-        /// <summary>
-        /// Gets or sets the summary indices file for the analysis.
-        /// </summary>
-        public FileInfo SegmentSummaryIndicesFile { get; set; }
-
-        /// <summary>
-        /// Gets or sets the spectrum indices directory where spectra should be written for the analysis.
-        /// </summary>
-        public DirectoryInfo SegmentSpectrumIndicesDirectory { get; set; }
-
-        /// <summary>
-        /// Gets or sets an output image file - most likely a spectrogram
-        /// Analysis implementations must not set this.
-        /// </summary>
-        public FileInfo SegmentImageFile { get; set; }
+        public DirectoryInfo AnalysisOutputDirectory { get; set; }
 
         /// <summary>
         /// Gets or sets the AnalysisSaveBehavior.
@@ -206,26 +142,12 @@ namespace AnalysisBase
         public SaveBehavior AnalysisSaveBehavior { get; set; }
 
         /// <summary>
-        /// Gets or sets the duration for segments to overlap.
-        /// This should be set to an initial value by an analysis.
-        /// </summary>
-        public TimeSpan SegmentOverlapDuration { get; set; }
-
-        /// <summary>
-        /// Gets or sets the ideal duration of audio for the segment being analyzed.
-        /// This number represents what was requested for cutting whereas the actual
-        /// duration of audio provided by <c>SegmentAudioFile</c> may differ slightly due to
-        /// inaccuracies in cutting audio.
-        /// </summary>
-        public TimeSpan? AnalysisIdealSegmentDuration { get; set; }
-
-        /// <summary>
         /// Gets or sets the minimum audio file duration the analysis can process.
         /// This is the min duration without including overlap. Overlap will be added.
         /// This should be set to an initial value by an analysis.
         /// TODO: a chunk of audio without the overlap is a 'segment step'.
         /// </summary>
-        public TimeSpan? AnalysisMinSegmentDuration { get; set; }
+        public TimeSpan AnalysisMinSegmentDuration { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum audio file duration the analysis can process.
@@ -235,10 +157,16 @@ namespace AnalysisBase
         public TimeSpan? AnalysisMaxSegmentDuration { get; set; }
 
         /// <summary>
-        /// Gets or sets the start offset of the current analysis segment.
-        /// For a large file, analyzed in minute segments, this will store Minute offsets (e.g. min 1, min 2, min 3...).
+        /// Gets or sets the duration for segments to overlap.
+        /// This should be set to an initial value by an analysis.
         /// </summary>
-        public TimeSpan? SegmentStartOffset { get; set; }
+        public TimeSpan SegmentOverlapDuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media type the analysis expects.
+        /// This should be set to an initial value by an analysis.
+        /// </summary>
+        public string SegmentMediaType { get; set; }
 
         /// <summary>
         /// Gets or sets the audio sample rate the analysis expects (in hertz).
@@ -246,12 +174,6 @@ namespace AnalysisBase
         /// This used to be set by a constant in each implementation of an analysis.
         /// </summary>
         public int AnalysisTargetSampleRate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the media type the analysis expects.
-        /// This should be set to an initial value by an analysis.
-        /// </summary>
-        public string SegmentMediaType { get; set; }
 
         /// <summary>
         /// Gets or sets the configuration file to use to run the analysis.
@@ -280,7 +202,7 @@ namespace AnalysisBase
         /// <inheritdoc/>
         public object Clone()
         {
-            AnalysisSettingsBase<TSegment> deepClone = this.DeepClone<AnalysisSettingsBase<TSegment>>();
+            AnalysisSettingsBase deepClone = this.DeepClone<AnalysisSettingsBase>();
             Log.Trace("Instance Id of old: {0}, vs new {1}".Format2(this.InstanceId, deepClone.InstanceId));
             return deepClone;
         }
@@ -288,13 +210,13 @@ namespace AnalysisBase
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{nameof(AnalysisSettingsBase<TSegment>)} for {this.SegmentAudioFile.Name} with instance id {this.InstanceId} and config file {this.ConfigFile.Name}.";
+            return $"{nameof(AnalysisSettingsBase)} for {this.SegmentSettings.SegmentAudioFile.Name} with instance id {this.InstanceId} and config file {this.ConfigFile.Name}.";
         }
     }
 
     /// <inheritdoc cref="AnalysisSettingsBase{TSegment}"/>
     [Serializable]
-    public class AnalysisSettings : AnalysisSettingsBase<FileInfo>
+    public class AnalysisSettings : AnalysisSettingsBase
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalysisSettings"/> class.
@@ -307,13 +229,13 @@ namespace AnalysisBase
         /// <summary>
         /// Gets the original source file from which audio segments are extracted for analysis.
         /// </summary>
-        public FileInfo SourceFile => this.Segment.Source;
+        public FileInfo SourceFile => this.SegmentSettings.Segment.Source;
 
         /// <summary>
         /// Gets the sample rate of the original audio file from which segment was extracted.
         /// THIS IS A HACK!!! IT IS A WAY OF STORING INFORMATION THAT WE WANT
         /// TO PASS DOWN INTO THE ANALYSIS LEVEL
         /// </summary>
-        public int? SampleRateOfOriginalAudioFile => (this.Segment as FileSegment).TargetFileSampleRate;
+        public int? SampleRateOfOriginalAudioFile => (this.SegmentSettings.Segment as FileSegment).TargetFileSampleRate;
     }
 }

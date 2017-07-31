@@ -289,12 +289,12 @@ namespace AnalysisPrograms.Recognizers.Base
                 audioUtilityRequest,
                 arguments.Output);
 
-            analysisSettings.SegmentAudioFile = preparedFile.TargetInfo.SourceFile;
+            analysisSettings.SegmentSettings.SegmentAudioFile = preparedFile.TargetInfo.SourceFile;
             analysisSettings.SampleRateOfOriginalAudioFile = preparedFile.SourceInfo.SampleRate;
             // we don't want segments, thus segment duration == total length of original file
-            analysisSettings.AnalysisIdealSegmentDuration = preparedFile.TargetInfo.Duration;
+            analysisSettings.SegmentSettings.AnalysisIdealSegmentDuration = preparedFile.TargetInfo.Duration;
             analysisSettings.AnalysisMaxSegmentDuration = preparedFile.TargetInfo.Duration;
-            analysisSettings.SegmentStartOffset = TimeSpan.Zero;
+            analysisSettings.SegmentSettings.SegmentStartOffset = TimeSpan.Zero;
 
             if (preparedFile.TargetInfo.SampleRate.Value != analysisSettings.AnalysisTargetSampleRate)
             {
@@ -311,7 +311,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
             // run summarize code - output data can be written
             Log.Info("Running recognizer summary: " + analysisIdentifier);
-            var fileSegment = new FileSegment(analysisSettings.SegmentAudioFile, preparedFile.SourceInfo.SampleRate.Value, preparedFile.SourceInfo.Duration.Value);
+            var fileSegment = new FileSegment(analysisSettings.SegmentSettings.SegmentAudioFile, preparedFile.SourceInfo.SampleRate.Value, preparedFile.SourceInfo.Duration.Value);
             recognizer.SummariseResults(
                 analysisSettings,
                 fileSegment,
@@ -324,9 +324,9 @@ namespace AnalysisPrograms.Recognizers.Base
             // TODO: Michael, output anything else as you wish.
 
             Log.Debug("Clean up temporary files");
-            if (analysisSettings.SourceFile.FullName != analysisSettings.SegmentAudioFile.FullName)
+            if (analysisSettings.SourceFile.FullName != analysisSettings.SegmentSettings.SegmentAudioFile.FullName)
             {
-                analysisSettings.SegmentAudioFile.Delete();
+                analysisSettings.SegmentSettings.SegmentAudioFile.Delete();
             }
 
             int eventCount = results?.Events?.Length ?? 0;

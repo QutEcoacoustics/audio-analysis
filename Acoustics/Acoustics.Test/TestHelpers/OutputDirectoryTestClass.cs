@@ -10,7 +10,7 @@ namespace Acoustics.Test.TestHelpers
     [TestClass]
     public class OutputDirectoryTestClass
     {
-        private DirectoryInfo outputDirectory;
+        protected DirectoryInfo outputDirectory;
 
         [TestInitialize]
         public void Setup()

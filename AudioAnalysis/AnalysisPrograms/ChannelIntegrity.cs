@@ -30,17 +30,17 @@ namespace AnalysisPrograms
         public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
             // boilerplate Analyzer
-            var audioFile = analysisSettings.SegmentAudioFile;
+            var audioFile = analysisSettings.SegmentSettings.SegmentAudioFile;
             var sampleRate = analysisSettings.SampleRateOfOriginalAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
-            var outputDirectory = analysisSettings.SegmentOutputDirectory;
+            var outputDirectory = analysisSettings.SegmentSettings.SegmentOutputDirectory;
 
             var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
             analysisResults.AnalysisIdentifier = this.Identifier;
 
             var result = new ChannelIntegrityIndices()
                 {
-                    StartOffset = analysisSettings.SegmentStartOffset.Value,
+                    StartOffset = analysisSettings.SegmentSettings.SegmentStartOffset.Value,
                 };
 
             // do some sanity checks
@@ -88,10 +88,10 @@ namespace AnalysisPrograms
             analysisResults.SummaryIndices = new SummaryIndexBase[] { result };
             analysisResults.SpectralIndices = new SpectralIndexBase[0];
 
-            if (analysisSettings.SegmentSummaryIndicesFile != null)
+            if (analysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null)
             {
-                this.WriteSummaryIndicesFile(analysisSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
-                analysisResults.SummaryIndicesFile = analysisSettings.SegmentSummaryIndicesFile;
+                this.WriteSummaryIndicesFile(analysisSettings.SegmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
+                analysisResults.SummaryIndicesFile = analysisSettings.SegmentSettings.SegmentSummaryIndicesFile;
             }
 
             if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Events.Length))
@@ -99,7 +99,7 @@ namespace AnalysisPrograms
                 throw new NotImplementedException();
             }
 
-            if (analysisSettings.SegmentSpectrumIndicesDirectory != null)
+            if (analysisSettings.SegmentSettings.SegmentSpectrumIndicesDirectory != null)
             {
                 throw new NotImplementedException();
             }

@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="DummyAnalyser.cs" company="QutEcoacoustics">
+// <copyright file="DummyAnalysis.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
@@ -26,7 +26,7 @@ namespace AnalysisPrograms
     /// <summary>
     /// The purpose of this analyser is to make inter-program parallelisation easier to develop
     /// </summary>
-    public class DummyAnalyser
+    public class DummyAnalysis
     {
         [CustomDetailedDescription]
         [CustomDescription]
@@ -47,13 +47,13 @@ namespace AnalysisPrograms
 
             public static string Description()
             {
-                return "An anaysis program to simulate load";
+                return "An analysis program to simulate load";
             }
 
             public static string AdditionalNotes()
             {
-                // add long explantory notes here if you need to
-                return "";
+                // add long explanatory notes here if you need to
+                return string.Empty;
             }
         }
 

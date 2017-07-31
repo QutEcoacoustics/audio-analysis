@@ -193,7 +193,7 @@
 
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT
-            FileInfo tempF = analysisSettings.SegmentAudioFile;
+            FileInfo tempF = analysisSettings.SegmentSettings.SegmentAudioFile;
             if (tempF.Exists)
             {
                 tempF.Delete();
@@ -202,12 +202,12 @@
             if (duration == TimeSpan.Zero)
             {
                 // Process entire file
-                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = resampleRate }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = resampleRate }, analysisSettings.AnalysisTempDirectoryFallback);
                 ////var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = resampleRate, OffsetStart = offsetStart, OffsetEnd = offsetStart.Add(duration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = resampleRate, OffsetStart = offsetStart, OffsetEnd = offsetStart.Add(duration) }, analysisSettings.AnalysisTempDirectoryFallback);
                 ////var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
@@ -230,7 +230,7 @@
                     row[InitialiseIndexProperties.KEYSegmentDuration] = result.AudioDuration.TotalSeconds;
                 }
 
-                CsvTools.DataTable2CSV(dt, analysisSettings.SegmentSummaryIndicesFile.FullName);
+                CsvTools.DataTable2CSV(dt, analysisSettings.SegmentSettings.SegmentSummaryIndicesFile.FullName);
                 //DataTableTools.WriteTable2Console(dt);
             }
 
@@ -245,8 +245,8 @@
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
-            var fiAudioF = analysisSettings.SegmentAudioFile;
-            var diOutputDir = analysisSettings.SegmentOutputDirectory;
+            var fiAudioF = analysisSettings.SegmentSettings.SegmentAudioFile;
+            var diOutputDir = analysisSettings.SegmentSettings.SegmentOutputDirectory;
 
             var analysisResults = new AnalysisResult();
             analysisResults.AnalysisIdentifier = this.Identifier;
@@ -287,9 +287,9 @@
             //    analysisResults.SegmentImageFile = new FileInfo(imagePath);
             //}
 
-            if ((analysisSettings.SegmentSummaryIndicesFile != null) && (analysisResults.Data != null))
+            if ((analysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null) && (analysisResults.Data != null))
             {
-                CsvTools.DataTable2CSV(analysisResults.Data, analysisSettings.SegmentSummaryIndicesFile.FullName);
+                CsvTools.DataTable2CSV(analysisResults.Data, analysisSettings.SegmentSettings.SegmentSummaryIndicesFile.FullName);
             }
             return analysisResults;
         }

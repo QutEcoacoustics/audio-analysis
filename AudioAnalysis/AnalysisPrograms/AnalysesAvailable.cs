@@ -31,7 +31,7 @@
 
         public static StringBuilder GetAnalyzersTable()
         {
-            var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly).OrderBy(x => x.Identifier).ToArray();
+            var analysers = AnalysisCoordinator.GetAnalyzers(typeof(MainEntry).Assembly).OrderBy(x => x.Identifier).ToArray();
 
             const string identifier = "Identifier";
             var indentifierWidth = Math.Max(identifier.Length, analysers.Max((analyser2) => analyser2.Identifier.Length)) + 1;
