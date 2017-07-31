@@ -10,6 +10,7 @@ namespace AnalysisPrograms.SourcePreparers
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using AnalysisBase;
+    using AnalysisBase.SegmentAnalysis;
     using log4net;
 
     /// <summary>
@@ -89,16 +90,25 @@ namespace AnalysisPrograms.SourcePreparers
         /// <returns>
         /// Enumerable of sub-segments.
         /// </returns>
-        public IEnumerable<FileSegment> CalculateSegments(
-            IEnumerable<FileSegment> fileSegments,
+        public IEnumerable<ISegment<TSource>> CalculateSegments<TSource>(
+            IEnumerable<ISegment<TSource>> fileSegments,
             AnalysisSettings settings)
         {
             var audioUtility = new MasterAudioUtility();
 
             var defaultAnalysisSegmentMinDuration = TimeSpan.FromSeconds(10);
 
-            foreach (var fileSegment in fileSegments)
+            foreach (var segment in fileSegments)
             {
+                if (!(segment is FileSegment))
+                {
+                    throw new NotImplementedException("Anthony was too lazy to fix this properly. " +
+                                                      "Adding support proper support for ISegment is difficult " +
+                                                      "at this stage.");
+                }
+
+                var fileSegment = (FileSegment)segment;
+
                 var mediaType = MediaTypes.GetMediaType(fileSegment.TargetFile.Extension);
                 var info = audioUtility.Info(fileSegment.TargetFile);
 
@@ -166,7 +176,7 @@ namespace AnalysisPrograms.SourcePreparers
 
                 // --------------------------------------------
 
-                var overlap = settings.SegmentOverlapDuration;
+                var overlap = settings.SegmentSettings.SegmentOverlapDuration;
                 long aggregate = 0;
 
 
@@ -177,7 +187,7 @@ namespace AnalysisPrograms.SourcePreparers
                     Log.Debug($"Generated fractional segment for time alignment ({startOffset} - {startOffset + startDelta})");
                     var startAlignDelta = Convert.ToInt64(startDelta.TotalMilliseconds);
                     yield return
-                        CreateSegment(ref aggregate, startAlignDelta, fileSegment, startOffset, endOffset, overlap);
+                        (ISegment<TSource>)CreateSegment(ref aggregate, startAlignDelta, fileSegment, startOffset, endOffset, overlap);
                 }
                 else
                 {
@@ -189,7 +199,7 @@ namespace AnalysisPrograms.SourcePreparers
                 foreach (long offset in segments)
                 {
                     yield return
-                        CreateSegment(ref aggregate, offset, fileSegment, startOffset, endOffset, overlap);
+                        (ISegment<TSource>)CreateSegment(ref aggregate, offset, fileSegment, startOffset, endOffset, overlap);
                 }
 
                 // include fractional segment cut from time alignment
@@ -199,7 +209,7 @@ namespace AnalysisPrograms.SourcePreparers
                     Log.Debug($"Generated fractional segment for time alignment ({endOffset - endDelta} - {endOffset})");
                     var endAlignDelta = Convert.ToInt64(endDelta.TotalMilliseconds);
                     yield return
-                        CreateSegment(ref aggregate, endAlignDelta, fileSegment, startOffset, endOffset, overlap);
+                        (ISegment<TSource>)CreateSegment(ref aggregate, endAlignDelta, fileSegment, startOffset, endOffset, overlap);
                 }
             }
         }
@@ -279,7 +289,7 @@ namespace AnalysisPrograms.SourcePreparers
 
                 while (currentPostion < fileSegmentDuration)
                 {
-                    var start = currentPostion - analysisSettings.SegmentOverlapDuration.TotalMilliseconds;
+                    var start = currentPostion - analysisSettings.SegmentSettings.SegmentOverlapDuration.TotalMilliseconds;
                     start = Math.Max(start, 0);
 
                     var end = currentPostion + segmentMaxDuration;
@@ -315,12 +325,12 @@ namespace AnalysisPrograms.SourcePreparers
                         fileSegment.TargetFile.Name,
                         offset.Minimum.TotalMilliseconds,
                         offset.Maximum.TotalMilliseconds,
-                        MediaTypes.GetExtension(analysisSettings.SegmentMediaType));
+                        MediaTypes.GetExtension(analysisSettings.SegmentSettings.SegmentMediaType));
 
                     var path =
                         new FileInfo(
                             Path.Combine(
-                                analysisSettings.AnalysisBaseOutputDirectory.FullName,
+                                analysisSettings.AnalysisOutputDirectory.FullName,
                                 "segmentedaudio",
                                 filename));
 
@@ -330,7 +340,7 @@ namespace AnalysisPrograms.SourcePreparers
                             fileSegment.TargetFile,
                             mediaType,
                             path,
-                            analysisSettings.SegmentMediaType,
+                            analysisSettings.SegmentSettings.SegmentMediaType,
                             new AudioUtilityRequest
                                 {
                                     OffsetStart = offset.Minimum,

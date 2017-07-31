@@ -816,12 +816,12 @@
             string keySegmentOverlap = AnalysisKeys.SegmentOverlap;
             settings.ConfigFile = fiConfig;
             settings.ConfigDict = dict;
-            settings.AnalysisBaseOutputDirectory = diOutputDir;
+            settings.AnalysisOutputDirectory = diOutputDir;
 
             // if temp dir is not given, use output dir as temp dir
             if (tempFileDir != null)
             {
-                settings.AnalysisBaseTempDirectory = tempFileDir;
+                settings.AnalysisTempDirectory = tempFileDir;
             }
 
             //#SEGMENT_DURATION=minutes, SEGMENT_OVERLAP=seconds   FOR EXAMPLE: SEGMENT_DURATION=5  and SEGMENT_OVERLAP=10
@@ -849,7 +849,7 @@
             {
                 string value = dict.TryGetValue(keySegmentOverlap, out value) ? value : null;
                 int segmentOverlapSeconds;
-                settings.SegmentOverlapDuration = int.TryParse(value, out segmentOverlapSeconds) ? TimeSpan.FromSeconds(segmentOverlapSeconds) : TimeSpan.Zero;
+                settings.SegmentSettings.SegmentOverlapDuration = int.TryParse(value, out segmentOverlapSeconds) ? TimeSpan.FromSeconds(segmentOverlapSeconds) : TimeSpan.Zero;
             }
 
 

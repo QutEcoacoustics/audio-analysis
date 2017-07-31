@@ -357,10 +357,10 @@ namespace AnalysisPrograms.Production
         }
 
         [ArgDescription("Test only. ")]
-        public DummyAnalyser.Arguments DummyArgs { get; set; }
-        public static Action<DummyAnalyser.Arguments> Dummy()
+        public DummyAnalysis.Arguments DummyArgs { get; set; }
+        public static Action<DummyAnalysis.Arguments> Dummy()
         {
-            return DummyAnalyser.Execute;
+            return DummyAnalysis.Execute;
         }
 
         public FileRenamer.Arguments FileRenamerArgs { get; set; }

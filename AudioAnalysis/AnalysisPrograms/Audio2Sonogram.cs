@@ -458,9 +458,9 @@ namespace AnalysisPrograms
 
         public AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
-            var audioFile = analysisSettings.SegmentAudioFile;
+            var audioFile = analysisSettings.SegmentSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
-            var outputDirectory = analysisSettings.SegmentOutputDirectory;
+            var outputDirectory = analysisSettings.SegmentSettings.SegmentOutputDirectory;
 
             var analysisResult = new AnalysisResult2(analysisSettings, recording.Duration());
             dynamic configuration = Yaml.Deserialise(analysisSettings.ConfigFile);
@@ -480,20 +480,20 @@ namespace AnalysisPrograms
                 audioFile,
                 null, // path2SoxFile
                 configurationDictionary,
-                dataOnly: analysisSettings.SegmentImageFile == null,
+                dataOnly: analysisSettings.SegmentSettings.SegmentImageFile == null,
                 makeSoxSonogram: false);
 
             // this analysis produces no results!
             // but we still print images (that is the point)
             if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResult.Events.Length))
             {
-                Debug.Assert(analysisSettings.SegmentImageFile.Exists);
-                spectrogramResult.CompositeImage.Save(analysisSettings.SegmentImageFile.FullName, ImageFormat.Png);
+                Debug.Assert(analysisSettings.SegmentSettings.SegmentImageFile.Exists);
+                spectrogramResult.CompositeImage.Save(analysisSettings.SegmentSettings.SegmentImageFile.FullName, ImageFormat.Png);
             }
 
             if (saveCsv)
             {
-                var basename = Path.GetFileNameWithoutExtension(analysisSettings.SegmentAudioFile.Name);
+                var basename = Path.GetFileNameWithoutExtension(analysisSettings.SegmentSettings.SegmentAudioFile.Name);
                 var spectrogramCsvFile = outputDirectory.CombineFile(basename + ".Spectrogram.csv");
                 Csv.WriteMatrixToCsv(spectrogramCsvFile, spectrogramResult.DecibelSpectrogram.Data, TwoDimensionalArray.RowMajor);
             }

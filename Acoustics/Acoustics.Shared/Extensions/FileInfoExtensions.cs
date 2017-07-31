@@ -17,9 +17,12 @@ namespace System
     using Linq;
     using Text;
     using Acoustics.Shared.Contracts;
+    using log4net;
 
     public static class FileInfoExtensions
     {
+        private static readonly ILog Log = LogManager.GetLogger(nameof(FileInfoExtensions));
+
         public static void CreateParentDirectories(this FileInfo file)
         {
             Contract.Requires(file != null);
@@ -73,6 +76,64 @@ namespace System
             }
 
             return new DirectoryInfo(str);
+        }
+
+        public static bool TryDelete(this FileSystemInfo file, string message = "")
+        {
+            return TryDelete(file, false, message);
+        }
+
+        public static bool TryDelete(this FileSystemInfo file, bool recursive, string message = "")
+        {
+            try
+            {
+                if (recursive && file is DirectoryInfo)
+                {
+                    ((DirectoryInfo)file).Delete(true);
+                }
+                else
+                {
+                    file.Delete();
+                }
+
+                Log.Debug($"Deleted file {file.FullName}. " + message);
+            }
+            catch (Exception ex)
+            {
+                // this error is not fatal, but it does mean we'll be leaving a file behind.
+                Log.Warn(
+                    $"Attempt to delete {file.FullName} failed." + message,
+                    ex);
+
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool TryCreate(this DirectoryInfo file)
+        {
+            if (file == null)
+            {
+                return false;
+            }
+
+            if (Directory.Exists(file.FullName))
+            {
+                return true;
+            }
+
+            try
+            {
+                file.Create();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Warn($"Attempt to create directory {file} failed", ex);
+            }
+
+            return false;
         }
     }
 

@@ -212,11 +212,11 @@
             var preparedFile = sourcePreparer.PrepareFile(
                     arguments.OutputDir,
                     fileSegment.TargetFile,
-                    settings.SegmentMediaType,
+                    settings.SegmentSettings.SegmentMediaType,
                     fileSegment.SegmentStartOffset.Value,
                     fileSegment.SegmentEndOffset.Value,
                     settings.AnalysisTargetSampleRate,
-                    settings.SegmentTempDirectory,
+                    settings.SegmentSettings.SegmentTempDirectory,
                     null,
                     mixDownToMono);
             LoggedConsole.WriteLine("Created segment {0} of {1}: {2}", itemNumber, itemCount, preparedFile.TargetFile.Name);

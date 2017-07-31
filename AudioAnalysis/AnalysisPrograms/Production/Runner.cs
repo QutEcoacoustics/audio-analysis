@@ -54,7 +54,7 @@
                 }
             }
 
-            var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly);
+            var analysers = AnalysisCoordinator.GetAnalyzers(typeof(MainEntry).Assembly);
             var analyser = analysers.FirstOrDefault(a => a.Identifier == new MultiAnalyser_OBSOLETE().Identifier);
 
             // production "..\..\Production\ProductionConfig.cfg"

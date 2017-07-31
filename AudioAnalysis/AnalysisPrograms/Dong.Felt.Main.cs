@@ -293,7 +293,7 @@ namespace AnalysisPrograms
     {
         public RidgeEvent(PointOfInterest pointOfInterest, AnalysisSettings analysisSettings, SpectrogramStandard sonogram)
         {
-            this.SegmentStartOffset = analysisSettings.SegmentStartOffset.Value;
+            this.SegmentStartOffset = analysisSettings.SegmentSettings.SegmentStartOffset.Value;
             this.MinHz = pointOfInterest.Herz;
             this.Frame = pointOfInterest.Point.X;
             this.Bin = sonogram.Configuration.FreqBinCount - pointOfInterest.Point.Y;
@@ -324,8 +324,8 @@ namespace AnalysisPrograms
     {
         public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
-            var audioFile = analysisSettings.SegmentAudioFile;
-            var startOffset = analysisSettings.SegmentStartOffset ?? TimeSpan.Zero;
+            var audioFile = analysisSettings.SegmentSettings.SegmentAudioFile;
+            var startOffset = analysisSettings.SegmentSettings.SegmentStartOffset ?? TimeSpan.Zero;
 
             var recording = new AudioRecording(audioFile.FullName);
 
@@ -363,17 +363,17 @@ namespace AnalysisPrograms
                 ((RidgeEvent[])result.Events)[index] = new RidgeEvent(ridges[index], analysisSettings, sonogram);
             }
 
-            if (analysisSettings.SegmentEventsFile != null)
+            if (analysisSettings.SegmentSettings.SegmentEventsFile != null)
             {
-                this.WriteEventsFile(analysisSettings.SegmentEventsFile, result.Events);
+                this.WriteEventsFile(analysisSettings.SegmentSettings.SegmentEventsFile, result.Events);
             }
 
-            if (analysisSettings.SegmentSummaryIndicesFile != null)
+            if (analysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
                 result.SummaryIndices = this.ConvertEventsToSummaryIndices(result.Events, unitTime, result.SegmentAudioDuration, 0);
 
-                this.WriteSummaryIndicesFile(analysisSettings.SegmentSummaryIndicesFile, result.SummaryIndices);
+                this.WriteSummaryIndicesFile(analysisSettings.SegmentSettings.SegmentSummaryIndicesFile, result.SummaryIndices);
             }
 
             if (analysisSettings.AnalysisSaveBehavior.ShouldSave(result.Events.Length))

@@ -238,7 +238,7 @@ namespace AnalysisPrograms
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT
             // TODO: add a .wavV extension
-            FileInfo tempF = analysisSettings.SegmentAudioFile;
+            FileInfo tempF = analysisSettings.SegmentSettings.SegmentAudioFile;
             var audioUtilityRequest = new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE };
             if (duration == TimeSpan.Zero)
             {
@@ -260,9 +260,9 @@ namespace AnalysisPrograms
                 arguments.Source,
                 MediaTypes.MediaTypeWav,
                 audioUtilityRequest,
-                analysisSettings.AnalysisBaseTempDirectoryChecked);
+                analysisSettings.AnalysisTempDirectoryFallback);
 
-            analysisSettings.SegmentAudioFile = preparedFile.TargetInfo.SourceFile;
+            analysisSettings.SegmentSettings.SegmentAudioFile = preparedFile.TargetInfo.SourceFile;
 
             // DO THE ANALYSIS
             /* ############################################################################################################################################# */
@@ -288,14 +288,14 @@ namespace AnalysisPrograms
 
         public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
-            FileInfo audioFile = analysisSettings.SegmentAudioFile;
+            FileInfo audioFile = analysisSettings.SegmentSettings.SegmentAudioFile;
 
             // execute actual analysis
             dynamic configuration = analysisSettings.Configuration;
             var recording = new AudioRecording(audioFile.FullName);
             Log.Debug("Canetoad sample rate:" + recording.SampleRate);
 
-            RecognizerResults results = Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero, analysisSettings.SegmentOutputDirectory);
+            RecognizerResults results = Analysis(recording, configuration, analysisSettings.SegmentSettings.SegmentStartOffset ?? TimeSpan.Zero, analysisSettings.SegmentSettings.SegmentOutputDirectory);
 
             var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
 
@@ -306,28 +306,28 @@ namespace AnalysisPrograms
 
             analysisResults.Events = predictedEvents.ToArray();
 
-            if (analysisSettings.SegmentEventsFile != null)
+            if (analysisSettings.SegmentSettings.SegmentEventsFile != null)
             {
-                this.WriteEventsFile(analysisSettings.SegmentEventsFile, analysisResults.Events);
-                analysisResults.EventsFile = analysisSettings.SegmentEventsFile;
+                this.WriteEventsFile(analysisSettings.SegmentSettings.SegmentEventsFile, analysisResults.Events);
+                analysisResults.EventsFile = analysisSettings.SegmentSettings.SegmentEventsFile;
             }
 
-            if (analysisSettings.SegmentSummaryIndicesFile != null)
+            if (analysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
                 analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
 
-                analysisResults.SummaryIndicesFile = analysisSettings.SegmentSummaryIndicesFile;
-                this.WriteSummaryIndicesFile(analysisSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
+                analysisResults.SummaryIndicesFile = analysisSettings.SegmentSettings.SegmentSummaryIndicesFile;
+                this.WriteSummaryIndicesFile(analysisSettings.SegmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
             if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
-                string imagePath = analysisSettings.SegmentImageFile.FullName;
+                string imagePath = analysisSettings.SegmentSettings.SegmentImageFile.FullName;
                 const double EventThreshold = 0.1;
                 Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, EventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
-                analysisResults.ImageFile = analysisSettings.SegmentImageFile;
+                analysisResults.ImageFile = analysisSettings.SegmentSettings.SegmentImageFile;
             }
 
             return analysisResults;

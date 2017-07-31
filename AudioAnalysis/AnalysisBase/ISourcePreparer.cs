@@ -66,7 +66,7 @@
         /// <returns>
         /// The prepared file.
         /// </returns>
-        Task<FileSegment> PrepareFile(DirectoryInfo outputDirectory, string source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz, DirectoryInfo temporaryFilesDirectory, int[] channelSelection, bool? mixDownToMono);
+        Task<FileSegment> PrepareFile<TSource>(DirectoryInfo outputDirectory, TSource source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz, DirectoryInfo temporaryFilesDirectory, int[] channelSelection, bool? mixDownToMono);
 
         /// <summary>
         /// Calculate the file segments for analysis.
@@ -83,6 +83,6 @@
         /// <remarks>
         /// This API does not fit with the other two. We should consider factoring it out.
         /// </remarks>
-        IEnumerable<ISegment<TSource>> CalculateSegments<TSource>(IEnumerable<ISegment<TSource>> fileSegments, AnalysisSettingsBase<TSource> settings);
+        IEnumerable<ISegment<TSource>> CalculateSegments<TSource>(IEnumerable<ISegment<TSource>> fileSegments, AnalysisSettingsBase settings);
     }
 }

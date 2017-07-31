@@ -191,16 +191,16 @@
 
             //EXTRACT THE REQUIRED RECORDING SEGMENT
             FileInfo sourceF = arguments.Source;
-            FileInfo tempF   = analysisSettings.SegmentAudioFile;
+            FileInfo tempF   = analysisSettings.SegmentSettings.SegmentAudioFile;
             if (tempF.Exists) tempF.Delete();
             if (tsDuration == TimeSpan.Zero)   //Process entire file
             {
-                AudioFilePreparer.PrepareFile(sourceF, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                AudioFilePreparer.PrepareFile(sourceF, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate }, analysisSettings.AnalysisTempDirectoryFallback);
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(sourceF, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                AudioFilePreparer.PrepareFile(sourceF, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisTempDirectoryFallback);
                 //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
@@ -218,14 +218,14 @@
 
             //ADD IN ADDITIONAL INFO TO TABLE
             AddContext2Table(dt, tsStart, tsDuration);
-            CsvTools.DataTable2CSV(dt, analysisSettings.SegmentEventsFile.FullName);
+            CsvTools.DataTable2CSV(dt, analysisSettings.SegmentSettings.SegmentEventsFile.FullName);
             //DataTableTools.WriteTable(dt);
         }
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
-            var fiAudioF    = analysisSettings.SegmentAudioFile;
-            var diOutputDir = analysisSettings.SegmentOutputDirectory;
+            var fiAudioF    = analysisSettings.SegmentSettings.SegmentAudioFile;
+            var diOutputDir = analysisSettings.SegmentSettings.SegmentOutputDirectory;
 
             var result = new AnalysisResult();
             result.AnalysisIdentifier = this.Identifier;
@@ -261,21 +261,21 @@
                 dataTable = DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
             }
 
-            if ((analysisSettings.SegmentEventsFile != null) && (dataTable != null))
+            if ((analysisSettings.SegmentSettings.SegmentEventsFile != null) && (dataTable != null))
             {
-                CsvTools.DataTable2CSV(dataTable, analysisSettings.SegmentEventsFile.FullName);
+                CsvTools.DataTable2CSV(dataTable, analysisSettings.SegmentSettings.SegmentEventsFile.FullName);
             }
             else
                 result.EventsFile = null;
 
-            if ((analysisSettings.SegmentSummaryIndicesFile != null) && (dataTable != null))
+            if ((analysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null) && (dataTable != null))
             {
                 double scoreThreshold = 0.01;
                 if (analysisSettings.ConfigDict.ContainsKey(AnalysisKeys.IntensityThreshold))
                     scoreThreshold = ConfigDictionary.GetDouble(AnalysisKeys.IntensityThreshold, analysisSettings.ConfigDict);
                 TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of i minute
                 var indicesDT = this.ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
-                CsvTools.DataTable2CSV(indicesDT, analysisSettings.SegmentSummaryIndicesFile.FullName);
+                CsvTools.DataTable2CSV(indicesDT, analysisSettings.SegmentSettings.SegmentSummaryIndicesFile.FullName);
             }
             else
                 result.IndicesFile = null;
@@ -283,13 +283,13 @@
             //save image of sonograms
             if (analysisSettings.AnalysisSaveBehavior.ShouldSave(result.Data.Rows.Count))
             {
-                string imagePath = analysisSettings.SegmentImageFile.FullName;
+                string imagePath = analysisSettings.SegmentSettings.SegmentImageFile.FullName;
                 Image image = DrawSonogram(sonogram, hits, scores, predictedEvents);
                 image.Save(imagePath, ImageFormat.Png);
             }
 
             result.Data = dataTable;
-            result.ImageFile = analysisSettings.SegmentImageFile;
+            result.ImageFile = analysisSettings.SegmentSettings.SegmentImageFile;
             result.AudioDuration = recordingTimeSpan;
             //result.DisplayItems = { { 0, "example" }, { 1, "example 2" }, }
             //result.OutputFiles = { { "exmaple file key", new FileInfo("Where's that file?") } }

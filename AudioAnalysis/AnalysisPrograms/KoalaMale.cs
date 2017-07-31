@@ -385,7 +385,7 @@ namespace AnalysisPrograms
             TimeSpan duration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT
-            FileInfo tempF = analysisSettings.SegmentAudioFile;
+            FileInfo tempF = analysisSettings.SegmentSettings.SegmentAudioFile;
             if (duration == TimeSpan.Zero)
             {
                 // Process entire file
@@ -393,7 +393,7 @@ namespace AnalysisPrograms
                     arguments.Source,
                     tempF,
                     new AudioUtilityRequest { TargetSampleRate = ResampleRate },
-                    analysisSettings.AnalysisBaseTempDirectoryChecked);
+                    analysisSettings.AnalysisTempDirectoryFallback);
             }
             else
             {
@@ -406,7 +406,7 @@ namespace AnalysisPrograms
                             OffsetStart = start,
                             OffsetEnd = start.Add(duration),
                         },
-                    analysisSettings.AnalysisBaseTempDirectoryChecked);
+                    analysisSettings.AnalysisTempDirectoryFallback);
             }
 
             // DO THE ANALYSIS
@@ -493,11 +493,11 @@ namespace AnalysisPrograms
 
         public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
-            FileInfo audioFile = analysisSettings.SegmentAudioFile;
+            FileInfo audioFile = analysisSettings.SegmentSettings.SegmentAudioFile;
 
             /* ###################################################################### */
             Dictionary<string, string> configuration = analysisSettings.Configuration;
-            KoalaMaleResults results = Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
+            KoalaMaleResults results = Analysis(audioFile, configuration, analysisSettings.SegmentSettings.SegmentStartOffset ?? TimeSpan.Zero);
 
             /* ###################################################################### */
             BaseSonogram sonogram = results.Sonogram;
@@ -511,13 +511,13 @@ namespace AnalysisPrograms
 
             analysisResults.Events = results.Events.ToArray();
 
-            if (analysisSettings.SegmentEventsFile != null)
+            if (analysisSettings.SegmentSettings.SegmentEventsFile != null)
             {
-                this.WriteEventsFile(analysisSettings.SegmentEventsFile, analysisResults.Events);
-                analysisResults.EventsFile = analysisSettings.SegmentEventsFile;
+                this.WriteEventsFile(analysisSettings.SegmentSettings.SegmentEventsFile, analysisResults.Events);
+                analysisResults.EventsFile = analysisSettings.SegmentSettings.SegmentEventsFile;
             }
 
-            if (analysisSettings.SegmentSummaryIndicesFile != null)
+            if (analysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null)
             {
                 TimeSpan unitTime = TimeSpan.FromMinutes(1.0);
                 analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(
@@ -526,16 +526,16 @@ namespace AnalysisPrograms
                     analysisResults.SegmentAudioDuration,
                     0);
 
-                this.WriteSummaryIndicesFile(analysisSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
+                this.WriteSummaryIndicesFile(analysisSettings.SegmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
             if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
-                string imagePath = analysisSettings.SegmentImageFile.FullName;
+                string imagePath = analysisSettings.SegmentSettings.SegmentImageFile.FullName;
                 const double EventThreshold = 0.1;
                 Image image = DrawSonogram(sonogram, hits, scores, results.Events, EventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
-                analysisResults.ImageFile = analysisSettings.SegmentImageFile;
+                analysisResults.ImageFile = analysisSettings.SegmentSettings.SegmentImageFile;
             }
 
             return analysisResults;

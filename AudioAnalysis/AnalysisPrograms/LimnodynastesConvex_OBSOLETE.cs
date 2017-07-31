@@ -196,7 +196,7 @@ namespace AnalysisPrograms
             TimeSpan duration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT
-            FileInfo tempF = analysisSettings.SegmentAudioFile;
+            FileInfo tempF = analysisSettings.SegmentSettings.SegmentAudioFile;
             if (duration == TimeSpan.Zero)
             {
                 // Process entire file
@@ -204,7 +204,7 @@ namespace AnalysisPrograms
                     arguments.Source,
                     tempF,
                     new AudioUtilityRequest { TargetSampleRate = ResampleRate },
-                    analysisSettings.AnalysisBaseTempDirectoryChecked);
+                    analysisSettings.AnalysisTempDirectoryFallback);
             }
             else
             {
@@ -217,7 +217,7 @@ namespace AnalysisPrograms
                             OffsetStart = start,
                             OffsetEnd = start.Add(duration),
                         },
-                    analysisSettings.AnalysisBaseTempDirectoryChecked);
+                    analysisSettings.AnalysisTempDirectoryFallback);
             }
 
             // DO THE ANALYSIS
@@ -245,7 +245,7 @@ namespace AnalysisPrograms
 
         public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
-            FileInfo audioFile = analysisSettings.SegmentAudioFile;
+            FileInfo audioFile = analysisSettings.SegmentSettings.SegmentAudioFile;
 
             // execute actual analysis
             Dictionary<string, string> configuration = analysisSettings.Configuration;
@@ -260,27 +260,27 @@ namespace AnalysisPrograms
 
             analysisResults.Events = predictedEvents.ToArray();
 
-            if (analysisSettings.SegmentEventsFile != null)
+            if (analysisSettings.SegmentSettings.SegmentEventsFile != null)
             {
-                this.WriteEventsFile(analysisSettings.SegmentEventsFile, analysisResults.Events);
-                analysisResults.EventsFile = analysisSettings.SegmentEventsFile;
+                this.WriteEventsFile(analysisSettings.SegmentSettings.SegmentEventsFile, analysisResults.Events);
+                analysisResults.EventsFile = analysisSettings.SegmentSettings.SegmentEventsFile;
             }
 
-            if (analysisSettings.SegmentSummaryIndicesFile != null)
+            if (analysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
                 analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
 
-                this.WriteSummaryIndicesFile(analysisSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
+                this.WriteSummaryIndicesFile(analysisSettings.SegmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
             if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
-                string imagePath = analysisSettings.SegmentImageFile.FullName;
+                string imagePath = analysisSettings.SegmentSettings.SegmentImageFile.FullName;
                 const double EventThreshold = 0.1;
                 Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, EventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
-                analysisResults.ImageFile = analysisSettings.SegmentImageFile;
+                analysisResults.ImageFile = analysisSettings.SegmentSettings.SegmentImageFile;
             }
 
             return analysisResults;
@@ -367,8 +367,8 @@ namespace AnalysisPrograms
             // So strategy is to look for three peaks separated by same amount and in the vicinity of the above,
             //  starting with highest power (the top peak) and working down to lowest power (bottom peak).
 
-            var outputDir = analysisSettings.SegmentOutputDirectory;
-            TimeSpan segmentStartOffset = analysisSettings.SegmentStartOffset ?? TimeSpan.Zero;
+            var outputDir = analysisSettings.SegmentSettings.SegmentOutputDirectory;
+            TimeSpan segmentStartOffset = analysisSettings.SegmentSettings.SegmentStartOffset ?? TimeSpan.Zero;
 
 
             //KeyValuePair<string, double[,]> kvp = dictionaryOfHiResSpectralIndices.First();
@@ -442,7 +442,7 @@ namespace AnalysisPrograms
             // superimpose point on RHZ HiRes spectrogram for debug purposes
             bool drawOnHiResSpectrogram = true;
             //string filePath = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test\Towsey.HiResIndices\SpectrogramImages\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30_0min.CombinedGreyScale.png";
-            var fileName = Path.GetFileNameWithoutExtension(analysisSettings.SegmentAudioFile.Name);
+            var fileName = Path.GetFileNameWithoutExtension(analysisSettings.SegmentSettings.SegmentAudioFile.Name);
             string filePath = outputDir.FullName + @"\SpectrogramImages\" + fileName + ".CombinedGreyScale.png";
             var debugImage = new FileInfo(filePath);
             if (!debugImage.Exists) drawOnHiResSpectrogram = false;
@@ -708,7 +708,7 @@ namespace AnalysisPrograms
             if (!imageDir.Exists) imageDir.Create();
             if (createStandardDebugSpectrogram)
             {
-                var fileName2 = Path.GetFileNameWithoutExtension(analysisSettings.SegmentAudioFile.Name);
+                var fileName2 = Path.GetFileNameWithoutExtension(analysisSettings.SegmentSettings.SegmentAudioFile.Name);
                 string filePath2 = Path.Combine(imageDir.FullName, fileName + ".Spectrogram.png");
                 Bitmap sonoBmp = (Bitmap)sonogram.GetImage();
                 int height = sonoBmp.Height;

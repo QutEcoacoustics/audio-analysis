@@ -20,7 +20,7 @@ namespace AnalysisBase
     using System.Text.RegularExpressions;
 
     using Acoustics.Shared;
-
+    using Acoustics.Shared.Contracts;
     using log4net;
     using SegmentAnalysis;
 
@@ -69,9 +69,12 @@ namespace AnalysisBase
             this.Alignment = TimeAlignment.None;
 
             this.ParseDate();
+
+            Contract.Ensures(this.Validate(), "FileSegment did not validate");
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="FileSegment"/> class.
         /// Allow specifying an absolutely aligned (to the nearest minute) file segment.
         /// Implies `FileDateBehavior.Required`.
         /// </summary>
@@ -218,26 +221,6 @@ namespace AnalysisBase
             return newSegment;
         }
 
-        /// <summary>
-        /// Gets the modified date time of the target file.
-        /// </summary>
-        /// <returns>The date if the file is set and if it exists. Otherwise returns null.</returns>
-        public DateTime? TargetFileModifiedDateTime()
-        {
-            if (this.TargetFile != null && this.TargetFile.Exists)
-            {
-                var createTime = this.TargetFile.CreationTime;
-                ////var accessTime = this.targetFile.LastAccessTime;
-                var modifyTime = this.TargetFile.LastWriteTime;
-
-                // just assume the earliest date is the one to use
-                var result = createTime < modifyTime ? createTime : modifyTime;
-                return result;
-            }
-
-            return null;
-        }
-
         private DateTimeOffset? AudioFileStart()
         {
             DateTimeOffset parsedDate;
@@ -254,20 +237,9 @@ namespace AnalysisBase
                 return null;
             }
 
-            /*
-             *  Disabling this block - it is too unpredictable.
-             *  No guarantee where a date is coming from.
-             *  Additionally, in a performance centric scenario, an
-             *  extra call to audio libs is unnecessary
-             */
-            /*
-            var dateTime = this.FileModifiedDateTime();
-            if (this.OriginalFileDuration > TimeSpan.Zero && dateTime.HasValue &&
-                dateTime.Value > DateTime.MinValue && dateTime.Value < DateTime.MaxValue)
-            {
-                return dateTime - this.OriginalFileDuration;
-            }
-            */
+            // Historical note: This method used to support inferring the date of the recording from the file's
+            // last modified timestamp. This method ultimately proved unreliable and inefficient.
+            // Support was removed for this edge case mid 2017.
 
             return null;
         }
@@ -277,5 +249,14 @@ namespace AnalysisBase
         double ISegment<FileInfo>.StartOffsetSeconds => this.SegmentStartOffset.Value.TotalSeconds;
 
         double ISegment<FileInfo>.EndOffsetSeconds => this.SegmentEndOffset.Value.TotalSeconds;
+
+        ISegment<FileInfo> ISegment<FileInfo>.SplitSegment(double newStart, double newEnd)
+        {
+            return new FileSegment(this.TargetFile)
+            {
+                SegmentStartOffset = newStart.Seconds(),
+                SegmentEndOffset = newEnd.Seconds(),
+            };
+        }
     }
 }

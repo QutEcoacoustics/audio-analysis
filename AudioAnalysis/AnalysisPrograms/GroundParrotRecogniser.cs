@@ -276,7 +276,7 @@ namespace AnalysisPrograms
 
         public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
-            FileInfo audioFile = analysisSettings.SegmentAudioFile;
+            FileInfo audioFile = analysisSettings.SegmentSettings.SegmentAudioFile;
 
             var eprNormalizedMinScore = GetEprParametersFromConfigFileOrDefaults(analysisSettings.Configuration);
 
@@ -287,7 +287,7 @@ namespace AnalysisPrograms
             var rawAedConfig = Yaml.Deserialise(aedConfigFile);
             var aedConfig = Aed.GetAedParametersFromConfigFileOrDefaults(rawAedConfig);
 
-            Tuple<BaseSonogram, List<AcousticEvent>> results = Detect(audioFile, aedConfig, eprNormalizedMinScore, analysisSettings.SegmentStartOffset.Value);
+            Tuple<BaseSonogram, List<AcousticEvent>> results = Detect(audioFile, aedConfig, eprNormalizedMinScore, analysisSettings.SegmentSettings.SegmentStartOffset.Value);
 
             var analysisResults = new AnalysisResult2(analysisSettings, results.Item1.Duration)
                                       {
@@ -296,18 +296,18 @@ namespace AnalysisPrograms
                                       };
             BaseSonogram sonogram = results.Item1;
 
-            if (analysisSettings.SegmentEventsFile != null)
+            if (analysisSettings.SegmentSettings.SegmentEventsFile != null)
             {
-                this.WriteEventsFile(analysisSettings.SegmentEventsFile, analysisResults.Events);
-                analysisResults.EventsFile = analysisSettings.SegmentEventsFile;
+                this.WriteEventsFile(analysisSettings.SegmentSettings.SegmentEventsFile, analysisResults.Events);
+                analysisResults.EventsFile = analysisSettings.SegmentSettings.SegmentEventsFile;
             }
 
-            if (analysisSettings.SegmentSummaryIndicesFile != null)
+            if (analysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
                 analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
 
-                this.WriteSummaryIndicesFile(analysisSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
+                this.WriteSummaryIndicesFile(analysisSettings.SegmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
 
@@ -315,8 +315,8 @@ namespace AnalysisPrograms
             if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 Image image = Aed.DrawSonogram(sonogram, results.Item2);
-                image.Save(analysisSettings.SegmentImageFile.FullName, ImageFormat.Png);
-                analysisResults.ImageFile = analysisSettings.SegmentImageFile;
+                image.Save(analysisSettings.SegmentSettings.SegmentImageFile.FullName, ImageFormat.Png);
+                analysisResults.ImageFile = analysisSettings.SegmentSettings.SegmentImageFile;
             }
 
             return analysisResults;

@@ -174,15 +174,15 @@
             TimeSpan tsDuration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
 
             //EXTRACT THE REQUIRED RECORDING SEGMENT
-            FileInfo tempF = analysisSettings.SegmentAudioFile;
+            FileInfo tempF = analysisSettings.SegmentSettings.SegmentAudioFile;
             if (tsDuration == TimeSpan.Zero)   //Process entire file
             {
-                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate }, analysisSettings.AnalysisTempDirectoryFallback);
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisTempDirectoryFallback);
                 //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
@@ -197,7 +197,7 @@
             if (dt != null)
             {
                 AddContext2Table(dt, tsStart, result.AudioDuration);
-                CsvTools.DataTable2CSV(dt, analysisSettings.SegmentEventsFile.FullName);
+                CsvTools.DataTable2CSV(dt, analysisSettings.SegmentSettings.SegmentEventsFile.FullName);
                 //DataTableTools.WriteTable(augmentedTable);
             }
         }
@@ -208,8 +208,8 @@
         {
             //var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
             //Dictionary<string, string> configDict = configuration.GetTable();
-            var fiAudioF = analysisSettings.SegmentAudioFile;
-            var diOutputDir = analysisSettings.SegmentOutputDirectory;
+            var fiAudioF = analysisSettings.SegmentSettings.SegmentAudioFile;
+            var diOutputDir = analysisSettings.SegmentSettings.SegmentOutputDirectory;
 
             var analysisResults = new AnalysisResult();
             analysisResults.AnalysisIdentifier = this.Identifier;
@@ -246,32 +246,32 @@
                 dataTableOfEvents = DataTableTools.SortTable(dataTableOfEvents, sortString); //sort by start time before returning
             }
 
-            if ((analysisSettings.SegmentEventsFile != null) && (dataTableOfEvents != null))
+            if ((analysisSettings.SegmentSettings.SegmentEventsFile != null) && (dataTableOfEvents != null))
             {
-                CsvTools.DataTable2CSV(dataTableOfEvents, analysisSettings.SegmentEventsFile.FullName);
+                CsvTools.DataTable2CSV(dataTableOfEvents, analysisSettings.SegmentSettings.SegmentEventsFile.FullName);
             }
 
-            if ((analysisSettings.SegmentSummaryIndicesFile != null) && (dataTableOfEvents != null))
+            if ((analysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null) && (dataTableOfEvents != null))
             {
                 double eventThreshold = ConfigDictionary.GetDouble(AnalysisKeys.EventThreshold, analysisSettings.ConfigDict);
                 TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of one minute
                 var indicesDT = this.ConvertEvents2Indices(dataTableOfEvents, unitTime, recordingTimeSpan, eventThreshold);
-                CsvTools.DataTable2CSV(indicesDT, analysisSettings.SegmentSummaryIndicesFile.FullName);
+                CsvTools.DataTable2CSV(indicesDT, analysisSettings.SegmentSettings.SegmentSummaryIndicesFile.FullName);
             }
 
             //save image of sonograms
             if ((sonogram != null) && (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Data.Rows.Count)))
             {
-                var fileExists = File.Exists(analysisSettings.SegmentImageFile.FullName);
-                string imagePath = analysisSettings.SegmentImageFile.FullName;
+                var fileExists = File.Exists(analysisSettings.SegmentSettings.SegmentImageFile.FullName);
+                string imagePath = analysisSettings.SegmentSettings.SegmentImageFile.FullName;
                 double eventThreshold = 0.1;
                 Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, eventThreshold);
 
-                image.Save(analysisSettings.SegmentImageFile.FullName, ImageFormat.Png);
+                image.Save(analysisSettings.SegmentSettings.SegmentImageFile.FullName, ImageFormat.Png);
             }
 
             analysisResults.Data = dataTableOfEvents;
-            analysisResults.ImageFile = analysisSettings.SegmentImageFile;
+            analysisResults.ImageFile = analysisSettings.SegmentSettings.SegmentImageFile;
             analysisResults.AudioDuration = recordingTimeSpan;
             //result.DisplayItems = { { 0, "example" }, { 1, "example 2" }, }
             //result.OutputFiles = { { "exmaple file key", new FileInfo("Where's that file?") } }

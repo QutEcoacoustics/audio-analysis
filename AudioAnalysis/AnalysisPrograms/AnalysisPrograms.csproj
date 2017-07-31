@@ -298,7 +298,7 @@
     <Compile Include="DifferenceSpectrogram.cs" />
     <Compile Include="Dong.Felt.Main.cs" />
     <Compile Include="DrawLongDurationSpectrograms.cs" />
-    <Compile Include="DummyAnalyser.cs" />
+    <Compile Include="DummyAnalysis.cs" />
     <Compile Include="EPR.cs" />
     <Compile Include="FileRenamer.cs" />
     <Compile Include="Frogs_OBSOLETE.cs" />
