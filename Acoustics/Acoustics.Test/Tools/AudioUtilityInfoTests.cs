@@ -6,9 +6,6 @@
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using Acoustics.Tools.Wav;
-    using EcoSounds.Mvc.Tests;
-    using log4net;
-    using log4net.Config;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
 
