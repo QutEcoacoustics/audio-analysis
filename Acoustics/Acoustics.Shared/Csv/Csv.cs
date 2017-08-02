@@ -64,7 +64,6 @@ namespace Acoustics.Shared.Csv
         {
             // This is a manually maintained method
             TypeConverterFactory.AddConverter<ISet<Point>>(new CsvSetPointConverter());
-
         }
 
         public static CsvConfiguration DefaultConfiguration
@@ -90,7 +89,7 @@ namespace Acoustics.Shared.Csv
         /// </summary>
         /// <typeparam name="T">The type to serialize.</typeparam>
         /// <param name="destination">The file to create.</param>
-        /// <param name="results"></param>
+        /// <param name="results">results data to be written to file</param>
         public static void WriteToCsv<T>(FileInfo destination, IEnumerable<T> results)
         {
             Contract.Requires(destination != null);
@@ -103,17 +102,12 @@ namespace Acoustics.Shared.Csv
             }
         }
 
-
         /// <summary>
         /// This has not been tested yet! Contact anthony if you have problems.
         /// IMPORTANT NOTE:
         /// If I get an exception, how do I tell what line the exception is on?
         /// There is a lot of information held in Exception.Data["CsvHelper"]
-        ///
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="source"></param>
-        /// <returns></returns>
         public static IEnumerable<T> ReadFromCsv<T>(FileInfo source, bool throwOnMissingField = true)
         {
             Contract.Requires(source != null);
@@ -126,7 +120,6 @@ namespace Acoustics.Shared.Csv
                     var configuration = DefaultConfiguration;
                     configuration.WillThrowOnMissingField = false;
                     var reader = new CsvReader(stream, configuration);
-
                     IEnumerable<T> results = reader.GetRecords<T>();
 
                     // had to disable the yield here so i could fix this csv exception shit
@@ -145,7 +138,6 @@ namespace Acoustics.Shared.Csv
                     {
                         var parserData = ctce.Data.ToDictDebugString();
                         var newMessage = ctce.Message + Environment.NewLine + parserData;
-
                         throw new CsvTypeConverterException(newMessage, ctce);
                     }
 
