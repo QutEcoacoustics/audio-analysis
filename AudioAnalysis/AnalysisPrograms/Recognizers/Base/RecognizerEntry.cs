@@ -25,6 +25,8 @@ namespace AnalysisPrograms.Recognizers.Base
 
     public class RecognizerEntry
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         [CustomDetailedDescription]
         public class Arguments : SourceConfigOutputDirArguments
         {
@@ -35,10 +37,10 @@ namespace AnalysisPrograms.Recognizers.Base
             }
         }
 
-        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
         public static Arguments Dev()
         {
+            Log.Info("Runnung Event Recognizer through the RecognizerEntry.Dev() method.");
+
             // The MULTI-RECOGNISER
             /*
             // Canetoad, Litoria fallax and Limnodynastes convex.
@@ -46,9 +48,11 @@ namespace AnalysisPrograms.Recognizers.Base
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\MultiLabel\Gympie_CaneToad_Lnasuta_Lfallax.wav";
             //string outputPath    = @"G:\SensorNetworks\Output\Frogs\Multirecognizer_2016December";
             */
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\LitoriaWotjulumensisAndRothii\Lrothii_emerald_river_1014_252497_20131216_180244_30_0.wav";
+
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\LitoriaWotjulumensisAndRothii\Lrothii_emerald_river_1014_252497_20131216_180244_30_0.wav";
+            //string recordingPath = @"D:\SensorNetworks\WavFiles\Frogs\SherynBrodie\Lconvex_Lbicolor_GolfC_20170213_183122.wav";
             string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Ecosounds.MultiRecognizer.yml";
-            string outputPath = @"D:\SensorNetworks\Output\Frogs\TestOfRecognizers-2017August\";
+            string outputPath = @"D:\SensorNetworks\Output\Frogs\TestOfRecognizers-2017August";
 
             //Ardea insignis (The White-bellied Herron
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\Heron_commonCall_downsampled.wav";
@@ -125,6 +129,7 @@ namespace AnalysisPrograms.Recognizers.Base
             */
 
             // Limnodynastes convex
+            string recordingPath = @"D:\SensorNetworks\WavFiles\Frogs\LimnodynastesSpecies\10 Limnodynastes convexiusculusMONO.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
             //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\LimnoConvex";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LimnodynastesConvex.yml";
@@ -322,7 +327,7 @@ namespace AnalysisPrograms.Recognizers.Base
             }
 
             int eventCount = results?.Events?.Length ?? 0;
-            LoggedConsole.WriteLine($"Number of detected events: {eventCount}");
+            Log.Info($"Number of detected events: {eventCount}");
             Log.Success(recognizer.Identifier + " recognizer has completed");
         }
     }
