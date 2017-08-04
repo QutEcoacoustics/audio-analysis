@@ -178,7 +178,6 @@ namespace AnalysisPrograms.Recognizers
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
             var plots = new List<Plot> { plot };
 
-
             this.WriteDebugImage(recording, outputDirectory, sonogram, acousticEvents, plots, hits);
 
             return new RecognizerResults()

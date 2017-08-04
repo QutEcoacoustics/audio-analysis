@@ -12,16 +12,16 @@ AnalysisName: Ecosounds.MultiRecognizer
 SpeciesList:
 #  - Towsey.CriniaRemota
   - Towsey.LimnodynastesConvex
-  - Towsey.LitoriaBicolor
+#  - Towsey.LitoriaBicolor
 #  - Towsey.LitoriaCaerulea
 #  - Towsey.LitoriaFallax
 #  - Towsey.LitoriaNasuta
 #  - Towsey.LitoriaPallida
-  - Towsey.LitoriaRothii
-  - Towsey.LitoriaRubella
+#  - Towsey.LitoriaRothii
+#  - Towsey.LitoriaRubella
 #  - Towsey.LitoriaWatjulumensis
 #  - Towsey.PlatyplectrumOrnatum
-  - Towsey.RhinellaMarina
+#  - Towsey.RhinellaMarina
 #  - Towsey.UperoleiaInundata
 #  - Towsey.UperoleiaLithomoda
 

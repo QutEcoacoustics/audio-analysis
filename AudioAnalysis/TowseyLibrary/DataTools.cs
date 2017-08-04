@@ -2754,6 +2754,28 @@ namespace TowseyLibrary
             return sum;
         }
 
+        public static double PatternSimilarity(double[] pattern, double[] data)
+        {
+            //assume vectors have same dimensions
+
+            var normalisedPattern = DataTools.normalise(pattern);
+            var normalisedData = DataTools.Normalise(data, -1.0, 1.0);
+            double sum = 0.0;
+            for (int i = 0; i < pattern.Length; i++)
+            {
+                sum += normalisedPattern[i] * normalisedData[i];
+            }
+
+            double similarity = sum / (double)pattern.Length;
+
+            //if (similarity < 0)
+            //{
+            //    similarity = 0.0;
+            //}
+
+            return similarity;
+        }
+
         public static double CosineSimilarity(double[] v1, double[] v2)
         {
             //assume v1 and v2 have same dimensions
