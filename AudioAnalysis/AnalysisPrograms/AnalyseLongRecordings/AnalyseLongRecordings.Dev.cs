@@ -28,7 +28,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 
             // TESTING for Sheryn Brodie
             // This is a six-hour recording and quite good for debugging calculation of acoustic indices
-            //string recordingPath = @"D:\SensorNetworks\WavFiles\Frogs\SherynBrodie\con1To6.wav";
+            string recordingPath = @"D:\SensorNetworks\WavFiles\Frogs\SherynBrodie\con1To6.wav";
             string outputPath = @"D:\SensorNetworks\Output\Frogs\TestOfRecognizers-2017August\";
             string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Ecosounds.MultiRecognizer.yml";
 
@@ -162,7 +162,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             // OTHER FROGS
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LimnodynastesSpecies\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\LitOlong.wav";
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\Limnodynastes_convexiusculus\10 Limnodynastes convexiusculus.mp3";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\Limnodynastes_convexiusculus\10 Limnodynastes convexiusculus.mp3";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSp\53 Litoria fallax.mp3";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\FrogRecording_2.wav";

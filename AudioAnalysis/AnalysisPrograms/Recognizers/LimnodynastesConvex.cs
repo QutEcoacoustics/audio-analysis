@@ -327,9 +327,13 @@ namespace AnalysisPrograms.Recognizers
         {
             // make a spectrogram
             double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 0.1;
+            int frameStep = 512;
+            int sampleRate = audioRecording.SampleRate;
+            double frameStepInSeconds = frameStep / (double)sampleRate;
+            double framesPerSec = 1 / frameStepInSeconds;
             var config = new SonogramConfig
             {
-                WindowSize = 512,
+                WindowSize = frameStep, // this default = zero overlap
                 WindowOverlap = 0.0,
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = noiseReductionParameter,
@@ -344,13 +348,8 @@ namespace AnalysisPrograms.Recognizers
             // sonogram.Data = spg;
 
             var spg = sonogram.Data;
-            int sampleRate = audioRecording.SampleRate;
             int rowCount = spg.GetLength(0);
             int colCount = spg.GetLength(1);
-            int frameSize = colCount * 2;
-            int frameStep = frameSize; // this default = zero overlap
-            double frameStepInSeconds = frameStep / (double)sampleRate;
-            double framesPerSec = 1 / frameStepInSeconds;
             double herzPerBin = sampleRate / 2.0 / colCount;
 
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
@@ -363,7 +362,7 @@ namespace AnalysisPrograms.Recognizers
             double similarityThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? 0.5;
 
             // IMPORTANT: The following frame durations assume a sampling rate = 22050 and window size of 512.
-            int callFrameWidth = 6;
+            int callFrameWidth = 5;
             int callHalfWidth = callFrameWidth / 2;
 
             // minimum number of bins covering frequency bandwidth of L.convex call
@@ -374,21 +373,21 @@ namespace AnalysisPrograms.Recognizers
 
             // # The Limnodynastes call has a duration of 3-5 frames given the above settings.
             // # But we will assume 5-7 because sometimes the three harmonics are not exactly alligned!!
-            // # The call has three major peaks. The dominant peak is at approx 1850, a value which is set in the convig.
-            // # The second and third peak are at equal gaps below. DominantFreq-gap and DominantFreq-(2*gap);
-            // # Set the gap in the Config file. Should typically be in range 440 to 500
-            // for Limnodynastes convex, in the D.Stewart CD, there are peaks close to:
+            // # The call has three major peaks. The top peak, typically the dominant peak, is at approx 1850, a value which is set in the convig.
+            // # The second and third peak are at equal gaps below. TopFreq-gap and TopFreq-(2*gap);
+            // # The gap could be set in the Config file, but this is not implemented yet.
+            // Instead the algorithm uses three pre-fixed templates that determine the different kinds ogap. Gap is typically close to 500Hz
+            // In the D.Stewart CD, there are peaks close to:
             //1. 1950 Hz
             //2. 1460 hz
             //3.  970 hz    These are 490 Hz apart.
-            // for Limnodynastes convex, in the Kiyomi's JCU recording, there are peaks close to:
+            // In the Kiyomi's JCU recording, there are peaks close to:
             //1. 1780 Hz
             //2. 1330 hz
             //3.  880 hz    These are 450 Hz apart.
 
             // So the strategy is to look for three peaks separated by same amount and in the vicinity of the above,
-            //  starting with highest power (the top peak) and working down to lowest power (bottom peak).
-            // To this end we produce two templates each of length 25, but having 2nd and 3rd peaks at different intervals.
+            // To this end we produce three templates each of length 36, but having 2nd and 3rd peaks at different intervals.
             var templates = GetLconvexTemplates(callBinWidth, binSilenceBuffer);
             int templateHeight = templates[0].Length;
 
@@ -398,7 +397,7 @@ namespace AnalysisPrograms.Recognizers
 
             int searchBand = 8;
             int topBin = (int)Math.Round(topFrequency / herzPerBin);
-            int bottomBin = topBin - templateHeight - searchBand;
+            int bottomBin = topBin - templateHeight - searchBand + 1;
             if (bottomBin < 0)
             {
                 Log.Fatal("Template bandwidth exceeds availble bandwidth given your value for top frequency.");
@@ -417,7 +416,6 @@ namespace AnalysisPrograms.Recognizers
             double[,] hits = new double[rowCount, colCount];
 
             // loop through all spectra/rows of the spectrogram - NB: spg is rotated to vertical.
-            // mark the hits in hitMatrix
             for (int s = callFrameWidth; s < rowCount; s++)
             {
                 double[] rowToRemove = MatrixTools.GetRow(spg, s - callFrameWidth);
@@ -441,7 +439,7 @@ namespace AnalysisPrograms.Recognizers
 
             // we now have a score array and decibel array and bottom bin array for the entire spectrogram.
             // smooth them to find events
-            scores = DataTools.filterMovingAverageOdd(scores, 3);
+            scores = DataTools.filterMovingAverageOdd(scores, 5);
             decibels = DataTools.filterMovingAverageOdd(decibels, 3);
 
             var peaks = DataTools.GetPeaks(scores);
@@ -540,11 +538,15 @@ namespace AnalysisPrograms.Recognizers
             t1[3] = 0.5;
             t1[4] = 1.0;
             t1[5] = 1.0;
+            t1[6] = 1.0;
 
+            t1[14] = 0.5;
             t1[15] = 1.0;
             t1[16] = 1.0;
             t1[17] = 1.0;
+            t1[18] = 0.5;
 
+            t1[25] = 1.0;
             t1[26] = 1.0;
             t1[27] = 1.0;
             t1[28] = 0.5;
@@ -555,10 +557,12 @@ namespace AnalysisPrograms.Recognizers
             t2[3] = 0.5;
             t2[4] = 1.0;
             t2[5] = 1.0;
+            t2[6] = 1.0;
 
             t2[14] = 1.0;
             t2[15] = 1.0;
             t2[16] = 1.0;
+            t2[17] = 1.0;
 
             t2[25] = 1.0;
             t2[26] = 1.0;
@@ -568,13 +572,13 @@ namespace AnalysisPrograms.Recognizers
             // template 3: has missing middle formant
             // include this because Sheryn Brodie found just such a case
             double[] t3 = new double[templateLength];
-            t3[3] = 0.5;
+            t3[3] = 1.0;
             t3[4] = 1.0;
             t3[5] = 1.0;
 
-            t3[26] = 1.0;
             t3[27] = 1.0;
             t3[28] = 1.0;
+            t3[29] = 1.0;
             templates.Add(t3);
 
             return templates;
@@ -625,11 +629,11 @@ namespace AnalysisPrograms.Recognizers
                 if (maxScore < eventScore)
                 {
                     maxScore = eventScore;
-                    id = i;
+                    id = i + 1;
                 }
             }
 
-            // square the score to increase contrast
+            // square the score to increase score contrast
             score = maxScore * maxScore;
         }
 

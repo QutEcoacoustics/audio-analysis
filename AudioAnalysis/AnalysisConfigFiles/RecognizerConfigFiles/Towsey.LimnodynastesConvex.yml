@@ -25,7 +25,7 @@ TopFrequency: 2100
 # Decibel threshold for the dominant peak: Use this to require a minimum decibel SNR value for a valid call.
 PeakThresholdDecibels: 6.0
 # Event threshold - use this to determine FP / FN trade-off for events. CosineSimilarity to template in 0,1.
-EventThreshold: 0.5
+EventThreshold: 0.6
 
 ################################################################################
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]

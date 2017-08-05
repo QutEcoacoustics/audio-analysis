@@ -129,8 +129,9 @@ namespace AnalysisPrograms.Recognizers.Base
             */
 
             // Limnodynastes convex
-            string recordingPath = @"D:\SensorNetworks\WavFiles\Frogs\LimnodynastesSpecies\10 Limnodynastes convexiusculusMONO.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
+            //string recordingPath = @"D:\SensorNetworks\WavFiles\Frogs\LimnodynastesSpecies\10 Limnodynastes convexiusculusMONO.wav";
+            //string recordingPath = @"D:\SensorNetworks\WavFiles\Frogs\SherynBrodie\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
+            string recordingPath = @"D:\SensorNetworks\WavFiles\Frogs\SherynBrodie\Lconvex_Paradise_20170206_0220.wav";
             //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\LimnoConvex";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LimnodynastesConvex.yml";
 
