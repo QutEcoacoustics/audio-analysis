@@ -297,7 +297,7 @@ namespace AnalysisPrograms
             {
                 // do test of SNR calculation
                 //Audio2InputForConvCNN.Main(null);
-                Audio2InputForConvCNN.ProcessMeriemsDataset();
+                Audio2InputForConvCnn.ProcessMeriemsDataset();
             }
 
             if (false)

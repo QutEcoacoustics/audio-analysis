@@ -396,10 +396,10 @@ namespace AnalysisPrograms.Production
         }
 
         [ArgDescription("No further practical use. Used in 2014 to prepare short recordings of bird calls for analysis by Convolution Neural Networks.")]
-        public Audio2InputForConvCNN.Arguments CreateConvCnnSonogramsArgs { get; set; }
-        public static Action<Audio2InputForConvCNN.Arguments> CreateConvCnnSonograms()
+        public Audio2InputForConvCnn.Arguments CreateConvCnnSonogramsArgs { get; set; }
+        public static Action<Audio2InputForConvCnn.Arguments> CreateConvCnnSonograms()
         {
-            return Audio2InputForConvCNN.Execute;
+            return Audio2InputForConvCnn.Execute;
         }
 
         [ArgDescription("DEPRACATED:  All frog recognizers should now enter through EventRecognizer.Execute() or Multirecognizer.Execute().")]
