@@ -19,7 +19,7 @@ namespace AnalysisBase
     using System.Threading.Tasks;
     using Acoustics.Shared.Contracts;
     using log4net;
-    using SegmentAnalysis;
+    using Segment;
 
     /// <summary>
     /// Prepares, runs and completes analyses.
@@ -28,26 +28,25 @@ namespace AnalysisBase
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The process to analyze files can be a little complex. The overall idea is
-    /// to begin with an analysis type and a list of file paths and segments inside those files.
-    /// Then those files are segmented using default settings from the analysis and possible modifications to the defaults by a user.
-    /// Each segment is analyzed, and the results are put into either a purpose-created folder (which might be deledt once that analysis is complete),
-    /// or a known location for later use.
+    /// The process to analyze files can be complex. The overall idea is
+    /// to begin with an analysis type and a list of audio objects and segments.
+    /// Then those files are segmented using default settings from the analysis and
+    /// possible modifications to the defaults by a user.
+    /// Each segment is analyzed, and the results are put into either a purpose-created
+    /// folder (which might be deleted once that analysis is complete), or a known location for later use.
     /// </para>
     /// <para>
-    /// temp files can also be stored in sub folders named by analysis name and files named by segment id
+    /// Temp files can also be stored in sub folders named by analysis name and files named by segment id
     /// when another analysis is run, the files are overwritten.
     /// </para>
     /// </remarks>
     public class AnalysisCoordinator
     {
         private const string StartingItem = "Starting item {0}: {1}.";
-        private const string CanceledItem = "Cancellation requested for {0} analysis {1}. Finished item {2}: {3}.";
+
+        private const int TaskTimeoutSeconds = 240;
 
         private static readonly ILog Log = LogManager.GetLogger(nameof(AnalysisCoordinator));
-
-        private readonly SaveBehavior saveImageFiles;
-        private readonly bool saveIntermediateDataFiles;
 
         private readonly SaveBehavior saveIntermediateWavFiles;
 
@@ -64,16 +63,12 @@ namespace AnalysisBase
         public AnalysisCoordinator(
             ISourcePreparer sourcePreparer,
             SaveBehavior saveIntermediateWavFiles,
-            SaveBehavior saveImageFiles,
-            bool saveIntermediateDataFiles,
             bool uniqueDirectoryPerSegment = true,
             bool isParallel = false)
         {
             Contract.Requires<ArgumentNullException>(sourcePreparer != null, "sourcePreparer must not be null");
 
             this.saveIntermediateWavFiles = saveIntermediateWavFiles;
-            this.saveImageFiles = saveImageFiles;
-            this.saveIntermediateDataFiles = saveIntermediateDataFiles;
 
             this.SourcePreparer = sourcePreparer;
             this.UniqueDirectoryPerSegment = uniqueDirectoryPerSegment;
@@ -99,13 +94,13 @@ namespace AnalysisBase
         public bool IsParallel { get; }
 
         /// <summary>
-        /// Get analysers using a method that is compatible with MONO environment..
+        /// Get analyzers using a method that is compatible with MONO environment..
         /// </summary>
         /// <param name="assembly">
         /// The assembly.
         /// </param>
         /// <returns>
-        /// The System.Collections.Generic.IEnumerable`1[T -&gt; AnalysisBase.IAnalyser2].
+        /// The System.Collections.Generic.IEnumerable`1[T -&gt; AnalysisBase.IAnalyzer2].
         /// </returns>
         public static IEnumerable<IAnalyser2> GetAnalyzers(Assembly assembly)
         {
@@ -113,12 +108,32 @@ namespace AnalysisBase
             // eg. typeof(MainEntry).Assembly
             var analyzerType = typeof(IAnalyser2);
 
-            var analyzers = assembly.GetTypes()
+            var types = assembly.GetTypes();
+            var analyzers = types
                 .Where(analyzerType.IsAssignableFrom)
                 .Where(t => t.IsClass && !t.IsAbstract)
                 .Select(t => Activator.CreateInstance(t) as IAnalyser2);
 
             return analyzers;
+        }
+
+        /// <summary>
+        /// Gets a named output directory. For example, if <paramref name="baseDir"/> is "C:\Temp" and
+        /// <paramref name="analyzer"/> is the indices analysis, the result will be "C:\Temp\Towsey.Acoustic".
+        /// </summary>
+        /// <param name="baseDir">The base output directory (either normal output or a temp directory).</param>
+        /// <param name="analyzer">The <see cref="IAnalyser2"/> to extract the identifier from.</param>
+        /// <param name="subFolders">An optional list of sub folders to append to the path.</param>
+        /// <returns>A combined directory made up of all the path fragments.</returns>
+        public static DirectoryInfo GetNamedDirectory(
+            DirectoryInfo baseDir,
+            IAnalyser2 analyzer,
+            params string[] subFolders)
+        {
+            Contract.Requires(analyzer.NotNull(), "analyzer must be not null");
+            Contract.Requires(!string.IsNullOrWhiteSpace(analyzer.Identifier), "analysisIdentifier must be set.");
+
+            return baseDir.Combine(subFolders.Prepend(analyzer.Identifier));
         }
 
         /// <summary>
@@ -136,7 +151,7 @@ namespace AnalysisBase
         /// <returns>
         /// The analysis results.
         /// </returns>
-        public AnalysisResult2[] Run<TSource>(ISegment<TSource> segment, IAnalyser2 analysis, AnalysisSettingsBase settings)
+        public AnalysisResult2[] Run<TSource>(ISegment<TSource> segment, IAnalyser2 analysis, AnalysisSettings settings)
         {
             return this.Run(new[] { segment }, analysis, settings);
         }
@@ -161,7 +176,7 @@ namespace AnalysisBase
         public AnalysisResult2[] Run<TSource>(
            ISegment<TSource>[] segments,
            IAnalyser2 analysis,
-           AnalysisSettingsBase settings)
+           AnalysisSettings settings)
         {
             Contract.Requires(settings != null, "Settings must not be null.");
             Contract.Requires(analysis != null, "Analysis must not be null.");
@@ -170,7 +185,8 @@ namespace AnalysisBase
             // do not allow the program to continue
             // if there are no possible segments to process because the original file
             // is too short.
-            var tooShort = segments.FirstOrDefault(segment => segment.SourceMetadata.DurationSeconds < settings.AnalysisMinSegmentDuration);
+            var tooShort = segments
+                .FirstOrDefault(segment => segment.SourceMetadata.Duration < settings.AnalysisMinSegmentDuration);
             if (tooShort != null)
             {
                 Log.Fatal("Provided audio recording is too short too analyze!");
@@ -178,6 +194,11 @@ namespace AnalysisBase
                     "{0} is too short to analyze with current analysisSettings.AnalysisMinSegmentDuration ({1})"
                         .Format2(tooShort.Source, settings.AnalysisMinSegmentDuration));
             }
+
+            // ensure output directory exists
+            Contract.Requires(
+                settings.AnalysisOutputDirectory.TryCreate(),
+                $"Attempt to create AnalysisOutputDirectory failed: {settings.AnalysisOutputDirectory}");
 
             // try and create temp directory (returns true if already exists)
             if (!settings.IsAnalysisTempDirectoryValid)
@@ -189,16 +210,21 @@ namespace AnalysisBase
             }
 
             // calculate the sub-segments of the given file segments that match what the analysis expects.
-            var analysisSegments = this.PrepareAnalysisSegments(segments, settings);
+            var analysisSegments = PrepareAnalysisSegments(this.SourcePreparer, segments, settings);
+
+            // Execute a pre analyzer hook
+            Log.Info("Executing BeforeAnalyze");
+            analysis.BeforeAnalyze(settings);
+            Log.Debug("Completed BeforeAnalyze");
 
             AnalysisResult2[] results;
 
             // clone analysis settings for parallelism concerns:
             //  - as each iteration modifies settings. This causes hard to track down bugs
             // clones are made for sequential runs to to ensure consistency
-            var settingsForThisItem = (AnalysisSettingsBase)settings.Clone();
+            var settingsForThisItem = (AnalysisSettings)settings.Clone();
 
-            Log.InfoFormat("Analysis started in {0}.", this.IsParallel ? "parallel" : "sequence");
+            Log.Info($"Analysis started in {(this.IsParallel ? "parallel" : "sequence")}.");
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -210,7 +236,6 @@ namespace AnalysisBase
             {
                 results = this.RunParallel(analysisSegments, analysis, settingsForThisItem);
 
-                // TODO: determine if this is bad because we do not do it for sequential as well!
                 Array.Sort(results);
             }
             else
@@ -221,7 +246,9 @@ namespace AnalysisBase
 
             stopwatch.Stop();
 
-            Log.DebugFormat("Analysis complete, took {0}.", stopwatch.Elapsed);
+            Log.Debug($"Analysis complete, took {stopwatch.Elapsed}.");
+
+            // TODO: execute SummariseResults hook here eventually
 
             // delete temp directories
             // only delete directory if we are using one that was created specifically for this analysis
@@ -230,32 +257,62 @@ namespace AnalysisBase
             return results;
         }
 
-        private List<ISegment<TSource>> PrepareAnalysisSegments<TSource>(ISegment<TSource>[] segments, AnalysisSettingsBase settings)
+        private static List<ISegment<TSource>> PrepareAnalysisSegments<TSource>(
+            ISourcePreparer preparer,
+            ISegment<TSource>[] segments,
+            AnalysisSettings settings)
         {
-            var analysisSegments = this.SourcePreparer.CalculateSegments(segments, settings).ToList();
-
-            // check for any segment that is too short and remove if too short
-            var shortSegments = analysisSegments
-                .Where(x => x.EndOffsetSeconds - x.StartOffsetSeconds <
-                            settings.AnalysisMinSegmentDuration.TotalSeconds);
-            foreach (var segment in shortSegments)
-            {
-                Log.Warn("Analysis segment removed because it was too short " +
-                         $"(less than {settings.AnalysisMinSegmentDuration}): {segment}");
-                analysisSegments.Remove(segment);
-            }
-
-            // ensure all segments are valid
-            foreach (var segment in analysisSegments)
+            // ensure all segments are valid and have source metadata set
+            foreach (var segment in segments)
             {
                 Contract.Requires<InvalidSegmentException>(
                     segment.EndOffsetSeconds - segment.StartOffsetSeconds > 0,
-                    $"Segment {segment} wa invalid because end was less than start");
+                    $"Segment {segment} was invalid because end was less than start");
 
                 Contract.Requires<InvalidSegmentException>(segment.Source != null, $"Segment {segment} source was null");
+
+                Contract.Requires(
+                    segment.SourceMetadata.NotNull(),
+                    $"Segment {segment} must have metadata supplied.");
+
+                // it should equal itself (because it is in the list) but should not equal anything else
+                Contract.Requires<InvalidSegmentException>(
+                    segments.Count(x => x.Equals(segment)) == 1,
+                    $"Supplied segment is a duplicate of another segment. Supplied: {segment}");
             }
 
-            return analysisSegments;
+            // split the provided segments up into processable chunks
+            var analysisSegments = preparer.CalculateSegments(segments, settings).ToArray();
+
+            // ensure after splitting there are no identical segments
+
+            // we use a a dictionary here because a HashSet does not support supplying an initial capacity (uggh)
+            var postCutSegments = new List<ISegment<TSource>>(analysisSegments.Length);
+            foreach (var analysisSegment in analysisSegments)
+            {
+                // check if the segment is too short... and if so, remove it
+                var tooShort = analysisSegment.EndOffsetSeconds - analysisSegment.StartOffsetSeconds <
+                               settings.AnalysisMinSegmentDuration.TotalSeconds;
+                if (tooShort)
+                {
+                    Log.Warn("Analysis segment removed because it was too short " +
+                             $"(less than {settings.AnalysisMinSegmentDuration}): {analysisSegment}");
+                    continue;
+                }
+
+                // ensure there are no identical segments (no use processing the same piece of audio twice
+                // with the same analysis!
+                // warning this is an O^2 operation.
+                if (postCutSegments.Any(x => x.Equals(analysisSegment)))
+                {
+                    Log.Warn($"A duplicate analysis segment was removed: {analysisSegment}");
+                    continue;
+                }
+
+                postCutSegments.Add(analysisSegment);
+            }
+
+            return postCutSegments;
         }
 
         private static void CleanupAfterSegment<TSource>(
@@ -292,7 +349,7 @@ namespace AnalysisBase
             // as all instances use the same directory!
             if (hasUniqueDirectoryPerSegment)
             {
-                if (settings.SegmentOutputDirectory == settings.SegmentTempDirectory)
+                if (settings.SegmentOutputDirectory.FullName == settings.SegmentTempDirectory.FullName)
                 {
                     Log.Debug(
                         "Not deleting segment temp directory because it is identical to segment output directory");
@@ -307,14 +364,14 @@ namespace AnalysisBase
         }
 
         /// <summary>
-        /// This method simply ensures that certain requirements are fulfilled by IAnalyser2.Analyze results.
+        /// This method simply ensures that certain requirements are fulfilled by IAnalyzer2.Analyze results.
         /// It only runs when the program is built as DEBUG.
         /// </summary>
         [Conditional("DEBUG")]
-        private static void ValidateResult(
+        private static void ValidateResult<T>(
             AnalysisSettings preAnalysisSettings,
             AnalysisResult2 result,
-            TimeSpan start,
+            SegmentSettings<T> segmentSettings,
             TimeSpan preparedFileDuration,
             bool parallelized)
         {
@@ -328,28 +385,25 @@ namespace AnalysisBase
                 result.SettingsUsed != null,
                 "The settings used in the analysis must be populated in the analysis result.");
             Debug.Assert(
-                result.SegmentStartOffset == start,
+                result.SegmentStartOffset == segmentSettings.SegmentStartOffset,
                 "The segment start offset of the result should match the start offset that it was instructed to analyze");
             Debug.Assert(
                 Math.Abs((result.SegmentAudioDuration - preparedFileDuration).TotalMilliseconds) < 1.0,
                 "The duration analyzed (reported by the analysis result) should be withing a millisecond of the provided audio file");
 
-            if (preAnalysisSettings.SegmentSettings.SegmentImageFile != null)
+            if (preAnalysisSettings.AnalysisImageSaveBehavior == SaveBehavior.Always
+                || (preAnalysisSettings.AnalysisImageSaveBehavior == SaveBehavior.WhenEventsDetected
+                    && result.Events.Length > 0))
             {
-                if (preAnalysisSettings.AnalysisSaveBehavior == SaveBehavior.Always
-                    || (preAnalysisSettings.AnalysisSaveBehavior == SaveBehavior.WhenEventsDetected
-                        && result.Events.Length > 0))
-                {
-                    Debug.Assert(
-                        preAnalysisSettings.SegmentSettings.SegmentImageFile.Exists,
-                        "If the analysis was instructed to produce an image file, then it should exist");
-                }
+                Debug.Assert(
+                    segmentSettings.SegmentImageFile.Exists,
+                    "If the analysis was instructed to produce an image file, then it should exist");
             }
 
             Debug.Assert(
                 result.Events != null,
                 "The Events array should never be null. No events should be represented by a zero length Events array.");
-            if (result.Events.Length != 0 && preAnalysisSettings.SegmentSettings.SegmentEventsFile != null)
+            if (result.Events.Length != 0 && preAnalysisSettings.AnalysisDataSaveBehavior)
             {
                 Debug.Assert(
                     result.EventsFile.Exists,
@@ -359,7 +413,7 @@ namespace AnalysisBase
             Debug.Assert(
                 result.SummaryIndices != null,
                 "The SummaryIndices array should never be null. No SummaryIndices should be represented by a zero length SummaryIndices array.");
-            if (result.SummaryIndices.Length != 0 && preAnalysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null)
+            if (result.SummaryIndices.Length != 0 && preAnalysisSettings.AnalysisDataSaveBehavior)
             {
                 Debug.Assert(
                     result.SummaryIndicesFile.Exists,
@@ -369,7 +423,7 @@ namespace AnalysisBase
             Debug.Assert(
                 result.SpectralIndices != null,
                 "The SpectralIndices array should never be null. No SpectralIndices should be represented by a zero length SpectralIndices array.");
-            if (result.SpectralIndices.Length != 0 && preAnalysisSettings.SegmentSettings.SegmentSpectrumIndicesDirectory != null)
+            if (result.SpectralIndices.Length != 0 && preAnalysisSettings.AnalysisDataSaveBehavior)
             {
                 foreach (var spectraIndicesFile in result.SpectraIndicesFiles)
                 {
@@ -407,9 +461,9 @@ namespace AnalysisBase
             }
         }
 
-        private static (DirectoryInfo Output, DirectoryInfo Temp) PrepareSegmentDirectories<T>(string analysisIdentifier, AnalysisSettingsBase settings, ISegment<T> uniqueDirectoryPerSegment)
+        private static (DirectoryInfo Output, DirectoryInfo Temp) PrepareSegmentDirectories<T>(IAnalyser2 analyzer, AnalysisSettings settings, ISegment<T> uniqueDirectoryPerSegment)
         {
-            Contract.Requires(analysisIdentifier.IsNotEmpty(), "analysis must not be null.");
+            Contract.Requires(analyzer.NotNull(), "analysis must not be null.");
             Contract.Requires(settings != null, "settings must not be null.");
             Contract.Requires(
                 settings.AnalysisOutputDirectory != null,
@@ -418,19 +472,22 @@ namespace AnalysisBase
             // create directory for analysis run
             var output = CreateRunDirectory(
                 settings.AnalysisOutputDirectory,
-                analysisIdentifier,
+                analyzer,
                 uniqueDirectoryPerSegment);
 
             // create temp directory for analysis run
+            var tempBase = settings.IsAnalysisTempDirectoryValid
+                ? settings.AnalysisTempDirectory
+                : settings.AnalysisTempDirectoryFallback;
             var temp = CreateRunDirectory(
-                settings.IsAnalysisTempDirectoryValid ? settings.AnalysisTempDirectory : settings.AnalysisTempDirectoryFallback,
-                analysisIdentifier,
+                tempBase,
+                analyzer,
                 uniqueDirectoryPerSegment);
 
             Contract.Ensures(output != null, "SegmentOutputDirectory was not set.");
-            Contract.Ensures(temp != null, "SegmentOutputDirectory was not set.");
+            Contract.Ensures(temp != null, "SegmentTempDirectory was not set.");
             Contract.Ensures(Directory.Exists(output.FullName), "SegmentOutputDirectory did not exist.");
-            Contract.Ensures(Directory.Exists(temp.FullName), "SegmentOutputDirectory did not exist.");
+            Contract.Ensures(Directory.Exists(temp.FullName), "SegmentTempDirectory did not exist.");
 
             return (output, temp);
         }
@@ -445,27 +502,28 @@ namespace AnalysisBase
         /// <param name="analysisIdentifier">
         /// Analysis Identifier.
         /// </param>
+        /// <param name="unique">Whether or not we are using the unique folder scheme.</param>
         /// <returns>
         /// The created directory.
         /// </returns>
-        private static DirectoryInfo CreateRunDirectory<T>(DirectoryInfo analysisBaseDirectory, string analysisIdentifier, ISegment<T> unique = null)
+        private static DirectoryInfo CreateRunDirectory<T>(
+            DirectoryInfo baseDir,
+            IAnalyser2 analyzer,
+            ISegment<T> unique = null)
         {
-            Contract.Requires(!string.IsNullOrWhiteSpace(analysisIdentifier), "analysisIdentifier must be set.");
-
             var token = string.Empty;
             if (unique.NotNull())
             {
-                token = unique.Source + unique.StartOffsetSeconds.ToString("000000.00");
+                token = unique.SourceMetadata.Identifier + "_" + unique.StartOffsetSeconds.ToString("000000.00");
             }
 
-            var runDirectory = Path.Combine(analysisBaseDirectory.FullName, analysisIdentifier, token);
+            var runDirectory = GetNamedDirectory(baseDir, analyzer, token);
 
-            var dir = new DirectoryInfo(runDirectory);
-            Directory.CreateDirectory(runDirectory);
+            Directory.CreateDirectory(runDirectory.FullName);
 
-            Contract.Ensures(Directory.Exists(dir.FullName), "Directory was not created.");
+            Contract.Ensures(Directory.Exists(runDirectory.FullName), "Directory was not created.");
 
-            return dir;
+            return runDirectory;
         }
 
         /// <summary>
@@ -486,7 +544,7 @@ namespace AnalysisBase
         private AnalysisResult2[] RunParallel<TSource>(
             ICollection<ISegment<TSource>> analysisSegments,
             IAnalyser2 analysis,
-            AnalysisSettingsBase clonedSettings)
+            AnalysisSettings clonedSettings)
         {
             var analysisSegmentsCount = analysisSegments.Count;
             var results = new AnalysisResult2[analysisSegmentsCount];
@@ -501,7 +559,7 @@ namespace AnalysisBase
 
                 // can't use settings as each iteration modifies settings. This causes hard to track down bugs
                 // instead create a copy of the settings, and use that
-                var settingsForThisItem = (AnalysisSettingsBase)clonedSettings.Clone();
+                var settingsForThisItem = (AnalysisSettings)clonedSettings.Clone();
 
                 // process item
                 Log.DebugFormat(StartingItem, settingsForThisItem.InstanceId, itemClosed);
@@ -540,7 +598,7 @@ namespace AnalysisBase
         private AnalysisResult2[] RunSequential<TSource>(
             ICollection<ISegment<TSource>> analysisSegments,
             IAnalyser2 analysis,
-            AnalysisSettingsBase clonedSettings)
+            AnalysisSettings clonedSettings)
         {
             var analysisSegmentsList = analysisSegments.ToList();
             var totalItems = analysisSegmentsList.Count;
@@ -583,7 +641,7 @@ namespace AnalysisBase
         private AnalysisResult2 PrepareFileAndAnalyzeSegment<T>(
             ISegment<T> segment,
             IAnalyser2 analyzer,
-            AnalysisSettingsBase localCopyOfSettings,
+            AnalysisSettings localCopyOfSettings,
             bool parallelized)
         {
             Contract.Requires(localCopyOfSettings != null, "Settings must not be null.");
@@ -595,7 +653,7 @@ namespace AnalysisBase
             //var end = fileSegment.SegmentEndOffset ?? fileSegment.TargetFileDuration.Value;
 
             // set directories
-            var dirs = PrepareSegmentDirectories(analyzer.Identifier, localCopyOfSettings, this.UniqueDirectoryPerSegment ? segment : null);
+            var dirs = PrepareSegmentDirectories(analyzer, localCopyOfSettings, this.UniqueDirectoryPerSegment ? segment : null);
 
             // create the file for the analysis
             // save created audio file to settings.SegmentTempDirectory
@@ -611,56 +669,38 @@ namespace AnalysisBase
                 localCopyOfSettings.AnalysisMixDownToMono);
 
             // de-async this method
-            task.Wait();
+            task.Wait(TaskTimeoutSeconds * 1000);
 
             var preparedFile = task.Result;
 
-            var preparedFilePath = preparedFile.TargetFile;
-            var preparedFileDuration = preparedFile.TargetFileDuration.Value;
-
-            // Store sample rate of original audio file in the Settings object.
-            // May need original SR during the analysis, esp if have upsampled from the original SR.
-            localCopyOfSettings.SampleRateOfOriginalAudioFile = fileSegment.TargetFileSampleRate;
-
-            //localCopyOfSettings.SegmentSettings.SegmentAudioFile = preparedFilePath;
-            //localCopyOfSettings.SegmentSettings.SegmentStartOffset = start;
-            //localCopyOfSettings.SegmentSettings.AnalysisIdealSegmentDuration = end - start;
-
             var segmentSettings = new SegmentSettings<T>(localCopyOfSettings, segment, dirs, preparedFile);
 
-            string fileName = Path.GetFileNameWithoutExtension(preparedFile.TargetFile.Name);
-
-            localCopyOfSettings.AnalysisSaveBehavior = this.saveImageFiles;
-
-            // if user requests, save the sonogram files
-            if (this.saveImageFiles != SaveBehavior.Never)
-            {
-                // save spectrogram to output dir - saving to temp dir means possibility of being overwritten
-                localCopyOfSettings.SegmentSettings.SegmentImageFile =
-                    new FileInfo(Path.Combine(
-                        localCopyOfSettings.SegmentSettings.SegmentOutputDirectory.FullName,
-                        fileName + ".png"));
-            }
-
-            Log.DebugFormat($"Item {segmentSettings.InstanceId} started analysing file {segmentSettings.SegmentAudioFile.Name}.");
+            Log.Debug($"Item {segmentSettings.InstanceId} started analyzing file {segmentSettings.SegmentAudioFile.Name}.");
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             // RUN the ANALYSIS
-            AnalysisResult2 result = analyzer.Analyze(localCopyOfSettings);
+            AnalysisResult2 result = analyzer.Analyze(localCopyOfSettings, segmentSettings);
 
             stopwatch.Stop();
-            Log.DebugFormat("Item {0} finished analysing {1}, took {2}.", localCopyOfSettings.InstanceId,
-                localCopyOfSettings.SegmentSettings.SegmentAudioFile.Name, stopwatch.Elapsed);
+            Log.Debug($"Item {localCopyOfSettings.InstanceId} finished analyzing {segmentSettings.SegmentAudioFile.Name}, took {stopwatch.Elapsed}.");
 
             // add information to the results
             result.AnalysisIdentifier = analyzer.Identifier;
 
             // validate results (debug only & not parallel only)
-            ValidateResult(localCopyOfSettings, result, start, preparedFileDuration, parallelized);
+            ValidateResult(
+                localCopyOfSettings,
+                result,
+                segmentSettings,
+                preparedFile.TargetFileDuration.Value,
+                parallelized);
 
             // clean up
-            CleanupAfterSegment(localCopyOfSettings, this.UniqueDirectoryPerSegment, this.saveIntermediateWavFiles.ShouldSave(result.Events.Length));
+            CleanupAfterSegment(
+                segmentSettings,
+                this.UniqueDirectoryPerSegment,
+                this.saveIntermediateWavFiles.ShouldSave(result.Events.Length));
 
             return result;
         }

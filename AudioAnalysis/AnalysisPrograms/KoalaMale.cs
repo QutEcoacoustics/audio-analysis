@@ -87,7 +87,7 @@ namespace AnalysisPrograms
                                AnalysisMinSegmentDuration = TimeSpan.FromSeconds(30),
                                SegmentMediaType = MediaTypes.MediaTypeWav,
                                SegmentOverlapDuration = TimeSpan.Zero,
-                               AnalysisTargetSampleRate = AnalysisTemplate.ResampleRate,
+                               AnalysisTargetSampleRate = ResampleRate,
                            };
             }
         }
@@ -165,10 +165,6 @@ namespace AnalysisPrograms
                         Source = recordingPath.ToFileInfo(),
                         Config = configPath.ToFileInfo(),
                         Output = outputDir.ToDirectoryInfo(),
-                        TmpWav = segmentFName,
-                        Events = eventsFname,
-                        Indices = indicesFname,
-                        Sgram = sonogramFname,
                         Start = start.TotalSeconds,
                         Duration = duration.TotalSeconds,
                     };
@@ -188,50 +184,7 @@ namespace AnalysisPrograms
             }
 
             Execute(arguments);
-
-            if (executeDev)
-            {
-                FileInfo csvEvents = arguments.Output.CombineFile(arguments.Events);
-                if (!csvEvents.Exists)
-                {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvEvents.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-
-                FileInfo csvIndicies = arguments.Output.CombineFile(arguments.Indices);
-                if (!csvIndicies.Exists)
-                {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvIndicies.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-
-                FileInfo image = arguments.Output.CombineFile(arguments.Sgram);
-                if (image.Exists)
-                {
-                    var process = new ProcessRunner(ImageViewer);
-                    process.Run(image.FullName, arguments.Output.FullName);
-                }
-
-                LoggedConsole.WriteLine("\n\n# Finished analysis:- " + arguments.Source.FullName);
-            }
         }
-
 
         public static KoalaMaleResults Analysis(FileInfo segmentOfSourceFile, IDictionary<string, string> configDict, TimeSpan segmentStartOffset)
         {
@@ -380,12 +333,12 @@ namespace AnalysisPrograms
         {
             Contract.Requires(arguments != null);
 
-            AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
+            var (analysisSettings, segmentSettings) = arguments.ToAnalysisSettings();
             TimeSpan start = TimeSpan.FromSeconds(arguments.Start ?? 0);
             TimeSpan duration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT
-            FileInfo tempF = analysisSettings.SegmentSettings.SegmentAudioFile;
+            FileInfo tempF = segmentSettings.SegmentAudioFile;
             if (duration == TimeSpan.Zero)
             {
                 // Process entire file
@@ -413,7 +366,7 @@ namespace AnalysisPrograms
             /* ############################################################################################################################################# */
             IAnalyser2 analyser = new KoalaMale();
             analyser.BeforeAnalyze(analysisSettings);
-            AnalysisResult2 result = analyser.Analyze(analysisSettings);
+            AnalysisResult2 result = analyser.Analyze(analysisSettings, segmentSettings);
 
             /* ############################################################################################################################################# */
             if (result.Events.Length > 0)
@@ -491,33 +444,33 @@ namespace AnalysisPrograms
             return events;
         }
 
-        public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
-            FileInfo audioFile = analysisSettings.SegmentSettings.SegmentAudioFile;
+            FileInfo audioFile = segmentSettings.SegmentAudioFile;
 
             /* ###################################################################### */
             Dictionary<string, string> configuration = analysisSettings.Configuration;
-            KoalaMaleResults results = Analysis(audioFile, configuration, analysisSettings.SegmentSettings.SegmentStartOffset ?? TimeSpan.Zero);
+            KoalaMaleResults results = Analysis(audioFile, configuration, segmentSettings.SegmentStartOffset);
 
             /* ###################################################################### */
             BaseSonogram sonogram = results.Sonogram;
             double[,] hits = results.Hits;
             Plot scores = results.Plot;
 
-            var analysisResults = new AnalysisResult2(analysisSettings, results.RecordingtDuration)
+            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, results.RecordingtDuration)
                                       {
                                           AnalysisIdentifier = this.Identifier,
                                       };
 
             analysisResults.Events = results.Events.ToArray();
 
-            if (analysisSettings.SegmentSettings.SegmentEventsFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
-                this.WriteEventsFile(analysisSettings.SegmentSettings.SegmentEventsFile, analysisResults.Events);
-                analysisResults.EventsFile = analysisSettings.SegmentSettings.SegmentEventsFile;
+                this.WriteEventsFile(segmentSettings.SegmentEventsFile, analysisResults.Events);
+                analysisResults.EventsFile = segmentSettings.SegmentEventsFile;
             }
 
-            if (analysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
                 TimeSpan unitTime = TimeSpan.FromMinutes(1.0);
                 analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(
@@ -526,16 +479,16 @@ namespace AnalysisPrograms
                     analysisResults.SegmentAudioDuration,
                     0);
 
-                this.WriteSummaryIndicesFile(analysisSettings.SegmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
+                this.WriteSummaryIndicesFile(segmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
-            if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Events.Length))
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
-                string imagePath = analysisSettings.SegmentSettings.SegmentImageFile.FullName;
+                string imagePath = segmentSettings.SegmentImageFile.FullName;
                 const double EventThreshold = 0.1;
                 Image image = DrawSonogram(sonogram, hits, scores, results.Events, EventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
-                analysisResults.ImageFile = analysisSettings.SegmentSettings.SegmentImageFile;
+                analysisResults.ImageFile = segmentSettings.SegmentImageFile;
             }
 
             return analysisResults;

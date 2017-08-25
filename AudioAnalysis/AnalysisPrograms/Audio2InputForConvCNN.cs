@@ -874,16 +874,16 @@ namespace AnalysisPrograms
             // noop
         }
 
-        public AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        public AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
-            var audioFile = analysisSettings.SegmentSettings.SegmentAudioFile;
+            var audioFile = segmentSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
-            var outputDirectory = analysisSettings.SegmentSettings.SegmentOutputDirectory;
+            var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
-            var analysisResult = new AnalysisResult2(analysisSettings, recording.Duration());
+            var analysisResult = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration());
             dynamic configuration = Yaml.Deserialise(analysisSettings.ConfigFile);
 
-            bool saveCsv = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
+            bool saveCsv = analysisSettings.AnalysisDataSaveBehavior;
 
             if ((bool?)configuration[AnalysisKeys.MakeSoxSonogram] == true)
             {
@@ -894,25 +894,25 @@ namespace AnalysisPrograms
             var configurationDictionary = new Dictionary<string, string>((Dictionary<string, string>)configuration);
             configurationDictionary[ConfigKeys.Recording.Key_RecordingCallName] = audioFile.FullName;
             configurationDictionary[ConfigKeys.Recording.Key_RecordingFileName] = audioFile.Name;
-            var soxImage = new FileInfo(Path.Combine(analysisSettings.SegmentSettings.SegmentOutputDirectory.FullName, audioFile.Name + ".SOX.png"));
+            var soxImage = new FileInfo(Path.Combine(segmentSettings.SegmentOutputDirectory.FullName, audioFile.Name + ".SOX.png"));
 
             var spectrogramResult = Audio2Sonogram.GenerateFourSpectrogramImages(
                 audioFile,
                 soxImage,
                 configurationDictionary,
-                dataOnly: analysisSettings.SegmentSettings.SegmentImageFile == null,
+                dataOnly: analysisSettings.AnalysisImageSaveBehavior.ShouldSave(),
                 makeSoxSonogram: false);
 
             // this analysis produces no results!
             // but we still print images (that is the point)
-            if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResult.Events.Length))
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResult.Events.Length))
             {
-                Debug.Assert(analysisSettings.SegmentSettings.SegmentImageFile.Exists);
+                Debug.Assert(segmentSettings.SegmentImageFile.Exists);
             }
 
             if (saveCsv)
             {
-                var basename = Path.GetFileNameWithoutExtension(analysisSettings.SegmentSettings.SegmentAudioFile.Name);
+                var basename = Path.GetFileNameWithoutExtension(segmentSettings.SegmentAudioFile.Name);
                 var spectrogramCsvFile = outputDirectory.CombineFile(basename + ".Spectrogram.csv");
                 Csv.WriteMatrixToCsv(spectrogramCsvFile, spectrogramResult.DecibelSpectrogram.Data, TwoDimensionalArray.RowMajor);
             }

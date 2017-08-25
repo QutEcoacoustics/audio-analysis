@@ -128,7 +128,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CsvHelper, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
-      <HintPath>..\packages\CsvHelper.2.16.3.0\lib\net40\CsvHelper.dll</HintPath>
+      <HintPath>..\packages\CsvHelper.2.16.2.0\lib\net40\CsvHelper.dll</HintPath>
     </Reference>
     <Reference Include="GeorgeCloney, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\GeorgeCloney.1.1.1.17\lib\net40\GeorgeCloney.dll</HintPath>
@@ -180,8 +180,8 @@
     <Compile Include="AnalysisResult2.cs" />
     <Compile Include="AnalysisSettings.cs" />
     <Compile Include="AudioRecordingTooShortException.cs" />
+    <Compile Include="Extensions\ModifiedInfoExtensions.cs" />
     <Compile Include="FileSegment.cs" />
-    <Compile Include="IAnalyser.cs" />
     <Compile Include="IAnalyser2.cs" />
     <Compile Include="AbstractStrongAnalyser.cs" />
     <Compile Include="ISourcePreparer.cs" />
@@ -193,7 +193,10 @@
     <Compile Include="ResultBases\ResultBase.cs" />
     <Compile Include="ResultBases\SpectralIndexBase.cs" />
     <Compile Include="SaveBehavior.cs" />
-    <Compile Include="SegmentAnalysis\ISegment.cs" />
+    <Compile Include="Segment\InvalidSegmentException.cs" />
+    <Compile Include="Segment\ISegment.cs" />
+    <Compile Include="Segment\ISourceMetadata.cs" />
+    <Compile Include="Segment\SourceMetadata.cs" />
     <Compile Include="SegmentSettings.cs" />
     <Compile Include="TimeAlignment.cs" />
   </ItemGroup>
@@ -201,6 +204,10 @@
     <ProjectReference Include="..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj">
       <Project>{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}</Project>
       <Name>Acoustics.Shared</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Acoustics\Acoustics.Tools\Acoustics.Tools.csproj">
+      <Project>{0338570E-5A77-4A2E-8E17-7955C36AE1F7}</Project>
+      <Name>Acoustics.Tools</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

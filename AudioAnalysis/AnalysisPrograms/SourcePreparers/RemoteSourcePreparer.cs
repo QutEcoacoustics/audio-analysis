@@ -11,6 +11,7 @@ namespace AnalysisPrograms.SourcePreparers
     using Acoustics.Tools.Audio;
     using AcousticWorkbench;
     using AnalysisBase;
+    using AnalysisBase.Segment;
     using log4net;
 
     /// <summary>
@@ -93,12 +94,12 @@ namespace AnalysisPrograms.SourcePreparers
         /// <returns>
         /// Enumerable of sub-segments.
         /// </returns>
-        public IEnumerable<FileSegment> CalculateSegments(
-            IEnumerable<FileSegment> fileSegments,
+        public IEnumerable<ISegment<TSource>> CalculateSegments<TSource>(
+            IEnumerable<ISegment<TSource>> fileSegments,
             AnalysisSettings settings)
         {
             // we can probably support this later on but we'll need to refactor the FileSegment type
-            throw new NotSupportedException("RemoteSourcePreparer does not support CalculatingSegments");
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -130,9 +131,9 @@ namespace AnalysisPrograms.SourcePreparers
         /// these are the path to the segmented file and the duration of the segmented file.
         /// The start and end offsets will not be set.
         /// </returns>
-        public async Task<FileSegment> PrepareFile(
+        public async Task<FileSegment> PrepareFile<TSource>(
             DirectoryInfo outputDirectory,
-            string source,
+            TSource source,
             string outputMediaType,
             TimeSpan startOffset,
             TimeSpan endOffset,
@@ -152,7 +153,7 @@ namespace AnalysisPrograms.SourcePreparers
                 };
             var preparedFile = AudioFilePreparer.PrepareFile(
                 outputDirectory,
-                source.ToFileInfo(),
+                null,//source.ToFileInfo(),
                 outputMediaType,
                 request,
                 temporaryFilesDirectory);

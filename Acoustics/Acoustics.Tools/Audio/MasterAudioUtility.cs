@@ -274,18 +274,25 @@ namespace Acoustics.Tools.Audio
                 // will not overwrite, will throw exception if the output file already exists.
                 // do not overwrite!!!
 
-                // AT: the following code by Towsey is extremely dangerous in parallel code. It Effectively means previous runs can cache files - if files are faulty it corrupts analysis.
+                // AT: the following code by Towsey is extremely dangerous in parallel code. It Effectively means
+                //     previous runs can cache files - if files are faulty it corrupts analysis.
                 // AT: This code is allowed in DEBUG for ease of use. It should not be subverted in RELEASE
-#if DEBUG
-                // However, output file may already exist if saved by user on previous run - therefore only copy if does not already exist.
+                // AT, August 2017: Reverting this behavior again! With enhancements made to our code, there is no
+                //     a guarantee that files will be produced from the same source, or even on nicely aligned minutes.
+                //     The only sane alternative here is to crash because it means something is catastrophically wrong
+                //     with our logic (or that a previous run failed and did not clean up it's files!).
+                //     Note to Michael (whom I've probably made grumpy with this change - sorry): I'd recommend instead
+                //     of changing this code back, you instead add add a cleanup command to your dev methods... something
+                //     like Directory.Delete(outputDirectory, true) that executes before you start a new analysis and
+                //     will clear away old files before the analysis runs.
+
+                // However, output file may already exist if saved by user on previous run
                 if (output.Exists)
                 {
-                    this.Log.Warn($"MasterAudioUtility is trying to create file ({output.FullName}) that already exists. BAD!! Program will crash if in RELEASE mode.");
+                    this.Log.Error($"MasterAudioUtility is trying to create file ({output.FullName}) that already exists.");
                 }
-                File.Copy(soxOutputFile.FullName, output.FullName, true);
-#else
+
                 File.Copy(soxOutputFile.FullName, output.FullName);
-#endif
             }
 
             // tidy up

@@ -339,7 +339,7 @@
         }
 
         /// <summary>
-        /// Run an executable. Will wait for up to 10 minutes, then kill the process. Will retry up to 3 times if the timeout is reached.
+        /// Run an executable. Will wait for up to 3 minutes, then kill the process. Will retry up to 3 times if the timeout is reached.
         /// </summary>
         /// <param name="processRunner">
         /// The process runner.

@@ -19,10 +19,10 @@ namespace AnalysisPrograms.Recognizers.Base
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools;
     using AnalysisBase;
-
-    using Production;
+    using AnalysisBase.Extensions;
     using AudioAnalysisTools;
     using log4net;
+    using Production;
 
     public class RecognizerEntry
     {
@@ -36,8 +36,7 @@ namespace AnalysisPrograms.Recognizers.Base
             }
         }
 
-        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
+        private static readonly ILog Log = LogManager.GetLogger(nameof(RecognizerEntry));
 
         public static Arguments Dev()
         {
@@ -255,7 +254,6 @@ namespace AnalysisPrograms.Recognizers.Base
             LoggedConsole.WriteLine("# Configuration file:  " + configFile);
             LoggedConsole.WriteLine("# Output folder:       " + outputDirectory);
 
-
             Log.Info("Reading configuration file");
             dynamic configuration = Yaml.Deserialise(configFile);
             string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
@@ -269,8 +267,11 @@ namespace AnalysisPrograms.Recognizers.Base
             AnalysisSettings analysisSettings = recognizer.DefaultSettings;
 
             // convert arguments to analysis settings
-            analysisSettings = arguments.ToAnalysisSettings(analysisSettings, outputIntermediate: true, resultSubDirectory: recognizer.Identifier);
-            analysisSettings.Configuration = configuration;
+            analysisSettings = arguments.ToAnalysisSettings(
+                analysisSettings,
+                outputIntermediate: true,
+                resultSubDirectory: recognizer.Identifier,
+                configuration: configuration);
 
             // Enable this if you want the Config file ResampleRate parameter to work.
             // Generally however the ResampleRate should remain at 22050Hz for all recognizers.
@@ -289,32 +290,31 @@ namespace AnalysisPrograms.Recognizers.Base
                 audioUtilityRequest,
                 arguments.Output);
 
-            analysisSettings.SegmentSettings.SegmentAudioFile = preparedFile.TargetInfo.SourceFile;
-            analysisSettings.SampleRateOfOriginalAudioFile = preparedFile.SourceInfo.SampleRate;
-            // we don't want segments, thus segment duration == total length of original file
-            analysisSettings.SegmentSettings.AnalysisIdealSegmentDuration = preparedFile.TargetInfo.Duration;
-            analysisSettings.AnalysisMaxSegmentDuration = preparedFile.TargetInfo.Duration;
-            analysisSettings.SegmentSettings.SegmentStartOffset = TimeSpan.Zero;
+            var source = preparedFile.SourceInfo.ToSegment();
+            var prepared = preparedFile.TargetInfo.ToSegment(FileSegment.FileDateBehavior.None);
+            var segmentSettings = new SegmentSettings<FileInfo>(
+                analysisSettings,
+                source,
+                (analysisSettings.AnalysisOutputDirectory, analysisSettings.AnalysisTempDirectory),
+                prepared);
 
             if (preparedFile.TargetInfo.SampleRate.Value != analysisSettings.AnalysisTargetSampleRate)
             {
                 Log.Warn("Input audio sample rate does not match target sample rate");
             }
 
-
             // Execute a pre analyzer hook
             recognizer.BeforeAnalyze(analysisSettings);
 
             // execute actual analysis - output data will be written
             Log.Info("Running recognizer: " + analysisIdentifier);
-            AnalysisResult2 results = recognizer.Analyze(analysisSettings);
+            AnalysisResult2 results = recognizer.Analyze(analysisSettings, segmentSettings);
 
             // run summarize code - output data can be written
             Log.Info("Running recognizer summary: " + analysisIdentifier);
-            var fileSegment = new FileSegment(analysisSettings.SegmentSettings.SegmentAudioFile, preparedFile.SourceInfo.SampleRate.Value, preparedFile.SourceInfo.Duration.Value);
             recognizer.SummariseResults(
                 analysisSettings,
-                fileSegment,
+                source,
                 results.Events,
                 results.SummaryIndices,
                 results.SpectralIndices,
@@ -324,9 +324,9 @@ namespace AnalysisPrograms.Recognizers.Base
             // TODO: Michael, output anything else as you wish.
 
             Log.Debug("Clean up temporary files");
-            if (analysisSettings.SourceFile.FullName != analysisSettings.SegmentSettings.SegmentAudioFile.FullName)
+            if (source.Source.FullName != prepared.Source.FullName)
             {
-                analysisSettings.SegmentSettings.SegmentAudioFile.Delete();
+                prepared.Source.Delete();
             }
 
             int eventCount = results?.Events?.Length ?? 0;

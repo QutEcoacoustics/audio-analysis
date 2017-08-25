@@ -27,20 +27,20 @@ namespace AnalysisPrograms
 
         public override string Identifier => "Towsey.ChannelIntegrity";
 
-        public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
             // boilerplate Analyzer
-            var audioFile = analysisSettings.SegmentSettings.SegmentAudioFile;
-            var sampleRate = analysisSettings.SampleRateOfOriginalAudioFile;
+            var audioFile = segmentSettings.SegmentAudioFile;
+            var sampleRate = segmentSettings.Segment.SourceMetadata.SampleRate;
             var recording = new AudioRecording(audioFile.FullName);
-            var outputDirectory = analysisSettings.SegmentSettings.SegmentOutputDirectory;
+            var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
-            var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
+            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration());
             analysisResults.AnalysisIdentifier = this.Identifier;
 
             var result = new ChannelIntegrityIndices()
                 {
-                    StartOffset = analysisSettings.SegmentSettings.SegmentStartOffset.Value,
+                    StartOffset = segmentSettings.SegmentStartOffset,
                 };
 
             // do some sanity checks
@@ -63,7 +63,7 @@ namespace AnalysisPrograms
             double midDecibelBias;
             double highDecibelBias;
 
-            ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate.Value, out similarityIndex,
+            ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate, out similarityIndex,
                                               out decibelIndex, out avDecibelBias, out medianDecibelBias,
                                               out lowDecibelBias, out midDecibelBias, out highDecibelBias);
 
@@ -88,18 +88,18 @@ namespace AnalysisPrograms
             analysisResults.SummaryIndices = new SummaryIndexBase[] { result };
             analysisResults.SpectralIndices = new SpectralIndexBase[0];
 
-            if (analysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
-                this.WriteSummaryIndicesFile(analysisSettings.SegmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
-                analysisResults.SummaryIndicesFile = analysisSettings.SegmentSettings.SegmentSummaryIndicesFile;
+                this.WriteSummaryIndicesFile(segmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
+                analysisResults.SummaryIndicesFile = segmentSettings.SegmentSummaryIndicesFile;
             }
 
-            if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Events.Length))
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 throw new NotImplementedException();
             }
 
-            if (analysisSettings.SegmentSettings.SegmentSpectrumIndicesDirectory != null)
+            if (false && analysisSettings.AnalysisDataSaveBehavior)
             {
                 throw new NotImplementedException();
             }

@@ -153,12 +153,12 @@
                 displayCsvImage = ConfigDictionary.GetBoolean(AnalysisKeys.DisplayCsvImage, (settings.ConfigDict));
 
             //initilise classes that will do the analysis
-            this.analysisCoordinator = new AnalysisCoordinator(this.IsParallel = false, saveIntermediateWavFiles ? SaveBehavior.Always : SaveBehavior.Never, saveSonogramImages ? SaveBehavior.Always : SaveBehavior.Never, saveIntermediateCsvFiles)
-            {
-                DeleteFinished = (!saveIntermediateWavFiles), // create and delete directories
-                IsParallel = doParallelProcessing,         // ########### PARALLEL OR SEQUENTIAL ??????????????
-                UniqueDirectoryPerSegment = false,
-            };
+            var preparer = new LocalSourcePreparer();
+            this.analysisCoordinator = new AnalysisCoordinator(
+                preparer,
+                saveIntermediateWavFiles ? SaveBehavior.Always : SaveBehavior.Never,
+                false,
+                false);
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();

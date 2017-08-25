@@ -17,6 +17,7 @@
     using Acoustics.Tools.Audio;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisBase.Segment;
     using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -25,8 +26,8 @@
     using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
-    [Obsolete]
-    public class Rain_OBSOLETE : IAnalyser
+    [Obsolete("This recognizer is non functional. It's core should be ported to the new recognizer base immediately")]
+    public class Rain_OBSOLETE
     {
         public const string key_LOW_FREQ_BOUND = "LOW_FREQ_BOUND";
         public const string key_MID_FREQ_BOUND = "MID_FREQ_BOUND";
@@ -52,18 +53,12 @@
         public const string header_HAvSpectrum  = "H[s]";
         public const string header_AcComplexity = "AcComplexity";
 
-
         //public const string header_rain     = "rain";
         //public const string header_cicada   = "cicada";
         //public const string header_negative = "none";
 
-
         private const bool Verbose = true;
         private const bool WriteOutputFile = true;
-
-
-
-
 
         //OTHER CONSTANTS
         public const string AnalysisName = "Rain";
@@ -81,7 +76,6 @@
         public class Arguments : AnalyserArguments
         {
         }
-
 
         public static void Dev(Arguments arguments)
         {
@@ -142,10 +136,6 @@
                                 Source = recordingPath.ToFileInfo(),
                                 Config = configPath.ToFileInfo(),
                                 Output = outputDir.ToDirectoryInfo(),
-                                TmpWav = segmentFName,
-                                //Events = eventsFname,
-                                Indices = indicesFname,
-                                Sgram = sonogramFname,
                                 Start = tsStart.TotalSeconds,
                                 Duration = tsDuration.TotalSeconds,
                             };
@@ -155,28 +145,7 @@
             LoggedConsole.WriteLine("# Recording file: " + arguments.Source.Name);
 
             Execute(arguments);
-
-            if (executeDev)
-            {
-                var csvIndicies = arguments.Output.CombineFile(arguments.Indices);
-                if (!csvIndicies.Exists)
-                {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvIndicies.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-
-                LoggedConsole.WriteLine("\n\n# Finished analysis for RAIN:- " + arguments.Source.Name);
-            }
         }
-
 
         /// <summary>
         /// A WRAPPER AROUND THE analyser.Analyze(analysisSettings) METHOD
@@ -186,14 +155,13 @@
         {
             Contract.Requires(arguments != null);
 
-            AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
+            var (analysisSettings, segmentSettings) = arguments.ToAnalysisSettings();
             TimeSpan offsetStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
             TimeSpan duration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
             int resampleRate = ConfigDictionary.GetInt(AnalysisKeys.ResampleRate, analysisSettings.ConfigDict);
 
-
             // EXTRACT THE REQUIRED RECORDING SEGMENT
-            FileInfo tempF = analysisSettings.SegmentSettings.SegmentAudioFile;
+            FileInfo tempF = segmentSettings.SegmentAudioFile;
             if (tempF.Exists)
             {
                 tempF.Delete();
@@ -213,9 +181,11 @@
 
             //DO THE ANALYSIS
             // #############################################################################################################################################
-            IAnalyser analyser = new Rain_OBSOLETE();
-            AnalysisResult result = analyser.Analyse(analysisSettings);
-            DataTable dt = result.Data;
+            // BROKEN!
+            throw new NotImplementedException("Broken in code updates");
+            IAnalyser2 analyser = null; //new Rain_OBSOLETE();
+            AnalysisResult2 result = analyser.Analyze<FileInfo>(analysisSettings, null /*broken */);
+            /*DataTable dt = result.Data;
             //#############################################################################################################################################
 
             // ADD IN ADDITIONAL INFO TO RESULTS TABLE
@@ -230,9 +200,9 @@
                     row[InitialiseIndexProperties.KEYSegmentDuration] = result.AudioDuration.TotalSeconds;
                 }
 
-                CsvTools.DataTable2CSV(dt, analysisSettings.SegmentSettings.SegmentSummaryIndicesFile.FullName);
+                CsvTools.DataTable2CSV(dt, segmentSettings.SegmentSummaryIndicesFile.FullName);
                 //DataTableTools.WriteTable2Console(dt);
-            }
+            }*/
 
         }
 
@@ -245,6 +215,9 @@
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
+            throw new NotImplementedException("Anthony was too lazy to convert this to a IAnalyser2 interface");
+            // TODO: save results into analysisResults object
+            /*
             var fiAudioF = analysisSettings.SegmentSettings.SegmentAudioFile;
             var diOutputDir = analysisSettings.SegmentSettings.SegmentOutputDirectory;
 
@@ -268,8 +241,7 @@
                 result.RainIndex = results.Item1[InitialiseIndexProperties.keyRAIN];
                 result.CicadaIndex = results.Item1[InitialiseIndexProperties.keyCICADA];
 
-            throw new NotImplementedException("Anthony was too lazy to convert this to a IAnalyser2 interface");
-            // TODO: save results into analysisResults object
+
 
 
 
@@ -277,7 +249,7 @@
             //var sonogram = results.Item3;
             //var scores = results.Item4;
 
-            //if ((sonogram != null) && (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Events.Length)))
+            //if ((sonogram != null) && (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Events.Length)))
             //{
             //    string imagePath = Path.Combine(diOutputDir.FullName, analysisSettings.SegmentImageFile.Name);
             //    var image = DrawSonogram(sonogram, scores);
@@ -287,14 +259,14 @@
             //    analysisResults.SegmentImageFile = new FileInfo(imagePath);
             //}
 
-            if ((analysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null) && (analysisResults.Data != null))
+            if ((segmentSettings.SegmentSummaryIndicesFile != null) && (analysisResults.Data != null))
             {
-                CsvTools.DataTable2CSV(analysisResults.Data, analysisSettings.SegmentSettings.SegmentSummaryIndicesFile.FullName);
+                CsvTools.DataTable2CSV(analysisResults.Data, segmentSettings.SegmentSummaryIndicesFile.FullName);
             }
-            return analysisResults;
+            return analysisResults; */
         }
 
-        public static Tuple<Dictionary<string, double>, TimeSpan> RainAnalyser(FileInfo fiAudioFile, AnalysisSettings analysisSettings)
+        public static Tuple<Dictionary<string, double>, TimeSpan> RainAnalyser(FileInfo fiAudioFile, AnalysisSettings analysisSettings, SourceMetadata originalFile)
         {
             Dictionary<string, string> config = analysisSettings.ConfigDict;
 
@@ -336,14 +308,12 @@
             int framesPerChunk  = (int)(chunkDuration * framesPerSecond);
             string[] classifications = new string[chunkCount];
 
-
             //i: EXTRACT ENVELOPE and FFTs
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
             var signalextract = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, windowOverlap);
             double[]  envelope    = signalextract.Envelope;
             double[,] spectrogram = signalextract.AmplitudeSpectrogram;  //amplitude spectrogram
             int colCount = spectrogram.GetLength(1);
-
 
             int nyquistFreq = recording.Nyquist;
             int nyquistBin = spectrogram.GetLength(1) - 1;
@@ -353,13 +323,12 @@
             int lowBinBound = (int)Math.Ceiling(lowFreqBound / binWidth);
 
             // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this iwll be less than 17640/2.
-            int originalAudioNyquist = (int)analysisSettings.SampleRateOfOriginalAudioFile / 2; // original sample rate can be anything 11.0-44.1 kHz.
+            int originalAudioNyquist = originalFile.SampleRate / 2; // original sample rate can be anything 11.0-44.1 kHz.
             if (recording.Nyquist > originalAudioNyquist)
             {
                 nyquistFreq = originalAudioNyquist;
                 nyquistBin = (int)Math.Floor(originalAudioNyquist / binWidth);
             }
-
 
             // vi: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
             var subBandSpectrogram = MatrixTools.Submatrix(spectrogram, 0, lowBinBound, spectrogram.GetLength(0) - 1, nyquistBin);
@@ -367,13 +336,11 @@
             double[] aciArray = AcousticComplexityIndex.CalculateACI(subBandSpectrogram);
             double aci1 = aciArray.Average();
 
-
             // ii: FRAME ENERGIES -
             // convert signal to decibels and subtract background noise.
             double StandardDeviationCount = 0.1; // number of noise SDs to calculate noise threshold - determines severity of noise reduction
             var results3 = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(signalextract.Envelope), StandardDeviationCount);
             var dBarray = SNR.TruncateNegativeValues2Zero(results3.NoiseReducedSignal);
-
 
             //// vii: remove background noise from the full spectrogram i.e. BIN 1 to Nyquist
             //spectrogramData = MatrixTools.Submatrix(spectrogramData, 0, 1, spectrogramData.GetLength(0) - 1, nyquistBin);
@@ -396,8 +363,6 @@
             Dictionary<string, double> dict = RainIndices.GetIndices(envelope, audioDuration, frameDuration, spectrogram, lowFreqBound, midFreqBound, binWidth);
             return Tuple.Create(dict, audioDuration);
         } //Analysis()
-
-
 
         //private static System.Tuple<string[], Type[], bool[]> InitOutputTableColumns()
         //{
@@ -547,7 +512,6 @@
             return processedtable;
         }
 
-
         /// <summary>
         ///// takes a data table of indices and converts column values to values in [0,1].
         ///// </summary>
@@ -651,7 +615,6 @@
         //    return processedtable;
         //}
 
-
         public static void WriteSee5DataFiles(DataTable dt, DirectoryInfo diOutputDir, string fileStem)
         {
             string namesFilePath = Path.Combine(diOutputDir.FullName, fileStem + ".See5.names");
@@ -683,7 +646,6 @@
             //nameContent.Add(String.Format("{0}: ignore",     "class"));
             FileTools.WriteTextFile(namesFilePath, nameContent);
 
-
             var dataContent = new List<string>();
             foreach (DataRow row in dt.Rows)
             {
@@ -705,13 +667,10 @@
             FileTools.WriteTextFile(dataFilePath, dataContent);
         }
 
-
         public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
         {
             return null;
         }
-
-
 
         public string DefaultConfiguration
         {
@@ -731,7 +690,6 @@
                     AnalysisMinSegmentDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    AnalysisTargetSampleRate = AnalysisTemplate.ResampleRate,
                 };
             }
         }

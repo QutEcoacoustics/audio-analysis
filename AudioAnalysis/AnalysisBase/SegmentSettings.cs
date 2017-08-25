@@ -1,39 +1,46 @@
+// <copyright file="SegmentSettings.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace AnalysisBase
 {
     using System;
     using System.IO;
     using Acoustics.Shared;
-    using SegmentAnalysis;
+    using Acoustics.Shared.Contracts;
+    using Segment;
+    using static Acoustics.Shared.FilenameHelpers;
 
-    public class SegmentSettings<TSegment>
+    public class SegmentSettingsBase
     {
-        private readonly AnalysisSettingsBase analysisSettings;
-        private readonly FileSegment preparedFile;
+        protected readonly AnalysisSettings AnalysisSettings;
+        protected readonly FileSegment PreparedFile;
 
-        public int InstanceId => this.analysisSettings.InstanceId;
-
-        public SegmentSettings(AnalysisSettingsBase analysisSettingsBase, ISegment<TSegment> segment, (DirectoryInfo Output, DirectoryInfo Temp) dirs, FileSegment preparedFile)
+        internal SegmentSettingsBase(AnalysisSettings analysisSettings, FileSegment preparedFile, DirectoryInfo segmentTempDirectory, DirectoryInfo segmentOutputDirectory)
         {
-            this.analysisSettings = analysisSettingsBase;
-            this.preparedFile = preparedFile;
-            this.Segment = segment;
-            this.SegmentTempDirectory = dirs.Temp;
-            this.SegmentOutputDirectory = dirs.Output;
+            Contract.Requires<ArgumentNullException>(analysisSettings != null, $"{nameof(analysisSettings)} must not be null");
+            Contract.Requires<ArgumentNullException>(segmentOutputDirectory != null, $"{nameof(segmentOutputDirectory)} must not be null");
+            Contract.Requires<ArgumentNullException>(segmentTempDirectory != null, $"{nameof(segmentTempDirectory)} must not be null");
+            Contract.Requires<ArgumentNullException>(preparedFile != null, $"{nameof(preparedFile)} must not be null");
 
-            string basename = Path.GetFileNameWithoutExtension(preparedFile.TargetFile.Name);
+            this.AnalysisSettings = analysisSettings;
+            this.SegmentTempDirectory = segmentTempDirectory;
+            this.SegmentOutputDirectory = segmentOutputDirectory;
+            this.PreparedFile = preparedFile;
+
+            string basename = Path.GetFileNameWithoutExtension(preparedFile.Source.Name);
 
             // if user requests, save the intermediate csv files
-            if (this.saveIntermediateDataFiles)
-            {
-                // always save csv to output dir
-                this.SegmentEventsFile = this.SegmentOutputDirectory.CombineFile(basename + ".Events.csv");
 
-                this.SegmentSummaryIndicesFile = this.SegmentOutputDirectory.CombineFile(basename + ".Indices.csv");
+            // always save csv to output dir
+            this.SegmentEventsFile = AnalysisResultPath(segmentOutputDirectory, basename, "Events", "csv").ToFileInfo();
+            this.SegmentSummaryIndicesFile = AnalysisResultPath(segmentOutputDirectory, basename, "Indices", "csv").ToFileInfo();
+            this.SegmentSpectrumIndicesDirectory = this.SegmentOutputDirectory;
 
-                this.SegmentSpectrumIndicesDirectory = this.SegmentOutputDirectory;
-            }
-
+            this.SegmentImageFile = AnalysisResultPath(segmentOutputDirectory, basename, "Image", "png").ToFileInfo();
         }
+
+        public int InstanceId => this.AnalysisSettings.InstanceId;
 
         /// <summary>
         /// Gets the temp directory for a single analysis run.
@@ -49,15 +56,10 @@ namespace AnalysisBase
         public DirectoryInfo SegmentOutputDirectory { get; }
 
         /// <summary>
-        /// Gets the segment from which audio segments are extracted for analysis.
-        /// </summary>
-        public ISegment<TSegment> Segment { get; }
-
-        /// <summary>
         /// Gets the audio file for the analysis.
         /// Analysis implementations must not set this.
         /// </summary>
-        public FileInfo SegmentAudioFile => this.preparedFile.TargetFile;
+        public FileInfo SegmentAudioFile => this.PreparedFile.Source;
 
         /// <summary>
         /// Gets or sets the events file for the analysis.
@@ -75,26 +77,52 @@ namespace AnalysisBase
         public DirectoryInfo SegmentSpectrumIndicesDirectory { get; }
 
         /// <summary>
-        /// Gets or sets an output image file - most likely a spectrogram
+        /// Gets an output image file - most likely a spectrogram
         /// Analysis implementations must not set this.
         /// </summary>
         public FileInfo SegmentImageFile { get; }
 
         /// <summary>
-        /// Gets the ideal duration of audio for the segment being analyzed.
+        /// Gets or sets the ideal duration of audio for the segment being analyzed.
         /// This number represents what was requested for cutting whereas the actual
         /// duration of audio provided by <c>SegmentAudioFile</c> may differ slightly due to
         /// inaccuracies in cutting audio.
         /// </summary>
-        public TimeSpan AnalysisIdealSegmentDuration =>
-            (this.Segment.EndOffsetSeconds - this.Segment.StartOffsetSeconds).Seconds();
+        public TimeSpan AnalysisIdealSegmentDuration { get; protected set; }
 
         /// <summary>
-        /// Gets the start offset of the current analysis segment.
+        /// Gets or sets the start offset of the current analysis segment.
         /// For a large file, analyzed in minute segments, this will store Minute offsets (e.g. min 1, min 2, min 3...).
         /// </summary>
-        public TimeSpan SegmentStartOffset => this.Segment.StartOffsetSeconds.Seconds();
+        public TimeSpan SegmentStartOffset { get; protected set; }
+    }
 
+    public class SegmentSettings<TSegment> : SegmentSettingsBase
+    {
+        public SegmentSettings(
+            AnalysisSettings analysisSettings,
+            ISegment<TSegment> segment,
+            (DirectoryInfo Output, DirectoryInfo Temp) dirs,
+            FileSegment preparedFile)
+            : base(analysisSettings, preparedFile, dirs.Temp, dirs.Output)
+        {
+            Contract.Requires<ArgumentNullException>(segment != null, $"{nameof(segment)} must not be null");
 
+            this.Segment = segment;
+            this.AnalysisIdealSegmentDuration = (this.Segment.EndOffsetSeconds - this.Segment.StartOffsetSeconds).Seconds();
+            this.SegmentStartOffset = this.Segment.StartOffsetSeconds.Seconds();
+        }
+
+        /// <summary>
+        /// Gets the segment from which audio segments are extracted for analysis.
+        /// </summary>
+        public ISegment<TSegment> Segment { get; }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"{nameof(SegmentSettings<TSegment>)} with instance id {this.InstanceId} and " +
+                $"source {this.Segment.Source} ({this.Segment.SourceMetadata?.Identifier}).";
+        }
     }
 }

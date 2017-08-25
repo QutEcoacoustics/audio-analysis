@@ -122,30 +122,29 @@ namespace System
             if (IsInteractive)
             {
                 WriteLine(prompt);
-
-                var t = TaskEx.Run(() =>
-                {
-                    if (forPassword)
+                var d = new Func<string>(() =>
                     {
-                        return ReadHiddenLine();
-                    }
-
-                    return Console.ReadLine();
-                });
-
-                var success = t.Wait(timeout ?? PromptTimeout);
-                if (!success)
+                        if (forPassword)
+                        {
+                            return ReadHiddenLine();
+                        }
+                        var line = System.Console.ReadLine();
+                        return line;
+                    });
+                IAsyncResult result = d.BeginInvoke(null, null);
+                result.AsyncWaitHandle.WaitOne(timeout ?? PromptTimeout);
+                if (result.IsCompleted)
                 {
-                    throw new TimeoutException($"Timed out waiting for user input to prompt: \"{prompt}\"");
+                    var endInvoke = d.EndInvoke(result);
+                    return endInvoke;
                 }
 
-                return t.Result;
+                throw new TimeoutException($"Timed out waiting for user input to prompt: \"{prompt}\"");
             }
-            else
-            {
-                Log.Warn("User prompt \"" + prompt + "\" suppressed because session is not interactive");
-                return null;
-            }
+
+
+            Log.Warn("User prompt \"" + prompt + "\" suppressed because session is not interactive");
+            return null;
         }
 
         /// <summary>

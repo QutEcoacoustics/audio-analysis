@@ -9,16 +9,14 @@ namespace Acoustics.Test.Shared
     using System.Diagnostics;
     using System.IO;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using TestHelpers;
 
     [TestClass]
     public class LoggedConsoleTests
     {
-        public LoggedConsoleTests()
-        {
-        }
-
         public TestContext TestContext { get; set; }
 
         #region Additional test attributes
@@ -44,7 +42,7 @@ namespace Acoustics.Test.Shared
         #endregion
 
         [TestMethod]
-        public void IsNotInteractive()
+        public void IsInteractive()
         {
             Assert.IsTrue(LoggedConsole.IsInteractive);
         }
@@ -60,6 +58,7 @@ namespace Acoustics.Test.Shared
         [TestMethod]
         public void PromptInteractive()
         {
+            LoggedConsole.SuppressInteractive = false;
             using (var memoryStream = new MemoryStream())
             {
                 var inWriter = new StreamWriter(memoryStream);
@@ -73,11 +72,11 @@ namespace Acoustics.Test.Shared
 
                     LoggedConsole.WriteLine("Test");
 
-                    var task = Task.Run(() => LoggedConsole.Prompt("Enter your name:"));
-
                     inWriter.WriteLine("anthony");
                     streamReader.BaseStream.Position = 0;
                     streamReader.BaseStream.Flush();
+
+                    var task = Task.Run(() => LoggedConsole.Prompt("Enter your name:"));
 
                     Assert.IsTrue(task.Wait(TimeSpan.FromSeconds(10)));
 
@@ -110,14 +109,20 @@ namespace Acoustics.Test.Shared
         }
 
         [TestMethod]
-        [Timeout(5000)]
-        public void PromptTimesout()
+        [Timeout(30_000)]
+        public void PromptTimesOut()
         {
+            LoggedConsole.SuppressInteractive = false;
             Assert.IsTrue(LoggedConsole.IsInteractive);
 
-            Assert.ThrowsException<TimeoutException>(
-                () => LoggedConsole.Prompt("Enter your name:", timeout: TimeSpan.FromSeconds(2.5)),
-                "Timed out waiting for user input to prompt:");
+            using (var reader = new InfiniteTextStream(random: TestHelpers.Random.GetRandom()))
+            {
+                Console.SetIn(reader);
+
+                Assert.ThrowsException<TimeoutException>(
+                    () => LoggedConsole.Prompt("Enter your name:", timeout: TimeSpan.FromMilliseconds(500)),
+                    "Timed out waiting for user input to prompt:");
+            }
         }
     }
 }

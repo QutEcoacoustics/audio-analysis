@@ -39,7 +39,8 @@ namespace AnalysisPrograms
     /// <summary>
     /// The felt analysis.
     /// </summary>
-    public class FeltAnalysis : IAnalyser
+    [Obsolete("This code is most likely broken")]
+    public class FeltAnalysis : AbstractStrongAnalyser
     {
 
         private const string StandardConfigFileName = "Dong.Felt.yml";
@@ -49,7 +50,7 @@ namespace AnalysisPrograms
         /// <summary>
         /// Gets the display name.
         /// </summary>
-        public string DisplayName
+        public override string DisplayName
         {
             get { return "Xueyan Dong's FELT work"; }
         }
@@ -57,7 +58,7 @@ namespace AnalysisPrograms
         /// <summary>
         /// Gets the identifier.
         /// </summary>
-        public string Identifier
+        public override string Identifier
         {
             get { return "Dong.Felt"; }
         }
@@ -85,7 +86,7 @@ namespace AnalysisPrograms
         /// <returns>
         /// The AnalysisResult.
         /// </returns>
-        public AnalysisResult Analyse(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
             // these are command line arguments
             var args = EntryArguments;
@@ -148,8 +149,34 @@ namespace AnalysisPrograms
             //    Log.Info("Show the result of Final PointsOfInterest");
             ////}
 
-            var result = new AnalysisResult();
+            var result = new AnalysisResult2(analysisSettings, segmentSettings, TimeSpan.Zero /* nonsensical */);
             return result;
+        }
+
+        public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void SummariseResults(
+            AnalysisSettings settings,
+            FileSegment inputFileSegment,
+            EventBase[] events,
+            SummaryIndexBase[] indices,
+            SpectralIndexBase[] spectralIndices,
+            AnalysisResult2[] results)
+        {
+            // NOOP
         }
 
         /// <summary>
@@ -278,8 +305,8 @@ namespace AnalysisPrograms
             // ultra dodgy - future Anthony/Mark please don't hate me
             EntryArguments = arguments;
 
-            // not used
-            /*var result = */felt.Analyse(analysisSettings);
+            throw new NotImplementedException("Intentionally broken in update");
+            /*var result = *///felt.Analyse(analysisSettings);
 
             string date = "# Date and Time:" + DateTime.Now;
             Log.Info("Finished, yay!");
@@ -291,9 +318,9 @@ namespace AnalysisPrograms
 
     public class RidgeEvent : EventBase
     {
-        public RidgeEvent(PointOfInterest pointOfInterest, AnalysisSettings analysisSettings, SpectrogramStandard sonogram)
+        public RidgeEvent(PointOfInterest pointOfInterest, SegmentSettingsBase segmentSettings, SpectrogramStandard sonogram)
         {
-            this.SegmentStartOffset = analysisSettings.SegmentSettings.SegmentStartOffset.Value;
+            this.SegmentStartOffset = segmentSettings.SegmentStartOffset;
             this.MinHz = pointOfInterest.Herz;
             this.Frame = pointOfInterest.Point.X;
             this.Bin = sonogram.Configuration.FreqBinCount - pointOfInterest.Point.Y;
@@ -303,7 +330,9 @@ namespace AnalysisPrograms
             this.BinMaximum = sonogram.Configuration.FreqBinCount;
 
             this.EventStartSeconds = pointOfInterest.TimeLocation.TotalSeconds;
-            this.FileName = analysisSettings.SourceFile.FullName;
+
+            // HACK: Intentionally broken
+            this.FileName = segmentSettings.SegmentAudioFile.Name;
 
         }
 
@@ -322,14 +351,14 @@ namespace AnalysisPrograms
 
     public class RidgeAnalysis : AbstractStrongAnalyser
     {
-        public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
-            var audioFile = analysisSettings.SegmentSettings.SegmentAudioFile;
-            var startOffset = analysisSettings.SegmentSettings.SegmentStartOffset ?? TimeSpan.Zero;
+            var audioFile = segmentSettings.SegmentAudioFile;
+            var startOffset = segmentSettings.SegmentStartOffset;
 
             var recording = new AudioRecording(audioFile.FullName);
 
-            var result = new AnalysisResult2(analysisSettings, recording.Duration())
+            var result = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration())
                          {
                              AnalysisIdentifier = this.Identifier,
                          };
@@ -360,23 +389,23 @@ namespace AnalysisPrograms
             result.Events = new RidgeEvent[ridges.Count];
             for (int index = 0; index < ridges.Count; index++)
             {
-                ((RidgeEvent[])result.Events)[index] = new RidgeEvent(ridges[index], analysisSettings, sonogram);
+                ((RidgeEvent[])result.Events)[index] = new RidgeEvent(ridges[index], segmentSettings, sonogram);
             }
 
-            if (analysisSettings.SegmentSettings.SegmentEventsFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
-                this.WriteEventsFile(analysisSettings.SegmentSettings.SegmentEventsFile, result.Events);
+                this.WriteEventsFile(segmentSettings.SegmentEventsFile, result.Events);
             }
 
-            if (analysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
                 result.SummaryIndices = this.ConvertEventsToSummaryIndices(result.Events, unitTime, result.SegmentAudioDuration, 0);
 
-                this.WriteSummaryIndicesFile(analysisSettings.SegmentSettings.SegmentSummaryIndicesFile, result.SummaryIndices);
+                this.WriteSummaryIndicesFile(segmentSettings.SegmentSummaryIndicesFile, result.SummaryIndices);
             }
 
-            if (analysisSettings.AnalysisSaveBehavior.ShouldSave(result.Events.Length))
+            if (false && analysisSettings.AnalysisImageSaveBehavior.ShouldSave(result.Events.Length))
             {
                 throw new NotImplementedException();
             }

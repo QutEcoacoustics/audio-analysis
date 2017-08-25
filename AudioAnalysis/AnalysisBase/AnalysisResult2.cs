@@ -27,16 +27,18 @@ namespace AnalysisBase
         /// This is the standard result class for <c>IAnalyser2</c> results.
         /// </summary>
         /// <param name="settingsUsed">
-        /// Represents the settings used for the analysis.
+        ///     Represents the settings used for the analysis.
         /// </param>
-        /// <param name="durationAnalysed">
-        /// Records the actual duration analyzed by the analysis.
+        /// <param name="segmentSettings">The settings for the segment that was analyzed.</param>
+        /// <param name="durationAnalyzed">
+        ///     Records the actual duration analyzed by the analysis.
         /// </param>
-        public AnalysisResult2(AnalysisSettings settingsUsed, TimeSpan durationAnalysed)
+        public AnalysisResult2(AnalysisSettings settingsUsed, SegmentSettingsBase segmentSettings, TimeSpan durationAnalyzed)
         {
+            this.SegmentSettings = segmentSettings;
             this.SettingsUsed = (AnalysisSettings)settingsUsed.Clone();
             this.OutputFiles = new Dictionary<string, FileInfo>();
-            this.SegmentAudioDuration = durationAnalysed;
+            this.SegmentAudioDuration = durationAnalyzed;
             this.MiscellaneousResults = new Dictionary<string, object>();
             this.SummaryIndices = new SummaryIndexBase[0];
             this.SpectralIndices = new SpectralIndexBase[0];
@@ -70,12 +72,17 @@ namespace AnalysisBase
         /// Gets a loosely typed dictionary that can store arbitrary result data.
         /// Added as a cheap form of extensibility.
         /// </summary>
-        public Dictionary<string, object> MiscellaneousResults { get; private set; }
+        public Dictionary<string, object> MiscellaneousResults { get; }
 
         /// <summary>
         /// Gets a the settings used to run the analysis.
         /// </summary>
-        public AnalysisSettings SettingsUsed { get; private set; }
+        public AnalysisSettings SettingsUsed { get; }
+
+        /// <summary>
+        /// Gets the segment settings used.
+        /// </summary>
+        public SegmentSettingsBase SegmentSettings { get; }
 
         /// <summary>
         /// Gets or sets the location of the events file for this analysis.
@@ -104,20 +111,17 @@ namespace AnalysisBase
         /// <summary>
         /// Gets a list of other files that were written (optional).
         /// </summary>
-        public Dictionary<string, FileInfo> OutputFiles { get; private set; }
+        public Dictionary<string, FileInfo> OutputFiles { get; }
 
         /// <summary>
         /// Gets the duration of the analyzed segment.
         /// </summary>
-        public TimeSpan SegmentAudioDuration { get; private set; }
+        public TimeSpan SegmentAudioDuration { get; }
 
         /// <summary>
         /// Gets the offset of the segment from the original entire audio file.
         /// </summary>
-        public TimeSpan SegmentStartOffset
-        {
-            get { return this.SettingsUsed.SegmentSettings.SegmentStartOffset ?? TimeSpan.Zero; }
-        }
+        public TimeSpan SegmentStartOffset => this.SegmentSettings.SegmentStartOffset;
 
         /// <summary>
         /// Defines an innate order of Analysis results based on the <c>SegmentStartOffset</c>.

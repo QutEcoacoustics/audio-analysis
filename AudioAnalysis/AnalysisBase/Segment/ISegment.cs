@@ -2,7 +2,7 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-namespace AnalysisBase.SegmentAnalysis
+namespace AnalysisBase.Segment
 {
     using System;
 
@@ -11,7 +11,7 @@ namespace AnalysisBase.SegmentAnalysis
     /// SEGMENTS ARE NOT HIERARCHICAL CONSTRUCTS.
     /// </summary>
     /// <typeparam name="TSource">The type of source file used.</typeparam>
-    public interface ISegment<out TSource>
+    public interface ISegment<TSource> : IEquatable<ISegment<TSource>>
     {
         /// <summary>
         /// Gets the source audio object.
@@ -26,7 +26,7 @@ namespace AnalysisBase.SegmentAnalysis
         /// <summary>
         /// Gets information about the source.
         /// </summary>
-        ISourceMetadata SourceMetadata { get; }
+        SourceMetadata SourceMetadata { get; }
 
         /// <summary>
         /// Gets the start of the segment, represented by seconds from the start of the audio object.
@@ -45,25 +45,5 @@ namespace AnalysisBase.SegmentAnalysis
         /// <param name="newEnd">The new end offset to use for this segment.</param>
         /// <returns>A segment from the same source, with new offsets.</returns>
         ISegment<TSource> SplitSegment(double newStart, double newEnd);
-    }
-
-    /// <summary>
-    /// Information about a source audio object
-    /// </summary>
-    public interface ISourceMetadata
-    {
-        /// <summary>
-        /// Gets DurationSeconds - the length of the source audio object.
-        /// </summary>
-        TimeSpan DurationSeconds { get; }
-
-        /// <summary>
-        /// Gets SampleRate - the number of samples per second in the source audio object.
-        /// </summary>
-        int SampleRate { get; }
-    }
-
-    public class InvalidSegmentException : InvalidOperationException
-    {
     }
 }

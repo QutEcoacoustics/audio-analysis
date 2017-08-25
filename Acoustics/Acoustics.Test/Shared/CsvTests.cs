@@ -11,6 +11,7 @@ namespace Acoustics.Test.Shared
 {
     using System;
     using System.Collections;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
@@ -20,8 +21,10 @@ namespace Acoustics.Test.Shared
     using CsvHelper;
     using CsvHelper.TypeConversion;
     using Fasterflect;
+    using global::AnalysisBase.ResultBases;
     using global::AnalysisPrograms.EventStatistics;
     using global::AudioAnalysisTools;
+    using global::AudioAnalysisTools.Indices;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
@@ -30,7 +33,6 @@ namespace Acoustics.Test.Shared
     [TestClass]
     public class CsvTests
     {
-
         private static readonly double[,] TestMatrix =
             {
                 { 1.0, 2.0, 3.0, 4.0 },
@@ -43,8 +45,7 @@ namespace Acoustics.Test.Shared
         private DirectoryInfo outputDirectory;
         private FileInfo testFile;
 
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext context)
+        static CsvTests()
         {
             // pump static class initializers - it seems when running multiple tests that sometimes
             // these classes are not discovered.
@@ -158,7 +159,6 @@ namespace Acoustics.Test.Shared
             this.AssertCsvEqual(expected, this.testFile);
         }
 
-
         [TestMethod]
         public void TestWriteAndReadSimpleMatrix()
         {
@@ -192,7 +192,6 @@ namespace Acoustics.Test.Shared
 
             CollectionAssert.AreEqual(TestMatrix, matrix);
         }
-
 
         [TestMethod]
         public void TestWriteAndThenReadDifferentOrders()
@@ -345,6 +344,50 @@ namespace Acoustics.Test.Shared
                 Assert.AreEqual(1, result.Length);
                 Assert.AreEqual(value, result[0].AudioEventId);
             }
+        }
+
+        [TestMethod]
+        public void TestBaseTypesAreNotSerializedAsArray()
+        {
+            var exampleIndices = new SummaryIndexValues();
+            SummaryIndexValues[] childArray = { exampleIndices, };
+            SummaryIndexBase[] baseArray = { exampleIndices, };
+
+            var baseExpected = @"RankOrder,FileName,StartOffset,SegmentDuration,StartOffsetMinute
+0,,00:00:00,00:00:00,0
+";
+            var childExpected = @"NoFile,ZeroSignal,HighAmplitudeIndex,ClippingIndex,AvgSignalAmplitude,BackgroundNoise,Snr,AvgSnrOfActiveFrames,Activity,EventsPerSecond,HighFreqCover,MidFreqCover,LowFreqCover,AcousticComplexity,TemporalEntropy,EntropyOfAverageSpectrum,AvgEntropySpectrum,EntropyOfVarianceSpectrum,VarianceEntropySpectrum,EntropyOfPeaksSpectrum,EntropyPeaks,EntropyOfCoVSpectrum,ClusterCount,ThreeGramCount,Ndsi,SptDensity,RankOrder,FileName,StartOffset,SegmentDuration,StartOffsetMinute
+0,0,0,0,-100,-100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,00:00:00,00:00:00,0
+";
+
+            Csv.WriteToCsv(this.testFile, childArray);
+
+            var childText = File.ReadAllText(this.testFile.FullName);
+
+            Csv.WriteToCsv(this.testFile, baseArray);
+
+            var baseText = File.ReadAllText(this.testFile.FullName);
+
+            Assert.AreNotEqual(childText, baseText);
+            Assert.AreEqual(baseExpected, baseText);
+            Assert.AreEqual(childExpected, childText);
+        }
+
+        [TestMethod] public void TestBaseTypesAreSerializedAsEnumerable()
+        {
+            var exampleIndices = new SummaryIndexValues();
+            IEnumerable<SummaryIndexValues> childArray = exampleIndices.AsArray().AsEnumerable();
+            IEnumerable<SummaryIndexBase> baseArray = exampleIndices.AsArray().AsEnumerable();
+
+            Csv.WriteToCsv(this.testFile, childArray);
+
+            var childText = File.ReadAllText(this.testFile.FullName);
+
+            Csv.WriteToCsv(this.testFile, baseArray);
+
+            var baseText = File.ReadAllText(this.testFile.FullName);
+
+            Assert.AreEqual(childText, baseText);
         }
 
         private void AssertCsvEqual(string expected, FileInfo actual)

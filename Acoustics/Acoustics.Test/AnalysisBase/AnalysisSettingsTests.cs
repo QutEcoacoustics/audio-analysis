@@ -12,6 +12,7 @@ namespace Acoustics.Test.AnalysisBase
     using System.Threading.Tasks;
     using global::AnalysisBase;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using TestHelpers;
 
     [TestClass]
     public class AnalysisSettingsTests
@@ -34,8 +35,8 @@ namespace Acoustics.Test.AnalysisBase
         public void TestTempDirectoryFieldIsCloned()
         {
             Assert.AreEqual(
-                this.original.AnalysisTempDirectoryFallback,
-                this.cloned.AnalysisTempDirectoryFallback);
+                this.original.AnalysisTempDirectoryFallback.FullName,
+                this.cloned.AnalysisTempDirectoryFallback.FullName);
         }
 
         [TestMethod]

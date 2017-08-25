@@ -55,12 +55,13 @@ namespace AnalysisBase
         /// Run analysis using the given analysis settings.
         /// </summary>
         /// <param name="analysisSettings">
-        /// The analysis Settings.
+        ///     The analysis Settings.
         /// </param>
+        /// <param name="segmentSettings">The settings unique to the current segment being analyzed.</param>
         /// <returns>
         /// The results of the analysis.
         /// </returns>
-        AnalysisResult2 Analyze(AnalysisSettings analysisSettings);
+        AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings);
 
         /// <summary>
         /// Ensures abstract types are downcast by the analyzer and written to file.

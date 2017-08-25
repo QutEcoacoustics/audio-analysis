@@ -49,6 +49,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
         /// Acoustic indices as calculated from Linear frequency scale spectrogram.
         /// </summary>
         [TestMethod]
+        [Timeout(45_000)]
         public void TestAnalyzeSr22050Recording()
         {
             int sampleRate = 22050;

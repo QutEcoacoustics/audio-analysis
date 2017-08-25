@@ -143,7 +143,7 @@
       <HintPath>..\..\Extra Assemblies\alglibnet2.dll</HintPath>
     </Reference>
     <Reference Include="CsvHelper, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
-      <HintPath>..\packages\CsvHelper.2.16.3.0\lib\net40\CsvHelper.dll</HintPath>
+      <HintPath>..\packages\CsvHelper.2.16.2.0\lib\net40\CsvHelper.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <Private>True</Private>
@@ -242,7 +242,6 @@
     <Compile Include="AnalyseLongRecordings\AnalyseLongRecordings.Arguments.cs" />
     <Compile Include="AnalyseLongRecordings\AnalyseLongRecordings.Dev.cs" />
     <Compile Include="AnalysesAvailable.cs" />
-    <Compile Include="AnalysisTemplate.cs" />
     <Compile Include="Audio2Sonogram.cs" />
     <Compile Include="AudioCutter.cs" />
     <Compile Include="AudioFileCheck.cs" />
@@ -318,12 +317,10 @@
     <Compile Include="LSKiwi3.cs" />
     <Compile Include="LSKiwiHelper.cs" />
     <Compile Include="LSKiwiROC.cs" />
-    <Compile Include="MultiAnalyser_OBSOLETE.cs" />
     <Compile Include="OscillationRecogniser.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PlanesTrainsAndAutomobiles.cs" />
-    <Compile Include="Production\Runner.cs" />
     <Compile Include="Rain_OBSOLETE.cs" />
     <Compile Include="RheobatrachusSilus.cs" />
     <Compile Include="Sandpit.cs" />
