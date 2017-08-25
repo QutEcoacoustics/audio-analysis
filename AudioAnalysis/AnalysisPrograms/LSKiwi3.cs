@@ -24,7 +24,8 @@
     using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
-    public class LSKiwi3 : IAnalyser
+    [Obsolete("This code does not work. It should be ported to be a modern recognizer")]
+    public class LSKiwi3
     {
         public class Arguments : AnalyserArguments
         {
@@ -43,7 +44,6 @@
         {
             get { return "Towsey." + AnalysisName; }
         }
-
 
         public static void Dev(Arguments arguments)
         {
@@ -107,58 +107,13 @@
                     Source = recordingPath.ToFileInfo(),
                     Config = configPath.ToFileInfo(),
                     Output = outputDir.ToDirectoryInfo(),
-                    TmpWav = segmentFName,
-                    Events = eventsFname,
-                    Indices = indicesFname,
-                    Sgram = sonogramFname,
                     Start = tsStart.TotalSeconds,
                     Duration = tsDuration.TotalSeconds,
                 };
             }
 
             Execute(arguments);
-
-            if (executeDev)
-            {
-                var csvEvents = arguments.Output.CombineFile(arguments.Events);
-                if (!csvEvents.Exists)
-                {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvEvents.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-                var csvIndicies = arguments.Output.CombineFile(arguments.Indices);
-                if (!csvIndicies.Exists)
-                {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvIndicies.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-                var image = arguments.Output.CombineFile(arguments.Sgram);
-                if (image.Exists)
-                {
-                    TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(LSKiwiHelper.imageViewer);
-                    process.Run(image.FullName, arguments.Output.FullName);
-                }
-
-                LoggedConsole.WriteLine("\n\n# Finished analysis:- " + arguments.Source.FullName);
-            }
         }
-
 
         /// <summary>
         /// A WRAPPER AROUND THE analyser.Analyze(analysisSettings) METHOD
@@ -168,7 +123,8 @@
         {
             Contract.Requires(arguments != null);
 
-
+            throw new NotImplementedException("This code is no longer supported");
+            /*
             AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
             TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
             TimeSpan tsDuration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
@@ -200,12 +156,15 @@
                 CsvTools.DataTable2CSV(dt, analysisSettings.SegmentSettings.SegmentEventsFile.FullName);
                 //DataTableTools.WriteTable(augmentedTable);
             }
+            */
         }
 
         private static readonly object imageWriteLock = new object();
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
+            throw new NotImplementedException("This code is no longer supported");
+            /*
             //var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
             //Dictionary<string, string> configDict = configuration.GetTable();
             var fiAudioF = analysisSettings.SegmentSettings.SegmentAudioFile;
@@ -260,7 +219,7 @@
             }
 
             //save image of sonograms
-            if ((sonogram != null) && (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Data.Rows.Count)))
+            if ((sonogram != null) && (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Data.Rows.Count)))
             {
                 var fileExists = File.Exists(analysisSettings.SegmentSettings.SegmentImageFile.FullName);
                 string imagePath = analysisSettings.SegmentSettings.SegmentImageFile.FullName;
@@ -276,10 +235,8 @@
             //result.DisplayItems = { { 0, "example" }, { 1, "example 2" }, }
             //result.OutputFiles = { { "exmaple file key", new FileInfo("Where's that file?") } }
             return analysisResults;
+            */
         } //Analyze()
-
-
-
 
         /// <summary>
         /// ################ THE KEY ANALYSIS METHOD
@@ -309,7 +266,6 @@
             var weights = LSKiwiHelper.GetFeatureWeights(configPath.FullName);
             bool doFilterEvents = ConfigDictionary.GetBoolean(LSKiwiHelper.key_FILTER_EVENTS, config);
 
-
             AudioRecording recording = new AudioRecording(fiSegmentOfSourceFile.FullName);
             if (recording == null)
             {
@@ -322,7 +278,6 @@
                 LoggedConsole.WriteLine("Audio recording must be atleast 15 seconds long for analysis.");
                 return null;
             }
-
 
             //i: MAKE SONOGRAM
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
@@ -365,8 +320,6 @@
 
             return Tuple.Create(sonogram, hitsM, scoresM, predictedEventsM, tsRecordingtDuration);
         } //Analysis()
-
-
 
         public static Tuple<List<Plot>, double[,], List<AcousticEvent>> DetectKiwi(BaseSonogram sonogram, int minHz, int maxHz, double minPeriod, double maxPeriod,
                                                                                           double eventThreshold, double minDuration, double maxDuration, Dictionary<string, double> weights)
@@ -416,7 +369,6 @@
             double[] chirps = CalculateKiwiChirpScore(dBArray, peakPeriodicity, subMatrix);
             double[] chirpScores = ConvertChirpsToScoreArray(chirps, dBArray, sonogram.FramesPerSecond);
             double[] bandWidthScore = CalculateKiwiBandWidthScore(sonogram, minHz, maxHz, peakPeriodicity);
-
 
             //GET A COMBINED WEIGHTED SCORE FOR FOUR OF THE FEATURES
             double[] comboScore = new double[dBArray.Length];
@@ -476,7 +428,6 @@
         //    return periodicity;
         //}
 
-
         public static double[] CalculateGridScore(double[] dBArray, double[] peakPeriodicity)
         {
             int length = dBArray.Length;
@@ -514,7 +465,6 @@
             }
             return gridScore;
         }
-
 
         //Delta score is number of frames over which there is a gradual increase in period.
         public static double[] CalculateDeltaPeriodScore(double[] periodicity, double framesPerSecond)
@@ -719,8 +669,6 @@
             return 1 - CCscore;
         }
 
-
-
         public static List<AcousticEvent> ConvertScoreArray2Events(
                                           double[] dBarray, double[] intensity, double[] gridScore, double[] deltaPeriodScore, double[] chirpScores,
                                           double[] comboScore, double[] bwScore,
@@ -774,8 +722,6 @@
             return events;
         }//end method ConvertScoreArray2Events()
 
-
-
         //this method assumes that the array has had backgroundnoise removed
         public static double CalculatePeakSnrScore(AcousticEvent ev, double[] dBarray)
         {
@@ -798,7 +744,6 @@
             }
             return sum / (double)peakCount;
         }
-
 
         //assume that the events are all from the same sex.
         public static void MergeEvents(List<AcousticEvent> events, double minGapInSeconds)
@@ -831,7 +776,6 @@
             }
         } //MergeEvents()
 
-
         public static void CropEvents(List<AcousticEvent> events, double[] activity, double minDurationInSeconds)
         {
             double croppingSeverity = 0.2;
@@ -859,8 +803,6 @@
             for (int i = events.Count - 1; i >= 0; i--) if (events[i].Duration < minDurationInSeconds) events.Remove(events[i]);
         } //CropEvents()
 
-
-
         static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
@@ -884,9 +826,6 @@
             }
             return image.GetImage();
         } //DrawSonogram()
-
-
-
 
         public static DataTable WriteEvents2DataTable(List<AcousticEvent> predictedEvents)
         {
@@ -934,8 +873,6 @@
             }
             return dataTable;
         }
-
-
 
         /// <summary>
         /// Converts a DataTable of events to a datatable where one row = one minute of indices
@@ -988,7 +925,6 @@
             }
         } //AddContext2Table()
 
-
         /// <summary>
         /// This method should no longer be used.
         /// It depends on use of the DataTable class which ceased when Anthony did a major refactor in mid-2014.
@@ -1002,8 +938,6 @@
             //return DrawSummaryIndices.ProcessCsvFile(fiCsvFile, fiConfigFile);
             return null;
         }
-
-
 
         /// <summary>
         /// takes a data table of indices and normalises column values to values in [0,1].
@@ -1045,7 +979,6 @@
             return processedtable;
         }
 
-
         public AnalysisSettings DefaultSettings
         {
             get
@@ -1056,11 +989,10 @@
                     AnalysisMinSegmentDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    AnalysisTargetSampleRate = AnalysisTemplate.ResampleRate,
+                    AnalysisTargetSampleRate = ResampleRate,
                 };
             }
         }
-
 
         public string DefaultConfiguration
         {
@@ -1069,9 +1001,6 @@
                 return string.Empty;
             }
         }
-
-
-
 
     }
 }

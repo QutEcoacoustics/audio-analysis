@@ -45,7 +45,7 @@ namespace AnalysisBase
         }
 
         /// <inheritdoc/>
-        public abstract AnalysisResult2 Analyze(AnalysisSettings analysisSettings);
+        public abstract AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings);
 
         /// <inheritdoc/>
         public abstract void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results);

@@ -274,9 +274,9 @@ namespace AnalysisPrograms
             }
         }
 
-        public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
-            FileInfo audioFile = analysisSettings.SegmentSettings.SegmentAudioFile;
+            FileInfo audioFile = segmentSettings.SegmentAudioFile;
 
             var eprNormalizedMinScore = GetEprParametersFromConfigFileOrDefaults(analysisSettings.Configuration);
 
@@ -287,36 +287,35 @@ namespace AnalysisPrograms
             var rawAedConfig = Yaml.Deserialise(aedConfigFile);
             var aedConfig = Aed.GetAedParametersFromConfigFileOrDefaults(rawAedConfig);
 
-            Tuple<BaseSonogram, List<AcousticEvent>> results = Detect(audioFile, aedConfig, eprNormalizedMinScore, analysisSettings.SegmentSettings.SegmentStartOffset.Value);
+            Tuple<BaseSonogram, List<AcousticEvent>> results = Detect(audioFile, aedConfig, eprNormalizedMinScore, segmentSettings.SegmentStartOffset);
 
-            var analysisResults = new AnalysisResult2(analysisSettings, results.Item1.Duration)
+            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, results.Item1.Duration)
                                       {
                                           AnalysisIdentifier = this.Identifier,
                                           Events = results.Item2.ToArray(),
                                       };
             BaseSonogram sonogram = results.Item1;
 
-            if (analysisSettings.SegmentSettings.SegmentEventsFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
-                this.WriteEventsFile(analysisSettings.SegmentSettings.SegmentEventsFile, analysisResults.Events);
-                analysisResults.EventsFile = analysisSettings.SegmentSettings.SegmentEventsFile;
+                this.WriteEventsFile(segmentSettings.SegmentEventsFile, analysisResults.Events);
+                analysisResults.EventsFile = segmentSettings.SegmentEventsFile;
             }
 
-            if (analysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
                 analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
 
-                this.WriteSummaryIndicesFile(analysisSettings.SegmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
+                this.WriteSummaryIndicesFile(segmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
-
             // save image of sonograms
-            if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Events.Length))
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 Image image = Aed.DrawSonogram(sonogram, results.Item2);
-                image.Save(analysisSettings.SegmentSettings.SegmentImageFile.FullName, ImageFormat.Png);
-                analysisResults.ImageFile = analysisSettings.SegmentSettings.SegmentImageFile;
+                image.Save(segmentSettings.SegmentImageFile.FullName, ImageFormat.Png);
+                analysisResults.ImageFile = segmentSettings.SegmentImageFile;
             }
 
             return analysisResults;

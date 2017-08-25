@@ -106,15 +106,6 @@ namespace AnalysisPrograms.Production
 
         #region Analyses of single, short (one minute) segments of audio
 
-        [ArgDescription("Calls MultiAnalyser.Execute():  Entry point for running multiple species recognizers at same time. Only use on short recordings (< 2mins)")]
-        public MultiAnalyser_OBSOLETE.Arguments MultiAnalyserArgs { get; set; }
-        public static Action<MultiAnalyser_OBSOLETE.Arguments> MultiAnalyser()
-        {
-            // IAnalyser - currently recognizes five different calls: human, crow, canetoad, machine and koala.
-            // Execute() signed off: Michael Towsey 27th July 2012
-            return MultiAnalyser_OBSOLETE.Dev;
-        }
-
         [ArgDescription("The entry point for all species or event recognizers. Only to be used on short recordings (< 2 mins).")]
         public RecognizerEntry.Arguments EventRecognizerArgs { get; set; }
         public static Action<RecognizerEntry.Arguments> EventRecognizer()
@@ -255,13 +246,6 @@ namespace AnalysisPrograms.Production
             return OscillationsGeneric.Main;
         }
 
-        public Runner.Arguments ProductionArgs { get; set; }
-        public static Action<Runner.Arguments> Production()
-        {
-            // Production Analysis runs - for running on mono or to run as fast as possible
-            return Runner.Run;
-        }
-
         [ArgDescription("Calls Rain.Dev():  Used to recognise one minute segments of rain. Revise code if intend to use.")]
         public Rain_OBSOLETE.Arguments RainArgs { get; set; }
         public static Action<Rain_OBSOLETE.Arguments> Rain()
@@ -339,14 +323,6 @@ namespace AnalysisPrograms.Production
         public static Action<Sandpit.Arguments> Sandpit()
         {
             return AnalysisPrograms.Sandpit.Dev;
-        }
-
-        [ArgDescription("Calls AnalysisTemplate.Dev():  A template for producing IAnalysis classes.")]
-        public AnalysisTemplate.Arguments TestArgs { get; set; }
-        public static Action<AnalysisTemplate.Arguments> Test()
-        {
-            // A template for producing IAnalysis classes.
-            return AnalysisTemplate.Dev;
         }
 
         [ArgDescription("Calls Create4Sonograms.Main(). Creates a set of four spectrograms derived using different algorithms.")]

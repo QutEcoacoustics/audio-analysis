@@ -36,7 +36,6 @@
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(MainForm));
 
-
         // START hard code area (comment this before commiting!)
 
         /*
@@ -50,7 +49,6 @@
         */
 
         // END hard code area (comment this before commiting!)
-
 
         private Helper helper { get; set; }
 
@@ -79,7 +77,6 @@
                 this.helper.DefaultOutputDir, this.helper.DefaultConfigDir,
                 this.helper.DefaultConfigFileExt, this.helper.DefaultAudioFileExt,
                 this.helper.DefaultResultImageFileExt, this.helper.DefaultResultTextFileExt);
-
 
             // init tabs
             this.InitAnalyseTab();
@@ -436,7 +433,6 @@
             };
             */
 
-
             var selectFilesForm = new AudioNavigatorFileSelectForm(this.helper)
             {
                 CsvFile = this.tabBrowseAudio.CsvFile,
@@ -446,7 +442,6 @@
                 OutputDir = this.tabBrowseAudio.OutputDirectory,
                 AudioFile = this.tabBrowseAudio.AudioFile,
             };
-
 
             using (selectFilesForm)
             {
@@ -789,7 +784,6 @@
                 return;
             }
 
-
             if (this.AnalyserOutputDir == null || !Directory.Exists(this.AnalyserOutputDir.FullName))
             {
                 MessageBox.Show("Could not find the output directory. Please check the path.");
@@ -806,7 +800,6 @@
 
             var config = new ConfigDictionary(this.AnalyserConfigFile.FullName);
             var analysisParams = config.GetDictionary();
-
 
             DirectoryInfo tempFileDir = this.helper.DefaultTempFilesDir;
             FileInfo fiConfig = this.AnalyserConfigFile;
@@ -849,11 +842,8 @@
             {
                 string value = dict.TryGetValue(keySegmentOverlap, out value) ? value : null;
                 int segmentOverlapSeconds;
-                settings.SegmentSettings.SegmentOverlapDuration = int.TryParse(value, out segmentOverlapSeconds) ? TimeSpan.FromSeconds(segmentOverlapSeconds) : TimeSpan.Zero;
+                settings.SegmentOverlapDuration = int.TryParse(value, out segmentOverlapSeconds) ? TimeSpan.FromSeconds(segmentOverlapSeconds) : TimeSpan.Zero;
             }
-
-
-
 
             // record run information
             Log.Debug("Parameters for selected analysis: " + analyserId);
@@ -937,10 +927,7 @@
 
             } // if (DialogResult.OK)
 
-
         }
-
-
 
     } //class MainForm : Form
 }

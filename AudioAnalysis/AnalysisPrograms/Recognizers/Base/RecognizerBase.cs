@@ -21,10 +21,9 @@ namespace AnalysisPrograms.Recognizers.Base
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using Acoustics.Tools.Wav;
-
+    using AcousticWorkbench;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
     using Production;
 
     using AudioAnalysisTools;
@@ -53,16 +52,15 @@ namespace AnalysisPrograms.Recognizers.Base
             AnalysisTargetSampleRate = AppConfigHelper.DefaultTargetSampleRate,
         };
 
-        public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
-            FileInfo audioFile = analysisSettings.SegmentSettings.SegmentAudioFile;
-            var recording = new AudioRecording(audioFile.FullName);
+            var recording = new AudioRecording(segmentSettings.SegmentAudioFile.FullName);
 
             // get indices configuration - extracted in BeforeAnalyze
             var acousticIndicesParsedConfiguration = (Acoustic.AcousticIndicesParsedConfiguration)analysisSettings.AnalysisAnalyzerSpecificConfiguration;
 
             // get a lazily calculated indices function - if you never get the lazy value, the indices will never be calculated
-            var lazyIndices = this.GetLazyIndices(recording, analysisSettings, acousticIndicesParsedConfiguration);
+            var lazyIndices = this.GetLazyIndices(recording, analysisSettings, segmentSettings, acousticIndicesParsedConfiguration);
 
             // determine imageWidth for output images
             int imageWidth = (int)Math.Floor(recording.Duration().TotalSeconds / acousticIndicesParsedConfiguration.IndexCalculationDuration.TotalSeconds);
@@ -72,12 +70,12 @@ namespace AnalysisPrograms.Recognizers.Base
             RecognizerResults results = this.Recognize(
                 recording,
                 analysisSettings.Configuration,
-                analysisSettings.SegmentSettings.SegmentStartOffset.Value,
+                segmentSettings.SegmentStartOffset,
                 lazyIndices,
-                analysisSettings.SegmentSettings.SegmentOutputDirectory,
+                segmentSettings.SegmentOutputDirectory,
                 imageWidth);
 
-            var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
+            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration());
 
             BaseSonogram sonogram = results.Sonogram;
             double[,] hits = results.Hits;
@@ -85,14 +83,10 @@ namespace AnalysisPrograms.Recognizers.Base
 
             foreach (var predictedEvent in predictedEvents)
             {
-                predictedEvent.SegmentStartOffset = analysisSettings.SegmentSettings.SegmentStartOffset.Value;
+                predictedEvent.SegmentStartOffset = segmentSettings.SegmentStartOffset;
             }
 
             analysisResults.Events = predictedEvents.ToArray();
-
-            // convert events to summary index values
-            // Not needed: this is done by AnalyzeLongRecording.cs#259
-            //analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, analysisSettings.AnalysisMaxSegmentDuration.Value, analysisResults.SegmentAudioDuration, 0);
 
             // compress high resolution indices - and save them.
             // IF they aren't used, empty values are returned.
@@ -102,42 +96,42 @@ namespace AnalysisPrograms.Recognizers.Base
             }
 
             // write intermediate output if necessary
-            if (analysisSettings.SegmentSettings.SegmentEventsFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
-                this.WriteEventsFile(analysisSettings.SegmentSettings.SegmentEventsFile, analysisResults.Events);
-                analysisResults.EventsFile = analysisSettings.SegmentSettings.SegmentEventsFile;
+                this.WriteEventsFile(segmentSettings.SegmentEventsFile, analysisResults.Events);
+                analysisResults.EventsFile = segmentSettings.SegmentEventsFile;
             }
 
-            if (analysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
-                this.WriteSummaryIndicesFile(analysisSettings.SegmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
+                this.WriteSummaryIndicesFile(segmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
-            if (analysisSettings.SegmentSettings.SegmentSpectrumIndicesDirectory != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
                 analysisResults.SpectraIndicesFiles =
                     this.WriteSpectrumIndicesFiles(
-                        analysisSettings.SegmentSettings.SegmentSpectrumIndicesDirectory,
-                        Path.GetFileNameWithoutExtension(analysisSettings.SegmentSettings.SegmentAudioFile.Name),
+                        segmentSettings.SegmentSpectrumIndicesDirectory,
+                        segmentSettings.Segment.SourceMetadata.Identifier,
                         analysisResults.SpectralIndices);
             }
 
-            if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Events.Length))
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
-                string imagePath = analysisSettings.SegmentSettings.SegmentImageFile.FullName;
+                string imagePath = segmentSettings.SegmentImageFile.FullName;
                 const double EventThreshold = 0.1;
                 var plots = results.Plots ?? new List<Plot>();
 
                 Image image = this.DrawSonogram(sonogram, hits,plots, predictedEvents, EventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
-                analysisResults.ImageFile = analysisSettings.SegmentSettings.SegmentImageFile;
+                analysisResults.ImageFile = segmentSettings.SegmentImageFile;
 
                 // draw a fancy high res index image
                 // IF indices aren't used, no image is drawn.
                 if (lazyIndices.IsValueCreated)
                 {
                     this.DrawLongDurationSpectrogram(
-                        analysisSettings.SegmentSettings.SegmentOutputDirectory,
+                        segmentSettings.SegmentOutputDirectory,
                         recording.BaseName,
                         results.ScoreTrack,
                         lazyIndices.Value,
@@ -263,7 +257,7 @@ namespace AnalysisPrograms.Recognizers.Base
             {
                 spectrums[i].StartOffset = analysisResults.SegmentStartOffset + TimeSpan.FromSeconds(i * lowResolution);
                 spectrums[i].SegmentDuration = imageScale;
-                spectrums[i].FileName = analysisResults.SettingsUsed.SourceFile.Name;
+                spectrums[i].FileName = ((SegmentSettings<object>)analysisResults.SegmentSettings).Segment.SourceMetadata.Identifier;
             }
 
             // assign to the analysis result
@@ -398,23 +392,28 @@ namespace AnalysisPrograms.Recognizers.Base
             // called once after all analysis segments have been completed
         }
 
-        private Lazy<IndexCalculateResult[]> GetLazyIndices(AudioRecording recording, AnalysisSettings analysisSettings, Acoustic.AcousticIndicesParsedConfiguration acousticConfiguration)
+        private Lazy<IndexCalculateResult[]> GetLazyIndices<T>(
+            AudioRecording recording,
+            AnalysisSettings analysisSettings,
+            SegmentSettings<T> segmentSettings,
+            Acoustic.AcousticIndicesParsedConfiguration acousticConfiguration)
         {
-            Func<IndexCalculateResult[]> callback = () =>
-                {
-                    IndexCalculateResult[] subsegmentResults = Acoustic.CalculateIndicesInSubsegments(
-                      recording,
-                      analysisSettings.SegmentSettings.SegmentStartOffset.Value,
-                      analysisSettings.SegmentSettings.AnalysisIdealSegmentDuration.Value,
-                      acousticConfiguration.IndexCalculationDuration,
-                      acousticConfiguration.BgNoiseNeighborhood,
-                      acousticConfiguration.IndexPropertiesFile,
-                      analysisSettings.SampleRateOfOriginalAudioFile.Value,
-                      analysisSettings.Configuration);
+            IndexCalculateResult[] Callback()
+            {
+                IndexCalculateResult[] subsegmentResults = Acoustic.CalculateIndicesInSubsegments(
+                    recording,
+                    segmentSettings.SegmentStartOffset,
+                    segmentSettings.AnalysisIdealSegmentDuration,
+                    acousticConfiguration.IndexCalculationDuration,
+                    acousticConfiguration.BgNoiseNeighborhood,
+                    acousticConfiguration.IndexPropertiesFile,
+                    segmentSettings.Segment.SourceMetadata.SampleRate,
+                    analysisSettings.Configuration);
 
-                    return subsegmentResults;
-                };
-            return new Lazy<IndexCalculateResult[]>(callback, LazyThreadSafetyMode.ExecutionAndPublication);
+                return subsegmentResults;
+            }
+
+            return new Lazy<IndexCalculateResult[]>(Callback, LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
         public static Image DrawDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)

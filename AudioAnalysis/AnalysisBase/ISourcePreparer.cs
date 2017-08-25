@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Threading.Tasks;
-    using SegmentAnalysis;
+    using Segment;
 
     /// <summary>
     /// Interface for preparing source files.
@@ -83,6 +83,6 @@
         /// <remarks>
         /// This API does not fit with the other two. We should consider factoring it out.
         /// </remarks>
-        IEnumerable<ISegment<TSource>> CalculateSegments<TSource>(IEnumerable<ISegment<TSource>> fileSegments, AnalysisSettingsBase settings);
+        IEnumerable<ISegment<TSource>> CalculateSegments<TSource>(IEnumerable<ISegment<TSource>> fileSegments, AnalysisSettings settings);
     }
 }

@@ -9,6 +9,7 @@
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using AnalysisBase;
+    using AnalysisBase.Segment;
     using Production;
     using SourcePreparers;
     using PowerArgs;
@@ -150,11 +151,11 @@
                 AnalysisMinSegmentDuration = TimeSpan.FromSeconds(arguments.SegmentDurationMinimum),
                 SegmentOverlapDuration = TimeSpan.FromSeconds(arguments.SegmentOverlap),
                 AnalysisTargetSampleRate = arguments.SampleRate,
-                SegmentTempDirectory = arguments.TemporaryFilesDir == null ? new DirectoryInfo(Path.GetTempPath()) : arguments.TemporaryFilesDir,
+                AnalysisTempDirectory = arguments.TemporaryFilesDir,
             };
 
             // create segments from file
-            var fileSegment = new FileSegment(arguments.InputFile)
+            var fileSegment = new FileSegment(arguments.InputFile, TimeAlignment.None)
             {
                 SegmentStartOffset = TimeSpan.FromSeconds(arguments.StartOffset),
             };
@@ -164,9 +165,10 @@
                 fileSegment.SegmentEndOffset = TimeSpan.FromSeconds(arguments.EndOffset.Value);
             }
 
-            var fileSegments = sourcePreparer.CalculateSegments(new FileSegment[] { fileSegment }, settings).ToList();
+            var fileSegments = sourcePreparer.CalculateSegments(new[] { fileSegment }, settings).ToList();
 
-            LoggedConsole.WriteLine("Started segmenting at {0} {1}: {2}.",
+            LoggedConsole.WriteLine(
+                "Started segmenting at {0} {1}: {2}.",
                 DateTime.Now,
                 arguments.RunParallel ? "in parallel" : "sequentially",
                 arguments.InputFile);
@@ -179,21 +181,22 @@
             {
                 RunSequential(fileSegments, sourcePreparer, settings, arguments);
             }
+
             sw.Stop();
             LoggedConsole.WriteLine("Took {0}. Done.", sw.Elapsed);
         }
 
-        private static void RunSequential(List<FileSegment> fileSegments, ISourcePreparer sourcePreparer, AnalysisSettings settings, Arguments arguments)
+        private static void RunSequential(List<ISegment<FileInfo>> fileSegments, ISourcePreparer sourcePreparer, AnalysisSettings settings, Arguments arguments)
         {
             var totalItems = fileSegments.Count;
-             for (var index = 0; index < fileSegments.Count; index++)
+            for (var index = 0; index < fileSegments.Count; index++)
             {
                 var item = fileSegments[index];
                 CreateSegment(sourcePreparer, item, settings, arguments, index + 1, totalItems, arguments.MixDownToMono);
             }
         }
 
-        private static void RunParallel(List<FileSegment> fileSegments, ISourcePreparer sourcePreparer, AnalysisSettings settings, Arguments arguments)
+        private static void RunParallel(List<ISegment<FileInfo>> fileSegments, ISourcePreparer sourcePreparer, AnalysisSettings settings, Arguments arguments)
         {
             var totalItems = fileSegments.Count;
             Parallel.ForEach(
@@ -207,19 +210,34 @@
                 });
         }
 
-        private static void CreateSegment(ISourcePreparer sourcePreparer, FileSegment fileSegment, AnalysisSettings settings, Arguments arguments, int itemNumber, int itemCount, bool mixDownToMono)
+        private static void CreateSegment(
+            ISourcePreparer sourcePreparer,
+            ISegment<FileInfo> fileSegment,
+            AnalysisSettings settings,
+            Arguments arguments,
+            int itemNumber,
+            int itemCount,
+            bool mixDownToMono)
         {
-            var preparedFile = sourcePreparer.PrepareFile(
+            var task = sourcePreparer.PrepareFile(
                     arguments.OutputDir,
-                    fileSegment.TargetFile,
-                    settings.SegmentSettings.SegmentMediaType,
-                    fileSegment.SegmentStartOffset.Value,
-                    fileSegment.SegmentEndOffset.Value,
+                    fileSegment.Source,
+                    settings.SegmentMediaType,
+                    fileSegment.StartOffsetSeconds.Seconds(),
+                    fileSegment.EndOffsetSeconds.Seconds(),
                     settings.AnalysisTargetSampleRate,
-                    settings.SegmentSettings.SegmentTempDirectory,
+                    settings.AnalysisTempDirectory,
                     null,
                     mixDownToMono);
-            LoggedConsole.WriteLine("Created segment {0} of {1}: {2}", itemNumber, itemCount, preparedFile.TargetFile.Name);
+
+            task.Wait(120.Seconds());
+            var preparedFile = task.Result;
+
+            LoggedConsole.WriteLine(
+                "Created segment {0} of {1}: {2}",
+                itemNumber,
+                itemCount,
+                preparedFile.SourceMetadata.Identifier);
         }
     }
 }

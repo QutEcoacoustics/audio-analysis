@@ -6,8 +6,10 @@ namespace Acoustics.Test.TestHelpers
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -18,24 +20,23 @@ namespace Acoustics.Test.TestHelpers
     {
         private readonly bool block;
 
+        private Task waitingFor;
+        private CancellationTokenSource cancellation;
+
         public DummyAnalyzer(bool block)
         {
             this.block = block;
-            this.cancellation = new CancellationTokenSource();
         }
-
-        private Task waitingFor;
-        private CancellationTokenSource cancellation;
 
         public override string DisplayName { get; } = "Testing Placeholder Analysis (temporary substitute)";
 
         public override string Identifier { get; } = "Ecosounds.TempusSubstitutus";
 
-        public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
-            this.Pause("Analyze");
+            this.Pause("Analyze" + segmentSettings.SegmentStartOffset.TotalMinutes);
 
-            return new AnalysisResult2(analysisSettings, TimeSpan.FromSeconds(60.0));
+            return new AnalysisResult2(analysisSettings, segmentSettings, TimeSpan.FromSeconds(60.0));
         }
 
         public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
@@ -71,26 +72,61 @@ namespace Acoustics.Test.TestHelpers
             this.Pause("BeforeAnalyze");
         }
 
-        public void Pump()
+        public void Pump(bool wait = true)
         {
             if (!this.block)
             {
                 return;
             }
 
-            this.cancellation.Cancel(false);
+            if (this.waitingFor != null)
+            {
+                this.cancellation.Cancel(false);
+
+                // need to wait for the next wait to be ready
+                if (wait)
+                {
+                    do
+                    {
+                        Task.Delay(100).Wait();
+                    } while (this.waitingFor == null);
+                }
+            }
+
+            return;
         }
 
         public void Pause(string description)
         {
+            Debug.WriteLine($"{this.Identifier} analysis has paused at stage `{description}`");
             if (!this.block)
             {
                 return;
             }
 
             // pause indefinitely
+            this.cancellation = new CancellationTokenSource();
             this.waitingFor = Task.Delay(-1, this.cancellation.Token);
-            this.waitingFor.Wait();
+            try
+            {
+                this.waitingFor.Wait();
+            }
+            catch (AggregateException aex)
+            {
+                if (!(aex.GetBaseException() is TaskCanceledException))
+                {
+                    throw;
+                }
+
+                Debug.WriteLine($"{this.Identifier} analysis has canceled at stage `{description}`");
+            }
+
+            this.waitingFor = null;
+        }
+
+        public bool IsPaused
+        {
+            get { return !this.waitingFor?.IsCompleted ?? false; }
         }
     }
 }

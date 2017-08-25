@@ -77,18 +77,22 @@
             AudioUtilityRequest request,
             DirectoryInfo temporaryFilesDirectory)
         {
-            var outputFileName = Path.GetFileNameWithoutExtension(source.Name);
-
-            outputFileName = string.Format(
-                "{0}_{1:f0}min.{3}",
-                outputFileName,
-                request.OffsetStart?.TotalMinutes ?? 0,
-                request.OffsetEnd?.TotalMilliseconds,
-                MediaTypes.GetExtension(outputMediaType));
+            var outputFileName = GetFileName(source.Name, outputMediaType, request.OffsetStart, request.OffsetEnd);
 
             var outputFile = new FileInfo(Path.Combine(outputDirectory.FullName, outputFileName));
 
             return PrepareFile(source, outputFile, request, temporaryFilesDirectory);
+        }
+
+        public static string GetFileName(string outputFileName, string outputMediaType, TimeSpan? requestOffsetStart, TimeSpan? requestOffsetEnd)
+        {
+            outputFileName = string.Format(
+                "{0}_{1:0.######}{2}min.{3}",
+                Path.GetFileNameWithoutExtension(outputFileName),
+                requestOffsetStart?.TotalMinutes ?? 0,
+                requestOffsetEnd?.TotalMinutes.ToString("\\-0.######") ?? string.Empty,
+                MediaTypes.GetExtension(outputMediaType));
+            return outputFileName;
         }
 
         /// <summary>
@@ -147,6 +151,7 @@
         /// from: http://stackoverflow.com/a/577451/31567
         /// This doesn't try to cope with negative numbers :).
         /// </remarks>
+        [Obsolete]
         public static IEnumerable<long> DivideEvenly(long numerator, long denominator)
         {
             long rem;

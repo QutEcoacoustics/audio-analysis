@@ -95,7 +95,7 @@ Output  to  directory: {1}
             dynamic configuration = Yaml.Deserialise(configFile);
 
             SaveBehavior saveIntermediateWavFiles = (SaveBehavior?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? SaveBehavior.Never;
-            bool saveIntermediateCsvFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
+            bool saveIntermediateDataFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
             SaveBehavior saveSonogramsImages = (SaveBehavior?)configuration[AnalysisKeys.SaveSonogramImages] ?? SaveBehavior.Never;
             bool doParallelProcessing = (bool?)configuration[AnalysisKeys.ParallelProcessing] ?? false;
 
@@ -141,13 +141,11 @@ Output  to  directory: {1}
             }
 
             // 3. initilize AnalysisCoordinator class that will do the analysis
-            var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveSonogramsImages, saveIntermediateCsvFiles, arguments.Channels, saveIntermediateWavFiles)
-            {
-                // create and delete directories
-                DeleteFinished = true,
-                IsParallel = doParallelProcessing,
-                UniqueDirectoryPerSegment = false,
-            };
+            var analysisCoordinator = new AnalysisCoordinator(
+                new LocalSourcePreparer(),
+                saveIntermediateWavFiles,
+                false,
+                doParallelProcessing);
 
             // 4. get the segment of audio to be analysed
             // if tiling output, specify that FileSegment needs to be able to read the date
@@ -170,9 +168,13 @@ Output  to  directory: {1}
             var analysisSettings = analyzer.DefaultSettings;
             analysisSettings.ConfigFile = configFile;
             analysisSettings.Configuration = configuration;
-            analysisSettings.SourceFile = sourceAudio;
             analysisSettings.AnalysisOutputDirectory = outputDirectory;
             analysisSettings.AnalysisTempDirectory = tempFilesDirectory;
+            analysisSettings.AnalysisDataSaveBehavior = saveIntermediateDataFiles;
+            analysisSettings.AnalysisImageSaveBehavior = saveSonogramsImages;
+            analysisSettings.AnalysisChannelSelection = arguments.Channels;
+            analysisSettings.AnalysisMixDownToMono = arguments.MixDownToMono;
+
 
             // #SEGMENT_DURATION=minutes, SEGMENT_OVERLAP=seconds   FOR EXAMPLE: SEGMENT_DURATION=5  and SEGMENT_OVERLAP=10
             // set the segment offset i.e. time between consecutive segment starts - the key used for this in config file = "SEGMENT_DURATION"
@@ -190,12 +192,12 @@ Output  to  directory: {1}
             try
             {
                 int rawOverlap = configuration[AnalysisKeys.SegmentOverlap];
-                analysisSettings.SegmentSettings.SegmentOverlapDuration = TimeSpan.FromSeconds(rawOverlap);
+                analysisSettings.SegmentOverlapDuration = TimeSpan.FromSeconds(rawOverlap);
             }
             catch (Exception ex)
             {
-                analysisSettings.SegmentSettings.SegmentOverlapDuration = TimeSpan.Zero;
-                Log.Warn("Can't read SegmentOverlapDuration from config file (exceptions squashed, default value of " + analysisSettings.SegmentSettings.SegmentOverlapDuration + " used)");
+                analysisSettings.SegmentOverlapDuration = TimeSpan.Zero;
+                Log.Warn("Can't read SegmentOverlapDuration from config file (exceptions squashed, default value of " + analysisSettings.SegmentOverlapDuration + " used)");
             }
 
             // set target sample rate
@@ -208,9 +210,6 @@ Output  to  directory: {1}
             {
                 Log.Warn("Can't read AnalysisTargetSampleRate from config file (exceptions squashed, default value  of " + analysisSettings.AnalysisTargetSampleRate + " used)");
             }
-
-            // Execute a pre analyzer hook
-            analyzer.BeforeAnalyze(analysisSettings);
 
             // 7. ####################################### DO THE ANALYSIS ###################################
             LoggedConsole.WriteLine("START ANALYSIS ...");
@@ -268,12 +267,8 @@ Output  to  directory: {1}
             // 10. Allow analysers to post-process
 
             // TODO: remove results directory if possible
-            var instanceOutputDirectory = analyserResults.First().SettingsUsed.SegmentSettings.SegmentOutputDirectory;
-
-            // this allows the summariser to write results to the same output directory as each analysis segment
-            analysisSettings.SegmentSettings.SegmentOutputDirectory = instanceOutputDirectory;
-            Debug.Assert(analysisSettings.SegmentSettings.SegmentOutputDirectory == instanceOutputDirectory, "The instance result directory should be the same as the base analysis directory");
-            Debug.Assert(analysisSettings.SourceFile == fileSegment.TargetFile);
+            var instanceOutputDirectory =
+                AnalysisCoordinator.GetNamedDirectory(analysisSettings.AnalysisOutputDirectory, analyzer);
 
             // 11. IMPORTANT - this is where IAnalyser2's post processor gets called.
             // Produces all spectrograms and images of SPECTRAL INDICES.

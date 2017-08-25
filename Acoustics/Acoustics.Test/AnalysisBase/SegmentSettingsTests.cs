@@ -10,58 +10,132 @@ namespace Acoustics.Test.AnalysisBase
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using Acoustics.Shared;
     using global::AnalysisBase;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using TestHelpers;
 
     [TestClass]
-    public class SegmentSettingsTests
+    public class SegmentSettingsTests : OutputDirectoryTest
     {
-        private AnalysisSettings original;
-        private AnalysisSettings cloned;
+        private AnalysisSettings analysisSettings;
+        private SegmentSettings<FileInfo> segmentSettings;
+        private FileSegment segment;
+        private FileSegment preparedSegment;
 
         [TestInitialize]
         public void Initialize()
         {
-            this.original = new AnalysisSettings();
+            this.analysisSettings = new AnalysisSettings();
 
-            this.original.AnalysisOutputDirectory = new DirectoryInfo("/");
+            this.analysisSettings.AnalysisOutputDirectory = this.outputDirectory.Combine("output");
+            this.analysisSettings.AnalysisTempDirectory = this.outputDirectory.Combine("tmp");
 
-            this.cloned = (AnalysisSettings)this.original.Clone();
+            var fakeSource = this.outputDirectory.CombineFile("abc_min1.wav");
+            fakeSource.Touch();
+            this.segment = new FileSegment(fakeSource, 123456, 60.0.Seconds())
+            {
+                SegmentStartOffset = TimeSpan.Zero,
+                SegmentEndOffset = 60.0.Seconds(),
+            };
 
+            var fakePrepared = this.outputDirectory.CombineFile("abc_min1.wav");
+            fakePrepared.Touch();
+            this.preparedSegment = new FileSegment(fakePrepared, 123456, 30.Seconds())
+            {
+                SegmentStartOffset = 0.Seconds(),
+                SegmentEndOffset = 59.999.Seconds(),
+            };
+
+            this.segmentSettings = new SegmentSettings<FileInfo>(
+                this.analysisSettings,
+                this.segment,
+                (this.analysisSettings.AnalysisOutputDirectory, this.analysisSettings.AnalysisTempDirectory),
+                this.preparedSegment);
         }
 
         [TestMethod]
-        public void TestTempDirectoryFieldIsCloned()
+        public void ThrowsIfArgumentNull()
         {
-            Assert.AreEqual(
-                this.original.AnalysisTempDirectoryFallback,
-                this.cloned.AnalysisTempDirectoryFallback);
+            Assert.ThrowsException<ArgumentNullException>(
+                () =>
+                {
+                   this.segmentSettings = new SegmentSettings<FileInfo>(
+                        null,
+                        this.segment,
+                        (this.analysisSettings.AnalysisOutputDirectory, this.analysisSettings.AnalysisTempDirectory),
+                        this.preparedSegment);
+                });
         }
 
         [TestMethod]
-        public void EnsureClonedObjectHasDifferentId()
+        public void ThrowsIfArgumentNull1()
         {
-            Assert.AreNotEqual(this.original.InstanceId, this.cloned.InstanceId);
+            Assert.ThrowsException<ArgumentNullException>(
+                () =>
+                {
+                   this.segmentSettings = new SegmentSettings<FileInfo>(
+                        this.analysisSettings,
+                        null,
+                        (this.analysisSettings.AnalysisOutputDirectory, this.analysisSettings.AnalysisTempDirectory),
+                        this.preparedSegment);
+                });
         }
 
         [TestMethod]
-        public void EnsureClonedObjectIsNotEquatable()
+        public void ThrowsIfArgumentNull2()
         {
-            Assert.AreNotEqual(this.original, this.cloned);
+            Assert.ThrowsException<ArgumentNullException>(
+                () =>
+                {
+                   this.segmentSettings = new SegmentSettings<FileInfo>(
+                        this.analysisSettings,
+                        this.segment,
+                        (null, null),
+                        this.preparedSegment);
+                });
         }
 
         [TestMethod]
-        public void EnsureClonedObjectDoesNotShareReferences()
+        public void ThrowsIfArgumentNull3()
         {
-            Assert.AreNotEqual(this.original.AnalysisOutputDirectory, this.cloned.AnalysisOutputDirectory);
+            Assert.ThrowsException<ArgumentNullException>(
+                () =>
+                {
+                   this.segmentSettings = new SegmentSettings<FileInfo>(
+                        this.analysisSettings,
+                        this.segment,
+                        (this.analysisSettings.AnalysisOutputDirectory, this.analysisSettings.AnalysisTempDirectory),
+                        null);
+                });
         }
 
         [TestMethod]
-        public void EnsureClonedObjectDoesCopyData()
+        public void IdealSegmentDurationIsAutomaticallyCalculated()
         {
-            Assert.AreEqual(
-                this.original.AnalysisOutputDirectory.FullName,
-                this.cloned.AnalysisOutputDirectory.FullName);
+            Assert.AreEqual(60.0.Seconds(), this.segmentSettings.AnalysisIdealSegmentDuration);
+        }
+
+        [TestMethod]
+        public void SegmentAudioFileIsProvidedForBackwardsCompatibility()
+        {
+            Assert.AreEqual("abc_min1.wav", this.segmentSettings.Segment.Source.Name);
+            Assert.AreEqual("abc_min1.wav", this.segmentSettings.SegmentAudioFile.Name);
+        }
+
+        [TestMethod]
+        public void InstanceIdProxiesAnalysisSettings()
+        {
+            Assert.AreEqual(this.analysisSettings.InstanceId, this.segmentSettings.InstanceId);
+        }
+
+        [TestMethod]
+        public void PathPropertiesAreAlwaysDefined()
+        {
+            Assert.AreEqual("abc_min1__Events.csv", this.segmentSettings.SegmentEventsFile.Name);
+            Assert.AreEqual("abc_min1__Indices.csv", this.segmentSettings.SegmentSummaryIndicesFile.Name);
+            Assert.AreEqual("abc_min1__Image.png", this.segmentSettings.SegmentImageFile.Name);
+            Assert.AreEqual(this.segmentSettings.SegmentOutputDirectory, this.segmentSettings.SegmentSpectrumIndicesDirectory);
         }
     }
 }

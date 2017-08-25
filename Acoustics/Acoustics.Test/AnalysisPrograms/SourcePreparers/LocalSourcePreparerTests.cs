@@ -5,6 +5,8 @@
     using System.Linq;
     using Acoustics.Shared;
     using AnalysisBase;
+    using global::AnalysisBase;
+    using global::AnalysisBase.Segment;
     using global::AnalysisPrograms.SourcePreparers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using MSTestExtensions;
@@ -13,8 +15,8 @@
     [TestClass]
     public class LocalSourcePreparerTests : BaseTest
     {
-        private LocalSourcePreparer preparer;
         private readonly FileInfo sourceFile = TestHelper.GetAudioFile("4min test.mp3");
+        private LocalSourcePreparer preparer;
         private AnalysisSettings settings;
         private DirectoryInfo testDirectory;
 
@@ -23,11 +25,7 @@
         {
             this.testDirectory = PathHelper.GetTempDir();
             this.preparer = new LocalSourcePreparer();
-            this.settings = new AnalysisSettings()
-            {
-                AnalysisTargetSampleRate = 22050,
-                AnalysisIdealSegmentDuration = TimeSpan.FromSeconds(60),
-            };
+            this.settings = new AnalysisSettings();
         }
 
         [TestCleanup]
@@ -40,9 +38,9 @@
         public void ShouldDoBasicSplits()
         {
             var source = TestHelper.AudioDetails[this.sourceFile.Name];
-            var fileSegment = new FileSegment(this.sourceFile, source.SampleRate, source.Duration);
+            var fileSegment = new FileSegment(this.sourceFile, source.SampleRate.Value, source.Duration.Value);
 
-            var analysisSegments = this.preparer.CalculateSegments(new[] {fileSegment}, this.settings).ToArray();
+            var analysisSegments = this.preparer.CalculateSegments(new[] { fileSegment }, this.settings).ToArray();
 
             var expected = new[]
             {
@@ -57,7 +55,7 @@
             {
                 var expectedStart = expected[i].Item1;
                 var expectedEnd = expected[i].Item2;
-                var actual = analysisSegments[i];
+                var actual = (FileSegment)analysisSegments[i];
 
                 Assert.IsTrue(actual.IsSegmentSet);
                 Assert.AreEqual(expectedStart, actual.SegmentStartOffset.Value.TotalSeconds);
@@ -65,12 +63,11 @@
             }
         }
 
-
         [TestMethod]
         public void ShouldHonorLimits()
         {
             var source = TestHelper.AudioDetails[this.sourceFile.Name];
-            var fileSegment = new FileSegment(this.sourceFile, source.SampleRate, source.Duration);
+            var fileSegment = new FileSegment(this.sourceFile, source.SampleRate.Value, source.Duration.Value);
             fileSegment.SegmentStartOffset = TimeSpan.FromMinutes(1);
             fileSegment.SegmentEndOffset = TimeSpan.FromMinutes(3);
 
@@ -85,12 +82,11 @@
             AssertSegmentsAreEqual(analysisSegments, expected);
         }
 
-
         [TestMethod]
         public void ShouldSupportOverlap()
         {
             var source = TestHelper.AudioDetails[this.sourceFile.Name];
-            var fileSegment = new FileSegment(this.sourceFile, source.SampleRate, source.Duration);
+            var fileSegment = new FileSegment(this.sourceFile, source.SampleRate.Value, source.Duration.Value);
 
             this.settings.SegmentOverlapDuration = TimeSpan.FromSeconds(30);
 
@@ -107,7 +103,6 @@
 
             AssertSegmentsAreEqual(analysisSegments, expected);
         }
-
 
         [TestMethod]
         public void AbsoluteTimeAlignmentHasNoEffectWhenOffsetIsZero()
@@ -133,7 +128,6 @@
             AssertSegmentsAreEqual(analysisSegments, expected);
         }
 
-
         [TestMethod]
         public void AbsoluteTimeAlignmentFailsWithoutDate()
         {
@@ -147,7 +141,6 @@
                     });
 
         }
-
 
         [TestMethod]
         public void ShouldSupportOffsetsAndAbsoluteTimeAlignment()
@@ -221,8 +214,6 @@
             AssertSegmentsAreEqual(analysisSegments, expected);
         }
 
-
-
         [TestMethod]
         public void ShouldSupportAbsoluteTimeAlignmentTrimStart()
         {
@@ -246,9 +237,6 @@
 
             AssertSegmentsAreEqual(analysisSegments, expected);
         }
-
-
-
 
         [TestMethod]
         public void ShouldSupportAbsoluteTimeAlignmentTrimEnd()
@@ -274,14 +262,13 @@
             AssertSegmentsAreEqual(analysisSegments, expected);
         }
 
-
-        private static void AssertSegmentsAreEqual(FileSegment[] acutal, Tuple<double, double>[] expected)
+        private static void AssertSegmentsAreEqual(ISegment<FileInfo>[] acutal, Tuple<double, double>[] expected)
         {
             for (int i = 0; i < acutal.Length; i++)
             {
                 var expectedStart = expected[i].Item1;
                 var expectedEnd = expected[i].Item2;
-                var actual = acutal[i];
+                var actual = (FileSegment)acutal[i];
 
                 Assert.IsTrue(actual.IsSegmentSet);
                 Assert.AreEqual(expectedStart, actual.SegmentStartOffset.Value.TotalSeconds);

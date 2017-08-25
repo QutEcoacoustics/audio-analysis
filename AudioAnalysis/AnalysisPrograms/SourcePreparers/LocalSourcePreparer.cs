@@ -10,7 +10,7 @@ namespace AnalysisPrograms.SourcePreparers
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using AnalysisBase;
-    using AnalysisBase.SegmentAnalysis;
+    using AnalysisBase.Segment;
     using log4net;
 
     /// <summary>
@@ -54,7 +54,7 @@ namespace AnalysisPrograms.SourcePreparers
             TimeSpan endOffset,
             int targetSampleRateHz)
         {
-            return await new Task<FileSegment>(() =>
+            return await TaskEx.Run(() =>
             {
                 FileInfo sourceFileInfo = source.ToFileInfo();
 
@@ -96,8 +96,6 @@ namespace AnalysisPrograms.SourcePreparers
         {
             var audioUtility = new MasterAudioUtility();
 
-            var defaultAnalysisSegmentMinDuration = TimeSpan.FromSeconds(10);
-
             foreach (var segment in fileSegments)
             {
                 if (!(segment is FileSegment))
@@ -109,13 +107,10 @@ namespace AnalysisPrograms.SourcePreparers
 
                 var fileSegment = (FileSegment)segment;
 
-                var mediaType = MediaTypes.GetMediaType(fileSegment.TargetFile.Extension);
-                var info = audioUtility.Info(fileSegment.TargetFile);
+                var mediaType = MediaTypes.GetMediaType(fileSegment.Source.Extension);
 
-                var startOffset = fileSegment.SegmentStartOffset ?? TimeSpan.Zero;
-                var endOffset = fileSegment.SegmentEndOffset ?? info.Duration.Value;
-                fileSegment.TargetFileDuration = info.Duration.Value;
-                fileSegment.TargetFileSampleRate = info.SampleRate.Value;
+                var startOffset = fileSegment.StartOffsetSeconds.Seconds();
+                var endOffset = fileSegment.EndOffsetSeconds.Seconds();
 
                 // process time alignment
                 var startDelta = TimeSpan.Zero;
@@ -153,32 +148,15 @@ namespace AnalysisPrograms.SourcePreparers
 
                 var analysisSegmentMaxDuration = settings.AnalysisMaxSegmentDuration?.TotalMilliseconds ?? fileSegmentDuration;
 
-                var analysisSegmentMinDuration = settings.AnalysisMinSegmentDuration?.TotalMilliseconds
-                                                 ?? defaultAnalysisSegmentMinDuration.TotalMilliseconds;
+                var analysisSegmentMinDuration = settings.AnalysisMinSegmentDuration.TotalMilliseconds;
 
-                // --------------------------------------------
-                // divide duration to get evenly-sized segments
-                // use the max duration to divide up the range
-                // this is the number of segments required to not go over the max duration
-                double analysisSegmentsForMaxSize = Math.Ceiling(fileSegmentDuration / analysisSegmentMaxDuration);
-
-                // get the segment durations
-                // segment evenly - each chunk will be equal or smaller than max, and equal or greater than min.
-                ////var segments = AudioFilePreparer.DivideEvenly(Convert.ToInt64(fileSegmentDuration), Convert.ToInt64(analysisSegmentsForMaxSize)).ToList();
-
-                // --------------------------------------------
-                // --OR--
-                // --------------------------------------------
                 // segment into exact chunks - all but the last chunk will be equal to the max duration
                 var segments = AudioFilePreparer.DivideExactLeaveLeftoversAtEnd(
                     Convert.ToInt64(fileSegmentDuration),
                     Convert.ToInt64(analysisSegmentMaxDuration));
 
-                // --------------------------------------------
-
-                var overlap = settings.SegmentSettings.SegmentOverlapDuration;
+                var overlap = settings.SegmentOverlapDuration;
                 long aggregate = 0;
-
 
                 // include fractional segment cut from time alignment
                 if ((fileSegment.Alignment == TimeAlignment.TrimEnd
@@ -238,120 +216,11 @@ namespace AnalysisPrograms.SourcePreparers
             if (segmentEndOffset > endOffset)
             {
                 segmentEndOffset = endOffset;
-
             }
+
             currentSegment.SegmentEndOffset = segmentEndOffset;
 
             return currentSegment;
-        }
-
-        /// <summary>
-        /// Get the source files based on analysis <paramref name="analysisSettings"/>.
-        /// </summary>
-        /// <param name="analysisSettings">
-        ///   The analysis settings.
-        /// </param>
-        /// <param name="fileSegments">
-        /// File segments to create.
-        /// </param>
-        /// <returns>
-        /// Enumerable of source files.
-        /// </returns>
-        private IEnumerable<FileInfo> PrepareFiles(
-            AnalysisSettings analysisSettings,
-            IEnumerable<FileSegment> fileSegments)
-        {
-            var audioUtility = new MasterAudioUtility();
-
-            foreach (var fileSegment in fileSegments)
-            {
-                var mediaType = MediaTypes.GetMediaType(fileSegment.TargetFile.Extension);
-                var info = audioUtility.Info(fileSegment.TargetFile);
-
-                var startOffset = fileSegment.SegmentStartOffset.HasValue
-                                      ? fileSegment.SegmentStartOffset.Value
-                                      : TimeSpan.Zero;
-                var endOffset = fileSegment.SegmentEndOffset.HasValue
-                                    ? fileSegment.SegmentEndOffset.Value
-                                    : info.Duration.Value;
-
-                var fileSegmentDuration = (endOffset - startOffset).TotalMilliseconds;
-                double currentPostion = 0;
-
-                var offsetsFromEntireFile = new List<Range<TimeSpan>>();
-
-                var segmentMaxDuration = analysisSettings.AnalysisMaxSegmentDuration.HasValue
-                                             ? analysisSettings.AnalysisMaxSegmentDuration.Value.TotalMilliseconds
-                                             : fileSegmentDuration;
-                var segmentMinDuration = analysisSettings.AnalysisMinSegmentDuration.HasValue
-                                             ? analysisSettings.AnalysisMinSegmentDuration.Value
-                                             : TimeSpan.Zero;
-
-                while (currentPostion < fileSegmentDuration)
-                {
-                    var start = currentPostion - analysisSettings.SegmentSettings.SegmentOverlapDuration.TotalMilliseconds;
-                    start = Math.Max(start, 0);
-
-                    var end = currentPostion + segmentMaxDuration;
-                    end = Math.Min(end, fileSegmentDuration);
-
-                    offsetsFromEntireFile.Add(
-                        new Range<TimeSpan>(
-                                TimeSpan.FromMilliseconds(start) + startOffset,
-                                TimeSpan.FromMilliseconds(end) + startOffset));
-
-                    currentPostion = end;
-                }
-
-                // make sure last segment is at least segmentMinDuration long if possible.
-                var last = offsetsFromEntireFile.Last();
-                if (offsetsFromEntireFile.Count > 1 && last.Maximum - last.Minimum < segmentMinDuration)
-                {
-                    var secondLast = offsetsFromEntireFile.Skip(offsetsFromEntireFile.Count - 2).First();
-
-                    ////var totalDuration = (secondLast.Maximum - secondLast.Minimum) + (last.Upper - last.Lower);
-                    var newLast = new Range<TimeSpan>(endOffset - segmentMinDuration, endOffset);
-                    var newSecondLast = new Range<TimeSpan>(secondLast.Minimum, newLast.Minimum);
-
-                    offsetsFromEntireFile[offsetsFromEntireFile.Count - 1] = newLast;
-                    offsetsFromEntireFile[offsetsFromEntireFile.Count - 2] = newSecondLast;
-                }
-
-                // segment and/or convert the file segment to match settings
-                foreach (var offset in offsetsFromEntireFile)
-                {
-                    var filename = string.Format(
-                        "{0}_{1}_{2}.{3}",
-                        fileSegment.TargetFile.Name,
-                        offset.Minimum.TotalMilliseconds,
-                        offset.Maximum.TotalMilliseconds,
-                        MediaTypes.GetExtension(analysisSettings.SegmentSettings.SegmentMediaType));
-
-                    var path =
-                        new FileInfo(
-                            Path.Combine(
-                                analysisSettings.AnalysisOutputDirectory.FullName,
-                                "segmentedaudio",
-                                filename));
-
-                    if (!File.Exists(path.FullName))
-                    {
-                        audioUtility.Modify(
-                            fileSegment.TargetFile,
-                            mediaType,
-                            path,
-                            analysisSettings.SegmentSettings.SegmentMediaType,
-                            new AudioUtilityRequest
-                                {
-                                    OffsetStart = offset.Minimum,
-                                    OffsetEnd = offset.Maximum,
-                                    TargetSampleRate = analysisSettings.AnalysisTargetSampleRate,
-                                });
-                    }
-
-                    yield return path;
-                }
-            }
         }
 
         /// <summary>
@@ -383,9 +252,9 @@ namespace AnalysisPrograms.SourcePreparers
         /// these are the path to the segmented file and the duration of the segmented file.
         /// The start and end offsets will not be set.
         /// </returns>
-        public async Task<FileSegment> PrepareFile(
+        public async Task<FileSegment> PrepareFile<TSource>(
             DirectoryInfo outputDirectory,
-            string source,
+            TSource source,
             string outputMediaType,
             TimeSpan startOffset,
             TimeSpan endOffset,
@@ -394,9 +263,14 @@ namespace AnalysisPrograms.SourcePreparers
             int[] channelSelection = null,
             bool? mixDownToMono = null)
         {
-            return await new Task<FileSegment>(() =>
+            return await TaskEx.Run(() =>
             {
-                var sourceFileInfo = source.ToFileInfo();
+                var sourceFileInfo = source as FileInfo;
+
+                if (sourceFileInfo == null)
+                {
+                    throw new NotSupportedException("LocalSourcePreparer only knows how to access FileInfo types");
+                }
 
                 var request = new AudioUtilityRequest
                 {

@@ -1,6 +1,9 @@
-﻿namespace AnalysisPrograms
-{
+﻿// <copyright file="PlanesTrainsAndAutomobiles.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
 
+namespace AnalysisPrograms
+{
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -16,14 +19,16 @@
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using AnalysisBase;
-    using Production;
+    using AnalysisBase.Extensions;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
+    using Production;
     using TowseyLibrary;
 
-    public class PlanesTrainsAndAutomobiles : IAnalyser
+    [Obsolete("This recognizer is non functional. It's core should be ported to the new recognizer base immediately")]
+    public class PlanesTrainsAndAutomobiles
     {
         public class Arguments : AnalyserArguments
         {
@@ -36,18 +41,15 @@
         //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
         public const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
 
-
         public string DisplayName
         {
             get { return "Planes Trains And Automobiles"; }
         }
 
-
         public string Identifier
         {
             get { return "Towsey." + AnalysisName; }
         }
-
 
         public static void Dev(Arguments arguments)
         {
@@ -62,7 +64,6 @@
 
                 string configPath = @"C:\SensorNetworks\Output\Machines\Machine.cfg";
                 string outputDir = @"C:\SensorNetworks\Output\Machines\";
-
 
                 string title = "# FOR DETECTION OF PLANES, TRAINS AND AUTOMOBILES using CROSS-CORRELATION & FFT";
                 string date = "# DATE AND TIME: " + DateTime.Now;
@@ -88,109 +89,66 @@
                     Source = recordingPath.ToFileInfo(),
                     Config = configPath.ToFileInfo(),
                     Output = outputDir.ToDirectoryInfo(),
-                    TmpWav = segmentFName,
-                    Events = eventsFname,
-                    Indices = indicesFname,
-                    Sgram = sonogramFname,
                     Start = tsStart.TotalSeconds,
                     Duration = tsDuration.TotalSeconds,
                 };
             }
 
             Execute(arguments);
-
-            if (executeDev)
-            {
-                var csvEvents = arguments.Output.CombineFile(arguments.Events);
-                if (!csvEvents.Exists)
-                {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvEvents.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-                var csvIndicies = arguments.Output.CombineFile(arguments.Indices);
-                if (!csvIndicies.Exists)
-                {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvIndicies.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-                var image = arguments.Output.CombineFile(arguments.Sgram);
-                if (image.Exists)
-                {
-                    TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(LSKiwiHelper.imageViewer);
-                    process.Run(image.FullName, arguments.Output.FullName);
-                }
-
-                LoggedConsole.WriteLine("\n\n# Finished analysis:- " + arguments.Source.FullName);
-            }
         }
-
-
 
         /// <summary>
         /// A WRAPPER AROUND THE analyser.Analyze(analysisSettings) METHOD
         /// To be called as an executable with command line arguments.
         /// </summary>
-
         public static void Execute(Arguments arguments)
         {
             Contract.Requires(arguments != null);
 
-            AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
             TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
             TimeSpan tsDuration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
 
             //EXTRACT THE REQUIRED RECORDING SEGMENT
-            FileInfo tempF = analysisSettings.SegmentSettings.SegmentAudioFile;
+            FileInfo tempF = TempFileHelper.NewTempFile(arguments.Output);
+            AudioUtilityModifiedInfo preparedFile;
             if (tsDuration == TimeSpan.Zero)   //Process entire file
             {
-                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate }, analysisSettings.AnalysisTempDirectoryFallback);
+                preparedFile = AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate }, arguments.Output);
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisTempDirectoryFallback);
+                preparedFile = AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, arguments.Output);
                 //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
+            var (analysisSettings, segmentSettings) = arguments.ToAnalysisSettings(
+                sourceSegment: preparedFile.SourceInfo.ToSegment(),
+                preparedSegment: preparedFile.TargetInfo.ToSegment());
+
             //DO THE ANALYSIS
             //#############################################################################################################################################
-            IAnalyser analyser = new PlanesTrainsAndAutomobiles();
-            AnalysisResult result = analyser.Analyse(analysisSettings);
-            DataTable dt = result.Data;
+            IAnalyser2 analyser = null; /* BROKEN ! new PlanesTrainsAndAutomobiles();*/
+            AnalysisResult2 result = analyser.Analyze(analysisSettings, segmentSettings);
+            //DataTable dt = result.Data;
             //#############################################################################################################################################
 
+            throw new NotImplementedException("intentionally broken in updates");
             //ADD IN ADDITIONAL INFO TO RESULTS TABLE
-            if (dt != null)
+            /*if (dt != null)
             {
                 AnalysisTemplate.AddContext2Table(dt, tsStart, result.AudioDuration);
                 CsvTools.DataTable2CSV(dt, analysisSettings.SegmentSettings.SegmentEventsFile.FullName);
                 //DataTableTools.WriteTable(dt);
-            }
+            }*/
         }
 
-
-        public AnalysisResult Analyse(AnalysisSettings analysisSettings)
+        public AnalysisResult Analyse<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
             var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
             Dictionary<string, string> configDict = configuration.GetTable();
-            var fiAudioF = analysisSettings.SegmentSettings.SegmentAudioFile;
-            var diOutputDir = analysisSettings.SegmentSettings.SegmentOutputDirectory;
+            var fiAudioF = segmentSettings.SegmentAudioFile;
+            var diOutputDir = segmentSettings.SegmentOutputDirectory;
 
             var analysisResults = new AnalysisResult();
             analysisResults.AnalysisIdentifier = this.Identifier;
@@ -228,37 +186,35 @@
 
             }
 
-            if ((analysisSettings.SegmentSettings.SegmentEventsFile != null) && (dataTable != null))
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
-                CsvTools.DataTable2CSV(dataTable, analysisSettings.SegmentSettings.SegmentEventsFile.FullName);
+                CsvTools.DataTable2CSV(dataTable, segmentSettings.SegmentEventsFile.FullName);
             }
 
-            if ((analysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null) && (dataTable != null))
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
                 double scoreThreshold = 0.1;
                 TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of i minute
                 var indicesDT = this.ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
-                CsvTools.DataTable2CSV(indicesDT, analysisSettings.SegmentSettings.SegmentSummaryIndicesFile.FullName);
+                CsvTools.DataTable2CSV(indicesDT, segmentSettings.SegmentSummaryIndicesFile.FullName);
             }
 
             //save image of sonograms
-            if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Data.Rows.Count))
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Data.Rows.Count))
             {
-                string imagePath = analysisSettings.SegmentSettings.SegmentImageFile.FullName;
+                string imagePath = segmentSettings.SegmentImageFile.FullName;
                 double eventThreshold = 0.1;
                 Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, eventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
             }
 
             analysisResults.Data = dataTable;
-            analysisResults.ImageFile = analysisSettings.SegmentSettings.SegmentImageFile;
+            analysisResults.ImageFile = segmentSettings.SegmentImageFile;
             analysisResults.AudioDuration = recordingTimeSpan;
             //result.DisplayItems = { { 0, "example" }, { 1, "example 2" }, }
             //result.OutputFiles = { { "exmaple file key", new FileInfo("Where's that file?") } }
             return analysisResults;
         } //Analyze()
-
-
 
         /// <summary>
         /// ################ THE KEY ANALYSIS METHOD
@@ -311,8 +267,6 @@
             Plot plot = new Plot(AnalysisName, scores, intensityThreshold);
             return Tuple.Create(sonogram, hits, plot, predictedEvents, tsRecordingtDuration);
         } //Analysis()
-
-
 
         public static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>> DetectHarmonics(AudioRecording recording, double intensityThreshold,
                                                               int minHz, int minFormantgap, int maxFormantgap, double minDuration, int windowSize, double windowOverlap)
@@ -401,8 +355,6 @@
             return Tuple.Create(sonogram, hits, scoreArray, predictedEvents);
         }//end Execute_HDDetect
 
-
-
         static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, Plot scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage());
@@ -419,8 +371,6 @@
             if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             return image.GetImage();
         } //DrawSonogram()
-
-
 
         public static DataTable WriteEvents2DataTable(List<AcousticEvent> predictedEvents)
         {
@@ -458,9 +408,6 @@
             return dataTable;
         }
 
-
-
-
         /// <summary>
         /// Converts a DataTable of events to a datatable where one row = one minute of indices
         /// </summary>
@@ -495,7 +442,6 @@
             return newtable;
         }
 
-
         public static void AddContext2Table(DataTable dt, TimeSpan segmentStartMinute, TimeSpan recordingTimeSpan)
         {
             if (!dt.Columns.Contains(AnalysisKeys.KeySegmentDuration)) dt.Columns.Add(AnalysisKeys.KeySegmentDuration, typeof(double));
@@ -509,7 +455,6 @@
                 row[AnalysisKeys.EventStartMin] = start;
             }
         } //AddContext2Table()
-
 
         public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
         {
@@ -580,8 +525,6 @@
             return Tuple.Create(dt, table2Display);
         } // ProcessCsvFile()
 
-
-
         /// <summary>
         /// takes a data table of indices and normalises column values to values in [0,1].
         /// </summary>
@@ -622,7 +565,6 @@
             return processedtable;
         }
 
-
         public string DefaultConfiguration
         {
             get
@@ -630,7 +572,6 @@
                 return string.Empty;
             }
         }
-
 
         public AnalysisSettings DefaultSettings
         {
@@ -642,11 +583,9 @@
                     AnalysisMinSegmentDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    AnalysisTargetSampleRate = AnalysisTemplate.ResampleRate,
                 };
             }
         }
-
 
     } //end class PlanesTrainsAndAutomobiles
 }

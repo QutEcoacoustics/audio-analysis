@@ -113,10 +113,6 @@ namespace AnalysisPrograms
                     arguments.Source = RecordingPath.ToFileInfo();
                     arguments.Config = ConfigPath.ToFileInfo();
                     arguments.Output = OutputDir.ToDirectoryInfo();
-                    arguments.TmpWav = segmentFName;
-                    arguments.Events = eventsFname;
-                    arguments.Indices = indicesFname;
-                    arguments.Sgram = sonogramFname;
                     arguments.Start = start.TotalSeconds;
                     arguments.Duration = duration.TotalSeconds;
                 }
@@ -135,49 +131,6 @@ namespace AnalysisPrograms
             }
 
             Execute(arguments);
-
-            if (executeDev)
-            {
-                FileInfo csvEvents = arguments.Output.CombineFile(arguments.Events);
-                if (!csvEvents.Exists)
-                {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvEvents.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-
-                FileInfo csvIndicies = arguments.Output.CombineFile(arguments.Indices);
-                if (!csvIndicies.Exists)
-                {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvIndicies.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-
-                FileInfo image = arguments.Output.CombineFile(arguments.Sgram);
-                if (image.Exists)
-                {
-                    throw new NotSupportedException("YOU CAN'T DO THIS!");
-                    ////var process = new ProcessRunner(ImageViewer);
-                    ////process.Run(image.FullName, arguments.Output.FullName);
-                }
-
-                LoggedConsole.WriteLine("\n\n# Finished analysis:- " + arguments.Source.FullName);
-            }
         }
 
         /// <summary>
@@ -191,12 +144,12 @@ namespace AnalysisPrograms
         {
             Contract.Requires(arguments != null);
 
-            AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
+            var (analysisSettings, segmentSettings) = arguments.ToAnalysisSettings();
             TimeSpan start = TimeSpan.FromSeconds(arguments.Start ?? 0);
             TimeSpan duration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT
-            FileInfo tempF = analysisSettings.SegmentSettings.SegmentAudioFile;
+            FileInfo tempF = segmentSettings.SegmentAudioFile;
             if (duration == TimeSpan.Zero)
             {
                 // Process entire file
@@ -224,7 +177,7 @@ namespace AnalysisPrograms
             /* ############################################################################################################################################# */
             IAnalyser2 analyser = new LimnodynastesConvex_OBSOLETE();
             analyser.BeforeAnalyze(analysisSettings);
-            AnalysisResult2 result = analyser.Analyze(analysisSettings);
+            AnalysisResult2 result = analyser.Analyze(analysisSettings, segmentSettings);
             /* ############################################################################################################################################# */
 
             if (result.Events.Length > 0)
@@ -243,15 +196,15 @@ namespace AnalysisPrograms
             return;
         }
 
-        public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
-            FileInfo audioFile = analysisSettings.SegmentSettings.SegmentAudioFile;
+            FileInfo audioFile = segmentSettings.SegmentAudioFile;
 
             // execute actual analysis
             Dictionary<string, string> configuration = analysisSettings.Configuration;
-            LimnodynastesConvexResults results = Analysis(audioFile, configuration, analysisSettings);
+            LimnodynastesConvexResults results = Analysis(audioFile, configuration, analysisSettings, segmentSettings);
 
-            var analysisResults = new AnalysisResult2(analysisSettings, results.RecordingDuration);
+            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, results.RecordingDuration);
 
             BaseSonogram sonogram = results.Sonogram;
             double[,] hits = results.Hits;
@@ -260,27 +213,27 @@ namespace AnalysisPrograms
 
             analysisResults.Events = predictedEvents.ToArray();
 
-            if (analysisSettings.SegmentSettings.SegmentEventsFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
-                this.WriteEventsFile(analysisSettings.SegmentSettings.SegmentEventsFile, analysisResults.Events);
-                analysisResults.EventsFile = analysisSettings.SegmentSettings.SegmentEventsFile;
+                this.WriteEventsFile(segmentSettings.SegmentEventsFile, analysisResults.Events);
+                analysisResults.EventsFile = segmentSettings.SegmentEventsFile;
             }
 
-            if (analysisSettings.SegmentSettings.SegmentSummaryIndicesFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
                 analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
 
-                this.WriteSummaryIndicesFile(analysisSettings.SegmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
+                this.WriteSummaryIndicesFile(segmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
-            if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Events.Length))
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
-                string imagePath = analysisSettings.SegmentSettings.SegmentImageFile.FullName;
+                string imagePath = segmentSettings.SegmentImageFile.FullName;
                 const double EventThreshold = 0.1;
                 Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, EventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
-                analysisResults.ImageFile = analysisSettings.SegmentSettings.SegmentImageFile;
+                analysisResults.ImageFile = segmentSettings.SegmentImageFile;
             }
 
             return analysisResults;
@@ -321,18 +274,20 @@ namespace AnalysisPrograms
 
         #region Methods
 
-        /// <summary>
-        ///
-        /// </summary>
+        ///  <summary>
+        /// 
+        ///  </summary>
         /// <param name="segmentOfSourceFile"></param>
         /// <param name="configDict"></param>
+        /// <param name="analysisSettings"></param>
+        /// <param name="segmentSettings"></param>
         /// <param name="segmentStartOffset"></param>
-        /// <returns></returns>
-        internal static LimnodynastesConvexResults Analysis(FileInfo segmentOfSourceFile, Dictionary<string, string> configDict, AnalysisSettings analysisSettings)
+        ///  <returns></returns>
+        internal static LimnodynastesConvexResults Analysis(FileInfo segmentOfSourceFile, Dictionary<string, string> configDict, AnalysisSettings analysisSettings, SegmentSettingsBase segmentSettings)
         {
             Dictionary<string, double[,]> dictionaryOfHiResSpectralIndices = null;
             var recording = new AudioRecording(segmentOfSourceFile.FullName);
-            return Analysis(dictionaryOfHiResSpectralIndices, recording, configDict, analysisSettings);
+            return Analysis(dictionaryOfHiResSpectralIndices, recording, configDict, analysisSettings, segmentSettings);
         }
 
 
@@ -353,7 +308,8 @@ namespace AnalysisPrograms
             Dictionary<string, double[,]> dictionaryOfHiResSpectralIndices,
             AudioRecording recording,
             Dictionary<string, string> configDict,
-            AnalysisSettings analysisSettings)
+            AnalysisSettings analysisSettings,
+            SegmentSettingsBase segmentSettings)
         {
             // for Limnodynastes convex, in the D.Stewart CD, there are peaks close to:
             //1. 1950 Hz
@@ -367,8 +323,8 @@ namespace AnalysisPrograms
             // So strategy is to look for three peaks separated by same amount and in the vicinity of the above,
             //  starting with highest power (the top peak) and working down to lowest power (bottom peak).
 
-            var outputDir = analysisSettings.SegmentSettings.SegmentOutputDirectory;
-            TimeSpan segmentStartOffset = analysisSettings.SegmentSettings.SegmentStartOffset ?? TimeSpan.Zero;
+            var outputDir = segmentSettings.SegmentOutputDirectory;
+            TimeSpan segmentStartOffset = segmentSettings.SegmentStartOffset;
 
 
             //KeyValuePair<string, double[,]> kvp = dictionaryOfHiResSpectralIndices.First();
@@ -442,7 +398,7 @@ namespace AnalysisPrograms
             // superimpose point on RHZ HiRes spectrogram for debug purposes
             bool drawOnHiResSpectrogram = true;
             //string filePath = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test\Towsey.HiResIndices\SpectrogramImages\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30_0min.CombinedGreyScale.png";
-            var fileName = Path.GetFileNameWithoutExtension(analysisSettings.SegmentSettings.SegmentAudioFile.Name);
+            var fileName = Path.GetFileNameWithoutExtension(segmentSettings.SegmentAudioFile.Name);
             string filePath = outputDir.FullName + @"\SpectrogramImages\" + fileName + ".CombinedGreyScale.png";
             var debugImage = new FileInfo(filePath);
             if (!debugImage.Exists) drawOnHiResSpectrogram = false;
@@ -708,7 +664,7 @@ namespace AnalysisPrograms
             if (!imageDir.Exists) imageDir.Create();
             if (createStandardDebugSpectrogram)
             {
-                var fileName2 = Path.GetFileNameWithoutExtension(analysisSettings.SegmentSettings.SegmentAudioFile.Name);
+                var fileName2 = Path.GetFileNameWithoutExtension(segmentSettings.SegmentAudioFile.Name);
                 string filePath2 = Path.Combine(imageDir.FullName, fileName + ".Spectrogram.png");
                 Bitmap sonoBmp = (Bitmap)sonogram.GetImage();
                 int height = sonoBmp.Height;

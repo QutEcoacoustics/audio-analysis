@@ -456,13 +456,13 @@ namespace AnalysisPrograms
             // noop
         }
 
-        public AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        public AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
-            var audioFile = analysisSettings.SegmentSettings.SegmentAudioFile;
+            var audioFile = segmentSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
-            var outputDirectory = analysisSettings.SegmentSettings.SegmentOutputDirectory;
+            var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
-            var analysisResult = new AnalysisResult2(analysisSettings, recording.Duration());
+            var analysisResult = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration());
             dynamic configuration = Yaml.Deserialise(analysisSettings.ConfigFile);
 
             bool saveCsv = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
@@ -480,20 +480,20 @@ namespace AnalysisPrograms
                 audioFile,
                 null, // path2SoxFile
                 configurationDictionary,
-                dataOnly: analysisSettings.SegmentSettings.SegmentImageFile == null,
+                dataOnly: analysisSettings.AnalysisDataSaveBehavior,
                 makeSoxSonogram: false);
 
             // this analysis produces no results!
             // but we still print images (that is the point)
-            if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResult.Events.Length))
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResult.Events.Length))
             {
-                Debug.Assert(analysisSettings.SegmentSettings.SegmentImageFile.Exists);
-                spectrogramResult.CompositeImage.Save(analysisSettings.SegmentSettings.SegmentImageFile.FullName, ImageFormat.Png);
+                Debug.Assert(segmentSettings.SegmentImageFile.Exists);
+                spectrogramResult.CompositeImage.Save(segmentSettings.SegmentImageFile.FullName, ImageFormat.Png);
             }
 
             if (saveCsv)
             {
-                var basename = Path.GetFileNameWithoutExtension(analysisSettings.SegmentSettings.SegmentAudioFile.Name);
+                var basename = Path.GetFileNameWithoutExtension(segmentSettings.SegmentAudioFile.Name);
                 var spectrogramCsvFile = outputDirectory.CombineFile(basename + ".Spectrogram.csv");
                 Csv.WriteMatrixToCsv(spectrogramCsvFile, spectrogramResult.DecibelSpectrogram.Data, TwoDimensionalArray.RowMajor);
             }

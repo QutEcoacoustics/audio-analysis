@@ -10,8 +10,9 @@ namespace Acoustics.Test.TestHelpers
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using Acoustics.Shared;
     using global::AnalysisBase;
-    using global::AnalysisBase.SegmentAnalysis;
+    using global::AnalysisBase.Segment;
 
     public class DummySourcePreparer : ISourcePreparer
     {
@@ -25,9 +26,11 @@ namespace Acoustics.Test.TestHelpers
         {
             int min = (int)startOffset.TotalMinutes;
 
+            var basename = Path.GetFileNameWithoutExtension(source);
+
             return Task.Run(() =>
             {
-                var path = outputDirectory.CombineFile(source + $"_{min}min" + outputMediaType);
+                var path = outputDirectory.CombineFile(basename + $"_{min}min." + outputMediaType);
 
                 using (var file = path.CreateText())
                 {
@@ -35,13 +38,13 @@ namespace Acoustics.Test.TestHelpers
                         $"{outputDirectory},{source},{outputMediaType},{startOffset},{endOffset},{targetSampleRateHz}");
                 }
 
-                return new FileSegment(path);
+                return new FileSegment(path, targetSampleRateHz, endOffset - startOffset);
             });
         }
 
-        public Task<FileSegment> PrepareFile(
+        public Task<FileSegment> PrepareFile<TSource>(
             DirectoryInfo outputDirectory,
-            string source,
+            TSource source,
             string outputMediaType,
             TimeSpan startOffset,
             TimeSpan endOffset,
@@ -52,9 +55,16 @@ namespace Acoustics.Test.TestHelpers
         {
             int min = (int)startOffset.TotalMinutes;
 
+            if (typeof(TSource) != typeof(FileInfo))
+            {
+                throw new NotSupportedException("Dummy Source Preparer only works with FileInfos");
+            }
+
+            var basename = Path.GetFileNameWithoutExtension((source as FileInfo).Name);
+
             return Task.Run(() =>
             {
-                var path = outputDirectory.CombineFile(source + $"_{min}min" + outputMediaType);
+                var path = outputDirectory.CombineFile(basename + $"_{min}min." + MediaTypes.GetExtension(outputMediaType));
 
                 using (var file = path.CreateText())
                 {
@@ -63,13 +73,13 @@ namespace Acoustics.Test.TestHelpers
                         + $",{temporaryFilesDirectory},{channelSelection},{mixDownToMono}");
                 }
 
-                return new FileSegment(path);
+                return new FileSegment(path, targetSampleRateHz, endOffset - startOffset);
             });
         }
 
         public IEnumerable<ISegment<TSource>> CalculateSegments<TSource>(
             IEnumerable<ISegment<TSource>> fileSegments,
-            AnalysisSettingsBase<TSource> settings)
+            AnalysisSettings settings)
         {
             foreach (var segment in fileSegments)
             {
@@ -80,7 +90,8 @@ namespace Acoustics.Test.TestHelpers
                 var segmentDuration = 60.0.Seconds();
                 for (var t = start; t < end; t += segmentDuration)
                 {
-                    yield return segment.SplitSegment(t.TotalSeconds, (t + segmentDuration).TotalSeconds);
+                    var segmentEnd = end.Min(t + segmentDuration);
+                    yield return segment.SplitSegment(t.TotalSeconds, segmentEnd.TotalSeconds);
                 }
             }
         }

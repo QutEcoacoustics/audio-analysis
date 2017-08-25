@@ -694,7 +694,7 @@ namespace AnalysisPrograms
         {
             var acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)settings.AnalysisAnalyzerSpecificConfiguration;
 
-            var sourceAudio = inputFileSegment.TargetFile;
+            var sourceAudio = inputFileSegment.Source;
             var resultsDirectory = settings.SegmentOutputDirectory;
             bool tileOutput = acousticIndicesParsedConfiguration.TileOutput;
 
@@ -716,7 +716,7 @@ namespace AnalysisPrograms
              
             var indexConfigData = new IndexGenerationData()
                                       {
-                                          RecordingType  = inputFileSegment.TargetFile.Extension,
+                                          RecordingType  = inputFileSegment.Source.Extension,
                                           RecordingStartDate = inputFileSegment.TargetFileStartDate,
                                           SampleRateOriginal = inputFileSegment.TargetFileSampleRate.Value,
                                           SampleRateResampled = sampleRate,

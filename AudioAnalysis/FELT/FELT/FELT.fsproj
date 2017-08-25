@@ -119,7 +119,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="CsvHelper">
-      <HintPath>..\..\packages\CsvHelper.2.16.3.0\lib\net40\CsvHelper.dll</HintPath>
+      <HintPath>..\..\packages\CsvHelper.2.16.2.0\lib\net40\CsvHelper.dll</HintPath>
     </Reference>
     <Reference Include="EPPlus">
       <HintPath>..\..\..\Extra Assemblies\EPPlus 3.0\EPPlus.dll</HintPath>

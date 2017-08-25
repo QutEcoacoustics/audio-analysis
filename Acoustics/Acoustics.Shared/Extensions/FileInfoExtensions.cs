@@ -38,6 +38,16 @@ namespace System
             }
         }
 
+        public static DirectoryInfo Combine(this DirectoryInfo directoryInfo, IEnumerable<string> str)
+        {
+            Contract.Requires(directoryInfo != null);
+            Contract.Requires(str != null);
+
+            string merged = Path.Combine(str.Prepend(directoryInfo.FullName).ToArray());
+
+            return new DirectoryInfo(merged);
+        }
+
         public static DirectoryInfo Combine(this DirectoryInfo directoryInfo, params string[] str)
         {
             Contract.Requires(directoryInfo != null);
@@ -134,6 +144,17 @@ namespace System
             }
 
             return false;
+        }
+
+        public static FileInfo Touch(this FileInfo info)
+        {
+            using (File.OpenWrite(info.FullName))
+            {    
+            }
+
+            info.Refresh();
+
+            return info;
         }
     }
 

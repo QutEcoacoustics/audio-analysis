@@ -5,6 +5,7 @@
 namespace Acoustics.Test.AcousticWorkbench
 {
     using System;
+    using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -13,6 +14,9 @@ namespace Acoustics.Test.AcousticWorkbench
         [TestMethod]
         public void TestMethod1()
         {
+            var task = TaskEx.Delay(1.5.Seconds());
+
+            task.Wait(60.Seconds());
         }
     }
 }

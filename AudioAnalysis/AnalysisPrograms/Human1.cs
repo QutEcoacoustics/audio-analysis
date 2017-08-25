@@ -23,7 +23,8 @@
     using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
-    public class Human1 : IAnalyser
+    [Obsolete("This code is tool old to work! It Should be ported to a modern event recognizer")]
+    public class Human1 
     {
         public class Arguments : AnalyserArguments
         {
@@ -61,14 +62,12 @@
         public static string key_CALL_SCORE = "CallScore";
         public static string key_EVENT_TOTAL= "# events";
 
-
         //OTHER CONSTANTS
         public const string AnalysisName = "Human2";
         public const int ResampleRate = 17640;
         //public const int RESAMPLE_RATE = 22050;
         //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
         public const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
-
 
         public string DisplayName
         {
@@ -79,7 +78,6 @@
         {
             get { return "Towsey." + AnalysisName; }
         }
-
 
         public static void Dev(Arguments arguments)
         {
@@ -121,10 +119,6 @@
                                 Source = recordingPath.ToFileInfo(),
                                 Config = configPath.ToFileInfo(),
                                 Output = outputDir.ToDirectoryInfo(),
-                                TmpWav = segmentFName,
-                                Events = eventsFname,
-                                Indices = indicesFname,
-                                Sgram = sonogramFname,
                                 Start = tsStart.TotalSeconds,
                                 //Duration = tsDuration.TotalSeconds
                             };
@@ -132,50 +126,7 @@
 
             Execute(arguments);
 
-
-            if (executeDev)
-            {
-                var csvEvents = arguments.Output.CombineFile(arguments.Events);
-                if (!csvEvents.Exists)
-                {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvEvents.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-                var csvIndicies = arguments.Output.CombineFile(arguments.Indices);
-                if (!csvIndicies.Exists)
-                {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvIndicies.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-                var image = arguments.Output.CombineFile(arguments.Sgram);
-                if (image.Exists)
-                {
-                    TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(ImageViewer);
-                    process.Run(image.FullName, arguments.Output.FullName);
-                }
-
-
-                LoggedConsole.WriteLine("\n\n# Finished recording:- " + arguments.Source.FullName);
-            }
         } //Dev()
-
-
 
         /// <summary>
         /// A WRAPPER AROUND THE Analysis() METHOD
@@ -185,7 +136,8 @@
         {
             Contract.Requires(arguments != null);
 
-
+            throw new NotImplementedException("Not supported, needs to be rewritten");
+            /*
             AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
             TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
             TimeSpan tsDuration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
@@ -221,14 +173,13 @@
             else
             {
                 throw new InvalidOperationException("DataTable is null - can not proceed");  //error!!
-            }
+            }*/
         }
-
-
-
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
+            throw new NotImplementedException("Not supported, needs to be rewritten");
+            /*
             var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
             Dictionary<string, string> configDict = configuration.GetTable();
             var fiAudioF    = analysisSettings.SegmentSettings.SegmentAudioFile;
@@ -283,7 +234,7 @@
             }
 
             //save image of sonograms
-            if (analysisSettings.AnalysisSaveBehavior.ShouldSave(analysisResults.Data.Rows.Count))
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Data.Rows.Count))
             {
                 string imagePath = analysisSettings.SegmentSettings.SegmentImageFile.FullName;
                 double eventThreshold = 0.1;
@@ -296,11 +247,8 @@
             analysisResults.AudioDuration = recordingTimeSpan;
             //result.DisplayItems = { { 0, "example" }, { 1, "example 2" }, }
             //result.OutputFiles = { { "exmaple file key", new FileInfo("Where's that file?") } }
-            return analysisResults;
+            return analysisResults;*/
         } //Analyze()
-
-
-
 
         /// <summary>
         /// Detects the human voice
@@ -343,8 +291,6 @@
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
             double framesPerSecond = freqBinWidth;
-
-
 
             //#############################################################################################################################################
             //window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
@@ -470,10 +416,6 @@
             return events;
         }
 
-
-
-
-
         static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, Plot scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage());
@@ -485,7 +427,6 @@
                 image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             return image.GetImage();
         } //DrawSonogram()
-
 
         public static DataTable WriteEvents2DataTable(List<AcousticEvent> predictedEvents)
         {
@@ -522,7 +463,6 @@
             }
             return dataTable;
         }
-
 
         /// <summary>
         /// Converts a DataTable of events to a datatable where one row = one minute of indices
@@ -576,7 +516,6 @@
                 row[AnalysisKeys.EventStartMin] = start;
             }
         } //AddContext2Table()
-
 
         public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
         {
@@ -647,8 +586,6 @@
             return Tuple.Create(dt, table2Display);
         } // ProcessCsvFile()
 
-
-
         /// <summary>
         /// takes a data table of indices and normalises column values to values in [0,1].
         /// </summary>
@@ -689,7 +626,6 @@
             return processedtable;
         }
 
-
         public string DefaultConfiguration
         {
             get
@@ -697,7 +633,6 @@
                 return string.Empty;
             }
         }
-
 
         public AnalysisSettings DefaultSettings
         {
@@ -709,11 +644,10 @@
                     AnalysisMinSegmentDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    AnalysisTargetSampleRate = AnalysisTemplate.ResampleRate,
+                    AnalysisTargetSampleRate = ResampleRate,
                 };
             }
         }
-
 
     } //end class Human
 }

@@ -51,6 +51,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     return null;
                 }
 
+                throw new NotSupportedException("Code intentionally broken because it is out of date and not used");
+
+                /*
                 Image image = null;
                 var settings = new AnalysisSettings
                 {
@@ -60,16 +63,18 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     SegmentImageFile = fiImage,
                     SegmentOutputDirectory = diOutputDir
                 };
+
                 // want to pass SampleRate of the original file.
                 settings.SampleRateOfOriginalAudioFile = int.Parse(settings.ConfigDict[AnalysisKeys.ResampleRate]);
 
                 analyser.BeforeAnalyze(settings);
 
-                var results = analyser.Analyze(settings);
-                if (results.ImageFile == null) image = null;
-                else image = Image.FromFile(results.ImageFile.FullName);
+                var results = analyser.Analyze(settings, new SegmentSettings<FileInfo>(se));
+                
+                image = results.ImageFile == null ? null : Image.FromFile(results.ImageFile.FullName);
+
                 analyser = null;
-                return image;
+                return image;*/
             }
             else
             {
@@ -88,10 +93,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
                     image.Save(fiImage.FullName, ImageFormat.Png);
                 }
+
                 return image;
             }
         }
-
 
         /// <summary>
         ///
@@ -142,7 +147,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     {
                         for (int j = 0; j < freqRedFactor; j++)
                         {
-                            if (max < data[or + i, oc + j]) max = data[or + i, oc + j];
+                            if (max < data[or + i, oc + j])
+                            {
+                                max = data[or + i, oc + j];
+                            }
                         }
                     }
 
@@ -223,22 +231,39 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             //ADD time and frequency scales
             bool addScale = false;
-            if (configDict.ContainsKey(AnalysisKeys.AddTimeScale)) addScale = ConfigDictionary.GetBoolean(AnalysisKeys.AddTimeScale, configDict);
+            if (configDict.ContainsKey(AnalysisKeys.AddTimeScale))
+            {
+                addScale = ConfigDictionary.GetBoolean(AnalysisKeys.AddTimeScale, configDict);
+            }
             else
-            if (configDict.ContainsKey(AnalysisKeys.AddAxes))      addScale = ConfigDictionary.GetBoolean(AnalysisKeys.AddAxes, configDict);
+            if (configDict.ContainsKey(AnalysisKeys.AddAxes))
+            {
+                addScale = ConfigDictionary.GetBoolean(AnalysisKeys.AddAxes, configDict);
+            }
+
             bool add1kHzLines = addScale;
 
 
             Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
             Image_MultiTrack mti = new Image_MultiTrack(img);
-            if (addScale) mti.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond)); //add time scale
+            if (addScale)
+            {
+                mti.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond)); //add time scale
+            }
+
             bool addSegmentationTrack = false;
 
             //add segmentation track
             if (configDict.ContainsKey(AnalysisKeys.AddSegmentationTrack))
+            {
                 addSegmentationTrack = ConfigDictionary.GetBoolean(AnalysisKeys.AddSegmentationTrack, configDict);
+            }
+
             if (addSegmentationTrack)
+            {
                 mti.AddTrack(Image_Track.GetSegmentationTrack(sonogram)); //add segmentation track
+            }
+
             return mti;
             //mti.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram)); //add segmentation track
         }//Sonogram2MultiTrackImage()
@@ -250,14 +275,20 @@ namespace AudioAnalysisTools.StandardSpectrograms
             if (scores != null)
             {
                 foreach (Plot plot in scores)
+                {
                     multiTrackImage.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
+                }
             }
 
             if (hits != null)
+            {
                 multiTrackImage.OverlayRainbowTransparency(hits);
+            }
 
             if (predictedEvents.Count > 0)
+            {
                 multiTrackImage.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+            }
 
             return multiTrackImage.GetImage();
         } //Sonogram2Image()
@@ -285,9 +316,16 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     double dbValue = dbSpectrogramNorm[x, y];
                     int c1 = 255 - (int)Math.Floor(255.0 * dbValue); //original version
                     //int c1 = (int)Math.Floor(255.0 * dbValue);
-                    if (c1 < 0) c1 = 0;
+                    if (c1 < 0)
+                    {
+                        c1 = 0;
+                    }
                     else
-                        if (c1 > 255) c1 = 255;
+                        if (c1 > 255)
+                    {
+                        c1 = 255;
+                    }
+
                     var colour = Color.FromArgb(c1, c1, c1);
 
                     if (nrSpectrogramNorm[x, y] > 0)
@@ -367,8 +405,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
                             if (hits[x, y] > 0)
                             {
                                 colourId +=20;
-                                if (colourId > 255) colourId = 255;
+                                if (colourId > 255)
+                            {
+                                colourId = 255;
                             }
+                        }
                             colour = cch.GetColorFromPallette(colourId);
                         }
                         image.SetPixel(x, height - y - 1, colour);
@@ -420,9 +461,16 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     double dbValue = spectrogramNorm[x, y];
                     int c1 = 255 - (int)Math.Floor(255.0 * dbValue); //original version
                     //int c1 = (int)Math.Floor(255.0 * dbValue);
-                    if (c1 < 0) c1 = 0;
+                    if (c1 < 0)
+                    {
+                        c1 = 0;
+                    }
                     else
-                        if (c1 > 255) c1 = 255;
+                        if (c1 > 255)
+                    {
+                        c1 = 255;
+                    }
+
                     colour = Color.FromArgb(c1, c1, c1);
 
                     //if (nrSpectrogramNorm[x, y] > 0)
@@ -684,14 +732,33 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             // error checking - required for marine recordings where SR=2000.
             // all this is arbitrary hack to something working for marine recordings. Will not affect terrestrial recordings
-            if (countOf8kHbin >= binCount) countOf8kHbin = binCount - 2;
-            if (countOf2kHbin >= countOf8kHbin) countOf2kHbin = countOf8kHbin - 100;
-            if (countOf1kHbin >= countOf2kHbin) countOf1kHbin = countOf2kHbin - 10;
+            if (countOf8kHbin >= binCount)
+            {
+                countOf8kHbin = binCount - 2;
+            }
+
+            if (countOf2kHbin >= countOf8kHbin)
+            {
+                countOf2kHbin = countOf8kHbin - 100;
+            }
+
+            if (countOf1kHbin >= countOf2kHbin)
+            {
+                countOf1kHbin = countOf2kHbin - 10;
+            }
 
             double anthropoEnergy = 0.0;
-            for (int i = countOf1kHbin; i < countOf2kHbin; i++) anthropoEnergy += psd[i];
+            for (int i = countOf1kHbin; i < countOf2kHbin; i++)
+            {
+                anthropoEnergy += psd[i];
+            }
+
             double biophonyEnergy = 0.0;
-            for (int i = countOf2kHbin; i < countOf8kHbin; i++) biophonyEnergy += psd[i];
+            for (int i = countOf2kHbin; i < countOf8kHbin; i++)
+            {
+                biophonyEnergy += psd[i];
+            }
+
             double ndsi = (biophonyEnergy - anthropoEnergy) / (biophonyEnergy + anthropoEnergy);
             return ndsi;
         }
@@ -774,7 +841,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
             AcousticEvent.Freq2BinIDs(doMelScale, minHz, maxHz, nyquist, binWidth, out c1, out c2);
             int subbandCount = c2 - c1 + 1;
             var subband = new double[subbandCount];
-            for (int i = 0; i < subbandCount; i++) subband[i] = modalNoise[c1 + i];
+            for (int i = 0; i < subbandCount; i++)
+            {
+                subband[i] = modalNoise[c1 + i];
+            }
+
             return subband;
         }
 

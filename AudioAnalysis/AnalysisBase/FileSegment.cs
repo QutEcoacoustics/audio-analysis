@@ -21,17 +21,67 @@ namespace AnalysisBase
 
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
+    using Acoustics.Tools.Audio;
     using log4net;
-    using SegmentAnalysis;
+    using Segment;
 
     /// <summary>
-    /// Represents a segment of a target file. It can also store the parent file that a new segment has been derived from.
-    /// A segment is just a stored start and end for a target file - it represents a future, or a request.
+    /// Represents a segment of a target file. It can also store the parent file that a new segment has been derived
+    /// from. A segment is just a stored start and end for a target file - it represents a future, or a request.
     /// Other functions can take the segment request, cut out the selected range, and return a new file segment.
-    /// New file segments, or so segments that represent a whole file, will not have the segment properties set because they do not represent a request anymore.
+    /// New file segments, or segments that represent a whole file, will not have the segment properties set
+    /// because they do not represent a request anymore.
     /// </summary>
     public class FileSegment : ICloneable, ISegment<FileInfo>
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+        private readonly FileDateBehavior dateBehavior;
+
+        private bool triedToParseDate = false;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileSegment"/> class.
+        /// Use this constructor if you know all the information about a segment beforehand.
+        /// </summary>
+        public FileSegment(FileInfo source, int sampleRate, TimeSpan duration, FileDateBehavior dateBehavior = FileDateBehavior.None, DateTimeOffset? suppliedDate = null)
+        {
+            this.dateBehavior = dateBehavior;
+            this.Source = source;
+
+            var basename = Path.GetFileNameWithoutExtension(this.Source.Name);
+            var fileDate = this.ParseDate(suppliedDate);
+
+            this.SourceMetadata = new SourceMetadata(duration, sampleRate, basename, fileDate);
+
+            this.Alignment = TimeAlignment.None;
+
+            Contract.Ensures(this.Validate(), "FileSegment did not validate");
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileSegment"/> class.
+        /// Allow specifying an absolutely aligned (to the nearest minute) file segment.
+        /// Implies `FileDateBehavior.Required`.
+        /// NOTE: Start offset will be set to start of file, and end offset set to the end of the file.
+        /// </summary>
+        public FileSegment(FileInfo source, TimeAlignment alignment, IAudioUtility utility = null)
+        {
+            Contract.Requires(source != null);
+
+            this.dateBehavior = alignment == TimeAlignment.None ? FileDateBehavior.Try : FileDateBehavior.Required;
+            this.Source = source;
+            this.Alignment = alignment;
+
+            var basename = Path.GetFileNameWithoutExtension(this.Source.Name);
+            var fileDate = this.ParseDate(null);
+
+            var info = (utility ?? new MasterAudioUtility()).Info(source);
+            this.SourceMetadata = new SourceMetadata(info.Duration.Value, info.SampleRate.Value, basename, fileDate);
+
+            Contract.Ensures(this.Validate(), "FileSegment did not validate");
+        }
+
         /// <summary>
         /// How FileSegment should try and parse the file's absolute date.
         /// </summary>
@@ -50,111 +100,93 @@ namespace AnalysisBase
             /// <summary>
             /// Do no try and parse the file's date at all.
             /// </summary>
-            None
-        }
-
-        private readonly FileDateBehavior dateBehavior;
-
-        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
-        private DateTimeOffset? fileStartDate;
-        private bool triedToParseDate = false;
-
-        public FileSegment(FileInfo targetFile, int? sampleRate = null, TimeSpan? duration = null, FileDateBehavior dateBehavior = FileDateBehavior.None)
-        {
-            this.dateBehavior = dateBehavior;
-            this.TargetFile = targetFile;
-            this.TargetFileSampleRate = sampleRate;
-            this.TargetFileDuration = duration;
-            this.Alignment = TimeAlignment.None;
-
-            this.ParseDate();
-
-            Contract.Ensures(this.Validate(), "FileSegment did not validate");
+            None,
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FileSegment"/> class.
-        /// Allow specifying an absolutely aligned (to the nearest minute) file segment.
-        /// Implies `FileDateBehavior.Required`.
+        /// Gets the style of alignment padding to use - indicates that bad start dates *should* be shifted to the
+        /// nearest minute.
         /// </summary>
-        public FileSegment(FileInfo targetFile, TimeAlignment alignment)
-        {
-            this.dateBehavior = alignment == TimeAlignment.None ? FileDateBehavior.Try : FileDateBehavior.Required;
-            this.TargetFile = targetFile;
-            this.Alignment = alignment;
-
-            this.ParseDate();
-        }
-
-        private void ParseDate()
-        {
-            if (this.dateBehavior != FileDateBehavior.None)
-            {
-                this.triedToParseDate = true;
-                this.fileStartDate = this.AudioFileStart();
-
-                if (this.dateBehavior == FileDateBehavior.Required)
-                {
-                    if (!this.fileStartDate.HasValue)
-                    {
-                        throw new InvalidFileDateException("A file date is required but one has not been successfully parsed");
-                    }
-                }
-            }
-        }
+        public TimeAlignment Alignment { get; }
 
         /// <summary>
-        /// Gets the style of alignment padding to use - indicates that bad start dates *should* be shifted to the nearest minute.
+        /// Gets or sets SegmentStartOffset - the value that represents what starting point of the target file should
+        /// be used.
         /// </summary>
-        public TimeAlignment Alignment { get; private set; }
-
-        /// <summary>
-        /// Gets the target file for this file segment.
-        /// </summary>
-        public FileInfo TargetFile { get; }
-
-        /// <summary>
-        /// Gets or sets SegmentStartOffset - the value that represents what starting point of the target file should be used.
-        /// </summary>
+        /// <remarks>
+        /// These properties are the source for <see cref="ISegment{TSource}.StartOffsetSeconds"/> and are maintained
+        /// as nullables for backwards compatibility. However as far as <see cref="ISegment{TSource}"/> is concerned
+        /// null is not a valid value.
+        /// </remarks>
         public TimeSpan? SegmentStartOffset { get; set; }
 
         /// <summary>
         /// Gets or sets SegmentEndOffset - the value that represents what ending point of the target file should be used.
         /// </summary>
+        /// <remarks>
+        /// These properties are the source for <see cref="ISegment{TSource}.EndOffsetSeconds"/> and are maintained
+        /// as nullables for backwards compatibility. However as far as <see cref="ISegment{TSource}"/> is concerned
+        /// null is not a valid value.
+        /// </remarks>
         public TimeSpan? SegmentEndOffset { get; set; }
 
         /// <summary>
         /// Gets ISegmentSet - whether or not either of the segment properties have been set.
-        /// If IsSegmentSet is true, then it means this file segment represents a fraction of the target file.
         /// </summary>
         public bool IsSegmentSet => this.SegmentStartOffset.HasValue || this.SegmentEndOffset.HasValue;
 
         /// <summary>
-        /// Gets or sets the entire audio file duration FOR THE TARGET FILE.
+        /// Gets the entire audio file duration FOR THE TARGET FILE.
         /// </summary>
-        public TimeSpan? TargetFileDuration { get; set; }
+        public TimeSpan? TargetFileDuration => this.SourceMetadata?.Duration;
 
         /// <summary>
-        /// Gets or sets the TARGET FILE'S audio file Sample rate.
+        /// Gets the TARGET FILE'S audio file Sample rate.
         /// May be required when doing analysis.
         /// </summary>
-        public int? TargetFileSampleRate { get; set; }
+        public int? TargetFileSampleRate => this.SourceMetadata?.SampleRate;
 
         /// <summary>
         /// Gets the TargetFileStartDate
         /// </summary>
-        public DateTimeOffset? TargetFileStartDate {
-            get
-            {
-                if (!this.fileStartDate.HasValue && !this.triedToParseDate)
-                {
-                    this.triedToParseDate = true;
-                    this.fileStartDate = this.AudioFileStart();
-                }
+        public DateTimeOffset? TargetFileStartDate => this.SourceMetadata?.RecordedDate;
 
-                return this.fileStartDate;
+        /// <inheritdoc/>
+        public object Clone()
+        {
+            if (this.SourceMetadata == null)
+            {
+                throw new NullReferenceException($"{nameof(this.SourceMetadata)} must not be null to clone segment");
             }
+
+            var newSegment = new FileSegment(
+                source: this.Source,
+                sampleRate: this.SourceMetadata.SampleRate,
+                duration: this.SourceMetadata.Duration,
+                dateBehavior: this.dateBehavior,
+                suppliedDate: this.TargetFileStartDate);
+
+            return newSegment;
+        }
+
+        /// <summary>
+        /// Gets the target file for this file segment.
+        /// </summary>
+        public FileInfo Source { get; }
+
+        public SourceMetadata SourceMetadata { get; }
+
+        public double StartOffsetSeconds => this.SegmentStartOffset?.TotalSeconds ?? 0.0;
+
+        public double EndOffsetSeconds => this.SegmentEndOffset?.TotalSeconds ?? this.SourceMetadata.Duration.TotalSeconds;
+
+        public ISegment<FileInfo> SplitSegment(double newStart, double newEnd)
+        {
+            var copy = (FileSegment)this.Clone();
+            copy.SegmentStartOffset = newStart.Seconds();
+            copy.SegmentEndOffset = newEnd.Seconds();
+
+            return copy;
         }
 
         /// <summary>
@@ -165,13 +197,13 @@ namespace AnalysisBase
         /// </returns>
         public bool Validate()
         {
-            if (this.TargetFile == null ||
-                 !File.Exists(this.TargetFile.FullName))
+            if (this.Source == null ||
+                 !File.Exists(this.Source.FullName))
             {
                 return false;
             }
 
-            if (this.dateBehavior == FileDateBehavior.Required && this.fileStartDate == null)
+            if (this.dateBehavior == FileDateBehavior.Required && this.SourceMetadata?.RecordedDate == null)
             {
                 return false;
             }
@@ -190,6 +222,29 @@ namespace AnalysisBase
         }
 
         /// <summary>
+        /// Determines if two FileSegments represent the same part of a source file.
+        /// It compares <see cref="Source"/>, <see cref="StartOffsetSeconds"/>, and <see cref="EndOffsetSeconds"/>.
+        /// </summary>
+        /// <param name="other">The other file segment to compare with.</param>
+        /// <returns>True if the segments are considered equal.</returns>
+        public bool Equals(ISegment<FileInfo> other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (object.ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return this.Source.FullName == other.Source.FullName &&
+                   this.StartOffsetSeconds == other.StartOffsetSeconds &&
+                   this.EndOffsetSeconds == other.EndOffsetSeconds;
+        }
+
+        /// <summary>
         /// Returns a friendly string representation of this object.
         /// </summary>
         /// <returns></returns>
@@ -197,34 +252,39 @@ namespace AnalysisBase
         {
             return string.Format(
                 "{0} ({3}{4}) {1} - {2}",
-                this.TargetFile.Name,
-                this.SegmentStartOffset?.ToString() ?? "start",
-                this.SegmentEndOffset?.ToString() ?? "end",
+                this.Source.Name,
+                this.SegmentStartOffset?.ToString() ?? "<null start>",
+                this.SegmentEndOffset?.ToString() ?? "<null end>",
                 this.TargetFileDuration,
                 this.TargetFileSampleRate.HasValue ? ", " + this.TargetFileSampleRate.Value + "hz" : string.Empty);
         }
 
-        /// <inheritdoc/>
-        public object Clone()
+        private DateTimeOffset? ParseDate(DateTimeOffset? suppliedDate = null)
         {
-            var newSegment = new FileSegment(
-                targetFile: this.TargetFile,
-                sampleRate: this.TargetFileSampleRate,
-                duration: this.TargetFileDuration,
-                dateBehavior: FileDateBehavior.None);
-
-            if (this.dateBehavior != FileDateBehavior.None)
+            if (this.dateBehavior == FileDateBehavior.None)
             {
-                newSegment.fileStartDate = this.TargetFileStartDate;
+                return null;
             }
 
-            return newSegment;
+            this.triedToParseDate = true;
+            var date = suppliedDate ?? this.AudioFileStart();
+
+            if (this.dateBehavior == FileDateBehavior.Required)
+            {
+                if (!date.HasValue)
+                {
+                    throw new InvalidFileDateException(
+                        "A file date is required but one has not been successfully parsed");
+                }
+            }
+
+            return date;
         }
 
         private DateTimeOffset? AudioFileStart()
         {
             DateTimeOffset parsedDate;
-            bool fileDateFound = FileDateHelpers.FileNameContainsDateTime(this.TargetFile.Name, out parsedDate);
+            bool fileDateFound = FileDateHelpers.FileNameContainsDateTime(this.Source.Name, out parsedDate);
 
             if (fileDateFound)
             {
@@ -237,26 +297,11 @@ namespace AnalysisBase
                 return null;
             }
 
-            // Historical note: This method used to support inferring the date of the recording from the file's
+            // Historical note: This method previously supported inferring the date of the recording from the file's
             // last modified timestamp. This method ultimately proved unreliable and inefficient.
             // Support was removed for this edge case mid 2017.
 
             return null;
-        }
-
-        FileInfo ISegment<FileInfo>.Source => this.TargetFile;
-
-        double ISegment<FileInfo>.StartOffsetSeconds => this.SegmentStartOffset.Value.TotalSeconds;
-
-        double ISegment<FileInfo>.EndOffsetSeconds => this.SegmentEndOffset.Value.TotalSeconds;
-
-        ISegment<FileInfo> ISegment<FileInfo>.SplitSegment(double newStart, double newEnd)
-        {
-            return new FileSegment(this.TargetFile)
-            {
-                SegmentStartOffset = newStart.Seconds(),
-                SegmentEndOffset = newEnd.Seconds(),
-            };
         }
     }
 }

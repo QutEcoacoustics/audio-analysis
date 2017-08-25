@@ -181,50 +181,37 @@
         /// <returns>
         /// An AnalysisSettings object.
         /// </returns>
-        public virtual AnalysisSettings ToAnalysisSettings(AnalysisSettings defaults = null, bool outputIntermediate = false, string resultSubDirectory = null)
+        public virtual AnalysisSettings ToAnalysisSettings(
+            AnalysisSettings defaults = null,
+            bool outputIntermediate = false,
+            string resultSubDirectory = null,
+            dynamic configuration = null)
         {
             var analysisSettings = defaults ?? new AnalysisSettings();
 
-            // ANT: renabled this line because it just makes sense! this is needed by IAnalyser cmd entry points
-            analysisSettings.SourceFile = this.Source;
-            analysisSettings.SegmentSettings.SegmentAudioFile = this.Source;
             analysisSettings.ConfigFile = this.Config;
 
             var resultDirectory = resultSubDirectory.IsNullOrEmpty() ? this.Output : this.Output.Combine(resultSubDirectory);
-
             resultDirectory.Create();
 
-            analysisSettings.SegmentSettings.SegmentOutputDirectory = resultDirectory;
             analysisSettings.AnalysisOutputDirectory = this.Output;
             analysisSettings.AnalysisTempDirectory = this.Output;
 
             if (outputIntermediate)
             {
-                string fileNameBase = Path.GetFileNameWithoutExtension(this.Source.Name);
-                analysisSettings.SegmentSettings.SegmentEventsFile = FilenameHelpers.AnalysisResultPath(resultDirectory, fileNameBase, "Events", "csv").ToFileInfo();
-                analysisSettings.SegmentSettings.SegmentSummaryIndicesFile = FilenameHelpers.AnalysisResultPath(resultDirectory, fileNameBase, "Indices", "csv").ToFileInfo();
-                analysisSettings.SegmentSettings.SegmentSpectrumIndicesDirectory = resultDirectory;
-                analysisSettings.SegmentSettings.SegmentImageFile = FilenameHelpers.AnalysisResultPath(resultDirectory, fileNameBase, "Image", "png").ToFileInfo();
-                analysisSettings.AnalysisSaveBehavior = SaveBehavior.Always;
+                analysisSettings.AnalysisImageSaveBehavior = SaveBehavior.Always;
+                analysisSettings.AnalysisDataSaveBehavior = true;
             }
 
-            analysisSettings.Configuration = Yaml.Deserialise(this.Config);
+            analysisSettings.Configuration = configuration ?? Yaml.Deserialise(this.Config);
 
             return analysisSettings;
+
         }
     }
 
-
     public class AnalyserArguments : SourceConfigOutputDirArguments
     {
-        public string TmpWav { get; set; }
-
-        public string Events { get; set; }
-
-        public string Indices { get; set; }
-
-        public string Sgram { get; set; }
-
         [ArgDescription("The start offset to start analysing from (in seconds)")]
         [ArgRange(0, double.MaxValue)]
         public double? Start { get; set; }
@@ -233,34 +220,22 @@
         [ArgRange(0, 10 * 60)]
         public double? Duration { get; set; }
 
-
-        public AnalysisSettings ToAnalysisSettings(AnalysisSettings defaults = null, bool outputIntermediate = false)
+        public (AnalysisSettings, SegmentSettings<FileInfo>) ToAnalysisSettings(
+            AnalysisSettings defaults = null,
+            bool outputIntermediate = false,
+            FileSegment sourceSegment = null,
+            FileSegment preparedSegment = null)
         {
-            var analysisSettings = base.ToAnalysisSettings(defaults, false);
+            var analysisSettings = base.ToAnalysisSettings(defaults, true);
 
-            if (this.TmpWav.IsNotEmpty())
-            {
-                analysisSettings.SegmentSettings.SegmentAudioFile = this.Output.CombineFile(this.TmpWav);
-            }
+            var segment = sourceSegment ?? new FileSegment(this.Source, TimeAlignment.None);
+            var segmentSettings = new SegmentSettings<FileInfo>(
+                analysisSettings,
+                segment,
+                (analysisSettings.AnalysisOutputDirectory, analysisSettings.AnalysisTempDirectory),
+                preparedSegment ?? segment);
 
-            if (this.Events.IsNotEmpty())
-            {
-                analysisSettings.SegmentSettings.SegmentEventsFile = this.Output.CombineFile(this.Events);
-            }
-
-            if (this.Indices.IsNotEmpty())
-            {
-                analysisSettings.SegmentSettings.SegmentSummaryIndicesFile = this.Output.CombineFile(this.Indices);
-            }
-
-            if (this.Sgram.IsNotEmpty())
-            {
-                analysisSettings.SegmentSettings.SegmentImageFile = this.Output.CombineFile(this.Sgram);
-            }
-
-            return analysisSettings;
+            return (analysisSettings, segmentSettings);
         }
     }
-
-
 }
