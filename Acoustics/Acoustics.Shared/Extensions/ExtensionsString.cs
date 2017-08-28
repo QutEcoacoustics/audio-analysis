@@ -18,7 +18,7 @@ namespace System
     public static class ExtensionsString
     {
         /// <summary>
-        /// Truncate a string to a desired length, specifiying an ellipsis to add if the text is longer than length.
+        /// Truncate a string to a desired length, specifying an ellipsis to add if the text is longer than length.
         /// </summary>
         /// <param name="text">
         /// String to truncate.
@@ -422,6 +422,12 @@ namespace System
         public static bool IsNotWhitespace(this string str)
         {
             return !string.IsNullOrWhiteSpace(str);
+        }
+
+        public static string NormalizeToCrLf(this string str)
+        {
+            string normalized = Regex.Replace(str, @"\r\n|\n\r|\n|\r", "\r\n");
+            return normalized;
         }
     }
 }

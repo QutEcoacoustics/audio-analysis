@@ -51,12 +51,12 @@ namespace Acoustics.Test.TestHelpers
             Minimal,
         }
 
-        public static void StringEqualWithDiff(this Assert assert, string actualValue, string expectedValue)
+        public static void StringEqualWithDiff(this Assert assert, string expectedValue, string actualValue)
         {
             ShouldEqualWithDiff(actualValue, expectedValue, DiffStyle.Full, Console.Out);
         }
 
-        public static void StringEqualWithDiff(this Assert assert, string actualValue, string expectedValue, DiffStyle diffStyle)
+        public static void StringEqualWithDiff(this Assert assert, string expectedValue, string actualValue, DiffStyle diffStyle)
         {
             ShouldEqualWithDiff(actualValue, expectedValue, diffStyle, Console.Out);
         }
