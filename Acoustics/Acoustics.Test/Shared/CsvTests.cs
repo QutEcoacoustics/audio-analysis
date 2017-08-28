@@ -369,8 +369,8 @@ namespace Acoustics.Test.Shared
             var baseText = File.ReadAllText(this.testFile.FullName);
 
             Assert.AreNotEqual(childText, baseText);
-            Assert.AreEqual(baseExpected, baseText);
-            Assert.AreEqual(childExpected, childText);
+            Assert.That.StringEqualWithDiff(baseExpected, baseText);
+            Assert.That.StringEqualWithDiff(childExpected, childText);
         }
 
         [TestMethod] public void TestBaseTypesAreSerializedAsEnumerable()
