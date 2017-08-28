@@ -355,10 +355,10 @@ namespace Acoustics.Test.Shared
 
             var baseExpected = @"RankOrder,FileName,StartOffset,SegmentDuration,StartOffsetMinute
 0,,00:00:00,00:00:00,0
-";
+".NormalizeToCrLf();
             var childExpected = @"NoFile,ZeroSignal,HighAmplitudeIndex,ClippingIndex,AvgSignalAmplitude,BackgroundNoise,Snr,AvgSnrOfActiveFrames,Activity,EventsPerSecond,HighFreqCover,MidFreqCover,LowFreqCover,AcousticComplexity,TemporalEntropy,EntropyOfAverageSpectrum,AvgEntropySpectrum,EntropyOfVarianceSpectrum,VarianceEntropySpectrum,EntropyOfPeaksSpectrum,EntropyPeaks,EntropyOfCoVSpectrum,ClusterCount,ThreeGramCount,Ndsi,SptDensity,RankOrder,FileName,StartOffset,SegmentDuration,StartOffsetMinute
 0,0,0,0,-100,-100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,00:00:00,00:00:00,0
-";
+".NormalizeToCrLf();
 
             Csv.WriteToCsv(this.testFile, childArray);
 

@@ -82,7 +82,6 @@ namespace Acoustics.Shared.Csv
                 var settings = new CsvConfiguration()
                                    {
                                        HasHeaderRecord = true,
-                                       
                                    };
                 foreach (var classMap in ClassMapsToRegister)
                 {
