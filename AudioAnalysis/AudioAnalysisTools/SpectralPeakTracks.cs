@@ -272,6 +272,11 @@ namespace AudioAnalysisTools
             this.RngSpectrum = spectrum;
         }
 
+        /// <summary>
+        /// Calculates spectral peak tracks
+        /// </summary>
+        /// <param name="dBSpectrogram"> typically a decibel noise-reduced spectrogram</param>
+        /// <param name="dBThreshold">threshold for spectral peak to be a valid peak.</param>
         public void GetPeakTracksSpectrum(double[,] dBSpectrogram, double dBThreshold)
         {
             var rowCount = dBSpectrogram.GetLength(0);
@@ -384,7 +389,10 @@ namespace AudioAnalysisTools
         } // LocalPeaks()
 
         /// <summary>
-        /// CALCULATEs SPECTRAL PEAK TRACKS.
+        /// CALCULATEs SPECTRAL PEAK TRACKS: spectralIndices.SPT, RHZ, RVT, RPS, RNG, R3D,
+        /// This method is only called from IndexCalulate.analysis() when the IndexCalculation Duration is less than 10 seconds,
+        /// because need to recalculate background noise etc.
+        /// Otherwise the constructor of this class is called: sptInfo = new SpectralPeakTracks(decibelSpectrogram, peakThreshold);
         /// NOTE: We require a noise reduced decibel spectrogram
         /// FreqBinWidth can be accessed, if required, through dspOutput1.FreqBinWidth,
         /// </summary>
