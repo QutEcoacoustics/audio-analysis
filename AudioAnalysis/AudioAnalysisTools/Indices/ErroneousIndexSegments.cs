@@ -372,11 +372,11 @@ namespace AudioAnalysisTools.Indices
                 if (textInVerticalOrientation)
                 {
                     var drawFormat = new StringFormat(StringFormatFlags.DirectionVertical);
-                    g.DrawString("ERROR: " + this.ErrorDescription, font, Brushes.Black, 2, 10, drawFormat);
+                    g.DrawString("         " + this.ErrorDescription, font, Brushes.Black, 2, 10, drawFormat);
                 }
                 else
                 {
-                    g.DrawString("ERROR: " + this.ErrorDescription, font, Brushes.Black, 2, fontVerticalPosition);
+                    g.DrawString("         " + this.ErrorDescription, font, Brushes.Black, 2, fontVerticalPosition);
                 }
             }
 
