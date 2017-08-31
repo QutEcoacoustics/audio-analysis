@@ -12,6 +12,7 @@ namespace AnalysisPrograms.SourcePreparers
     using AcousticWorkbench;
     using AnalysisBase;
     using AnalysisBase.Segment;
+    using global::AcousticWorkbench;
     using log4net;
 
     /// <summary>

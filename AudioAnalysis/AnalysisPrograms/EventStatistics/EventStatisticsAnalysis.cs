@@ -9,19 +9,29 @@ namespace AnalysisPrograms.EventStatistics
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.Remoting.Messaging;
     using System.Text;
     using System.Threading.Tasks;
+    using System.Threading.Tasks.Dataflow;
+    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using AcousticWorkbench;
+    using AcousticWorkbench.Orchestration;
     using AnalysisBase;
+    using AnalysisBase.ResultBases;
+    using AnalysisBase.Segment;
     using AudioAnalysisTools.EventStatistics;
     using CsvHelper;
+    using global::AcousticWorkbench;
+    using global::AcousticWorkbench.Models;
     using log4net;
     using SourcePreparers;
 
-    public partial class EventStatisticsAnalysis
+    public partial class EventStatisticsAnalysis : AbstractStrongAnalyser
     {
+        private const double AnalysisDurationSeconds = 60.0;
+
         private static readonly ILog Log = LogManager.GetLogger(nameof(EventStatisticsAnalysis));
 
         public static void Execute(Arguments arguments)
@@ -112,7 +122,7 @@ namespace AnalysisPrograms.EventStatistics
             Log.Info($"Events read, {events.Length} read.");
 
             // need to validate the events
-            var invalidEvents = events.Where(e => !e.Isvalid()).ToArray();
+            var invalidEvents = events.Where(e => !e.IsValid()).ToArray();
 
             if (invalidEvents.Length > 0)
             {
@@ -121,18 +131,105 @@ namespace AnalysisPrograms.EventStatistics
                     + $" {invalidEvents.Length} events are not valid. The first invalid event is {invalidEvents[0]}");
             }
 
-            // finally time to start preparing jobs
+            // next gather meta data for all events
+            // and transform list of events into list of segments
+            var resolver = new EventMetadataResolver(
+                authenticatedApi,
+                AnalysisDurationSeconds,
+                arguments.Parallel ? 25 : 1);
+            var metadataTask = resolver.GetRemoteMetadata(events);
 
+            // wait for 1 second per event - this should be an order of magnitude greater than what is needed
+            metadataTask.Wait(TimeSpan.FromSeconds(events.Length));
+
+            ISegment<AudioRecording>[] segments = metadataTask.Result;
+
+            // finally time to start preparing jobs
             ISourcePreparer preparer = new RemoteSourcePreparer(authenticatedApi);
+
+            AnalysisCoordinator coordinator = new AnalysisCoordinator(preparer, SaveBehavior.Never, true, arguments.Parallel);
+
+            // instantiate the Analysis
+            EventStatisticsAnalysis analysis = new EventStatisticsAnalysis();
+
+            AnalysisSettings settings = analysis.DefaultSettings;
+            settings.AnalysisOutputDirectory = arguments.Output;
+            settings.AnalysisTempDirectory = arguments.TempDir;
+
+            var results = coordinator.Run(segments, analysis, settings);
+
+            Log.Warn("INCOMPLETE");
 
         }
 
-        public static void Analyze(
-            ImportedEvent[] events,
-            ISourcePreparer preparer,
-            EventStatisticsConfiguration configuration)
+        public override string DisplayName { get; } = "Event statistics calculation";
+
+        public override string Identifier { get; } = "Ecosounds.EventStatistics";
+
+        public string Description { get; } = "Event statistics calculation analysis used to extract critical statistics (features) from an acoustic event";
+
+        public AnalysisSettings DefaultSettings { get; } = new AnalysisSettings()
         {
-            
+            AnalysisMaxSegmentDuration = 60.0.Seconds(),
+        };
+
+        public void BeforeAnalyze(AnalysisSettings analysisSettings)
+        {
+            // noop
+        }
+
+        public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
+        {
+            var segment = (RemoteSegmentWithDatum)segmentSettings.Segment;
+            var importedEvent = (ImportedEvent)segment.Datum;
+            var temporalRange = new Range<TimeSpan>(
+                importedEvent.EventStartSeconds.Value.Seconds(),
+                importedEvent.EventEndSeconds.Value.Seconds());
+            var spectralRange = new Range<double>(
+                importedEvent.LowFrequencyHertz.Value,
+                importedEvent.HighFrequencyHertz.Value);
+
+            var configuration = (EventStatisticsConfiguration)analysisSettings.Configuration;
+
+            var recording = new AudioAnalysisTools.WavTools.AudioRecording(segmentSettings.SegmentAudioFile);
+
+            var statistics = EventStatisticsCalculate.AnalyzeAudioEvent(
+                recording,
+                temporalRange,
+                spectralRange,
+                configuration);
+
+            var result = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration());
+
+            result.Events = statistics.AsArray();
+
+            return result;
+        }
+
+        public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
+        {
+            Csv.WriteToCsv(destination, results);
+        }
+
+        public override void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void SummariseResults(
+            AnalysisSettings settings,
+            FileSegment inputFileSegment,
+            EventBase[] events,
+            SummaryIndexBase[] indices,
+            SpectralIndexBase[] spectralIndices,
+            AnalysisResult2[] results)
+        {
+            // noop
         }
     }
 }

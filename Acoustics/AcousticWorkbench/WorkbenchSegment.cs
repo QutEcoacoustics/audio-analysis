@@ -4,7 +4,7 @@
 
 namespace AcousticWorkbench
 {
-    public class Segment : ISegment
+    public class WorkbenchSegment : IWorkbenchSegment
     {
         public int AudioRecordingId { get; set; }
 

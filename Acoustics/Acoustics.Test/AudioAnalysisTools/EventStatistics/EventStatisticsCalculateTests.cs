@@ -6,6 +6,7 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
 {
     using System;
     using System.Collections.Generic;
+    using Acoustics.Shared;
     using Acoustics.Tools.Wav;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.EventStatistics;
@@ -37,8 +38,8 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
 
             var start = TimeSpan.FromSeconds(28);
             var end = TimeSpan.FromSeconds(32);
-            int lowFreq = 1500;
-            int topFreq = 8500;
+            double lowFreq = 1500.0;
+            double topFreq = 8500.0;
 
             var statsConfig = new EventStatisticsConfiguration()
             {
@@ -47,7 +48,7 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
             };
 
             EventStatistics stats =
-                EventStatisticsCalculate.AnalyzeAudioEvent(recording, (start, end), (lowFreq, topFreq), statsConfig);
+                EventStatisticsCalculate.AnalyzeAudioEvent(recording, (start, end).AsRange(), (lowFreq, topFreq).AsRange(), statsConfig);
 
             LoggedConsole.WriteLine($"Stats: Temporal entropy = {stats.TemporalEnergyDistribution:f4}");
             LoggedConsole.WriteLine($"Stats: Spectral entropy = {stats.SpectralEnergyDistribution:f4}");

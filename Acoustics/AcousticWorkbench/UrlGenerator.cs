@@ -8,6 +8,21 @@ namespace AcousticWorkbench
 
     public static class UrlGenerator
     {
+        public static Uri GetAudioEventUri(this IApi api, long audioRecordingId, long audioEventId)
+        {
+            return api.Base($"audio_recordings/{audioRecordingId}/audio_events/{audioEventId}");
+        }
+
+        public static Uri GetAudioEventFilterUri(this IApi api)
+        {
+            return api.Base("audio_events/filter");
+        }
+
+        public static Uri GetAudioRecordingUri(this IApi api, long audioRecordingId)
+        {
+            return api.Base($"audio_recordings/{audioRecordingId}");
+        }
+
         public static Uri GetLoginUri(this IApi api)
         {
             return api.Base("security");
@@ -18,25 +33,30 @@ namespace AcousticWorkbench
             return api.Base("security/new");
         }
 
-        public static Uri GetListenUri(this IApi api, ISegment segment)
+        public static Uri GetListenUri(this IApi api, IWorkbenchSegment workbenchSegment)
         {
-            return GetListenUri(api, segment.AudioRecordingId, segment.StartOffsetSeconds, segment.EndOffsetSeconds);
+            return GetListenUri(api, workbenchSegment.AudioRecordingId, workbenchSegment.StartOffsetSeconds, workbenchSegment.EndOffsetSeconds);
         }
 
-        public static Uri GetListenUri(this IApi api, int audioRecordingId, double startOffsetSeconds, double? endOffsetSeconds = null)
+        public static Uri GetListenUri(this IApi api, long audioRecordingId, double startOffsetSeconds, double? endOffsetSeconds = null)
         {
             string end = endOffsetSeconds == null ? string.Empty : $"&end ={endOffsetSeconds}";
             return api.ViewBase($"listen/{audioRecordingId}?start={startOffsetSeconds}{end}");
         }
 
-        public static Uri GetMediaInfoUri(this IApi api, ISegment segment)
+        public static Uri GetMediaInfoUri(this IApi api, long audioRecordingId)
         {
-            return api.Base($"audio_recordings/{segment.AudioRecordingId}/media.json?start_offset={segment.StartOffsetSeconds}&end_offset={segment.EndOffsetSeconds}");
+            return api.Base($"audio_recordings/{audioRecordingId}/media.json");
         }
 
-        public static Uri GetMediaWaveUri(this IApi api, ISegment segment)
+        public static Uri GetMediaInfoUri(this IApi api, IWorkbenchSegment workbenchSegment)
         {
-            return api.Base($"audio_recordings/{segment.AudioRecordingId}/media.wav?start_offset={segment.StartOffsetSeconds}&end_offset={segment.EndOffsetSeconds}");
+            return api.Base($"audio_recordings/{workbenchSegment.AudioRecordingId}/media.json?start_offset={workbenchSegment.StartOffsetSeconds}&end_offset={workbenchSegment.EndOffsetSeconds}");
+        }
+
+        public static Uri GetMediaWaveUri(this IApi api, IWorkbenchSegment workbenchSegment)
+        {
+            return api.Base($"audio_recordings/{workbenchSegment.AudioRecordingId}/media.wav?start_offset={workbenchSegment.StartOffsetSeconds}&end_offset={workbenchSegment.EndOffsetSeconds}");
         }
 
         public static Uri Base(this IApi api, string path = "")

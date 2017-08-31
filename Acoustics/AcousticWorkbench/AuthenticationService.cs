@@ -56,18 +56,17 @@ namespace AcousticWorkbench
             return await this.ProcessResult(result);
         }
 
-        private async Task<IAuthenticatedApi> ProcessResult(HttpResponseMessage result)
+        private async Task<IAuthenticatedApi> ProcessResult(HttpResponseMessage response)
         {
+            var json = await response.Content.ReadAsStringAsync();
+            var result = this.Deserialize<LoginResponse>(json);
 
-            var json = await result.Content.ReadAsStringAsync();
-            var response = this.Deserialize<LoginResponse>(json);
-
-            if (!result.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
-                throw new AuthenticationException("Could not login in to the acoustic workbench: " + response.Meta);
+                throw new AuthenticationException("Could not login in to the acoustic workbench: " + result.Meta);
             }
 
-            return AuthenticatedApi.Merge(this.api, response.Data.UserName, response.Data.AuthToken);
+            return AcousticWorkbench.AuthenticatedApi.Merge(this.api, result.Data.UserName, result.Data.AuthToken);
         }
 
         public class LoginRequest

@@ -91,7 +91,7 @@ namespace AnalysisPrograms
             [ArgRange(0, 10 * 60)]
             public int? Duration { get; set; }
 
-            public void Isvalid()
+            public void IsValid()
             {
                 if (this.TaskIsLoadCsv)
                 {
