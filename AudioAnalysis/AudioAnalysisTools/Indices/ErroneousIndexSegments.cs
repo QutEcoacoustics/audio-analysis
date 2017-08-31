@@ -16,7 +16,7 @@ namespace AudioAnalysisTools.Indices
         public const string ErroneousIndexSegmentsFilenameFragment = "WARNING-IndexErrors";
 
         private static string errorMissingData = "No Recording";
-        private static string errorZeroSignal = "Flat Signal";
+        private static string errorZeroSignal = "ERROR: Zero Signal";
         private static string invalidIndexValue = "Invalid Index Value";
 
         public string ErrorDescription { get; set; }
@@ -356,27 +356,28 @@ namespace AudioAnalysisTools.Indices
         {
             int width = this.EndPosition - this.StartPosition + 1;
             var bmp = new Bitmap(width, height);
-            int fontVerticalPosition = (height / 2) - 7;
+            int fontVerticalPosition = (height / 2) - 10;
             var g = Graphics.FromImage(bmp);
 
             g.Clear(this.ErrorDescription.Equals(errorMissingData) ? Color.LightGray : Color.HotPink);
 
-            // Draw black cross over error patch only if is wider than arbitrary 10 pixels.
+            // Draw error message and black cross over error patch only if is wider than arbitrary 10 pixels.
             if (width > 10)
             {
-                g.DrawLine(Pens.Black, 0, 0, width, height);
-                g.DrawLine(Pens.Black, 0, height, width, 0);
+                // decided to do without the black cross!!! - 31/08/2017
+                // g.DrawLine(Pens.Black, 0, 0, width, height);
+                // g.DrawLine(Pens.Black, 0, height, width, 0);
 
                 // Write description of the error cause.
                 var font = new Font("Arial", 9.0f, FontStyle.Bold);
                 if (textInVerticalOrientation)
                 {
                     var drawFormat = new StringFormat(StringFormatFlags.DirectionVertical);
-                    g.DrawString("         " + this.ErrorDescription, font, Brushes.Black, 2, 10, drawFormat);
+                    g.DrawString("     " + this.ErrorDescription, font, Brushes.Black, 2, 10, drawFormat);
                 }
                 else
                 {
-                    g.DrawString("         " + this.ErrorDescription, font, Brushes.Black, 2, fontVerticalPosition);
+                    g.DrawString("     " + this.ErrorDescription, font, Brushes.Black, 2, fontVerticalPosition);
                 }
             }
 
