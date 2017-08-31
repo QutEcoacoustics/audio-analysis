@@ -9,7 +9,10 @@ namespace AnalysisPrograms.EventStatistics
     using System.Linq;
     using System.Reflection;
     using System.Text;
+    using System.Threading.Tasks;
+    using AcousticWorkbench;
     using CsvHelper.Configuration;
+    using log4net;
 
     public class ImportedEvent
     {
@@ -21,10 +24,18 @@ namespace AnalysisPrograms.EventStatistics
 
         public double? EventEndSeconds { get; set; }
 
-        public bool Isvalid()
+        public double? LowFrequencyHertz { get; set; }
+
+        public double? HighFrequencyHertz { get; set; }
+
+        public bool IsValid()
         {
             return this.AudioEventId.HasValue ||
-                   (this.AudioRecordingId.HasValue && this.EventStartSeconds.HasValue && this.EventEndSeconds.HasValue);
+                   (this.AudioRecordingId.HasValue
+                   && this.EventStartSeconds.HasValue
+                   && this.EventEndSeconds.HasValue
+                   && this.LowFrequencyHertz.HasValue
+                   && this.HighFrequencyHertz.HasValue);
         }
 
         public sealed class ImportedEventNameClassMap : CsvClassMap<ImportedEvent>

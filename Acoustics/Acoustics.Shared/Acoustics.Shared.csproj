@@ -260,6 +260,7 @@
     <Compile Include="Extensions\FileInfoExtensions.cs" />
     <Compile Include="Extensions\FSharpExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
+    <Compile Include="Extensions\RangeExtensions.cs" />
     <Compile Include="Extensions\RectangleExtensions.cs" />
     <Compile Include="Extensions\ReflectionExtensions.cs" />
     <Compile Include="Extensions\StringCaseExtensions.cs" />
@@ -282,7 +283,6 @@
     <Compile Include="PropertyComparer.cs" />
     <Compile Include="Range.cs" />
     <Compile Include="ResultProperty.cs" />
-    <Compile Include="SegmentPolicy.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
     <Compile Include="StatDescriptive.cs" />
     <Compile Include="StringKeyValueStore.cs" />

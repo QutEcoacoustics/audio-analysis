@@ -126,7 +126,7 @@ namespace Acoustics.Shared
         /// </returns>
         public override string ToString()
         {
-            return this.Minimum + " - " + this.Maximum;
+            return $"Range: {this.Minimum} - {this.Maximum}";
         }
 
         public int CompareTo(Range<T> other)

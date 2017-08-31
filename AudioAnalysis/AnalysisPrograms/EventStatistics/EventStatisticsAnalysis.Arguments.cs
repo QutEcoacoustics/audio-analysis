@@ -47,6 +47,9 @@ namespace AnalysisPrograms.EventStatistics
             [ArgDescription("The authentication token to use for the Acoustic Workbench website. If not specified you will prompted for log in credentials.")]
             public string AuthenticationToken { get; set; }
 
+            [ArgDescription("Whether or not run this analysis in parallel - multiple segments can be analyzed at the same time")]
+            public bool Parallel { get; set; } = false;
+
             /* Arguments for local event analysis:
 
             [ArgDescription("TimeSpan offset hint required if file names do not contain time zone info. NO DEFAULT IS SET")]

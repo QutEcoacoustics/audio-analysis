@@ -120,15 +120,19 @@
     <Analyzer Include="..\..\AudioAnalysis\packages\StyleCop.Analyzers.1.1.0-beta004\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AcousticEventService.cs" />
+    <Compile Include="Models\Models.cs" />
+    <Compile Include="AcousticWorkbenchResponse{T}.cs" />
     <Compile Include="Api.cs" />
+    <Compile Include="AudioRecordingService.cs" />
     <Compile Include="AuthenticatedApi.cs" />
     <Compile Include="AuthenticationService.cs" />
-    <Compile Include="RubyJsonObject.cs" />
+    <Compile Include="MediaService.cs" />
     <Compile Include="Service.cs" />
     <Compile Include="IApi.cs" />
     <Compile Include="IAuthenticatedApi.cs" />
-    <Compile Include="ISegment.cs" />
-    <Compile Include="Segment.cs" />
+    <Compile Include="IWorkbenchSegment.cs" />
+    <Compile Include="WorkbenchSegment.cs" />
     <Compile Include="UrlGenerator.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -10,6 +10,7 @@ namespace AcousticWorkbench
     using System.Net.Http.Headers;
     using System.Net.Security;
     using System.Text;
+    using System.Threading.Tasks;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
 
@@ -39,6 +40,15 @@ namespace AcousticWorkbench
             this.jsonSerializerSettings = new JsonSerializerSettings { ContractResolver = this.defaultContractResolver };
         }
 
+        protected Service(IAuthenticatedApi authenticatedApi)
+            : this((IApi)authenticatedApi)
+        {
+            this.AuthenticatedApi = authenticatedApi;
+            AddAuthTokenHeader(this.Client.DefaultRequestHeaders, authenticatedApi.Token);
+        }
+
+        protected IAuthenticatedApi AuthenticatedApi { get; }
+
         protected static void AddAuthTokenHeader(HttpRequestHeaders headers, string token)
         {
             headers.Authorization = new AuthenticationHeaderValue("Token token", token);
@@ -57,6 +67,31 @@ namespace AcousticWorkbench
         protected AcousticWorkbenchResponse<T> Deserialize<T>(string json)
         {
             return JsonConvert.DeserializeObject<AcousticWorkbenchResponse<T>>(json, this.jsonSerializerSettings);
+        }
+
+        protected async Task<T> ProcessApiResult<T>(HttpResponseMessage response)
+        {
+            var json = await response.Content.ReadAsStringAsync();
+            var result = this.Deserialize<T>(json);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpResponseException(response, result.Meta);
+            }
+
+            return result.Data;
+        }
+
+        public class HttpResponseException : Exception
+        {
+            public HttpResponseException(HttpResponseMessage response, Meta responseMeta)
+            {
+                this.Message = $"Http response failed (Status: {response.StatusCode}:\n" +
+                               $"URI: {response.RequestMessage.RequestUri}\n" +
+                               $"API meta: {responseMeta}";
+            }
+
+            public override string Message { get; }
         }
     }
 }
