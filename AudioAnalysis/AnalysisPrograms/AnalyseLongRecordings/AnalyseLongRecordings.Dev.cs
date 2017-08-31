@@ -28,9 +28,9 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 
             // TESTING for Sheryn Brodie
             // This is a six-hour recording and quite good for debugging calculation of acoustic indices
-            string recordingPath = @"D:\SensorNetworks\WavFiles\Frogs\SherynBrodie\con1To6.wav";
-            string outputPath = @"D:\SensorNetworks\Output\Frogs\TestOfRecognizers-2017August\";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Ecosounds.MultiRecognizer.yml";
+            //string recordingPath = @"D:\SensorNetworks\WavFiles\Frogs\SherynBrodie\con1To6.wav";
+            //string outputPath = @"D:\SensorNetworks\Output\Frogs\TestOfRecognizers-2017August\";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Ecosounds.MultiRecognizer.yml";
 
             // ACOUSTIC_INDICES_SUNSHINE_COAST SITE1
             // audio2csv  "Z:\Sunshine Coast\Site1\DM420036.MP3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\SunshineCoast\Acoustic\Site1"
@@ -84,8 +84,15 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
             //Output = @"C:\SensorNetworks\Output\FalseColourSpectrograms".ToDirectoryInfo()
 
-            // ARTIFICIAL TEST RECORDING
+            string recordingPath = @"D:\SensorNetworks\WavFiles\BradLaw\PillagaForestSite18a\PILLIGA_20121125_052500.wav";
+            string outputPath = @"D:\SensorNetworks\Output\PillagaForest";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiRes.yml";
 
+            //To draw false-colourspectrograms after the above call to audio2csv,
+            // use the activity code: colourspectrogram. This calls DrawLongDurationSpectrograms.Execute()
+            // to produce LD FC spectrograms from matrices of indices.
+
+            // ARTIFICIAL TEST RECORDING
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
             //string outputPath    = @"C:\SensorNetworks\Output\Test\Test2";
             //string outputPath    = @"C:\SensorNetworks\Output\FalseColourSpectrograms";

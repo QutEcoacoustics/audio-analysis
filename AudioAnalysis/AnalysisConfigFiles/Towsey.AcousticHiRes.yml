@@ -15,7 +15,7 @@ SegmentOverlap: 0
 
 # IndexCalculationDuration: units=seconds (default=60 seconds; use 0.1 or 0.2 for hi-resolution, zooming spectrogram tiles)
 # The Timespan (in seconds) over which summary and spectral indices are calculated
-IndexCalculationDuration: 0.1
+IndexCalculationDuration: 1.0
 
 # BGNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
 # BG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
@@ -33,9 +33,15 @@ FrameLength: 512
 # ResampleRate: 17640
 ResampleRate: 22050
 
-#Default values in code are LowFreqBound=500Hz & MidFreqBound=4000
-LowFreqBound: 500
-MidFreqBound: 4000
+#Default values in code are LowFreqBound=1000Hz & MidFreqBound=8000
+LowFreqBound: 1000
+MidFreqBound: 8000
+HighFreqBound: 11000
+
+# FrequencyScale options are currently only Linear and Octave
+# Octave scale is to be used only for Jasco Marine recordings @ sample rate = 64000
+FrequencyScale: Linear
+
 
 DisplayWeightedIndices: false
 

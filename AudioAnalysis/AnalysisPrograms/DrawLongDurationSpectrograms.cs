@@ -88,10 +88,14 @@ namespace AnalysisPrograms
         /// </summary>
         public static Arguments Dev()
         {
+            // the default index properties file
+            string indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml";
+
             // INPUT and OUTPUT DIRECTORIES
             //MARINE JASCO TEST
             //var ipdir = @"C:\SensorNetworks\Output\MarineJasco\Towsey.Acoustic";
             //var opdir = @"C:\SensorNetworks\Output\MarineJasco\Towsey.Acoustic\Images";
+            //indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml";
 
             // INPUT and OUTPUT DIRECTORIES
 
@@ -164,13 +168,16 @@ namespace AnalysisPrograms
             //var ipdir = @"C:\SensorNetworks\Output\TsheringDema\Towsey.Acoustic_OLD4";
             //var opdir = @"C:\SensorNetworks\Output\TsheringDema\Towsey.Acoustic";
 
-            var ipdir = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017\Towsey.Acoustic";
-            var opdir = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017";
+            //var ipdir = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017\Towsey.Acoustic";
+            //var opdir = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017";
+
+            // string ipFileName = "PillagaForestDawn"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
+            string ipdir = @"D:\SensorNetworks\Output\PillagaForest\Towsey.Acoustic";
+            string opdir = @"D:\SensorNetworks\Output\PillagaForest";
+            indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml";
 
             var ipDir = new DirectoryInfo(ipdir);
             var opDir = new DirectoryInfo(opdir);
-
-            //FileInfo fiSpectrogramConfig = null;
             var fiSpectrogramConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramFalseColourConfig.yml");
 
             return new Arguments
@@ -179,7 +186,7 @@ namespace AnalysisPrograms
                 OutputDirectory = opDir,
 
                 // use the default set of index properties in the AnalysisConfig directory.
-                IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
+                IndexPropertiesConfig = indexPropertiesFile.ToFileInfo(),
 
                 //IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml".ToFileInfo(),
                 SpectrogramConfigPath = fiSpectrogramConfig,
