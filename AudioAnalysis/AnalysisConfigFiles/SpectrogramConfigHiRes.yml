@@ -1,20 +1,28 @@
 ---
-UnitsOfTime: "second"
-# SpectralFrameDuration: 0.02
-TileWidth: 300
-# How to tile, valid values:
-# - PanoJsTilingProfile
-# - AbsoluteDateTilingProfile
-TilingProfile: AbsoluteDateTilingProfile
-ScaleUnits: "SecondsPerPixel"
-UseDistributionsForNormalization: false
-LdSpectrogramConfig:
-    ColorMap1: "ACI-ENT-EVN"
-    #ColorMap2: "BGN-POW-EVN"
-    ColorMap2: "RHZ-RVT-SPT"
-    # minutes
-    XAxisTicIntervalSeconds: 3600
-    # Hertz
-    YAxisTicInterval: 1000
-IndexPropertiesConfig: './IndexPropertiesConfigHiRes.yml'
+# This config can be used to control the drawing of long duration false-colour Spectrograms
+# It should NOT contain index related configuration data
+# It should NOT contain dynamic data (like file names or analysis types)
+
+ColorMap1: "SPT-ENT-RHZ"
+ColorMap2: "BGN-PMN-CVR"
+#ColorMap2: "RHZ-RVT-SPT"
+
+# The ColourFilter parameter determines how much the low index values are emphasized or de-emphasized.
+# The purpose is to make low intensity features stand out (emphasis) or become less obvious (de-emphasis).
+# This parameter applies a function that lies between y=x^-2 and y=x^2, i.e. between the square-root and the square.
+# For an acoustic index value of X, newX = [(1/c - 1) * X^2 + X] * c, where c = the supplied filterCoeff.
+#    When filterCoeff = 1.0, small values are maximally emphasized, i.e. newX=sqrt(x).
+#    When filterCoeff = 0.0, the matrix remains unchanged, that is, newX=x.
+#    When filterCoeff =-1.0, small values are maximally de-emphasized, i.e. newX=x^2.
+#    Generally usage suggests that a value of -0.25 is suitable. i.e. a slight de-emphasis.
+ColourFilter: -0.25
+
+# minutes x-axis scale
+XAxisTicIntervalSeconds: 3600
+# Hertz y-axis scale
+# Eventual options will be: Linear, Mel, Linear62Octaves31Nyquist11025, Linear125Octaves30Nyquist11025, Octaves24Nyquist32000, Linear125Octaves28Nyquist32000
+# Only "Linear", "Linear125Octaves7Tones28Nyquist32000" work at present 
+FreqScale: "Linear"
+YAxisTicInterval: 1000
+# IndexPropertiesConfig: './IndexPropertiesConfigHiRes.yml'
 ...

@@ -11,7 +11,10 @@ namespace AnalysisPrograms.AnalyseLongRecordings
         public static Arguments Dev()
         {
             // TO GET TO HERE audio2csv MUST BE ONLY COMMAND LINE ARGUMENT
-            // If you end up with indices and no images, then, to draw the false-colour spectrograms, you must call activity "colourspectrogram"
+            // If you end up with indices and no images, then, to draw the false-colour spectrograms,
+            //          you must use the activity code "colourspectrogram"
+            // This calls AnalysisPrograms.DrawLongDurationSpectrograms.Execute() to produce LD FC spectrograms from matrices of indices.
+            // See line 176 for example using the Pillaga Forest data.
 
             // DEV CONFIG OPTIONS
             //C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\App.config
@@ -84,13 +87,13 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
             //Output = @"C:\SensorNetworks\Output\FalseColourSpectrograms".ToDirectoryInfo()
 
-            string recordingPath = @"D:\SensorNetworks\WavFiles\BradLaw\PillagaForestSite18a\PILLIGA_20121125_052500.wav";
-            string outputPath = @"D:\SensorNetworks\Output\PillagaForest";
+            // Brad Law Data
+            //string recordingPath = @"D:\SensorNetworks\WavFiles\BradLaw\PillagaForestSite18a\PILLIGA_20121125_052500.wav";
+            //string recordingPath = @"D:\SensorNetworks\WavFiles\BradLaw\PillagaForestSite18a\PILLIGA_20121125_194900.wav";
+            // next recording contains koala calls
+            string recordingPath = @"D:\SensorNetworks\WavFiles\BradLaw\WilliWilliNP_K48\Data\K48_20161104_211749.wav";
+            string outputPath = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP";
             string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiRes.yml";
-
-            //To draw false-colourspectrograms after the above call to audio2csv,
-            // use the activity code: colourspectrogram. This calls DrawLongDurationSpectrograms.Execute()
-            // to produce LD FC spectrograms from matrices of indices.
 
             // ARTIFICIAL TEST RECORDING
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
