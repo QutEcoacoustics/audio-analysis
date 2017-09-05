@@ -88,6 +88,9 @@ namespace AnalysisPrograms
         /// </summary>
         public static Arguments Dev()
         {
+            // the default ld fc spectrogram config file
+            var spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramFalseColourConfig.yml";
+
             // the default index properties file
             string indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml";
 
@@ -98,7 +101,6 @@ namespace AnalysisPrograms
             //indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml";
 
             // INPUT and OUTPUT DIRECTORIES
-
             //2010 Oct 13th
             //var ipdir = @"C:\SensorNetworks\Output\SERF\2014May06_100720 Indices OCT2010 SERF\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
             //var opdir = @"C:\SensorNetworks\Output\SERF\SERF_falseColourSpectrogram\SE";
@@ -171,25 +173,18 @@ namespace AnalysisPrograms
             //var ipdir = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017\Towsey.Acoustic";
             //var opdir = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017";
 
-            // string ipFileName = "PillagaForestDawn"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
-            string ipdir = @"D:\SensorNetworks\Output\PillagaForest\Towsey.Acoustic";
-            string opdir = @"D:\SensorNetworks\Output\PillagaForest";
-            indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml";
-
-            var ipDir = new DirectoryInfo(ipdir);
-            var opDir = new DirectoryInfo(opdir);
-            var fiSpectrogramConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramFalseColourConfig.yml");
+            // PILLAGA FOREST RECORDINGS OF BRAD LAW - High Resolution analysis
+            string ipdir = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP\Towsey.Acoustic";
+            string opdir = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP";
+            spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramConfigHiRes.yml";
+            indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
 
             return new Arguments
             {
-                InputDataDirectory = ipDir,
-                OutputDirectory = opDir,
-
-                // use the default set of index properties in the AnalysisConfig directory.
-                IndexPropertiesConfig = indexPropertiesFile.ToFileInfo(),
-
-                //IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml".ToFileInfo(),
-                SpectrogramConfigPath = fiSpectrogramConfig,
+                InputDataDirectory = new DirectoryInfo(ipdir),
+                OutputDirectory = new DirectoryInfo(opdir),
+                IndexPropertiesConfig = new FileInfo(indexPropertiesFile),
+                SpectrogramConfigPath = new FileInfo(spectrogramConfigFile),
             };
     }
 
