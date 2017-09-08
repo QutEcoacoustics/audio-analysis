@@ -5,12 +5,15 @@
 namespace AnalysisPrograms.AcousticWorkbench.Orchestration
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
     using System.Threading.Tasks.Dataflow;
     using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
     using AnalysisBase.Segment;
     using EventStatistics;
     using global::AcousticWorkbench;
@@ -34,14 +37,50 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
 
         public double AnalysisDurationSeconds { get; }
 
-        public async Task<RemoteSegment[]> GetRemoteMetadata(
-            ImportedEvent[] events)
+        public static RemoteSegmentWithData[] DedupeSegments(IList<RemoteSegmentWithData> segments)
+        {
+            // ugggh don't really need a dictionary but HashSet doesn't allow retrieveal of values
+            var unique = new Dictionary<RemoteSegment, RemoteSegmentWithData>(segments.Count);
+
+            foreach (var segment in segments)
+            {
+                var exists = unique.ContainsKey(segment);
+
+                if (exists)
+                {
+                    var current = unique[segment];
+
+                    Contract.Ensures(unique.Remove(segment));
+
+                    var data = current.Data.Concat(segment.Data).ToArray();
+
+                    var combined = new RemoteSegmentWithData(current.Source, current.Offsets, data);
+
+                    unique.Add(combined, combined);
+                }
+                else
+                {
+                    unique.Add(segment, segment);
+                }
+            }
+
+            return unique.Values.ToArray();
+        }
+
+        public async Task<RemoteSegmentWithData[]> GetRemoteMetadata(ImportedEvent[] events)
         {
             // asynchronously start downloading all the metadata we need
-            Log.Info("Begin downloading metadata for segments");
-            var downloader = new TransformBlock<ImportedEvent, RemoteSegment>(
+            Log.Info($"Begin downloading metadata for segments (Request concurrency: {this.maxDegreeOfParallelism})");
+
+            // the transform block maps A -> B, and allows us to throttle requests
+            var downloader = new TransformBlock<ImportedEvent, RemoteSegmentWithData>(
                 (importedEvent) => this.DownloadRemoteMetadata(importedEvent),
                 new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = this.maxDegreeOfParallelism });
+
+            // the transform block can't `Complete` unless it's output is empty
+            // so add a buffer block to store the transform block's output
+            var buffer = new BufferBlock<RemoteSegmentWithData>();
+            downloader.LinkTo(buffer);
 
             foreach (var record in events)
             {
@@ -50,14 +89,17 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
             }
 
             // the dataflow should not accept any more messages
+            Log.Trace("Finished posting messages to metadata downloader");
             downloader.Complete();
 
             // wait for all requests to finish
+            Log.Trace("Begin waiting for metadata downloader");
             await downloader.Completion;
+            Log.Trace("Finished waiting for metadata downloader");
 
-            if (downloader.TryReceiveAll(out var segments))
+            if (buffer.TryReceiveAll(out var segments))
             {
-                return segments.ToArray();
+                return DedupeSegments(segments);
             }
             else
             {
@@ -65,7 +107,7 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
             }
         }
 
-        private async Task<RemoteSegment> DownloadRemoteMetadata(ImportedEvent importedEvent)
+        private async Task<RemoteSegmentWithData> DownloadRemoteMetadata(ImportedEvent importedEvent)
         {
             long audioRecordingId;
             if (importedEvent.AudioRecordingId.HasValue)
@@ -76,7 +118,22 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
             {
                 long audioEventId = importedEvent.AudioEventId.Value;
                 Log.Debug($"Requesting metadata for audio event {audioEventId}");
-                var audioEvent = await this.acousticEventService.GetAudioEvent(audioEventId);
+                AudioEvent audioEvent;
+                try
+                {
+                    audioEvent = await this.acousticEventService.GetAudioEvent(audioEventId);
+                }
+                catch (Service.HttpResponseException exception)
+                {
+                    if (Debugger.IsAttached)
+                    {
+                        Debugger.Break();
+                    }
+
+                    Log.Error(exception);
+                    throw;
+                }
+
                 audioRecordingId = audioEvent.AudioRecordingId;
                 Log.Trace($"Metadata for audio event {audioEventId} retrieved");
 
@@ -93,9 +150,10 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
             var target = (importedEvent.EventStartSeconds.Value, importedEvent.EventEndSeconds.Value).AsRange();
 
             // grow target to required analysis length
-            var analysisRange = target.Grow(limit, this.AnalysisDurationSeconds);
+            // we round the grow size to the nearest integer so that we reduce caching combinatorics in the workbench
+            var analysisRange = target.Grow(limit, this.AnalysisDurationSeconds, 0);
 
-            var segment = new RemoteSegmentWithDatum(audioRecording, analysisRange, importedEvent);
+            var segment = new RemoteSegmentWithData(audioRecording, analysisRange, importedEvent.AsArray());
 
             return segment;
         }

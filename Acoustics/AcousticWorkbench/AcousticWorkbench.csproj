@@ -131,8 +131,6 @@
     <Compile Include="Service.cs" />
     <Compile Include="IApi.cs" />
     <Compile Include="IAuthenticatedApi.cs" />
-    <Compile Include="IWorkbenchSegment.cs" />
-    <Compile Include="WorkbenchSegment.cs" />
     <Compile Include="UrlGenerator.cs" />
   </ItemGroup>
   <ItemGroup>

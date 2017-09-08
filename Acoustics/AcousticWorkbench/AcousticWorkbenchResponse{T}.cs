@@ -32,7 +32,7 @@ namespace AcousticWorkbench
 
         public override string ToString()
         {
-            return $"[Status: {this.Status}] {this.Message}" +
+            return $"[Status: {this.Status}] {this.Message}\n" +
                 (this.Error?.ToString() ?? string.Empty);
         }
     }
@@ -47,7 +47,7 @@ namespace AcousticWorkbench
 
         public override string ToString()
         {
-            return "API error:" + this.Details + Environment.NewLine + this.Info.ToString(Formatting.Indented);
+            return "API error: " + this.Details + Environment.NewLine + (this.Info.ToString(Formatting.Indented) ?? string.Empty);
         }
     }
 }

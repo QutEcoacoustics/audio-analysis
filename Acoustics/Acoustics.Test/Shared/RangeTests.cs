@@ -85,18 +85,21 @@ namespace Acoustics.Test.Shared
         }
 
         [DataTestMethod]
-        [DataRow(57.5, 62.5, 0, 120, 30, 90)]
-        [DataRow(10, 20, 0, 120, 0, 60)]
-        [DataRow(110, 115, 0, 120, 60, 120)]
-        [DataRow(15, 25, 0, 60, 0, 60)]
-        [DataRow(30, 40, 20, 50, 20, 50)]
-        public void DoubleGrowWorks(double a1, double a2, double b1, double b2, double c1, double c2)
+        [DataRow(57.5, 62.5, 00, 120, null, 27.5, 92.5)]
+        [DataRow(10.0, 20.0, 00, 120, null, 0, 70)]
+        [DataRow(110, 115.0, 00, 120, null, 55, 120)]
+        [DataRow(15.0, 25.0, 00, 060, null, 0, 60)]
+        [DataRow(30.0, 40.0, 20, 050, null, 20, 50)]
+        [DataRow(60.0, 540,  00, 600, null, 30, 570)]
+        [DataRow(37.123, 39.999, 0, 120, 0, 7, 70)]
+        [DataRow(37.123, 39.999, 0, 120, 1, 7.1, 70)]
+        public void DoubleGrowWorks(double a1, double a2, double b1, double b2, int? roundDigits, double c1, double c2)
         {
-            var target = (a1, a2).AsRange();
-            var limit = (b1, b2).AsRange();
-            var expected = (c1, c2).AsRange();
+            var target = a1.To(a2);
+            var limit = b1.To(b2);
+            var expected = c1.To(c2);
 
-            var actual = target.Grow(limit, 60.0);
+            var actual = target.Grow(limit, 60.0, roundDigits);
 
             Assert.AreEqual(expected, actual);
         }

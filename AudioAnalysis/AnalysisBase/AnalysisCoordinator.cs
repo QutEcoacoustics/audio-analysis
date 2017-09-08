@@ -276,9 +276,10 @@ namespace AnalysisBase
                     $"Segment {segment} must have metadata supplied.");
 
                 // it should equal itself (because it is in the list) but should not equal anything else
+                var matchingSegments = segments.Where(x => x.Equals(segment)).ToArray();
                 Contract.Requires<InvalidSegmentException>(
-                    segments.Count(x => x.Equals(segment)) == 1,
-                    $"Supplied segment is a duplicate of another segment. Supplied: {segment}");
+                    matchingSegments.Length == 1,
+                    $"Supplied segment is a duplicate of another segment. Supplied:\n{segment}\nMatches\n: {string.Join("\n-----------\n", matchingSegments.Select(x => x.ToString()))}");
             }
 
             // split the provided segments up into processable chunks
@@ -659,19 +660,15 @@ namespace AnalysisBase
             // save created audio file to settings.SegmentTempDirectory
             var task = this.SourcePreparer.PrepareFile(
                 dirs.Temp,
-                segment.Source,
+                segment,
                 localCopyOfSettings.SegmentMediaType,
-                segment.StartOffsetSeconds.Seconds(),
-                segment.EndOffsetSeconds.Seconds(),
                 localCopyOfSettings.AnalysisTargetSampleRate,
                 dirs.Temp,
                 localCopyOfSettings.AnalysisChannelSelection,
                 localCopyOfSettings.AnalysisMixDownToMono);
 
             // de-async this method
-            task.Wait(TaskTimeoutSeconds * 1000);
-
-            var preparedFile = task.Result;
+            var preparedFile = task.ConfigureAwait(false).GetAwaiter().GetResult();
 
             var segmentSettings = new SegmentSettings<T>(localCopyOfSettings, segment, dirs, preparedFile);
 

@@ -146,4 +146,3 @@ namespace AcousticWorkbench.Models
         public Available Available { get; set; }
     }
 }
-

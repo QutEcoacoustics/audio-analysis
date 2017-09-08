@@ -94,8 +94,6 @@ namespace AnalysisPrograms.SourcePreparers
             IEnumerable<ISegment<TSource>> fileSegments,
             AnalysisSettings settings)
         {
-            var audioUtility = new MasterAudioUtility();
-
             foreach (var segment in fileSegments)
             {
                 if (!(segment is FileSegment))
@@ -106,8 +104,6 @@ namespace AnalysisPrograms.SourcePreparers
                 }
 
                 var fileSegment = (FileSegment)segment;
-
-                var mediaType = MediaTypes.GetMediaType(fileSegment.Source.Extension);
 
                 var startOffset = fileSegment.StartOffsetSeconds.Seconds();
                 var endOffset = fileSegment.EndOffsetSeconds.Seconds();
@@ -192,19 +188,15 @@ namespace AnalysisPrograms.SourcePreparers
             }
         }
 
-        private static FileSegment CreateSegment(
+        internal static ISegment<TSource> CreateSegment<TSource>(
             ref long aggregate,
             long offset,
-            FileSegment fileSegment,
+            ISegment<TSource> currentSegment,
             TimeSpan startOffset,
             TimeSpan endOffset,
             TimeSpan overlap)
         {
-            // So we aren't actually cutting any files, rather we're preparing to cut files.
-            // Thus the clone the object and set new offsets.
-            var currentSegment = (FileSegment)fileSegment.Clone();
-
-            currentSegment.SegmentStartOffset = startOffset.Add(TimeSpan.FromMilliseconds(aggregate));
+            var newStart = startOffset.Add(TimeSpan.FromMilliseconds(aggregate));
 
             aggregate += offset;
 
@@ -212,15 +204,18 @@ namespace AnalysisPrograms.SourcePreparers
 
             // include overlap
             segmentEndOffset = segmentEndOffset.Add(overlap);
+
             // don't allow overflow past desired end point
             if (segmentEndOffset > endOffset)
             {
                 segmentEndOffset = endOffset;
             }
 
-            currentSegment.SegmentEndOffset = segmentEndOffset;
+            var newEnd = segmentEndOffset;
 
-            return currentSegment;
+            // So we aren't actually cutting any files, rather we're preparing to cut files.
+            // Thus the clone the object and set new offsets.
+            return currentSegment.SplitSegment(newStart.TotalSeconds, newEnd.TotalSeconds);
         }
 
         /// <summary>
@@ -235,12 +230,6 @@ namespace AnalysisPrograms.SourcePreparers
         /// <param name="outputMediaType">
         ///     The output Media Type.
         /// </param>
-        /// <param name="startOffset">
-        ///     The start Offset from start of entire original file.
-        /// </param>
-        /// <param name="endOffset">
-        ///     The end Offset from start of entire original file.
-        /// </param>
         /// <param name="targetSampleRateHz">
         ///     The target Sample Rate Hz.
         /// </param>
@@ -254,35 +243,31 @@ namespace AnalysisPrograms.SourcePreparers
         /// </returns>
         public async Task<FileSegment> PrepareFile<TSource>(
             DirectoryInfo outputDirectory,
-            TSource source,
+            ISegment<TSource> source,
             string outputMediaType,
-            TimeSpan startOffset,
-            TimeSpan endOffset,
-            int targetSampleRateHz,
+            int? targetSampleRateHz,
             DirectoryInfo temporaryFilesDirectory,
-            int[] channelSelection = null,
-            bool? mixDownToMono = null)
+            int[] channelSelection,
+            bool? mixDownToMono)
         {
             return await TaskEx.Run(() =>
             {
-                var sourceFileInfo = source as FileInfo;
-
-                if (sourceFileInfo == null)
+                if (!(source is FileSegment segment))
                 {
-                    throw new NotSupportedException("LocalSourcePreparer only knows how to access FileInfo types");
+                    throw new NotSupportedException($"{nameof(LocalSourcePreparer)} only knows how to access {nameof(FileSegment)} types");
                 }
 
                 var request = new AudioUtilityRequest
                 {
-                    OffsetStart = startOffset,
-                    OffsetEnd = endOffset,
+                    OffsetStart = segment.StartOffsetSeconds.Seconds(),
+                    OffsetEnd = segment.EndOffsetSeconds.Seconds(),
                     TargetSampleRate = targetSampleRateHz,
                     MixDownToMono = mixDownToMono,
                     Channels = channelSelection,
                 };
                 var preparedFile = AudioFilePreparer.PrepareFile(
                     outputDirectory,
-                    sourceFileInfo,
+                    segment.Source,
                     outputMediaType,
                     request,
                     temporaryFilesDirectory);
