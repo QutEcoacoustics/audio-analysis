@@ -221,10 +221,8 @@
         {
             var task = sourcePreparer.PrepareFile(
                     arguments.OutputDir,
-                    fileSegment.Source,
+                    fileSegment,
                     settings.SegmentMediaType,
-                    fileSegment.StartOffsetSeconds.Seconds(),
-                    fileSegment.EndOffsetSeconds.Seconds(),
                     settings.AnalysisTargetSampleRate,
                     settings.AnalysisTempDirectory,
                     null,

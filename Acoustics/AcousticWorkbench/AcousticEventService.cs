@@ -35,11 +35,14 @@ namespace AcousticWorkbench
                             eq = audioEventId,
                         },
                     },
-                });
+                },
+                out var stringBody);
 
             var response = await this.Client.PostAsync(uri, body);
 
-            return await this.ProcessApiResult<AudioEvent>(response);
+            var audioEvents = await this.ProcessApiResult<AudioEvent[]>(response, stringBody);
+
+            return audioEvents.Single();
         }
     }
 }

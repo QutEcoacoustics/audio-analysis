@@ -212,6 +212,7 @@
     <Reference Include="System.Net.Http.WebRequest, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Threading.Tasks, Version=2.6.10.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.1.1.10\lib\net40\System.Threading.Tasks.dll</HintPath>
     </Reference>
@@ -257,6 +258,7 @@
     <Compile Include="Draw\Zooming\DrawZoomingSpectrograms.Dev.cs" />
     <Compile Include="EventStatistics\EventStatisticsAnalysis.Arguments.cs" />
     <Compile Include="EventStatistics\EventStatisticsAnalysis.cs" />
+    <Compile Include="EventStatistics\EventStatisticsAnalysis.Entry.cs" />
     <Compile Include="EventStatistics\ImportedEvent.cs" />
     <Compile Include="LitoriaFallax_OBSOLETE.cs" />
     <Compile Include="LimnodynastesConvex_OBSOLETE.cs" />

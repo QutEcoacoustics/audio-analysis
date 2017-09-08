@@ -33,11 +33,6 @@ namespace AcousticWorkbench
             return api.Base("security/new");
         }
 
-        public static Uri GetListenUri(this IApi api, IWorkbenchSegment workbenchSegment)
-        {
-            return GetListenUri(api, workbenchSegment.AudioRecordingId, workbenchSegment.StartOffsetSeconds, workbenchSegment.EndOffsetSeconds);
-        }
-
         public static Uri GetListenUri(this IApi api, long audioRecordingId, double startOffsetSeconds, double? endOffsetSeconds = null)
         {
             string end = endOffsetSeconds == null ? string.Empty : $"&end ={endOffsetSeconds}";
@@ -49,14 +44,24 @@ namespace AcousticWorkbench
             return api.Base($"audio_recordings/{audioRecordingId}/media.json");
         }
 
-        public static Uri GetMediaInfoUri(this IApi api, IWorkbenchSegment workbenchSegment)
+        public static Uri GetMediaInfoUri(this IApi api, long audioRecordingId, double startOffsetSeconds, double endOffsetSeconds)
         {
-            return api.Base($"audio_recordings/{workbenchSegment.AudioRecordingId}/media.json?start_offset={workbenchSegment.StartOffsetSeconds}&end_offset={workbenchSegment.EndOffsetSeconds}");
+            return api.Base($"audio_recordings/{audioRecordingId}/media.json?start_offset={startOffsetSeconds}&end_offset={endOffsetSeconds}");
         }
 
-        public static Uri GetMediaWaveUri(this IApi api, IWorkbenchSegment workbenchSegment)
+        public static Uri GetMediaWaveUri(
+            this IApi api,
+            long audioRecordingId,
+            double startOffsetSeconds,
+            double endOffsetSeconds,
+            int? sampleRate = null,
+            byte? channel = 0)
         {
-            return api.Base($"audio_recordings/{workbenchSegment.AudioRecordingId}/media.wav?start_offset={workbenchSegment.StartOffsetSeconds}&end_offset={workbenchSegment.EndOffsetSeconds}");
+            return api.Base(
+                $"audio_recordings/{audioRecordingId}/media.wav?"
+                + $"start_offset={startOffsetSeconds}&end_offset={endOffsetSeconds}"
+                + (sampleRate.HasValue ? $"&sample_rate={sampleRate.Value}" : string.Empty)
+                + (channel.HasValue ? $"&channel={channel.Value}" : string.Empty));
         }
 
         public static Uri Base(this IApi api, string path = "")

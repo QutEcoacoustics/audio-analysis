@@ -44,23 +44,21 @@ namespace Acoustics.Test.TestHelpers
 
         public Task<FileSegment> PrepareFile<TSource>(
             DirectoryInfo outputDirectory,
-            TSource source,
+            ISegment<TSource> source,
             string outputMediaType,
-            TimeSpan startOffset,
-            TimeSpan endOffset,
-            int targetSampleRateHz,
+            int? targetSampleRateHz,
             DirectoryInfo temporaryFilesDirectory,
             int[] channelSelection,
             bool? mixDownToMono)
         {
-            int min = (int)startOffset.TotalMinutes;
+            int min = (int)source.StartOffsetSeconds.Seconds().TotalMinutes;
 
             if (typeof(TSource) != typeof(FileInfo))
             {
                 throw new NotSupportedException("Dummy Source Preparer only works with FileInfos");
             }
 
-            var basename = Path.GetFileNameWithoutExtension((source as FileInfo).Name);
+            var basename = Path.GetFileNameWithoutExtension((source.Source as FileInfo).Name);
 
             return Task.Run(() =>
             {
@@ -69,11 +67,11 @@ namespace Acoustics.Test.TestHelpers
                 using (var file = path.CreateText())
                 {
                     file.WriteLine(
-                        $"{outputDirectory},{source},{outputMediaType},{startOffset},{endOffset},{targetSampleRateHz}"
+                        $"{outputDirectory},{source},{outputMediaType},{source.StartOffsetSeconds},{source.EndOffsetSeconds},{targetSampleRateHz}"
                         + $",{temporaryFilesDirectory},{channelSelection},{mixDownToMono}");
                 }
 
-                return new FileSegment(path, targetSampleRateHz, endOffset - startOffset);
+                return new FileSegment(path, targetSampleRateHz.Value, (source.EndOffsetSeconds - source.StartOffsetSeconds).Seconds());
             });
         }
 

@@ -6,6 +6,7 @@ namespace AcousticWorkbench
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Net.Http;
     using System.Text;
@@ -33,6 +34,41 @@ namespace AcousticWorkbench
             var response = await this.Client.SendAsync(request);
 
             return await this.ProcessApiResult<Media>(response);
+        }
+
+        public async Task<(Stream Stream, long? ContentLength)> DownloadMediaWave(
+            long audioRecordingId,
+            double startOffsetSeconds,
+            double endOffsetSeconds,
+            int? sampleRateHertz = null,
+            byte? channel = 0)
+        {
+            var uri = this.AuthenticatedApi.GetMediaWaveUri(
+                audioRecordingId,
+                startOffsetSeconds,
+                endOffsetSeconds,
+                sampleRateHertz,
+                channel);
+
+            var request = new HttpRequestMessage()
+            {
+                RequestUri = uri,
+                Method = HttpMethod.Get,
+            };
+
+            // this is just blocking until the response is ready to start streaming
+            // and NOT blocking until the entire response has been read!
+            var response = await this.Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return (await response.Content.ReadAsStreamAsync(), response.Content.Headers.ContentLength);
+            }
+
+            // only called for errors - this call should always throw
+            await this.ProcessApiResult<object>(response);
+
+            throw new InvalidOperationException("DownloadMedia reached an invalid state");
         }
     }
 }

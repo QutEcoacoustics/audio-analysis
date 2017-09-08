@@ -238,14 +238,17 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnalysisPrograms\AcousticWorkbench.Orchestration\RemoteSegmentTests.cs" />
     <Compile Include="AcousticWorkbench\ApiTests.cs" />
     <Compile Include="AcousticWorkbench\AuthenticationServiceTests.cs" />
     <Compile Include="AnalysisBase\AnalysisCoordinatorTests.cs" />
     <Compile Include="AnalysisBase\SegmentSettingsTests.cs" />
     <Compile Include="AnalysisBase\AnalysisSettingsTests.cs" />
     <Compile Include="AnalysisBase\FileSegmentTests.cs" />
+    <Compile Include="AnalysisPrograms\AcousticWorkbench.Orchestration\EventMetadataResolverTests.cs" />
     <Compile Include="AnalysisPrograms\AnalyzeLongRecordings\TestAnalyzeLongRecording.cs" />
     <Compile Include="AnalysisPrograms\Concatenation\ConcatenationTests.cs" />
+    <Compile Include="AnalysisPrograms\SourcePreparers\RemoteSourcePreparerTests.cs" />
     <Compile Include="AnalysisPrograms\SourcePreparers\LocalSourcePreparerTests.cs" />
     <Compile Include="ArrayExtensionsTests.cs" />
     <Compile Include="AudioAnalysisTools\DSP\EnvelopeAndFftTests.cs" />
@@ -261,6 +264,7 @@
     <Compile Include="AudioAnalysisTools\TileImage\AbsoluteDateTimeTilerTests.cs" />
     <Compile Include="AudioAnalysisTools\TileImage\TilerTests.cs" />
     <Compile Include="Shared\RangeTests.cs" />
+    <Compile Include="TestHelpers\Factories\AudioRecordingFactory.cs" />
     <Compile Include="Tools\AudioFilePreparerTests.cs" />
     <Compile Include="FileDateHelpersTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -365,6 +369,7 @@
     <Analyzer Include="..\..\AudioAnalysis\packages\StyleCop.Analyzers.1.1.0-beta004\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
     <Analyzer Include="..\..\AudioAnalysis\packages\StyleCop.Analyzers.1.1.0-beta004\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

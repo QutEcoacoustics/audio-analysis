@@ -22,7 +22,10 @@ namespace AnalysisPrograms
     using System.Reflection;
     using System.Runtime.Serialization;
     using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
+    using EventStatistics;
     using log4net.Appender;
     using log4net.Core;
     using log4net.Filter;
@@ -87,6 +90,25 @@ namespace AnalysisPrograms
 #endif
                 return false;
             }
+        }
+
+        public static bool IsDebuggerAttached => Debugger.IsAttached;
+
+        public static void ExecuteAsync<T>(Func<T, Task> task, T arguments)
+        {
+            Log.Debug("Executing supplied method as an async block");
+            var source = new CancellationTokenSource();
+            Console.CancelKeyPress += (s, e) =>
+            {
+                e.Cancel = true;
+                source.Cancel();
+            };
+
+            task(arguments).ConfigureAwait(false).GetAwaiter().GetResult();
+
+            //AsyncContext.Run(() => task(arguments));
+
+            Log.Debug("Executing supplied method as an async block has completed");
         }
 
         private static void AttachExceptionHandler()

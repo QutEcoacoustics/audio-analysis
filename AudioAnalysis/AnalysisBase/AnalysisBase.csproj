@@ -193,6 +193,7 @@
     <Compile Include="ResultBases\ResultBase.cs" />
     <Compile Include="ResultBases\SpectralIndexBase.cs" />
     <Compile Include="SaveBehavior.cs" />
+    <Compile Include="SegmentSplitException.cs" />
     <Compile Include="Segment\InvalidSegmentException.cs" />
     <Compile Include="Segment\ISegment.cs" />
     <Compile Include="Segment\ISourceMetadata.cs" />

@@ -51,7 +51,7 @@ namespace AcousticWorkbench
 
         protected static void AddAuthTokenHeader(HttpRequestHeaders headers, string token)
         {
-            headers.Authorization = new AuthenticationHeaderValue("Token token", token);
+            headers.Authorization = new AuthenticationHeaderValue("Token", "token=" + token);
         }
 
         protected string Serialize(object obj)
@@ -61,7 +61,13 @@ namespace AcousticWorkbench
 
         protected StringContent SerializeContent(object obj)
         {
-            return new StringContent(this.Serialize(obj), Encoding.UTF8, ApplicationJson);
+            return this.SerializeContent(obj, out var _);
+        }
+
+        protected StringContent SerializeContent(object obj, out string serializedString)
+        {
+            serializedString = this.Serialize(obj);
+            return new StringContent(serializedString, Encoding.UTF8, ApplicationJson);
         }
 
         protected AcousticWorkbenchResponse<T> Deserialize<T>(string json)
@@ -69,14 +75,14 @@ namespace AcousticWorkbench
             return JsonConvert.DeserializeObject<AcousticWorkbenchResponse<T>>(json, this.jsonSerializerSettings);
         }
 
-        protected async Task<T> ProcessApiResult<T>(HttpResponseMessage response)
+        protected async Task<T> ProcessApiResult<T>(HttpResponseMessage response, string requestBody = "")
         {
             var json = await response.Content.ReadAsStringAsync();
             var result = this.Deserialize<T>(json);
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpResponseException(response, result.Meta);
+                throw new HttpResponseException(response, result.Meta, requestBody);
             }
 
             return result.Data;
@@ -84,10 +90,18 @@ namespace AcousticWorkbench
 
         public class HttpResponseException : Exception
         {
-            public HttpResponseException(HttpResponseMessage response, Meta responseMeta)
+            public HttpResponseMessage Response { get; }
+
+            public Meta ResponseMeta { get; }
+
+            public HttpResponseException(HttpResponseMessage response, Meta responseMeta, string requestBody = "")
             {
-                this.Message = $"Http response failed (Status: {response.StatusCode}:\n" +
+                this.Response = response;
+                this.ResponseMeta = responseMeta;
+                this.Message = $"Http response failed (Status: {response.StatusCode}):\n" +
                                $"URI: {response.RequestMessage.RequestUri}\n" +
+                               $"Headers: {response.RequestMessage.Headers}\n" +
+                               $"Body: {requestBody}\n" +
                                $"API meta: {responseMeta}";
             }
 

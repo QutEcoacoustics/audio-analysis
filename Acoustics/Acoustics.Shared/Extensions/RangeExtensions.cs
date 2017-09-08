@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+// ReSharper disable once CheckNamespace
 namespace Acoustics.Shared
 {
     public static class RangeExtensions
@@ -14,26 +15,43 @@ namespace Acoustics.Shared
         /// <summary>
         /// Greedily grow the current range to the new duration without exceeding the limits.
         /// Will grow the range around the center of the current range if possible.
-        /// Will not fail, and will return as much range as possible, without exceeding limits or duration.
+        /// Will not fail, and will return as much range as possible, without exceeding limits.
         /// </summary>
         /// <param name="range"></param>
         /// <param name="limits"></param>
-        /// <param name="duration"></param>
+        /// <param name="growAmount"></param>
+        /// <param name="roundDigits"></param>
         /// <returns></returns>
-        public static Range<double> Grow(this Range<double> range, Range<double> limits, double duration)
+        public static Range<double> Grow(
+            this Range<double> range,
+            Range<double> limits,
+            double growAmount,
+            int? roundDigits = null)
         {
             var limitMagnitude = limits.Magnitude();
 
-            if (duration > limitMagnitude)
+            if (growAmount + range.Magnitude() > limitMagnitude)
             {
-                duration = limitMagnitude;
+                return limits;
             }
 
-            var rangeCenter = range.Center();
+            var halfGrow = (growAmount / 2.0);
 
-            var newDurationHalf = duration / 2.0;
-            var newMin = rangeCenter - newDurationHalf;
-            var newMax = rangeCenter + newDurationHalf;
+            var newMin = range.Minimum - halfGrow;
+
+            // round the lower bound
+            if (roundDigits.HasValue)
+            {
+                newMin = Math.Round(newMin, roundDigits.Value, MidpointRounding.AwayFromZero);
+            }
+
+            var newMax = range.Maximum + halfGrow;
+
+            // round the upper bound
+            if (roundDigits.HasValue)
+            {
+                newMax = Math.Round(newMax, roundDigits.Value, MidpointRounding.AwayFromZero);
+            }
 
             if (newMin < limits.Minimum)
             {
@@ -63,6 +81,12 @@ namespace Acoustics.Shared
             where T : struct, IComparable<T>
         {
             return new Range<T>(pair.Minimum, pair.Maximum);
+        }
+
+        public static Range<T> To<T>(this T Minimum, T Maximum)
+            where T : struct, IComparable<T>
+        {
+            return new Range<T>(Minimum, Maximum);
         }
 
         public static Range<T> AsRangeFromZero<T>(this T maximum)

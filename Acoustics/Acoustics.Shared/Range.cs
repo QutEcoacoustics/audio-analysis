@@ -76,8 +76,7 @@ namespace Acoustics.Shared
         /// </param>
         public bool Equals(Range<T> other)
         {
-            return EqualityComparer<T>.Default.Equals(this.Maximum, other.Maximum) &&
-                   EqualityComparer<T>.Default.Equals(this.Minimum, other.Minimum);
+            return this.Minimum.Equals(other.Minimum) && this.Maximum.Equals(other.Maximum);
         }
 
         /// <summary>
@@ -91,20 +90,12 @@ namespace Acoustics.Shared
         /// </returns>
         public override bool Equals(object obj)
         {
-            if (obj == null)
+            if (ReferenceEquals(null, obj))
             {
                 return false;
             }
 
-            // If parameter cannot be cast return false.
-            if (!(obj is Range<T>))
-            {
-                return false;
-            }
-
-            var other = (Range<T>)obj;
-
-            return this.Equals(other);
+            return obj is Range<T> && this.Equals((Range<T>)obj);
         }
 
         /// <summary>
@@ -115,7 +106,10 @@ namespace Acoustics.Shared
         /// </returns>
         public override int GetHashCode()
         {
-            return this.Minimum.GetHashCode() ^ this.Maximum.GetHashCode();
+            unchecked
+            {
+                return (this.Minimum.GetHashCode() * 397) ^ this.Maximum.GetHashCode();
+            }
         }
 
         /// <summary>

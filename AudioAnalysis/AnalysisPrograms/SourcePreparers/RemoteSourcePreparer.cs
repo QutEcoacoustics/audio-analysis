@@ -10,9 +10,11 @@ namespace AnalysisPrograms.SourcePreparers
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using AcousticWorkbench;
+    using AcousticWorkbench.Orchestration;
     using AnalysisBase;
     using AnalysisBase.Segment;
     using global::AcousticWorkbench;
+    using global::AcousticWorkbench.Models;
     using log4net;
 
     /// <summary>
@@ -20,12 +22,17 @@ namespace AnalysisPrograms.SourcePreparers
     /// </summary>
     public class RemoteSourcePreparer : ISourcePreparer
     {
-        private readonly IAuthenticatedApi authenticatedApi;
         private static readonly ILog Log = LogManager.GetLogger(nameof(RemoteSourcePreparer));
+        private readonly IAuthenticatedApi authenticatedApi;
+        private readonly bool allowSegmentcutting;
+        private readonly MediaService mediaService;
 
-        public RemoteSourcePreparer(IAuthenticatedApi authenticatedApi)
+        public RemoteSourcePreparer(IAuthenticatedApi authenticatedApi, bool allowSegmentcutting = true)
         {
             this.authenticatedApi = authenticatedApi;
+            this.allowSegmentcutting = allowSegmentcutting;
+
+            this.mediaService = new MediaService(this.authenticatedApi);
         }
 
         /// <summary>
@@ -65,11 +72,11 @@ namespace AnalysisPrograms.SourcePreparers
         {
             throw new NotImplementedException();
             var request = new AudioUtilityRequest
-                {
-                    OffsetStart = startOffset,
-                    OffsetEnd = endOffset,
-                    TargetSampleRate = targetSampleRateHz,
-                };
+            {
+                OffsetStart = startOffset,
+                OffsetEnd = endOffset,
+                TargetSampleRate = targetSampleRateHz,
+            };
             var preparedFile = AudioFilePreparer.PrepareFile(
                 outputDirectory,
                 source.ToFileInfo(),
@@ -99,8 +106,57 @@ namespace AnalysisPrograms.SourcePreparers
             IEnumerable<ISegment<TSource>> fileSegments,
             AnalysisSettings settings)
         {
-            // we can probably support this later on but we'll need to refactor the FileSegment type
-            throw new NotImplementedException();
+            if (this.allowSegmentcutting)
+            {
+                foreach (var segment in fileSegments)
+                {
+                    if (!(segment is RemoteSegment))
+                    {
+                        throw new NotImplementedException(
+                            $"{nameof(RemoteSourcePreparer)} only supports operating on {nameof(RemoteSegment)}");
+                    }
+
+                    var startOffset = segment.StartOffsetSeconds.Seconds();
+                    var endOffset = segment.EndOffsetSeconds.Seconds();
+
+                    var segmentDuration = endOffset - startOffset;
+
+                    // segment into exact chunks - all but the last chunk will be equal to the max duration
+                    var segments = AudioFilePreparer.DivideExactLeaveLeftoversAtEnd(
+                        Convert.ToInt64(segmentDuration.TotalMilliseconds),
+                        Convert.ToInt64(settings.AnalysisMaxSegmentDuration.Value.TotalMilliseconds));
+
+                    var overlap = settings.SegmentOverlapDuration;
+                    long aggregate = 0;
+
+                    // yield each normal segment
+                    foreach (long offset in segments)
+                    {
+                        yield return LocalSourcePreparer.CreateSegment(
+                            ref aggregate,
+                            offset,
+                            segment,
+                            startOffset,
+                            endOffset,
+                            overlap);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var segment in fileSegments)
+                {
+                    var duration = (segment.EndOffsetSeconds - segment.StartOffsetSeconds).Seconds();
+                    if (duration > settings.AnalysisMaxSegmentDuration.Value)
+                    {
+                        throw new SegmentSplitException(
+                            $"Splitting segments has been disabled for" +
+                            $" {nameof(RemoteSourcePreparer)}, cannot split {segment}");
+                    }
+
+                    yield return segment;
+                }
+            }
         }
 
         /// <summary>
@@ -115,12 +171,6 @@ namespace AnalysisPrograms.SourcePreparers
         /// <param name="outputMediaType">
         ///     The output Media Type.
         /// </param>
-        /// <param name="startOffset">
-        ///     The start Offset from start of entire original file.
-        /// </param>
-        /// <param name="endOffset">
-        ///     The end Offset from start of entire original file.
-        /// </param>
         /// <param name="targetSampleRateHz">
         ///     The target Sample Rate Hz.
         /// </param>
@@ -134,35 +184,89 @@ namespace AnalysisPrograms.SourcePreparers
         /// </returns>
         public async Task<FileSegment> PrepareFile<TSource>(
             DirectoryInfo outputDirectory,
-            TSource source,
+            ISegment<TSource> source,
             string outputMediaType,
-            TimeSpan startOffset,
-            TimeSpan endOffset,
-            int targetSampleRateHz,
+            int? targetSampleRateHz,
             DirectoryInfo temporaryFilesDirectory,
-            int[] channelSelection = null,
-            bool? mixDownToMono = null)
+            int[] channelSelection,
+            bool? mixDownToMono)
         {
-            throw new NotImplementedException();
-            var request = new AudioUtilityRequest
-                {
-                    OffsetStart = startOffset,
-                    OffsetEnd = endOffset,
-                    TargetSampleRate = targetSampleRateHz,
-                    MixDownToMono = mixDownToMono,
-                    Channels = channelSelection,
-                };
-            var preparedFile = AudioFilePreparer.PrepareFile(
-                outputDirectory,
-                null,//source.ToFileInfo(),
-                outputMediaType,
-                request,
-                temporaryFilesDirectory);
+            if (!(source is RemoteSegment segment))
+            {
+                throw new NotImplementedException(
+                    $"{nameof(RemoteSourcePreparer)} only supports preparing files with {nameof(RemoteSegment)} sources");
+            }
 
-            return new FileSegment(
-                preparedFile.TargetInfo.SourceFile,
-                preparedFile.TargetInfo.SampleRate.Value,
-                preparedFile.TargetInfo.Duration.Value);
+            if (channelSelection != null && channelSelection.Length > 1)
+            {
+                throw new NotSupportedException(
+                    $"{nameof(RemoteSourcePreparer)} does not support multi channel selection");
+            }
+
+            var recording = segment.Source;
+            var identifier = segment.SourceMetadata.Identifier;
+            var filename = AudioFilePreparer.GetFileName(
+                identifier,
+                outputMediaType,
+                source.StartOffsetSeconds.Seconds(),
+                source.EndOffsetSeconds.Seconds());
+
+            var destination = outputDirectory.CombineFile(filename);
+
+            // channel values:
+            // null - select all channels
+            // 0 - mixdown all channels
+            // n - select nth channel
+            byte? channel = (mixDownToMono ?? false)
+                ? (byte)0
+                : (channelSelection == null ? (byte?)null : (byte)channelSelection[0]);
+
+            Log.Debug($"Downloading media: {recording.Id}, {segment.Offsets}");
+            var (stream, contentLength) = await this.mediaService.DownloadMediaWave(
+                recording.Id,
+                source.StartOffsetSeconds,
+                source.EndOffsetSeconds,
+                targetSampleRateHz,
+                channel);
+
+            Log.Trace(
+                $"Downloading media: {recording.Id}, {segment.Offsets} - headers recieved," 
+                + $" body is {contentLength?.ToString() ?? "<unknown>"} bytes, writing stream to file {destination}");
+
+            // The output file should never exist already - if it does there's something wrong with the program
+            // or a previous run of the program left behind files.
+            // This restriction is similar to that found in MasterAudioUtility
+            if (destination.Exists)
+            {
+                Log.Warn($"RemoteSource preparer is trying to create file {destination} that already exists");
+            }
+
+            // purposely use FileMode.CreateNew to ensure target file does not exist already (or else throw)
+            long length;
+            using (var file = File.Open(destination.FullName, FileMode.CreateNew, FileAccess.Write))
+            {
+                await stream.CopyToAsync(file);
+                length = file.Length;
+            }
+
+            Log.Trace(
+                $"Downloading media: {recording.Id}, {segment.Offsets} - file recieved, "
+                + $"{length} bytes written to file {destination}");
+
+            // finally inspect the bit of audio we downloaded, extract the metadata, and return a file segment
+            var preparedFile = new FileSegment(destination, TimeAlignment.None);
+
+            // do some sanity checks
+            var expectedDuration = segment.Offsets.Magnitude().Seconds();
+            var durationDelta = expectedDuration - preparedFile.TargetFileDuration.Value;
+            if (durationDelta > 1.0.Seconds())
+            {
+                Log.Warn(
+                    $"Downloaded media ({recording.Id}, {segment.Offsets}) did not have expected duration."
+                    + $" Expected: {expectedDuration}, Actual: {preparedFile.TargetFileDuration}");
+            }
+
+            return preparedFile;
         }
     }
 }

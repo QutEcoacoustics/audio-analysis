@@ -5,7 +5,9 @@
 namespace AnalysisPrograms.AcousticWorkbench.Orchestration
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
@@ -21,16 +23,12 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
     /// </summary>
     public class RemoteSegment : ISegment<AudioRecording>
     {
-        public RemoteSegment(AudioRecording source, Range<double> offsets)
-            : this(source, offsets.Minimum, offsets.Maximum)
-        {
-        }
+        private AudioRecording recording;
 
-        public RemoteSegment(AudioRecording source, double startOffsetSeconds, double endOffsetSeconds)
+        public RemoteSegment(AudioRecording source, Range<double> offsets)
         {
             this.Source = source;
-            this.StartOffsetSeconds = startOffsetSeconds;
-            this.EndOffsetSeconds = endOffsetSeconds;
+            this.Offsets = offsets;
 
             this.SourceMetadata = new SourceMetadata(
                 source.DurationSeconds.Seconds(),
@@ -39,13 +37,25 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
                 source.RecordedDate);
         }
 
+        public RemoteSegment(AudioRecording source, double startOffsetSeconds, double endOffsetSeconds)
+            : this(source, new Range<double>(startOffsetSeconds, endOffsetSeconds))
+        {
+        }
+
+        public RemoteSegment(AudioRecording source)
+            : this(source, 0, source.DurationSeconds)
+        {
+        }
+
+        public Range<double> Offsets { get; }
+
         public AudioRecording Source { get; }
 
         public SourceMetadata SourceMetadata { get; }
 
-        public double StartOffsetSeconds { get; }
+        public double StartOffsetSeconds => this.Offsets.Minimum;
 
-        public double EndOffsetSeconds { get; }
+        public double EndOffsetSeconds => this.Offsets.Maximum;
 
         public bool Equals(ISegment<AudioRecording> other)
         {
@@ -64,45 +74,67 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
                    this.EndOffsetSeconds == other.EndOffsetSeconds;
         }
 
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = this.Source?.Uuid.GetHashCode() ?? 0;
+                hashCode = (hashCode * 397) ^ this.StartOffsetSeconds.GetHashCode();
+                hashCode = (hashCode * 397) ^ this.EndOffsetSeconds.GetHashCode();
+                return hashCode;
+            }
+        }
+
         public ISegment<AudioRecording> SplitSegment(double newStart, double newEnd)
         {
             return new RemoteSegment(this.Source, newStart, newEnd);
         }
-    }
 
-    public class RemoteSegmentWithDatum : RemoteSegment
-    {
-        public RemoteSegmentWithDatum(AudioRecording source, Range<double> offsets, object datum)
-            : base(source, offsets.Minimum, offsets.Maximum)
+        public override bool Equals(object obj)
         {
-            this.Datum = datum;
-        }
-
-        public object Datum { get; }
-
-        public bool Equals(RemoteSegmentWithDatum other)
-        {
-            if (other == null)
+            if (ReferenceEquals(null, obj))
             {
                 return false;
             }
 
-            if (object.ReferenceEquals(this, other))
+            if (ReferenceEquals(this, obj))
             {
                 return true;
             }
 
-            if (this.Datum != other.Datum)
+            if (!(obj is RemoteSegment objSegment))
             {
                 return false;
             }
 
-            return base.Equals(other);
+            return this.Equals(objSegment);
         }
+
+    }
+
+    public class RemoteSegmentWithData : RemoteSegment
+    {
+        public RemoteSegmentWithData(AudioRecording source, Range<double> offsets, object[] data)
+            : this(source, offsets, (IList<object>)data)
+        {
+        }
+
+        public RemoteSegmentWithData(AudioRecording source, Range<double> offsets, IList<object> data)
+            : base(source, offsets.Minimum, offsets.Maximum)
+        {
+            this.Data = new ReadOnlyCollection<object>(data);
+        }
+
+        public IReadOnlyCollection<object> Data { get; }
 
         public new ISegment<AudioRecording> SplitSegment(double newStart, double newEnd)
         {
-            return new RemoteSegmentWithDatum(this.Source, (newStart, newEnd).AsRange(), this.Datum);
+            return new RemoteSegmentWithData(this.Source, (newStart, newEnd).AsRange(), this.Data.ToList());
+        }
+
+        public override string ToString()
+        {
+            return "[RemoteSegmentWithDatum: " + Json.SerialiseToString(this) + "]";
         }
     }
 }

@@ -44,17 +44,17 @@
 
             var expected = new[]
             {
-                Tuple.Create(0.0, 60.0),
-                Tuple.Create(60.0, 120.0),
-                Tuple.Create(120.0, 180.0),
-                Tuple.Create(180.0, 240.0),
-                Tuple.Create(240.0, 240.113),
+                (0.0, 60.0).AsRange(),
+                (60.0, 120.0).AsRange(),
+                (120.0, 180.0).AsRange(),
+                (180.0, 240.0).AsRange(),
+                (240.0, 240.113).AsRange(),
             };
 
             for (int i = 0; i < analysisSegments.Length; i++)
             {
-                var expectedStart = expected[i].Item1;
-                var expectedEnd = expected[i].Item2;
+                var expectedStart = expected[i].Minimum;
+                var expectedEnd = expected[i].Maximum;
                 var actual = (FileSegment)analysisSegments[i];
 
                 Assert.IsTrue(actual.IsSegmentSet);
@@ -75,8 +75,8 @@
 
             var expected = new[]
             {
-                Tuple.Create(60.0, 120.0),
-                Tuple.Create(120.0, 180.0),
+                (60.0, 120.0).AsRange(),
+                (120.0, 180.0).AsRange(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -94,11 +94,11 @@
 
             var expected = new[]
             {
-                Tuple.Create(0.0, 60.0 + 30.0),
-                Tuple.Create(60.0, 120.0 + 30.0),
-                Tuple.Create(120.0, 180.0 + 30.0),
-                Tuple.Create(180.0, 240.0 + 0.113),
-                Tuple.Create(240.0, 240.113),
+                (0.0, 60.0 + 30.0).AsRange(),
+                (60.0, 120.0 + 30.0).AsRange(),
+                (120.0, 180.0 + 30.0).AsRange(),
+                (180.0, 240.0 + 0.113).AsRange(),
+                (240.0, 240.113).AsRange(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -118,11 +118,11 @@
 
             var expected = new[]
             {
-                Tuple.Create(0.0, 60.0),
-                Tuple.Create(60.0, 120.0),
-                Tuple.Create(120.0, 180.0),
-                Tuple.Create(180.0, 240.0),
-                Tuple.Create(240.0, 240.113),
+                (0.0, 60.0).AsRange(),
+                (60.0, 120.0).AsRange(),
+                (120.0, 180.0).AsRange(),
+                (180.0, 240.0).AsRange(),
+                (240.0, 240.113).AsRange(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -160,7 +160,7 @@
             var d = 48.0;
             var expected = new[]
             {
-                Tuple.Create(60.0 + d, 120.0 + d),
+                (60.0 + d, 120.0 + d).AsRange(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -181,9 +181,9 @@
             var d = 48.0;
             var expected = new[]
             {
-                Tuple.Create(0.0 + d, 60.0 + d),
-                Tuple.Create(60.0 + d, 120.0 + d),
-                Tuple.Create(120.0 + d, 180.0 + d),
+                (0.0 + d, 60.0 + d).AsRange(),
+                (60.0 + d, 120.0 + d).AsRange(),
+                (120.0 + d, 180.0 + d).AsRange(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -204,11 +204,11 @@
             var d = 48.0;
             var expected = new[]
             {
-                Tuple.Create(0.0,  d),
-                Tuple.Create(0.0 + d, 60.0 + d),
-                Tuple.Create(60.0 + d, 120.0 + d),
-                Tuple.Create(120.0 + d, 180.0 + d),
-                Tuple.Create(180.0 + d, 240.113),
+                (0.0,  d).AsRange(),
+                (0.0 + d, 60.0 + d).AsRange(),
+                (60.0 + d, 120.0 + d).AsRange(),
+                (120.0 + d, 180.0 + d).AsRange(),
+                (180.0 + d, 240.113).AsRange(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -229,10 +229,10 @@
             var d = 48.0;
             var expected = new[]
             {
-                Tuple.Create(0.0 + d, 60.0 + d),
-                Tuple.Create(60.0 + d, 120.0 + d),
-                Tuple.Create(120.0 + d, 180.0 + d),
-                Tuple.Create(180.0 + d, 240.113),
+                (0.0 + d, 60.0 + d).AsRange(),
+                (60.0 + d, 120.0 + d).AsRange(),
+                (120.0 + d, 180.0 + d).AsRange(),
+                (180.0 + d, 240.113).AsRange(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -253,21 +253,21 @@
             var d = 48.0;
             var expected = new[]
             {
-                Tuple.Create(0.0, d),
-                Tuple.Create(0.0 + d, 60.0 + d),
-                Tuple.Create(60.0 + d, 120.0 + d),
-                Tuple.Create(120.0 + d, 180.0 + d),
+                (0.0, d).AsRange(),
+                (0.0 + d, 60.0 + d).AsRange(),
+                (60.0 + d, 120.0 + d).AsRange(),
+                (120.0 + d, 180.0 + d).AsRange(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
         }
 
-        private static void AssertSegmentsAreEqual(ISegment<FileInfo>[] acutal, Tuple<double, double>[] expected)
+        private static void AssertSegmentsAreEqual(ISegment<FileInfo>[] acutal, Range<double>[] expected)
         {
             for (int i = 0; i < acutal.Length; i++)
             {
-                var expectedStart = expected[i].Item1;
-                var expectedEnd = expected[i].Item2;
+                var expectedStart = expected[i].Minimum;
+                var expectedEnd = expected[i].Maximum;
                 var actual = (FileSegment)acutal[i];
 
                 Assert.IsTrue(actual.IsSegmentSet);
