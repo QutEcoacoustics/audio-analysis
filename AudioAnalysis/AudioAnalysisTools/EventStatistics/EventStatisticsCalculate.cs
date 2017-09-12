@@ -55,19 +55,27 @@ namespace AudioAnalysisTools.EventStatistics
         /// <param name="temporalTarget">Both start and end bounds - relative to the supplied recording</param>
         /// <param name="spectralTarget">both bottom and top bounds in Hertz</param>
         /// <param name="config">parameters that determine the outcome of the analysis</param>
+        /// <param name="segmentStartOffset">How long since the start of the recording this event occurred</param>
         /// <returns>an instance of EventStatistics</returns>
         public static EventStatistics AnalyzeAudioEvent(
             AudioRecording recording,
             Range<TimeSpan> temporalTarget,
             Range<double> spectralTarget,
-            EventStatisticsConfiguration config)
+            EventStatisticsConfiguration config,
+            TimeSpan segmentStartOffset)
         {
+            // temporal target is supplied relative to recording, but not the supplied audio segment
+            // shift coordinates relative to segment
+            var localTemporalTarget = temporalTarget.Shift(-segmentStartOffset);
+
             var stats = new EventStatistics
             {
-                EventStartSeconds = temporalTarget.Minimum.TotalSeconds,
-                EventEndSeconds = temporalTarget.Maximum.TotalSeconds,
-                MinHz = spectralTarget.Minimum,
-                MaxHz = spectralTarget.Maximum,
+                EventStartSeconds = localTemporalTarget.Minimum.TotalSeconds,
+                EventEndSeconds = localTemporalTarget.Maximum.TotalSeconds,
+                LowFrequencyHertz = spectralTarget.Minimum,
+                HighFrequencyHertz = spectralTarget.Maximum,
+                SegmentDuration = recording.Duration,
+                SegmentStartOffset = segmentStartOffset,
             };
 
             // convert recording to spectrogram
@@ -79,13 +87,22 @@ namespace AudioAnalysisTools.EventStatistics
 
             double hertzBinWidth = dspOutput1.FreqBinWidth;
             var stepDurationInSeconds = config.FrameStep / (double)sampleRate;
-            var startFrame = (int)Math.Ceiling(temporalTarget.Minimum.TotalSeconds / stepDurationInSeconds);
+            var startFrame = (int)Math.Ceiling(localTemporalTarget.Minimum.TotalSeconds / stepDurationInSeconds);
 
             // subtract 1 frame because want to end before start of end point.
-            var endFrame = (int)Math.Floor(temporalTarget.Maximum.TotalSeconds / stepDurationInSeconds) - 1;
+            var endFrame = (int)Math.Floor(localTemporalTarget.Maximum.TotalSeconds / stepDurationInSeconds) - 1;
 
             var bottomBin = (int)Math.Floor(spectralTarget.Minimum / hertzBinWidth);
             var topBin = (int)Math.Ceiling(spectralTarget.Maximum / hertzBinWidth);
+
+            // TODO: Michael check this logic please
+            // Events can have their high value set to the nyquist.
+            // Since the submatrix call below uses an inclusive upper bound an index out of bounds exception occurs in
+            // these cases. So we just ask for the bin below.
+            if (topBin == (int)(recording.Nyquist / hertzBinWidth))
+            {
+                topBin--;
+            }
 
             // Convert amplitude spectrogram to deciBels and calculate the dB background noise profile
             double[,] decibelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput1.AmplitudeSpectrogram, dspOutput1.WindowPower, sampleRate, epsilon);
@@ -114,7 +131,7 @@ namespace AudioAnalysisTools.EventStatistics
 
             // calculate the frequency standard deviation in decibels
             NormalDist.AverageAndSD(columnAverages, out mean, out stddev);
-            stats.FreqBinStdDevDb = 10 * Math.Log10(stddev);
+            stats.FreqBinStdDevDecibels = 10 * Math.Log10(stddev);
 
             // calculate relative location of the temporal maximum
             int maxRowId = DataTools.GetMaxIndex(rowAverages);
@@ -128,7 +145,7 @@ namespace AudioAnalysisTools.EventStatistics
             double binCentroid = CalculateSpectralCentroid(columnAverages);
             stats.SpectralCentroid = (int)Math.Round(hertzBinWidth * binCentroid) + (int)spectralTarget.Minimum;
             int maxColumnId = DataTools.GetMaxIndex(columnAverages);
-            stats.DominantFrequency = (int)Math.Round(hertzBinWidth * maxColumnId) + (int)spectralTarget.Maximum;
+            stats.DominantFrequency = (int)Math.Round(hertzBinWidth * maxColumnId) + (int)spectralTarget.Minimum;
 
             // remainder of this method is to produce debugging images. Can comment out when not debugging.
             /*

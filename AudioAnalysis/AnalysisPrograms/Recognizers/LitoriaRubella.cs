@@ -138,7 +138,7 @@ namespace AnalysisPrograms.Recognizers
                 NoiseReductionParameter = 0.2,
             };
 
-            TimeSpan recordingDuration = recording.Duration();
+            TimeSpan recordingDuration = recording.Duration;
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
 

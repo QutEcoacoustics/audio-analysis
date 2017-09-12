@@ -64,8 +64,7 @@ namespace AnalysisPrograms.EventStatistics
             // if a temp dir is not given, use output dir as temp dir
             if (arguments.TempDir == null)
             {
-                Log.Warn("No temporary directory provided, using output directory");
-                arguments.TempDir = arguments.Output;
+                Log.Warn("No temporary directory provided, using backup directory");
             }
 
             // Remote: create an instance of our API helpers
@@ -164,7 +163,23 @@ namespace AnalysisPrograms.EventStatistics
             // TODO: implement if needed
             analysis.SummariseResults(settings, null, null, null, null, results);
 
-            Log.Warn("INCOMPLETE");
+            Log.Debug("Summary complete");
+
+            var instanceOutputDirectory =
+                AnalysisCoordinator.GetNamedDirectory(settings.AnalysisOutputDirectory, analysis);
+
+            var resultName = FilenameHelpers.AnalysisResultPath(
+                instanceOutputDirectory,
+                arguments.Source,
+                analysis.Identifier,
+                "csv");
+
+            // NOTE: we are only saving event files
+            Log.Info($"Writing results to {resultName}");
+            analysis.WriteEventsFile(resultName.ToFileInfo(), results.SelectMany(es => es.Events));
+            Log.Debug("Writing events completed");
+
+            Log.Success("Event statistics analysis complete!");
         }
     }
 }

@@ -109,7 +109,7 @@ namespace AnalysisPrograms.Recognizers
                 NoiseReductionParameter = noiseReductionParameter,
             };
 
-            var recordingDuration = recording.Duration();
+            var recordingDuration = recording.Duration;
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
             int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;

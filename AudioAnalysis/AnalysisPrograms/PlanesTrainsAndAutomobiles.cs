@@ -262,7 +262,7 @@ namespace AnalysisPrograms
                 ev.Name = analysisName;
             }
 
-            TimeSpan tsRecordingtDuration = recording.Duration();
+            TimeSpan tsRecordingtDuration = recording.Duration;
 
             Plot plot = new Plot(AnalysisName, scores, intensityThreshold);
             return Tuple.Create(sonogram, hits, plot, predictedEvents, tsRecordingtDuration);
@@ -339,7 +339,7 @@ namespace AnalysisPrograms
 
             //set up the songogram to return. Use the existing amplitude sonogram
             int bitsPerSample = recording.WavReader.BitsPerSample;
-            TimeSpan duration = recording.Duration();
+            TimeSpan duration = recording.Duration;
             //NoiseReductionType nrt = SNR.Key2NoiseReductionType("NONE");
             NoiseReductionType nrt = SNR.KeyToNoiseReductionType("STANDARD");
 

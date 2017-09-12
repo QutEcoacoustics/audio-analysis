@@ -13,10 +13,12 @@ namespace Acoustics.Shared
     using System.Collections.Generic;
 
     /// <summary>
-    /// Range of Min-Max.
+    /// Represents a range between two points on the same dimenson.
+    /// This type does not encode any notion of endpoint clusivity - we do not know if a range is left-open, right-open,
+    /// open, or closed.
     /// </summary>
     /// <typeparam name="T">
-    /// Type of range.
+    /// The type used to represent the points in this range.
     /// </typeparam>
     public struct Range<T> : IEquatable<Range<T>>, IComparable<Range<T>>
         where T : struct, IComparable<T>
@@ -28,12 +30,12 @@ namespace Acoustics.Shared
         }
 
         /// <summary>
-        /// Gets or Minimum.
+        /// Gets the Minimum.
         /// </summary>
         public T Minimum { get; }
 
         /// <summary>
-        /// Gets Maximum.
+        /// Gets the Maximum.
         /// </summary>
         public T Maximum { get; }
 
@@ -113,14 +115,16 @@ namespace Acoustics.Shared
         }
 
         /// <summary>
-        /// Get string representation.
+        /// Gets string representation of the Range.
+        /// Note: our range has no notion of inclusive or exclusive endpoints, thus the square bracket notation is
+        /// technially incorrectly representing this value.
         /// </summary>
         /// <returns>
         /// String representation.
         /// </returns>
         public override string ToString()
         {
-            return $"Range: {this.Minimum} - {this.Maximum}";
+            return $"Range: [{this.Minimum}, {this.Maximum}]";
         }
 
         public int CompareTo(Range<T> other)

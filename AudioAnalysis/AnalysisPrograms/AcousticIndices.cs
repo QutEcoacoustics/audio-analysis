@@ -338,7 +338,7 @@ namespace AnalysisPrograms
             var recording = new AudioRecording(audioFile.FullName);
             var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
-            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration());
+            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
             analysisResults.AnalysisIdentifier = this.Identifier;
 
             // calculate indices for each subsegment
@@ -640,7 +640,7 @@ namespace AnalysisPrograms
                     @"A multi-channel recording MUST be mixed down to MONO before calculating acoustic indices!");
             }
 
-            double recordingDuration = recording.Duration().TotalSeconds;
+            double recordingDuration = recording.Duration.TotalSeconds;
             double subsegmentDuration = indexCalculationDuration.TotalSeconds;
 
             // intentional possible null ref, throw if not null

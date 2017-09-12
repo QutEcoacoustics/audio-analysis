@@ -321,7 +321,7 @@ namespace AnalysisPrograms
         public RidgeEvent(PointOfInterest pointOfInterest, SegmentSettingsBase segmentSettings, SpectrogramStandard sonogram)
         {
             this.SegmentStartOffset = segmentSettings.SegmentStartOffset;
-            this.MinHz = pointOfInterest.Herz;
+            this.LowFrequencyHertz = pointOfInterest.Herz;
             this.Frame = pointOfInterest.Point.X;
             this.Bin = sonogram.Configuration.FreqBinCount - pointOfInterest.Point.Y;
             this.Magnitude = pointOfInterest.RidgeMagnitude;
@@ -358,7 +358,7 @@ namespace AnalysisPrograms
 
             var recording = new AudioRecording(audioFile.FullName);
 
-            var result = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration())
+            var result = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration)
                          {
                              AnalysisIdentifier = this.Identifier,
                          };

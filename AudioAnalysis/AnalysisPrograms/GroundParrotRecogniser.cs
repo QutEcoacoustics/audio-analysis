@@ -138,7 +138,7 @@ namespace AnalysisPrograms
                 ae.SetScores(rectScore.Item2, 0, 1);
                 ae.BorderColour = aedConfiguration.AedEventColor;
                 ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = aed.Item2.Duration();
+                ae.SegmentDuration = aed.Item2.Duration;
 
                 eprEvents.Add(ae);
             }

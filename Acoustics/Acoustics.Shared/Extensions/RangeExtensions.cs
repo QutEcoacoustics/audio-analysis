@@ -28,9 +28,9 @@ namespace Acoustics.Shared
             double growAmount,
             int? roundDigits = null)
         {
-            var limitMagnitude = limits.Magnitude();
+            var limitMagnitude = limits.Size();
 
-            if (growAmount + range.Magnitude() > limitMagnitude)
+            if (growAmount + range.Size() > limitMagnitude)
             {
                 return limits;
             }
@@ -69,12 +69,32 @@ namespace Acoustics.Shared
 
         public static double Center(this Range<double> range)
         {
-            return range.Minimum + (range.Magnitude() / 2.0);
+            return range.Minimum + (range.Size() / 2.0);
         }
 
-        public static double Magnitude(this Range<double> range)
+        public static TimeSpan Center(this Range<TimeSpan> range)
+        {
+            return range.Minimum.Add(range.Size().Divide(2.0));
+        }
+
+        public static double Size(this Range<double> range)
         {
             return range.Maximum - range.Minimum;
+        }
+
+        public static TimeSpan Size(this Range<TimeSpan> range)
+        {
+            return range.Maximum.Subtract(range.Minimum);
+        }
+
+        public static Range<double> Shift(this Range<double> range, double shift)
+        {
+            return new Range<double>(range.Minimum + shift, range.Maximum + shift);
+        }
+
+        public static Range<TimeSpan> Shift(this Range<TimeSpan> range, TimeSpan shift)
+        {
+            return new Range<TimeSpan>(range.Minimum.Add(shift), range.Maximum.Add(shift));
         }
 
         public static Range<T> AsRange<T>(this (T Minimum, T Maximum) pair)

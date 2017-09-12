@@ -440,7 +440,7 @@ namespace AnalysisBase
                     eventBase.StartOffset >= result.SegmentStartOffset,
                     "Every event detected by this analysis should of been found within the bounds of the segment analyzed");
                 Debug.Assert(
-                    Math.Abs((eventBase.EventStartSeconds % 60.0) - (eventBase.StartOffset.TotalSeconds % 60)) < 0.001,
+                    Math.Abs((eventBase.EventStartSeconds % 60.0) - ((eventBase.StartOffset.TotalSeconds - eventBase.SegmentStartOffset.TotalSeconds) % 60)) < 0.001,
                     "The relative EventStartSeconds should equal the seconds component of StartOffset");
                 Debug.Assert(
                     eventBase.SegmentStartOffset == result.SegmentStartOffset,

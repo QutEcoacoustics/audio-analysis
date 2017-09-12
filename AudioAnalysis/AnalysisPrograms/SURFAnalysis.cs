@@ -533,7 +533,7 @@ namespace AnalysisPrograms
             var recording = new AudioRecording(audioFile.FullName);
             var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
-            var analysisResult = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration());
+            var analysisResult = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
             dynamic configuration = Yaml.Deserialise(analysisSettings.ConfigFile);
 
             bool saveCsv = analysisSettings.AnalysisDataSaveBehavior;

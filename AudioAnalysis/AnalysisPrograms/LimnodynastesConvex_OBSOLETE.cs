@@ -636,7 +636,7 @@ namespace AnalysisPrograms
             {
                 ae.SpeciesName = configDict[AnalysisKeys.SpeciesName];
                 ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = recording.Duration();
+                ae.SegmentDuration = recording.Duration;
                 ae.Name = abbreviatedName;
                 ae.BorderColour = Color.Red;
                 ae.FileName = recording.BaseName;
@@ -706,7 +706,7 @@ namespace AnalysisPrograms
                            Hits = null,
                            Plot = plot,
                            Events = acousticEvents,
-                           RecordingDuration = recording.Duration(),
+                           RecordingDuration = recording.Duration,
                        };
         } // Analysis()
 

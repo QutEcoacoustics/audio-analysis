@@ -50,13 +50,13 @@ namespace AnalysisBase
         [NonSerialized]
         private static int instanceCounter = 0;
 
+        private readonly string fallbackTempDirectory;
+
         /// <summary>
         /// Used to track instances of this class through parallelism - must be readonly.
         /// </summary>
         [NonSerialized]
         private int? instanceId = null;
-
-        private readonly string fallbackTempDirectory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalysisSettings"/> class.
@@ -68,7 +68,7 @@ namespace AnalysisBase
             this.AnalysisTargetSampleRate = AppConfigHelper.DefaultTargetSampleRate;
             this.AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1);
             this.AnalysisMinSegmentDuration = TimeSpan.FromSeconds(20);
-            this.fallbackTempDirectory = TempFileHelper.TempDir().FullName;
+            this.fallbackTempDirectory = TempFileHelper.TempDir(ensureNew: true).FullName;
             this.SegmentOverlapDuration = TimeSpan.Zero;
             this.SegmentMediaType = MediaTypes.MediaTypeWav;
             this.AnalysisDataSaveBehavior = false;
@@ -95,7 +95,8 @@ namespace AnalysisBase
 
         /// <summary>
         /// Gets or sets the temp directory that is the base of the folder structure that analyses can use.
-        /// The contents of this directory may be deleted after the analysis is finished
+        /// The contents of this directory may be deleted after the analysis is finished.
+        /// If this value is null, AnalysisCoordinator will fallback to AnalysisTempDirectoryFallback.
         /// Analysis implementations must not set this.
         /// </summary>
         public DirectoryInfo AnalysisTempDirectory { get; set; }
@@ -106,7 +107,7 @@ namespace AnalysisBase
         public bool IsAnalysisTempDirectoryValid => this.AnalysisTempDirectory?.TryCreate() == true;
 
         /// <summary>
-        /// Gets a base temp directory. The directory will exist.
+        /// Gets a base temp directory. The directory will exist and it will be unique.
         /// Anything put here will be deleted when the analysis is complete.
         /// </summary>
         public DirectoryInfo AnalysisTempDirectoryFallback

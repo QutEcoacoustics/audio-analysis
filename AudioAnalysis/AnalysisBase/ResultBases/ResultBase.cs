@@ -44,7 +44,7 @@ namespace AnalysisBase.ResultBases
             set
             {
                 this.StartOffsetMinute = (int)value.TotalMinutes;
-                this.StartOffsetSecond = (float)value.TotalSeconds;
+                this.StartOffsetSeconds = (float)value.TotalSeconds;
                 this.startOffset = value;
             }
         }
@@ -60,8 +60,11 @@ namespace AnalysisBase.ResultBases
         /// Gets the StartOffsetSecond.
         /// This is an representation of <c>SegmentStartOffset</c>.
         /// </summary>
-        [Obsolete]
-        internal float StartOffsetSecond { get; private set; }
+        /// <remarks>
+        /// No longer obsolete so that we can output a simple number for processing.
+        /// Not much code supports parsing the StartOffset timespan value.
+        /// </remarks>
+        internal float StartOffsetSeconds { get; private set; }
 
         /// <summary>
         /// Gets the StartOffsetMinute.

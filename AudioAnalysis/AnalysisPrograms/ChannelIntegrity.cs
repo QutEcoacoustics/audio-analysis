@@ -35,7 +35,7 @@ namespace AnalysisPrograms
             var recording = new AudioRecording(audioFile.FullName);
             var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
-            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration());
+            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
             analysisResults.AnalysisIdentifier = this.Identifier;
 
             var result = new ChannelIntegrityIndices()

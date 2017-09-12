@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
 
     using Shared;
@@ -77,21 +78,38 @@
             AudioUtilityRequest request,
             DirectoryInfo temporaryFilesDirectory)
         {
-            var outputFileName = GetFileName(source.Name, outputMediaType, request.OffsetStart, request.OffsetEnd);
+            var outputFileName = GetFileName(
+                source.Name,
+                outputMediaType,
+                request.OffsetStart,
+                request.OffsetEnd,
+                oldFormat: true);
 
             var outputFile = new FileInfo(Path.Combine(outputDirectory.FullName, outputFileName));
 
             return PrepareFile(source, outputFile, request, temporaryFilesDirectory);
         }
 
-        public static string GetFileName(string outputFileName, string outputMediaType, TimeSpan? requestOffsetStart, TimeSpan? requestOffsetEnd)
+        public static string GetFileName(
+            string outputFileName,
+            string outputMediaType,
+            TimeSpan? requestOffsetStart,
+            TimeSpan? requestOffsetEnd,
+            bool oldFormat = false)
         {
-            outputFileName = string.Format(
-                "{0}_{1:0.######}{2}min.{3}",
-                Path.GetFileNameWithoutExtension(outputFileName),
-                requestOffsetStart?.TotalMinutes ?? 0,
-                requestOffsetEnd?.TotalMinutes.ToString("\\-0.######") ?? string.Empty,
-                MediaTypes.GetExtension(outputMediaType));
+            var start = oldFormat ? requestOffsetStart?.TotalMinutes : requestOffsetStart?.TotalSeconds;
+            var end = oldFormat ? requestOffsetEnd?.TotalMinutes : requestOffsetEnd?.TotalSeconds;
+
+            var format = oldFormat ? "0.######" : "0.###";
+
+            outputFileName =
+                string.Format(
+                    "{0}_{1}{2}{4}.{3}",
+                    Path.GetFileNameWithoutExtension(outputFileName),
+                    (start ?? 0).ToString(format, CultureInfo.InvariantCulture),
+                    end?.ToString("\\-" + format, CultureInfo.InvariantCulture) ?? string.Empty,
+                    MediaTypes.GetExtension(outputMediaType),
+                    oldFormat ? "min" : string.Empty);
             return outputFileName;
         }
 
