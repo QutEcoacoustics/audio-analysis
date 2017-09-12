@@ -257,7 +257,7 @@ namespace AnalysisPrograms.SourcePreparers
             var preparedFile = new FileSegment(destination, TimeAlignment.None);
 
             // do some sanity checks
-            var expectedDuration = segment.Offsets.Magnitude().Seconds();
+            var expectedDuration = segment.Offsets.Size().Seconds();
             var durationDelta = expectedDuration - preparedFile.TargetFileDuration.Value;
             if (durationDelta > 1.0.Seconds())
             {

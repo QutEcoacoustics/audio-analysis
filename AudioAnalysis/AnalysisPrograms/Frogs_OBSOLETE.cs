@@ -324,7 +324,7 @@
             sonoConfig.WindowOverlap = windowOverlap;
             //sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
             sonoConfig.NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD");   //must do noise removal
-            TimeSpan tsRecordingtDuration = recording.Duration();
+            TimeSpan tsRecordingtDuration = recording.Duration;
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
             double frameOffset = sonoConfig.GetFrameOffset(sr);

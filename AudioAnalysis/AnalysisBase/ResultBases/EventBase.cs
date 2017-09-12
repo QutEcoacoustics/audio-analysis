@@ -67,7 +67,7 @@ namespace AnalysisBase.ResultBases
         ///       When MinHz has a value, this indicates the event is a point in time/frequency space.
         ///       Implementers may implement their own MaxHz if needed.
         /// </summary>
-        public double? MinHz { get; protected set; }
+        public double? LowFrequencyHertz { get; protected set; }
 
         //// THIS IS REMOVED because the IComparer on ResultBase should achieve a similar effect,
         //// provided both EventStartSeconds and SegmentStartOffset are set.

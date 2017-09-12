@@ -9,6 +9,7 @@ namespace AnalysisPrograms.EventStatistics
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
     using AcousticWorkbench.Orchestration;
     using AnalysisBase;
@@ -49,6 +50,8 @@ namespace AnalysisPrograms.EventStatistics
 
         public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
+            Contract.Requires(segmentSettings.SegmentStartOffset == segmentSettings.Segment.StartOffsetSeconds.Seconds());
+
             var recording = new AudioRecording(segmentSettings.SegmentAudioFile);
 
             var segment = (RemoteSegmentWithData)segmentSettings.Segment;
@@ -71,19 +74,28 @@ namespace AnalysisPrograms.EventStatistics
                     importedEvent.LowFrequencyHertz.Value,
                     importedEvent.HighFrequencyHertz.Value);
 
-                Log.Debug($"Calculating event statistics for {importedEvent.AudioEventId},{temporalRange},{spectralRange} in {segmentSettings.SegmentAudioFile}");
+                Log.Debug(
+                    $"Calculating event statistics for {importedEvent.AudioEventId},{temporalRange}," +
+                    $"{spectralRange} in {segmentSettings.SegmentAudioFile}, Duration: {recording.Duration}");
 
                 var configuration = (EventStatisticsConfiguration)analysisSettings.Configuration;
 
-                results[index] = EventStatisticsCalculate.AnalyzeAudioEvent(
+                var statistics = EventStatisticsCalculate.AnalyzeAudioEvent(
                     recording,
                     temporalRange,
                     spectralRange,
-                    configuration);
+                    configuration,
+                    segmentSettings.SegmentStartOffset);
+
+                // lastly add some metadata to make the results useful
+                statistics.AudioRecordingId = segment.Source.Id;
+                statistics.AudioRecordingRecordedDateTime = segment.SourceMetadata.RecordedDate;
+
+                results[index] = statistics;
                 index++;
             }
 
-            var result = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration());
+            var result = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
 
             result.Events = results;
 

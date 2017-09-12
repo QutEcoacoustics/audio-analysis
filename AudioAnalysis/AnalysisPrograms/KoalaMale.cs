@@ -254,7 +254,7 @@ namespace AnalysisPrograms
                                  };
 
             ////sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
-            TimeSpan recordingDuration = recording.Duration();
+            TimeSpan recordingDuration = recording.Duration;
             double freqBinWidth = recording.SampleRate / (double)sonoConfig.WindowSize;
 
             /* #############################################################################################################################################

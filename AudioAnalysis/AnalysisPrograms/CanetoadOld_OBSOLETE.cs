@@ -251,7 +251,7 @@ namespace AnalysisPrograms
 
             RecognizerResults results = Analysis(recording, configuration, segmentSettings.SegmentStartOffset, segmentSettings.SegmentOutputDirectory);
 
-            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration());
+            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
 
             BaseSonogram sonogram = results.Sonogram;
             double[,] hits = results.Hits;

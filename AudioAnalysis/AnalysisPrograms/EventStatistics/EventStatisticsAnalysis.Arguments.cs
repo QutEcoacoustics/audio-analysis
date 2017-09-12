@@ -31,7 +31,7 @@ namespace AnalysisPrograms.EventStatistics
             public new FileInfo Source { get; set; }
 
             [ArgDescription("A TEMP directory where cut files will be stored. Use this option for efficiency (e.g. write to a RAM Disk).")]
-            [Production.ArgExistingDirectory]
+            [Production.ArgExistingDirectory(createIfNotExists: true)]
             public DirectoryInfo TempDir { get; set; }
 
             [ArgDescription("An array of channels to select. Default is all channels.")]

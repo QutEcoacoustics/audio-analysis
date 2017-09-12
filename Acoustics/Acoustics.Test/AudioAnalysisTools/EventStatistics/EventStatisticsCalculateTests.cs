@@ -36,8 +36,11 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
             var wr = new WavReader(signal, 1, 16, sampleRate);
             var recording = new AudioRecording(wr);
 
-            var start = TimeSpan.FromSeconds(28);
-            var end = TimeSpan.FromSeconds(32);
+            // this value is fake, but we set it to ensure output values are calculated correctly
+            var segmentOffset = 547.123.Seconds();
+
+            var start = TimeSpan.FromSeconds(28) + segmentOffset;
+            var end = TimeSpan.FromSeconds(32) + segmentOffset;
             double lowFreq = 1500.0;
             double topFreq = 8500.0;
 
@@ -48,7 +51,12 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
             };
 
             EventStatistics stats =
-                EventStatisticsCalculate.AnalyzeAudioEvent(recording, (start, end).AsRange(), (lowFreq, topFreq).AsRange(), statsConfig);
+                EventStatisticsCalculate.AnalyzeAudioEvent(
+                    recording,
+                    (start, end).AsRange(),
+                    (lowFreq, topFreq).AsRange(),
+                    statsConfig,
+                    segmentOffset);
 
             LoggedConsole.WriteLine($"Stats: Temporal entropy = {stats.TemporalEnergyDistribution:f4}");
             LoggedConsole.WriteLine($"Stats: Spectral entropy = {stats.SpectralEnergyDistribution:f4}");
@@ -60,11 +68,11 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
             Assert.AreEqual(6687, stats.SpectralCentroid);
             Assert.AreEqual(8003, stats.DominantFrequency);
 
-            Assert.AreEqual(1500, stats.MinHz);
-            Assert.AreEqual(8500, stats.MaxHz);
+            Assert.AreEqual(1500, stats.LowFrequencyHertz);
+            Assert.AreEqual(8500, stats.HighFrequencyHertz);
             Assert.AreEqual(28, stats.EventStartSeconds);
             Assert.AreEqual(32, stats.EventEndSeconds);
-
+            Assert.AreEqual(28.Seconds() + segmentOffset, stats.StartOffset);
 
             /*
             // Assume linear scale.

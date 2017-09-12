@@ -63,7 +63,7 @@ namespace AnalysisPrograms.Recognizers.Base
             var lazyIndices = this.GetLazyIndices(recording, analysisSettings, segmentSettings, acousticIndicesParsedConfiguration);
 
             // determine imageWidth for output images
-            int imageWidth = (int)Math.Floor(recording.Duration().TotalSeconds / acousticIndicesParsedConfiguration.IndexCalculationDuration.TotalSeconds);
+            int imageWidth = (int)Math.Floor(recording.Duration.TotalSeconds / acousticIndicesParsedConfiguration.IndexCalculationDuration.TotalSeconds);
 
             // execute actual analysis
             dynamic configuration = analysisSettings.Configuration;
@@ -75,7 +75,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 segmentSettings.SegmentOutputDirectory,
                 imageWidth);
 
-            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration());
+            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
 
             BaseSonogram sonogram = results.Sonogram;
             double[,] hits = results.Hits;

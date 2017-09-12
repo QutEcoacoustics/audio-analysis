@@ -50,8 +50,8 @@ namespace Acoustics.Test.Shared
             var a = new Range<double>(5, 10);
             var c = new Range<double>(5, 10.004);
 
-            Assert.AreEqual("Range: 5 - 10", a.ToString());
-            Assert.AreEqual("Range: 5 - 10.004", c.ToString());
+            Assert.AreEqual("Range: [5, 10]", a.ToString());
+            Assert.AreEqual("Range: [5, 10.004]", c.ToString());
         }
 
         [DataTestMethod]
@@ -77,11 +77,45 @@ namespace Acoustics.Test.Shared
         }
 
         [TestMethod]
-        public void DoubleMagnitudeWorks()
+        public void TimeSpanCenterWorks()
         {
             var a = new Range<double>(5, 10);
 
-            Assert.AreEqual(5.0, a.Magnitude());
+            Assert.AreEqual(7.5, a.Center());
+        }
+
+        [TestMethod]
+        public void DoubleSizeWorks()
+        {
+            var a = new Range<double>(5, 10);
+
+            Assert.AreEqual(5.0, a.Size());
+        }
+
+        [TestMethod]
+        public void TimeSpanSizeWorks()
+        {
+            var a = new Range<TimeSpan>(5.Seconds(), 10.Seconds());
+
+            Assert.AreEqual(5.0.Seconds(), a.Size());
+        }
+
+        [TestMethod]
+        public void DoubleShiftWorks()
+        {
+            var a = new Range<double>(5, 10);
+
+            Assert.AreEqual((20.0, 25.0).AsRange(), a.Shift(15));
+            Assert.AreEqual((-310.0, -305.0).AsRange(), a.Shift(-315));
+        }
+
+        [TestMethod]
+        public void TimeSpanShiftWorks()
+        {
+            var a = new Range<TimeSpan>(5.Seconds(), 10.Seconds());
+
+            Assert.AreEqual((20.Seconds(), 25.Seconds()).AsRange(), a.Shift(15.Seconds()));
+            Assert.AreEqual((-310.Seconds(), -305.Seconds()).AsRange(), a.Shift(-315.Seconds()));
         }
 
         [DataTestMethod]

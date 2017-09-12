@@ -156,7 +156,7 @@ namespace AnalysisPrograms
             }
 
             var recording = new AudioRecording(audioFile);
-            var segmentDuration = recording.Duration();
+            var segmentDuration = recording.Duration;
             if (recording.SampleRate != aedConfiguration.ResampleRate)
             {
                 throw new ArgumentException(

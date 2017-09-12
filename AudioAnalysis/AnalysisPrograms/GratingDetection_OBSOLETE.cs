@@ -287,7 +287,7 @@ namespace AnalysisPrograms
             double frameDuration = frameSize / (double)sr;
             double frameOffset   = frameDuration * (1 - windowOverlap); //seconds between start of each frame
             double framesPerSecond = 1 / frameOffset;
-            TimeSpan tsRecordingtDuration = recording.Duration();
+            TimeSpan tsRecordingtDuration = recording.Duration;
             int colStep = (int)Math.Round(bandWidth / binWidth);
 
 

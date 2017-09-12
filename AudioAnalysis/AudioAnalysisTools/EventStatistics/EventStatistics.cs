@@ -12,6 +12,9 @@ namespace AudioAnalysisTools.EventStatistics
     using WavTools;
 
     /// <summary>
+    /// The data class that holds event statistics
+    /// </summary>
+    /// <remarks>
     /// Note that EventBase already has getters/setters for:
     /// TimeSpan SegmentStartOffset
     /// double Score
@@ -20,15 +23,15 @@ namespace AudioAnalysisTools.EventStatistics
     /// ..
     /// NOTE: When MinHz equals null, this indicates that the event is broad band or has undefined frequency. The event is an instant.
     ///       When MinHz has a value, this indicates the event is a point in time/frequency space.
-    /// </summary>
+    /// </remarks>
     public class EventStatistics : EventBase
     {
         public EventStatistics()
         {
-            base.MinHz = 0;
+            base.LowFrequencyHertz = 0;
         }
 
-        public int? AudioRecordingId { get; set; }
+        public long? AudioRecordingId { get; set; }
 
         public string ListenUrl
         {
@@ -45,7 +48,7 @@ namespace AudioAnalysisTools.EventStatistics
             }
         }
 
-        public DateTimeOffset? AudioRecordingDateTime { get; set; }
+        public DateTimeOffset? AudioRecordingRecordedDateTime { get; set; }
 
         // Note: EventStartSeconds is in base class
 
@@ -53,7 +56,7 @@ namespace AudioAnalysisTools.EventStatistics
 
         public double DurationSeconds => this.EventEndSeconds - this.EventStartSeconds;
 
-        public DateTimeOffset? StartDateTime => this.AudioRecordingDateTime?.Add(this.StartOffset);
+        public DateTimeOffset? EventStartDateTime => this.AudioRecordingRecordedDateTime?.Add(this.StartOffset);
 
         public double MeanDecibels { get; set; }
 
@@ -66,22 +69,22 @@ namespace AudioAnalysisTools.EventStatistics
         public double TemporalMaxRelative { get; set; }
 
         // Note: MinHz implemented in base class.
-        public new double MinHz
+        public new double LowFrequencyHertz
         {
-            get => base.MinHz.Value;
-            set => base.MinHz = value;
+            get => base.LowFrequencyHertz.Value;
+            set => base.LowFrequencyHertz = value;
         }
 
         /// <summary>
         /// Gets or sets the top frequency bound of the acoustic event in Hertz
         /// </summary>
-        public double MaxHz { get; set; }
+        public double HighFrequencyHertz { get; set; }
 
-        public double BandWidth => this.MaxHz - this.MinHz;
+        public double BandWidth => this.HighFrequencyHertz - this.LowFrequencyHertz;
 
         public int DominantFrequency { get; set; }
 
-        public double FreqBinStdDevDb { get; set; }
+        public double FreqBinStdDevDecibels { get; set; }
 
         /// <summary>
         /// Gets or sets the SpectralCentroid.

@@ -289,11 +289,19 @@ namespace System
         }
 
         /// <summary>
-        /// Multiplies a timespan by an integer value
+        /// Multiplies a timespan by a scalar value
         /// </summary>
         public static TimeSpan Multiply(this TimeSpan multiplicand, int multiplier)
         {
             return TimeSpan.FromTicks(multiplicand.Ticks * multiplier);
+        }
+
+        /// <summary>
+        /// Divides a timespan by an scalar value
+        /// </summary>
+        public static TimeSpan Divide(this TimeSpan dividend, int divisor)
+        {
+            return TimeSpan.FromTicks(dividend.Ticks / divisor);
         }
 
         /// <summary>
@@ -302,6 +310,14 @@ namespace System
         public static TimeSpan Multiply(this TimeSpan multiplicand, double multiplier)
         {
             return TimeSpan.FromTicks((long)(multiplicand.Ticks * multiplier));
+        }
+        
+        /// <summary>
+        /// Divides a timespan by an scalar value
+        /// </summary>
+        public static TimeSpan Divide(this TimeSpan dividend, double divisor)
+        {
+            return TimeSpan.FromTicks((long)(dividend.Ticks / divisor));
         }
 
         // https://github.com/exceptionless/Exceptionless.DateTimeExtensions/blob/master/src/Exceptionless.DateTimeExtensions/DateTimeOffsetExtensions.cs#L222

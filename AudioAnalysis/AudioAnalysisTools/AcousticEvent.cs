@@ -54,7 +54,7 @@ namespace AudioAnalysisTools
                 this.GetPropertyMap(m => ((EventBase)m).EventStartSeconds).Index(0);
                 this.Map(m => m.TimeEnd).Name("EventEndSeconds").Index(2);
                 this.Map(m => m.Duration).Index(3);
-                this.GetPropertyMap(m => ((EventBase)m).MinHz).Index(4);
+                this.GetPropertyMap(m => ((EventBase)m).LowFrequencyHertz).Index(4);
                 this.Map(m => m.MaxFreq).Name("MaxHz").Index(5);
                 this.References<Oblong.OblongClassMap>(m => m.Oblong);
 
@@ -102,11 +102,11 @@ namespace AudioAnalysisTools
         {
             get
             {
-                return this.MinHz ?? default(double);
+                return this.LowFrequencyHertz ?? default(double);
             }
             set
             {
-                this.MinHz = value;
+                this.LowFrequencyHertz = value;
             }
         }
 

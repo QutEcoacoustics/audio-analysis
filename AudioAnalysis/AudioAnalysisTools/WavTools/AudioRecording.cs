@@ -155,10 +155,7 @@ namespace AudioAnalysisTools.WavTools
         /// <summary>
         /// returns Time Span of the recording
         /// </summary>
-        public TimeSpan Duration()
-        {
-            return this.WavReader.Time;
-        }
+        public TimeSpan Duration => this.WavReader.Time;
 
         public static AudioRecording Filter_IIR(AudioRecording audio, string filterName)
         {

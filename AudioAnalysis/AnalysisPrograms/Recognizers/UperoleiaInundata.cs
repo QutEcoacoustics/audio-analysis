@@ -135,7 +135,7 @@ namespace AnalysisPrograms.Recognizers
             };
 
             // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
-            TimeSpan recordingDuration = recording.Duration();
+            TimeSpan recordingDuration = recording.Duration;
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);

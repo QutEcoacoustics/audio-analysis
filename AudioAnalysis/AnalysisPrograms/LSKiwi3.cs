@@ -272,7 +272,7 @@
                 LoggedConsole.WriteLine("AudioRecording == null. Analysis not possible.");
                 return null;
             }
-            TimeSpan tsRecordingtDuration = recording.Duration();
+            TimeSpan tsRecordingtDuration = recording.Duration;
             if (tsRecordingtDuration.TotalSeconds < 15)
             {
                 LoggedConsole.WriteLine("Audio recording must be atleast 15 seconds long for analysis.");
