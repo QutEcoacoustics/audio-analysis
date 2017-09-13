@@ -16,15 +16,11 @@ namespace AnalysisPrograms.EventStatistics
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools.EventStatistics;
     using AudioAnalysisTools.WavTools;
+    using global::AcousticWorkbench;
     using log4net;
 
     public partial class EventStatisticsAnalysis : AbstractStrongAnalyser
     {
-        /// <summary>
-        /// Add this much paddding to each acoustic event
-        /// </summary>
-        private const double AnalysisDurationSeconds = 60.0;
-
         private static readonly ILog Log = LogManager.GetLogger(nameof(EventStatisticsAnalysis));
 
         public override string DisplayName { get; } = "Event statistics calculation";
@@ -36,11 +32,12 @@ namespace AnalysisPrograms.EventStatistics
         public override AnalysisSettings DefaultSettings { get; } = new AnalysisSettings
         {
             // The workbench supports extracting as much as 5 minutes of data at a time
-            AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(5),
+            AnalysisMaxSegmentDuration = MediaService.MediaDownloadMaximumSeconds.Seconds(),
+            AnalysisMinSegmentDuration = MediaService.MediaDownloadMinimumSeconds.Seconds(),
 
             // The analsysis could very easily include annotations with spectral bounds outside of a normalized set of
             // bounds defined by a fixed sample rate. Thus, do not normalize sample rate.
-            AnalysisTargetSampleRate = null
+            AnalysisTargetSampleRate = null,
         };
 
         public override void BeforeAnalyze(AnalysisSettings analysisSettings)
@@ -90,6 +87,7 @@ namespace AnalysisPrograms.EventStatistics
                 // lastly add some metadata to make the results useful
                 statistics.AudioRecordingId = segment.Source.Id;
                 statistics.AudioRecordingRecordedDateTime = segment.SourceMetadata.RecordedDate;
+                statistics.AudioEventId = importedEvent.AudioEventId;
 
                 results[index] = statistics;
                 index++;

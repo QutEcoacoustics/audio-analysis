@@ -27,7 +27,7 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
         private readonly AcousticEventService acousticEventService;
         private readonly int maxDegreeOfParallelism;
 
-        public EventMetadataResolver(IAuthenticatedApi api, double analysisDurationSeconds, int parallelism)
+        public EventMetadataResolver(IAuthenticatedApi api, Func<double, double> analysisDurationSeconds, int parallelism)
         {
             this.AnalysisDurationSeconds = analysisDurationSeconds;
             this.audioRecordingService = new AudioRecordingService(api);
@@ -35,7 +35,7 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
             this.maxDegreeOfParallelism = parallelism;
         }
 
-        public double AnalysisDurationSeconds { get; }
+        public Func<double, double> AnalysisDurationSeconds { get; }
 
         public static RemoteSegmentWithData[] DedupeSegments(IList<RemoteSegmentWithData> segments)
         {
@@ -149,9 +149,21 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
             var limit = audioRecording.DurationSeconds.AsRangeFromZero();
             var target = (importedEvent.EventStartSeconds.Value, importedEvent.EventEndSeconds.Value).AsRange();
 
+            // determine how much padding is required (dynamically scales with event size
+            var padding = this.AnalysisDurationSeconds(target.Size());
+
+            if (target.Size() + padding > MediaService.MediaDownloadMaximumSeconds)
+            {
+                var newPadding = MediaService.MediaDownloadMaximumSeconds - target.Size();
+                Log.Warn($"Audio event size {audioRecordingId},{target} and padding {padding} exceeds maximum media " +
+                    $"download amount - trimming padding from {padding}, to {newPadding}");
+                padding = newPadding;
+            }
+
             // grow target to required analysis length
             // we round the grow size to the nearest integer so that we reduce caching combinatorics in the workbench
-            var analysisRange = target.Grow(limit, this.AnalysisDurationSeconds, 0);
+            Log.Trace($"Growing target event from {audioRecordingId},{target} by {padding} seconds");
+            var analysisRange = target.Grow(limit, padding, 0);
 
             var segment = new RemoteSegmentWithData(audioRecording, analysisRange, importedEvent.AsArray());
 

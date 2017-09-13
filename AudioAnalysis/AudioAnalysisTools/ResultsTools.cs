@@ -99,7 +99,7 @@ namespace AudioAnalysisTools
             else if (events == null && indices != null)
             {
                 // no-op, no events to convert, but indices already calculated
-                Log.Debug("No events recieved, indices already given, no further action");
+                Log.Debug("No events received, indices already given, no further action");
             }
             else if (events != null && indices == null)
             {

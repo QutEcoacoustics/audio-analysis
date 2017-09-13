@@ -15,6 +15,9 @@ namespace AcousticWorkbench
 
     public partial class MediaService : Service
     {
+        public const double MediaDownloadMinimumSeconds = 0.5;
+        public const double MediaDownloadMaximumSeconds = 300;
+
         public MediaService(IAuthenticatedApi authenticatedApi)
             : base(authenticatedApi)
         {

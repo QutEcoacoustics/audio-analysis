@@ -5,8 +5,13 @@
 namespace AudioAnalysisTools.EventStatistics
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+    using Acoustics.Shared.Csv;
     using AcousticWorkbench;
     using AnalysisBase.ResultBases;
+    using CsvHelper.Configuration;
     using DSP;
     using TowseyLibrary;
     using WavTools;
@@ -31,6 +36,8 @@ namespace AudioAnalysisTools.EventStatistics
             base.LowFrequencyHertz = 0;
         }
 
+        public long? AudioEventId { get; set; }
+
         public long? AudioRecordingId { get; set; }
 
         public string ListenUrl
@@ -41,7 +48,7 @@ namespace AudioAnalysisTools.EventStatistics
                 {
                     return Api.Default.GetListenUri(
                         this.AudioRecordingId.Value,
-                        this.StartOffset.TotalSeconds).ToString();
+                        Math.Floor(this.StartOffset.TotalSeconds)).ToString();
                 }
 
                 return string.Empty;
@@ -68,19 +75,13 @@ namespace AudioAnalysisTools.EventStatistics
         /// </summary>
         public double TemporalMaxRelative { get; set; }
 
-        // Note: MinHz implemented in base class.
-        public new double LowFrequencyHertz
-        {
-            get => base.LowFrequencyHertz.Value;
-            set => base.LowFrequencyHertz = value;
-        }
-
         /// <summary>
         /// Gets or sets the top frequency bound of the acoustic event in Hertz
+        /// Note: MinHz implemented in base class.
         /// </summary>
         public double HighFrequencyHertz { get; set; }
 
-        public double BandWidth => this.HighFrequencyHertz - this.LowFrequencyHertz;
+        public double BandWidth => this.HighFrequencyHertz - this.LowFrequencyHertz.Value;
 
         public int DominantFrequency { get; set; }
 
@@ -113,5 +114,44 @@ namespace AudioAnalysisTools.EventStatistics
         /// Gets or sets the event's signal-to-noise ratio in decibels.
         /// </summary>
         public double SnrDecibels { get; set; }
+    }
+
+    public sealed class EventStatisticsClassMap : CsvClassMap<EventStatistics>
+    {
+        public EventStatisticsClassMap()
+        {
+            this.AutoMap();
+
+            var ordered = new Dictionary<string, int>()
+            {
+                { nameof(EventStatistics.AudioEventId), 0 },
+                { nameof(EventStatistics.AudioRecordingId), 1 },
+                { nameof(EventStatistics.EventStartSeconds), 2 },
+                { nameof(EventStatistics.EventEndSeconds), 3 },
+                { nameof(EventStatistics.LowFrequencyHertz), 4 },
+                { nameof(EventStatistics.HighFrequencyHertz), 5 },
+            };
+
+            var index = 6;
+            foreach (var propertyMap in this.PropertyMaps.OrderBy(x => x.Data.Names.First()))
+            {
+                var name = propertyMap.Data.Names.First();
+
+                if (name == nameof(EventBase.Score))
+                {
+                    propertyMap.Ignore();
+                }
+
+                if (ordered.TryGetValue(name, out var orderedIndex))
+                {
+                    propertyMap.Data.Index = orderedIndex;
+                }
+                else
+                {
+                    propertyMap.Data.Index = index;
+                    index++;
+                }
+            }
+        }
     }
 }
