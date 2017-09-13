@@ -515,7 +515,7 @@ namespace AnalysisBase
             var token = string.Empty;
             if (unique.NotNull())
             {
-                token = unique.SourceMetadata.Identifier + "_" + unique.StartOffsetSeconds.ToString("000000.00");
+                token = unique.SourceMetadata.Identifier + "_" + unique.StartOffsetSeconds.ToString("000000.00") + " _" + unique.EndOffsetSeconds.ToString("000000.00");
             }
 
             var runDirectory = GetNamedDirectory(baseDir, analyzer, token);

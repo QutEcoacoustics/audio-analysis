@@ -230,7 +230,7 @@ namespace AnalysisPrograms.SourcePreparers
                 channel);
 
             Log.Trace(
-                $"Downloading media: {recording.Id}, {segment.Offsets} - headers recieved," 
+                $"Downloading media: {recording.Id}, {segment.Offsets} - headers received,"
                 + $" body is {contentLength?.ToString() ?? "<unknown>"} bytes, writing stream to file {destination}");
 
             // The output file should never exist already - if it does there's something wrong with the program
@@ -250,7 +250,7 @@ namespace AnalysisPrograms.SourcePreparers
             }
 
             Log.Trace(
-                $"Downloading media: {recording.Id}, {segment.Offsets} - file recieved, "
+                $"Downloading media: {recording.Id}, {segment.Offsets} - file received, "
                 + $"{length} bytes written to file {destination}");
 
             // finally inspect the bit of audio we downloaded, extract the metadata, and return a file segment

@@ -106,8 +106,6 @@ namespace AnalysisPrograms
 
             task(arguments).ConfigureAwait(false).GetAwaiter().GetResult();
 
-            //AsyncContext.Run(() => task(arguments));
-
             Log.Debug("Executing supplied method as an async block has completed");
         }
 

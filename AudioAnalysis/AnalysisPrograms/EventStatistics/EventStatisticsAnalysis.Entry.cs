@@ -132,7 +132,7 @@ namespace AnalysisPrograms.EventStatistics
             // bundled into the same analysis segment.
             var resolver = new EventMetadataResolver(
                 authenticatedApi,
-                AnalysisDurationSeconds,
+                PaddingFunction,
                 arguments.Parallel ? 25 : 1);
             var metadataTask = resolver.GetRemoteMetadata(events);
 
@@ -145,8 +145,8 @@ namespace AnalysisPrograms.EventStatistics
             AnalysisCoordinator coordinator = new AnalysisCoordinator(
                 preparer,
                 SaveBehavior.Never,
-                true,
-                arguments.Parallel);
+                uniqueDirectoryPerSegment: false,
+                isParallel: arguments.Parallel);
 
             // instantiate the Analysis
             EventStatisticsAnalysis analysis = new EventStatisticsAnalysis();
@@ -180,6 +180,17 @@ namespace AnalysisPrograms.EventStatistics
             Log.Debug("Writing events completed");
 
             Log.Success("Event statistics analysis complete!");
+        }
+
+        /// <summary>
+        /// Add this much paddding to each acoustic event.
+        /// Returns the total padding, half of which will be symmetrically to either side, or assymertrically if
+        /// boundary effects occur.
+        /// </summary>
+        private static double PaddingFunction(double eventDurationSeconds)
+        {
+            const double minimum = 10;
+            return Math.Max(minimum, Math.Ceiling(eventDurationSeconds * 2.0));
         }
     }
 }

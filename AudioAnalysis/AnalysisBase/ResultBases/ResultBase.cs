@@ -64,7 +64,7 @@ namespace AnalysisBase.ResultBases
         /// No longer obsolete so that we can output a simple number for processing.
         /// Not much code supports parsing the StartOffset timespan value.
         /// </remarks>
-        internal float StartOffsetSeconds { get; private set; }
+        public float StartOffsetSeconds { get; private set; }
 
         /// <summary>
         /// Gets the StartOffsetMinute.
