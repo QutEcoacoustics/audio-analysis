@@ -479,6 +479,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 if (indexProperties.CalculateNormMax)
                 {
                     maxBound = this.IndexStats[key].GetValueOfNthPercentile(IndexDistributions.UpperPercentileDefault);
+
+                    // correct for case where max bound = zero. This can happen where ICD is very short i.e. 0.1s.
+                    if (maxBound < 0.0001)
+                    {
+                        maxBound = this.IndexStats[key].Maximum * 0.1;
+                    }
                 }
             }
 
