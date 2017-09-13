@@ -483,12 +483,12 @@ BGN:
   Name: spectralBGN
   Comment: "Spectrum of dB value of the background 'noise' removed each frequency bin."
   DataType: double[]
-  DefaultValue: -100.0
+  DefaultValue: -150.0
   DoDisplay: true
   # min = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20 = -80-20 = -100, 
-  # Usual value is -30. However -20 adds more contrast into BGN spectrogram
-  NormMin: -120.0
-  NormMax: -40.0
+  # Usual values are min=-120, max=-40. However need to adjust down about -20dB for more sensitive microphones
+  NormMin: -140.0
+  NormMax: -60.0
   CalculateNormMin: true
   CalculateNormMax: true
   ProjectID: Acoustic Indices
