@@ -3,7 +3,8 @@
 # It should NOT contain index related configuration data
 # It should NOT contain dynamic data (like file names or analysis types)
 
-ColorMap1: "SPT-ENT-RHZ"
+ColorMap1: "RHZ-RVT-SPT"
+#ColorMap1: "SPT-ENT-RHZ"
 ColorMap2: "BGN-PMN-CVR"
 #ColorMap2: "RHZ-RVT-SPT"
 
