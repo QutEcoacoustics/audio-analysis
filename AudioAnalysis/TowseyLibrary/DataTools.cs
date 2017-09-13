@@ -4711,7 +4711,7 @@ namespace TowseyLibrary
 
       if (width >= length)
             {
-                return null;
+                return signal;
             }
 
       if (length < 3)

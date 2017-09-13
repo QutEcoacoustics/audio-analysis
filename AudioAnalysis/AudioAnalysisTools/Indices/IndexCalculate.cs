@@ -208,7 +208,7 @@ namespace AudioAnalysisTools.Indices
 
             // Deal with case where the signal waveform is continuous flat with values < 0.001. Has happened!!
             // Although signal appears zero, this condition is required.
-            if (avgSignalEnvelope < 0.001)
+            if (avgSignalEnvelope < 0.0001)
             {
                 Logger.Debug("Segment skipped because avSignalEnvelope is < 0.001!");
                 summaryIndices.ZeroSignal = 1.0;

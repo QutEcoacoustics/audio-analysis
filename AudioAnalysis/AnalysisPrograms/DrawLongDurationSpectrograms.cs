@@ -174,10 +174,22 @@ namespace AnalysisPrograms
             //var opdir = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017";
 
             // PILLAGA FOREST RECORDINGS OF BRAD LAW - High Resolution analysis
-            string ipdir = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP\Towsey.Acoustic";
-            string opdir = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP";
+            //string ipdir = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP\Towsey.Acoustic";
+            //string opdir = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP";
+            //spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramConfigHiRes.yml";
+            //indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
+
+            // USA WILD-LIFE ACOUSTICS TEST RECORDINGS OF LOSSY COMPRESSION - High Resolution analysis
+            string ipdir = @"D:\SensorNetworks\Output\WildLifeAcoustics\Towsey.Acoustic";
+            string opdir = @"D:\SensorNetworks\Output\WildLifeAcoustics";
             spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramConfigHiRes.yml";
             indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
+
+            // Australian WILD-LIFE ACOUSTICS RECORDING Group - from Andrew Skeoch - High Resolution analysis
+            //string ipdir = @"D:\SensorNetworks\Output\BradLawData\AWARG\Towsey.Acoustic";
+            //string opdir = @"D:\SensorNetworks\Output\BradLawData\AWARG";
+            //spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramConfigHiRes.yml";
+            //indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
 
             return new Arguments
             {

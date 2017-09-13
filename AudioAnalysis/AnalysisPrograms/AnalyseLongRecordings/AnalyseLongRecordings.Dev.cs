@@ -91,9 +91,20 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string recordingPath = @"D:\SensorNetworks\WavFiles\BradLaw\PillagaForestSite18a\PILLIGA_20121125_052500.wav";
             //string recordingPath = @"D:\SensorNetworks\WavFiles\BradLaw\PillagaForestSite18a\PILLIGA_20121125_194900.wav";
             // next recording contains koala calls
-            string recordingPath = @"D:\SensorNetworks\WavFiles\BradLaw\WilliWilliNP_K48\Data\K48_20161104_211749.wav";
-            string outputPath = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP";
+            //string recordingPath = @"D:\SensorNetworks\WavFiles\BradLaw\WilliWilliNP_K48\Data\K48_20161104_211749.wav";
+            //string outputPath = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiRes.yml";
+
+            // Test recordings from Wildlife Acoustics demonstrating their compression algorithm
+            //string recordingPath = @"D:\SensorNetworks\WildLifeAcoustics\sm4_compression_demo\S4A00068_20160506_063000.wav";
+            string recordingPath = @"D:\SensorNetworks\WildLifeAcoustics\sm4_compression_demo\S4A00068_20160506_063000_new50.wav";
+            string outputPath = @"D:\SensorNetworks\Output\WildLifeAcoustics";
             string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiRes.yml";
+
+            // Recording from Andrew Skeoch at Australian Wildlife Audio Recording Group
+            //string recordingPath = @"D:\SensorNetworks\WavFiles\BradLaw\TopTrapDam Pilliga 22050 16bit.wav";
+            //string outputPath = @"D:\SensorNetworks\Output\BradLawData\AWARG";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiRes.yml";
 
             // ARTIFICIAL TEST RECORDING
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
