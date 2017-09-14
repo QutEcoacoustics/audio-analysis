@@ -64,19 +64,19 @@ namespace AudioAnalysisTools.EventStatistics
             EventStatisticsConfiguration config,
             TimeSpan segmentStartOffset)
         {
+            var stats = new EventStatistics
+            {
+                EventStartSeconds = temporalTarget.Minimum.TotalSeconds,
+                EventEndSeconds = temporalTarget.Maximum.TotalSeconds,
+                LowFrequencyHertz = spectralTarget.Minimum,
+                HighFrequencyHertz = spectralTarget.Maximum,
+                SegmentDurationSeconds = recording.Duration.TotalSeconds,
+                SegmentStartSeconds = segmentStartOffset.TotalSeconds,
+            };
+
             // temporal target is supplied relative to recording, but not the supplied audio segment
             // shift coordinates relative to segment
             var localTemporalTarget = temporalTarget.Shift(-segmentStartOffset);
-
-            var stats = new EventStatistics
-            {
-                EventStartSeconds = localTemporalTarget.Minimum.TotalSeconds,
-                EventEndSeconds = localTemporalTarget.Maximum.TotalSeconds,
-                LowFrequencyHertz = spectralTarget.Minimum,
-                HighFrequencyHertz = spectralTarget.Maximum,
-                SegmentDuration = recording.Duration,
-                SegmentStartOffset = segmentStartOffset,
-            };
 
             // convert recording to spectrogram
             int sampleRate = recording.SampleRate;

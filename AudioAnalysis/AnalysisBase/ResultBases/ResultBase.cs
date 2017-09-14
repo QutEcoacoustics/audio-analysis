@@ -19,7 +19,7 @@ namespace AnalysisBase.ResultBases
     /// </summary>
     public abstract class ResultBase : IComparable<ResultBase>, IComparable
     {
-        private TimeSpan startOffset;
+        private double resultStartSeconds;
 
         /// <summary>
         /// Gets or sets the filename of the audio file this result produced.
@@ -27,51 +27,41 @@ namespace AnalysisBase.ResultBases
         public string FileName { get; set; }
 
         /// <summary>
-        /// Gets or sets the time StartOffset.
+        /// Gets or sets the result start time in seconds.
+        /// This is relative to the start of the recording.
         /// This basically allows every sort of result to be sorted/time indexed from the start of the file/recording.
-        /// It replaced SegmentStartOffset but is NOT THE SAME.
+        /// </summary>
+        /// <remarks>
         /// I.e. the time since the start of the original audio recording.
         /// E.g. Given segment 78 of a 120min audio file, with a segment size of 60 seconds, this property would hold 78 minutes.
         /// And again: StartOffset is the time offset between the start of the recording and the start of the current result.
-        /// </summary>
-        public TimeSpan StartOffset
+        /// </remarks>
+        public double ResultStartSeconds
         {
             get
             {
-                return this.startOffset;
+                return this.resultStartSeconds;
             }
 
             set
             {
-                this.StartOffsetMinute = (int)value.TotalMinutes;
-                this.StartOffsetSeconds = (float)value.TotalSeconds;
-                this.startOffset = value;
+                this.ResultMinute = (int)Math.Floor(value % 60.0);
+                this.resultStartSeconds = value;
             }
         }
 
         /// <summary>
         /// Gets or sets the duration of audio segment that produced this result.
-        /// This is recording because there is typically some error in cutting out segments of an audio file.
-        /// This property was previously aliased "SEGMENT_TIMESPAN" and "SegTimeSpan".
+        /// This is tracked because there is typically some error in cutting out segments of an audio file and it is
+        /// useful to know how much audio was actually used to generate the result.
         /// </summary>
-        public TimeSpan SegmentDuration { get; set; }
+        public double SegmentDurationSeconds { get; set; }
 
         /// <summary>
-        /// Gets the StartOffsetSecond.
-        /// This is an representation of <c>SegmentStartOffset</c>.
+        /// Gets the ResultMinute.
+        /// This is an integer representation of <see cref="ResultStartSeconds"/>.
         /// </summary>
-        /// <remarks>
-        /// No longer obsolete so that we can output a simple number for processing.
-        /// Not much code supports parsing the StartOffset timespan value.
-        /// </remarks>
-        public float StartOffsetSeconds { get; private set; }
-
-        /// <summary>
-        /// Gets the StartOffsetMinute.
-        /// This is an integer representation of <c>SegmentStartOffset</c>.
-        /// This property was previously aliased as "START_MIN", "start-min", and <c>AudioAnalysisTools.Keys.EVENT_START_MIN</c>.
-        /// </summary>
-        public int StartOffsetMinute { get; private set; }
+        public int ResultMinute { get; private set; }
 
         /// <summary>
         /// Defines an innate order of Analysis results based on the <c>SegmentStartOffset</c>.
@@ -85,7 +75,7 @@ namespace AnalysisBase.ResultBases
                 return 1;
             }
 
-            return this.StartOffset.CompareTo(other.StartOffset);
+            return this.ResultStartSeconds.CompareTo(other.ResultStartSeconds);
         }
 
         /// <inheritdoc/>

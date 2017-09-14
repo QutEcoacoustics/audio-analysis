@@ -278,11 +278,6 @@ namespace AnalysisPrograms
 
         #endregion
 
-
-
-
-
-
         #region Methods
 
         /// <summary>
@@ -297,7 +292,6 @@ namespace AnalysisPrograms
             var recording = new AudioRecording(segmentOfSourceFile.FullName);
             return Analysis(recording, configDict, segmentStartOffset);
         }
-
 
         /// <summary>
         /// THE KEY ANALYSIS METHOD
@@ -318,7 +312,6 @@ namespace AnalysisPrograms
             TimeSpan segmentStartOffset)
         {
             // WARNING: TODO TODO TODO = this method simply duplicates the CANETOAD analyser!!!!!!!!!!!!!!!!!!!!! ###################
-
 
             int minHz = int.Parse(configDict[AnalysisKeys.MinHz]);
             int maxHz = int.Parse(configDict[AnalysisKeys.MaxHz]);
@@ -346,7 +339,6 @@ namespace AnalysisPrograms
 
             // min score for an acceptable event
             double eventThreshold = double.Parse(configDict[AnalysisKeys.EventThreshold]);
-
 
             // The default was 512 for Canetoad.
             // Framesize = 128 seems to work for Littoria fallax.
@@ -410,14 +402,12 @@ namespace AnalysisPrograms
             acousticEvents.ForEach(ae =>
                     {
                         ae.SpeciesName = configDict[AnalysisKeys.SpeciesName];
-                        ae.SegmentStartOffset = segmentStartOffset;
-                        ae.SegmentDuration = recordingDuration;
+                        ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                        ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
                         ae.Name = AbbreviatedName;
                     });
 
             var plot = new Plot(AnalysisName, scores, eventThreshold);
-
-
 
             // DEBUG ONLY ################################ TEMPORARY ################################
             // Draw a standard spectrogram and mark of hites etc.
@@ -434,7 +424,6 @@ namespace AnalysisPrograms
                 sonoBmp.Save(filePath2);
             }
             // END DEBUG ################################ TEMPORARY ################################
-
 
             return new LitoriaFallaxResults
             {

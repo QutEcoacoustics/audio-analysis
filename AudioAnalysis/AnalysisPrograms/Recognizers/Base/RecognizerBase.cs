@@ -81,9 +81,10 @@ namespace AnalysisPrograms.Recognizers.Base
             double[,] hits = results.Hits;
             var predictedEvents = results.Events;
 
+            // double check all the events have the right offset in case it was missed
             foreach (var predictedEvent in predictedEvents)
             {
-                predictedEvent.SegmentStartOffset = segmentSettings.SegmentStartOffset;
+                predictedEvent.SegmentStartSeconds = segmentSettings.SegmentStartOffset.TotalSeconds;
             }
 
             analysisResults.Events = predictedEvents.ToArray();
@@ -255,8 +256,8 @@ namespace AnalysisPrograms.Recognizers.Base
             var spectrums = SpectralIndexValues.ImportFromDictionary(spectralSelection);
             for (int i = 0; i < spectrums.Length; i++)
             {
-                spectrums[i].StartOffset = analysisResults.SegmentStartOffset + TimeSpan.FromSeconds(i * lowResolution);
-                spectrums[i].SegmentDuration = imageScale;
+                spectrums[i].ResultStartSeconds = (analysisResults.SegmentStartOffset + TimeSpan.FromSeconds(i * lowResolution)).TotalSeconds;
+                spectrums[i].SegmentDurationSeconds = imageScale.TotalSeconds;
                 spectrums[i].FileName = ((SegmentSettings<object>)analysisResults.SegmentSettings).Segment.SourceMetadata.Identifier;
             }
 
@@ -352,7 +353,6 @@ namespace AnalysisPrograms.Recognizers.Base
 
             return result;
         }
-
 
         /// <summary>
         /// Run once before each segment of analysis

@@ -31,7 +31,6 @@ namespace AnalysisPrograms
         const string FEATURE_KEYS = "SPT,RHZ,RVT,RPS,RNG";
         const string HEADERS = "index,Hz(top),SPT,RHZ,RVT,RPS,RNG";
 
-
         /// <summary>
         /// This DEV method runs the EXECUTE method in this class. It sets up the input/output arguments that go into the Aruments class.
         /// Access to this DEV class is from the EXECUTE class.
@@ -93,8 +92,6 @@ namespace AnalysisPrograms
             throw new Exception();
         } //Dev()
 
-
-
         public class Arguments
         {
             public FileInfo DebugRecording { get; set; }
@@ -120,8 +117,6 @@ namespace AnalysisPrograms
 
             public double BgnThreshold { get; set; }
         }
-
-
 
         //public class Output
         //{
@@ -151,7 +146,6 @@ namespace AnalysisPrograms
         //    public double[] Weights;
         //}
 
-
         public static void Execute(Arguments arguments)
         {
             if (arguments == null)
@@ -169,13 +163,11 @@ namespace AnalysisPrograms
                 } // if (verbose)
             } // if
 
-
             FileInfo[] wavFiles = { arguments.DebugRecording };
 
             // ####################### COMMENT THE NEXT TW0 LINES when debugging a single recording file
             //string match = @"*.mp3";
             //wavFiles = arguments.InputDataDirectory.GetFiles(match, SearchOption.AllDirectories);
-
 
             // READ IN THE SPECIES LABELS FILE AND SET UP THE DATA
             string[] fileID = new string[wavFiles.Length];
@@ -213,7 +205,6 @@ namespace AnalysisPrograms
                     }
                     AnalyseLongRecordings.AnalyseLongRecording.Execute(audio2csvArguments);
 
-
                     // B: Concatenate the summary indices and produce images
                     // need to find out how long the recording is.
                     string fileName = Path.GetFileNameWithoutExtension(audio2csvArguments.Source.FullName);
@@ -227,8 +218,6 @@ namespace AnalysisPrograms
                     // i.e. image resolution  0.1s/px. or 600px/min
                     double focalMinute = (double)lineCount / 600 / 2;
                     if (focalMinute < 0.016666) focalMinute = 0.016666; // shortest recording = 1 second.
-
-
 
                     var zoomingArguments = new DrawZoomingSpectrograms.Arguments
                     {
@@ -266,8 +255,6 @@ namespace AnalysisPrograms
                                                                             TimeSpan.FromMinutes(focalMinute),
                                                                             imageWidth);
 
-
-
                     // DRAW THE VARIOUS IMAGES
                     // i.e. greyscale images, ridge spectrogram and two-maps spectrograms.
                     string fileStem = fileName;
@@ -303,7 +290,6 @@ namespace AnalysisPrograms
             } // end loop through all wav files
 
         } //Execute()
-
 
         //######################################################################################################################################
         // MAX-POOLING METHODS BELOW
@@ -363,8 +349,6 @@ namespace AnalysisPrograms
 
             return opVector.ToArray();
         }
-
-
 
     }
 }

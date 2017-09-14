@@ -72,7 +72,7 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
             Assert.AreEqual(8500, stats.HighFrequencyHertz);
             Assert.AreEqual(28, stats.EventStartSeconds);
             Assert.AreEqual(32, stats.EventEndSeconds);
-            Assert.AreEqual(28.Seconds() + segmentOffset, stats.StartOffset);
+            Assert.AreEqual(28.Seconds() + segmentOffset, stats.ResultStartSeconds);
 
             /*
             // Assume linear scale.

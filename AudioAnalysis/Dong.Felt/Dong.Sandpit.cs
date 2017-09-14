@@ -798,7 +798,7 @@
             {
                 var queryEvent = CSVResults.CsvToAcousticEvent(new FileInfo(queryCsvFiles[i]));
                 var newSouceFile = (Path.ChangeExtension(queryCsvFiles[i], ".wav")).ToFileInfo().Name;
-                var item = new CompactCandidates(queryEvent.TimeStart * 1000, queryEvent.Duration * 1000, newSouceFile);
+                var item = new CompactCandidates(queryEvent.TimeStart * 1000, queryEvent.EventDurationSeconds * 1000, newSouceFile);
                 newCandidateList.Add(item);
                 // Log.InfoFormat("{0}/{1} ({2:P}) queries have been done", i + 1, csvFilesCount, (i + 1) / (double)csvFilesCount);
             } // end of for searching the query folder

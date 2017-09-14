@@ -48,7 +48,6 @@ namespace AnalysisPrograms.Recognizers
 
         //private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
         /// </summary>
@@ -83,7 +82,6 @@ namespace AnalysisPrograms.Recognizers
             // this default framesize seems to work
             const int frameSize = 256;
             const double windowOverlap = 0.25;
-
 
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
@@ -171,23 +169,31 @@ namespace AnalysisPrograms.Recognizers
                 peakScores[p] = score;
             }
 
-            var events = AcousticEvent.ConvertScoreArray2Events(peakScores, recognizerConfig.MinHz, recognizerConfig.MaxHz, sonogram.FramesPerSecond,
-                                                                          freqBinWidth, recognizerConfig.EventThreshold, recognizerConfig.MinDuration, recognizerConfig.MaxDuration);
+            var events = AcousticEvent.ConvertScoreArray2Events(
+                peakScores,
+                recognizerConfig.MinHz,
+                recognizerConfig.MaxHz,
+                sonogram.FramesPerSecond,
+                freqBinWidth,
+                recognizerConfig.EventThreshold,
+                recognizerConfig.MinDuration,
+                recognizerConfig.MaxDuration,
+                segmentStartOffset);
             double[,] hits = null;
 
             var prunedEvents = new List<AcousticEvent>();
 
             foreach (var ae in events)
             {
-                if ((ae.Duration < recognizerConfig.MinDuration) || (ae.Duration > recognizerConfig.MaxDuration))
+                if ((ae.EventDurationSeconds < recognizerConfig.MinDuration) || (ae.EventDurationSeconds > recognizerConfig.MaxDuration))
                 {
                     continue;
                 }
 
                 // add additional info
                 ae.SpeciesName = recognizerConfig.SpeciesName;
-                ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = recordingDuration;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
                 ae.Name = recognizerConfig.AbbreviatedSpeciesName;
                 prunedEvents.Add(ae);
             }
@@ -232,7 +238,6 @@ namespace AnalysisPrograms.Recognizers
 
     }
 
-
     internal class CriniaRemotaConfig
     {
         public string AnalysisName { get; set; }
@@ -264,7 +269,6 @@ namespace AnalysisPrograms.Recognizers
             // min and max duration of event in seconds
             this.MinDuration = (double)configuration[AnalysisKeys.MinDuration];
             this.MaxDuration = (double)configuration[AnalysisKeys.MaxDuration];
-
 
             // min score for an acceptable event
             this.EventThreshold = (double)configuration[AnalysisKeys.EventThreshold];

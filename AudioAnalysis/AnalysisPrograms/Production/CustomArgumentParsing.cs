@@ -171,7 +171,6 @@
             Regex regFixFileName = new Regex("[" + Regex.Escape(strTheseAreInvalidFileNameChars) + "]");
             if (regFixFileName.IsMatch(testName)) { return false; };
 
-
             return true;
         }
 
@@ -201,7 +200,6 @@
             Regex regFixPathName = new Regex("[" + Regex.Escape(strTheseAreInvalidPathNameChars) + "]");
             if (regFixPathName.IsMatch(testName)) { return false; };
 
-
             return true;
         }
 
@@ -217,7 +215,6 @@
             }
         }
     }
-
 
     [AttributeUsage(AttributeTargets.Property)]
     public class ArgOneOfThese : ArgValidator
@@ -253,8 +250,6 @@
             }
         }
     }
-
-
 
     public static class CustomRevivers
     {

@@ -273,7 +273,6 @@ namespace AnalysisPrograms
                     }
                 }
 
-
                 // set IndexCalculationDuration i.e. duration of a subsegment
                 TimeSpan indexCalculationDuration;
                 try
@@ -465,7 +464,7 @@ namespace AnalysisPrograms
             return this.WriteSpectrumIndicesFilesCustom(destination, fileNameBase, results);
         }
 
-        public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold, bool absolute = false)
+        public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold)
         {
             throw new NotImplementedException();
         }

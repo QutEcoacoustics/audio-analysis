@@ -177,7 +177,7 @@ namespace AnalysisPrograms
             var diOutputDir = segmentSettings.SegmentOutputDirectory;
 
             //######################################################################
-            var results = Analysis(fiAudioF, configDict);
+            var results = Analysis(fiAudioF, configDict, segmentSettings.SegmentStartOffset);
             //######################################################################
 
             var sonogram = results.Item1;
@@ -201,7 +201,7 @@ namespace AnalysisPrograms
                 {
                     ev.FileName = fName;
                     ev.Name = analysisName;
-                    ev.SegmentDuration = recordingTimeSpan;
+                    ev.SegmentDurationSeconds = recordingTimeSpan.TotalSeconds;
                 }
                 //write events to a data table to return.
                 dataTable = WriteEvents2DataTable(predictedEvents);
@@ -269,9 +269,9 @@ namespace AnalysisPrograms
         /// </summary>
         /// <param name="fiSegmentOfSourceFile"></param>
         /// <param name="configDict"></param>
+        /// <param name="segmentStartOffset"></param>
         /// <param name="diOutputDir"></param>
-        public static Tuple<BaseSonogram, double[,], Plot, List<AcousticEvent>, TimeSpan>
-            Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
+        public static Tuple<BaseSonogram, double[,], Plot, List<AcousticEvent>, TimeSpan> Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, TimeSpan segmentStartOffset)
         {
             //set default values -
             int frameLength = 1024;
@@ -378,7 +378,7 @@ namespace AnalysisPrograms
                 //assume one score position per crow call
                 if (scoreArray[i] < 0.001) continue;
                 double startTime = (i - halfCallSpan) / framesPerSecond;
-                AcousticEvent ev = new AcousticEvent(startTime, callDuration, minHz, maxHz);
+                AcousticEvent ev = new AcousticEvent(segmentStartOffset, startTime, callDuration, minHz, maxHz);
                 ev.SetTimeAndFreqScales(framesPerSecond, freqBinWidth);
                 ev.Score = scoreArray[i];
                 ev.ScoreNormalised = ev.Score / maxPossibleScore; // normalised to the user supplied threshold
@@ -435,7 +435,7 @@ namespace AnalysisPrograms
                 DataRow row = dataTable.NewRow();
                 row[AnalysisKeys.EventStartAbs] = (double)ev.TimeStart;  //Set now - will overwrite later
                 row[AnalysisKeys.EventStartSec] = (double)ev.TimeStart;  //EvStartSec
-                row[AnalysisKeys.EventDuration] = (double)ev.Duration;   //duratio in seconds
+                row[AnalysisKeys.EventDuration] = (double)ev.EventDurationSeconds;   //duratio in seconds
                 row[AnalysisKeys.EventIntensity] = (double)ev.kiwi_intensityScore;   //
                 row[AnalysisKeys.EventName] = (string)ev.Name;   //
                 row[AnalysisKeys.EventNormscore] = (double)ev.ScoreNormalised;

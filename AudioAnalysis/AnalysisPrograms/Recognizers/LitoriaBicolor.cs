@@ -44,8 +44,6 @@ namespace AnalysisPrograms.Recognizers
     ///
     /// </summary>
 
-
-
     public class LitoriaBicolor : RecognizerBase
     {
         public override string Author => "Towsey";
@@ -71,8 +69,6 @@ namespace AnalysisPrograms.Recognizers
 
         // OTHER CONSTANTS
         //private const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
-
-
 
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
@@ -108,7 +104,6 @@ namespace AnalysisPrograms.Recognizers
                 frameSize,
                 maxOscilRate);
 
-
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
             {
@@ -126,7 +121,7 @@ namespace AnalysisPrograms.Recognizers
 
             //#############################################################################################################################################
             //DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            var results = Analysis(recording, sonoConfig, recognizerConfig, MainEntry.InDEBUG);
+            var results = Analysis(recording, sonoConfig, recognizerConfig, MainEntry.InDEBUG, segmentStartOffset);
             //######################################################################
 
             if (results == null) return null; //nothing to process
@@ -147,8 +142,8 @@ namespace AnalysisPrograms.Recognizers
                 // add additional info
                 ae.Name = recognizerConfig.AbbreviatedSpeciesName;
                 ae.SpeciesName = recognizerConfig.SpeciesName;
-                ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = recordingDuration;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
             };
 
             // do a RECOGNIZER TEST.
@@ -169,7 +164,6 @@ namespace AnalysisPrograms.Recognizers
             };
         }
 
-
         /// <summary>
         /// ################ THE KEY ANALYSIS METHOD
         /// </summary>
@@ -177,9 +171,14 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="sonoConfig"></param>
         /// <param name="lbConfig"></param>
         /// <param name="drawDebugImage"></param>
+        /// <param name="segmentStartOffset"></param>
         /// <returns></returns>
-        public static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, Image> Analysis(AudioRecording recording, SonogramConfig sonoConfig,
-                                                                                                          LitoriaBicolorConfig lbConfig, bool drawDebugImage)
+        public static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, Image> Analysis(
+            AudioRecording recording,
+            SonogramConfig sonoConfig,
+            LitoriaBicolorConfig lbConfig,
+            bool drawDebugImage,
+            TimeSpan segmentStartOffset)
         {
             double decibelThreshold = lbConfig.DecibelThreshold;   //dB
             double intensityThreshold = lbConfig.IntensityThreshold;
@@ -218,7 +217,6 @@ namespace AnalysisPrograms.Recognizers
             //lowerArray = DataTools.filterMovingAverage(lowerArray, 3);
             //upperArray = DataTools.filterMovingAverage(upperArray, 3);
 
-
             double[] amplitudeScores = DataTools.SumMinusDifference(lowerArray, upperArray);
             double[] differenceScores = DspFilters.PreEmphasis(amplitudeScores, 1.0);
 
@@ -226,10 +224,17 @@ namespace AnalysisPrograms.Recognizers
             amplitudeScores = DataTools.filterMovingAverage(amplitudeScores, 7);
             differenceScores = DataTools.filterMovingAverage(differenceScores, 7);
 
-
             //iii: CONVERT decibel sum-diff SCORES TO ACOUSTIC EVENTS
-            var predictedEvents = AcousticEvent.ConvertScoreArray2Events(amplitudeScores, lbConfig.LowerBandMinHz, lbConfig.UpperBandMaxHz, sonogram.FramesPerSecond,
-                                                                          freqBinWidth, decibelThreshold, lbConfig.MinDuration, lbConfig.MaxDuration);
+            var predictedEvents = AcousticEvent.ConvertScoreArray2Events(
+                amplitudeScores,
+                lbConfig.LowerBandMinHz,
+                lbConfig.UpperBandMaxHz,
+                sonogram.FramesPerSecond,
+                freqBinWidth,
+                decibelThreshold,
+                lbConfig.MinDuration,
+                lbConfig.MaxDuration,
+                segmentStartOffset);
 
             for (int i = 0; i < differenceScores.Length; i++)
             {
@@ -289,7 +294,6 @@ namespace AnalysisPrograms.Recognizers
 
             }
 
-
             //######################################################################
 
             // calculate the cosine similarity scores
@@ -319,7 +323,6 @@ namespace AnalysisPrograms.Recognizers
                 debugImage = DisplayDebugImage(sonogram, confirmedEvents, debugPlots, hits);
             }
 
-
             // return new sonogram because it makes for more easy interpretation of the image
             var returnSonoConfig = new SonogramConfig
             {
@@ -336,7 +339,6 @@ namespace AnalysisPrograms.Recognizers
             BaseSonogram returnSonogram = new SpectrogramStandard(returnSonoConfig, recording.WavReader);
             return Tuple.Create(returnSonogram, hits, scores, confirmedEvents, debugImage);
         } //Analysis()
-
 
         public static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {
@@ -365,7 +367,6 @@ namespace AnalysisPrograms.Recognizers
         }
 
     } //end class LitoriaBicolor.cs
-
 
     public class LitoriaBicolorConfig
     {

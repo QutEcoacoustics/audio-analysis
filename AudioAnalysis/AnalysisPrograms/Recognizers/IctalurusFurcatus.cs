@@ -38,7 +38,6 @@ namespace AnalysisPrograms.Recognizers
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         internal class CatFishCallData
         {
             public TimeSpan Timehms { get; set; } //(hh:mm:ss)
@@ -47,8 +46,6 @@ namespace AnalysisPrograms.Recognizers
             public int Rating { get; set; }
             public int Waveform { get; set; }
         }
-
-
 
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
@@ -152,8 +149,6 @@ namespace AnalysisPrograms.Recognizers
                 amplitudeThreshold = minAmplitudeThreshold;
             }
 
-
-
             bool doAnalysisOfKnownExamples = true;
             if (doAnalysisOfKnownExamples)
             {
@@ -180,13 +175,11 @@ namespace AnalysisPrograms.Recognizers
                 //var catFishCallDatas = data as IList<CatFishCallData> ?? data.ToList();
                 int count = data.Count();
 
-
                 var subSamplesDirectory = outputDirectory.CreateSubdirectory("testSubsamples_5000LPFilter");
                 //for (int t = 0; t < times.Length; t++)
                 foreach (var fishCall in data)
                 {
                     //Image bmp1 = IctalurusFurcatus.AnalyseLocation(bandPassFilteredSignal, sr, times[t], windowWidth);
-
 
                     // use following line where using time in seconds
                     //int location = (int)Math.Round(times[t] * sr); //assume location points to start of grunt
@@ -195,7 +188,6 @@ namespace AnalysisPrograms.Recognizers
                     // use following line where using sample
                     int location1 = fishCall.Sample / 2; //assume Chris's sample location points to centre of grunt. Divide by 2 because original recording was 44100.
                     int location = (int)Math.Round(fishCall.TimeSeconds * sr); //assume location points to centre of grunt
-
 
                     double[] subsample = DataTools.Subarray(bandPassFilteredSignal, location - signalBuffer, 2 * signalBuffer);
 
@@ -303,7 +295,6 @@ namespace AnalysisPrograms.Recognizers
                 spectrum = DataTools.normalise(spectrum);
                 var subBandSpectrum = DataTools.Subarray(spectrum, 1, requiredBinCount); // ignore DC in bin zero.
 
-
                 // now do some tests on spectrum to determine if it is a candidate grunt
                 bool eventFound = false;
 
@@ -333,7 +324,7 @@ namespace AnalysisPrograms.Recognizers
                     double duration = 0.2;
                     int minFreq = 50;
                     int maxFreq = 1000;
-                    var anEvent = new AcousticEvent(startTime.TotalSeconds, duration, minFreq, maxFreq);
+                    var anEvent = new AcousticEvent(segmentStartOffset, startTime.TotalSeconds, duration, minFreq, maxFreq);
                     anEvent.Name = "grunt";
                     //anEvent.Name = DataTools.WriteArrayAsCsvLine(subBandSpectrum, "f4");
                     anEvent.Score = score;
@@ -342,7 +333,6 @@ namespace AnalysisPrograms.Recognizers
                 }
                 id++;
             }
-
 
             // make a spectrogram
             var config = new SonogramConfig
@@ -373,7 +363,6 @@ namespace AnalysisPrograms.Recognizers
             };
         }
 
-
         public static Image AnalyseLocation(double[] signal, int sr, double startTimeInSeconds, int windowWidth)
         {
             int binCount = windowWidth / 2;
@@ -400,13 +389,11 @@ namespace AnalysisPrograms.Recognizers
             spectrum = DataTools.normalise(spectrum);
             var subBandSpectrum = DataTools.Subarray(spectrum, 1, requiredBinCount); // ignore DC in bin zero.
 
-
             var startTime = TimeSpan.FromSeconds(startTimeInSeconds);
             double[] scoreArray = CalculateScores(subBandSpectrum, windowWidth);
             Image image4 = GraphsAndCharts.DrawWaveAndFft(subsampleWav, sr, startTime, spectrum, maxHz * 2, scoreArray);
             return image4;
         }
-
 
         public static double[] AnalyseWaveformAtLocation(double[] signal, double amplitudeThreshold, double scoreThreshold)
         {
@@ -451,7 +438,6 @@ namespace AnalysisPrograms.Recognizers
             //scores = DataTools.filterMovingAverageOdd(scores, 3);
             return scores;
         }
-
 
         public static double[] CalculateScores(double[] subBandSpectrum, int windowWidth)
         {
@@ -505,8 +491,6 @@ namespace AnalysisPrograms.Recognizers
             //double[] truePositives2 = { 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0001, 0.0001, 0.0001, 0.0001, 0.0000, 0.0000, 0.0001, 0.0001, 0.0003, 0.0004, 0.0004, 0.0002, 0.0001, 0.0001, 0.0003, 0.0003, 0.0006, 0.0007, 0.0020, 0.0127, 0.0256, 0.0426, 0.0512, 0.0560, 0.0414, 0.0237, 0.0133, 0.0107, 0.0091, 0.0077, 0.0085, 0.0165, 0.0144, 0.0308, 0.0416, 0.0454, 0.0341, 0.0191, 0.0128, 0.0058, 0.0026, 0.0081, 0.0139, 0.0313, 0.0404, 0.0493, 0.0610, 0.1951, 0.4083, 0.5616, 0.5711, 0.5096, 0.4020, 0.2917, 0.1579, 0.1421, 0.1461, 0.1406, 0.2098, 0.1676, 0.2758, 0.2875, 0.6513, 0.9374, 1.0000, 0.7576, 0.4130, 0.2622, 0.1495, 0.0973, 0.0623, 0.0425, 0.0205, 0.0034, 0.0065, 0.0054, 0.0089, 0.0138, 0.0208, 0.0204, 0.0168, 0.0136, 0.0149, 0.0155, 0.0106, 0.0086, 0.0099, 0.0187 };
             //double[] truePositivesA = NormalDist.Convert2ZScores(truePositivesA);
             //double[] truePositivesB = NormalDist.Convert2ZScores(truePositivesB);
-
-
 
             // TEST TWO (B)
             // Use these spectra when using my filtering (i.e. not Chris's prefiltered)

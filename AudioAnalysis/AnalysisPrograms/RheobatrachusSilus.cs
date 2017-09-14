@@ -187,7 +187,7 @@
             var diOutputDir = segmentSettings.SegmentOutputDirectory;
 
             //######################################################################
-            var results = Analysis(fiAudioF, analysisSettings.ConfigDict);
+            var results = Analysis(fiAudioF, analysisSettings.ConfigDict, segmentSettings.SegmentStartOffset);
             //######################################################################
 
             var sonogram = results.Item1;
@@ -209,7 +209,7 @@
                 {
                     ev.FileName = fName;
                     ev.Name = analysisName;
-                    ev.SegmentDuration = recordingTimeSpan;
+                    ev.SegmentDurationSeconds = recordingTimeSpan.TotalSeconds;
                 }
                 //write events to a data table to return.
                 dataTable = WriteEvents2DataTable(predictedEvents);
@@ -257,9 +257,9 @@
         /// </summary>
         /// <param name="fiSegmentOfSourceFile"></param>
         /// <param name="configDict"></param>
+        /// <param name="segmentStartOffset"></param>
         /// <param name="diOutputDir"></param>
-        public static Tuple<BaseSonogram, double[,], List<Plot>, List<AcousticEvent>, TimeSpan>
-                                                                                   Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
+        public static Tuple<BaseSonogram, double[,], List<Plot>, List<AcousticEvent>, TimeSpan> Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, TimeSpan segmentStartOffset)
         {
             //set default values - ignore those set by user
             int frameSize        = 128;
@@ -367,8 +367,16 @@
             intensity = DataTools.filterMovingAverage(intensity, 3);
             intensity = DataTools.NormaliseInZeroOne(intensity, 0, 0.5); //## ABSOLUTE NORMALISATION 0-0.5 #######################################################################
 
-            List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(intensity, lowerHz, upperHz, sonogram.FramesPerSecond, freqBinWidth,
-                                                                                         intensityThreshold, minDuration, maxDuration);
+            List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(
+                intensity,
+                lowerHz,
+                upperHz,
+                sonogram.FramesPerSecond,
+                freqBinWidth,
+                intensityThreshold,
+                minDuration,
+                maxDuration,
+                segmentStartOffset);
             CropEvents(predictedEvents, upperArray);
             var hits = new double[rowCount, colCount];
 
@@ -450,7 +458,7 @@
                 DataRow row = dataTable.NewRow();
                 row[AnalysisKeys.EventStartAbs] = (double)ev.TimeStart;  //Set now - will overwrite later
                 row[AnalysisKeys.EventStartSec] = (double)ev.TimeStart;  //EvStartSec
-                row[AnalysisKeys.EventDuration] = (double)ev.Duration;   //duration in seconds
+                row[AnalysisKeys.EventDuration] = (double)ev.EventDurationSeconds;   //duration in seconds
                 //row[AudioAnalysisTools.Keys.EVENT_INTENSITY] = (double)ev.kiwi_intensityScore;   //
                 row[AnalysisKeys.EventName] = (string)ev.Name;   //
                 row[AnalysisKeys.EventNormscore] = (double)ev.ScoreNormalised;

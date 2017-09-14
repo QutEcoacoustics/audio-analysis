@@ -56,7 +56,6 @@ namespace AnalysisPrograms.Recognizers
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
         /// </summary>
@@ -117,12 +116,10 @@ namespace AnalysisPrograms.Recognizers
             // min score for an acceptable event
             double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
 
-
             if (recording.WavReader.SampleRate != 22050)
             {
                 throw new InvalidOperationException("Requires a 22050Hz file");
             }
-
 
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
@@ -150,7 +147,6 @@ namespace AnalysisPrograms.Recognizers
             int dctLength = (int)Math.Round(framesPerSecond * dctDuration);
             // set up the cosine coefficients
             double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength);
-
 
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
@@ -191,16 +187,23 @@ namespace AnalysisPrograms.Recognizers
             }
 
             //iii: CONVERT decibel sum-diff SCORES TO ACOUSTIC EVENTS
-            var acousticEvents = AcousticEvent.ConvertScoreArray2Events(dctScores, minHz, maxHz, sonogram.FramesPerSecond,
-                                                                          freqBinWidth, eventThreshold, minDuration, maxDuration);
-
+            var acousticEvents = AcousticEvent.ConvertScoreArray2Events(
+                dctScores,
+                minHz,
+                maxHz,
+                sonogram.FramesPerSecond,
+                freqBinWidth,
+                eventThreshold,
+                minDuration,
+                maxDuration,
+                segmentStartOffset);
 
             // ######################################################################
             acousticEvents.ForEach(ae =>
             {
                 ae.SpeciesName = speciesName;
-                ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = recordingDuration;
+                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
                 ae.Name = abbreviatedSpeciesName;
             });
 
@@ -238,8 +241,6 @@ namespace AnalysisPrograms.Recognizers
 
         }
 
-
-
         public static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {
             const bool doHighlightSubband = false;
@@ -265,7 +266,6 @@ namespace AnalysisPrograms.Recognizers
             }
             return image.GetImage();
         }
-
 
     }
 }

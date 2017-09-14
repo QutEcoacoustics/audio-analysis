@@ -315,11 +315,6 @@ namespace AnalysisPrograms
 
         #endregion
 
-
-
-
-
-
         #region Methods
 
         /// <summary>

@@ -49,9 +49,6 @@
             }
         }
 
-
-
-
         private static Arguments Dev()
         {
             // COMMAND LINES FOR SnrAnalysis.exe
@@ -158,7 +155,6 @@
             double framesPerSecond = 1 / stepDuration.TotalSeconds;
             int frameCount = signalLength / stepSize;
 
-
             // (B) ################################## EXTRACT ENVELOPE and SPECTROGRAM ##################################
             var dspOutput = DSP_Frames.ExtractEnvelopeAndFfts(
                 recording,
@@ -221,7 +217,6 @@
             //sb.AppendLine("Noise range              =" + noiseSpan.ToString("F2") + " to +" + (noiseSpan * -1).ToString("F2") + " dB   (See Note 6)");
             //sb.AppendLine("SNR (max frame-noise)    =" + sonogram.SnrData.Snr.ToString("F2") + " dB   (See Note 7)");
 
-
             //sb.Append("\nSEGMENTATION PARAMETERS");
             //sb.Append("Segment Thresholds K1: {0:f2}.  K2: {1:f2}  (See Note 8)", segK1, segK2);
             //sb.Append("# Event Count = " + predictedEvents.Count());
@@ -237,7 +232,6 @@
             int hzInterval = 1000;
 
             Image image1 = DrawSonogram(deciBelSpectrogram, wavDuration, X_AxisInterval, stepDuration, nyquist, hzInterval);
-
 
             // (G) ################################## Calculate modal background noise spectrum in decibels
             //double SD_COUNT = -0.5; // number of SDs above the mean for noise removal
@@ -275,9 +269,6 @@
             //NoiseReductionType nrt = NoiseReductionType.MEDIAN;
             //System.Tuple<double[,], double[]> tuple = SNR.NoiseReduce(deciBelSpectrogram, nrt, upperPercentileBound);
 
-
-
-
             //double[,] noiseReducedSpectrogram1 = tuple.Item1;  //
             //double[] noiseProfile              = tuple.Item2;  // smoothed modal profile
 
@@ -285,8 +276,6 @@
             //double[] noiseProfile = DataTools.filterMovingAverage(dBProfile.noiseThresholds, 7);        // smooth modal profile
             //double[,] noiseReducedSpectrogram1 = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, dBProfile.noiseThresholds);
             //Image image2 = DrawSonogram(noiseReducedSpectrogram1, wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
-
-
 
             Image[] array = new Image[2];
             array[0] = image1;
@@ -338,7 +327,6 @@
             //image3.Save(path);
             //}
 
-
             //DISPLAY IMAGE SUB BAND HIGHLIGHT and SNR DATA
             //doHighlightSubband = true;
             //var image4 = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
@@ -348,7 +336,6 @@
             ////path = outputFolder + wavFileName + "_subband.png"
             //image4.Save(path);
         }
-
 
         private static void DrawWaveforms(AudioRecording recording, string path)
         {
@@ -363,7 +350,6 @@
             //path = outputFolder + wavFileName + "_waveformDB.png"
             image6.Save(path);
         }
-
 
         public static StringBuilder GetSNRNotes(double noiseRange)
         {

@@ -75,7 +75,6 @@ namespace AnalysisPrograms.Recognizers
         // OTHER CONSTANTS
         //private const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
 
-
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
@@ -150,7 +149,7 @@ namespace AnalysisPrograms.Recognizers
 
                 //#############################################################################################################################################
                 //DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-                var results = Analysis(recording, sonoConfig, recognizerConfig, this.ReturnDebugImage);
+                var results = Analysis(recording, sonoConfig, recognizerConfig, this.ReturnDebugImage, segmentStartOffset);
                 //######################################################################
 
                 if (results == null) return null; //nothing to process
@@ -180,8 +179,8 @@ namespace AnalysisPrograms.Recognizers
 
                     ae.Name = recognizerConfig.AbbreviatedSpeciesName;
                     ae.SpeciesName = recognizerConfig.SpeciesName;
-                    ae.SegmentStartOffset = segmentStartOffset;
-                    ae.SegmentDuration = recordingDuration;
+                    ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                    ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
                     prunedEvents.Add(ae);
                 }
 
@@ -192,7 +191,6 @@ namespace AnalysisPrograms.Recognizers
                     TestTools.RecognizerScoresTest(recording.BaseName, testDir, recognizerConfig.AnalysisName, scoreArray);
                     AcousticEvent.TestToCompareEvents(recording.BaseName, testDir, recognizerConfig.AnalysisName, predictedEvents);
                 }
-
 
                 // increase very low scores
                 for (int j = 0; j < scoreArray.Length; j++)
@@ -213,7 +211,6 @@ namespace AnalysisPrograms.Recognizers
             };
         }
 
-
         /// <summary>
         /// ################ THE KEY ANALYSIS METHOD
         /// </summary>
@@ -221,9 +218,14 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="sonoConfig"></param>
         /// <param name="lrConfig"></param>
         /// <param name="returnDebugImage"></param>
+        /// <param name="segmentStartOffset"></param>
         /// <returns></returns>
-        private static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, Image> Analysis(AudioRecording recording,
-                                                                                  SonogramConfig sonoConfig, LewinsRailConfig lrConfig, bool returnDebugImage)
+        private static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, Image> Analysis(
+            AudioRecording recording,
+            SonogramConfig sonoConfig,
+            LewinsRailConfig lrConfig,
+            bool returnDebugImage,
+            TimeSpan segmentStartOffset)
         {
             if (recording == null)
             {
@@ -250,7 +252,6 @@ namespace AnalysisPrograms.Recognizers
 
             //i: MAKE SONOGRAM
             double framesPerSecond = freqBinWidth;
-
 
             //the Xcorrelation-FFT technique requires number of bins to scan to be power of 2.
             //assuming sr=17640 and window=1024, then  64 bins span 1100 Hz above the min Hz level. i.e. 500 to 1600
@@ -307,7 +308,8 @@ namespace AnalysisPrograms.Recognizers
             //iii: CONVERT SCORES TO ACOUSTIC EVENTS
             intensity = DataTools.filterMovingAverage(intensity, 5);
             var predictedEvents = AcousticEvent.ConvertScoreArray2Events(intensity, lowerBandMinHz, upperBandMaxHz, sonogram.FramesPerSecond, freqBinWidth,
-                                                                                         eventThreshold, minDuration, maxDuration);
+                                                                                         eventThreshold, minDuration, maxDuration,
+                segmentStartOffset);
             CropEvents(predictedEvents, upperArray);
             var hits = new double[rowCount, colCount];
 
@@ -332,9 +334,6 @@ namespace AnalysisPrograms.Recognizers
             return Tuple.Create(sonogram, hits, intensity, predictedEvents, debugImage);
         } //Analysis()
 
-
-
-
         public static void CropEvents(List<AcousticEvent> events, double[] intensity)
         {
             double severity = 0.1;
@@ -357,9 +356,6 @@ namespace AnalysisPrograms.Recognizers
                 ev.TimeEnd   = newMaxRow * ev.FrameOffset;
             }
         }
-
-
-
 
         private static Image DrawDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {
@@ -389,9 +385,6 @@ namespace AnalysisPrograms.Recognizers
 
     } //end class Lewinia pectoralis - Lewin's Rail.
 
-
-
-
     public class LewinsRailConfig
     {
         public string AnalysisName { get; set; }
@@ -409,7 +402,6 @@ namespace AnalysisPrograms.Recognizers
         public double IntensityThreshold { get; set; }
         public double DecibelThreshold { get; set; }
         public double EventThreshold { get; set; }
-
 
         public void ReadConfigFile(dynamic configuration, string profileName)
         {

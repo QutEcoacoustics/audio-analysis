@@ -43,7 +43,6 @@ namespace AnalysisPrograms.Recognizers.Base
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             // this is a multi recognizer - it does no actual analysis itself
@@ -104,8 +103,6 @@ namespace AnalysisPrograms.Recognizers.Base
 
             Image scoreTrackImage = ImageTools.CombineImagesVertically(scoreTracks);
 
-
-
             return new RecognizerResults()
                 {
                     Events = events,
@@ -126,7 +123,6 @@ namespace AnalysisPrograms.Recognizers.Base
         {
             // no-op
         }
-
 
         public static RecognizerResults DoCallRecognition(string name, TimeSpan segmentStartOffset, AudioRecording recording, Lazy<IndexCalculateResult[]> indices, DirectoryInfo outputDirectory, int imageWidth)
         {

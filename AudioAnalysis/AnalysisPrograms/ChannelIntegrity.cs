@@ -40,7 +40,7 @@ namespace AnalysisPrograms
 
             var result = new ChannelIntegrityIndices()
                 {
-                    StartOffset = segmentSettings.SegmentStartOffset,
+                    ResultStartSeconds = segmentSettings.SegmentStartOffset.TotalSeconds,
                 };
 
             // do some sanity checks
@@ -48,7 +48,6 @@ namespace AnalysisPrograms
             {
                 throw new InvalidAudioChannelException($"The channel integrity analyzer requires exactly two channels but {recording.WavReader.Channels} channels found in file ({audioFile.FullName}");
             }
-
 
             // actual analysis
             double[] channelLeft = recording.WavReader.GetChannel(0);
@@ -75,7 +74,6 @@ namespace AnalysisPrograms
             result.LowFreqDecibelBias  = lowDecibelBias;
             result.MidFreqDecibelBias  = midDecibelBias;
             result.HighFreqDecibelBias = highDecibelBias;
-
 
             double zeroCrossingFractionLeft;
             double zeroCrossingFractionRight;

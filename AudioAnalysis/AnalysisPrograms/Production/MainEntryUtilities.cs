@@ -397,7 +397,6 @@ namespace AnalysisPrograms
                     //innerExceptions.AppendLine();
                     Log.Fatal("\n\n" + depthString + "> Inner exception:", exception);
 
-
                     if (exception is AggregateException) {
                         PrintAggregateException(exception, ref innerExceptions, depth++);
                     }

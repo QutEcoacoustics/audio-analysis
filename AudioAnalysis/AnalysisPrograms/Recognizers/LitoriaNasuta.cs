@@ -46,7 +46,6 @@ namespace AnalysisPrograms.Recognizers
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
         /// </summary>
@@ -137,7 +136,6 @@ namespace AnalysisPrograms.Recognizers
             var binAtTopOfBotBand = (int)Math.Round((hzAtTopOfBotBand - recognizerConfig.MinHz) / freqBinWidth);
             var binAtBotOfBotBand = (int)Math.Round((hzAtBotOfBotBand - recognizerConfig.MinHz) / freqBinWidth);
 
-
             // scan the frog band and get the decibel value of those spectra which have their maximum within the correct subband.
             for (int x = 0; x < rowCount; x++)
             {
@@ -165,9 +163,17 @@ namespace AnalysisPrograms.Recognizers
             var croakPlot1 = new Plot(text1, normalisedScores, normalisedThreshold);
 
             // extract potential croak events from the array of croak candidate
-            var croakEvents = AcousticEvent.ConvertScoreArray2Events(croakScoreArray, recognizerConfig.MinHz, recognizerConfig.MaxHz, sonogram.FramesPerSecond,
-                                                                          freqBinWidth, recognizerConfig.EventThreshold,
-                                                                          recognizerConfig.MinCroakDuration, recognizerConfig.MaxCroakDuration);
+            var croakEvents = AcousticEvent.ConvertScoreArray2Events(
+                croakScoreArray,
+                recognizerConfig.MinHz,
+                recognizerConfig.MaxHz,
+                sonogram.FramesPerSecond,
+                freqBinWidth,
+                recognizerConfig.EventThreshold,
+                recognizerConfig.MinCroakDuration,
+                recognizerConfig.MaxCroakDuration,
+                segmentStartOffset);
+
             // add necesary info into the candidate events
             double[,] hits = null;
             var prunedEvents = new List<AcousticEvent>();
@@ -175,12 +181,11 @@ namespace AnalysisPrograms.Recognizers
             {
                 // add additional info
                 ae.SpeciesName = speciesName;
-                ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = recordingDuration;
+                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
                 ae.Name = recognizerConfig.AbbreviatedSpeciesName;
                 prunedEvents.Add(ae);
             }
-
 
             /*
             // DO NOT LOOK FOR  A PULSE TRAIN because recording from Karlina does not have one for L.nasuta.
@@ -230,7 +235,6 @@ namespace AnalysisPrograms.Recognizers
 
             var scoresPlot = new Plot(this.DisplayName, croakScoreArray, recognizerConfig.EventThreshold);
 
-
             if (true)
             {
                 // display a variety of debug score arrays
@@ -245,9 +249,6 @@ namespace AnalysisPrograms.Recognizers
                 var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, this.SpeciesName, "png", "DebugSpectrogram");
                 debugImage.Save(debugPath);
             }
-
-
-
 
             return new RecognizerResults()
             {

@@ -95,7 +95,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             Assert.AreEqual(0.957433, summaryIndices.Ndsi, 0.000001);
             Assert.AreEqual(27.877206, summaryIndices.Snr, 0.000001);
             Assert.AreEqual(6.240310, summaryIndices.SptDensity, 0.000001);
-            Assert.AreEqual(TimeSpan.Zero, summaryIndices.StartOffset);
+            Assert.AreEqual(TimeSpan.Zero, summaryIndices.ResultStartSeconds);
             Assert.AreEqual(0.162216, summaryIndices.TemporalEntropy, 0.000001);
             Assert.AreEqual(401, summaryIndices.ThreeGramCount, 0.000001);
         }

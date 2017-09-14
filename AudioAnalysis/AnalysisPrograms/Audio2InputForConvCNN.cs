@@ -136,8 +136,6 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("SnrStats:" + Json.SerialiseToString(result.SnrStatistics, prettyPrint: false));
         }
 
-
-
         /// <summary>
         /// This method written 18-09-2014 to process Mangalam's CNN recordings.
         /// Calculate the SNR statistics for each recording and then write info back to csv file
@@ -172,15 +170,12 @@ namespace AnalysisPrograms
 
             bool doPreprocessing = true;
 
-
             // print out the parameters
             LoggedConsole.WriteLine("\nPARAMETERS");
             foreach (var kvp in configDict)
             {
                 LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
             }
-
-
 
             // set up header of the output file
             string outputPath = Path.Combine(output.FullName, "SNRInfoForConvDnnDataset.csv");
@@ -199,7 +194,6 @@ namespace AnalysisPrograms
             // keep track of species names and distribution of classes.
             // following dictionaries are to monitor species numbers
             var speciesCounts = new SpeciesCounts();
-
 
             // read through the csv file containing info about recording locations and call bounds
             try
@@ -261,7 +255,6 @@ namespace AnalysisPrograms
                     /* #######################################
                        ####################################### */
 
-
                     if (!sourceRecording.Exists)
                     {
                         fileInCsvDoesNotExist++;
@@ -314,8 +307,6 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("\n##### FINISHED FILE ############################\n");
         }
 
-
-
         /// <summary>
         /// This method was written 9th March 2015 to process a dataset of some 1000 x 5 second recordings.
         /// The dataset was originally prepared by Meriem for use in her Master's thesis.
@@ -342,7 +333,6 @@ namespace AnalysisPrograms
             //LoggedConsole.WriteLine("# Input .csv file: " + arguments.Source.Name);
             //LoggedConsole.WriteLine("# Configure  file: " + arguments.Config.Name);
             //LoggedConsole.WriteLine("# Output directry: " + arguments.Output.Name);
-
 
             //bool verbose = arguments.Verbose;
             bool verbose = true;
@@ -390,9 +380,6 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("\n##### FINISHED ############################\n");
         }
 
-
-
-
         private static Dictionary<string, string> GetConfigurationForConvCNN(FileInfo configFile)
         {
             dynamic configuration = Yaml.Deserialise(configFile);
@@ -410,9 +397,6 @@ namespace AnalysisPrograms
         }
 
         // end MAIN()
-
-
-
 
         public static AudioToSonogramResult AnalyseOneRecording(CsvDataRecord dataRecord, Dictionary<string, string> configDict, DirectoryInfo opDir)
         {
@@ -496,12 +480,8 @@ namespace AnalysisPrograms
             // 4: Delete the temp file
             File.Delete(tempAudioSegment.FullName);
 
-
             return result;
         }
-
-
-
 
         /// <summary>
         /// In line class used to store a single record read from a line of the csv file;
@@ -573,17 +553,11 @@ namespace AnalysisPrograms
         }
         // class CsvDataRecord
 
-
-
-
-
-
         public class SpeciesCounts
         {
             public Dictionary<string, int> speciesCounts = new Dictionary<string, int>();
             public Dictionary<string, int> speciesIDs = new Dictionary<string, int>();
             public Dictionary<string, int> siteNames = new Dictionary<string, int>();
-
 
             public void AddSpeciesID(string speciesID, string latinInfo)
             {
@@ -607,7 +581,6 @@ namespace AnalysisPrograms
                     this.speciesIDs.Add(BothNames + "####", value);
                 }
             }
-
 
             public void AddSpeciesCount(string speciesID)
             {
@@ -643,9 +616,6 @@ namespace AnalysisPrograms
                 Csv.WriteToCsv(new FileInfo(path + "Sites.csv"), this.siteNames);
             }
         }
-
-
-
 
         /// <summary>
         /// In line class used to return results from the static method Audio2InputForConvCNN.GenerateFourSpectrogramImages();
@@ -771,10 +741,8 @@ namespace AnalysisPrograms
             image = sonogram.GetImageAnnotatedWithLinearHerzScale(image, "AMPLITUDE SPECTROGRAM + LCN + ridge detection");
             list.Add(image);
 
-
             Image envelopeImage = Image_Track.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
             list.Add(envelopeImage);
-
 
             // 3) now draw the standard decibel spectrogram
             sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
@@ -838,8 +806,6 @@ namespace AnalysisPrograms
         }
 
     }
-
-
 
     /// <summary>
     /// This analyzer preprocesses short audio segments a few seconds to maximum 1 minute long for processing by a convolutional Deep NN.
@@ -935,7 +901,7 @@ namespace AnalysisPrograms
             throw new NotImplementedException();
         }
 
-        public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold, bool absolute = false)
+        public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold)
         {
             throw new NotImplementedException();
         }

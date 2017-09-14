@@ -86,7 +86,7 @@ namespace AnalysisPrograms.EventStatistics
 
                 // lastly add some metadata to make the results useful
                 statistics.AudioRecordingId = segment.Source.Id;
-                statistics.AudioRecordingRecordedDateTime = segment.SourceMetadata.RecordedDate;
+                statistics.AudioRecordingRecordedDate = segment.SourceMetadata.RecordedDate;
                 statistics.AudioEventId = importedEvent.AudioEventId;
 
                 results[index] = statistics;

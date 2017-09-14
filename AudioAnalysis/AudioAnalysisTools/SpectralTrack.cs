@@ -445,7 +445,10 @@
         }
 
 
-        public static List<AcousticEvent> ConvertTracks2Events(List<SpectralTrack> tracks /*, double framesPerSecond, double herzPerBin*/)
+        public static List<AcousticEvent> ConvertTracks2Events(
+            List<SpectralTrack> tracks,
+            TimeSpan segmentStartOffset
+/*, double framesPerSecond, double herzPerBin*/)
         {
             if (tracks == null) return null;
             var list = new List<AcousticEvent>();
@@ -458,7 +461,7 @@
                 double duration = frameDuration / track.framesPerSecond;
                 double minFreq = track.herzPerBin * (track.avBin - 1);
                 double maxFreq = track.herzPerBin * (track.avBin + 1);
-                AcousticEvent ae = new AcousticEvent(startTime, duration, minFreq, maxFreq);
+                AcousticEvent ae = new AcousticEvent(segmentStartOffset, startTime, duration, minFreq, maxFreq);
                 ae.SetTimeAndFreqScales(track.framesPerSecond, track.herzPerBin);
                 ae.Name = "";
                 ae.BorderColour = Color.Blue;

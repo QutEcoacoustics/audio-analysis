@@ -56,7 +56,6 @@ namespace AnalysisPrograms.Recognizers
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
         /// </summary>
@@ -178,14 +177,13 @@ namespace AnalysisPrograms.Recognizers
             acousticEvents.ForEach(ae =>
             {
                 ae.SpeciesName = speciesName;
-                ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = recordingDuration;
+                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
                 ae.Name = abbreviatedSpeciesName;
             });
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
             var plots = new List<Plot> { plot };
-
 
             // DEBUG IMAGE this recognizer only. MUST set false for deployment.
             bool displayDebugImage = MainEntry.InDEBUG;
@@ -205,8 +203,6 @@ namespace AnalysisPrograms.Recognizers
             };
 
         }
-
-
 
         public static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {
@@ -232,7 +228,6 @@ namespace AnalysisPrograms.Recognizers
             }
             return image.GetImage();
         }
-
 
     }
 }

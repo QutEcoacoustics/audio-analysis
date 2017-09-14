@@ -177,7 +177,6 @@ namespace AnalysisPrograms
             return Tuple.Create(events, recording, sonogram);
         }
 
-
         public static AcousticEvent[] CallAed(BaseSonogram sonogram, AedConfiguration aedConfiguration, TimeSpan segmentStartOffset, TimeSpan segmentDuration)
         {
             Log.Info("AED start");
@@ -209,6 +208,7 @@ namespace AnalysisPrograms
                     }
 
                     return new AcousticEvent(
+                        segmentStartOffset,
                         o,
                         sonogram.NyquistFrequency,
                         sonogram.Configuration.FreqBinCount,
@@ -216,16 +216,13 @@ namespace AnalysisPrograms
                         sonogram.FrameStep,
                         sonogram.FrameCount)
                     {
-                        SegmentStartOffset = segmentStartOffset,
                         BorderColour = aedConfiguration.AedEventColor,
                         HitColour = aedConfiguration.AedHitColor,
-                        SegmentDuration = segmentDuration,
+                        SegmentDurationSeconds = segmentDuration.TotalSeconds,
                     };
                 }).ToArray();
             return events;
         }
-
-
 
         public static Arguments Dev(object obj)
         {
@@ -249,7 +246,6 @@ namespace AnalysisPrograms
             return image.GetImage();
         }
 
-
         public static void Execute(Arguments arguments)
         {
             if (arguments == null)
@@ -267,7 +263,6 @@ namespace AnalysisPrograms
             DirectoryInfo outputDir = arguments.Output.Combine(EcosoundsAedIdentifier);
             outputDir.Create();
 
-
             Log.Info("# Output folder =" + outputDir);
             Log.Info("# Recording file: " + recodingFile.Name);
 
@@ -283,7 +278,6 @@ namespace AnalysisPrograms
             image.Save(outputImagePath.FullName, ImageFormat.Png);
             Log.Info("Image saved to: " + outputImagePath.FullName);
 
-
             // output csv
             var outputCsvPath = outputDir.CombineFile(recodingBaseName + ".Events.csv");
             WriteEventsFileStatic(outputCsvPath, results.Item1);
@@ -291,7 +285,6 @@ namespace AnalysisPrograms
 
             TowseyLibrary.Log.WriteLine("Finished");
         }
-
 
         public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
@@ -320,7 +313,6 @@ namespace AnalysisPrograms
                 this.WriteSummaryIndicesFile(segmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
                 analysisResults.SummaryIndicesFile = segmentSettings.SegmentSummaryIndicesFile;
             }
-
 
             // save image of sonograms
             if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Events.Length))

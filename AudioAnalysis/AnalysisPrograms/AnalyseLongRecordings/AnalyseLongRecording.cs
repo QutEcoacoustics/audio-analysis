@@ -175,7 +175,6 @@ Output  to  directory: {1}
             analysisSettings.AnalysisChannelSelection = arguments.Channels;
             analysisSettings.AnalysisMixDownToMono = arguments.MixDownToMono;
 
-
             // #SEGMENT_DURATION=minutes, SEGMENT_OVERLAP=seconds   FOR EXAMPLE: SEGMENT_DURATION=5  and SEGMENT_OVERLAP=10
             // set the segment offset i.e. time between consecutive segment starts - the key used for this in config file = "SEGMENT_DURATION"
             try

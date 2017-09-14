@@ -48,7 +48,6 @@ namespace AnalysisPrograms.Recognizers
         //DEBUG IMAGE this recognizer only. MUST set false for deployment.
         readonly bool _displayDebugImage = MainEntry.InDEBUG;
 
-
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
         /// </summary>
@@ -99,13 +98,12 @@ namespace AnalysisPrograms.Recognizers
             //      string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             //      string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
-            RecognizerResults results = Gruntwork(audioRecording, configuration, outputDirectory);
+            RecognizerResults results = Gruntwork(audioRecording, configuration, outputDirectory, segmentStartOffset);
 
             return results;
         }
 
-
-        internal RecognizerResults Gruntwork(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory)
+        internal RecognizerResults Gruntwork(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
         {
             double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 0.1;
             // make a spectrogram
@@ -218,8 +216,6 @@ namespace AnalysisPrograms.Recognizers
                 // Console.WriteLine("Col {0}, Bin {1}  ", c, freqBinID);
             } // loop through all spectra
 
-
-
             // We now have a list of potential hits for LimCon. This needs to be filtered.
             double[] prunedScores;
             var startEnds = new List<Point>();
@@ -268,7 +264,7 @@ namespace AnalysisPrograms.Recognizers
 
                 double startTime = point.X * frameStepInSeconds;
                 double durationTime = eventWidth * frameStepInSeconds;
-                var newEvent = new AcousticEvent(startTime, durationTime, bottomFreqForEvent, topFreqForEvent)
+                var newEvent = new AcousticEvent(segmentStartOffset, startTime, durationTime, bottomFreqForEvent, topFreqForEvent)
                 {
                     DominantFreq = avDominantFreq,
                     Score = eventScore,
@@ -311,8 +307,6 @@ namespace AnalysisPrograms.Recognizers
             };
         }
 
-
-
         /// <summary>
         /// Constructs a simple template for the L.convex call.
         /// Assume that the passed value of callBinWidth > 22.
@@ -348,7 +342,6 @@ namespace AnalysisPrograms.Recognizers
             return templates;
         }
 
-
         public static double GetEventScore(double[,] eventMatrix, List<double[]> templates)
         {
             double[] eventAsVector = MatrixTools.SumColumns(eventMatrix);
@@ -363,8 +356,6 @@ namespace AnalysisPrograms.Recognizers
             }
             return maxScore;
         }
-
-
 
         public static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {

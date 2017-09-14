@@ -114,7 +114,7 @@ namespace AnalysisPrograms
         {
             Tuple<AcousticEvent[], AudioRecording, BaseSonogram> aed = Aed.Detect(wavFilePath, aedConfiguration, segmentStartOffset);
 
-            var events = aed.Item1.Select(ae => Util.fcornersToRect(ae.TimeStart, ae.TimeEnd, ae.MaxFreq, ae.MinFreq)).ToList();
+            var events = aed.Item1.Select(ae => Util.fcornersToRect(ae.TimeStart, ae.TimeEnd, ae.HighFrequencyHertz, ae.LowFrequencyHertz)).ToList();
 
             Log.Debug("EPR start");
 
@@ -132,13 +132,17 @@ namespace AnalysisPrograms
             foreach (var rectScore in eprRects)
             {
                 var ae = new AcousticEvent(
-                    rectScore.Item1.Left, rectScore.Item1.Right - rectScore.Item1.Left, rectScore.Item1.Bottom, rectScore.Item1.Top);
+                    segmentStartOffset,
+                    rectScore.Item1.Left,
+                    rectScore.Item1.Right - rectScore.Item1.Left,
+                    rectScore.Item1.Bottom,
+                    rectScore.Item1.Top);
                 ae.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                 ae.SetTimeAndFreqScales(sonogram.NyquistFrequency, sonogram.Configuration.WindowSize, 0 );
                 ae.SetScores(rectScore.Item2, 0, 1);
                 ae.BorderColour = aedConfiguration.AedEventColor;
-                ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = aed.Item2.Duration;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                ae.SegmentDurationSeconds = aed.Item2.Duration.TotalSeconds;
 
                 eprEvents.Add(ae);
             }
@@ -172,7 +176,7 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine();
             foreach (AcousticEvent ae in eprEvents)
             {
-                LoggedConsole.WriteLine(ae.TimeStart + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
+                LoggedConsole.WriteLine(ae.TimeStart + "," + ae.EventDurationSeconds + "," + ae.LowFrequencyHertz + "," + ae.HighFrequencyHertz);
             }
 
             LoggedConsole.WriteLine();
@@ -189,7 +193,6 @@ namespace AnalysisPrograms
 
         }
 
-
         #endregion
 
         #region helper methods
@@ -202,7 +205,6 @@ namespace AnalysisPrograms
         {
             return (double?)configuration[KeyNormalizedMinScore] ?? Default.eprNormalisedMinScore;
         }
-
 
         /// <summary>
         /// Takes the template defined by Birgit and converts it to integer bins using the user supplied time & hz scales
@@ -243,6 +245,7 @@ namespace AnalysisPrograms
                 Oblong o = new Oblong(t1, f1, t2, f2);
                 gpTemplate.Add(
                     new AcousticEvent(
+                        TimeSpan.Zero,
                         o,
                         sonogram.NyquistFrequency,
                         sonogram.Configuration.FreqBinCount,
@@ -250,6 +253,7 @@ namespace AnalysisPrograms
                         sonogram.FrameStep,
                         sonogram.FrameCount));
             }
+
             return gpTemplate;
         }
 

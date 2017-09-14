@@ -69,15 +69,14 @@
         public EventBasedRepresentation(double timeScale, double freqScale,
             double maxFrequency, double minFrequency, double startTime, double endTime)
         {
-            this.MaxFreq = maxFrequency;
-            this.MinFreq = minFrequency;
+            this.HighFrequencyHertz = maxFrequency;
+            this.LowFrequencyHertz = minFrequency;
             this.TimeStart = startTime;
-            this.Duration = endTime - startTime;
             this.Bottom = (int)(minFrequency / freqScale);
             this.Left = (int)(startTime / timeScale);
 
-            this.Width = (int)(this.Duration / timeScale) + 1;
-            this.Height = (int)(this.FreqRange / freqScale) + 1;
+            this.Width = (int)(this.EventDurationSeconds / timeScale) + 1;
+            this.Height = (int)(this.Bandwidth / freqScale) + 1;
             this.Centroid = new Point(this.Left + this.Width / 2, this.Bottom + this.Height / 2);
             this.Area = this.Width * this.Height;
         }
@@ -145,7 +144,7 @@
             foreach (var e in ae)
             {
                 var ep = new EventBasedRepresentation(timeScale, freqScale,
-                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                    e.HighFrequencyHertz, e.LowFrequencyHertz, e.TimeStart, e.TimeEnd);
                 ep.InsideRidgeOrientation = orientationType;
                 ep.TimeScale = timeScale;
                 ep.FreqScale = freqScale;
@@ -170,7 +169,7 @@
             foreach (var e in vAcousticEventList)
             {
                 var ep = new EventBasedRepresentation(timeScale, freqScale,
-                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                    e.HighFrequencyHertz, e.LowFrequencyHertz, e.TimeStart, e.TimeEnd);
 
                 if (ep.Area >= 30)
                 {
@@ -188,7 +187,7 @@
             foreach (var e in hAcousticEventList)
             {
                 var ep = new EventBasedRepresentation(timeScale, freqScale,
-                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                    e.HighFrequencyHertz, e.LowFrequencyHertz, e.TimeStart, e.TimeEnd);
 
                 if (ep.Area >= 30)
                 {
@@ -206,7 +205,7 @@
             foreach (var e in pAcousticEventList)
             {
                 var ep = new EventBasedRepresentation(timeScale, freqScale,
-                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                    e.HighFrequencyHertz, e.LowFrequencyHertz, e.TimeStart, e.TimeEnd);
                 if (ep.Area >= 10)
                 {
                     ep.InsideRidgeOrientation = 2;
@@ -223,7 +222,7 @@
             foreach (var e in nAcousticEventList)
             {
                 var ep = new EventBasedRepresentation(timeScale, freqScale,
-                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                    e.HighFrequencyHertz, e.LowFrequencyHertz, e.TimeStart, e.TimeEnd);
                 if (ep.Area >= 10)
                 {
                     ep.InsideRidgeOrientation = 3;
@@ -260,7 +259,7 @@
             foreach (var e in vAcousticEventList)
             {
                 var ep = new EventBasedRepresentation(timeScale, freqScale,
-                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                    e.HighFrequencyHertz, e.LowFrequencyHertz, e.TimeStart, e.TimeEnd);
 
                 if (ep.Area >= 10)
                 {
@@ -275,7 +274,7 @@
             foreach (var e in hAcousticEventList)
             {
                 var ep = new EventBasedRepresentation(timeScale, freqScale,
-                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                    e.HighFrequencyHertz, e.LowFrequencyHertz, e.TimeStart, e.TimeEnd);
 
                 if (ep.Area >= 10)
                 {
@@ -290,7 +289,7 @@
             foreach (var e in pAcousticEventList)
             {
                 var ep = new EventBasedRepresentation(timeScale, freqScale,
-                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                    e.HighFrequencyHertz, e.LowFrequencyHertz, e.TimeStart, e.TimeEnd);
                 if (ep.Area >= 6)
                 {
                     ep.InsideRidgeOrientation = 2;
@@ -304,7 +303,7 @@
             foreach (var e in nAcousticEventList)
             {
                 var ep = new EventBasedRepresentation(timeScale, freqScale,
-                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                    e.HighFrequencyHertz, e.LowFrequencyHertz, e.TimeStart, e.TimeEnd);
                 if (ep.Area >= 6)
                 {
                     ep.InsideRidgeOrientation = 3;
