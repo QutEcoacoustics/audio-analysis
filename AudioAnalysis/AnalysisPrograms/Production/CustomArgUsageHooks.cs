@@ -27,7 +27,6 @@
                                                                    },
                                                                };
 
-
         public override void BeforeGenerateUsage(ArgumentUsageInfo info)
         {
             var propertyType = info.Property.PropertyType;

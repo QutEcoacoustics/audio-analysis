@@ -243,9 +243,11 @@
         /// Returns a DataTable
         /// </summary>
         /// <param name="fiSegmentOfSourceFile"></param>
+        /// <param name="analysisSettings"></param>
+        /// <param name="segmentStartOffset"></param>
         /// <param name="configDict"></param>
         /// <param name="diOutputDir"></param>
-        public static Tuple<BaseSonogram, double[,], List<Plot>, List<AcousticEvent>, TimeSpan> Analysis(FileInfo fiSegmentOfSourceFile, AnalysisSettings analysisSettings)
+        public static Tuple<BaseSonogram, double[,], List<Plot>, List<AcousticEvent>, TimeSpan> Analysis(FileInfo fiSegmentOfSourceFile, AnalysisSettings analysisSettings, TimeSpan segmentStartOffset)
         {
             Dictionary<string, string> config = analysisSettings.ConfigDict;
 
@@ -288,14 +290,14 @@
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
             //DETECT MALE KIWI
-            var resultsMale = DetectKiwi(sonogram, minHzMale, maxHzMale, minPeriod, maxPeriod, eventThreshold, minDuration, maxDuration, weights);
+            var resultsMale = DetectKiwi(sonogram, minHzMale, maxHzMale, minPeriod, maxPeriod, eventThreshold, minDuration, maxDuration, weights, segmentStartOffset);
             var scoresM = resultsMale.Item1;
             var hitsM = resultsMale.Item2;
             var predictedEventsM = resultsMale.Item3;
             foreach (AcousticEvent ev in predictedEventsM) ev.Name = "LSK(m)";
 
             //DETECT FEMALE KIWI
-            var resultsFemale = DetectKiwi(sonogram, minHzFemale, maxHzFemale, minPeriod, maxPeriod, eventThreshold, minDuration, maxDuration, weights);
+            var resultsFemale = DetectKiwi(sonogram, minHzFemale, maxHzFemale, minPeriod, maxPeriod, eventThreshold, minDuration, maxDuration, weights, segmentStartOffset);
             var scoresF = resultsFemale.Item1;
             var hitsF = resultsFemale.Item2;
             var predictedEventsF = resultsFemale.Item3;
@@ -321,8 +323,17 @@
             return Tuple.Create(sonogram, hitsM, scoresM, predictedEventsM, tsRecordingtDuration);
         } //Analysis()
 
-        public static Tuple<List<Plot>, double[,], List<AcousticEvent>> DetectKiwi(BaseSonogram sonogram, int minHz, int maxHz, double minPeriod, double maxPeriod,
-                                                                                          double eventThreshold, double minDuration, double maxDuration, Dictionary<string, double> weights)
+        public static Tuple<List<Plot>, double[,], List<AcousticEvent>> DetectKiwi(
+            BaseSonogram sonogram,
+            int minHz,
+            int maxHz,
+            double minPeriod,
+            double maxPeriod,
+            double eventThreshold,
+            double minDuration,
+            double maxDuration,
+            Dictionary<string, double> weights,
+            TimeSpan segmentStartOffset)
         {
             int step = (int)Math.Round(sonogram.FramesPerSecond); //take one second steps
             //#############################################################################################################################################
@@ -383,7 +394,8 @@
             //iii: CONVERT SCORES TO ACOUSTIC EVENTS
             var events = ConvertScoreArray2Events(dBArray, intensity1, gridScore, deltaPeriodScore, chirpScores, comboScore, bandWidthScore,
                                                           minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
-                                                          eventThreshold, minDuration, maxDuration);
+                                                          eventThreshold, minDuration, maxDuration,
+                segmentStartOffset);
 
             //double minGap = 10.0; //seconds
             //MergeEvents(events, minGap);    //decide not to use this
@@ -670,10 +682,21 @@
         }
 
         public static List<AcousticEvent> ConvertScoreArray2Events(
-                                          double[] dBarray, double[] intensity, double[] gridScore, double[] deltaPeriodScore, double[] chirpScores,
-                                          double[] comboScore, double[] bwScore,
-                                          int minHz, int maxHz, double framesPerSec, double freqBinWidth,
-                                          double scoreThreshold, double minDuration, double maxDuration)
+            double[] dBarray,
+            double[] intensity,
+            double[] gridScore,
+            double[] deltaPeriodScore,
+            double[] chirpScores,
+            double[] comboScore,
+            double[] bwScore,
+            int minHz,
+            int maxHz,
+            double framesPerSec,
+            double freqBinWidth,
+            double scoreThreshold,
+            double minDuration,
+            double maxDuration,
+            TimeSpan segmentStartOffset)
         {
             int count = comboScore.Length;
             var events = new List<AcousticEvent>();
@@ -700,7 +723,7 @@
                         double endTime = i * frameOffset;
                         double duration = endTime - startTime;
                         if ((duration < minDuration) || (duration > maxDuration)) continue; //skip events with duration outside defined limits
-                        AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
+                        AcousticEvent ev = new AcousticEvent(segmentStartOffset, startTime, duration, minHz, maxHz);
                         ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth); //need time scale for later cropping of events
 
                         //
@@ -759,7 +782,6 @@
                 {
                     events[i].Oblong = null;
                     events[i].TimeEnd = events[i + 1].TimeEnd;
-                    events[i].Duration = events[i + 1].TimeEnd - events[i].TimeStart;
                     if (events[i + 1].kiwi_intensityScore > events[i].kiwi_intensityScore) events[i].kiwi_intensityScore = events[i + 1].kiwi_intensityScore;
                     if (events[i + 1].kiwi_chirpScore > events[i].kiwi_chirpScore) events[i].kiwi_chirpScore = events[i + 1].kiwi_chirpScore;
                     if (events[i + 1].kiwi_deltaPeriodScore > events[i].kiwi_deltaPeriodScore) events[i].kiwi_deltaPeriodScore = events[i + 1].kiwi_deltaPeriodScore;
@@ -767,7 +789,7 @@
                     if (events[i + 1].kiwi_snrScore > events[i].kiwi_snrScore) events[i].kiwi_snrScore = events[i + 1].kiwi_snrScore;
                     if (events[i + 1].kiwi_bandWidthScore > events[i].kiwi_bandWidthScore) events[i].kiwi_bandWidthScore = events[i + 1].kiwi_bandWidthScore;
                     events.Remove(events[i + 1]);
-                    if (events[i].Duration > 80.0)
+                    if (events[i].EventDurationSeconds > 80.0)
                     {
                         events.Remove(events[i]);
                         i--;
@@ -797,10 +819,10 @@
                 ev.Oblong = null;
                 ev.TimeStart = newMinRow * ev.FrameOffset;
                 ev.TimeEnd = newMaxRow * ev.FrameOffset;
-                ev.Duration = ev.TimeEnd - ev.TimeStart;
+
                 //int frameCount = (int)Math.Round(ev.Duration / ev.FrameOffset);
             }
-            for (int i = events.Count - 1; i >= 0; i--) if (events[i].Duration < minDurationInSeconds) events.Remove(events[i]);
+            for (int i = events.Count - 1; i >= 0; i--) if (events[i].EventDurationSeconds < minDurationInSeconds) events.Remove(events[i]);
         } //CropEvents()
 
         static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
@@ -859,7 +881,7 @@
                 DataRow row = dataTable.NewRow();
                 row[AnalysisKeys.EventStartAbs] = (double)ev.TimeStart;  //Set now - will overwrite later
                 row[AnalysisKeys.EventStartSec] = (double)ev.TimeStart;  //EvStartSec
-                row[AnalysisKeys.EventDuration] = (double)ev.Duration;   //duratio in seconds
+                row[AnalysisKeys.EventDuration] = (double)ev.EventDurationSeconds;   //duratio in seconds
                 row[AnalysisKeys.EventName] = (string)ev.Name;       //
                 row[AnalysisKeys.EventIntensity] = (double)ev.kiwi_intensityScore;  //
                 row[LSKiwiHelper.key_BANDWIDTH_SCORE] = (double)ev.kiwi_bandWidthScore;

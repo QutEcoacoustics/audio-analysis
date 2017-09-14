@@ -48,22 +48,22 @@ namespace AudioAnalysisTools.EventStatistics
                 {
                     return Api.Default.GetListenUri(
                         this.AudioRecordingId.Value,
-                        Math.Floor(this.StartOffset.TotalSeconds)).ToString();
+                        Math.Floor(this.ResultStartSeconds)).ToString();
                 }
 
                 return string.Empty;
             }
         }
 
-        public DateTimeOffset? AudioRecordingRecordedDateTime { get; set; }
+        public DateTimeOffset? AudioRecordingRecordedDate { get; set; }
 
         // Note: EventStartSeconds is in base class
 
         public double EventEndSeconds { get; set; }
 
-        public double DurationSeconds => this.EventEndSeconds - this.EventStartSeconds;
+        public double EventDurationSeconds => this.EventEndSeconds - this.EventStartSeconds;
 
-        public DateTimeOffset? EventStartDateTime => this.AudioRecordingRecordedDateTime?.Add(this.StartOffset);
+        public DateTimeOffset? EventStartDate => this.AudioRecordingRecordedDate?.AddSeconds(this.ResultStartSeconds);
 
         public double MeanDecibels { get; set; }
 
@@ -75,13 +75,19 @@ namespace AudioAnalysisTools.EventStatistics
         /// </summary>
         public double TemporalMaxRelative { get; set; }
 
+        public new double LowFrequencyHertz
+        {
+            get { return base.LowFrequencyHertz.Value; }
+            set { base.LowFrequencyHertz = value; }
+        }
+
         /// <summary>
         /// Gets or sets the top frequency bound of the acoustic event in Hertz
         /// Note: MinHz implemented in base class.
         /// </summary>
         public double HighFrequencyHertz { get; set; }
 
-        public double BandWidth => this.HighFrequencyHertz - this.LowFrequencyHertz.Value;
+        public double Bandwidth => this.HighFrequencyHertz - this.LowFrequencyHertz;
 
         public int DominantFrequency { get; set; }
 
@@ -138,6 +144,12 @@ namespace AudioAnalysisTools.EventStatistics
                 var name = propertyMap.Data.Names.First();
 
                 if (name == nameof(EventBase.Score))
+                {
+                    propertyMap.Ignore();
+                }
+
+                if (name == nameof(EventBase.LowFrequencyHertz) &&
+                    propertyMap.Data.Property.DeclaringType == typeof(EventBase))
                 {
                     propertyMap.Ignore();
                 }

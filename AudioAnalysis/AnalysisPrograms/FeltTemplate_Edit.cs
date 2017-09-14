@@ -123,7 +123,6 @@
                               periods[0]*FeltTemplates_Use.FeltFreqBinWidth, periods[1]*FeltTemplates_Use.FeltFreqBinWidth, periods[2]*FeltTemplates_Use.FeltFreqBinWidth);
             //double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
 
-
             //FileTools.WriteMatrix2File(spr, sprOpPath);
 
             // ZIP THE OUTPUT
@@ -143,7 +142,6 @@
 
                 filenames = new[]
                                 { iniPath, targetImagePath, sprOpPath, targetPath, targetNoNoisePath, noisePath };
-
 
                 string sprOutZipFile = outputDir + targetName + "_syntacticTemplate.zip";
                 FileTools.ZipFiles(filenames, sprOutZipFile);
@@ -178,13 +176,8 @@ arguments[0] = sourceDir + "\\" + sourceFile;
                        }*/
             //FeltTemplates_Use.Dev(arguments);
 
-
-
             Log.WriteLine("# Finished everything!");
         }
-
-
-
 
         public static Bitmap Image2BinaryBitmap(Bitmap bitmap, int threshold)
         {
@@ -206,7 +199,6 @@ arguments[0] = sourceDir + "\\" + sourceFile;
 
             return opBmp;
         }
-
 
         public static Bitmap Image2TrinaryBitmap(Bitmap bitmap, int neighbourhood)
         {

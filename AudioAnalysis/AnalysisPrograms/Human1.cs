@@ -256,9 +256,9 @@
         /// </summary>
         /// <param name="fiSegmentOfSourceFile"></param>
         /// <param name="configDict"></param>
+        /// <param name="segmentStartOffset"></param>
         /// <param name="diOutputDir"></param>
-        public static Tuple<BaseSonogram, double[,], Plot, List<AcousticEvent>, TimeSpan>
-                                        Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
+        public static Tuple<BaseSonogram, double[,], Plot, List<AcousticEvent>, TimeSpan> Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, TimeSpan segmentStartOffset)
         {
             //set default values
             int frameLength = 1024;
@@ -367,8 +367,16 @@
             }
 
             //iii: CONVERT TO ACOUSTIC EVENTS
-            List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(scoreArray, minHz, maxHz, sonogram.FramesPerSecond, freqBinWidth,
-                                                                                         intensityThreshold, minDuration, maxDuration);
+            List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(
+                scoreArray,
+                minHz,
+                maxHz,
+                sonogram.FramesPerSecond,
+                freqBinWidth,
+                intensityThreshold,
+                minDuration,
+                maxDuration,
+                segmentStartOffset);
 
             //predictedEvents = Human2.FilterHumanSpeechEvents(predictedEvents); //remove isolated speech events - expect humans to talk like politicians
 
@@ -454,7 +462,7 @@
                 DataRow row = dataTable.NewRow();
                 row[AnalysisKeys.EventStartSec] = (double)ev.TimeStart;  //EvStartSec
                 row[AnalysisKeys.EventStartAbs] = (double)ev.TimeStart;  //Set now - will overwrite later
-                row[AnalysisKeys.EventDuration] = (double)ev.Duration;   //duratio in seconds
+                row[AnalysisKeys.EventDuration] = (double)ev.EventDurationSeconds;   //duratio in seconds
                 row[AnalysisKeys.EventIntensity] = (double)ev.kiwi_intensityScore;   //
                 row[AnalysisKeys.EventName] = (string)ev.Name;   //
                 row[AnalysisKeys.EventNormscore] = (double)ev.ScoreNormalised;

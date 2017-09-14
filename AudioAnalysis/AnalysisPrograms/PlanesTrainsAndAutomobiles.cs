@@ -156,7 +156,7 @@ namespace AnalysisPrograms
             analysisResults.Data = null;
 
             //######################################################################
-            var results = Analysis(fiAudioF, configDict);
+            var results = Analysis(fiAudioF, configDict, segmentSettings.SegmentStartOffset);
             //######################################################################
 
             if (results == null) return analysisResults; //nothing to process
@@ -177,7 +177,7 @@ namespace AnalysisPrograms
                 {
                     ev.FileName = fName;
                     ev.Name = analysisName;
-                    ev.SegmentDuration = recordingTimeSpan;
+                    ev.SegmentDurationSeconds = recordingTimeSpan.TotalSeconds;
                 }
                 //write events to a data table to return.
                 dataTable = WriteEvents2DataTable(predictedEvents);
@@ -222,8 +222,9 @@ namespace AnalysisPrograms
         /// </summary>
         /// <param name="fiSegmentOfSourceFile"></param>
         /// <param name="configDict"></param>
+        /// <param name="segmentStartOffset"></param>
         /// <param name="diOutputDir"></param>
-        public static Tuple<BaseSonogram, double[,], Plot, List<AcousticEvent>, TimeSpan> Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
+        public static Tuple<BaseSonogram, double[,], Plot, List<AcousticEvent>, TimeSpan> Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, TimeSpan segmentStartOffset)
         {
             string analysisName = configDict[AnalysisKeys.AnalysisName];
             int minFormantgap = int.Parse(configDict[AnalysisKeys.MinFormantGap]);
@@ -249,7 +250,7 @@ namespace AnalysisPrograms
             }
 
             //#############################################################################################################################################
-            var results = DetectHarmonics(recording, intensityThreshold, minHz, minFormantgap, maxFormantgap, minDuration, frameLength, windowOverlap); //uses XCORR and FFT
+            var results = DetectHarmonics(recording, intensityThreshold, minHz, minFormantgap, maxFormantgap, minDuration, frameLength, windowOverlap, segmentStartOffset); //uses XCORR and FFT
             //#############################################################################################################################################
 
             var sonogram = results.Item1;
@@ -268,8 +269,16 @@ namespace AnalysisPrograms
             return Tuple.Create(sonogram, hits, plot, predictedEvents, tsRecordingtDuration);
         } //Analysis()
 
-        public static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>> DetectHarmonics(AudioRecording recording, double intensityThreshold,
-                                                              int minHz, int minFormantgap, int maxFormantgap, double minDuration, int windowSize, double windowOverlap)
+        public static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>> DetectHarmonics(
+            AudioRecording recording,
+            double intensityThreshold,
+            int minHz,
+            int minFormantgap,
+            int maxFormantgap,
+            double minDuration,
+            int windowSize,
+            double windowOverlap,
+            TimeSpan segmentStartOffset)
         {
             //i: MAKE SONOGRAM
             int numberOfBins = 32;
@@ -333,8 +342,16 @@ namespace AnalysisPrograms
 
             //iii: CONVERT TO ACOUSTIC EVENTS
             double maxDuration = 100000.0; //abitrary long number - do not want to restrict duration of machine noise
-            List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(scoreArray, minHz, maxHz, framesPerSecond, binWidth,
-                                                                                         intensityThreshold, minDuration, maxDuration);
+            List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(
+                scoreArray,
+                minHz,
+                maxHz,
+                framesPerSecond,
+                binWidth,
+                intensityThreshold,
+                minDuration,
+                maxDuration,
+                segmentStartOffset);
             hits = null;
 
             //set up the songogram to return. Use the existing amplitude sonogram
@@ -398,7 +415,7 @@ namespace AnalysisPrograms
             {
                 DataRow row = dataTable.NewRow();
                 row[AnalysisKeys.EventStartSec] = (double)ev.TimeStart;  //EvStartSec
-                row[AnalysisKeys.EventDuration] = (double)ev.Duration;   //duratio in seconds
+                row[AnalysisKeys.EventDuration] = (double)ev.EventDurationSeconds;   //duratio in seconds
                 row[AnalysisKeys.EventIntensity] = (double)ev.kiwi_intensityScore;   //
                 row[AnalysisKeys.EventName] = (string)ev.Name;   //
                 row[AnalysisKeys.EventNormscore] = (double)ev.ScoreNormalised;

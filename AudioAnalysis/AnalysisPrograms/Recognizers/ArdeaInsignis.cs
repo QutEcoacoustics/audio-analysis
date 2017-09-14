@@ -221,21 +221,29 @@ namespace AnalysisPrograms.Recognizers
             var smoothedScores = DataTools.filterMovingAverageOdd(amplitudeScores, 3);
 
             // iii: CONVERT decibel sum-diff SCORES TO ACOUSTIC EVENTS
-            var predictedEvents = AcousticEvent.ConvertScoreArray2Events(smoothedScores, minHz, maxHz, sonogram.FramesPerSecond,
-                                                                          freqBinWidth, eventThreshold, minDuration, maxDuration);
+            var predictedEvents = AcousticEvent.ConvertScoreArray2Events(
+                smoothedScores,
+                minHz,
+                maxHz,
+                sonogram.FramesPerSecond,
+                freqBinWidth,
+                eventThreshold,
+                minDuration,
+                maxDuration,
+                segmentStartOffset);
 
             var prunedEvents = new List<AcousticEvent>();
             foreach (var ae in predictedEvents)
             {
-                if (ae.Duration < minDuration)
+                if (ae.EventDurationSeconds < minDuration)
                 {
                     continue;
                 }
 
                 // add additional info
                 ae.SpeciesName = speciesName;
-                ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = recordingDuration;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
                 ae.Name = abbreviatedSpeciesName;
                 prunedEvents.Add(ae);
             }

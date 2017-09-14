@@ -254,7 +254,6 @@
             return dtOutput;
         } //CalculateRecallPrecision()
 
-
         public static DataRow FilterEvent(DataRow acousticEvent, List<string[]> rules)
         {
             foreach (string[] rule in rules)
@@ -300,7 +299,6 @@
             //double precisionAt30 = 0.0;
             //double recallAt30 = 0.0;
             //double scoreAt30 = 0.0;
-
 
             int count = 0;
             foreach (DataRow row in dt.Rows)
@@ -349,7 +347,6 @@
             }
         }
 
-
         public static void WriteSee5DataFiles(DataTable dt, DirectoryInfo diOutputDir, string fileStem)
         {
             string namesFilePath = Path.Combine(diOutputDir.FullName, fileStem + ".See5.names");
@@ -379,7 +376,6 @@
             nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_COMBO_SCORE));
             nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_EVENT_NORMSCORE));
             FileTools.WriteTextFile(namesFilePath, nameContent);
-
 
             var dataContent = new List<string>();
             foreach (DataRow row in dt.Rows)

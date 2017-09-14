@@ -75,7 +75,6 @@ namespace AnalysisPrograms.Recognizers
         // OTHER CONSTANTS
         //private const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
 
-
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
@@ -92,7 +91,6 @@ namespace AnalysisPrograms.Recognizers
             recognizerConfig.ReadConfigFile(configuration);
             //int maxOscilRate = (int)Math.Ceiling(1 / lwConfig.MinPeriod);
 
-
             if (recording.WavReader.SampleRate != 22050)
             {
                 throw new InvalidOperationException("Requires a 22050Hz file");
@@ -107,7 +105,6 @@ namespace AnalysisPrograms.Recognizers
             //    recording.SampleRate,
             //    frameSize,
             //    maxOscilRate);
-
 
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
@@ -124,10 +121,9 @@ namespace AnalysisPrograms.Recognizers
                 NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD"),
             };
 
-
             //#############################################################################################################################################
             //DO THE ANALYSIS
-            var results = Analysis(recording, sonoConfig, recognizerConfig, MainEntry.InDEBUG);
+            var results = Analysis(recording, sonoConfig, recognizerConfig, MainEntry.InDEBUG, segmentStartOffset);
             //######################################################################
 
             if (results == null) return null; //nothing to process
@@ -142,7 +138,6 @@ namespace AnalysisPrograms.Recognizers
             var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, this.SpeciesName, "png", "DebugSpectrogram");
             debugImage.Save(debugPath);
 
-
             //#############################################################################################################################################
 
             // Prune events here if required i.e. remove those below threshold score if this not already done. See other recognizers.
@@ -151,8 +146,8 @@ namespace AnalysisPrograms.Recognizers
                 // add additional info
                 ae.Name = recognizerConfig.AbbreviatedSpeciesName;
                 ae.SpeciesName = recognizerConfig.SpeciesName;
-                ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = recordingDuration;
+                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
             }
 
             // do a recognizer TEST.
@@ -162,7 +157,6 @@ namespace AnalysisPrograms.Recognizers
                 TestTools.RecognizerScoresTest(recording.BaseName, testDir, recognizerConfig.AnalysisName, scoreArray);
                 AcousticEvent.TestToCompareEvents(recording.BaseName, testDir, recognizerConfig.AnalysisName, predictedEvents);
             }
-
 
             var plot = new Plot(this.DisplayName, scoreArray, recognizerConfig.EventThreshold);
             return new RecognizerResults()
@@ -174,19 +168,23 @@ namespace AnalysisPrograms.Recognizers
             };
         }
 
-
-        /// <summary>
-        /// ################ THE KEY ANALYSIS METHOD for TRILLS
-        ///
-        /// See Anthony's ExempliGratia.Recognize() method in order to see how to use methods for config profiles.
-        /// </summary>
+        ///  <summary>
+        ///  ################ THE KEY ANALYSIS METHOD for TRILLS
+        /// 
+        ///  See Anthony's ExempliGratia.Recognize() method in order to see how to use methods for config profiles.
+        ///  </summary>
         /// <param name="recording"></param>
         /// <param name="sonoConfig"></param>
         /// <param name="lwConfig"></param>
         /// <param name="returnDebugImage"></param>
+        /// <param name="segmentStartOffset"></param>
         /// <returns></returns>
-        private static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, Image> Analysis(AudioRecording recording, SonogramConfig sonoConfig,
-                                                                                               LitoriaWatjulumConfig lwConfig, bool returnDebugImage)
+        private static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, Image> Analysis(
+            AudioRecording recording,
+            SonogramConfig sonoConfig,
+            LitoriaWatjulumConfig lwConfig,
+            bool returnDebugImage,
+            TimeSpan segmentStartOffset)
         {
             double intensityThreshold = lwConfig.IntensityThreshold;
             double minDuration = lwConfig.MinDurationOfTrill;  // seconds
@@ -227,7 +225,6 @@ namespace AnalysisPrograms.Recognizers
             //lowerArray = DataTools.filterMovingAverage(lowerArray, 3);
             //upperArray = DataTools.filterMovingAverage(upperArray, 3);
 
-
             double[] amplitudeScores = DataTools.SumMinusDifference(lowerArray, upperArray);
             double[] differenceScores = DspFilters.SubtractBaseline(amplitudeScores, 7);
 
@@ -235,17 +232,23 @@ namespace AnalysisPrograms.Recognizers
             //amplitudeScores = DataTools.filterMovingAverage(amplitudeScores, 7);
             //differenceScores = DataTools.filterMovingAverage(differenceScores, 7);
 
-
             //iii: CONVERT decibel sum-diff SCORES TO ACOUSTIC TRILL EVENTS
-            var predictedTrillEvents = AcousticEvent.ConvertScoreArray2Events(amplitudeScores, lwConfig.LowerBandMinHz, lwConfig.UpperBandMaxHz,
-                                                     sonogram.FramesPerSecond, freqBinWidth, lwConfig.DecibelThreshold, minDuration, maxDuration);
+            var predictedTrillEvents = AcousticEvent.ConvertScoreArray2Events(
+                amplitudeScores,
+                lwConfig.LowerBandMinHz,
+                lwConfig.UpperBandMaxHz,
+                sonogram.FramesPerSecond,
+                freqBinWidth,
+                lwConfig.DecibelThreshold,
+                minDuration,
+                maxDuration,
+                segmentStartOffset);
 
             for (int i = 0; i < differenceScores.Length; i++)
             {
                 if (differenceScores[i] < 1.0)
                     differenceScores[i] = 0.0;
             }
-
 
             // LOOK FOR TRILL EVENTS
             // init the score array
@@ -306,8 +309,16 @@ namespace AnalysisPrograms.Recognizers
             double maxDurationOfTink = lwConfig.MaxDurationOfTink;  // seconds
             // want stronger threshold for tink because brief.
             double tinkDecibelThreshold = lwConfig.DecibelThreshold + 3.0;
-            var predictedTinkEvents = AcousticEvent.ConvertScoreArray2Events(amplitudeScores, lwConfig.LowerBandMinHz, lwConfig.UpperBandMaxHz,
-                                                sonogram.FramesPerSecond, freqBinWidth, tinkDecibelThreshold, minDurationOfTink, maxDurationOfTink);
+            var predictedTinkEvents = AcousticEvent.ConvertScoreArray2Events(
+                amplitudeScores,
+                lwConfig.LowerBandMinHz,
+                lwConfig.UpperBandMaxHz,
+                sonogram.FramesPerSecond,
+                freqBinWidth,
+                tinkDecibelThreshold,
+                minDurationOfTink,
+                maxDurationOfTink,
+                segmentStartOffset);
             foreach (var ae2 in predictedTinkEvents)
             {
                 // Prune the list of potential acoustic events, for example using Cosine Similarity.
@@ -348,7 +359,6 @@ namespace AnalysisPrograms.Recognizers
                 debugImage = DrawDebugImage(sonogram, confirmedEvents, debugPlots, hits);
             }
 
-
             // return new sonogram because it makes for more easy interpretation of the image
             var returnSonoConfig = new SonogramConfig
             {
@@ -367,7 +377,6 @@ namespace AnalysisPrograms.Recognizers
         } //Analysis()
 
     } //end class LitoriaWatjulumensis.
-
 
     /// <summary>
     /// See Anthony's ExempliGratia.Recognize() method in order to see how to use methods for config profiles.

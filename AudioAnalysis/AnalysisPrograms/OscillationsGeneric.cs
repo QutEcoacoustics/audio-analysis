@@ -67,10 +67,6 @@ namespace AnalysisPrograms
         //string algorithmName = "CwtWavelets";
         // ####################################################################
 
-
-
-
-
         // use the following paths for the command line for the <audio2sonogram> task.
         // oscillationsGeneric "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
         [CustomDetailedDescription]
@@ -84,7 +80,6 @@ namespace AnalysisPrograms
             [ArgDescription("The end offset (in minutes) of the source audio file to operate on")]
             [ArgRange(0, double.MaxValue)]
             public double? EndOffset { get; set; }
-
 
             public static string Description()
             {
@@ -119,7 +114,6 @@ namespace AnalysisPrograms
             throw new NoDeveloperMethodException();
         }
 
-
         public static void Main(Arguments arguments)
         {
 
@@ -151,7 +145,6 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine(Title);
             LoggedConsole.WriteLine(date);
             LoggedConsole.WriteLine("# Input  audio file: " + arguments.Source.Name);
-
 
             // 1. set up the necessary files
             FileInfo sourceRecording = arguments.Source;
@@ -206,7 +199,6 @@ namespace AnalysisPrograms
             }
             // This line creates a temporary version of the source file downsampled as per entry in the config file
             MasterAudioUtility.SegmentToWav(sourceRecording, tempAudioSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
-
 
             // 1) get amplitude spectrogram
             AudioRecording recordingSegment = new AudioRecording(tempAudioSegment.FullName);
@@ -273,7 +265,6 @@ namespace AnalysisPrograms
             //image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM");
             //list.Add(image);
 
-
             // combine eight images
             list1 = new List<Image>();
             list1.Add(compositeOscImage1);
@@ -281,7 +272,6 @@ namespace AnalysisPrograms
             Image compositeOscImage3 = ImageTools.CombineImagesVertically(list1.ToArray());
             string imagePath3 = Path.Combine(opDir.FullName, sourceName + "_freqOscilMatrix.png");
             compositeOscImage3.Save(imagePath3, ImageFormat.Png);
-
 
             Image segmentationImage = Image_Track.DrawSegmentationTrack(
                 sonogram,
@@ -309,8 +299,6 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
 
         }
-
-
 
         /// <summary>
         /// Puts title bar, X & Y axes and gridlines on the passed sonogram.

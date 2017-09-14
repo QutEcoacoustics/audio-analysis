@@ -92,9 +92,8 @@ namespace AnalysisBase
         /// <param name="unitTime">The unit time of the summary indices to produce.</param>
         /// <param name="duration">The duration of audio for the period analyzed that produced <c>events</c>.</param>
         /// <param name="scoreThreshold">A threshold to filter out low-scoring events.</param>
-        /// <param name="absolute"></param>
         /// <returns>A set of summary indices that describe the input events.</returns>
-        SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold, bool absolute = false);
+        SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold);
 
         /// <summary>
         /// Post-processing for an entire analysis.

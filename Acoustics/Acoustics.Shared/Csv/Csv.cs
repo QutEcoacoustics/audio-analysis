@@ -83,6 +83,7 @@ namespace Acoustics.Shared.Csv
                                    {
                                        HasHeaderRecord = true,
                                        TrimHeaders = true,
+                                       
                                    };
                 foreach (var classMap in ClassMapsToRegister)
                 {

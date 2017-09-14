@@ -58,7 +58,6 @@ namespace AnalysisPrograms.Recognizers
 
         //private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
         /// </summary>
@@ -98,7 +97,6 @@ namespace AnalysisPrograms.Recognizers
             }
             */
 
-
             // DIFFERENT WAYS to get value from CONFIG file.
             // Get a value from the config file - with a backup default
             //          int minHz = (int?)configuration[AnalysisKeys.MinHz] ?? 600;
@@ -111,13 +109,12 @@ namespace AnalysisPrograms.Recognizers
             //          var abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             //RecognizerResults results = Algorithm1(recording, configuration, outputDirectory);
-            RecognizerResults results = Algorithm2(audioRecording, configuration, outputDirectory);
+            RecognizerResults results = Algorithm2(audioRecording, configuration, outputDirectory, segmentStartOffset);
 
             return results;
         }
 
-
-        internal RecognizerResults Algorithm1(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory)
+        internal RecognizerResults Algorithm1(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
         {
             double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 0.1;
             // make a spectrogram
@@ -216,8 +213,6 @@ namespace AnalysisPrograms.Recognizers
                 // Console.WriteLine("Col {0}, Bin {1}  ", c, freqBinID);
             } // loop through all spectra
 
-
-
             // We now have a list of potential hits. This needs to be filtered.
             double[] prunedScores;
             List<Point> startEnds;
@@ -266,7 +261,7 @@ namespace AnalysisPrograms.Recognizers
 
                 double startTime = point.X * frameStepInSeconds;
                 double durationTime = eventWidth * frameStepInSeconds;
-                var newEvent = new AcousticEvent(startTime, durationTime, bottomFreqForEvent, topFreqForEvent)
+                var newEvent = new AcousticEvent(segmentStartOffset, startTime, durationTime, bottomFreqForEvent, topFreqForEvent)
                 {
                     DominantFreq = avDominantFreq,
                     Score = eventScore,
@@ -314,7 +309,6 @@ namespace AnalysisPrograms.Recognizers
             };
         }
 
-
         /// <summary>
         /// Algorithm2:
         /// 1: Loop through spgm and find dominant freq bin and its amplitude in each frame
@@ -324,8 +318,9 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="recording"></param>
         /// <param name="configuration"></param>
         /// <param name="outputDirectory"></param>
+        /// <param name="segmentStartOffset"></param>
         /// <returns></returns>
-        internal RecognizerResults Algorithm2(AudioRecording recording, dynamic configuration, DirectoryInfo outputDirectory)
+        internal RecognizerResults Algorithm2(AudioRecording recording, dynamic configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
         {
             double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 0.1;
             // make a spectrogram
@@ -371,7 +366,6 @@ namespace AnalysisPrograms.Recognizers
             //int maxFrameWidth = 5;  // this is larger than actual to accomodate an echo.
             //double minDuration = (minFrameWidth - 1) * frameStepInSeconds;
             //double maxDuration = maxFrameWidth * frameStepInSeconds;
-
 
             // minimum number of frames and bins covering the call
             // The PlatyplectrumOrnatum call has a duration of 3-5 frames GIVEN THE ABOVE SAMPLING and WINDOW SETTINGS!
@@ -435,8 +429,6 @@ namespace AnalysisPrograms.Recognizers
                 }
             } // loop through all spectra
 
-
-
             // loop through all spectra/rows of the spectrogram for a second time
             // NB: the spectrogram is rotated to vertical, i.e. rows = spectra, columns= freq bins
             // We now have a list of potential hits. This needs to be filtered. Mark the hits in hitMatrix
@@ -468,7 +460,7 @@ namespace AnalysisPrograms.Recognizers
 
                 double startTime = s * frameStepInSeconds;
                 double durationTime = 4 * frameStepInSeconds;
-                var newEvent = new AcousticEvent(startTime, durationTime, bottomFreqForEvent, topFreqForEvent)
+                var newEvent = new AcousticEvent(segmentStartOffset, startTime, durationTime, bottomFreqForEvent, topFreqForEvent)
                 {
                     DominantFreq = avDominantFreq,
                     Score = amplitudeScores[s],
@@ -480,7 +472,6 @@ namespace AnalysisPrograms.Recognizers
                 events.Add(newEvent);
 
             } // loop through all spectra
-
 
             // display the amplitude scores
             double[] normalisedScores;
@@ -516,8 +507,6 @@ namespace AnalysisPrograms.Recognizers
             };
         }
 
-
-
         /// <summary>
         /// Constructs a simple template for the L.convex call.
         /// Assume that the passed value of callBinWidth > 22.
@@ -549,8 +538,6 @@ namespace AnalysisPrograms.Recognizers
             return templates;
         }
 
-
-
         /// <summary>
         /// Constructs a simple template for the P. ornatum call.
         /// </summary>
@@ -581,7 +568,6 @@ namespace AnalysisPrograms.Recognizers
             return templates;
         }
 
-
         public static double GetEventScore(double[,] eventMatrix, List<double[]> templates)
         {
             double[] eventAsVector = MatrixTools.SumColumns(eventMatrix);
@@ -596,8 +582,6 @@ namespace AnalysisPrograms.Recognizers
             }
             return maxScore;
         }
-
-
 
         public static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {
@@ -623,8 +607,6 @@ namespace AnalysisPrograms.Recognizers
             }
             return image.GetImage();
         }
-
-
 
     }
 }

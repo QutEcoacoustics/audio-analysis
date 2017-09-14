@@ -267,11 +267,6 @@ namespace AnalysisPrograms
 
         #endregion
 
-
-
-
-
-
         #region Methods
 
         ///  <summary>
@@ -289,7 +284,6 @@ namespace AnalysisPrograms
             var recording = new AudioRecording(segmentOfSourceFile.FullName);
             return Analysis(dictionaryOfHiResSpectralIndices, recording, configDict, analysisSettings, segmentSettings);
         }
-
 
         /// <summary>
         /// THE KEY ANALYSIS METHOD
@@ -325,7 +319,6 @@ namespace AnalysisPrograms
 
             var outputDir = segmentSettings.SegmentOutputDirectory;
             TimeSpan segmentStartOffset = segmentSettings.SegmentStartOffset;
-
 
             //KeyValuePair<string, double[,]> kvp = dictionaryOfHiResSpectralIndices.First();
             var spg = dictionaryOfHiResSpectralIndices["RHZ"];
@@ -424,7 +417,6 @@ namespace AnalysisPrograms
                 bmp.Save(opFilePath);
             }
             // END DEBUG ################################ TEMPORARY ################################
-
 
             // now construct the standard decibel spectrogram WITHOUT noise removal, and look for LimConvex
             // get frame parameters for the analysis
@@ -551,7 +543,6 @@ namespace AnalysisPrograms
                 // locate the peaks in lower frequency bands, F2 and F3
                 bool[] peaks = DataTools.GetPeaks(spectrum);
 
-
                 int F2bin = 0;
                 double F2power = -200.0; // dB
                 for (int i = -3; i <= 2; i++)
@@ -606,11 +597,10 @@ namespace AnalysisPrograms
                 double startTimeWrtSegment = (Tframe - 2) * frameStepInSeconds;
 
                 // Got to here so start initialising an acoustic event
-                var ae = new AcousticEvent(startTimeWrtSegment, duration, minimumFrequency, maxfreq);
+                var ae = new AcousticEvent(segmentStartOffset, startTimeWrtSegment, duration, minimumFrequency, maxfreq);
                 ae.SetTimeAndFreqScales(framesPerSec, herzPerBin);
                 //var ae = new AcousticEvent(oblong, recording.Nyquist, binCount, frameDurationInSeconds, frameStepInSeconds, frameCount);
                 //ae.StartOffset = TimeSpan.FromSeconds(Tframe * frameStepInSeconds);
-
 
                 var pointF1 = new Point(2, topBin - F1bin);
                 var pointF2 = new Point(2, topBin - F2bin);
@@ -635,8 +625,8 @@ namespace AnalysisPrograms
             acousticEvents.ForEach(ae =>
             {
                 ae.SpeciesName = configDict[AnalysisKeys.SpeciesName];
-                ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = recording.Duration;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                ae.SegmentDurationSeconds = recording.Duration.TotalSeconds;
                 ae.Name = abbreviatedName;
                 ae.BorderColour = Color.Red;
                 ae.FileName = recording.BaseName;
@@ -654,7 +644,6 @@ namespace AnalysisPrograms
                 scores[hiresFrameID] = ae.ScoreNormalised;
             }
             var plot = new Plot(AnalysisName, scores, scoreThreshold);
-
 
             // DEBUG ONLY ################################ TEMPORARY ################################
             // Draw a standard spectrogram and mark of hites etc.
@@ -698,7 +687,6 @@ namespace AnalysisPrograms
                 sonoBmp.Save(filePath2);
             }
             // END DEBUG ################################ TEMPORARY ################################
-
 
             return new LimnodynastesConvexResults
                        {

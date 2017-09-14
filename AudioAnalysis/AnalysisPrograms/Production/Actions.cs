@@ -287,7 +287,6 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.SpeciesAccumulationCurve.Execute;
         }
 
-
         [ArgDescription("Calls SPT.Execute():  spt = Spectral Peak Tracking. Probably not useful anymore.")]
         public SPT.Arguments SptArgs { get; set; }
         public static Action<SPT.Arguments> Spt()

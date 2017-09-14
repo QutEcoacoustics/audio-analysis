@@ -110,7 +110,6 @@ namespace AnalysisPrograms
 
         #endregion
 
-
         #region Public Methods and Operators
 
         public static void Dev(Arguments arguments)
@@ -303,8 +302,8 @@ namespace AnalysisPrograms
                     ae =>
                         {
                             ae.SpeciesName = configDict[AnalysisKeys.SpeciesName];
-                            ae.SegmentStartOffset = segmentStartOffset;
-                            ae.SegmentDuration = recordingDuration;
+                            ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                            ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
                         });
             }
 
@@ -320,7 +319,6 @@ namespace AnalysisPrograms
                            Sonogram = sonogram,
                        };
         }
-
 
         /// <summary>
         /// A WRAPPER AROUND THE analyser.Analyze(analysisSettings) METHOD

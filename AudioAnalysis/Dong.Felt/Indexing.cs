@@ -1588,7 +1588,7 @@ namespace Dong.Felt
                     if (e.Area > 0.1 * majorEventArea)
                     {
                         // Bottom and Left will be used for calculating overlap score.
-                        var item = new EventBasedRepresentation(e.TimeScale, e.FreqScale, e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                        var item = new EventBasedRepresentation(e.TimeScale, e.FreqScale, e.HighFrequencyHertz, e.LowFrequencyHertz, e.TimeStart, e.TimeEnd);
                         var eBottom = e.Bottom;
                         item.Bottom = eBottom - regionBottom;
                         var eLeft = e.Left;

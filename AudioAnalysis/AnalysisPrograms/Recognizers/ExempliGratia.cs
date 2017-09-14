@@ -49,7 +49,6 @@ namespace AnalysisPrograms.Recognizers
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
         /// </summary>
@@ -77,7 +76,6 @@ namespace AnalysisPrograms.Recognizers
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-
 
             // Get a value from the config file - with a backup default
             int minHz = (int?)configuration[AnalysisKeys.MinHz] ?? 600;
@@ -181,10 +179,8 @@ namespace AnalysisPrograms.Recognizers
             }
             */
 
-
         // get samples
         var samples = audioRecording.WavReader.Samples;
-
 
             // make a spectrogram
             var config = new SonogramConfig
@@ -211,6 +207,7 @@ namespace AnalysisPrograms.Recognizers
 
             // 'find' an event - if you find an event, store the data in the AcousticEvent class
             var anEvent = new AcousticEvent(
+                segmentStartOffset,
                 new Oblong(50, 50, 100, 100),
                 sonogram.NyquistFrequency,
                 sonogram.Configuration.FreqBinCount,

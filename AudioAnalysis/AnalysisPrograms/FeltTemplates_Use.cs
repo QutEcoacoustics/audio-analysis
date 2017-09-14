@@ -38,10 +38,7 @@
         public const int    FeltFreqBinCount   = 256;
         public const double FeltFreqBinWidth   = 43.06640625;
 
-
-
         //felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-003000.wav" C:\SensorNetworks\Output\FELT_MultiOutput\templateList.txt  C:\SensorNetworks\Output\FELT_MultiOutput
-
 
         //Following lines are used for SINGLE TEMPLATE command lines.
         //CANETOAD
@@ -109,12 +106,10 @@
             AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
             SpectrogramStandard sonogram = new SpectrogramStandard(basegram);  //spectrogram has dim[N,257]
 
-
             Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
             Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
                                        sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
                                       (sonogram.FrameStep * 1000), sonogram.FramesPerSecond, FeltFrameOverlap * 100);
-
 
             //iii: Get zip paths and the results Tuple
             List<string> zipList = FileTools.ReadTextFile(arguments.Config.FullName);
@@ -146,21 +141,21 @@
                 {
                     string templatePath = Path.Combine(arguments.Output.FullName, id + "_binary.bmp");
                     double[,] templateMatrix = FindMatchingEvents.ReadImage2BinaryMatrixDouble(templatePath);
-                    results = FELTWithBinaryTemplate(sonogram, dict, templateMatrix);
+                    results = FELTWithBinaryTemplate(sonogram, dict, templateMatrix, TimeSpan.Zero);
                 }
                 else
                 if (zipName.EndsWith("trinaryTemplate"))
                 {
                     string templatePath = Path.Combine(arguments.Output.FullName, id + "_trinary.bmp");
                     double[,] templateMatrix = FindMatchingEvents.ReadImage2TrinaryMatrix(templatePath);
-                    results = FELTWithBinaryTemplate(sonogram, dict, templateMatrix);
+                    results = FELTWithBinaryTemplate(sonogram, dict, templateMatrix, TimeSpan.Zero);
                 }
                 else
                 if (zipName.EndsWith("syntacticTemplate"))
                 {
                     string templatePath = Path.Combine(arguments.Output.FullName, id + "_spr.txt");
                     char[,] templateMatrix = FindMatchingEvents.ReadTextFile2CharMatrix(templatePath);
-                    results = FELTWithSprTemplate(sonogram, dict, templateMatrix);
+                    results = FELTWithSprTemplate(sonogram, dict, templateMatrix, TimeSpan.Zero);
                 }
                 else
                 {
@@ -177,7 +172,6 @@
                 Log.WriteLine("# Finished detecting events like target: " + id);
                 Log.WriteLine("# Matching Event Count = " + matchingEvents.Count);
                 Log.WriteLine("           @ threshold = {0:f2}", matchThreshold);
-
 
                 // accumulate results
                 allEvents.AddRange(matchingEvents);
@@ -210,7 +204,6 @@
             Log.WriteLine("# Event Count = " + allEvents.Count);
             WriteEventNames(allEvents);
 
-
             //WriteScoreAverages2Console(scoresList);
 
             //draw images of sonograms
@@ -229,16 +222,17 @@
             Log.WriteLine("# FINISHED passing all templates over recording:- " + arguments.Source.Name);
         }
 
-
-
         /// <summary>
         /// Scans a recording given a dicitonary of parameters and a binary template
         /// </summary>
-        /// <param name="recording"></param>
+        /// <param name="sonogram"></param>
         /// <param name="dict"></param>
+        /// <param name="templateMatrix"></param>
+        /// <param name="segmentStartOffset"></param>
+        /// <param name="recording"></param>
         /// <param name="templatePath"></param>
         /// <returns></returns>
-        public static Tuple<SpectrogramStandard, List<AcousticEvent>, double[]> FELTWithBinaryTemplate(SpectrogramStandard sonogram, Dictionary<string, string> dict, double[,] templateMatrix)
+        public static Tuple<SpectrogramStandard, List<AcousticEvent>, double[]> FELTWithBinaryTemplate(SpectrogramStandard sonogram, Dictionary<string, string> dict, double[,] templateMatrix, TimeSpan segmentStartOffset)
         {
             //i: get parameters from dicitonary
             string callName = dict[FeltTemplate_Create.key_CALL_NAME];
@@ -259,7 +253,7 @@
             //iii: DO SEGMENTATION
             double segmentationThreshold = 2.0;     // Standard deviations above backgorund noise
             double maxDuration = double.MaxValue;   // Do not constrain maximum length of events.
-            var tuple1 = AcousticEvent.GetSegmentationEvents((SpectrogramStandard)sonogram, doSegmentation, minHz, maxHz, smoothWindow, segmentationThreshold, minDuration, maxDuration);
+            var tuple1 = AcousticEvent.GetSegmentationEvents((SpectrogramStandard)sonogram, doSegmentation, segmentStartOffset, minHz, maxHz, smoothWindow, segmentationThreshold, minDuration, maxDuration);
             var segmentEvents = tuple1.Item1;
 
             //iv: Score sonogram for events matching template
@@ -274,14 +268,21 @@
             for (int i = 0; i < scores.Length; i++) if (scores[i] < 0.0) scores[i] = 0.0;  // Set (scores < 0.0) = 0.0;
 
             //vi: EXTRACT EVENTS
-            List<AcousticEvent> matchEvents = AcousticEvent.ConvertScoreArray2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, dBThreshold,
-                                                                            minDuration, maxDuration);
+            List<AcousticEvent> matchEvents = AcousticEvent.ConvertScoreArray2Events(
+                scores,
+                minHz,
+                maxHz,
+                sonogram.FramesPerSecond,
+                sonogram.FBinWidth,
+                dBThreshold,
+                minDuration,
+                maxDuration,
+                segmentStartOffset);
             foreach (AcousticEvent ev in matchEvents)
             {
                 ev.FileName = sonogram.Configuration.SourceFName;
                 ev.Name = sonogram.Configuration.CallName;
             }
-
 
             // Edit the events to correct the start time, duration and end of events to match the max score and length of the template.
             AdjustEventLocation(matchEvents, callName, templateDuration, sonogram.Duration.TotalSeconds);
@@ -289,16 +290,18 @@
             return Tuple.Create(sonogram, matchEvents, scores);
         } // FELTWithBinaryTemplate()
 
-
         /// <summary>
         /// Scans a recording given a dicitonary of parameters and a syntactic template
         /// Template has a different orientation to others.
         /// </summary>
-        /// <param name="recording"></param>
+        /// <param name="sonogram"></param>
         /// <param name="dict"></param>
+        /// <param name="templateMatrix"></param>
+        /// <param name="segmentStartOffset"></param>
+        /// <param name="recording"></param>
         /// <param name="templatePath"></param>
         /// <returns></returns>
-        public static Tuple<SpectrogramStandard, List<AcousticEvent>, double[]> FELTWithSprTemplate(SpectrogramStandard sonogram, Dictionary<string, string> dict, char[,] templateMatrix)
+        public static Tuple<SpectrogramStandard, List<AcousticEvent>, double[]> FELTWithSprTemplate(SpectrogramStandard sonogram, Dictionary<string, string> dict, char[,] templateMatrix, TimeSpan segmentStartOffset)
         {
             //i: get parameters from dicitonary
             string callName = dict[FeltTemplate_Create.key_CALL_NAME];
@@ -320,7 +323,7 @@
             //iii: DO SEGMENTATION
             double segmentationThreshold = 2.0;      // Standard deviations above backgorund noise
             double maxDuration = double.MaxValue;    // Do not constrain maximum length of events.
-            var tuple1 = AcousticEvent.GetSegmentationEvents((SpectrogramStandard)sonogram, doSegmentation, minHz, maxHz, smoothWindow, segmentationThreshold, minDuration, maxDuration);
+            var tuple1 = AcousticEvent.GetSegmentationEvents((SpectrogramStandard)sonogram, doSegmentation, segmentStartOffset, minHz, maxHz, smoothWindow, segmentationThreshold, minDuration, maxDuration);
             var segmentEvents = tuple1.Item1;
 
             //iv: Score sonogram for events matching template
@@ -340,21 +343,19 @@
 
             //vi: EXTRACT EVENTS
             List<AcousticEvent> matchEvents = AcousticEvent.ConvertScoreArray2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, dBThreshold,
-                                                                            minDuration, maxDuration);
+                                                                            minDuration, maxDuration,
+                segmentStartOffset);
             foreach (AcousticEvent ev in matchEvents)
             {
                 ev.FileName = sonogram.Configuration.SourceFName;
                 ev.Name = sonogram.Configuration.CallName;
             }
 
-
             // Edit the events to correct the start time, duration and end of events to match the max score and length of the template.
             AdjustEventLocation(matchEvents, callName, templateDuration, sonogram.Duration.TotalSeconds);
 
             return Tuple.Create(sonogram, matchEvents, scores);
         } // FELTWithSprTemplate()
-
-
 
         /// <summary>
         /// Edits the passed events to adjust start and end locations to position of maximum score
@@ -374,8 +375,7 @@
                 Log.WriteLine("# Old  event frame= {0} to {1}.", ae.Oblong.RowTop, ae.Oblong.RowBottom);
                 ae.Name = callName;
                 ae.TimeStart = ae.Score_TimeOfMaxInEvent;
-                ae.Duration  = templateDuration;
-                ae.TimeEnd   = ae.TimeStart + templateDuration;
+                ae.TimeEnd = ae.TimeStart + templateDuration;
                 if (ae.TimeEnd > sonogramDuration) ae.TimeEnd = sonogramDuration; // check for overflow.
                 ae.Oblong = AcousticEvent.ConvertEvent2Oblong(ae);
                 ae.Score = ae.Score_MaxInEvent;
@@ -384,8 +384,6 @@
                 Log.WriteLine("# New event frame= {0} to {1}.", ae.Oblong.RowTop, ae.Oblong.RowBottom);
             }
         }
-
-
 
         public static List<AcousticEvent> PruneOverlappingEvents(List<AcousticEvent> events, int percentOverlap)
         {
@@ -413,7 +411,6 @@
             return pruned;
         }
 
-
         public static void WriteEventNames(List<AcousticEvent> events)
         {
             var names = new Dictionary<string, int>();
@@ -428,7 +425,6 @@
                 Log.WriteLine("{0}     {1}.", key, names[key].ToString());
             }
         }
-
 
         public static void DrawSonogram(BaseSonogram sonogram, FileInfo path, List<AcousticEvent> predictedEvents, List<double> thresholdList, List<double[]> scoresList)
         {
@@ -517,7 +513,6 @@
             }
             return newList;
         } // ConvertScoreArrayLengths()
-
 
         public static void WriteScoreAverages2Console(List<double[]> scoresList)
         {

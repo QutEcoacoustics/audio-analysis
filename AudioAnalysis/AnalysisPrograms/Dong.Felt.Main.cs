@@ -314,13 +314,11 @@ namespace AnalysisPrograms
 
     }
 
-
-
     public class RidgeEvent : EventBase
     {
         public RidgeEvent(PointOfInterest pointOfInterest, SegmentSettingsBase segmentSettings, SpectrogramStandard sonogram)
         {
-            this.SegmentStartOffset = segmentSettings.SegmentStartOffset;
+            this.SegmentStartSeconds = segmentSettings.SegmentStartOffset.TotalSeconds;
             this.LowFrequencyHertz = pointOfInterest.Herz;
             this.Frame = pointOfInterest.Point.X;
             this.Bin = sonogram.Configuration.FreqBinCount - pointOfInterest.Point.Y;
@@ -474,8 +472,6 @@ namespace AnalysisPrograms
                 };
             }
         }
-
-
 
     }
 }

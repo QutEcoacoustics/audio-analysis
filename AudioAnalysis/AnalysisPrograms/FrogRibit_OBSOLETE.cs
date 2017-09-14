@@ -64,13 +64,11 @@
             //double templateThreshold = dB_Threshold / maxTemplateIntensity;
             //int bitmapThreshold = (int)(255 - (templateThreshold * 255));
 
-
             //IMPORTANT NOTE:
             // You must determine a value for the variable maxOscilScore. This is used to normalize the oscillation scores so that lie in 0,1.
             // The default Value = 60.0; but it must be determined for each species.
             // This is obtained from the score on training data.
             // Find the relevant commented Code in the FrogRibbitRecognizer() method.
-
 
             string frogName; //, filterName;
             //double windowDuration, windowOverlap, dctDuration, dctThreshold,
@@ -145,7 +143,6 @@
             //int bitRate = 16;
             //WavWriter.WriteWavFile(filteredRecording.GetWavReader().Samples, filteredRecording.SampleRate, bitRate, recordingPath + "filtered.wav");
 
-
             // ix: DRAW SONOGRAM AND SCORES
             string imagePath = arguments.Source.Name + ".png";
             var dBarray = results.Item3;
@@ -154,7 +151,6 @@
 
             Log.WriteLine("# Finished everything!");
         }
-
 
         //#########################################################################################################################################################
 
@@ -186,7 +182,6 @@
             Log.WriteLine("#   Filter: " + filterName);
             var filteredRecording = AudioRecording.Filter_IIR(recording, filterName); //return new filtered audio recording.
             int signalLength = filteredRecording.WavReader.Samples.Length;
-
 
             //ii: FRAMING
             int[,] frameIDs = DSP_Frames.FrameStartEnds(signalLength, windowSize, windowOverlap);
@@ -243,8 +238,6 @@
             return Tuple.Create(combinedScores, filteredRecording, dBarray, tsd);
         }
 
-
-
         //#########################################################################################################################################################
         //  OTHER METHODS
 
@@ -263,14 +256,12 @@
             return fuzzy;
         }
 
-
         public static void DrawSonogram(BaseSonogram sonogram, string path, double[] array1, double[] array2, List<double[]> scores)
         {
             Log.WriteLine("# Draw image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
             //sonogram.FramesPerSecond = 1 / sonogram.FrameOffset;
             int length = sonogram.FrameCount;
-
 
             int maxIndex1 = DataTools.GetMaxIndex(array1);
             int maxIndex2 = DataTools.GetMaxIndex(array2);

@@ -229,7 +229,7 @@
             var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
             var nhCountInRow = spectrogram.Data.GetLength(1) / neighbourhoodLength;
             var nhCountInColumn = spectrogram.Data.GetLength(0) / neighbourhoodLength;
-            var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart,
+            var result = new Query(queryInfo.HighFrequencyHertz, queryInfo.LowFrequencyHertz, queryInfo.TimeStart,
                 queryInfo.TimeEnd, neighbourhoodLength,
                 nhCountInRow, nhCountInColumn, spectrogramConfig, compressConfig);
             return result;
@@ -238,7 +238,7 @@
         public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile)
         {
             var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
-            var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart, queryInfo.TimeEnd);
+            var result = new Query(queryInfo.HighFrequencyHertz, queryInfo.LowFrequencyHertz, queryInfo.TimeStart, queryInfo.TimeEnd);
             return result;
         }
 
@@ -256,7 +256,7 @@
             {
                 nhCountInColumn--;
             }
-            var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart,
+            var result = new Query(queryInfo.HighFrequencyHertz, queryInfo.LowFrequencyHertz, queryInfo.TimeStart,
                 queryInfo.TimeEnd, neighbourhoodLength,
                 nhCountInRow, nhCountInColumn, spectrogramConfig);
             return result;
@@ -266,7 +266,7 @@
             CompressSpectrogramConfig compressConfig)
         {
             var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
-            var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart,
+            var result = new Query(queryInfo.HighFrequencyHertz, queryInfo.LowFrequencyHertz, queryInfo.TimeStart,
                 queryInfo.TimeEnd, compressConfig);
             return result;
         }
@@ -275,7 +275,7 @@
             SpectrogramStandard spectrogram)
         {
             var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
-            var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart,
+            var result = new Query(queryInfo.HighFrequencyHertz, queryInfo.LowFrequencyHertz, queryInfo.TimeStart,
                 queryInfo.TimeEnd);
             var timeScale = spectrogram.FrameDuration - spectrogram.Configuration.GetFrameOffset();
             var freqScale = spectrogram.FBinWidth;

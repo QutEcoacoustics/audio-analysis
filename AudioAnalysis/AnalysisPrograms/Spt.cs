@@ -140,7 +140,6 @@ namespace AnalysisPrograms
             return Tuple.Create(r);
         }
 
-
         /// <summary>
         /// Performs Spectral Peak Tracking on a recording
         /// Returns a matrix derived from the passed sonogram.Data()

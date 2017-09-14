@@ -45,7 +45,6 @@ namespace AnalysisPrograms.Recognizers
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
         /// </summary>
@@ -175,13 +174,12 @@ namespace AnalysisPrograms.Recognizers
             acousticEvents.ForEach(ae =>
             {
                 ae.SpeciesName = speciesName;
-                ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = recordingDuration;
+                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
                 ae.Name = abbreviatedSpeciesName;
             });
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
-
 
             return new RecognizerResults()
             {

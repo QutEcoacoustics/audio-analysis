@@ -51,7 +51,6 @@ namespace AnalysisPrograms.Recognizers
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
         /// </summary>
@@ -79,12 +78,12 @@ namespace AnalysisPrograms.Recognizers
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-            RecognizerResults results = Gruntwork(audioRecording, configuration, outputDirectory);
+            RecognizerResults results = Gruntwork(audioRecording, configuration, outputDirectory, segmentStartOffset);
 
             return results;
         }
 
-        internal RecognizerResults Gruntwork(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory)
+        internal RecognizerResults Gruntwork(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
         {
             double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 0.1;
             // make a spectrogram
@@ -176,10 +175,7 @@ namespace AnalysisPrograms.Recognizers
             var startEnds = new List<Point>();
             Plot.FindStartsAndEndsOfScoreEvents(highPassFilteredSignal, eventThresholdDb, minFrameWidth, maxFrameWidth, out prunedScores, out startEnds);
 
-
             // High pass Filter
-
-
 
             // loop through the score array and find beginning and end of potential events
             var potentialEvents = new List<AcousticEvent>();
@@ -220,13 +216,12 @@ namespace AnalysisPrograms.Recognizers
 
                 if (eventScore < similarityThreshold) continue;
 
-
                 int topBinForEvent = avDominantBin + 2;
                 int bottomBinForEvent = topBinForEvent - callBinWidth;
 
                 double startTime = point.X * frameStepInSeconds;
                 double durationTime = eventWidth * frameStepInSeconds;
-                var newEvent = new AcousticEvent(startTime, durationTime, minHz, maxHz);
+                var newEvent = new AcousticEvent(segmentStartOffset, startTime, durationTime, minHz, maxHz);
                 newEvent.DominantFreq = avDominantFreq;
                 newEvent.Score = eventScore;
                 newEvent.SetTimeAndFreqScales(framesPerSec, sonogram.FBinWidth);
@@ -239,8 +234,6 @@ namespace AnalysisPrograms.Recognizers
             // display the original score array
             scores = DataTools.normalise(scores);
             var debugPlot = new Plot(this.DisplayName, scores, similarityThreshold);
-
-
 
             // DEBUG IMAGE this recognizer only. MUST set false for deployment.
             bool displayDebugImage = MainEntry.InDEBUG;
@@ -269,7 +262,6 @@ namespace AnalysisPrograms.Recognizers
                 debugImage.Save(debugPath.FullName);
             }
 
-
             // display the cosine similarity scores
             var plot = new Plot(this.DisplayName, prunedScores, similarityThreshold);
             var plots = new List<Plot> { plot };
@@ -288,8 +280,6 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram,
             };
         }
-
-
 
         /// <summary>
         /// Constructs a simple template for the L.convex call.
@@ -319,14 +309,10 @@ namespace AnalysisPrograms.Recognizers
 
             templates.Add(t1);
 
-
-
             //templates.Add(new[] {0.0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0});
-
 
             return templates;
         }
-
 
         public static double GetEventScore(double[,] eventMatrix, List<double[]> templates)
         {
@@ -342,8 +328,6 @@ namespace AnalysisPrograms.Recognizers
             }
             return maxScore;
         }
-
-
 
         public static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {

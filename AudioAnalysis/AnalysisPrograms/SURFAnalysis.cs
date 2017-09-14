@@ -66,8 +66,6 @@ namespace AnalysisPrograms
             }
         }
 
-
-
         private static Arguments Dev()
         {
             DateTime time = DateTime.Now;
@@ -88,7 +86,6 @@ namespace AnalysisPrograms
 
             throw new NoDeveloperMethodException();
         }
-
 
         public static void Main(Arguments arguments)
         {
@@ -124,9 +121,7 @@ namespace AnalysisPrograms
             // string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
             // int resampleRate = (int?)configuration[AnalysisKeys.ResampleRate] ?? AppConfigHelper.DefaultTargetSampleRate;
 
-
             var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
-
 
             configDict[AnalysisKeys.AddAxes] = ((bool?)configuration[AnalysisKeys.AddAxes] ?? true).ToString();
             configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true;
@@ -142,7 +137,6 @@ namespace AnalysisPrograms
             {
                 LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
             }
-
 
             //set up the output file
             //string header = "File Name, MinFreq(Hz), MaxFreq(Hz), StartTime(s), EndTime(s), Duration(s), Annotated by expert(Y-1/N-0),Correct Annotation(Y-1/N-0)";
@@ -186,7 +180,6 @@ namespace AnalysisPrograms
                 writer.WriteLine(line);
             }
 
-
             // ####################################################################
             result = AnalyseOneRecording(targtWavfile, configDict, record.event_start_seconds, record.event_end_seconds,
                                              record.low_frequency_hertz, record.high_frequency_hertz, opDir);
@@ -208,8 +201,6 @@ namespace AnalysisPrograms
                 writer.WriteLine(line);
             }
         } // end MAIN()
-
-
 
         public static AudioToSonogramResult AnalyseOneRecording(FileInfo sourceRecording, Dictionary<string, string> configDict, TimeSpan localEventStart, TimeSpan localEventEnd,
                                                                 int minHz, int maxHz, DirectoryInfo opDir)
@@ -247,9 +238,6 @@ namespace AnalysisPrograms
             result.SnrStatistics = SNR.Calculate_SNR_ShortRecording(tempAudioSegment, configDict, localEventStart, eventDuration, minHz, maxHz, threshold);
             return result;
         }
-
-
-
 
         /// <summary>
         /// In line class used to store a single record read from a line of the csv file;
@@ -297,17 +285,11 @@ namespace AnalysisPrograms
         }
         // class CsvDataRecord
 
-
-
-
-
-
         public class SpeciesCounts
         {
             public Dictionary<string, int> speciesCounts = new Dictionary<string, int>();
             public Dictionary<string, int> speciesIDs = new Dictionary<string, int>();
             public Dictionary<string, int> siteNames = new Dictionary<string, int>();
-
 
             public void AddSpeciesID(string speciesID, string latinInfo)
             {
@@ -331,7 +313,6 @@ namespace AnalysisPrograms
                     this.speciesIDs.Add(BothNames + "####", value);
                 }
             }
-
 
             public void AddSpeciesCount(string speciesID)
             {
@@ -367,9 +348,6 @@ namespace AnalysisPrograms
                 Csv.WriteToCsv(new FileInfo(path + "Sites.csv"), this.siteNames);
             }
         }
-
-
-
 
         /// <summary>
         /// In line class used to return results from the static method GenerateFourSpectrogramImages();
@@ -493,7 +471,6 @@ namespace AnalysisPrograms
 
     }
 
-
     /// <summary>
     /// This analyzer preprocesses short audio segments a few seconds to maximum 1 minute long for processing by a convolutional Deep NN.
     /// It does not accumulate data or other indices over a long recording.
@@ -588,7 +565,7 @@ namespace AnalysisPrograms
             throw new NotImplementedException();
         }
 
-        public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold, bool absolute = false)
+        public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold)
         {
             throw new NotImplementedException();
         }
