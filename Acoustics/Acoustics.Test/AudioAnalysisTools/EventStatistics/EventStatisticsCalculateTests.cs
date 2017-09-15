@@ -36,7 +36,7 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
             var wr = new WavReader(signal, 1, 16, sampleRate);
             var recording = new AudioRecording(wr);
 
-            // this value is fake, but we set it to ensure output values are calculated correctly
+            // this value is fake, but we set it to ensure output values are calculated correctly w.r.t. segment start
             var segmentOffset = 547.123.Seconds();
 
             var start = TimeSpan.FromSeconds(28) + segmentOffset;
@@ -70,9 +70,9 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
 
             Assert.AreEqual(1500, stats.LowFrequencyHertz);
             Assert.AreEqual(8500, stats.HighFrequencyHertz);
-            Assert.AreEqual(28, stats.EventStartSeconds);
-            Assert.AreEqual(32, stats.EventEndSeconds);
-            Assert.AreEqual(28.Seconds() + segmentOffset, stats.ResultStartSeconds);
+            Assert.AreEqual(28.Seconds() + segmentOffset, stats.EventStartSeconds.Seconds());
+            Assert.AreEqual(32.Seconds() + segmentOffset, stats.EventEndSeconds.Seconds());
+            Assert.AreEqual(28.Seconds() + segmentOffset, stats.ResultStartSeconds.Seconds());
 
             /*
             // Assume linear scale.

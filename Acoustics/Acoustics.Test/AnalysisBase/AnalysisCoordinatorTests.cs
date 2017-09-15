@@ -924,8 +924,8 @@ namespace Acoustics.Test.AnalysisBase
                 temp = (temp ?? this.TestTemp).FullName,
                 tempNull = this.FallbackTemp.FullName,
                 fragment = "Ecosounds.TempusSubstitutus",
-                unique1 = basename + "_000000.00",
-                unique2 = basename + "_000060.00",
+                unique1 = basename + "_000000.00-000060.00",
+                unique2 = basename + "_000060.00-000120.00",
                 source = basename,
             };
 
