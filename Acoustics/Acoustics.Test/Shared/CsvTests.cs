@@ -319,7 +319,7 @@ namespace Acoustics.Test.Shared
 
             var actual = result.ToString();
 
-            foreach (var property in AcousticEvent.AcousticEventClassMap.IgnoredProperties.Except(new[] { "Duration" }))
+            foreach (var property in AcousticEvent.AcousticEventClassMap.IgnoredProperties.Except(AcousticEvent.AcousticEventClassMap.RemappedProperties))
             {
                 Assert.IsFalse(
                     actual.Contains(property, StringComparison.InvariantCultureIgnoreCase),
@@ -353,11 +353,11 @@ namespace Acoustics.Test.Shared
             SummaryIndexValues[] childArray = { exampleIndices, };
             SummaryIndexBase[] baseArray = { exampleIndices, };
 
-            var baseExpected = @"RankOrder,FileName,StartOffset,SegmentDuration,StartOffsetMinute
-0,,00:00:00,00:00:00,0
+            var baseExpected = $@"{nameof(SummaryIndexBase.RankOrder)},{nameof(SummaryIndexBase.FileName)},{nameof(SummaryIndexBase.ResultStartSeconds)},{nameof(SummaryIndexBase.SegmentDurationSeconds)},{nameof(SummaryIndexBase.ResultMinute)}
+0,,0,0,0
 ".NormalizeToCrLf();
-            var childExpected = @"NoFile,ZeroSignal,HighAmplitudeIndex,ClippingIndex,AvgSignalAmplitude,BackgroundNoise,Snr,AvgSnrOfActiveFrames,Activity,EventsPerSecond,HighFreqCover,MidFreqCover,LowFreqCover,AcousticComplexity,TemporalEntropy,EntropyOfAverageSpectrum,AvgEntropySpectrum,EntropyOfVarianceSpectrum,VarianceEntropySpectrum,EntropyOfPeaksSpectrum,EntropyPeaks,EntropyOfCoVSpectrum,ClusterCount,ThreeGramCount,Ndsi,SptDensity,RankOrder,FileName,StartOffset,SegmentDuration,StartOffsetMinute
-0,0,0,0,-100,-100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,00:00:00,00:00:00,0
+            var childExpected = $@"NoFile,ZeroSignal,HighAmplitudeIndex,ClippingIndex,AvgSignalAmplitude,BackgroundNoise,Snr,AvgSnrOfActiveFrames,Activity,EventsPerSecond,HighFreqCover,MidFreqCover,LowFreqCover,AcousticComplexity,TemporalEntropy,EntropyOfAverageSpectrum,AvgEntropySpectrum,EntropyOfVarianceSpectrum,VarianceEntropySpectrum,EntropyOfPeaksSpectrum,EntropyPeaks,EntropyOfCoVSpectrum,ClusterCount,ThreeGramCount,Ndsi,SptDensity,{nameof(SummaryIndexBase.RankOrder)},{nameof(SummaryIndexBase.FileName)},{nameof(SummaryIndexBase.ResultStartSeconds)},{nameof(SummaryIndexBase.SegmentDurationSeconds)},{nameof(SummaryIndexBase.ResultMinute)}
+0,0,0,0,-100,-100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,0,0,0
 ".NormalizeToCrLf();
 
             Csv.WriteToCsv(this.testFile, childArray);

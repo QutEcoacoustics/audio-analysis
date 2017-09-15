@@ -38,8 +38,13 @@ namespace AudioAnalysisTools
                     nameof(Score_MaxInEvent), nameof(Score_TimeOfMaxInEvent),
                     nameof(Score2Name), nameof(Score2), nameof(Periodicity), nameof(DominantFreq),
                     nameof(Tag), nameof(Intensity), nameof(Quality), nameof(HitColour),
-                    nameof(EventDurationSeconds),
+                    nameof(EventDurationSeconds), nameof(EventStartSeconds), nameof(EventEndSeconds),
                 };
+
+            public static readonly string[] RemappedProperties =
+            {
+                nameof(LowFrequencyHertz), nameof(HighFrequencyHertz), nameof(EventDurationSeconds), nameof(EventStartSeconds), nameof(EventEndSeconds),
+            };
 
             public AcousticEventClassMap()
             {
@@ -51,8 +56,8 @@ namespace AudioAnalysisTools
                     this.PropertyMaps.RemoveAt(index);
                 }
 
-                this.GetPropertyMap(m => ((EventBase)m).EventStartSeconds).Index(0);
-                this.GetPropertyMap(m => m.EventEndSeconds).Index(2);
+                this.Map(m => m.EventStartSeconds).Index(0);
+                this.Map(m => m.EventEndSeconds).Index(2);
                 this.Map(m => m.EventDurationSeconds).Index(3);
                 this.GetPropertyMap(m => ((EventBase)m).LowFrequencyHertz).Index(4);
                 this.Map(m => m.HighFrequencyHertz).Index(5);
@@ -237,6 +242,7 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="AcousticEvent"/> class.
         /// This constructor currently works ONLY for linear Hertz scale events.
         /// </summary>
         /// <param name="o">An oblong initialized with bin and frame numbers marking location of the event</param>

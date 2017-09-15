@@ -246,7 +246,7 @@ namespace AnalysisBase
 
             stopwatch.Stop();
 
-            Log.Debug($"Analysis complete, took {stopwatch.Elapsed}.");
+            Log.Info($"Analysis complete, took {stopwatch.Elapsed}.");
 
             // TODO: execute SummariseResults hook here eventually
 
@@ -376,11 +376,12 @@ namespace AnalysisBase
             TimeSpan preparedFileDuration,
             bool parallelized)
         {
-            if (parallelized)
-            {
-                Log.Warn("VALIDATION OF ANALYSIS RESULTS BYPASSED BECAUSE THE ANALYSIS IS IN PARALLEL!");
-                return;
-            }
+            // TODO: remove if no issues - can't determine why this would have been prevented from occurring in the first place
+//            if (parallelized)
+//            {
+//                Log.Warn("VALIDATION OF ANALYSIS RESULTS BYPASSED BECAUSE THE ANALYSIS IS IN PARALLEL!");
+//                return;
+//            }
 
             Debug.Assert(
                 result.SettingsUsed != null,
@@ -523,7 +524,7 @@ namespace AnalysisBase
             var token = string.Empty;
             if (unique.NotNull())
             {
-                token = unique.SourceMetadata.Identifier + "_" + unique.StartOffsetSeconds.ToString("000000.00") + " _" + unique.EndOffsetSeconds.ToString("000000.00");
+                token = unique.SourceMetadata.Identifier + "_" + unique.StartOffsetSeconds.ToString("000000.00") + "-" + unique.EndOffsetSeconds.ToString("000000.00");
             }
 
             var runDirectory = GetNamedDirectory(baseDir, analyzer, token);
