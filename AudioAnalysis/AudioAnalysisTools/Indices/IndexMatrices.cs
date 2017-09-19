@@ -310,34 +310,34 @@ namespace AudioAnalysisTools.Indices
                 // track the row counts
                 int partialRowCount = matrix.GetLength(0);
                 // calculate elapsed time from the rows
-                int partialRowMinutes = (int)Math.Round(partialRowCount * indexCalcDuration.TotalMinutes);
+                int partialMatrixRowMinutes = (int)Math.Round(partialRowCount * indexCalcDuration.TotalMinutes);
 
                 //track the elapsed minutes
                 // calculate the partial elapsed time indexed by file names.
-                var partialMinutes = 0;
+                var elapsedMinutesInFileNames = 0;
                 var length = datesAndFiles.Length;
                 if (i < length - 1)
                 {
                     TimeSpan partialElapsedTime = datesAndFiles[i + 1].date - datesAndFiles[i].date;
-                    partialMinutes = (int)Math.Round(partialElapsedTime.TotalMinutes);
+                    elapsedMinutesInFileNames = (int)Math.Round(partialElapsedTime.TotalMinutes);
                 }
                 else
                 {
-                    partialMinutes = partialRowMinutes; // a hack for the last file
+                    elapsedMinutesInFileNames = partialMatrixRowMinutes; // a hack for the last file
                 }
 
-                if (partialRowMinutes != partialMinutes)
+                if (partialMatrixRowMinutes < elapsedMinutesInFileNames)
                 {
                     if (Verbose)
                     {
                         LoggedConsole.WriteWarnLine("WARNING from IndexMatrices.ConcatenateSpectralIndexFilesWithTimeCheck(" + file.Name + ") ");
                         string str1 = $"    Mismatch in csvFile {i + 1}/{length} between rows added and elapsed time according to file names.";
                         LoggedConsole.WriteWarnLine(str1);
-                        string str2 = $"    Row Count={partialRowMinutes} != {partialMinutes} elapsed minutes";
+                        string str2 = $"    Row Count={partialMatrixRowMinutes} != {elapsedMinutesInFileNames} elapsed minutes in file names.";
                         LoggedConsole.WriteWarnLine(str2);
                     }
 
-                    int missingRowCount = partialMinutes - partialRowMinutes;
+                    int missingRowCount = elapsedMinutesInFileNames - partialMatrixRowMinutes;
                     int columnCount = matrices[0].GetLength(1);
                     var emptyMatrix = new double[missingRowCount, columnCount];
                     if (fileExt.StartsWith("BGN"))
@@ -345,7 +345,9 @@ namespace AudioAnalysisTools.Indices
                         for (int r = 0; r < missingRowCount; r++)
                         {
                             for (int c = 0; c < columnCount; c++)
-                            {   // init with low decibel value
+                            {
+                                // init with low decibel value
+                                // TODO: This should be set = a global constant somewhere. May need to change value to -150 dB.
                                 emptyMatrix[r, c] = -100.0;
                             }
                         }
