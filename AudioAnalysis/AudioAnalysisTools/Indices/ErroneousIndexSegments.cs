@@ -145,6 +145,8 @@ namespace AudioAnalysisTools.Indices
         /// This method reads through a ZeroIndex SUMMARY array.
         /// It reads the ZeroSignal array to make sure there was actually a signal to analyse.
         /// If this occurs an error is flagged.
+        /// TODO: should do a unit test. Argument should be an a array of zeros with two insertions of short runs of ones.
+        /// //    One of the runs should terminate the array. e.g. 000000000000000000000000000000001111110000000000000000000000001111111111111.
         /// </summary>
         /// <param name="zeroSignalArray"> array indicating zero signal</param>
         /// <returns>a list of erroneous segments</returns>
@@ -187,7 +189,8 @@ namespace AudioAnalysisTools.Indices
             // if not OK at end of the array, need to close the error.
             if (!allOk)
             {
-                errors[errors.Count - 1].EndPosition = arrayLength - 1;
+                error.EndPosition = arrayLength - 1;
+                errors.Add(error);
             }
 
             return errors;
