@@ -156,6 +156,13 @@ namespace System
 
             return info;
         }
+
+        public static T RefreshInfo<T>(this T info)
+            where T : FileSystemInfo
+        {
+            info.Refresh();
+            return info;
+        }
     }
 
     public class FileInfoNameComparer : IComparer<FileInfo>, IEqualityComparer<FileInfo>

@@ -95,13 +95,12 @@ namespace AudioAnalysisTools.EventStatistics
             var bottomBin = (int)Math.Floor(spectralTarget.Minimum / hertzBinWidth);
             var topBin = (int)Math.Ceiling(spectralTarget.Maximum / hertzBinWidth);
 
-            // TODO: Michael check this logic please
             // Events can have their high value set to the nyquist.
             // Since the submatrix call below uses an inclusive upper bound an index out of bounds exception occurs in
             // these cases. So we just ask for the bin below.
-            if (topBin == (int)(recording.Nyquist / hertzBinWidth))
+            if (topBin >= config.FrameSize / 2)
             {
-                topBin--;
+                topBin = (config.FrameSize / 2) - 1;
             }
 
             // Convert amplitude spectrogram to deciBels and calculate the dB background noise profile

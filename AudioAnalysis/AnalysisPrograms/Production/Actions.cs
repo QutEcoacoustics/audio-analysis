@@ -96,10 +96,10 @@ namespace AnalysisPrograms.Production
         }
 
         [ArgDescription("Event statistics accepts a list of events to analyze and returns a data file of statistics")]
-        public EventStatistics.EventStatisticsAnalysis.Arguments EventStatisticsArgs { get; set; }
-        public static Action<EventStatisticsAnalysis.Arguments> EventStatistics()
+        public EventStatistics.EventStatisticsEntry.Arguments EventStatisticsArgs { get; set; }
+        public static Action<EventStatisticsEntry.Arguments> EventStatistics()
         {
-            return EventStatisticsAnalysis.Execute;
+            return EventStatisticsEntry.Execute;
         }
 
         #endregion

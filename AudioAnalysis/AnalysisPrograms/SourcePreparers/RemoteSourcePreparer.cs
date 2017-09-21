@@ -177,6 +177,7 @@ namespace AnalysisPrograms.SourcePreparers
         /// <param name="temporaryFilesDirectory"></param>
         /// <param name="channelSelection"></param>
         /// <param name="mixDownToMono"></param>
+        /// <exception cref="RemoteSourcePreparerException"></exception>
         /// <returns>
         /// The prepared file. The returned FileSegment will have the targetFile and OriginalFileDuration set -
         /// these are the path to the segmented file and the duration of the segmented file.
@@ -252,6 +253,13 @@ namespace AnalysisPrograms.SourcePreparers
             Log.Trace(
                 $"Downloading media: {recording.Id}, {segment.Offsets} - file received, "
                 + $"{length} bytes written to file {destination}");
+
+            if (length == 0)
+            {
+                throw new RemoteSourcePreparerException(
+                    "Downloaded media has a content length of zero bytes. This means media download has failed."
+                    + $"{recording.Id}, { segment.Offsets} (file: {destination})");
+            }
 
             // finally inspect the bit of audio we downloaded, extract the metadata, and return a file segment
             var preparedFile = new FileSegment(destination, TimeAlignment.None);

@@ -383,13 +383,13 @@ namespace AnalysisBase
 //                return;
 //            }
 
-            Debug.Assert(
+            Contract.Ensures(
                 result.SettingsUsed != null,
                 "The settings used in the analysis must be populated in the analysis result.");
-            Debug.Assert(
+            Contract.Ensures(
                 result.SegmentStartOffset == segmentSettings.SegmentStartOffset,
                 "The segment start offset of the result should match the start offset that it was instructed to analyze");
-            Debug.Assert(
+            Contract.Ensures(
                 Math.Abs((result.SegmentAudioDuration - preparedFileDuration).TotalMilliseconds) < 1.0,
                 "The duration analyzed (reported by the analysis result) should be withing a millisecond of the provided audio file");
 
@@ -397,75 +397,75 @@ namespace AnalysisBase
                 || (preAnalysisSettings.AnalysisImageSaveBehavior == SaveBehavior.WhenEventsDetected
                     && result.Events.Length > 0))
             {
-                Debug.Assert(
-                    segmentSettings.SegmentImageFile.Exists,
+                Contract.Ensures(
+                    segmentSettings.SegmentImageFile.RefreshInfo().Exists,
                     "If the analysis was instructed to produce an image file, then it should exist");
             }
 
-            Debug.Assert(
+            Contract.Ensures(
                 result.Events != null,
                 "The Events array should never be null. No events should be represented by a zero length Events array.");
             if (result.Events.Length != 0 && preAnalysisSettings.AnalysisDataSaveBehavior)
             {
-                Debug.Assert(
-                    result.EventsFile.Exists,
+                Contract.Ensures(
+                    result.EventsFile.RefreshInfo().Exists,
                     "If events were produced and an events file was expected, then the events file should exist");
             }
 
-            Debug.Assert(
+            Contract.Ensures(
                 result.SummaryIndices != null,
                 "The SummaryIndices array should never be null. No SummaryIndices should be represented by a zero length SummaryIndices array.");
             if (result.SummaryIndices.Length != 0 && preAnalysisSettings.AnalysisDataSaveBehavior)
             {
-                Debug.Assert(
-                    result.SummaryIndicesFile.Exists,
+                Contract.Ensures(
+                    result.SummaryIndicesFile.RefreshInfo().Exists,
                     "If SummaryIndices were produced and an SummaryIndices file was expected, then the SummaryIndices file should exist");
             }
 
-            Debug.Assert(
+            Contract.Ensures(
                 result.SpectralIndices != null,
                 "The SpectralIndices array should never be null. No SpectralIndices should be represented by a zero length SpectralIndices array.");
             if (result.SpectralIndices.Length != 0 && preAnalysisSettings.AnalysisDataSaveBehavior)
             {
                 foreach (var spectraIndicesFile in result.SpectraIndicesFiles)
                 {
-                    Debug.Assert(
-                        spectraIndicesFile.Exists,
+                    Contract.Ensures(
+                        spectraIndicesFile.RefreshInfo().Exists,
                         "If SpectralIndices were produced and SpectralIndices files were expected, then the SpectralIndices files should exist");
                 }
             }
 
             foreach (var eventBase in result.Events)
             {
-                Debug.Assert(
+                Contract.Ensures(
                     eventBase.ResultStartSeconds >= result.SegmentStartOffset.TotalSeconds,
                     "Every event detected by this analysis should of been found within the bounds of the segment analyzed");
 
                 // ReSharper disable CompareOfFloatsByEqualityOperator
-                Debug.Assert(
+                Contract.Ensures(
                     eventBase.EventStartSeconds == eventBase.ResultStartSeconds,
                     "The relative EventStartSeconds should equal the seconds component of StartOffset");
 
                 // ReSharper restore CompareOfFloatsByEqualityOperator
-                Debug.Assert(
+                Contract.Ensures(
                     Math.Abs(eventBase.SegmentStartSeconds - result.SegmentStartOffset.TotalSeconds) < 0.0001,
                     "Segment start offsets must match");
 
-                Debug.Assert(
+                Contract.Ensures(
                     eventBase.SegmentDurationSeconds > 0.0,
                     "eventBase.SegmentDurationSeconds must be greater than 0.0");
             }
 
             foreach (var summaryIndexBase in result.SummaryIndices)
             {
-                Debug.Assert(
+                Contract.Ensures(
                     summaryIndexBase.ResultStartSeconds >= result.SegmentStartOffset.TotalSeconds,
                     "Every summary index generated by this analysis should of been found within the bounds of the segment analyzed");
             }
 
             foreach (var spectralIndexBase in result.SpectralIndices)
             {
-                Debug.Assert(
+                Contract.Ensures(
                     spectralIndexBase.ResultStartSeconds >= result.SegmentStartOffset.TotalSeconds,
                     "Every spectral index generated by this analysis should of been found within the bounds of the segment analyzed");
             }
@@ -677,7 +677,7 @@ namespace AnalysisBase
                 localCopyOfSettings.AnalysisMixDownToMono);
 
             // de-async this method
-            var preparedFile = task.ConfigureAwait(false).GetAwaiter().GetResult();
+            var preparedFile = task.GetAwaiter().GetResult();
 
             var segmentSettings = new SegmentSettings<T>(localCopyOfSettings, segment, dirs, preparedFile);
 

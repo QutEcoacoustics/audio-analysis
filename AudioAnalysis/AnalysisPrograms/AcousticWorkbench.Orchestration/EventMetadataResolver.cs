@@ -72,34 +72,79 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
             // asynchronously start downloading all the metadata we need
             Log.Info($"Begin downloading metadata for segments (Request concurrency: {this.maxDegreeOfParallelism})");
 
-            // the transform block maps A -> B, and allows us to throttle requests
-            var downloader = new TransformBlock<ImportedEvent, RemoteSegmentWithData>(
-                (importedEvent) => this.DownloadRemoteMetadata(importedEvent),
-                new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = this.maxDegreeOfParallelism });
+            var groupedEvents = new ConcurrentDictionary<long, ConcurrentBag<ImportedEvent>>(
+                this.maxDegreeOfParallelism,
+                events.Length / 10);
+
+            // execution options allows us to throttle requests
+            var options = new ExecutionDataflowBlockOptions()
+            {
+                MaxDegreeOfParallelism = this.maxDegreeOfParallelism,
+                SingleProducerConstrained = true,
+            };
+
+            // the transform block maps A->B, ensuring that all events have an audio recording id
+            var getRecordingIdBlock = new TransformBlock<ImportedEvent, ImportedEvent>(
+                (importedEvent) => this.GetAudioRecordingId(importedEvent),
+                options);
+
+            // all events are buffered into groups based on audio recording id
+            var groupRecordingsBlock = new ActionBlock<ImportedEvent>(
+                importedEvent =>
+                {
+                    var collection = groupedEvents.GetOrAdd(
+                        importedEvent.AudioRecordingId.Value,
+                        new ConcurrentBag<ImportedEvent>());
+
+                    collection.Add(importedEvent);
+                });
+
+            // the metadata for each recording is retrieved and used to produce many segments (one per imported event)
+            var createSegmentsBlock = new TransformManyBlock<KeyValuePair<long, ConcurrentBag<ImportedEvent>>, RemoteSegmentWithData>(
+                (group) => this.DownloadRemoteMetadata(group.Key, group.Value),
+                options);
 
             // the transform block can't `Complete` unless it's output is empty
             // so add a buffer block to store the transform block's output
             var buffer = new BufferBlock<RemoteSegmentWithData>();
-            downloader.LinkTo(buffer);
 
+            // link the two parts of block A
+            getRecordingIdBlock.LinkTo(groupRecordingsBlock);
+
+            // link the two parts of block B
+            createSegmentsBlock.LinkTo(buffer);
+
+            // kick off the chain, resolve audio recording ids and group
             foreach (var record in events)
             {
                 // post an event to the transform block to process
-                downloader.Post(record);
+                getRecordingIdBlock.Post(record);
             }
 
-            // the dataflow should not accept any more messages
-            Log.Trace("Finished posting messages to metadata downloader");
-            downloader.Complete();
+            Log.Trace("Finished posting messages to recording id resolver");
+            getRecordingIdBlock.Complete();
+
+            Log.Trace("Begin waiting for ids to resolve");
+            await getRecordingIdBlock.Completion;
+            Log.Trace("Finish waiting for ids to resolve");
+
+            // now post the grouped audio recordings to the segment generating block
+            foreach (var keyValuePair in groupedEvents)
+            {
+                createSegmentsBlock.Post(keyValuePair);
+            }
+
+            Log.Trace("Finished posting messages to recording metadata downloader");
+            createSegmentsBlock.Complete();
 
             // wait for all requests to finish
             Log.Trace("Begin waiting for metadata downloader");
-            await downloader.Completion;
+            await createSegmentsBlock.Completion;
             Log.Trace("Finished waiting for metadata downloader");
 
             if (buffer.TryReceiveAll(out var segments))
             {
-                return DedupeSegments(segments);
+                return segments.ToArray();
             }
             else
             {
@@ -107,14 +152,52 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
             }
         }
 
-        private async Task<RemoteSegmentWithData> DownloadRemoteMetadata(ImportedEvent importedEvent)
+        private async Task<IEnumerable<RemoteSegmentWithData>> DownloadRemoteMetadata(
+            long audioRecordingId,
+            IEnumerable<ImportedEvent> events)
         {
-            long audioRecordingId;
-            if (importedEvent.AudioRecordingId.HasValue)
+            // now download the metadata for the audio recording
+
+            Log.Debug($"Requesting metadata for audio recording media {audioRecordingId}");
+            var audioRecording = await this.audioRecordingService.GetAudioRecording(audioRecordingId);
+            Log.Trace(
+                $"Metadata for audio recording media {audioRecordingId} retrieved, generating segments for associated events");
+
+            // now generate the segments
+            var limit = audioRecording.DurationSeconds.AsRangeFromZero();
+            var results = new List<RemoteSegmentWithData>(20);
+            foreach (var importedEvent in events)
             {
-                audioRecordingId = importedEvent.AudioRecordingId.Value;
+                var target = (importedEvent.EventStartSeconds.Value, importedEvent.EventEndSeconds.Value).AsRange();
+
+                // determine how much padding is required (dynamically scales with event size
+                var padding = this.AnalysisDurationSeconds(target.Size());
+
+                if (target.Size() + padding > MediaService.MediaDownloadMaximumSeconds)
+                {
+                    var newPadding = MediaService.MediaDownloadMaximumSeconds - target.Size();
+                    Log.Warn(
+                        $"Audio event size {audioRecordingId},{target} and padding {padding} exceeds maximum media " +
+                        $"download amount - trimming padding from {padding}, to {newPadding}");
+                    padding = newPadding;
+                }
+
+                // grow target to required analysis length
+                // we round the grow size to the nearest integer so that we reduce caching combinatorics in the workbench
+                Log.Trace($"Growing target event from {audioRecordingId},{target} by {padding} seconds");
+                var analysisRange = target.Grow(limit, padding, 0);
+
+                var segment = new RemoteSegmentWithData(audioRecording, analysisRange, importedEvent.AsArray());
+
+                results.Add(segment);
             }
-            else
+
+            return DedupeSegments(results);
+        }
+
+        private async Task<ImportedEvent> GetAudioRecordingId(ImportedEvent importedEvent)
+        {
+            if (!importedEvent.AudioRecordingId.HasValue)
             {
                 long audioEventId = importedEvent.AudioEventId.Value;
                 Log.Debug($"Requesting metadata for audio event {audioEventId}");
@@ -134,40 +217,12 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
                     throw;
                 }
 
-                audioRecordingId = audioEvent.AudioRecordingId;
                 Log.Trace($"Metadata for audio event {audioEventId} retrieved");
 
-                importedEvent.AudioRecordingId = audioRecordingId;
+                importedEvent.AudioRecordingId = audioEvent.AudioRecordingId;
             }
 
-            // now download the metadata for the media
-            // TODO: concurrent cache?
-            Log.Debug($"Requesting metadata for audio recording media {audioRecordingId}");
-            var audioRecording = await this.audioRecordingService.GetAudioRecording(audioRecordingId);
-            Log.Trace($"Metadata for audio recording media {audioRecordingId} retrieved");
-
-            var limit = audioRecording.DurationSeconds.AsRangeFromZero();
-            var target = (importedEvent.EventStartSeconds.Value, importedEvent.EventEndSeconds.Value).AsRange();
-
-            // determine how much padding is required (dynamically scales with event size
-            var padding = this.AnalysisDurationSeconds(target.Size());
-
-            if (target.Size() + padding > MediaService.MediaDownloadMaximumSeconds)
-            {
-                var newPadding = MediaService.MediaDownloadMaximumSeconds - target.Size();
-                Log.Warn($"Audio event size {audioRecordingId},{target} and padding {padding} exceeds maximum media " +
-                    $"download amount - trimming padding from {padding}, to {newPadding}");
-                padding = newPadding;
-            }
-
-            // grow target to required analysis length
-            // we round the grow size to the nearest integer so that we reduce caching combinatorics in the workbench
-            Log.Trace($"Growing target event from {audioRecordingId},{target} by {padding} seconds");
-            var analysisRange = target.Grow(limit, padding, 0);
-
-            var segment = new RemoteSegmentWithData(audioRecording, analysisRange, importedEvent.AsArray());
-
-            return segment;
+            return importedEvent;
         }
     }
 }

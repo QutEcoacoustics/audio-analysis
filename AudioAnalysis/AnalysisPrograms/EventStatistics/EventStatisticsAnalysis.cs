@@ -19,7 +19,7 @@ namespace AnalysisPrograms.EventStatistics
     using global::AcousticWorkbench;
     using log4net;
 
-    public partial class EventStatisticsAnalysis : AbstractStrongAnalyser
+    public class EventStatisticsAnalysis : AbstractStrongAnalyser
     {
         private static readonly ILog Log = LogManager.GetLogger(nameof(EventStatisticsAnalysis));
 
@@ -74,6 +74,17 @@ namespace AnalysisPrograms.EventStatistics
                 Log.Debug(
                     $"Calculating event statistics for {importedEvent.AudioEventId},{temporalRange}," +
                     $"{spectralRange} in {segmentSettings.SegmentAudioFile}, Duration: {recording.Duration}");
+
+                // Repeat sanity check here. Previous duration sanity check only checks the header of the audio file,
+                // but that still allows for a fragmented audio file to have been downloaded, shorter than it should be
+                var expectedDuration = segment.Offsets.Size().Seconds();
+                var durationDelta = expectedDuration - recording.Duration;
+                if (durationDelta > 1.0.Seconds())
+                {
+                    Log.Warn(
+                        $"Media ({segmentSettings.SegmentAudioFile}) did not have expected duration."
+                        + $" Expected: {expectedDuration}, Actual: {recording.Duration}");
+                }
 
                 var configuration = (EventStatisticsConfiguration)analysisSettings.Configuration;
 
