@@ -11,6 +11,7 @@ namespace Acoustics.Shared
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
 
     /// <summary>
     /// Represents a range between two points on the same dimenson.
@@ -25,6 +26,13 @@ namespace Acoustics.Shared
     {
         public Range(T minimum, T maximum)
         {
+            if (minimum.CompareTo(maximum) == 1)
+            {
+                throw new ArgumentException(
+                    $"Range's minimum ({minimum}) must be less than the maximum ({maximum})",
+                    nameof(minimum));
+            }
+
             this.Minimum = minimum;
             this.Maximum = maximum;
         }
@@ -66,6 +74,36 @@ namespace Acoustics.Shared
         {
             return !(first == second);
         }
+
+        public bool Contains(T scalar, Topology type = Topology.Default)
+        {
+            return ScalarEqualOrGreaterThanAnchor(scalar, this.Minimum, type) && ScalarEqualOrLessThanAnchor(scalar, this.Maximum, type);
+        }
+
+        public bool IntersectsWith(Range<T> range, Topology type = Topology.Default)
+        {
+            return (ScalarEqualOrGreaterThanAnchor(range.Maximum, this.Minimum, type) &&
+                    ScalarEqualOrLessThanAnchor(range.Minimum, this.Maximum, type));
+        }
+
+        public bool TryGetUnion(Range<T> range, out Range<T> union)
+        {
+            if (this.IntersectsWith(range, Topology.Closed))
+            {
+                T newMin = this.Minimum.CompareTo(range.Minimum) < 0 ? this.Minimum : range.Minimum;
+                T newMax = this.Maximum.CompareTo(range.Maximum) > 0 ? this.Maximum : range.Maximum;
+
+                union = new Range<T>(newMin, newMax);
+                return true;
+            }
+
+            union = default(Range<T>);
+            return false;
+        }
+
+        public bool IsEmpty => this.Minimum.Equals(this.Maximum);
+
+        public bool IsDefault => this.Equals(default(Range<T>));
 
         /// <summary>
         /// Indicates whether the current object is equal to another object of the same type.
@@ -138,5 +176,72 @@ namespace Acoustics.Shared
 
             return this.Maximum.CompareTo(other.Maximum);
         }
+
+        private static bool ScalarEqualOrGreaterThanAnchor(T scalar, T anchor, Topology anchorTopology)
+        {
+            int comparison = anchor.CompareTo(scalar);
+            bool result = false;
+            switch (comparison)
+            {
+                case -1:
+                    {
+                        result = true;
+                        break;
+                    }
+                case 0:
+                    {
+                        result = (anchorTopology & Topology.LeftClosedRightOpen) == Topology.LeftClosedRightOpen;
+                        break;
+                    }
+                case 1:
+                    {
+                        result = false;
+                        break;
+                    }
+            }
+
+            return result;
+        }
+        private static bool ScalarEqualOrLessThanAnchor(T scalar, T anchor, Topology anchorTopology)
+        {
+            int comparison = anchor.CompareTo(scalar);
+            bool result = false;
+            switch (comparison)
+            {
+                case -1:
+                {
+                    result = false;
+                    break;
+                }
+                case 0:
+                {
+                    result = (anchorTopology & Topology.LeftOpenRightClosed) == Topology.LeftOpenRightClosed;
+                    break;
+                }
+                case 1:
+                {
+                    result = true;
+                    break;
+                }
+            }
+
+            return result;
+        }
+    }
+
+    [Flags]
+    public enum Topology
+    {
+        Open = 0x0,
+        LeftClosedRightOpen = 0x01,
+        LeftOpenRightClosed = 0x02,
+        Closed = 0x3,
+
+        Exclusive = Open,
+        MinimumInclusiveMaximumExclusive = LeftClosedRightOpen,
+        MinimumExclusiveMaximumInclusive = LeftOpenRightClosed,
+        Inclusive = Closed,
+
+        Default = LeftClosedRightOpen
     }
 }

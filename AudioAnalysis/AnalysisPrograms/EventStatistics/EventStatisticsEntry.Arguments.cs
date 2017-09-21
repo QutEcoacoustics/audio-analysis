@@ -15,7 +15,7 @@ namespace AnalysisPrograms.EventStatistics
     using PowerArgs;
     using Production;
 
-    public partial class EventStatisticsAnalysis
+    public partial class EventStatisticsEntry
     {
         [CustomDetailedDescription]
         public class Arguments : SourceConfigOutputDirArguments, IArgClassValidator
@@ -64,7 +64,7 @@ Support may be added in the future for other data sources (e.g. local). If you w
 
 For remote resources, the input file needs to have either one of these sets of fields:
 - AudioEventId/audio_event_id
-- AudioRecordingId/audio_recording_id, EventStartSeconds/event_start_seconds, EventEndSeconds/event_end_seconds
+- AudioRecordingId/audio_recording_id, EventStartSeconds/event_start_seconds, EventEndSeconds/event_end_seconds, LowFrequencyHertz/low_frequency_hertz, HighFrequencyHertz/high_frequency_herttz
 ";
 
             }

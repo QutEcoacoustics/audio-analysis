@@ -17,10 +17,13 @@ namespace AnalysisPrograms.EventStatistics
     using AudioAnalysisTools.EventStatistics;
     using global::AcousticWorkbench;
     using global::AcousticWorkbench.Models;
+    using log4net;
     using SourcePreparers;
 
-    public partial class EventStatisticsAnalysis
+    public partial class EventStatisticsEntry
     {
+        private static readonly ILog Log = LogManager.GetLogger(nameof(EventStatisticsAnalysis));
+
         public static void Execute(Arguments arguments)
         {
             MainEntry.ExecuteAsync(ExecuteAsync, arguments);
@@ -90,10 +93,11 @@ namespace AnalysisPrograms.EventStatistics
             }
             else
             {
-                //var username = LoggedConsole.Prompt("Enter your username or email for the acoustic workbench:");
-                //var password = LoggedConsole.Prompt("Enter your password for the acoustic workbench:", forPassword: true);
-                //task = auth.Login(username, password);
-                task = auth.Login("bioacoustics@qut.edu.au", "tsettest");
+                var username = LoggedConsole.Prompt("Enter your username or email for the acoustic workbench:");
+                var password = LoggedConsole.Prompt("Enter your password for the acoustic workbench:", forPassword: true);
+                task = auth.Login(username, password);
+
+                //task = auth.Login("bioacoustics@qut.edu.au", "tsettest");
             }
 
             LoggedConsole.WriteWaitingLine(task, "Logging into workbench...");

@@ -97,14 +97,16 @@ namespace AnalysisPrograms
         public static void ExecuteAsync<T>(Func<T, Task> task, T arguments)
         {
             Log.Debug("Executing supplied method as an async block");
-            var source = new CancellationTokenSource();
+            //var source = new CancellationTokenSource();
             Console.CancelKeyPress += (s, e) =>
             {
-                e.Cancel = true;
-                source.Cancel();
+                e.Cancel = false;
+                //source.Cancel();
             };
 
-            task(arguments).ConfigureAwait(false).GetAwaiter().GetResult();
+            var asyncTask = task(arguments);
+
+            asyncTask.ConfigureAwait(false).GetAwaiter().GetResult();
 
             Log.Debug("Executing supplied method as an async block has completed");
         }

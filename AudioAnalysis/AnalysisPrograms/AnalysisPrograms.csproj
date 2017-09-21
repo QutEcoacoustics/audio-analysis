@@ -256,9 +256,9 @@
     <Compile Include="AudioFileCheck.cs" />
     <Compile Include="Draw\Zooming\DrawZoomingSpectrograms.Arguments.cs" />
     <Compile Include="Draw\Zooming\DrawZoomingSpectrograms.Dev.cs" />
-    <Compile Include="EventStatistics\EventStatisticsAnalysis.Arguments.cs" />
+    <Compile Include="EventStatistics\EventStatisticsEntry.Arguments.cs" />
     <Compile Include="EventStatistics\EventStatisticsAnalysis.cs" />
-    <Compile Include="EventStatistics\EventStatisticsAnalysis.Entry.cs" />
+    <Compile Include="EventStatistics\EventStatisticsEntry.cs" />
     <Compile Include="EventStatistics\ImportedEvent.cs" />
     <Compile Include="LitoriaFallax_OBSOLETE.cs" />
     <Compile Include="LimnodynastesConvex_OBSOLETE.cs" />
@@ -302,6 +302,7 @@
     <Compile Include="Recognizers\RhinellaMarina.cs" />
     <Compile Include="SourcePreparers\RemoteSourcePreparer.cs" />
     <Compile Include="SourcePreparers\LocalSourcePreparer.cs" />
+    <Compile Include="SourcePreparers\RemoteSourcePreparerException.cs" />
     <Compile Include="SURFAnalysis.cs" />
     <Compile Include="OscillationsGeneric.cs" />
     <Compile Include="DifferenceSpectrogram.cs" />

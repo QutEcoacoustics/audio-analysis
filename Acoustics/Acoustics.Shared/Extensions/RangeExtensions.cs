@@ -79,7 +79,7 @@ namespace Acoustics.Shared
 
         public static double Size(this Range<double> range)
         {
-            return range.Maximum - range.Minimum;
+            return Math.Abs(range.Maximum - range.Minimum);
         }
 
         public static TimeSpan Size(this Range<TimeSpan> range)
@@ -95,6 +95,61 @@ namespace Acoustics.Shared
         public static Range<TimeSpan> Shift(this Range<TimeSpan> range, TimeSpan shift)
         {
             return new Range<TimeSpan>(range.Minimum.Add(shift), range.Maximum.Add(shift));
+        }
+
+        public static Range<double> Add(this Range<double> rangeA, Range<double> rangeB)
+        {
+            // https://en.wikipedia.org/wiki/Interval_arithmetic
+
+            return new Range<double>(
+                rangeA.Minimum + rangeB.Minimum,
+                rangeA.Maximum + rangeB.Maximum);
+        }
+
+        public static Range<double> Subtract(this Range<double> rangeA, Range<double> rangeB)
+        {
+            // https://en.wikipedia.org/wiki/Interval_arithmetic
+
+            return new Range<double>(
+                rangeA.Minimum - rangeB.Maximum,
+                rangeA.Maximum - rangeB.Minimum);
+        }
+
+        public static Range<double> Multiply(this Range<double> rangeA, Range<double> rangeB)
+        {
+            // https://en.wikipedia.org/wiki/Interval_arithmetic
+            double
+                a1b1 = rangeA.Minimum * rangeB.Minimum,
+                a1b2 = rangeA.Minimum * rangeB.Maximum,
+                a2b1 = rangeA.Maximum * rangeB.Minimum,
+                a2b2 = rangeA.Maximum * rangeB.Maximum;
+
+            return new Range<double>(
+                Maths.Min(a1b1, a1b2, a2b1, a2b2),
+                Maths.Max(a1b1, a1b2, a2b1, a2b2));
+        }
+
+        public static Range<double> Divide(this Range<double> rangeA, Range<double> rangeB)
+        {
+            // https://en.wikipedia.org/wiki/Interval_arithmetic
+           
+            return rangeA.Multiply(rangeB.Invert());
+        }
+
+        public static Range<double> Invert(this Range<double> range)
+        {
+            // https://en.wikipedia.org/wiki/Interval_arithmetic
+            if (range.Maximum == 0)
+            {
+                return new Range<double>(double.NegativeInfinity, 1 / range.Minimum);
+            }
+
+            if (range.Minimum == 0)
+            {
+                return new Range<double>(1 / range.Maximum, double.PositiveInfinity);
+            }
+
+            return new Range<double>(1 / range.Maximum, 1 / range.Minimum);
         }
 
         public static Range<T> AsRange<T>(this (T Minimum, T Maximum) pair)
