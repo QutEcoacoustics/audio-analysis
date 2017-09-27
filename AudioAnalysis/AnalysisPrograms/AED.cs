@@ -193,7 +193,7 @@ namespace AnalysisPrograms
                     Tuple.Create(
                         (double)aedConfiguration.BandpassMinimum.Value,
                         (double)aedConfiguration.BandpassMaximum.Value);
-                aedOptions.BandPassFilter = bandPassFilter.ToOption();
+                aedOptions.BandPassFilter = new FSharpOption<Tuple<double, double>>(bandPassFilter);
             }
 
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(aedOptions,   sonogram.Data);

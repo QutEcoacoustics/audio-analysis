@@ -27,7 +27,9 @@
             if List.exists (function | Result r -> true | _ -> false) operationsList then
                 operationsList
              else
-                List.append operationsList [Result(Console(new ResultsComputation(config)))]
+                let consoleResult:ResultComputationType = Console(new ResultsComputation(config))
+                let resultItem = WorkflowItem.Result(consoleResult)
+                List.append operationsList [ resultItem ]
         
 
 
