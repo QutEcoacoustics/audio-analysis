@@ -407,18 +407,20 @@
             var rotateDoubleMatrix = MatrixTools.MatrixRotate90Clockwise(doubleMatrix);
             /// based on spectrogram intensity matrix directly
             //var rotateDoubleMatrix = sonogram.Data;
-            var aedOptions = new AedOptions(sonogram.NyquistFrequency)
+
+            throw new NotImplementedException("Intentionally broken in refactor");
+            AedOptions aedOptions = null; /*new AedOptions(sonogram.NyquistFrequency)
                                  {
                                      IntensityThreshold = 0.5,
                                      //IntensityThreshold = 10.0,
                                      SmallAreaThreshold = 30,
-                                     BandPassFilter = Tuple.Create(500.0, 9000.0).ToOption(),
+                                     BandPassFilter =  null, //Tuple.Create(500.0, 9000.0),
                                      DoNoiseRemoval = false,
                                      LargeAreaHorizontal = Default.SeparateStyle.Skip,
                                      LargeAreaVeritical = Default.SeparateStyle.Skip,
                                      //LargeAreaHorizontal = Default.SeparateStyle.NewVertical(new Default.SeparateParameters(5000, 10, 10, false)),
                                      //LargeAreaVeritical = Default.SeparateStyle.NewHorizontal(new Default.SeparateParameters(2000, 20, 10, false))
-                                 };
+                                 };*/
             var oblongs = AcousticEventDetection.detectEvents(aedOptions, rotateDoubleMatrix);
              //=> to call a anonymous method
             var events = oblongs.Select(
@@ -460,7 +462,8 @@
             var rotateDoubleMatrix = MatrixTools.MatrixRotate90Clockwise(doubleMatrix);
             /// based on spectrogram intensity matrix directly
             //var rotateDoubleMatrix = sonogram.Data;
-            var aedOptions = new AedOptions(sonogram.NyquistFrequency)
+            throw new NotImplementedException("Intentionally broken in refactor");
+            AedOptions aedOptions = null; /*new AedOptions(sonogram.NyquistFrequency)
             {
                 IntensityThreshold = 0.5,
                 SmallAreaThreshold = 50,
@@ -470,7 +473,7 @@
                 LargeAreaVeritical = Default.SeparateStyle.Skip,
                 //LargeAreaHorizontal = Default.SeparateStyle.NewVertical(new Default.SeparateParameters(5000, 10, 10, false)),
                 //LargeAreaVeritical = Default.SeparateStyle.NewHorizontal(new Default.SeparateParameters(2000, 20, 10, false))
-            };
+            };*/
             var oblongs = AcousticEventDetection.detectEvents(aedOptions, rotateDoubleMatrix);
             //=> to call a anonymous method
             var events = oblongs.Select(

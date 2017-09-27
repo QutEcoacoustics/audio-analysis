@@ -14,6 +14,7 @@
     using Acoustics.Shared.Contracts;
     using Acoustics.Tools.Audio;
     using AnalysisBase;
+    using AnalysisPrograms.SourcePreparers;
     using AudioAnalysisTools;
     using AudioBase;
     using log4net;
