@@ -73,7 +73,7 @@ namespace AnalysisPrograms
                 int partialRowCount = rowsOfCsvFile.Count();
             }
 
-            if (true)
+            if (false)
             {
                 // The following are test methods to confirm that the frequency scale code is working
                 // They are also good tests for the making of standard sonograms.
@@ -297,7 +297,7 @@ namespace AnalysisPrograms
             {
                 // do test of SNR calculation
                 //Audio2InputForConvCNN.Main(null);
-                Audio2InputForConvCNN.ProcessMeriemsDataset();
+                Audio2InputForConvCnn.ProcessMeriemsDataset();
             }
 
             if (false)
@@ -490,27 +490,35 @@ namespace AnalysisPrograms
                 ConcatenateIndexFiles.ConcatenateRibbonImages(dataDirs, match, outputDirectory, opFileStem, title, tidalInfo);
             }
 
-            // Concatenate three images for Dan Stowell.
+            // Concatenate images horizontally or vertically.
             if (false)
             {
-                var imageDirectory = new DirectoryInfo(@"H:\Documents\SensorNetworks\MyPapers\2016_QMUL_SchoolMagazine");
-                string fileName1 = @"TNC_Musiamunat_20150702_BAR10__ACI-ENT-EVNCropped.png";
-                string fileName2 = @"GympieNP_20150701__ACI-ENT-EVN.png";
-                string fileName3 = @"Sturt-Mistletoe_20150702__ACI-ENT-EVN - Corrected.png";
+                // Concatenate three images for Dan Stowell.
+                //var imageDirectory = new DirectoryInfo(@"H:\Documents\SensorNetworks\MyPapers\2016_QMUL_SchoolMagazine");
+                //string fileName1 = @"TNC_Musiamunat_20150702_BAR10__ACI-ENT-EVNCropped.png";
+                //string fileName2 = @"GympieNP_20150701__ACI-ENT-EVN.png";
+                //string fileName3 = @"Sturt-Mistletoe_20150702__ACI-ENT-EVN - Corrected.png";
+                //string opFileName = string.Format("ThreeLongDurationSpectrograms.png");
+
+                // Concatenate two iimages for Paul Roe.
+                var imageDirectory = new DirectoryInfo(@"D:\SensorNetworks\Output\WildLifeAcoustics");
+                string fileName1 = @"S4A00068_20160506_063000__SummaryIndices.png";
+                string fileName2 = @"S4A00068_20160506_063000_new50__SummaryIndices.png";
+                string opFileName = string.Format("WildLifeAcoustics_TestLossyCompression3.png");
+
                 var image1Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName1));
                 var image2Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName2));
-                var image3Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName3));
+                //var image3Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName3));
 
                 var imageList = new List<Image>();
-
                 imageList.Add(Image.FromFile(image1Path.FullName));
                 imageList.Add(Image.FromFile(image2Path.FullName));
-                imageList.Add(Image.FromFile(image3Path.FullName));
+                //imageList.Add(Image.FromFile(image3Path.FullName));
 
                 Image combinedImage = ImageTools.CombineImagesVertically(imageList);
+                //var combinedImage = ImageTools.CombineImagesInLine(imageList);
 
-                string fileName = string.Format("ThreeLongDurationSpectrograms.png");
-                combinedImage.Save(Path.Combine(imageDirectory.FullName, fileName));
+                combinedImage.Save(Path.Combine(imageDirectory.FullName, opFileName));
             }
 
             // Concatenate two images but add labels for EcoCongress.

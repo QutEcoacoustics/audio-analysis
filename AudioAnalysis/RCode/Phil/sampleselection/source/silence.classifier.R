@@ -89,7 +89,7 @@ ClassifySegments <- function (segments = NULL, silence.features = NULL, use.save
     # TODO: add audio path here
     
     if (is.null(silence.features) && is.list(segments) && use.saved.features) {
-        silence.features <- datatrack::ReadDataobject(name = 'silence.features', dependencies = list('segment.events' = segments$version), false.if.missing = TRUE)
+        silence.features <- datatrack::ReadDataobject(name = 'silence.features', dependencies = list(segment.events = segments$version), false.if.missing = TRUE)
     } 
     
     if (is.list(silence.features)) {
@@ -458,7 +458,7 @@ AudioPath <- function (fn = NULL, input.directory = NULL) {
     }
 }
 
-CalculateSilenceFeatures <- function (seconds, wavecol = c('wav.file','wave.path'), parallel = 5) {
+CalculateSilenceFeatures <- function (seconds, wavecol = c('wav.file','wave.path'), parallel = 2) {
     
     #debugging
     #seconds <- seconds[1:4000,]

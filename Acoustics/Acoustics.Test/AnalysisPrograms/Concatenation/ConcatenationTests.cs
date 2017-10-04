@@ -128,7 +128,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
             ImageAssert.IsSize(722, 632, actualImage);
             ImageAssert.PixelIsColor(new Point(100, 100), Color.FromArgb(211, 211, 211), actualImage);
-            ImageAssert.PixelIsColor(new Point(200, 100), Color.FromArgb(54, 28, 18), actualImage);
+            ImageAssert.PixelIsColor(new Point(200, 100), Color.FromArgb(54, 29, 18), actualImage);
             ImageAssert.PixelIsColor(new Point(675, 600), Color.FromArgb(255, 105, 180), actualImage);
         }
 
@@ -181,8 +181,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
             ImageAssert.IsSize(512, 632, actualImage);
-            ImageAssert.PixelIsColor(new Point(100, 100), Color.FromArgb(32, 24, 35), actualImage);
-            ImageAssert.PixelIsColor(new Point(100, 160), Color.FromArgb(0, 79, 132), actualImage);
+            ImageAssert.PixelIsColor(new Point(100, 100), Color.FromArgb(32, 25, 36), actualImage);
+            ImageAssert.PixelIsColor(new Point(100, 160), Color.FromArgb(0, 80, 132), actualImage);
         }
 
         /// <summary>
@@ -238,7 +238,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var actualImage1 = ImageTools.ReadImage2Bitmap(image1FileInfo.FullName);
             ImageAssert.IsSize(210, 632, actualImage1);
             ImageAssert.PixelIsColor(new Point(100, 100), Color.FromArgb(211, 211, 211), actualImage1);
-            ImageAssert.PixelIsColor(new Point(50, 50), Color.FromArgb(86, 27, 16), actualImage1);
+            ImageAssert.PixelIsColor(new Point(50, 50), Color.FromArgb(86, 29, 17), actualImage1);
 
             // IMAGE 2: Compare image files - check that image exists and dimensions are correct
             var dateString2 = "20160726";
@@ -249,7 +249,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             var actualImage2 = ImageTools.ReadImage2Bitmap(image2FileInfo.FullName);
             ImageAssert.IsSize(512, 632, actualImage2);
-            ImageAssert.PixelIsColor(new Point(50, 124), Color.FromArgb(70, 37, 255), actualImage2);
+            ImageAssert.PixelIsColor(new Point(50, 124), Color.FromArgb(70, 38, 255), actualImage2);
             ImageAssert.PixelIsColor(new Point(460, 600), Color.FromArgb(255, 105, 180), actualImage2);
         }
 

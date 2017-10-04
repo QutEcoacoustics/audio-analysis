@@ -82,8 +82,10 @@ HtmlInspector <- function (template.path, output.path, df = NULL,  singles = lis
                 repeater.res <- rep(NA, length(groups))
                 for (g in 1:length(groups)) {
                     subset <- df[df[,rep.name] == groups[g],]
-                    sub.singles <- list()
-                    sub.singles[[rep.name]] <- groups[g]
+                    # singles for each instance of this repeater
+                    # will take the values for the first row that matches the 
+                    # criteria for inclusion in this instance of this repeater
+                    sub.singles <- subset[1,]
                     repeater.res[g] <- .InsertData(subset, repeater.txt.template, singles = sub.singles)
                 }
                 repeater.res <- paste(repeater.res, collapse = "\n")

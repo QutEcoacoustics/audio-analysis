@@ -72,7 +72,6 @@ namespace Acoustics.Shared.Csv
         {
             // This is a manually maintained method
             TypeConverterFactory.AddConverter<ISet<Point>>(new CsvSetPointConverter());
-
         }
 
         public static CsvConfiguration DefaultConfiguration
@@ -133,7 +132,6 @@ namespace Acoustics.Shared.Csv
         /// IMPORTANT NOTE:
         /// If I get an exception, how do I tell what line the exception is on?
         /// There is a lot of information held in Exception.Data["CsvHelper"]
-        ///
         /// </remarks>
         public static IEnumerable<T> ReadFromCsv<T>(
             FileInfo source,

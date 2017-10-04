@@ -1,12 +1,12 @@
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Plot 1 -----------------------------
 # was produced in illustrator and photoshop
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Plot 3 -----------------------------
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #png(filename = "Journal_article_plot1.png",
 #    width = 1200, height = 600, units = "px")
 tiff("Figures for plos article/Fig3.tiff", width = 2250, height = 1125, units = 'px', res = 300)
@@ -27,7 +27,7 @@ plot(x, y, type = "b", xlab = "k", pch = 20,
      main = "Intra-three-day distance
      k-means and hclust ", mgp =c(2,0.8,0),
      xlim = xlim, ylim = ylim)
-#%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%
 I3D.average <- c(1.527, 1.408, 1.523, 1.585, 1.580, 1.513)
 I3D.wardD2 <- c(1.766, 1.360, 1.381, 1.763, 1.738, 1.701)
 x <- c(5, 10, 15, 20, 25, 30)
@@ -44,7 +44,7 @@ legend(x=25, y=2.23, pch = c(20,0,5),
        bty = "n", cex = 1.2)
 text(0.6, 2.3, "a.", adj = c(0,0), cex = 1.2)
 #dev.off()
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%
 x <- c(5,10,15,20,22,24,26,28,30)#,35,40,45)
 hybrid1000 <- c(1.915,1.292,1.252,1.735,1.521,1.519,1.471,1.482,1.484)#,1.494,1.592,1.601)
 hybrid1500<- c(1.789,1.292,1.305,1.334,1.419,1.416,1.478,1.414,1.402)#,1.512,1.878,2.034)
@@ -243,7 +243,7 @@ plot(clusters1$points1,
      main = "Sammon map - sixty clusters",
      xlab = "x",ylab = "", mgp =c(2,0.5,0),
      xlim = c((min(clusters1$points1)-0.05),
-              (max(clusters1$points1)+0.45)),
+              (max(clusters1$points1)+0.25)),
      ylim = c((min(clusters1$points2)-0.11),
               (max(clusters1$points2)+0.13)),
      cex.axis=1, cex.lab=0.6, las=1, cex.main=1,
@@ -260,15 +260,15 @@ for(i in 1:nrow(clusters1)) {
               lwd = 6)
 }
 # plot the x and y axis to form four quadrants
-abline(h = 0, col = "gray50", lwd = 0.4)
-abline(v = 0, col = "gray50", lwd = 0.4)
+abline(h = 0, col = "gray40", lwd = 1)
+abline(v = 0, col = "gray40", lwd = 1)
 # plot the cluster numbers
 text(clusters1$points1, clusters1$points2, 
-     labels = as.character(clusters1$clusters), cex = 0.84)
+     labels = as.character(clusters1$clusters), cex = 1)
 # plot the plot legend
 a <-legend("topright", title="Classes", 
            col = leg_col, bty = "n", 
-           cex=1.1, leg_names , y.intersp = 1.2) 
+           cex=1.1, leg_names , y.intersp = 1) 
 for(j in 1:length(a$text$x)) {
   draw.circle(a$text$x[j]-0.06, a$text$y[j]-0.005, 
               radius = 0.035,
@@ -367,15 +367,15 @@ z <- which(a$Var1==1000)
 na_reference <- a[z,3]
 
 # colours for each class
-insects <- "#F0E442"
-rain <- "#0072B2"
-wind <- "#56B4E9"
-birds <- "#009E73"
-cicadas <- "#E69F00"
-quiet <- "#999999"
-planes <- "#CC79A7"
+insects_col <- "#F0E442"
+rain_col <- "#0072B2"
+wind_col <- "#56B4E9"
+birds_col <- "#009E73"
+cicadas_col <- "#E69F00"
+quiet_col <- "#999999"
+planes_col <- "#CC79A7"
 
-plot_funct <- function(clust_num, colour) {
+plot_funct <- function(clust_num, colour, site) {
   y <- which(a$Var1==clust_num)
   cluster_reference <- a[y,3]
   cluster_reference <- cbind(cluster_reference, 
@@ -408,35 +408,99 @@ plot_funct <- function(clust_num, colour) {
   
   num_of_plots <- length(started)
   max <- max(cluster_reference$output)
-  for(i in 15:28) { # num_of_plots should be even
-    # The y-axis labels are plotted for the 1st and 15th plots
-    num1 <- c(1,15)
-    if(i %in% num1) {
-      barplot(cluster_reference$output[started[i]:finished[i]],
-              ylim=c(0, max), col = colour, xlab = "", las=1,
-              mgp = c(1, 0.4, 0), tck = - 0.05)
-      Axis(side = 1, labels = FALSE, 
-           at = seq.int(0.4, 14, length.out = 12),
-           cex = 0.4, tck = -0.05, mgp = c(1,0.4,0))
+  if(site=="site1") {
+    for(i in 1:14) { # num_of_plots should be even
+      # The y-axis labels are plotted for the 1st and 15th plots
+      num1 <- c(1,15)
+      if(i %in% num1) {
+        mp <- barplot(cluster_reference$output[started[i]:finished[i]],
+                      ylim=c(0, max), col = colour, xlab = "", las=1,
+                      mgp = c(1, 0.4, 0), tck = - 0.05)
+        spacing <- mp[2] - mp[1]
+        # adjust the midpoints (mp)
+        mp <- mp - spacing/2
+        mp <- c(mp, mp[length(mp)]+ spacing)
+        at <- mp    #seq.int(0.4, 14, length.out = 12)
+        Axis(side = 1, labels = FALSE, 
+             at = at, cex = 0.4, 
+             tck = -0.05, mgp = c(1,0.4,0))
+        Axis(side = 1, labels = FALSE, at = c(at[1], at[7], at[13]),
+             cex = 0.4, tck = -0.14, mgp = c(1,0.4,0))
+        Axis(side = 1, labels = FALSE, at = c(at[4], at[10]),
+             cex = 0.4, tck = -0.09, mgp = c(1,0.4,0))
+      }
+      num2 <- c(2:14,16:28) 
+      if(i %in% num2) {
+        mp <- barplot(cluster_reference$output[started[i]:finished[i]],
+                      ylim=c(0,max), col = colour, xlab = "", axes=FALSE,
+                      mgp = c(1,0.5,0), tck = - 0.05)
+        spacing <- mp[2] - mp[1]
+        # adjust the midpoints (mp)
+        mp <- mp - spacing/2
+        mp <- c(mp, mp[length(mp)]+ spacing)
+        at <- mp    #seq.int(0.4, 14, length.out = 12)
+        Axis(side = 2, labels=FALSE, tck = -0.05, mgp = c(1,0.4,0))
+        Axis(side = 1, labels = FALSE, tck = -0.05,
+             at = at, mgp = c(1,0.4,0))
+        Axis(side = 1, labels = FALSE, tck = -0.14,
+             at = c(at[1], at[7], at[13]), mgp = c(1,0.4,0))
+        Axis(side = 1, labels = FALSE, at = c(at[4], at[10]),
+             cex = 0.4, tck = -0.09, mgp = c(1,0.4,0))
+      }
+      mtext(side = 3, paste(months[i]), line = 0.3, cex = 0.7)
+      mtext(side = 1, text = c(as.character(seq(0,24,12))), 
+            at = c(at[1]+0.7, at[7], at[13]-0.7), line=-0.1, cex = 0.5)
+    }  
+  }
+  if(site=="site2") {
+    for(i in 15:28) { # num_of_plots should be even
+      # The y-axis labels are plotted for the 1st and 15th plots
+      num1 <- c(1,15)
+      if(i %in% num1) {
+        mp <- barplot(cluster_reference$output[started[i]:finished[i]],
+                      ylim=c(0, max), col = colour, xlab = "", las=1,
+                      mgp = c(1, 0.4, 0), tck = - 0.05)
+        spacing <- mp[2] - mp[1]
+        # adjust the midpoints (mp)
+        mp <- mp - spacing/2
+        mp <- c(mp, mp[length(mp)]+ spacing)
+        at <- mp    #seq.int(0.4, 14, length.out = 12)
+        Axis(side = 1, labels = FALSE,
+             at = at, cex = 0.4, tck = -0.05, mgp = c(1,0.4,0))
+        Axis(side = 1, labels = FALSE,
+             at = c(at[1], at[7], at[13]), cex = 0.4, 
+             tck = -0.14, mgp = c(1,0.4,0))
+        Axis(side = 1, labels = FALSE, at = c(at[4], at[10]),
+             cex = 0.4, tck = -0.09, mgp = c(1,0.4,0))
+      }
+      num2 <- c(2:14,16:28) 
+      if(i %in% num2) {
+        mp <- barplot(cluster_reference$output[started[i]:finished[i]],
+                      ylim=c(0,max), col = colour, xlab = "", axes=FALSE,
+                      mgp = c(1,0.5,0), tck = - 0.05)
+        spacing <- mp[2] - mp[1]
+        # adjust the midpoints (mp)
+        mp <- mp - spacing/2
+        mp <- c(mp, mp[length(mp)]+ spacing)
+        at <- mp    #seq.int(0.4, 14, length.out = 12)
+        Axis(side = 2, labels=FALSE, tck = -0.05, mgp = c(1,0.4,0))
+        Axis(side = 1, labels = FALSE, tck = -0.05,
+             at = mp, mgp = c(1, 0.4, 0))
+        Axis(side = 1, labels = FALSE, tck = -0.14,
+             at = c(at[1], at[7], at[13]), mgp = c(1,0.4,0))
+        Axis(side = 1, labels = FALSE, at = c(at[4], at[10]),
+             cex = 0.4, tck = -0.09, mgp = c(1,0.4,0))
+      }
+      mtext(side = 3, paste(months[i]), line = 0.3, cex = 0.7)
+      mtext(side = 1, text = c(as.character(seq(0,24,12))), 
+            at = c(at[1]+0.7, at[7], at[13]-0.7), line=-0.1, cex = 0.5)
     }
-    num2 <- c(2:14,16:28) 
-    if(i %in% num2) {
-      barplot(cluster_reference$output[started[i]:finished[i]],
-              ylim=c(0,max), col = colour, xlab = "", axes=FALSE,
-              mgp = c(1,0.5,0), tck = - 0.05)
-      Axis(side = 2, labels=FALSE, tck = -0.05, mgp = c(1,0.4,0))
-      Axis(side = 1, labels = FALSE, tck = -0.05,
-           at = seq.int(0.8, 14, length.out = 12), mgp = c(1,0.4,0))
-    }
-    mtext(side = 3, paste(months[i]), line = 0.3, cex = 0.7)
-    mtext(side = 1, text = c(as.character(seq(0,24,12))), 
-          at = c(1,7,13), line=-0.1, cex = 0.5)
   }
 }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # plot 7 ------------------------------
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-tiff("Figures for plos article/Fig7.tiff", width = 2250, 
+tiff("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\Figures for plos article/Fig7.tiff", width = 2250, 
      height = 1500, units = 'px', res = 300)
 #par(mar=c(2, 2.5, 2, 0.4), mfrow = c(4,1),
 #    cex = 1, cex.axis = 1, cex.main = 2.4)
@@ -446,45 +510,604 @@ par(mfrow=c(4, 14),
 
 # Start insect image
 clust_num <- 29
-colour <- insects
-plot_funct(clust_num, colour)
-mtext(side = 3, line = 1, "INSECTS - Cluster 29                                                                                                                                 ", cex=1.1)
+colour <- insects_col
+plot_funct(clust_num, colour, "site2")
+mtext(side = 3, line = 1, "ORTHOPTERA - Cluster 29                                                                                                                                 ", cex=1.1)
 
 # Start Bird image
 clust_num <- 37
-colour <- birds
-plot_funct(clust_num, colour)
+colour <- birds_col
+plot_funct(clust_num, colour, "site2")
 mtext(side = 3, line = 1, "BIRDS - Cluster 37                                                                                                                                 ", cex=1.1)
-mtext(side = 2, line = 1.3, outer = T,
-      "       Average number of minutes in 2 hour period per month")
+mtext(side = 2, line = 1.3, outer = T, cex = 0.92,
+      "Average number of cluster minutes in 2 hour period each month")
 
 # Start cicada image
 clust_num <- 48
-colour <- cicadas
-plot_funct(clust_num, colour)
+colour <- cicadas_col
+plot_funct(clust_num, colour, "site2")
 mtext(side = 3, line = 1, "CICADAS - Cluster 48                                                                                                                                 ", cex=1.1)
 
 # Start quiet image
 cluster <- 13
-colour <- quiet
-plot_funct(cluster, colour)
+colour <- quiet_col
+plot_funct(cluster, colour, "site2")
 mtext(side = 3, line = 1, "QUIET - Cluster 13                                                                                                                                 ", cex=1.1)
 
 dev.off()
 
+# define cluster classes 
+rain <- c(2,10,17,18,21,54,59,60) 
+wind <- c(9,19,20,24,25,30,40,42,45,46,47,51,52,56)
+birds <- c(3,11,14,15,28,33,37,39,43,57,58)
+insects <- c(1,4,22,26,27,29)
+cicadas <- c(7,8,12,16,32,34,44,48)
+planes <- c(23,49)
+quiet <- c(5,6,13,31,35,36,38,41,50,53,55)
+list <- c("rain","wind","birds","insects","planes","quiet")
+
+mixtures <- c(2,4,7,8,22,26,30,39,45,54,60)
+inconsistent <- c(17,24,28,36,40,50,57)
+
+tiff("Figures for plos article/S4_rain_Gym.tiff", width = 2300, 
+     height = (370*length(rain)+20), units = 'px', res = 300)
+par(mfrow=c(length(rain), 14), mar=c(1, 0, 2, 0.1), 
+    oma=c(1.1, 2.1, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in rain) {
+  clust_num <- i
+  colour <- rain_col
+  plot_funct(clust_num, colour, "site1")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Gympie NP 22 June 2015 - 23 July 2016", outer = T)
+mtext(side = 2, line = 1.3, outer = T,
+      "       Average number of cluster minutes in 2 hour period each month")
+mtext(side = 1, outer = T,line = 0.15, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/S4_rain_Woon.tiff", width = 2240, 
+     height = (370*length(rain)+20), units = 'px', res = 300)
+par(mfrow=c(length(rain), 14), 
+    mar=c(1, 0, 2, 0.1), oma=c(1.1, 1.5, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in rain) {
+  clust_num <- i
+  colour <- rain_col
+  plot_funct(clust_num, colour, "site2")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Woondum NP 22 June 2015 - 23 July 2016", outer = T)
+dev.off()
+#############
+# WIND
+tiff("Figures for plos article/S4_wind1_Gym.tiff", width = 2300, 
+     height = (370*length(wind[1:8])+20), units = 'px', res = 300)
+par(mfrow=c(length(wind[1:8]), 14), 
+    mar=c(1, 0, 2, 0.1), oma=c(1.1, 2.1, 0, 0), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in wind[1:8]) {
+  clust_num <- i
+  colour <- wind_col
+  plot_funct(clust_num, colour, "site1")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Gympie NP 22 June 2015 - 23 July 2016", outer = T)
+mtext(side = 2, line = 1.3, outer = T,
+      "       Average number of cluster minutes in 2 hour period each month")
+mtext(side = 1, outer = T,line = 0.15, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/S4_wind1_Woon.tiff", width = 2250, 
+     height = (370*length(wind[1:8])+20), units = 'px', res = 300)
+par(mfrow=c(length(wind[1:8]), 14), 
+    mar=c(1, 0, 2, 0.1), oma=c(1.1, 1.5, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in wind[1:8]) {
+  clust_num <- i
+  colour <- wind_col
+  plot_funct(clust_num, colour, "site2")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Woondum NP 22 June 2015 - 23 July 2016", outer = T)
+mtext(side = 2, line = 1.3, outer = T,
+      "       Average number of cluster minutes in 2 hour period each month")
+dev.off()
+
+tiff("Figures for plos article/S4_wind2_Gym.tiff", width = 2300, 
+     height = (370*length(wind[9:length(wind)])+20), units = 'px', res = 300)
+par(mfrow=c(length(wind[9:length(wind)]), 14), 
+    mar=c(1, 0, 2, 0.1), oma=c(1.1, 2.1, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in wind[9:length(wind)]) {
+  clust_num <- i
+  colour <- wind_col
+  plot_funct(clust_num, colour, "site1")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Gympie NP 22 June 2015 - 23 July 2016", outer = T)
+mtext(side = 2, line = 1.3, outer = T,
+      "       Average number of cluster minutes in 2 hour period each month")
+mtext(side = 1, outer = T,line = 0.15, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/S4_wind2_Woon.tiff", width = 2250, 
+     height = (370*length(wind[9:length(wind)])+20), units = 'px', res = 300)
+par(mfrow=c(length(wind[9:length(wind)]), 14), 
+    mar=c(1, 0, 2, 0.1), oma=c(1.1, 1.5, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in wind[9:length(wind)]) {
+  clust_num <- i
+  colour <- wind_col
+  plot_funct(clust_num, colour, "site2")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Gympie NP 22 June 2015 - 23 July 2016", outer = T)
+mtext(side = 2, line = 1.3, outer = T,
+      "       Average number of cluster minutes in 2 hour period each month")
+dev.off()
+#############
+# PLANES
+tiff("Figures for plos article/S4_planes_Gym.tiff", width = 2300, 
+     height = (370*length(planes)+20), units = 'px', res = 300)
+par(mfrow=c(length(planes), 14), 
+    mar=c(1, 0, 2, 0.1), oma=c(1.1, 2.6, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in planes) {
+  clust_num <- i
+  colour <- planes_col
+  plot_funct(clust_num, colour, "site1")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Gympie NP 22 June 2015 - 23 July 2016", outer = T)
+mtext(side = 2, line = 1.9, outer = T, cex = 0.85,
+      "   Average number of cluster minutes in")
+mtext(side = 2, line = 1.1, outer = T, cex = 0.85,
+      " 2 hour period each month")
+mtext(side = 1, outer = T,line = 0.15, cex = 1.0,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/S4_planes_Woon.tiff", width = 2250, 
+     height = (370*length(planes)+20), units = 'px', res = 300)
+par(mfrow=c(length(planes), 14), 
+    mar=c(1, 0, 2, 0.1), oma=c(1.1, 1.5, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in planes) {
+  clust_num <- i
+  colour <- planes_col
+  plot_funct(clust_num, colour, "site2")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Woondum NP 22 June 2015 - 23 July 2016", outer = T)
+dev.off()
+#############
+tiff("Figures for plos article/S4_wind2_Gym.tiff", width = 2300, 
+     height = (370*length(wind[9:length(wind)])+20), units = 'px', res = 300)
+par(mfrow=c(length(wind[9:length(wind)]), 14), 
+    mar=c(1, 0, 2, 0.1), oma=c(1.1, 2.1, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in wind[9:length(wind)]) {
+  clust_num <- i
+  colour <- wind_col
+  plot_funct(clust_num, colour, "site1")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Gympie NP 22 June 2015 - 23 July 2016", outer = T)
+mtext(side = 2, line = 1.3, outer = T,
+      "       Average number of cluster minutes in 2 hour period each month")
+mtext(side = 1, outer = T,line = 0.15, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/S4_wind2_Woon.tiff", width = 2250, 
+     height = (370*length(wind[9:length(wind)])+20), units = 'px', res = 300)
+par(mfrow=c(length(wind[9:length(wind)]), 14), 
+    mar=c(1, 0, 2, 0.1), oma=c(1.1, 1.5, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in wind[9:length(wind)]) {
+  clust_num <- i
+  colour <- wind_col
+  plot_funct(clust_num, colour, "site2")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Woondum NP 22 June 2015 - 23 July 2016", outer = T)
+mtext(side = 2, line = 1.3, outer = T,
+      "       Average number of cluster minutes in 2 hour period each month")
+dev.off()
+#########
+tiff("Figures for plos article/S4_birds1_Gym.tiff", width = 2300, 
+     height = (370*length(birds[1:8])+20), units = 'px', res = 300)
+par(mfrow=c(length(birds[1:8]), 14), 
+    mar=c(1, 0, 2, 0.1), oma=c(1.1, 2.1, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in birds[1:8]) {
+  clust_num <- i
+  colour <- birds_col
+  plot_funct(clust_num, colour, "site1")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Gympie NP 22 June 2015 - 23 July 2016", outer = T)
+mtext(side = 2, line = 1.3, outer = T,
+      "       Average number of cluster minutes in 2 hour period each month")
+mtext(side = 1, outer = T,line = 0.15, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/S4_birds1_Woon.tiff", width = 2240, 
+     height = (370*length(birds[1:8])+20), units = 'px', res = 300)
+par(mfrow=c(length(birds[1:8]), 14), 
+    mar=c(1, 0, 2, 0.1), oma=c(1.1, 1.5, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in birds[1:8]) {
+  clust_num <- i
+  colour <- birds_col
+  plot_funct(clust_num, colour, "site2")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Woondum NP 22 June 2015 - 23 July 2016", outer = T)
+dev.off()
+
+tiff("Figures for plos article/S4_birds2_Gym.tiff", width = 2300, 
+     height = (370*length(birds[9:length(birds)])+20), 
+     units = 'px', res = 300)
+par(mfrow=c(length(birds[9:length(birds)]), 14), 
+    mar=c(1, 0, 2, 0.1), oma=c(1.1, 2.6, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in birds[9:length(birds)]) {
+  clust_num <- i
+  colour <- birds_col
+  plot_funct(clust_num, colour, "site1")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Gympie NP 22 June 2015 - 23 July 2016", outer = T)
+mtext(side = 2, line = 1.9, outer = T, cex = 0.85,
+      "   Average number of cluster minutes in")
+mtext(side = 2, line = 1.1, outer = T, cex = 0.85,
+      " 2 hour period each month")
+#mtext(side = 2, line = 1.3, outer = T,
+#      "       Average number of cluster minutes in 2 hour period each month")
+mtext(side = 1, outer = T,line = 0.15, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/S4_birds2_Woon.tiff", width = 2240, 
+     height = (370*length(birds[9:length(birds)])+20), units = 'px', res = 300)
+par(mfrow=c(length(birds[9:length(birds)]), 14), 
+    mar=c(1, 0, 2, 0.1), oma=c(1.1, 1.5, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in birds[9:length(birds)]) {
+  clust_num <- i
+  colour <- birds_col
+  plot_funct(clust_num, colour, "site2")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Woondum NP 22 June 2015 - 23 July 2016", outer = T)
+dev.off()
+##########
+# CICADAS
+tiff("Figures for plos article/S4_cicadas_Gym.tiff", width = 2300, 
+     height = (370*length(cicadas)+20), units = 'px', res = 300)
+par(mfrow=c(length(cicadas), 14), mar=c(1, 0, 2, 0.1), 
+    oma=c(1.1, 2.1, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in cicadas) {
+  clust_num <- i
+  colour <- cicadas_col
+  plot_funct(clust_num, colour, "site1")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Gympie NP 22 June 2015 - 23 July 2016", outer = T)
+mtext(side = 2, line = 1.3, outer = T,
+      "       Average number of cluster minutes in 2 hour period each month")
+mtext(side = 1, outer = T,line = 0.15, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/S4_cicadas_Woon.tiff", width = 2240, 
+     height = (370*length(cicadas)+20), units = 'px', res = 300)
+par(mfrow=c(length(cicadas), 14), 
+    mar=c(1, 0, 2, 0.1), oma=c(1.1, 1.5, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in cicadas) {
+  clust_num <- i
+  colour <- cicadas_col
+  plot_funct(clust_num, colour, "site2")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Woondum NP 22 June 2015 - 23 July 2016", outer = T)
+dev.off()
+##########
+# QUIET
+tiff("Figures for plos article/S4_quiet1_Gym.tiff", width = 2300, 
+     height = (370*length(quiet[1:8])+20), units = 'px', res = 300)
+par(mfrow=c(length(quiet[1:8]), 14), mar=c(1, 0, 2, 0.1), 
+    oma=c(1.1, 2.1, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in quiet[1:8]) {
+  clust_num <- i
+  colour <- quiet_col
+  plot_funct(clust_num, colour, "site1")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Gympie NP 22 June 2015 - 23 July 2016", outer = T)
+mtext(side = 2, line = 1.3, outer = T,
+      "       Average number of cluster minutes in 2 hour period each month")
+mtext(side = 1, outer = T,line = 0.15, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/S4_quiet1_Woon.tiff", width = 2240, 
+     height = (370*length(quiet[1:8])+20), units = 'px', res = 300)
+par(mfrow=c(length(quiet[1:8]), 14), 
+    mar=c(1, 0, 2, 0.1), oma=c(1.1, 1.5, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in quiet[1:8]) {
+  clust_num <- i
+  colour <- quiet_col
+  plot_funct(clust_num, colour, "site2")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Woondum NP 22 June 2015 - 23 July 2016", outer = T)
+dev.off()
+
+tiff("Figures for plos article/S4_quiet2_Gym.tiff", width = 2300, 
+     height = (370*length(quiet[9:length(quiet)])+20), units = 'px', res = 300)
+par(mfrow=c(length(quiet[9:length(quiet)]), 14), mar=c(1, 0, 2, 0.1), 
+    oma=c(1.1, 2.6, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in quiet[9:length(quiet)]) {
+  clust_num <- i
+  colour <- quiet_col
+  plot_funct(clust_num, colour, "site1")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Gympie NP 22 June 2015 - 23 July 2016", outer = T)
+mtext(side = 2, line = 1.9, outer = T, cex = 0.85,
+      "   Average number of cluster minutes")
+mtext(side = 2, line = 1.1, outer = T, cex = 0.85,
+      " 2 hour period each month")
+mtext(side = 1, outer = T,line = 0.15, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/S4_quiet2_Woon.tiff", width = 2240, 
+     height = (370*length(quiet[9:length(quiet)])+20), units = 'px', res = 300)
+par(mfrow=c(length(quiet[9:length(quiet)]), 14), 
+    mar=c(1, 0, 2, 0.1), oma=c(1.1, 1.5, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in quiet[9:length(quiet)]) {
+  clust_num <- i
+  colour <- quiet_col
+  plot_funct(clust_num, colour, "site2")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Woondum NP 22 June 2015 - 23 July 2016", outer = T)
+dev.off()
+##########
+# INSECTS
+tiff("Figures for plos article/S4_insects_Gym.tiff", width = 2300, 
+     height = (370*length(insects)+20), units = 'px', res = 300)
+par(mfrow=c(length(insects), 14), mar=c(1, 0, 2, 0.1), 
+    oma=c(1.1, 2.1, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in insects) {
+  clust_num <- i
+  colour <- insects_col
+  plot_funct(clust_num, colour, "site1")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Gympie NP 22 June 2015 - 23 July 2016", outer = T)
+mtext(side = 2, line = 1.3, outer = T,
+      "       Average number of cluster minutes in 2 hour period each month")
+mtext(side = 1, outer = T,line = 0.15, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/S4_insects_Woon.tiff", width = 2250, 
+     height = (370*length(insects)+20), units = 'px', res = 300)
+par(mfrow=c(length(insects), 14), mar=c(1, 0, 2, 0.1), 
+    oma=c(1.1, 1.5, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in insects) {
+  clust_num <- i
+  colour <- insects_col
+  plot_funct(clust_num, colour, "site2")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Woondum NP 22 June 2015 - 23 July 2016", outer = T)
+mtext(side = 2, line = 1.3, outer = T,
+      "       Average number of cluster minutes in 2 hour period each month")
+dev.off()
+##########
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Plot 8 Rose plots ------------------------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # remove all objects in the global environment
-rm(list = ls())
+#rm(list = ls())
+list1 <- c("cluster37", "cluster44", "cluster48")
 
-# Set the variable of cluster number
-# choose a cluster, clust is used to label the plots
-clust <- "cluster37"
-clust <- "cluster44"
-clust <- "cluster48"
-
-# Choose a colour from this list
-# colours for each class
+# Colours for each class
 insect_col <- "#F0E442"
 rain_col <- "#0072B2"
 wind_col <- "#56B4E9"
@@ -494,1109 +1117,1241 @@ quiet_col <- "#999999"
 plane_col <- "#CC79A7"
 na_col <- "white"
 
-if(clust=="cluster37") {
-  col <- bird_col
-  scale <- c(20, 20)
-  selection <- 17:21 # This selects August 2015 to December 2015
-  circleProportion <- 0.5
-}
-if(clust=="cluster44"|clust=="cluster48") {
-  col <- cicada_col
-  circleProportion <- 1
-  if(clust=="cluster44") {
-    scale <- c(18, 18)
-    selection <- 21:23 # This selects December 2015 to February 2015
-  }
-  if(clust=="cluster48") {
-    scale <- c(12, 12)
-    selection <- 21:23
-  }
-}
-
-# Christophe Ladroue
-library(plyr)
-library(ggplot2)
-
-polarHistogram <-function (df, family = NULL, 
-                           columnNames = NULL, 
-                           binSize = 1,
-                           spaceItem = 0.2, 
-                           spaceFamily = 0, 
-                           innerRadius = 0, 
-                           outerRadius = 10,
-                           guides = c(), 
-                           alphaStart = 0, #-0.1, 
-                           circleProportion = 0.5,
-                           direction = "outwards", 
-                           familyLabels = FALSE, 
-                           normalised = FALSE,
-                           labels=FALSE,
-                           units = "cm",
-                           colour = NULL)
-{
-  if (!is.null(columnNames)) {
-    namesColumn <- names(columnNames)
-    names(namesColumn) <- columnNames
-    df <- rename(df, namesColumn)
-  }
+for(t in 1:length(list1)) {
+  clust <- list1[t]
   
-  applyLookup <- function(groups, keys, unassigned = "unassigned") {
-    lookup <- rep(names(groups), sapply(groups, length, USE.NAMES = FALSE))
-    names(lookup) <- unlist(groups, use.names = FALSE)
-    p <- lookup[as.character(keys)]
-    p[is.na(p)] <- unassigned
-    p
-  }
-  
-  if (!is.null(family))
-    df$family <- applyLookup(family, df$item)
-  # not useful for date-time data
-  #df <- arrange(df, family, item, score)
-  if(normalised)
-    df <- ddply(df, .(family, item), transform, 
-                value = cumsum(value/(sum(value))))
-  else {
-    maxFamily <- max(plyr::ddply(df,.(family,item), summarise, total = sum(value))$total)
-    df <- ddply(df, .(family, item), transform, value = cumsum(value))
-    df$value <- df$value/maxFamily
-  }
-  
-  df <- ddply(df, .(family, item), transform, previous = c(0, head(value, length(value) - 1)))
-  
-  df2 <- ddply(df, .(family, item), summarise, indexItem = 1)
-  df2$indexItem <- cumsum(df2$indexItem)
-  df3 <- ddply(df, .(family), summarise, indexFamily = 1)
-  df3$indexFamily <- cumsum(df3$indexFamily)
-  df <- merge(df, df2, by = c("family", "item"))
-  df <- merge(df, df3, by = "family")
-  df <- arrange(df, family, item, score)
-  
-  affine <- switch(direction,
-                   inwards = function(y) (outerRadius - innerRadius) * y + innerRadius,
-                   outwards = function(y) (outerRadius - innerRadius) * (1 - y) + innerRadius,
-                   stop(paste("Unknown direction")))
-  df <- within(df, {
-    xmin <- (indexItem - 1) * binSize + (indexItem - 1) *
-      spaceItem + (indexFamily - 1) * (spaceFamily - spaceItem)
-    xmax <- xmin + binSize
-    ymin <- affine(1 - previous)
-    ymax <- affine(1 - value)
-  })
-  
-  if(normalised)
-    guidesDF <- data.frame(xmin = rep(df$xmin, length(guides)),
-                           y = rep(1 - guides/100, 1, each = nrow(df)))
-  else
-    guidesDF <- data.frame(xmin = rep(df$xmin, length(guides)),
-                           y = rep(1 - guides/maxFamily, 1, each = nrow(df)))
-  
-  guidesDF <- within(guidesDF, {
-    xend <- xmin + binSize
-    y <- affine(y)
-  })
-  
-  totalLength <- tail(df$xmin + binSize + spaceFamily, 1)/circleProportion - 0
-  
-  p <- ggplot(df) + geom_rect(aes(xmin = xmin, xmax = xmax,
-                                  ymin = ymin, ymax = ymax, fill = score))
-  readableAngle <- function(x) {
-    angle <- x * (-360/totalLength) - alphaStart * 180/pi + 90
-    angle + ifelse(sign(cos(angle * pi/180)) + sign(sin(angle * pi/180)) == -2, 180, 0)
-  }
-  
-  readableJustification <- function(x) {
-    angle <- x * (-360/totalLength) - alphaStart * 180/pi + 90
-    ifelse(sign(cos(angle * pi/180)) + sign(sin(angle * pi/180)) == -2, 1, 0)
-  }
-  
-  dfItemLabels <- ddply(df, .(family, item), summarize, xmin = xmin[1])
-  dfItemLabels <- within(dfItemLabels, {
-    x <- xmin + binSize/2
-    angle <- readableAngle(xmin + binSize/2)
-    hjust <- readableJustification(xmin + binSize/2)
-  })
-  
-  if(labels)
-    p <- p + geom_text(aes(x = x, label = item, angle = angle,
-                           hjust = hjust), y = 1.02, size = 6.5, vjust = 0.5, data = dfItemLabels)
-# this code prints the guidelines  
-    p <- p + geom_segment(aes(x = xmin, xend = xend, y = y, yend = y),
-                      colour = "white", data = guidesDF)
-  
-  if(normalised)
-    guideLabels <- data.frame(x = 0, y = affine(1 - guides/100),
-                              label = paste(guides, "% ", sep = ""))
-  else
-    guideLabels <- data.frame(x = 0, y = affine(1 - guides/maxFamily),
-                              label = paste(guides, " ", sep = ""))
-  
-  p <- p + geom_text(aes(x = x, y = y, label = label), data = guideLabels,
-                     angle = -alphaStart * 180/pi, hjust = 1, size = 5)
-  if (familyLabels) {
-    familyLabelsDF <- aggregate(xmin ~ family, data = df,
-                                FUN = function(s) mean(s + binSize))
-    familyLabelsDF <- within(familyLabelsDF, {
-      x <- xmin
-      angle <- xmin * (-360/totalLength) - alphaStart * 180/pi
-    })
-    p <- p + geom_text(aes(x = x, label = family, angle = angle),
-                       data = familyLabelsDF, y = 1.35, size = 6.5)
-  }
-  
-  p <- p + theme(panel.background = element_blank(), axis.title.x = element_blank(),
-                 axis.title.y = element_blank(), panel.grid.major = element_blank(),
-                 panel.grid.minor = element_blank(), axis.text.x = element_blank(),
-                 axis.text.y = element_blank(), axis.ticks = element_blank())
-  
-  p <- p + xlim(0, tail(df$xmin + binSize + spaceFamily, 1)/circleProportion)
-  p <- p + ylim(0, outerRadius + 0.2)
-  p <- p + coord_polar(start = alphaStart)
-  #p <- p + scale_fill_brewer(palette = "Set1", type = "qual")
-  p <- p + scale_fill_manual(values = c('cluster0'="white",
-                                        'cluster1'=colour, 'cluster2'=colour, 'cluster3'=colour, 'cluster4'=colour,
-                                        'cluster5'=colour, 'cluster6'=colour, 'cluster7'=colour, 'cluster8'=colour,
-                                        'cluster9'=colour, 'cluster10'=colour,'cluster11'=colour, 'cluster12'=colour,
-                                        'cluster13'=colour, 'cluster14'=colour,'cluster15'=colour, 'cluster16'=colour,
-                                        'cluster17'=colour, 'cluster18'=colour,'cluster19'=colour, 'cluster20'=colour,
-                                        'cluster21'=colour, 'cluster22'=colour,'cluster23'=colour, 'cluster24'=colour,
-                                        'cluster25'=colour, 'cluster26'=colour, 'cluster27'=colour, 'cluster28'=colour,
-                                        'cluster29'=colour, 'cluster30'=colour, 'cluster31'=colour, 'cluster32'=colour,
-                                        'cluster33'=colour, 'cluster34'=colour,'cluster35'=colour, 'cluster36'=colour,
-                                        'cluster37'=colour, 'cluster38'=colour,'cluster39'=colour, 'cluster40'=colour,
-                                        'cluster41'=colour, 'cluster42'=colour,'cluster43'=colour, 'cluster44'=colour,
-                                        'cluster45'=colour, 'cluster46'=colour,'cluster47'=colour, 'cluster48'=colour,
-                                        'cluster49'=colour, 'cluster50'=colour, 'cluster51'=colour, 'cluster52'=colour,
-                                        'cluster53'=colour, 'cluster54'=colour, 'cluster55'=colour, 'cluster56'=colour,
-                                        'cluster57'=colour, 'cluster58'=colour,'cluster59'=colour, 'cluster60'=colour))
-  p <- p + theme(legend.text=element_text(size=1))
-  p <- p + theme(legend.position="none")
-  p <<- p
-}
-
-df <- read.csv("polarHistograms/polar_data.csv", header = T)
-
-df$item <- as.character(df$item)
-df$family <- as.character(df$family)
-df$score <- as.character(df$score)
-df$value <- as.numeric(df$value)
-
-# shift the time labels by 15 minutes to correspond to the 
-# middle of each time period
-times<- unique(df$item)
-
-startDate = as.POSIXct("2013-12-23 00:15:00")
-endDate = as.POSIXct("2013-12-23 23:45:00")
-dateSeq5sec = seq(from=startDate, to=endDate, by="1800 sec")
-
-times_new <- substr(dateSeq5sec, 12, 16)
-
-for(i in 1:length(times)) {
-  a <- which(df$item==times[i]) 
-  df$item[a] <- times_new[i]
-}
-
-#df$item <- substr(df$item, 1,5)
-b <- nrow(df)
-gym_df <- df[1:(b/2),]
-won_df <- df[(b/2+1):b,]
-
-a <- which(gym_df$score==clust)
-gym_df <- gym_df[a,]
-
-a <- which(won_df$score==clust)
-won_df <- won_df[a,]
-
-#a <- which(gym_df$value==23)
-#m <- max(gym_df$value)
-
-# June 2015
-a <- which(gym_df$family=="a  Jun 15")
-b <- c(min(a), max(a))
-GympieNP_June2015 <- gym_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(GympieNP_June2015)/48
-# normalise the number of minutes
-GympieNP_June2015$value <- GympieNP_June2015$value/n
-# set the scale of the polar plot by setting an empty
-# time slot to the scale set above
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(GympieNP_June2015$item==times_new[i] & GympieNP_June2015$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-# if a is not NULL take the last value
-if(length(a) >= 1) {
-  GympieNP_June2015$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  GympieNP_June2015$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(GympieNP_June2015$value)
-  a <- which(GympieNP_June2015$value==min)
-  GympieNP_June2015$value[a[1]] <- (scale[1] - 0.5)
-  GympieNP_June2015$score[a[1]] <- "cluster0"
-}
-
-a <- which(won_df$family=="a  Jun 15")
-b <- c(min(a), max(a))
-WoondumNP_June2015 <- won_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(WoondumNP_June2015)/48
-# normalise the number of minutes
-WoondumNP_June2015$value <- WoondumNP_June2015$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(WoondumNP_June2015$item==times_new[i] & WoondumNP_June2015$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  WoondumNP_June2015$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  WoondumNP_June2015$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(WoondumNP_June2015$value)
-  a <- which(WoondumNP_June2015$value==min)
-  WoondumNP_June2015$value[a[1]] <- (scale[1] - 0.5)
-  WoondumNP_June2015$score[a[1]] <- "cluster0"
-}
-
-# July 2015
-a <- which(gym_df$family=="b  Jul 15")
-b <- c(min(a), max(a))
-GympieNP_July2015 <- gym_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(GympieNP_July2015)/48
-# normalise the number of minutes
-GympieNP_July2015$value <- GympieNP_July2015$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(GympieNP_July2015$item==times_new[i] & GympieNP_July2015$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  GympieNP_July2015$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  GympieNP_July2015$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(GympieNP_July2015$value)
-  a <- which(GympieNP_July2015$value==min)
-  GympieNP_July2015$value[a[1]] <- (scale[1] - 0.5)
-  GympieNP_July2015$score[a[1]] <- "cluster0"
-}
-
-a <- which(won_df$family=="b  Jul 15")
-b <- c(min(a), max(a))
-WoondumNP_July2015 <- won_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(WoondumNP_July2015)/48
-# normalise the number of minutes
-WoondumNP_July2015$value <- WoondumNP_July2015$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(WoondumNP_July2015$item==times_new[i] & WoondumNP_July2015$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  WoondumNP_July2015$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  WoondumNP_July2015$score[a[length(a)]] <- "cluster0"
-}
-
-if(length(a) < 1) {
-  min <- min(WoondumNP_July2015$value)
-  a <- which(WoondumNP_July2015$value==min)
-  WoondumNP_July2015$value[a[1]] <- (scale[1] - 0.5)
-  WoondumNP_July2015$score[a[1]] <- "cluster0"
-}
-
-# August 2015
-a <- which(gym_df$family=="c  Aug 15")
-b <- c(min(a), max(a))
-GympieNP_August2015 <- gym_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(GympieNP_August2015)/48
-# normalise the number of minutes
-GympieNP_August2015$value <- GympieNP_August2015$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(GympieNP_August2015$item==times_new[i] & GympieNP_August2015$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  GympieNP_August2015$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  GympieNP_August2015$score[a[length(a)]] <- "cluster0"
-}
-
-if(length(a) < 1) {
-  min <- min(GympieNP_August2015$value)
-  a <- which(GympieNP_August2015$value==min)
-  GympieNP_August2015$value[a[1]] <- (scale[1] - 0.5)
-  GympieNP_August2015$score[a[1]] <- "cluster0"
-}
-
-
-a <- which(won_df$family=="c  Aug 15")
-b <- c(min(a), max(a))
-WoondumNP_August2015 <- won_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(WoondumNP_August2015)/48
-# normalise the number of minutes
-WoondumNP_August2015$value <- WoondumNP_August2015$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(WoondumNP_August2015$item==times_new[i] & WoondumNP_August2015$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  WoondumNP_August2015$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  WoondumNP_August2015$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(WoondumNP_August2015$value)
-  a <- which(WoondumNP_August2015$value==min)
-  WoondumNP_August2015$value[a[1]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  WoondumNP_August2015$score[a[1]] <- "cluster0"
-}
-
-# September 2015
-m_days <- c(28,29,30) # place the missing dates, must be in numeric order
-a <- which(gym_df$family=="d  Sept 15")
-b <- c(min(a), max(a))
-GympieNP_September2015 <- gym_df[b[1]:b[2],]
-if(length(m_days >= 1)) {
-  for(i in 1:length(m_days)) {
-    GympieNP_September2015 <- GympieNP_September2015[-(((m_days[i]-1)*48+1):(m_days[i]*48)),]    
-    m_days <- m_days - 1
-  }
-}
-# determine the number of days
-n <- (nrow(GympieNP_September2015)/48) 
-# normalise the number of minutes
-GympieNP_September2015$value <- GympieNP_September2015$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(GympieNP_September2015$item==times_new[i] & GympieNP_September2015$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-
-if(length(a) >= 1) {
-  GympieNP_September2015$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  GympieNP_September2015$score[a[length(a)]] <- "cluster0"
-}
-
-if(length(a) < 1) {
-  min <- min(GympieNP_September2015$value)
-  a <- which(GympieNP_September2015$value==min)
-  GympieNP_September2015$value[a[1]] <- (scale[1] - 0.5)
-  GympieNP_September2015$score[a[1]] <- "cluster0"
-}
-
-a <- which(won_df$family=="d  Sept 15")
-b <- c(min(a), max(a))
-WoondumNP_September2015 <- won_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(WoondumNP_September2015)/48
-# normalise the number of minutes
-WoondumNP_September2015$value <- WoondumNP_September2015$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(WoondumNP_September2015$item==times_new[i] & WoondumNP_September2015$value < 0.04)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  WoondumNP_September2015$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  WoondumNP_September2015$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(WoondumNP_September2015$value)
-  a <- which(WoondumNP_September2015$value==min)
-  WoondumNP_September2015$value[a[1]] <- (scale[1] - 0.5)
-  WoondumNP_September2015$score[a[1]] <- "cluster0"
-}
-
-# October 2015
-a <- which(gym_df$family=="e  Oct 15")
-b <- c(min(a), max(a))
-GympieNP_October2015 <- gym_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(GympieNP_October2015)/48
-# normalise the number of minutes
-GympieNP_October2015$value <- GympieNP_October2015$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(GympieNP_October2015$item==times_new[i] & GympieNP_October2015$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  GympieNP_October2015$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  GympieNP_October2015$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(GympieNP_October2015$value)
-  a <- which(GympieNP_October2015$value==min)
-  GympieNP_October2015$value[a[1]] <- (scale[1] - 0.5)
-  GympieNP_October2015$score[a[1]] <- "cluster0"
-}
-
-a <- which(won_df$family=="e  Oct 15")
-b <- c(min(a), max(a))
-WoondumNP_October2015 <- won_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(WoondumNP_October2015)/48
-# normalise the number of minutes
-WoondumNP_October2015$value <- WoondumNP_October2015$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(WoondumNP_October2015$item==times_new[i] & WoondumNP_October2015$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  WoondumNP_October2015$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  WoondumNP_October2015$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(WoondumNP_October2015$value)
-  a <- which(WoondumNP_October2015$value==min)
-  WoondumNP_October2015$value[a[1]] <- (scale[1] - 0.5)
-  WoondumNP_October2015$score[a[1]] <- "cluster0"
-}
-
-# November 2015
-a <- which(gym_df$family=="f  Nov 15")
-b <- c(min(a), max(a))
-GympieNP_November2015 <- gym_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(GympieNP_November2015)/48
-# normalise the number of minutes
-GympieNP_November2015$value <- GympieNP_November2015$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(GympieNP_November2015$item==times_new[i] & GympieNP_November2015$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  GympieNP_November2015$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  GympieNP_November2015$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(GympieNP_November2015$value)
-  a <- which(GympieNP_November2015$value==min)
-  GympieNP_November2015$value[a[1]] <- (scale[1] - 0.5)
-  GympieNP_November2015$score[a[1]] <- "cluster0"
-}
-
-a <- which(won_df$family=="f  Nov 15")
-b <- c(min(a), max(a))
-WoondumNP_November2015 <- won_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(WoondumNP_November2015)/48
-# normalise the number of minutes
-WoondumNP_November2015$value <- WoondumNP_November2015$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(WoondumNP_November2015$item==times_new[i] & WoondumNP_November2015$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  WoondumNP_November2015$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  WoondumNP_November2015$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(WoondumNP_November2015$value)
-  a <- which(WoondumNP_November2015$value==min)
-  WoondumNP_November2015$value[a[1]] <- (scale[1] - 0.5)
-  WoondumNP_November2015$score[a[1]] <- "cluster0"
-}
-
-# December 2015
-a <- which(gym_df$family=="g  Dec 15")
-b <- c(min(a), max(a))
-GympieNP_December2015 <- gym_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(GympieNP_December2015)/48
-# normalise the number of minutes
-GympieNP_December2015$value <- GympieNP_December2015$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(GympieNP_December2015$item==times_new[i] & GympieNP_December2015$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  GympieNP_December2015$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  GympieNP_December2015$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(GympieNP_December2015$value)
-  a <- which(GympieNP_December2015$value==min)
-  GympieNP_December2015$value[a[1]] <- (scale[1] - 0.5)
-  GympieNP_December2015$score[a[1]] <- "cluster0"
-}
-
-a <- which(won_df$family=="g  Dec 15")
-b <- c(min(a), max(a))
-WoondumNP_December2015 <- won_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(WoondumNP_December2015)/48
-# normalise the number of minutes
-WoondumNP_December2015$value <- WoondumNP_December2015$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(WoondumNP_December2015$item==times_new[i] & WoondumNP_December2015$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  WoondumNP_December2015$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  WoondumNP_December2015$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(WoondumNP_December2015$value)
-  a <- which(WoondumNP_December2015$value==min)
-  WoondumNP_December2015$value[a[1]] <- (scale[1] - 0.5)
-  WoondumNP_December2015$score[a[1]] <- "cluster0"
-}
-
-# January 2016
-a <- which(gym_df$family=="h  Jan 16")
-b <- c(min(a), max(a))
-GympieNP_January2016 <- gym_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(GympieNP_January2016)/48
-# normalise the number of minutes
-GympieNP_January2016$value <- GympieNP_January2016$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(GympieNP_January2016$item==times_new[i] & GympieNP_January2016$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  GympieNP_January2016$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  GympieNP_January2016$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(GympieNP_January2016$value)
-  a <- which(GympieNP_January2016$value==min)
-  GympieNP_January2016$value[a[1]] <- (scale[1] - 0.5)
-  GympieNP_January2016$score[a[1]] <- "cluster0"
-}
-
-a <- which(won_df$family=="h  Jan 16")
-b <- c(min(a), max(a))
-WoondumNP_January2016 <- won_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(WoondumNP_January2016)/48
-# normalise the number of minutes
-WoondumNP_January2016$value <- WoondumNP_January2016$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(WoondumNP_January2016$item==times_new[i] & WoondumNP_January2016$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  WoondumNP_January2016$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  WoondumNP_January2016$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(WoondumNP_January2016$value)
-  a <- which(WoondumNP_January2016$value==min)
-  WoondumNP_January2016$value[a[1]] <- (scale[1] - 0.5)
-  WoondumNP_January2016$score[a[1]] <- "cluster0"
-}
-
-# February 2016
-a <- which(gym_df$family=="i  Feb 16")
-b <- c(min(a), max(a))
-GympieNP_February2016 <- gym_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(GympieNP_February2016)/48
-# normalise the number of minutes
-GympieNP_February2016$value <- GympieNP_February2016$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(GympieNP_February2016$item==times_new[i] & GympieNP_February2016$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  GympieNP_February2016$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  GympieNP_February2016$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  a <- which(GympieNP_February2016$value < 0.1)
-  min <- min(GympieNP_February2016$value)
-  a <- which(GympieNP_February2016$value==min)
-  GympieNP_February2016$value[a[1]] <- (scale[1] - 0.5)
-  GympieNP_February2016$score[a[1]] <- "cluster0"
-}
-
-a <- which(won_df$family=="i  Feb 16")
-b <- c(min(a), max(a))
-WoondumNP_February2016 <- won_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(WoondumNP_February2016)/48
-# normalise the number of minutes
-WoondumNP_February2016$value <- WoondumNP_February2016$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(WoondumNP_February2016$item==times_new[i] & WoondumNP_February2016$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  WoondumNP_February2016$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  WoondumNP_February2016$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(WoondumNP_February2016$value)
-  a <- which(WoondumNP_February2016$value==min)
-  WoondumNP_February2016$value[a[1]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  WoondumNP_February2016$score[a[1]] <- "cluster0"
-}
-
-# March 2016
-a <- which(gym_df$family=="j  Mar 16")
-b <- c(min(a), max(a))
-GympieNP_March2016 <- gym_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(GympieNP_March2016)/48
-# normalise the number of minutes
-GympieNP_March2016$value <- GympieNP_March2016$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(GympieNP_March2016$item==times_new[i] & GympieNP_March2016$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  GympieNP_March2016$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  GympieNP_March2016$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(GympieNP_March2016$value)
-  a <- which(GympieNP_March2016$value==min)
-  GympieNP_March2016$value[a[1]] <- (scale[1] - 0.5)
-  GympieNP_March2016$score[a[1]] <- "cluster0"
-}
-
-a <- which(won_df$family=="j  Mar 16")
-b <- c(min(a), max(a))
-WoondumNP_March2016 <- won_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(WoondumNP_March2016)/48
-# normalise the number of minutes
-WoondumNP_March2016$value <- WoondumNP_March2016$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(WoondumNP_March2016$item==times_new[i] & WoondumNP_March2016$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  WoondumNP_March2016$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  WoondumNP_March2016$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(WoondumNP_March2016$value)
-  a <- which(WoondumNP_March2016$value==min)
-  WoondumNP_March2016$value[a[1]] <- (scale[1] - 0.5)
-  WoondumNP_March2016$score[a[1]] <- "cluster0"
-}
-
-# April 2016
-a <- which(gym_df$family=="k  Apr 16")
-b <- c(min(a), max(a))
-GympieNP_April2016 <- gym_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(GympieNP_April2016)/48
-# normalise the number of minutes
-GympieNP_April2016$value <- GympieNP_April2016$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(GympieNP_April2016$item==times_new[i] & GympieNP_April2016$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  GympieNP_April2016$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  GympieNP_April2016$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(GympieNP_April2016$value)
-  a <- which(GympieNP_April2016$value==min)
-  GympieNP_April2016$value[a[1]] <- (scale[1] - 0.5)
-  GympieNP_April2016$score[a[1]] <- "cluster0"
-}
-
-a <- which(won_df$family=="k  Apr 16")
-b <- c(min(a), max(a))
-WoondumNP_April2016 <- won_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(WoondumNP_April2016)/48
-# normalise the number of minutes
-WoondumNP_April2016$value <- WoondumNP_April2016$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(WoondumNP_April2016$item==times_new[i] & WoondumNP_April2016$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  WoondumNP_April2016$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  WoondumNP_April2016$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(WoondumNP_April2016$value)
-  a <- which(WoondumNP_April2016$value==min)
-  WoondumNP_April2016$value[a[1]] <- (scale[1] - 0.5)
-  WoondumNP_April2016$score[a[1]] <- "cluster0"
-}
-
-# May 2016
-a <- which(gym_df$family=="l  May 16")
-b <- c(min(a), max(a))
-GympieNP_May2016 <- gym_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(GympieNP_May2016)/48
-# normalise the number of minutes
-GympieNP_May2016$value <- GympieNP_May2016$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(GympieNP_May2016$item==times_new[i] & GympieNP_May2016$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  GympieNP_May2016$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  GympieNP_May2016$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(GympieNP_May2016$value)
-  a <- which(GympieNP_May2016$value==min)
-  GympieNP_May2016$value[a[1]] <- (scale[1] - 0.5)
-  GympieNP_May2016$score[a[1]] <- "cluster0"
-}
-
-a <- which(won_df$family=="l  May 16")
-b <- c(min(a), max(a))
-WoondumNP_May2016 <- won_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(WoondumNP_May2016)/48
-# normalise the number of minutes
-WoondumNP_May2016$value <- WoondumNP_May2016$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(WoondumNP_May2016$item==times_new[i] & WoondumNP_May2016$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  WoondumNP_May2016$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  WoondumNP_May2016$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(WoondumNP_May2016$value)
-  a <- which(WoondumNP_May2016$value==min)
-  WoondumNP_May2016$value[a[1]] <- (scale[1] - 0.5)
-  WoondumNP_May2016$score[a[1]] <- "cluster0"
-}
-
-# June 2016
-a <- which(gym_df$family=="m  Jun 16")
-b <- c(min(a), max(a))
-GympieNP_June2016 <- gym_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(GympieNP_June2016)/48
-# normalise the number of minutes
-GympieNP_June2016$value <- GympieNP_June2016$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(GympieNP_June2016$item==times_new[i] & GympieNP_June2016$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  GympieNP_June2016$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  GympieNP_June2016$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(GympieNP_June2016$value)
-  a <- which(GympieNP_June2016$value==min)
-  GympieNP_June2016$value[a[1]] <- (scale[1] - 0.5)
-  GympieNP_June2016$score[a[1]] <- "cluster0"
-}
-
-a <- which(won_df$family=="m  Jun 16")
-b <- c(min(a), max(a))
-WoondumNP_June2016 <- won_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(WoondumNP_June2016)/48
-# normalise the number of minutes
-WoondumNP_June2016$value <- WoondumNP_June2016$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(WoondumNP_June2016$item==times_new[i] & WoondumNP_June2016$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  WoondumNP_June2016$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  WoondumNP_June2016$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(WoondumNP_June2016$value)
-  a <- which(WoondumNP_June2016$value==min)
-  WoondumNP_June2016$value[a[1]] <- (scale[1] - 0.5)
-  WoondumNP_June2016$score[a[1]] <- "cluster0"
-}
-
-# July 2016
-a <- which(gym_df$family=="n  Jul 16")
-b <- c(min(a), max(a))
-GympieNP_July2016 <- gym_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(GympieNP_July2016)/48
-# normalise the number of minutes
-GympieNP_July2016$value <- GympieNP_July2016$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(GympieNP_July2016$item==times_new[i] & GympieNP_July2016$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  GympieNP_July2016$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  GympieNP_July2016$score[a[length(a)]] <- "cluster0"
-}
-if(length(a) < 1) {
-  min <- min(GympieNP_July2016$value)
-  a <- which(GympieNP_July2016$value==min)
-  GympieNP_July2016$value[a[1]] <- (scale[1] - 0.5)
-  GympieNP_July2016$score[a[1]] <- "cluster0"
-}
-
-a <- which(won_df$family=="n  Jul 16")
-b <- c(min(a), max(a))
-WoondumNP_July2016 <- won_df[b[1]:b[2],]
-# determine the number of days
-n <- nrow(WoondumNP_July2016)/48
-# normalise the number of minutes
-WoondumNP_July2016$value <- WoondumNP_July2016$value/n
-# set the scale of the polar plot
-a <- NULL
-for(i in 1:length(times_new)) {
-  ref <- which(WoondumNP_July2016$item==times_new[i] & WoondumNP_July2016$value< 0.4)
-  if(length(ref)==n) {
-    a <- c(a,ref[n])  
-  }
-}
-if(length(a) >= 1) {
-  WoondumNP_July2016$value[a[length(a)]] <- (scale[1] - 0.5)
-  # cluster0 will be white
-  WoondumNP_July2016$score[a[length(a)]] <- "cluster0"
-}
-
-if(length(a) < 1) {
-  min <- min(WoondumNP_July2016$value)
-  a <- which(WoondumNP_July2016$value==min)
-  WoondumNP_July2016$value[a[1]] <- (scale[1] - 0.5)
-  WoondumNP_July2016$score[a[1]] <- "cluster0"
-}
-a <- c("GympieNP_June2015", "GympieNP_July2015",
-       "GympieNP_August2015", "GympieNP_September2015",
-       "GympieNP_October2015", "GympieNP_November2015",
-       "GympieNP_December2015", "GympieNP_January2016",
-       "GympieNP_February2016", "GympieNP_March2016",
-       "GympieNP_April2016", "GympieNP_May2016",
-       "GympieNP_June2016", "GympieNP_July2016",
-       "WoondumNP_June2015", "WoondumNP_July2015",
-       "WoondumNP_August2015", "WoondumNP_September2015",
-       "WoondumNP_October2015", "WoondumNP_November2015",
-       "WoondumNP_December2015", "WoondumNP_January2016",
-       "WoondumNP_February2016", "WoondumNP_March2016",
-       "WoondumNP_April2016", "WoondumNP_May2016",
-       "WoondumNP_June2016", "WoondumNP_July2016")
-
-#a <- "GympieNP_September2015"
-#b <- a[c(7:10,21:24)]
-#label <- as.character(intToUtf8(0x2600L))
-#labels="\u2600";labels
-sunrise <- read.csv("data/Sunrise_Sunset_protected.csv", header=T)
-sunrise_min <- NULL
-sunset_min <- NULL
-for(i in 1:nrow(sunrise)) {
-  sunrise_min[i:nrow(sunrise)] <- as.numeric(substr(sunrise$Sunrise[i],1,1))*60 +
-    as.numeric(substr(sunrise$Sunrise[i],3,4))
-  sunset_min[i:nrow(sunrise)] <- (((as.numeric(substr(sunrise$Sunset[i],1,1))*60) + 12*60) +
-                                    (as.numeric(substr(sunrise$Sunset[i],3,4))))
-}
-sunrise_min <- rep(sunrise_min,2)
-sunset_min <- rep(sunset_min,2)
-
-a37 <- a[selection]
-a37 <- data.frame(a37)
-a37[,2] <- NULL
-a37[,2] <- selection
-
-n <- 1:nrow(a37)
-j <- 0
-for(i in a37[n,1]) {
-  j <- j + 1
-  r <- a37[j,2]
-  title <- paste(i)
-  subtitle <- paste("Cluster", substr(clust,8,10))
-  file_title <- paste("polarHistograms/article/rose_plot_", i,"_",clust, ".tiff",sep = "")
-  data <- get(i)
-  data <- data.frame(data)
   if(clust=="cluster37") {
-    list <- c("00:15","00:45","01:15","01:45","02:15","02:45","03:15","03:45","04:15",
-              "04:45","05:15","05:45","06:15","06:45","07:15","07:45","08:15","08:45",
-              "09:15","09:45","10:15","10:45","11:15","11:45","12:15","12:30")
-    ac <- which(data$item=="00:15")
-    data$value[ac[1]] <- (as.numeric(scale[1]) - 0.5)
-    data$score[ac[1]] <- "cluster0"
-    ab <- NULL
-    for(k in 1:length(list)) {
-      aa <- which(data$item==list[k])
-      ab <- c(ab, aa)
+    col <- bird_col
+    scale <- c(20, 20)
+    # The selection August 2015 to December 2015 at Gympie
+    selection <- 3:7 
+    circleProportion <- 0.5
+    months <- c("Aug 2015", "Sept 2015", "Oct 2015",
+                "Nov 2015", "Dec 2015")
+  }
+  if(clust=="cluster44"|clust=="cluster48") {
+    col <- cicada_col
+    circleProportion <- 1
+    months <- c("Dec 2015", "Jan 2016", "Feb 2016")
+    if(clust=="cluster44") {
+      scale <- c(18, 18)
+      # The selection - December 2015 to February 2015 at Woondum
+      selection <- 21:23 
     }
-    ab <- sort(ab)
+    if(clust=="cluster48") {
+      scale <- c(12, 12)
+      selection <- 21:23
+    }
   }
-  if(clust=="cluster44"|clust=="cluster48") {
-    ab <- 1:nrow(data)
+  
+  # Christophe Ladroue
+  library(plyr)
+  library(ggplot2)
+  
+  polarHistogram <-function (df, family = NULL, 
+                             columnNames = NULL, 
+                             binSize = 1,
+                             spaceItem = 0.2, 
+                             spaceFamily = 0, 
+                             innerRadius = 0, 
+                             outerRadius = 10,
+                             guides = c(), 
+                             alphaStart = 0, #-0.1, 
+                             circleProportion = 0.5,
+                             direction = "outwards", 
+                             familyLabels = FALSE, 
+                             normalised = FALSE,
+                             labels=FALSE,
+                             units = "cm",
+                             colour = NULL)
+  {
+    if (!is.null(columnNames)) {
+      namesColumn <- names(columnNames)
+      names(namesColumn) <- columnNames
+      df <- rename(df, namesColumn)
+    }
+    
+    applyLookup <- function(groups, keys, unassigned = "unassigned") {
+      lookup <- rep(names(groups), sapply(groups, length, USE.NAMES = FALSE))
+      names(lookup) <- unlist(groups, use.names = FALSE)
+      p <- lookup[as.character(keys)]
+      p[is.na(p)] <- unassigned
+      p
+    }
+    
+    if (!is.null(family))
+      df$family <- applyLookup(family, df$item)
+    # not useful for date-time data
+    #df <- arrange(df, family, item, score)
+    if(normalised)
+      df <- ddply(df, .(family, item), transform, 
+                  value = cumsum(value/(sum(value))))
+    else {
+      maxFamily <- max(plyr::ddply(df,.(family,item), summarise, total = sum(value))$total)
+      df <- ddply(df, .(family, item), transform, value = cumsum(value))
+      df$value <- df$value/maxFamily
+    }
+    
+    df <- ddply(df, .(family, item), transform, previous = c(0, head(value, length(value) - 1)))
+    
+    df2 <- ddply(df, .(family, item), summarise, indexItem = 1)
+    df2$indexItem <- cumsum(df2$indexItem)
+    df3 <- ddply(df, .(family), summarise, indexFamily = 1)
+    df3$indexFamily <- cumsum(df3$indexFamily)
+    df <- merge(df, df2, by = c("family", "item"))
+    df <- merge(df, df3, by = "family")
+    df <- arrange(df, family, item, score)
+    
+    affine <- switch(direction,
+                     inwards = function(y) (outerRadius - innerRadius) * y + innerRadius,
+                     outwards = function(y) (outerRadius - innerRadius) * (1 - y) + innerRadius,
+                     stop(paste("Unknown direction")))
+    df <- within(df, {
+      xmin <- (indexItem - 1) * binSize + (indexItem - 1) *
+        spaceItem + (indexFamily - 1) * (spaceFamily - spaceItem)
+      xmax <- xmin + binSize
+      ymin <- affine(1 - previous)
+      ymax <- affine(1 - value)
+    })
+    
+    if(normalised)
+      guidesDF <- data.frame(xmin = rep(df$xmin, length(guides)),
+                             y = rep(1 - guides/100, 1, each = nrow(df)))
+    else
+      guidesDF <- data.frame(xmin = rep(df$xmin, length(guides)),
+                             y = rep(1 - guides/maxFamily, 1, each = nrow(df)))
+    
+    guidesDF <- within(guidesDF, {
+      xend <- xmin + binSize
+      y <- affine(y)
+    })
+    
+    totalLength <- tail(df$xmin + binSize + spaceFamily, 1)/circleProportion - 0
+    
+    p <- ggplot(df) + geom_rect(aes(xmin = xmin, xmax = xmax,
+                                    ymin = ymin, ymax = ymax, fill = score))
+    readableAngle <- function(x) {
+      angle <- x * (-360/totalLength) - alphaStart * 180/pi + 90
+      angle + ifelse(sign(cos(angle * pi/180)) + sign(sin(angle * pi/180)) == -2, 180, 0)
+    }
+    
+    readableJustification <- function(x) {
+      angle <- x * (-360/totalLength) - alphaStart * 180/pi + 90
+      ifelse(sign(cos(angle * pi/180)) + sign(sin(angle * pi/180)) == -2, 1, 0)
+    }
+    
+    dfItemLabels <- ddply(df, .(family, item), summarize, xmin = xmin[1])
+    dfItemLabels <- within(dfItemLabels, {
+      x <- xmin + binSize/2
+      angle <- readableAngle(xmin + binSize/2)
+      hjust <- readableJustification(xmin + binSize/2)
+    })
+    
+    if(labels)
+      p <- p + geom_text(aes(x = x, label = item, angle = angle,
+                             hjust = hjust), y = 1.02, size = 8, vjust = 0.5, data = dfItemLabels)
+    # this code prints the guidelines  
+    p <- p + geom_segment(aes(x = xmin, xend = xend, y = y, yend = y),
+                          colour = "white", data = guidesDF)
+    
+    if(normalised)
+      guideLabels <- data.frame(x = 0, y = affine(1 - guides/100),
+                                label = paste(guides, "% ", sep = ""))
+    else
+      guideLabels <- data.frame(x = 0, y = affine(1 - guides/maxFamily),
+                                label = paste(guides, " ", sep = ""), size = 8)
+    
+    p <- p + geom_text(aes(x = x, y = y, label = label), data = guideLabels,
+                       angle = -alphaStart * 180/pi, hjust = 1, size = 8)
+    if (familyLabels) {
+      familyLabelsDF <- aggregate(xmin ~ family, data = df,
+                                  FUN = function(s) mean(s + binSize))
+      familyLabelsDF <- within(familyLabelsDF, {
+        x <- xmin
+        angle <- xmin * (-360/totalLength) - alphaStart * 180/pi
+      })
+      p <- p + geom_text(aes(x = x, label = family, angle = angle),
+                         data = familyLabelsDF, y = 1.35, size = 8)
+    }
+    
+    p <- p + theme(panel.background = element_blank(), axis.title.x = element_blank(),
+                   axis.title.y = element_blank(), panel.grid.major = element_blank(),
+                   panel.grid.minor = element_blank(), axis.text.x = element_blank(),
+                   axis.text.y = element_blank(), axis.ticks = element_blank())
+    
+    p <- p + xlim(0, tail(df$xmin + binSize + spaceFamily, 1)/circleProportion)
+    p <- p + ylim(0, outerRadius + 0.2)
+    p <- p + coord_polar(start = alphaStart)
+    #p <- p + scale_fill_brewer(palette = "Set1", type = "qual")
+    p <- p + scale_fill_manual(values = c('cluster0'="white",
+                                          'cluster1'=colour, 'cluster2'=colour, 'cluster3'=colour, 'cluster4'=colour,
+                                          'cluster5'=colour, 'cluster6'=colour, 'cluster7'=colour, 'cluster8'=colour,
+                                          'cluster9'=colour, 'cluster10'=colour,'cluster11'=colour, 'cluster12'=colour,
+                                          'cluster13'=colour, 'cluster14'=colour,'cluster15'=colour, 'cluster16'=colour,
+                                          'cluster17'=colour, 'cluster18'=colour,'cluster19'=colour, 'cluster20'=colour,
+                                          'cluster21'=colour, 'cluster22'=colour,'cluster23'=colour, 'cluster24'=colour,
+                                          'cluster25'=colour, 'cluster26'=colour, 'cluster27'=colour, 'cluster28'=colour,
+                                          'cluster29'=colour, 'cluster30'=colour, 'cluster31'=colour, 'cluster32'=colour,
+                                          'cluster33'=colour, 'cluster34'=colour,'cluster35'=colour, 'cluster36'=colour,
+                                          'cluster37'=colour, 'cluster38'=colour,'cluster39'=colour, 'cluster40'=colour,
+                                          'cluster41'=colour, 'cluster42'=colour,'cluster43'=colour, 'cluster44'=colour,
+                                          'cluster45'=colour, 'cluster46'=colour,'cluster47'=colour, 'cluster48'=colour,
+                                          'cluster49'=colour, 'cluster50'=colour, 'cluster51'=colour, 'cluster52'=colour,
+                                          'cluster53'=colour, 'cluster54'=colour, 'cluster55'=colour, 'cluster56'=colour,
+                                          'cluster57'=colour, 'cluster58'=colour,'cluster59'=colour, 'cluster60'=colour))
+    p <- p + theme(legend.text=element_text(size=1))
+    p <- p + theme(legend.position="none")
+    p <<- p
   }
-  if(clust=="cluster37") {
-    z <- polarHistogram(data[ab,], familyLabels = F, normalised = F, 
-                        colour = col, circleProportion = 0.5,
-                        innerRadius = 0, outerRadius = 1,
-                        guides = seq(2,(scale[1]-1),2), 
-                        labels = TRUE)
+  
+  df <- read.csv("polarHistograms/polar_data.csv", header = T)
+  
+  df$item <- as.character(df$item)
+  df$family <- as.character(df$family)
+  df$score <- as.character(df$score)
+  df$value <- as.numeric(df$value)
+  
+  # shift the time labels by 15 minutes to correspond to the 
+  # middle of each time period
+  times<- unique(df$item)
+  
+  startDate = as.POSIXct("2013-12-23 00:15:00")
+  endDate = as.POSIXct("2013-12-23 23:45:00")
+  dateSeq5sec = seq(from=startDate, to=endDate, by="1800 sec")
+  
+  times_new <- substr(dateSeq5sec, 12, 16)
+  
+  for(i in 1:length(times)) {
+    a <- which(df$item==times[i]) 
+    df$item[a] <- times_new[i]
   }
-  if(clust=="cluster44"|clust=="cluster48") {
-    z <- polarHistogram(data[ab,], familyLabels = F, normalised = F, 
-                        colour = col, circleProportion = 1,
-                        innerRadius = 0, outerRadius = 1,
-                        guides = seq(2,(scale[1]-1),2), 
-                        labels = TRUE)
+  
+  #df$item <- substr(df$item, 1,5)
+  b <- nrow(df)
+  gym_df <- df[1:(b/2),]
+  won_df <- df[(b/2+1):b,]
+  
+  a <- which(gym_df$score==clust)
+  gym_df <- gym_df[a,]
+  
+  a <- which(won_df$score==clust)
+  won_df <- won_df[a,]
+  
+  #a <- which(gym_df$value==23)
+  #m <- max(gym_df$value)
+  
+  # June 2015
+  a <- which(gym_df$family=="a  Jun 15")
+  b <- c(min(a), max(a))
+  GympieNP_June2015 <- gym_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(GympieNP_June2015)/48
+  # normalise the number of minutes
+  GympieNP_June2015$value <- GympieNP_June2015$value/n
+  # set the scale of the polar plot by setting an empty
+  # time slot to the scale set above
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(GympieNP_June2015$item==times_new[i] & GympieNP_June2015$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
   }
-  #z <- z + ggtitle(bquote(atop(.(title), atop(italic(.(subtitle)), ""))))
-  #z <- z + theme(plot.title = element_text(size=22))
-  #z <- z + theme(plot.title = element_text(margin=margin(b = -50, unit = "pt")))
-  # add the sun symbol x is angle and y the fraction of the radius
-  z <- z + geom_point(data=data.frame(x=c(1)), 
-                      aes(x = (sunrise_min[r]*60/1440-0.5), y = 0.94), 
-                      shape="\u2600", size=10)
-  # add the moon symbol 
-  z <- z + geom_point(data=data.frame(x=c(1)), 
-                      aes(x = (sunset_min[r]*60/1440-2), y = 0.94), 
-                      shape="\u263D", size=10)
-  #z <- z + geom_point(x=150,y=0,shape="\u2600", size=20)
-  z <- z + theme(plot.background = element_rect(fill = "transparent", 
-                                                colour = NA))
-  z <- z + theme(plot.margin=unit(c(0,-10,0,0),"mm"))
-  # invisible is used to stop print opening a print window
-  invisible(print(z))
-  ggsave(file_title, width = 19.05, height = 19.05, units = "cm", 
-         dpi = 300)
-  dev.off()
+  # if a is not NULL take the last value
+  if(length(a) >= 1) {
+    GympieNP_June2015$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    GympieNP_June2015$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(GympieNP_June2015$value)
+    a <- which(GympieNP_June2015$value==min)
+    GympieNP_June2015$value[a[1]] <- (scale[1] - 0.5)
+    GympieNP_June2015$score[a[1]] <- "cluster0"
+  }
+  
+  a <- which(won_df$family=="a  Jun 15")
+  b <- c(min(a), max(a))
+  WoondumNP_June2015 <- won_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(WoondumNP_June2015)/48
+  # normalise the number of minutes
+  WoondumNP_June2015$value <- WoondumNP_June2015$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(WoondumNP_June2015$item==times_new[i] & WoondumNP_June2015$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    WoondumNP_June2015$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    WoondumNP_June2015$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(WoondumNP_June2015$value)
+    a <- which(WoondumNP_June2015$value==min)
+    WoondumNP_June2015$value[a[1]] <- (scale[1] - 0.5)
+    WoondumNP_June2015$score[a[1]] <- "cluster0"
+  }
+  
+  # July 2015
+  a <- which(gym_df$family=="b  Jul 15")
+  b <- c(min(a), max(a))
+  GympieNP_July2015 <- gym_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(GympieNP_July2015)/48
+  # normalise the number of minutes
+  GympieNP_July2015$value <- GympieNP_July2015$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(GympieNP_July2015$item==times_new[i] & GympieNP_July2015$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    GympieNP_July2015$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    GympieNP_July2015$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(GympieNP_July2015$value)
+    a <- which(GympieNP_July2015$value==min)
+    GympieNP_July2015$value[a[1]] <- (scale[1] - 0.5)
+    GympieNP_July2015$score[a[1]] <- "cluster0"
+  }
+  
+  a <- which(won_df$family=="b  Jul 15")
+  b <- c(min(a), max(a))
+  WoondumNP_July2015 <- won_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(WoondumNP_July2015)/48
+  # normalise the number of minutes
+  WoondumNP_July2015$value <- WoondumNP_July2015$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(WoondumNP_July2015$item==times_new[i] & WoondumNP_July2015$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    WoondumNP_July2015$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    WoondumNP_July2015$score[a[length(a)]] <- "cluster0"
+  }
+  
+  if(length(a) < 1) {
+    min <- min(WoondumNP_July2015$value)
+    a <- which(WoondumNP_July2015$value==min)
+    WoondumNP_July2015$value[a[1]] <- (scale[1] - 0.5)
+    WoondumNP_July2015$score[a[1]] <- "cluster0"
+  }
+  
+  # August 2015
+  a <- which(gym_df$family=="c  Aug 15")
+  b <- c(min(a), max(a))
+  GympieNP_August2015 <- gym_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(GympieNP_August2015)/48
+  # normalise the number of minutes
+  GympieNP_August2015$value <- GympieNP_August2015$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(GympieNP_August2015$item==times_new[i] & GympieNP_August2015$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    GympieNP_August2015$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    GympieNP_August2015$score[a[length(a)]] <- "cluster0"
+  }
+  
+  if(length(a) < 1) {
+    min <- min(GympieNP_August2015$value)
+    a <- which(GympieNP_August2015$value==min)
+    GympieNP_August2015$value[a[1]] <- (scale[1] - 0.5)
+    GympieNP_August2015$score[a[1]] <- "cluster0"
+  }
+  
+  
+  a <- which(won_df$family=="c  Aug 15")
+  b <- c(min(a), max(a))
+  WoondumNP_August2015 <- won_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(WoondumNP_August2015)/48
+  # normalise the number of minutes
+  WoondumNP_August2015$value <- WoondumNP_August2015$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(WoondumNP_August2015$item==times_new[i] & WoondumNP_August2015$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    WoondumNP_August2015$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    WoondumNP_August2015$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(WoondumNP_August2015$value)
+    a <- which(WoondumNP_August2015$value==min)
+    WoondumNP_August2015$value[a[1]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    WoondumNP_August2015$score[a[1]] <- "cluster0"
+  }
+  
+  # September 2015
+  m_days <- c(28,29,30) # place the missing dates, must be in numeric order
+  a <- which(gym_df$family=="d  Sept 15")
+  b <- c(min(a), max(a))
+  GympieNP_September2015 <- gym_df[b[1]:b[2],]
+  if(length(m_days >= 1)) {
+    for(i in 1:length(m_days)) {
+      GympieNP_September2015 <- GympieNP_September2015[-(((m_days[i]-1)*48+1):(m_days[i]*48)),]    
+      m_days <- m_days - 1
+    }
+  }
+  # determine the number of days
+  n <- (nrow(GympieNP_September2015)/48) 
+  # normalise the number of minutes
+  GympieNP_September2015$value <- GympieNP_September2015$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(GympieNP_September2015$item==times_new[i] & GympieNP_September2015$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  
+  if(length(a) >= 1) {
+    GympieNP_September2015$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    GympieNP_September2015$score[a[length(a)]] <- "cluster0"
+  }
+  
+  if(length(a) < 1) {
+    min <- min(GympieNP_September2015$value)
+    a <- which(GympieNP_September2015$value==min)
+    GympieNP_September2015$value[a[1]] <- (scale[1] - 0.5)
+    GympieNP_September2015$score[a[1]] <- "cluster0"
+  }
+  
+  a <- which(won_df$family=="d  Sept 15")
+  b <- c(min(a), max(a))
+  WoondumNP_September2015 <- won_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(WoondumNP_September2015)/48
+  # normalise the number of minutes
+  WoondumNP_September2015$value <- WoondumNP_September2015$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(WoondumNP_September2015$item==times_new[i] & WoondumNP_September2015$value < 0.04)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    WoondumNP_September2015$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    WoondumNP_September2015$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(WoondumNP_September2015$value)
+    a <- which(WoondumNP_September2015$value==min)
+    WoondumNP_September2015$value[a[1]] <- (scale[1] - 0.5)
+    WoondumNP_September2015$score[a[1]] <- "cluster0"
+  }
+  
+  # October 2015
+  a <- which(gym_df$family=="e  Oct 15")
+  b <- c(min(a), max(a))
+  GympieNP_October2015 <- gym_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(GympieNP_October2015)/48
+  # normalise the number of minutes
+  GympieNP_October2015$value <- GympieNP_October2015$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(GympieNP_October2015$item==times_new[i] & GympieNP_October2015$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    GympieNP_October2015$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    GympieNP_October2015$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(GympieNP_October2015$value)
+    a <- which(GympieNP_October2015$value==min)
+    GympieNP_October2015$value[a[1]] <- (scale[1] - 0.5)
+    GympieNP_October2015$score[a[1]] <- "cluster0"
+  }
+  
+  a <- which(won_df$family=="e  Oct 15")
+  b <- c(min(a), max(a))
+  WoondumNP_October2015 <- won_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(WoondumNP_October2015)/48
+  # normalise the number of minutes
+  WoondumNP_October2015$value <- WoondumNP_October2015$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(WoondumNP_October2015$item==times_new[i] & WoondumNP_October2015$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    WoondumNP_October2015$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    WoondumNP_October2015$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(WoondumNP_October2015$value)
+    a <- which(WoondumNP_October2015$value==min)
+    WoondumNP_October2015$value[a[1]] <- (scale[1] - 0.5)
+    WoondumNP_October2015$score[a[1]] <- "cluster0"
+  }
+  
+  # November 2015
+  a <- which(gym_df$family=="f  Nov 15")
+  b <- c(min(a), max(a))
+  GympieNP_November2015 <- gym_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(GympieNP_November2015)/48
+  # normalise the number of minutes
+  GympieNP_November2015$value <- GympieNP_November2015$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(GympieNP_November2015$item==times_new[i] & GympieNP_November2015$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    GympieNP_November2015$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    GympieNP_November2015$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(GympieNP_November2015$value)
+    a <- which(GympieNP_November2015$value==min)
+    GympieNP_November2015$value[a[1]] <- (scale[1] - 0.5)
+    GympieNP_November2015$score[a[1]] <- "cluster0"
+  }
+  
+  a <- which(won_df$family=="f  Nov 15")
+  b <- c(min(a), max(a))
+  WoondumNP_November2015 <- won_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(WoondumNP_November2015)/48
+  # normalise the number of minutes
+  WoondumNP_November2015$value <- WoondumNP_November2015$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(WoondumNP_November2015$item==times_new[i] & WoondumNP_November2015$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    WoondumNP_November2015$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    WoondumNP_November2015$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(WoondumNP_November2015$value)
+    a <- which(WoondumNP_November2015$value==min)
+    WoondumNP_November2015$value[a[1]] <- (scale[1] - 0.5)
+    WoondumNP_November2015$score[a[1]] <- "cluster0"
+  }
+  
+  # December 2015
+  a <- which(gym_df$family=="g  Dec 15")
+  b <- c(min(a), max(a))
+  GympieNP_December2015 <- gym_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(GympieNP_December2015)/48
+  # normalise the number of minutes
+  GympieNP_December2015$value <- GympieNP_December2015$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(GympieNP_December2015$item==times_new[i] & GympieNP_December2015$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    GympieNP_December2015$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    GympieNP_December2015$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(GympieNP_December2015$value)
+    a <- which(GympieNP_December2015$value==min)
+    GympieNP_December2015$value[a[1]] <- (scale[1] - 0.5)
+    GympieNP_December2015$score[a[1]] <- "cluster0"
+  }
+  
+  a <- which(won_df$family=="g  Dec 15")
+  b <- c(min(a), max(a))
+  WoondumNP_December2015 <- won_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(WoondumNP_December2015)/48
+  # normalise the number of minutes
+  WoondumNP_December2015$value <- WoondumNP_December2015$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(WoondumNP_December2015$item==times_new[i] & WoondumNP_December2015$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    WoondumNP_December2015$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    WoondumNP_December2015$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(WoondumNP_December2015$value)
+    a <- which(WoondumNP_December2015$value==min)
+    WoondumNP_December2015$value[a[1]] <- (scale[1] - 0.5)
+    WoondumNP_December2015$score[a[1]] <- "cluster0"
+  }
+  
+  # January 2016
+  a <- which(gym_df$family=="h  Jan 16")
+  b <- c(min(a), max(a))
+  GympieNP_January2016 <- gym_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(GympieNP_January2016)/48
+  # normalise the number of minutes
+  GympieNP_January2016$value <- GympieNP_January2016$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(GympieNP_January2016$item==times_new[i] & GympieNP_January2016$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    GympieNP_January2016$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    GympieNP_January2016$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(GympieNP_January2016$value)
+    a <- which(GympieNP_January2016$value==min)
+    GympieNP_January2016$value[a[1]] <- (scale[1] - 0.5)
+    GympieNP_January2016$score[a[1]] <- "cluster0"
+  }
+  
+  a <- which(won_df$family=="h  Jan 16")
+  b <- c(min(a), max(a))
+  WoondumNP_January2016 <- won_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(WoondumNP_January2016)/48
+  # normalise the number of minutes
+  WoondumNP_January2016$value <- WoondumNP_January2016$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(WoondumNP_January2016$item==times_new[i] & WoondumNP_January2016$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    WoondumNP_January2016$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    WoondumNP_January2016$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(WoondumNP_January2016$value)
+    a <- which(WoondumNP_January2016$value==min)
+    WoondumNP_January2016$value[a[1]] <- (scale[1] - 0.5)
+    WoondumNP_January2016$score[a[1]] <- "cluster0"
+  }
+  
+  # February 2016
+  a <- which(gym_df$family=="i  Feb 16")
+  b <- c(min(a), max(a))
+  GympieNP_February2016 <- gym_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(GympieNP_February2016)/48
+  # normalise the number of minutes
+  GympieNP_February2016$value <- GympieNP_February2016$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(GympieNP_February2016$item==times_new[i] & GympieNP_February2016$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    GympieNP_February2016$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    GympieNP_February2016$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    a <- which(GympieNP_February2016$value < 0.1)
+    min <- min(GympieNP_February2016$value)
+    a <- which(GympieNP_February2016$value==min)
+    GympieNP_February2016$value[a[1]] <- (scale[1] - 0.5)
+    GympieNP_February2016$score[a[1]] <- "cluster0"
+  }
+  
+  a <- which(won_df$family=="i  Feb 16")
+  b <- c(min(a), max(a))
+  WoondumNP_February2016 <- won_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(WoondumNP_February2016)/48
+  # normalise the number of minutes
+  WoondumNP_February2016$value <- WoondumNP_February2016$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(WoondumNP_February2016$item==times_new[i] & WoondumNP_February2016$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    WoondumNP_February2016$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    WoondumNP_February2016$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(WoondumNP_February2016$value)
+    a <- which(WoondumNP_February2016$value==min)
+    WoondumNP_February2016$value[a[1]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    WoondumNP_February2016$score[a[1]] <- "cluster0"
+  }
+  
+  # March 2016
+  a <- which(gym_df$family=="j  Mar 16")
+  b <- c(min(a), max(a))
+  GympieNP_March2016 <- gym_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(GympieNP_March2016)/48
+  # normalise the number of minutes
+  GympieNP_March2016$value <- GympieNP_March2016$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(GympieNP_March2016$item==times_new[i] & GympieNP_March2016$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    GympieNP_March2016$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    GympieNP_March2016$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(GympieNP_March2016$value)
+    a <- which(GympieNP_March2016$value==min)
+    GympieNP_March2016$value[a[1]] <- (scale[1] - 0.5)
+    GympieNP_March2016$score[a[1]] <- "cluster0"
+  }
+  
+  a <- which(won_df$family=="j  Mar 16")
+  b <- c(min(a), max(a))
+  WoondumNP_March2016 <- won_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(WoondumNP_March2016)/48
+  # normalise the number of minutes
+  WoondumNP_March2016$value <- WoondumNP_March2016$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(WoondumNP_March2016$item==times_new[i] & WoondumNP_March2016$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    WoondumNP_March2016$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    WoondumNP_March2016$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(WoondumNP_March2016$value)
+    a <- which(WoondumNP_March2016$value==min)
+    WoondumNP_March2016$value[a[1]] <- (scale[1] - 0.5)
+    WoondumNP_March2016$score[a[1]] <- "cluster0"
+  }
+  
+  # April 2016
+  a <- which(gym_df$family=="k  Apr 16")
+  b <- c(min(a), max(a))
+  GympieNP_April2016 <- gym_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(GympieNP_April2016)/48
+  # normalise the number of minutes
+  GympieNP_April2016$value <- GympieNP_April2016$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(GympieNP_April2016$item==times_new[i] & GympieNP_April2016$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    GympieNP_April2016$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    GympieNP_April2016$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(GympieNP_April2016$value)
+    a <- which(GympieNP_April2016$value==min)
+    GympieNP_April2016$value[a[1]] <- (scale[1] - 0.5)
+    GympieNP_April2016$score[a[1]] <- "cluster0"
+  }
+  
+  a <- which(won_df$family=="k  Apr 16")
+  b <- c(min(a), max(a))
+  WoondumNP_April2016 <- won_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(WoondumNP_April2016)/48
+  # normalise the number of minutes
+  WoondumNP_April2016$value <- WoondumNP_April2016$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(WoondumNP_April2016$item==times_new[i] & WoondumNP_April2016$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    WoondumNP_April2016$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    WoondumNP_April2016$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(WoondumNP_April2016$value)
+    a <- which(WoondumNP_April2016$value==min)
+    WoondumNP_April2016$value[a[1]] <- (scale[1] - 0.5)
+    WoondumNP_April2016$score[a[1]] <- "cluster0"
+  }
+  
+  # May 2016
+  a <- which(gym_df$family=="l  May 16")
+  b <- c(min(a), max(a))
+  GympieNP_May2016 <- gym_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(GympieNP_May2016)/48
+  # normalise the number of minutes
+  GympieNP_May2016$value <- GympieNP_May2016$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(GympieNP_May2016$item==times_new[i] & GympieNP_May2016$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    GympieNP_May2016$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    GympieNP_May2016$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(GympieNP_May2016$value)
+    a <- which(GympieNP_May2016$value==min)
+    GympieNP_May2016$value[a[1]] <- (scale[1] - 0.5)
+    GympieNP_May2016$score[a[1]] <- "cluster0"
+  }
+  
+  a <- which(won_df$family=="l  May 16")
+  b <- c(min(a), max(a))
+  WoondumNP_May2016 <- won_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(WoondumNP_May2016)/48
+  # normalise the number of minutes
+  WoondumNP_May2016$value <- WoondumNP_May2016$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(WoondumNP_May2016$item==times_new[i] & WoondumNP_May2016$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    WoondumNP_May2016$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    WoondumNP_May2016$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(WoondumNP_May2016$value)
+    a <- which(WoondumNP_May2016$value==min)
+    WoondumNP_May2016$value[a[1]] <- (scale[1] - 0.5)
+    WoondumNP_May2016$score[a[1]] <- "cluster0"
+  }
+  
+  # June 2016
+  a <- which(gym_df$family=="m  Jun 16")
+  b <- c(min(a), max(a))
+  GympieNP_June2016 <- gym_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(GympieNP_June2016)/48
+  # normalise the number of minutes
+  GympieNP_June2016$value <- GympieNP_June2016$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(GympieNP_June2016$item==times_new[i] & GympieNP_June2016$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    GympieNP_June2016$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    GympieNP_June2016$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(GympieNP_June2016$value)
+    a <- which(GympieNP_June2016$value==min)
+    GympieNP_June2016$value[a[1]] <- (scale[1] - 0.5)
+    GympieNP_June2016$score[a[1]] <- "cluster0"
+  }
+  
+  a <- which(won_df$family=="m  Jun 16")
+  b <- c(min(a), max(a))
+  WoondumNP_June2016 <- won_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(WoondumNP_June2016)/48
+  # normalise the number of minutes
+  WoondumNP_June2016$value <- WoondumNP_June2016$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(WoondumNP_June2016$item==times_new[i] & WoondumNP_June2016$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    WoondumNP_June2016$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    WoondumNP_June2016$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(WoondumNP_June2016$value)
+    a <- which(WoondumNP_June2016$value==min)
+    WoondumNP_June2016$value[a[1]] <- (scale[1] - 0.5)
+    WoondumNP_June2016$score[a[1]] <- "cluster0"
+  }
+  
+  # July 2016
+  a <- which(gym_df$family=="n  Jul 16")
+  b <- c(min(a), max(a))
+  GympieNP_July2016 <- gym_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(GympieNP_July2016)/48
+  # normalise the number of minutes
+  GympieNP_July2016$value <- GympieNP_July2016$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(GympieNP_July2016$item==times_new[i] & GympieNP_July2016$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    GympieNP_July2016$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    GympieNP_July2016$score[a[length(a)]] <- "cluster0"
+  }
+  if(length(a) < 1) {
+    min <- min(GympieNP_July2016$value)
+    a <- which(GympieNP_July2016$value==min)
+    GympieNP_July2016$value[a[1]] <- (scale[1] - 0.5)
+    GympieNP_July2016$score[a[1]] <- "cluster0"
+  }
+  
+  a <- which(won_df$family=="n  Jul 16")
+  b <- c(min(a), max(a))
+  WoondumNP_July2016 <- won_df[b[1]:b[2],]
+  # determine the number of days
+  n <- nrow(WoondumNP_July2016)/48
+  # normalise the number of minutes
+  WoondumNP_July2016$value <- WoondumNP_July2016$value/n
+  # set the scale of the polar plot
+  a <- NULL
+  for(i in 1:length(times_new)) {
+    ref <- which(WoondumNP_July2016$item==times_new[i] & WoondumNP_July2016$value< 0.4)
+    if(length(ref)==n) {
+      a <- c(a,ref[n])  
+    }
+  }
+  if(length(a) >= 1) {
+    WoondumNP_July2016$value[a[length(a)]] <- (scale[1] - 0.5)
+    # cluster0 will be white
+    WoondumNP_July2016$score[a[length(a)]] <- "cluster0"
+  }
+  
+  if(length(a) < 1) {
+    min <- min(WoondumNP_July2016$value)
+    a <- which(WoondumNP_July2016$value==min)
+    WoondumNP_July2016$value[a[1]] <- (scale[1] - 0.5)
+    WoondumNP_July2016$score[a[1]] <- "cluster0"
+  }
+  a <- c("GympieNP_June2015", "GympieNP_July2015",
+         "GympieNP_August2015", "GympieNP_September2015",
+         "GympieNP_October2015", "GympieNP_November2015",
+         "GympieNP_December2015", "GympieNP_January2016",
+         "GympieNP_February2016", "GympieNP_March2016",
+         "GympieNP_April2016", "GympieNP_May2016",
+         "GympieNP_June2016", "GympieNP_July2016",
+         "WoondumNP_June2015", "WoondumNP_July2015",
+         "WoondumNP_August2015", "WoondumNP_September2015",
+         "WoondumNP_October2015", "WoondumNP_November2015",
+         "WoondumNP_December2015", "WoondumNP_January2016",
+         "WoondumNP_February2016", "WoondumNP_March2016",
+         "WoondumNP_April2016", "WoondumNP_May2016",
+         "WoondumNP_June2016", "WoondumNP_July2016")
+  
+  #a <- "GympieNP_September2015"
+  #b <- a[c(7:10,21:24)]
+  #label <- as.character(intToUtf8(0x2600L))
+  #labels="\u2600";labels
+  sunrise <- read.csv("data/Sunrise_Sunset_protected.csv", header=T)
+  sunrise_min <- NULL
+  sunset_min <- NULL
+  for(i in 1:nrow(sunrise)) {
+    sunrise_min[i:nrow(sunrise)] <- as.numeric(substr(sunrise$Sunrise[i],1,1))*60 +
+      as.numeric(substr(sunrise$Sunrise[i],3,4))
+    sunset_min[i:nrow(sunrise)] <- (((as.numeric(substr(sunrise$Sunset[i],1,1))*60) + 12*60) +
+                                      (as.numeric(substr(sunrise$Sunset[i],3,4))))
+  }
+  sunrise_min <- rep(sunrise_min,2)
+  sunset_min <- rep(sunset_min,2)
+  
+  a37 <- a[selection]
+  a37 <- data.frame(a37)
+  a37[,2] <- NULL
+  a37[,2] <- selection
+  # Set the layout matrix to divide page into two frames one
+  # for the plot and one for the table
+  layout.show(11)
+  
+  n <- 1:nrow(a37)
+  j <- 0
+  for(i in a37[n,1]) {
+    j <- j + 1
+    r <- a37[j,2]
+    title <- paste(i)
+    subtitle <- paste("Cluster", substr(clust,8,10))
+    file_title <- paste("polarHistograms/article/rose_plot_", i,"_",clust, ".tiff",sep = "")
+    data <- get(i)
+    data <- data.frame(data)
+    if(clust=="cluster37") {
+      list <- c("00:15","00:45","01:15","01:45","02:15","02:45","03:15","03:45","04:15",
+                "04:45","05:15","05:45","06:15","06:45","07:15","07:45","08:15","08:45",
+                "09:15","09:45","10:15","10:45","11:15","11:45","12:15","12:30")
+      ac <- which(data$item=="00:15")
+      data$value[ac[1]] <- (as.numeric(scale[1]) - 0.5)
+      data$score[ac[1]] <- "cluster0"
+      ab <- NULL
+      for(k in 1:length(list)) {
+        aa <- which(data$item==list[k])
+        ab <- c(ab, aa)
+      }
+      ab <- sort(ab)
+    }
+    if(clust=="cluster44"|clust=="cluster48") {
+      ab <- 1:nrow(data)
+    }
+    if(clust=="cluster37") {
+      z <- polarHistogram(data[ab,], familyLabels = F, normalised = F, 
+                          colour = col, circleProportion = 0.5,
+                          innerRadius = 0, outerRadius = 1,
+                          guides = seq(2,(scale[1]-1),2), 
+                          labels = TRUE)
+    }
+    if(clust=="cluster44"|clust=="cluster48") {
+      z <- polarHistogram(data[ab,], familyLabels = F, normalised = F, 
+                          colour = col, circleProportion = 1,
+                          innerRadius = 0, outerRadius = 1,
+                          guides = seq(2,(scale[1]-1),2), 
+                          labels = TRUE)
+    }
+    #z <- z + ggtitle(bquote(atop(.(title), atop(italic(.(subtitle)), ""))))
+    #z <- z + theme(plot.title = element_text(size=22))
+    #z <- z + theme(plot.title = element_text(margin=margin(b = -50, unit = "pt")))
+    # add the sun symbol x is angle and y the fraction of the radius
+    z <- z + geom_point(data=data.frame(x=c(1)), 
+                        aes(x = (sunrise_min[r]*60/1440-0.5), y = 0.93), 
+                        shape="\u2600", size=11)
+    if(clust=="cluster44"|clust=="cluster48") {
+      # add the moon symbol 
+      z <- z + geom_point(data=data.frame(x=c(1)), 
+                          aes(x = (sunset_min[r]*60/1440-2), y = 0.93), 
+                          shape="\u263D", size=11)
+    } 
+    if(clust=="cluster37"|clust=="cluster44"){
+      # add the month label
+      z <- z + annotate("text", x=0.4*scale[1], y=0.55, 
+                        label= months[j], size = 11)
+    }
+    if(clust=="cluster48") {
+      # add the month label
+      z <- z + annotate("text", x=0.6*scale[1], y=0.55, 
+                        label= months[j], size = 11)
+      
+    }
+    #z <- z + geom_point(x=150,y=0,shape="\u2600", size=20)
+    z <- z + theme(plot.background = element_rect(fill = "transparent", 
+                                                  colour = NA))
+    if(clust=="cluster37") {
+      # plot margin controls the top, right, bottom, and left margins
+      z <- z + theme(plot.margin=unit(c(-15,-13, -15,-95),"mm"))  
+    }
+    if(clust=="cluster44"|clust=="cluster48") {
+      # plot margin controls the top, right, bottom, and left margins
+      z <- z + theme(plot.margin=unit(c(-14,-19, -15,-21),"mm"))  
+    }
+    if(clust=="cluster37") {
+      if(j==1) {
+        O <- z 
+      }
+      if(j==2) {
+        P <- z 
+      }
+      if(j==3) {
+        Q <- z 
+      }
+      if(j==4) {
+        R <- z 
+      }
+      if(j==5) {
+        S <- z 
+      }
+    }
+    if(clust=="cluster44") {
+      if(j==1) {
+        U <- z 
+      }
+      if(j==2) {
+        V <- z 
+      }
+      if(j==3) {
+        W <- z 
+      }
+    }
+    if(clust=="cluster48") {
+      if(j==1) {
+        X <- z 
+      }
+      if(j==2) {
+        Y <- z 
+      }
+      if(j==3) {
+        Z <- z 
+      }
+    }
+    #invisible is used to stop print opening a print window
+    invisible(print(z))
+    if(clust=="cluster37") {
+      ggsave(file_title, width = 10.2, height = 19.05, units = "cm", 
+             dpi = 300)  
+    }
+    if(clust=="cluster44"|clust=="cluster48") {
+      ggsave(file_title, width = 19.05, height = 19.05, units = "cm", 
+             dpi = 300)  
+    }
+    dev.off()
+  }
 }
+
+file_title <- paste("Figures for plos article/image8.tiff",sep = "")
+library(grid)
+m <- rbind(c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5),
+           c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5),
+           c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5),
+           c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5),
+           c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5),
+           c(6,6,6,6,6,7,7,7,7,7,8,8,8,8,8),
+           c(6,6,6,6,6,7,7,7,7,7,8,8,8,8,8),
+           c(6,6,6,6,6,7,7,7,7,7,8,8,8,8,8),
+           c(6,6,6,6,6,7,7,7,7,7,8,8,8,8,8),
+           c(6,6,6,6,6,7,7,7,7,7,8,8,8,8,8),
+           c(9,9,9,9,9,10,10,10,10,10,11,11,11,11,11),
+           c(9,9,9,9,9,10,10,10,10,10,11,11,11,11,11),
+           c(9,9,9,9,9,10,10,10,10,10,11,11,11,11,11),
+           c(9,9,9,9,9,10,10,10,10,10,11,11,11,11,11),
+           c(9,9,9,9,9,10,10,10,10,10,11,11,11,11,11))
+layout(m, widths = 0.6333334, heights = 0.6333334)
+print(O)
+print(P)
+print(Q)
+print(R)
+print(S)
+print(U)
+print(V)
+print(W)
+print(X)
+print(Y)
+print(Z)
+
+library("gridExtra")
+tiff("Figures for plos article/Cluster37.tiff", width = 2250, 
+     height = 850, units = 'px', res = 300)
+grid.arrange(O,P,Q,R,S, 
+             ncol=5, nrow=1, 
+             widths=c(4, 4, 4, 4, 4), 
+             heights=c(7.5))
+dev.off()
+
+tiff("Figures for plos article/Cluster44.tiff", width = 2250, 
+     height = 720, units = 'px', res = 300)
+grid.arrange(U,V,W, 
+             ncol=5, nrow=1, 
+             widths=c(0.52,0.52,0.52,0.52,0.52), 
+             heights=c(0.8))
+dev.off()
+
+tiff("Figures for plos article/Cluster48.tiff", width = 2250, 
+     height = 720, units = 'px', res = 300)
+grid.arrange(X,Y,Z, 
+             ncol=5, nrow=1, widths=c(0.5,0.5,0.5,0.5,0.5), 
+             heights=c(0.8))
+dev.off()
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Figure10 ---------------------------------
+# Figure10 Radar Plots ---------------------------------
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # remove all objects in the global environment
 rm(list = ls())
 source("scripts/radarPlot.R")
@@ -1672,47 +2427,248 @@ ref <- 1
 par(mfrow=c(2,3), xpd=NA, #decrease default margin
     mgp = c(0, 0.2, 0), cex = 0.6, oma = c(0,0.5,1,0)) 
 radarPlot(rbind(rep(1,60), rep(0,60), dd[5,-1]), 
-           pfcol=colours[ref], seg = 5, vlcex = 1.6, axistype=2,
-           centerzero = TRUE, plwd = 1.5, 
-           pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
+          pfcol=colours[ref], seg = 5, vlcex = 1.6, 
+          axistype=0, centerzero = TRUE, plwd = 1.5, 
+          pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
 mtext("a. QUIET", side = 3, cex = 1.1, line = -0.1)
 text(x = -0.9, y = 1.26, paste("Cluster 5"), cex = 1.6)
 ref <- ref + 1
 radarPlot(rbind(rep(1,60), rep(0,60), dd[11,-1]), 
-           pfcol=colours[ref], seg = 5, vlcex = 1.6, axistype=2,
-           centerzero = TRUE, plwd = 1.5, 
-           pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
+          pfcol=colours[ref], seg = 5, vlcex = 1.6, 
+          axistype=0, centerzero = TRUE, plwd = 1.5, 
+          pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
 text(x = -0.9, y = 1.26, paste("Cluster 11"), cex = 1.6)
 mtext("b. BIRDS", side = 3, cex = 1.1, line = -0.1)
 ref <- ref + 1
 radarPlot(rbind(rep(1,60), rep(0,60), dd[59,-1]), 
-           pfcol=colours[ref], seg = 5, vlcex = 1.6, axistype=2,
-           centerzero = TRUE, plwd = 1.5, 
-           pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 1, y2 = 0.5)
+          pfcol=colours[ref], seg = 5, vlcex = 1.6, 
+          axistype=0, centerzero = TRUE, plwd = 1.5, 
+          pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 1, y2 = 0.5)
 text(x = -0.9, y = 1.26, paste("Cluster 59"), cex = 1.6)
 mtext("c. RAIN", side = 3, cex = 1.1, line = -0.1)
 ref <- ref + 1
 radarPlot(rbind(rep(1,60), rep(0,60), dd[42,-1]), 
-           pfcol=colours[ref], seg = 5, vlcex = 1.6, axistype=2,
-           centerzero = TRUE, plwd = 1.5, 
-           pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
+          pfcol=colours[ref], seg = 5, vlcex = 1.6, 
+          axistype=0, centerzero = TRUE, plwd = 1.5, 
+          pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
 text(x = -0.9, y = 1.26, paste("Cluster 42"), cex = 1.6)
 mtext("d. WIND", side = 3, cex = 1.1, line = -0.1)
 ref <- ref + 1
 radarPlot(rbind(rep(1,60), rep(0,60), dd[48,-1]), 
-           pfcol=colours[ref], seg = 5, vlcex = 1.6, axistype=2,
-           centerzero = TRUE, plwd = 1.5, 
-           pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
+          pfcol=colours[ref], seg = 5, vlcex = 1.6, 
+          axistype=0, centerzero = TRUE, plwd = 1.5, 
+          pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
 text(x = -0.9, y = 1.26, paste("Cluster 48"), cex = 1.6)
 mtext("e. CICADAS", side = 3, cex = 1.1, line = -0.1)
 ref <- ref + 1
 radarPlot(rbind(rep(1,60), rep(0,60), dd[49,-1]), 
-           pfcol=colours[ref], seg = 5, vlcex = 1.6, axistype=2,
-           centerzero = TRUE, plwd = 1.5, 
-           pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 1, y2 = 0.5)
+          pfcol=colours[ref], seg = 5, vlcex = 1.6, 
+          axistype=0, centerzero = TRUE, plwd = 1.5, 
+          pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 1, y2 = 0.5)
 text(x = -0.9, y = 1.26, paste("Cluster 49"), cex = 1.6)
 mtext("f. PLANES", side = 3, cex = 1.1, line = -0.1)
 ref <- ref + 1
+dev.off()
+
+# define cluster classes 
+rain <- c(2,10,17,18,21,54,59,60) 
+wind <- c(9,19,20,24,25,30,40,42,45,46,47,51,52,56)
+birds <- c(3,11,14,15,28,33,37,39,43,57,58)
+insects <- c(1,4,22,26,27,29)
+cicadas <- c(7,8,12,16,32,34,44,48)
+planes <- c(23,49)
+quiet <- c(5,6,13,31,35,36,38,41,50,53,55)
+
+mixtures <- c(2,4,7,8,22,26,30,39,45,54,60)
+inconsistent <- c(17,24,28,36,40,50,57)
+
+tiff("Figures for plos article/Radar_plot_rain.tiff", 
+     width = 2250, height = (560*ceiling(length(rain)/4)), 
+     units = 'px', res = 300)
+ref <- 1
+length <- length(rain)
+par(mfrow=c(2,4), xpd=NA, #decrease default margin
+    mgp = c(0, 0.2, 0), cex = 0.6, oma = c(0.5,0.5,0.1,0)) 
+for(i in 1:length(rain)) {
+  j <- rain[i]
+  radarPlot(rbind(rep(1,60), rep(0,60), dd[j,-1]), 
+            pfcol=rain_col, seg = 5, vlcex = 1.6, 
+            axistype=0, centerzero = TRUE, plwd = 1.5, 
+            pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
+  #mtext("a. QUIET", side = 3, cex = 1.1, line = -0.1)
+  text(x = -0.8, y = 1.44, paste("Cluster", j), cex = 1.6)
+  if(j %in% mixtures) {
+    text(x = -0.07, y = 1.415, paste("      (MIX)"), cex = 1.6)
+  }
+  if(j %in% inconsistent) {
+    text(x = -0.07, y = 1.415, paste("   (IC)"), cex = 1.6)
+  }
+  ref <- ref + 1
+}
+mtext(side = 1, outer = T,line = -0.5, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/Radar_plot_wind.tiff", 
+     width = 2250, height = (560*ceiling(length(wind)/4)), 
+     units = 'px', res = 300)
+ref <- 1
+length <- length(wind)
+par(mfrow=c((ceiling(length(wind)/4)),4), xpd=NA, 
+    mgp = c(0, 0.2, 0), cex = 0.6, oma = c(0.5,0.5,0.1,0)) 
+for(i in 1:length(wind)) {
+  j <- wind[i]
+  radarPlot(rbind(rep(1,60), rep(0,60), dd[j,-1]), 
+            pfcol=rain_col, seg = 5, vlcex = 1.6, 
+            axistype=0, centerzero = TRUE, plwd = 1.5, 
+            pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
+  #mtext("a. QUIET", side = 3, cex = 1.1, line = -0.1)
+  text(x = -0.8, y = 1.44, paste("Cluster", j), cex = 1.6)
+  if(j %in% mixtures) {
+    text(x = -0.07, y = 1.415, paste("      (MIX)"), cex = 1.6)
+  }
+  if(j %in% inconsistent) {
+    text(x = -0.07, y = 1.415, paste("   (IC)"), cex = 1.6)
+  }
+  ref <- ref + 1
+}
+mtext(side = 1, outer = T,line = -0.5, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/Radar_plot_birds.tiff", 
+     width = 2250, height = (560*ceiling(length(birds)/4)), 
+     units = 'px', res = 300)
+ref <- 1
+length <- length(birds)
+par(mfrow=c((ceiling(length(birds)/4)),4), xpd=NA, 
+    mgp = c(0, 0.2, 0), cex = 0.6, oma = c(0.5,0.5,0.1,0)) 
+for(i in 1:length(birds)) {
+  j <- birds[i]
+  radarPlot(rbind(rep(1,60), rep(0,60), dd[j,-1]), 
+            pfcol=birds_col, seg = 5, vlcex = 1.6, 
+            axistype=0, centerzero = TRUE, plwd = 1.5, 
+            pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
+  #mtext("a. QUIET", side = 3, cex = 1.1, line = -0.1)
+  text(x = -0.8, y = 1.44, paste("Cluster", j), cex = 1.6)
+  if(j %in% mixtures) {
+    text(x = -0.07, y = 1.415, paste("      (MIX)"), cex = 1.6)
+  }
+  if(j %in% inconsistent) {
+    text(x = -0.07, y = 1.415, paste("   (IC)"), cex = 1.6)
+  }
+  ref <- ref + 1
+}
+mtext(side = 1, outer = T,line = -0.5, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/Radar_plot_insects.tiff", 
+     width = 2250, height = (560*ceiling(length(insects)/4)), 
+     units = 'px', res = 300)
+ref <- 1
+length <- length(insects)
+par(mfrow=c((ceiling(length(insects)/4)),4), xpd=NA, 
+    mgp = c(0, 0.2, 0), cex = 0.6, oma = c(0.5,0.5,0.1,0)) 
+for(i in 1:length(insects)) {
+  j <- insects[i]
+  radarPlot(rbind(rep(1,60), rep(0,60), dd[j,-1]), 
+            pfcol=insects_col, seg = 5, vlcex = 1.6, 
+            axistype=0, centerzero = TRUE, plwd = 1.5, 
+            pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
+  #mtext("a. QUIET", side = 3, cex = 1.1, line = -0.1)
+  text(x = -0.8, y = 1.44, paste("Cluster", j), cex = 1.6)
+  if(j %in% mixtures) {
+    text(x = -0.07, y = 1.415, paste("      (MIX)"), cex = 1.6)
+  }
+  if(j %in% inconsistent) {
+    text(x = -0.07, y = 1.415, paste("   (IC)"), cex = 1.6)
+  }
+  ref <- ref + 1
+}
+mtext(side = 1, outer = T,line = -0.5, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/Radar_plot_planes.tiff", 
+     width = 2250, height = (560*ceiling(length(planes)/4)), 
+     units = 'px', res = 300)
+ref <- 1
+length <- length(planes)
+par(mfrow=c((ceiling(length(planes)/4)),4), xpd=NA, 
+    mgp = c(0, 0.2, 0), cex = 0.6, oma = c(0.5,0.5,0.2,0)) 
+for(i in 1:length(planes)) {
+  j <- planes[i]
+  radarPlot(rbind(rep(1,60), rep(0,60), dd[j,-1]), 
+            pfcol=planes_col, seg = 5, vlcex = 1.6, 
+            axistype=0, centerzero = TRUE, plwd = 1.5, 
+            pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
+  #mtext("a. QUIET", side = 3, cex = 1.1, line = -0.1)
+  text(x = -0.8, y = 1.435, paste("Cluster", j), cex = 1.6)
+  if(j %in% mixtures) {
+    text(x = -0.07, y = 1.41, paste("    (MIX)"), cex = 1.6)
+  }
+  if(j %in% inconsistent) {
+    text(x = -0.07, y = 1.41, paste("   (IC)"), cex = 1.6)
+  }
+  ref <- ref + 1
+}
+mtext(side = 1, outer = T,line = -0.5, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/Radar_plot_cicadas.tiff", 
+     width = 2250, height = (560*ceiling(length(cicadas)/4)), 
+     units = 'px', res = 300)
+ref <- 1
+length <- length(cicadas)
+par(mfrow=c((ceiling(length(cicadas)/4)),4), xpd=NA, 
+    mgp = c(0, 0.2, 0), cex = 0.6, oma = c(0.5,0.5,0.1,0)) 
+for(i in 1:length(cicadas)) {
+  j <- cicadas[i]
+  radarPlot(rbind(rep(1,60), rep(0,60), dd[j,-1]), 
+            pfcol=cicadas_col, seg = 5, vlcex = 1.6, 
+            axistype=0, centerzero = TRUE, plwd = 1.5, 
+            pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
+  #mtext("a. QUIET", side = 3, cex = 1.1, line = -0.1)
+  text(x = -0.8, y = 1.44, paste("Cluster", j), cex = 1.6)
+  if(j %in% mixtures) {
+    text(x = -0.07, y = 1.415, paste("      (MIX)"), cex = 1.6)
+  }
+  if(j %in% inconsistent) {
+    text(x = -0.07, y = 1.415, paste("   (IC)"), cex = 1.6)
+  }
+  ref <- ref + 1
+}
+mtext(side = 1, outer = T,line = -0.5, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/Radar_plot_quiet.tiff", 
+     width = 2250, height = (560*ceiling(length(quiet)/4)), 
+     units = 'px', res = 300)
+ref <- 1
+length <- length(quiet)
+par(mfrow=c((ceiling(length(quiet)/4)),4), xpd=NA, 
+    mgp = c(0, 0.2, 0), cex = 0.6, oma = c(0.5,0.5,0.1,0)) 
+for(i in 1:length(quiet)) {
+  j <- quiet[i]
+  radarPlot(rbind(rep(1,60), rep(0,60), dd[j,-1]), 
+            pfcol=quiet_col, seg = 5, vlcex = 1.6, 
+            axistype=0, centerzero = TRUE, plwd = 1.5, 
+            pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
+  #mtext("a. QUIET", side = 3, cex = 1.1, line = -0.1)
+  text(x = -0.8, y = 1.44, paste("Cluster", j), cex = 1.6)
+  if(j %in% mixtures) {
+    text(x = -0.07, y = 1.415, paste("      (MIX)"), cex = 1.6)
+  }
+  if(j %in% inconsistent) {
+    text(x = -0.07, y = 1.415, paste("   (IC)"), cex = 1.6)
+  }
+  ref <- ref + 1
+}
+mtext(side = 1, outer = T,line = -0.5, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
 dev.off()
 
 # Figure11 -----------------------------------------
@@ -1743,36 +2699,36 @@ layout.show(22)
 vp_top <- viewport(x = 0, y = 0, width = 7.5, height = 8.7, 
                    name = "vp_top", default.units = "in")
 vp9 <- viewport(x=0, y=0, width=2.5, height=2.5, just = c("right","top"), 
-         name = "vp9", default.units = "in")
+                name = "vp9", default.units = "in")
 vp10 <- viewport(x=2.5, y=0, width=2.5, height=2.5, just = c("right","top"), 
-         name = "vp10", default.units = "in")
+                 name = "vp10", default.units = "in")
 vp11 <- viewport(x=5, y=0, width=2.5, height=2.5, just = c("right","top"), 
-         name = "vp11", default.units = "in")
+                 name = "vp11", default.units = "in")
 margin1 <- viewport(x=0, y=2.5, width=7.5, height=0.4, just = c("right","top"), 
-         name = "margin1", default.units = "in")
+                    name = "margin1", default.units = "in")
 vp6 <- viewport(x=0, y=2.9, width=2.5, height=2.5, just = c("right","top"), 
-         name = "vp6", default.units = "in")
+                name = "vp6", default.units = "in")
 vp7 <- viewport(x=2.5, y=2.9, width=2.5, height=2.5, just = c("right","top"), 
-         name = "vp7", default.units = "in")
+                name = "vp7", default.units = "in")
 vp8 <- viewport(x=5, y=2.9, width=2.5, height=2.5, just = c("right","top"), 
-         name = "vp8", default.units = "in")
+                name = "vp8", default.units = "in")
 margin2 <- viewport(x=0, y=5.4, width=7.5, height=0.4, just = c("right","top"), 
-         name = "margin2", default.units = "in")
+                    name = "margin2", default.units = "in")
 vp1 <- viewport(x=0, y=5.8, width=1.5, height=2.5, just = c("right","top"), 
-         name = "vp1", default.units = "in")
+                name = "vp1", default.units = "in")
 vp2 <- viewport(x=1.5, y=5.8, width=1.5, height=2.5, just = c("right","top"), 
-         name = "vp2", default.units = "in")
+                name = "vp2", default.units = "in")
 vp3 <- viewport(x=3, y=5.8, width=1.5, height=2.5, just = c("right","top"), 
-         name = "vp3", default.units = "in")
+                name = "vp3", default.units = "in")
 vp4 <- viewport(x=4.5, y=5.8, width=1.5, height=2.5, just = c("right","top"), 
-         name = "vp4", default.units = "in")
+                name = "vp4", default.units = "in")
 vp5 <- viewport(x=6, y=5.8, width=1.5, height=2.5, just = c("right","top"), 
-         name = "vp5", default.units = "in")
+                name = "vp5", default.units = "in")
 margin3 <- viewport(x=0, y=8.3, width=7.5, height=0.4, just = c("right","top"), 
-         name = "margin3", default.units = "in")
+                    name = "margin3", default.units = "in")
 splot <- vpTree(vp_top, vpList(vp1, vp2, vp3, vp4, vp5, 
-                       vp6, vp7, vp8, vp9, vp10, 
-                       vp11, margin1, margin2, margin3))
+                               vp6, vp7, vp8, vp9, vp10, 
+                               vp11, margin1, margin2, margin3))
 pushViewport(splot)
 seekViewport("vp10")
 par(mar=c(0,0,0,0))
@@ -2109,10 +3065,12 @@ for (k in 1:2) {
   end <- start + as.difftime(days, units="days")
   dates <- seq(from=start, by=interval*60, to=end)
   if(k==1) {
-    tiff("Figures for plos article/Fig11.tiff", width = 2250, height = 1150, units = 'px', res = 300)
+    tiff("Figures for plos article/Fig11.tiff", width = 2250, 
+         height = 1200, units = 'px', res = 300)
   }
   if(k==2) {
-    tiff("Figures for plos article/Fig12.tiff", width = 2250, height = 1150, units = 'px', res = 300)
+    tiff("Figures for plos article/Fig12.tiff", width = 2250, 
+         height = 1200, units = 'px', res = 300)
   }
   #par(mar=c(0.9, 3.9, 0.9, 3.9), mgp = c(3,0.8,0),
   #    cex = 0.6, cex.axis = 1.2, cex.main = 1)
@@ -2702,7 +3660,7 @@ polarHistogram365 <-function (df, family = NULL,
   #if(normalised)
   df <- ddply(df, .(family, item), transform, 
               value = cumsum(value/(sum(value))))
-
+  
   df <- ddply(df, .(family, item), transform, previous = c(0, head(value, length(value) - 1)))
   
   df2 <- ddply(df, .(family, item), summarise, indexItem = 1)
@@ -2846,7 +3804,7 @@ ggsave("Figures for plos article/Fig14_unedited.tiff",
 rm(list = ls())
 
 # read file containing summary of 30 minute segments
-df <- read.csv("polarHistograms/polar_data.csv", header = T)
+df <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\polarHistograms\\polar_data.csv", header = T)
 
 # convert from 30 minute to 24 hour summaries
 length <- nrow(df)
@@ -2956,7 +3914,7 @@ layout(m)
 layout.show(2)
 
 #par(mar=c(1,3,3,0))
-tiff("Figures for plos article/Fig15.tiff", width = 2250, 
+tiff("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\Figures for plos article\\Fig15.tiff", width = 2250, 
      height = 1500, units = 'px', res = 300)
 
 par(mar=c(0, 3.4, 1.5, 0),  #, mfcol=c(2,1) ,
@@ -2964,10 +3922,17 @@ par(mar=c(0, 3.4, 1.5, 0),  #, mfcol=c(2,1) ,
 m <- rbind(c(1,1,1),
            c(1,1,1),
            c(1,1,1),
+           c(1,1,1),
+           c(1,1,1),
+           c(1,1,1),
+           c(1,1,1),
            c(2,2,2),
-           c(2,2,2))
+           c(3,3,3),
+           c(3,3,3),
+           c(3,3,3),
+           c(3,3,3))
 layout(m)
-layout.show(2)
+#layout.show(2)
 
 # space between sets not columns
 gap <- 10
@@ -2977,7 +3942,8 @@ space <- 0.4
 # empty plot
 plot(x = c(0,((width+space)*(length(n)-1))), type = "n",
      y = c(-(max_x+12),(max_y+12)), xlab="", ylab="",
-     frame.plot = FALSE, axes = FALSE) 
+     frame.plot = FALSE, axes = FALSE, las=1) 
+mtext(side = 1, "Days from 22 June to 29 September 2015", line = 0)
 ref <- 0
 maxim <- 0
 for(i in 1:length(woon_x)) {
@@ -2991,12 +3957,11 @@ ref <- 0
 for(i in 1:length(woon_x)) {
   rect(ref, -gap, ref+width, -(woon_x[i]+gap), col = rain_col)
   ref <- ref + (width+space)
-  
 }
-axis(side = 2, at = (seq(0, max(rowSums(x)),50)+gap), 
-     seq(0, max(rowSums(x)), 50), line = -1.4, cex=2.2)
+axis(side = 2, at = (seq(50, max(rowSums(x)),50)+gap), 
+     seq(50, max(rowSums(x)), 50), line = -1.4, cex=2.2, las=1)
 axis(side = 2, at = -(seq(0,max(rowSums(x)),50)+gap), 
-     seq(0, max(rowSums(x)), 50), line = -1.4, cex=2.2)
+     seq(0, max(rowSums(x)), 50), line = -1.4, cex=2.2, las=1)
 date.ref <- a[which(a > min(n))]
 date.ref <- date.ref[1:3]
 for(i in 1:length(date.ref)) {
@@ -3014,7 +3979,7 @@ mtext(side = 3, paste("WoondumNP - Rain clusters (",
       outer = F, cex = 1)
 
 #par(font=1)
-mtext(side = 2, "Minutes per day", line = 1.2)
+mtext(side = 2, "Minutes per day", line = 1.8)
 mtext(side = 3, "a.", cex = 1.2, adj = 0.005, outer = TRUE,
       line = -2)
 # Perform cross correlation on both the Woondum data
@@ -3023,17 +3988,17 @@ mtext(side = 3, "a.", cex = 1.2, adj = 0.005, outer = TRUE,
 #    height = 450, width = 600)
 #par(mar=c(3.8, 3.8, 0, 1), oma=c(0,0,2,0), cex = 1.2, 
 #    cex.axis = 1.2)
+plot()
 ylim <- c(-0.2, 0.58)
 par(mar=c(3.8, 4.8, 0, 1), oma= c(0,0,0.5,0),
     cex = 0.6, cex.axis = 1, cex.main = 1)
 par(new=T)
 ccf(woon_y, woon_x, main = "", bty = "n",
     xlab = "", ylab = "", ylim = ylim)
-abline(h=-0.1)
-mtext(side = 1, "Lag (days)", line = 2.5)
-mtext(side = 2, "Cross-correlation", line = 2.5)
+mtext(side = 1, "Lag between rain and insects (days)", line = 2.5)
+mtext(side = 2, "Cross-correlation", line = 3)
 mtext(side = 3, "b.", cex = 1.2, adj = 0.005, outer = TRUE,
-      line = -22.8)
+      line = -23.8)
 dev.off()
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3509,11 +4474,12 @@ if(site=="WoondumNP") {
   file <- "woon_cluster_list"  
 }
 
-tiff("Figures for plos article/Fig13.tiff", width = 2250, 
-     height = 580, units = 'px', res = 300)
-par(mar = c(0.65, 0.65, 0, 0), mfrow = c(1,4), 
+tiff("Figures for plos article/Fig13.tiff", 
+     width = 2250, height = 580, units = 'px', 
+     res = 300)
+par(mar = c(0.6, 0.6, 0, 0), mfrow = c(1,4), 
     cex = 1, cex.axis = 1, cex.main = 2.4,
-    oma=c(0.4, 0.15, 0, 0.2))
+    oma=c(0.4, 0, 0, 0))
 days <- c(59, 108, 185, 301)
 ref2 <- 0
 for(l in days) { #length(dates1)) {
@@ -3565,7 +4531,7 @@ for(l in days) { #length(dates1)) {
                   "12","14","16","18","20",
                   "22", "24h"), cex.axis = 0.42, 
        las=T, pos=NA, lwd=0.5, tck=-0.02,
-       mgp = c(0.2, (-0.22), 0.6))
+       mgp = c((-0.2), (-0.22), (-0.6)))
   x <- c(seq(120, 1440, 120))
   y <- c(seq(121,1441, 120))
   segments(x0 = x, y0 = 0, x1 = x, y1 = 1440,
@@ -3591,9 +4557,12 @@ for(l in days) { #length(dates1)) {
               "c. Summer", "d. Autumn")
   mtext(side = 1, line = 0.1, 
         paste(season[ref2], ", ",substr(dates1[l],7,8), "-",
-              substr(dates1[l],5,6), "-", substr(dates1[l],1,4),
+              substr(dates1[l],5,6), "-", 
+              substr(dates1[l],1,4),
               sep = ""),
         cex = 0.8)
+  mtext(side = 1, line = -0.53, "24h", 
+        cex = 0.39, adj = 1)
 }
 dev.off()
 
@@ -3713,26 +4682,41 @@ max <- 0.0009
 
 tiff("Figures for plos article/Fig16.tiff", 
      width = 2250, height = 870, units = 'px', res = 300)
-par(mar=c(0.4, 0, 0.6, 0), mfrow=c(1,2),
+par(mar=c(0, 0, 0.55, 0), mfrow=c(1,2),
     cex = 1, cex.axis = 1, cex.main = 1.2)
+
 for(i in 1:2) {
-    # plot an empty plot
+  # plot an empty plot
   if(i==1) {
     main <- " a. Winter"  
   }
   if(i==2) {
     main <- " b. Summer"  
   }
-  plot(clusters1$points1, 
-       clusters1$points2, type = "n",
-       main = main, 
-       xaxt='n', yaxt='n',
-       xlab = "",ylab = "", frame.plot=FALSE,
-       xlim = c((min(clusters1$points1)-0.05),
-                (max(clusters1$points1)+0.45)),
-       ylim = c((min(clusters1$points2)-0.11),
-                (max(clusters1$points2)+0.13)),
-       cex.axis=1, cex.lab=0.6, las=1, cex.main=1)
+  if(i==1) {
+    plot(clusters1$points1, 
+         clusters1$points2, type = "n",
+         main = main, 
+         xaxt='n', yaxt='n',
+         xlab = "",ylab = "", frame.plot=FALSE,
+         xlim = c((min(clusters1$points1)-0.04),
+                  (max(clusters1$points1)+0.1)),
+         ylim = c((min(clusters1$points2)-0.11),
+                  (max(clusters1$points2)+0.08)),
+         cex.axis=1, cex.lab=0.6, las=1, cex.main=1)
+  }
+  if(i==2) {
+    plot(clusters1$points1, 
+         clusters1$points2, type = "n",
+         main = main, 
+         xaxt='n', yaxt='n',
+         xlab = "",ylab = "", frame.plot=FALSE,
+         xlim = c((min(clusters1$points1)-0.04),
+                  (max(clusters1$points1)+0.1)),
+         ylim = c((min(clusters1$points2)-0.11),
+                  (max(clusters1$points2)+0.08)),
+         cex.axis=1, cex.lab=0.6, las=1, cex.main=1)
+  }
   #mtext(side=2, "y", las=1, cex = 3, line = 3.5)
   #abline(h = seq(-10, 10, 0.1), col = "lightgray", lty = 3)
   #abline(v = seq(-10, 10, 0.1), col = "lightgray", lty = 3)
@@ -3745,27 +4729,29 @@ for(i in 1:2) {
                 lwd = 4)
   }
   # plot the x and y axis to form four quadrants
-  abline(h = 0, col = "gray50", lwd = 0.4)
-  abline(v = 0, col = "gray50", lwd = 0.4)
+  abline(h = 0, col = "gray50", lwd = 1)
+  abline(v = 0, col = "gray50", lwd = 1)
   # plot the plot legend
-  leg <-legend("topright", title="Classes", 
-               col = leg_col, bty = "n", 
-               cex=0.6, leg_names , y.intersp = 1.2) 
-  for(j in 1:length(leg$text$x)) {
-    draw.circle(leg$text$x[j]-0.06, leg$text$y[j]-0.005, 
-                radius = 0.055,
-                col = leg_col[j],
-                border = "white")
-  }  
+  if(i==2) {
+    leg <-legend("topright", #title="Classes", 
+                 col = leg_col, bty = "n",
+                 cex=0.6, leg_names , y.intersp = 1) 
+    for(j in 1:length(leg$text$x)) {
+      draw.circle(leg$text$x[j]-0.06, leg$text$y[j]-0.01, 
+                  radius = 0.055,
+                  col = leg_col[j],
+                  border = "white")
+    }  
+  }
   # add family to fonts list use windowsFonts() to check current
-  windowsFonts(A = windowsFont("Times New Roman"))
-  text(x = 1.1, y = 1.1, "I", cex = 0.6, family="A", font = 2)
-  text(x = -1.6, y = 1.1, "II", cex = 0.6, family="A", font = 2)
-  text(x = -1.6, y = -1.05, "III", cex = 0.6, family="A", font = 2)
-  text(x = 1.1, y = -1.05, "IV", cex = 0.6, family="A", font = 2)
+  #windowsFonts(A = windowsFont("Times New Roman"))
+  #text(x = 1.1, y = 1.1, "I", cex = 0.6, family="A", font = 2)
+  #text(x = -1.6, y = 1.1, "II", cex = 0.6, family="A", font = 2)
+  #text(x = -1.6, y = -1.05, "III", cex = 0.6, family="A", font = 2)
+  #text(x = 1.1, y = -1.05, "IV", cex = 0.6, family="A", font = 2)
   if(i == 1) {
-    text(x = 0.45, y = -1.1, "Gym-2015-08-19", 
-         cex = 0.6, family="A", font = 4)
+    text(x = 0.45, y = -1.1, "Gympie 19-08-2015", 
+         cex = 0.6)
     list1 <- c(14,43,37,39,11,31,35,31,13,5,37)
     for(m in 1:length(list1)) {
       a <- which(clusters1$clusters==list1[m])
@@ -3779,8 +4765,8 @@ for(i in 1:2) {
     }
   }
   if(i == 2) {
-    text(x = 0.45, y = -1.1, "Gym-2015-12-23", 
-         cex = 0.6, family="A", font = 4)
+    text(x = 0.45, y = -1.1, "Gympie 23-12-2015", 
+         cex = 0.6)
     list1 <- c(48,34,48,22,35,29)
     for(m in 1:length(list1)) {
       a <- which(clusters1$clusters==list1[m])
@@ -3820,16 +4806,17 @@ for(i in 1:2) {
                     lwd = 1.6)
       if(clusters1$summer2[j]=="y")
         draw.circle(clusters1$points1[j],
-                  clusters1$points2[j]+0.09, 
-                  radius = 0.04,
-                  col = clusters1$colours[j],
-                  border = "black",
-                  lwd = 1.2)
+                    clusters1$points2[j]+0.09, 
+                    radius = 0.036,
+                    col = clusters1$colours[j],
+                    border = "black",
+                    lwd = 1.2)
     }
     for(j in 1:nrow(clusters1)) {
-    # plot the cluster numbers
-    text(clusters1$points1, clusters1$points2, 
-         labels = as.character(clusters1$clusters), cex = 0.5)
+      # plot the cluster numbers
+      text(clusters1$points1, clusters1$points2, 
+           labels = as.character(clusters1$clusters), 
+           cex = 0.8)
     }
   }
 }

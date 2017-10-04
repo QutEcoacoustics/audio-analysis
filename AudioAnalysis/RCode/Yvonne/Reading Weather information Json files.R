@@ -262,7 +262,8 @@ column <- k2_value/5
 # generate the time sequences
 startDate = as.POSIXct("2015-06-22 00:00")
 endDate = as.POSIXct("2016-07-24 00:00")
-dateSeq30min = substr(seq(from=startDate, to=endDate, by="30 min"),1,16)
+dateSeq10min = substr(seq(from=startDate, to = endDate, by = "10 min"), 1, 16)
+dateSeq30min = substr(seq(from=startDate, to = endDate, by = "30 min"), 1, 16)
 dateSeq60min = substr(seq(from=startDate, to=endDate, by="60 min"),1,16)
 dateSeq120min = substr(seq(from=startDate, to=endDate, by="120 min"),1,16)
 
@@ -295,8 +296,109 @@ reconstituted_cluster_list[list1] <- cluster_list
 cluster_list <- reconstituted_cluster_list
 rm(reconstituted_cluster_list)
 
-# generate a sequence that can be used for half-hour, 
-# one-hour and two-hour sequences
+# generate a sequence that can be used for ten-minute sequence
+day.ref <- seq(1,(398*2*1440+1), 10) 
+# generate half-hour counts for each cluster + sum
+# the sum checks for NAs
+# WARNING this takes from 21-180 minutes for a cluster list
+# over 1 million minutes
+counts <- NULL
+for(i in 1:20000) { #(length(day.ref)-1)) {
+  a <- tabulate(cluster_list[day.ref[i]:(day.ref[i+1]-1)], nbins = 60)
+  a <- c(a, sum(a))
+  counts <- rbind(counts, a)
+  rownames(counts) <- 1:nrow(counts)
+  print(i)
+}
+write.csv(counts,"data/weather/counts1_10minute.csv", row.names = FALSE)
+rm(counts)
+
+counts <- NULL
+for(i in 20001:40000) { #(length(day.ref)-1)) {
+  a <- tabulate(cluster_list[day.ref[i]:(day.ref[i+1]-1)], nbins = 60)
+  a <- c(a, sum(a))
+  counts <- rbind(counts, a)
+  rownames(counts) <- 1:nrow(counts)
+  print(i)
+}
+write.csv(counts,"data/weather/counts2_10minute.csv", row.names = FALSE)
+rm(counts)
+
+counts <- NULL
+for(i in 40001:60000) { #(length(day.ref)-1)) {
+  a <- tabulate(cluster_list[day.ref[i]:(day.ref[i+1]-1)], nbins = 60)
+  a <- c(a, sum(a))
+  counts <- rbind(counts, a)
+  rownames(counts) <- 1:nrow(counts)
+  print(i)
+}
+write.csv(counts,"data/weather/counts3_10minute.csv", row.names = FALSE)
+rm(counts)
+
+counts <- NULL
+for(i in 60001:80000) { #(length(day.ref)-1)) {
+  a <- tabulate(cluster_list[day.ref[i]:(day.ref[i+1]-1)], nbins = 60)
+  a <- c(a, sum(a))
+  counts <- rbind(counts, a)
+  rownames(counts) <- 1:nrow(counts)
+  print(i)
+}
+write.csv(counts,"data/weather/counts4_10minute.csv", row.names = FALSE)
+rm(counts)
+
+counts <- NULL
+for(i in 80001:100000) { #(length(day.ref)-1)) {
+  a <- tabulate(cluster_list[day.ref[i]:(day.ref[i+1]-1)], nbins = 60)
+  a <- c(a, sum(a))
+  counts <- rbind(counts, a)
+  rownames(counts) <- 1:nrow(counts)
+  print(i)
+}
+write.csv(counts,"data/weather/counts5_10minute.csv", row.names = FALSE)
+rm(counts)
+
+counts <- NULL
+for(i in 100001:(length(day.ref)-1)) {
+  a <- tabulate(cluster_list[day.ref[i]:(day.ref[i+1]-1)], nbins = 60)
+  a <- c(a, sum(a))
+  counts <- rbind(counts, a)
+  rownames(counts) <- 1:nrow(counts)
+  print(i)
+}
+write.csv(counts,"data/weather/counts6_10minute.csv", row.names = FALSE)
+rm(counts)
+
+counts <- NULL
+count1 <- read.csv("data/weather/counts1_10minute.csv", header = T)
+counts <- count1
+rm(count1)
+count2 <- read.csv("data/weather/counts2_10minute.csv", header = T)
+counts <- rbind(counts, count2)
+rm(count2)
+count3 <- read.csv("data/weather/counts3_10minute.csv", header = T)
+counts <- rbind(counts, count3)
+rm(count3)
+count4 <- read.csv("data/weather/counts4_10minute.csv", header = T)
+counts <- rbind(counts, count4)
+rm(count4)
+count5 <- read.csv("data/weather/counts5_10minute.csv", header = T)
+counts <- rbind(counts, count5)
+rm(count5)
+count6 <- read.csv("data/weather/counts6_10minute.csv", header = T)
+counts <- rbind(counts, count6)
+rm(count6)
+
+counts <- data.frame(counts)
+site <- c("GympieNP", "WoondumNP")
+sites <- rep(site, each = (nrow(counts)/2))
+dateSeq10min = substr(seq(from=startDate, to = endDate, by = "10 min"), 1, 16)
+dateSeq10min <- dateSeq10min[1:(length(dateSeq10min)-1)]
+counts <- cbind(counts, sites, dateSeq10min)
+# save the 10minute vector
+write.csv(counts, "data/weather/10minute.csv", row.names = FALSE)
+
+
+# generate a sequence that can be used for half-hour sequence
 day.ref <- seq(1,(398*2*1440+1),30)
 
 # generate half-hour counts for each cluster + sum
@@ -304,13 +406,24 @@ day.ref <- seq(1,(398*2*1440+1),30)
 # WARNING this takes 21 minutes for a cluster list
 # over 1 million minutes
 counts <- NULL
-for(i in 1:(length(day.ref)-1)) {
+for(i in 100001:(length(day.ref)-1)) {
   a <- tabulate(cluster_list[day.ref[i]:(day.ref[i+1]-1)], nbins = 60)
   a <- c(a, sum(a))
   counts <- rbind(counts, a)
   rownames(counts) <- 1:nrow(counts)
+  print(i)
 }
-counts <- data.frame(counts)
+#count1  <- counts[1:30000,]
+#count2 <- counts[1:10000,]
+#counts3 <- data.frame(counts[1:20000,])
+#counts4 <- data.frame(counts[1:20000,]) #80000
+#counts5 <- data.frame(counts[1:20000,]) #100000
+#counts6 <- data.frame(counts[1:nrow(counts),]) #120000
+
+all_counts <- rbind(count1, count2, counts3, counts4, counts5, counts6)
+
+length(day.ref)
+
 site <- c("GympieNP", "WoondumNP")
 sites <- rep(site, each=(nrow(counts)/2))
 counts <- cbind(counts, sites, dateSeq30min)
@@ -329,6 +442,7 @@ for(i in 1:(length(day.ref)-1)) {
   a <- c(a, sum(a))
   counts <- rbind(counts, a)
   rownames(counts) <- 1:nrow(counts)
+  print(i)
 }
 counts <- data.frame(counts)
 sites <- rep(site, each=(nrow(counts)/2))
@@ -349,6 +463,7 @@ for(i in 1:(length(day.ref)-1)) {
   a <- c(a, sum(a))
   counts <- rbind(counts, a)
   rownames(counts) <- 1:nrow(counts)
+  print(i)
 }
 counts <- data.frame(counts)
 sites <- rep(site, each=(nrow(counts)/2))

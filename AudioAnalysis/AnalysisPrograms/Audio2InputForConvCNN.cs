@@ -18,35 +18,28 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Reflection;
     using System.Text.RegularExpressions;
-
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
-    using Production;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
     using log4net;
-
-    using PowerArgs;
-
+    using Production;
     using TowseyLibrary;
 
-    public class Audio2InputForConvCNN
+    /// <summary>
+    /// Use the following paths for the command line for the 'audio2sonogram' task.
+    /// audio2InputForConvCNN "Path to CSV file" @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml"  "Output directory" true
+    /// </summary>
+    public class Audio2InputForConvCnn
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        // use the following paths for the command line for the <audio2sonogram> task.
-        // audio2InputForConvCNN "Path to CSV file"   @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml"  "Output directory" true
         [CustomDetailedDescription]
         [CustomDescription]
         public class Arguments : SourceConfigOutputDirArguments
@@ -67,33 +60,32 @@ namespace AnalysisPrograms
         private static Arguments Dev()
         {
             DateTime time = DateTime.Now;
-            string datestamp = string.Format("{0}{1:d2}{2:d2}", time.Year, time.Month, time.Day);
+            string datestamp = $"{time.Year}{time.Month:d2}{time.Day:d2}";
             return new Arguments
             {
-
                 // prior to processing
                 // Y:\Results\2014Aug29-000000 - ConvDNN Data Export\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.csv
-                // audio_event_id	audio_recording_id	audio_recording_uuid	event_created_at_utc	projects	site_id	site_name	event_start_date_utc	event_start_seconds	event_end_seconds	event_duration_seconds	low_frequency_hertz	high_frequency_hertz	padding_start_time_seconds	padding_end_time_seconds	common_tags	species_tags	other_tags	listen_url	library_url
+                // audio_event_id   audio_recording_id  audio_recording_uuid    event_created_at_utc    projects    site_id site_name   event_start_date_utc    event_start_seconds event_end_seconds   event_duration_seconds  low_frequency_hertz high_frequency_hertz    padding_start_time_seconds  padding_end_time_seconds    common_tags species_tags    other_tags  listen_url  library_url
+
                 // Y:\Results\2014Aug29-000000 - ConvDNN Data Export\Output\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv
-                // audio_event_id	audio_recording_id	audio_recording_uuid	event_created_at_utc	projects	site_id	site_name	event_start_date_utc	event_start_seconds	event_end_seconds	event_duration_seconds	low_frequency_hertz	high_frequency_hertz	padding_start_time_seconds	padding_end_time_seconds	common_tags	species_tags	other_tags	listen_url	library_url	path	download_success	skipped
+                // audio_event_id   audio_recording_id  audio_recording_uuid    event_created_at_utc    projects    site_id site_name   event_start_date_utc    event_start_seconds event_end_seconds   event_duration_seconds  low_frequency_hertz high_frequency_hertz    padding_start_time_seconds  padding_end_time_seconds    common_tags species_tags    other_tags  listen_url  library_url path    download_success    skipped
 
                 // csv file containing recording info, call bounds etc
+                //Source = @"C:\SensorNetworks\Output\ConvDNN\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
                 Source = @"Y:\Results\2014Aug29-000000 - Mangalam Data Export\Output\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
-                ////Source = @"C:\SensorNetworks\Output\ConvDNN\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
-                ////Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
 
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo(),
 
                 Output = (@"C:\SensorNetworks\Output\ConvDNN\" + datestamp).ToDirectoryInfo(),
             };
 
-            throw new NoDeveloperMethodException();
+            //throw new NoDeveloperMethodException();
         }
 
         /// <summary>
         /// This is the entrypoint for generating ConCNN spectrograms - one at a time
         /// </summary>
-        /// <param name="arguments"></param>
         public static void Execute(Arguments arguments)
         {
             if (arguments == null)
@@ -111,6 +103,7 @@ namespace AnalysisPrograms
             {
                 throw new ArgumentException("Ths TargetEventBounds paramter must be specified");
             }
+
             var matchResults = Regex.Match(arguments.TargetEventBounds, @"([0-9\.]+),([0-9\.]+),([0-9\.]+),([0-9\.]+)");
             TimeSpan localEventStart;
             TimeSpan localEventEnd;
@@ -129,11 +122,11 @@ namespace AnalysisPrograms
             }
 
             // Grab configuration
-            var configDict = GetConfigurationForConvCNN(arguments.Config);
+            var configDict = GetConfigurationForConvCnn(arguments.Config);
 
             var result = AnalyseOneRecording(arguments.Source, configDict, localEventStart, localEventEnd, (int)minHz, (int)mazHz, arguments.Output);
-            LoggedConsole.WriteLine("SpectrogramPath:" + result.SpectrogramFile);
-            LoggedConsole.WriteLine("SnrStats:" + Json.SerialiseToString(result.SnrStatistics, prettyPrint: false));
+            Log.InfoFormat("SpectrogramPath:" + result.SpectrogramFile);
+            Log.InfoFormat("SnrStats:" + Json.SerialiseToString(result.SnrStatistics, prettyPrint: false));
         }
 
         /// <summary>
@@ -142,6 +135,9 @@ namespace AnalysisPrograms
         /// </summary>
         public static void Main(Arguments arguments)
         {
+            // set preprocessing parameter
+            bool doPreprocessing = true;
+
             if (arguments == null)
             {
                 arguments = Dev();
@@ -152,13 +148,11 @@ namespace AnalysisPrograms
                 arguments.Output.Create();
             }
 
-            const string Title = "# PRE-PROCESS SHORT AUDIO RECORDINGS FOR Convolutional DNN";
-            string date = "# DATE AND TIME: " + DateTime.Now;
-            LoggedConsole.WriteLine(Title);
-            LoggedConsole.WriteLine(date);
-            LoggedConsole.WriteLine("# Input .csv file: " + arguments.Source.Name);
-            LoggedConsole.WriteLine("# Configure  file: " + arguments.Config.Name);
-            LoggedConsole.WriteLine("# Output directry: " + arguments.Output.Name);
+            Log.InfoFormat("# PRE-PROCESS SHORT AUDIO RECORDINGS FOR Convolutional DNN");
+            Log.InfoFormat("# DATE AND TIME: " + DateTime.Now);
+            Log.InfoFormat("# Input .csv file: " + arguments.Source.Name);
+            Log.InfoFormat("# Configure  file: " + arguments.Config.Name);
+            Log.InfoFormat("# Output directry: " + arguments.Output.Name);
 
             // 1. set up the necessary files
             FileInfo csvFileInfo = arguments.Source;
@@ -167,8 +161,6 @@ namespace AnalysisPrograms
 
             // 2. get the config dictionary
             var configDict = GetConfigurationForConvCNN(configFile);
-
-            bool doPreprocessing = true;
 
             // print out the parameters
             LoggedConsole.WriteLine("\nPARAMETERS");
@@ -219,7 +211,7 @@ namespace AnalysisPrograms
                     // read single record from csv file
                     var record = CsvDataRecord.ReadLine(strLine);
 
-                    if (record.path == null)
+                    if (record.Path == null)
                     {
                         fileLocationNotInCsv++;
                         ////string warning = String.Format("######### WARNING: line {0}  NULL PATH FIELD >>>null<<<", count);
@@ -227,43 +219,30 @@ namespace AnalysisPrograms
                         continue;
                     }
 
-                    var sourceRecording = record.path;
+                    var sourceRecording = record.Path;
                     var sourceDirectory = sourceRecording.Directory;
                     string parentDirectoryName = sourceDirectory.Parent.Name;
-                    var imageOpDir = new DirectoryInfo(output.FullName + @"\" + parentDirectoryName);
-                    ////DirectoryInfo imageOpDir = new DirectoryInfo(outDirectory.FullName + @"\" + parentDirectoryName + @"\" + directoryName);
 
-                    /*#######################################
-                      #######################################
-                      my debug code for home to test on subset of data - comment these lines when at QUT!
-                      Anthony will tell me I should use a conditional compilation flag.
-                        -- Anthony will tell you that this is completely unnecessary!
-                      ####################################### */
+                    //var imageOpDir = new DirectoryInfo(output.FullName + @"\" + parentDirectoryName);
+                    ////DirectoryInfo imageOpDir = new DirectoryInfo(outDirectory.FullName + @"\" + parentDirectoryName + @"\" + directoryName);
                     ////DirectoryInfo localSourceDir = new DirectoryInfo(@"C:\SensorNetworks\WavFiles\ConvDNNData");
                     ////sourceRecording = Path.Combine(localSourceDir.FullName + @"\" + parentDirectoryName + @"\" + directoryName, fileName).ToFileInfo();
                     ////record.path = sourceRecording;
 
                     /* ####################################### */
 
-                    // TO TEST PORTION OF DATA
-                    doPreprocessing = false;
-                    if (parentDirectoryName.Equals("0"))
-                    {
-                        doPreprocessing = true;
-                    }
-
-                    /* #######################################
-                       ####################################### */
+                    // TO TEST SMALL PORTION OF DATA because total data is too large.
+                    doPreprocessing = false || parentDirectoryName.Equals("0");
 
                     if (!sourceRecording.Exists)
                     {
                         fileInCsvDoesNotExist++;
                         string warning = string.Format("FILE DOES NOT EXIST >>>," + sourceRecording.Name);
-                        using (StreamWriter writer = new StreamWriter(outputPath, true))
+                        using (var writer = new StreamWriter(outputPath, true))
                         {
                             writer.WriteLine(warning);
                         }
-                        ////LoggedConsole.WriteWarnLine(warning);
+
                         continue;
                     }
 
@@ -271,11 +250,11 @@ namespace AnalysisPrograms
                     if (doPreprocessing)
                     {
                         AudioToSonogramResult result = AnalyseOneRecording(record, configDict, output);
-                        string line = result.WriteResultAsLineOfCSV();
+                        string line = result.WriteResultAsLineOfCsv();
 
                         // It is helpful to write to the output file as we go, so as to keep a record of where we are up to.
                         // This requires to open and close the output file at each iteration
-                        using (StreamWriter writer = new StreamWriter(outputPath, true))
+                        using (var writer = new StreamWriter(outputPath, true))
                         {
                             writer.WriteLine(line);
                         }
@@ -283,11 +262,11 @@ namespace AnalysisPrograms
 
                     // everything should be OK - have jumped through all the hoops.
                     fileExistsCount++;
-                    // keep track of species names and distribution of classes.
-                    speciesCounts.AddSpeciesCount(record.common_tags);
-                    speciesCounts.AddSpeciesID(record.common_tags, record.species_tags);
-                    speciesCounts.AddSiteName(record.site_name);
 
+                    // keep track of species names and distribution of classes.
+                    speciesCounts.AddSpeciesCount(record.CommonTags);
+                    speciesCounts.AddSpeciesId(record.CommonTags, record.SpeciesTags);
+                    speciesCounts.AddSiteName(record.SiteName);
                 } // end while()
 
                 string classDistributionOpPath = Path.Combine(output.FullName, "ClassDistributionsForConvDnnDataset.csv");
@@ -316,40 +295,25 @@ namespace AnalysisPrograms
         /// </summary>
         public static void ProcessMeriemsDataset()
         {
-            //if (arguments == null)
-            //{
-            //    arguments = Dev();
-            //}
-
-            //if (!arguments.Output.Exists)
-            //{
-            //    arguments.Output.Create();
-            //}
-
-            const string Title = "# PRE-PROCESS SHORT AUDIO RECORDINGS FOR Convolutional DNN";
-            string date = "# DATE AND TIME: " + DateTime.Now;
-            LoggedConsole.WriteLine(Title);
-            LoggedConsole.WriteLine(date);
-            //LoggedConsole.WriteLine("# Input .csv file: " + arguments.Source.Name);
-            //LoggedConsole.WriteLine("# Configure  file: " + arguments.Config.Name);
-            //LoggedConsole.WriteLine("# Output directry: " + arguments.Output.Name);
-
-            //bool verbose = arguments.Verbose;
-            bool verbose = true;
-
             // 1. set up the necessary files
             //FileInfo csvFileInfo = arguments.Source;
             //FileInfo configFile = arguments.Config;
             //DirectoryInfo output = arguments.Output;
-            DirectoryInfo inputDirInfo  = new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MeriemDataSet\1016 Distinct files");
-            FileInfo         configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml");
+            DirectoryInfo inputDirInfo = new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MeriemDataSet\1016 Distinct files");
+            FileInfo configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml");
             DirectoryInfo outputDirInfo = new DirectoryInfo(@"C:\SensorNetworks\Output\ConvDNN\MeriemDataset\");
 
             // 2. get the config dictionary
-            var configDict = GetConfigurationForConvCNN(configFile);
-            // print out the parameters
-            if (verbose)
+            var configDict = GetConfigurationForConvCnn(configFile);
+            if (true)
             {
+                // if VERBOSE
+                const string title = "# PRE-PROCESS SHORT AUDIO RECORDINGS FOR Convolutional DNN";
+                string date = "# DATE AND TIME: " + DateTime.Now;
+                LoggedConsole.WriteLine(title);
+                LoggedConsole.WriteLine(date);
+
+                // print out the parameters
                 LoggedConsole.WriteLine("\nPARAMETERS");
                 foreach (var kvp in configDict)
                 {
@@ -359,15 +323,20 @@ namespace AnalysisPrograms
 
             int fileCount = 0;
             FileInfo[] inputFiles = inputDirInfo.GetFiles();
-            foreach (FileInfo file in inputFiles)
+            foreach (var file in inputFiles)
             {
                 LoggedConsole.Write(".");
-                if (!file.Exists) continue;
+                if (!file.Exists)
+                {
+                    continue;
+                }
+
                 fileCount++;
 
                 // need to set up the config with file names
                 configDict[ConfigKeys.Recording.Key_RecordingFileName] = file.FullName;
                 configDict[ConfigKeys.Recording.Key_RecordingCallName] = Path.GetFileNameWithoutExtension(file.FullName);
+
                 // reset the frame size
                 configDict["FrameLength"] = "512";
 
@@ -380,19 +349,20 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("\n##### FINISHED ############################\n");
         }
 
-        private static Dictionary<string, string> GetConfigurationForConvCNN(FileInfo configFile)
+        private static Dictionary<string, string> GetConfigurationForConvCnn(FileInfo configFile)
         {
             dynamic configuration = Yaml.Deserialise(configFile);
 
-            var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
-
-            configDict[AnalysisKeys.AddAxes] = ((bool?)configuration[AnalysisKeys.AddAxes] ?? true).ToString();
-            configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true;
+            var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration)
+            {
+                [AnalysisKeys.AddAxes] = ((bool?)configuration[AnalysisKeys.AddAxes] ?? true).ToString(),
+                [AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true,
+                [AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true",
+                [AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes] ?? "true",
+                [AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true",
+            };
 
             ////bool makeSoxSonogram = (bool?)configuration[AnalysisKeys.MakeSoxSonogram] ?? false;
-            configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
-            configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes] ?? "true";
-            configDict[AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
             return configDict;
         }
 
@@ -402,21 +372,13 @@ namespace AnalysisPrograms
         {
             // ############## IMPORTANT PARAMETER - SET EQUAL TO WHAT ANTHONY HAS EXTRACTED.
             double extractFixedTimeDuration = 4.0; // fixed length duration of all extracts from the original data - centred on the bounding box.
-
-            //
-            FileInfo sourceRecording = dataRecord.path;
-            string fileName = sourceRecording.Name;
-            // string message = String.Format("#########: line {0}  FILE EXISTS >>>" + sourceRecording.Name + "<<<", fileExistsCount);
-            // LoggedConsole.WriteWarnLine(message);
-            DirectoryInfo sourceDir = sourceRecording.Directory;
-            int minHz = dataRecord.low_frequency_hertz;
-            int maxHz = dataRecord.high_frequency_hertz;
-            TimeSpan start = dataRecord.event_start_seconds;
-            TimeSpan eventDuration = dataRecord.event_duration_seconds;
+            FileInfo sourceRecording = dataRecord.Path;
+            int minHz = dataRecord.LowFrequencyHertz;
+            int maxHz = dataRecord.HighFrequencyHertz;
+            TimeSpan eventDuration = dataRecord.EventDurationSeconds;
             TimeSpan eventCentre = TimeSpan.FromTicks(eventDuration.Ticks / 2);
             TimeSpan extractDuration = TimeSpan.FromSeconds(extractFixedTimeDuration);
             TimeSpan extractHalfDuration = TimeSpan.FromSeconds(extractFixedTimeDuration / 2);
-
             TimeSpan localEventStart = TimeSpan.Zero;
             TimeSpan localEventEnd = extractDuration;
             if ((eventDuration != TimeSpan.Zero) && (eventDuration < extractDuration))
@@ -428,9 +390,9 @@ namespace AnalysisPrograms
             var result = AnalyseOneRecording(sourceRecording, configDict, localEventStart, localEventEnd, minHz, maxHz, opDir);
 
             // add additional info to identify this recording
-            result.AudioEventId = dataRecord.audio_event_id;
-            result.SiteName = dataRecord.site_name;
-            result.CommonTags = dataRecord.common_tags;
+            result.AudioEventId = dataRecord.AudioEventId;
+            result.SiteName = dataRecord.SiteName;
+            result.CommonTags = dataRecord.CommonTags;
             return result;
         }
 
@@ -445,7 +407,7 @@ namespace AnalysisPrograms
         {
             // set a threshold for determining energy distribution in call
             // NOTE: value of this threshold depends on whether working with decibel, energy or amplitude values
-            const double Threshold = 9.0;
+            const double threshold = 9.0;
 
             int resampleRate = AppConfigHelper.DefaultTargetSampleRate;
             if (configDict.ContainsKey(AnalysisKeys.ResampleRate))
@@ -470,12 +432,11 @@ namespace AnalysisPrograms
             MasterAudioUtility.SegmentToWav(sourceRecording, tempAudioSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
 
             // 2: Generate sonogram image files
-            AudioToSonogramResult result = new AudioToSonogramResult();
-            result = GenerateSpectrogramImages(tempAudioSegment, configDict, outDirectory);
+            AudioToSonogramResult result = GenerateSpectrogramImages(tempAudioSegment, configDict, outDirectory);
 
             // 3: GET the SNR statistics
             TimeSpan eventDuration = localEventEnd - localEventStart;
-            result.SnrStatistics = SNR.Calculate_SNR_ShortRecording(tempAudioSegment, configDict, localEventStart, eventDuration, minHz, maxHz, Threshold);
+            result.SnrStatistics = SNR.Calculate_SNR_ShortRecording(tempAudioSegment, configDict, localEventStart, eventDuration, minHz, maxHz, threshold);
 
             // 4: Delete the temp file
             File.Delete(tempAudioSegment.FullName);
@@ -488,28 +449,42 @@ namespace AnalysisPrograms
         /// </summary>
         public class CsvDataRecord
         {
-            public int audio_event_id { get; set; }
-            public int audio_recording_id { get; set; }
+            public int AudioEventId { get; set; }
+
+            public int AudioRecordingId { get; set; }
+
             //public int audio_recording_uuid { get; set; }
             //public string event_created_at_utc { get; set; }
-            public string projects { get; set; }
-            public int site_id { get; set; }
-            public string site_name { get; set; }
+            public string Projects { get; set; }
+
+            public int SiteId { get; set; }
+
+            public string SiteName { get; set; }
+
             //event_start_date_utc { get; set; }
-            public TimeSpan event_start_seconds { get; set; }
+            public TimeSpan EventStartSeconds { get; set; }
+
             //event_end_seconds { get; set; }
-            public TimeSpan event_duration_seconds { get; set; }
-            public int low_frequency_hertz { get; set; }
-            public int high_frequency_hertz { get; set; }
-            public TimeSpan padding_start_time_seconds { get; set; }
-            public TimeSpan padding_end_time_seconds { get; set; }
-            public string common_tags { get; set; }
-            public string species_tags { get; set; }
+            public TimeSpan EventDurationSeconds { get; set; }
+
+            public int LowFrequencyHertz { get; set; }
+
+            public int HighFrequencyHertz { get; set; }
+
+            public TimeSpan PaddingStartTimeSeconds { get; set; }
+
+            public TimeSpan PaddingEndTimeSeconds { get; set; }
+
+            public string CommonTags { get; set; }
+
+            public string SpeciesTags { get; set; }
+
             //other_tags { get; set; }
             //listen_url { get; set; }
             //library_url { get; set; }
             // path to audio recording
-            public FileInfo path { get; set; }
+            public FileInfo Path { get; set; }
+
             //download_success { get; set; }
             //skipped { get; set; }
 
@@ -519,72 +494,77 @@ namespace AnalysisPrograms
 
                 // split and parse elements of data line
                 var fields = record.Split(',');
-                for (int i= 0; i < fields.Length; i++)
+                for (int i = 0; i < fields.Length; i++)
                 {
                     string word = fields[i];
-                    while ((word.StartsWith("\"")) || word.StartsWith(" "))
+                    while (word.StartsWith("\"") || word.StartsWith(" "))
                     {
                         word = word.Substring(1, word.Length - 1);
                     }
-                    while ((word.EndsWith("\"")) || word.EndsWith(" "))
+
+                    while (word.EndsWith("\"") || word.EndsWith(" "))
                     {
                         word = word.Substring(0, word.Length - 1);
                     }
+
                     fields[i] = word;
                 }
-                csvDataRecord.audio_event_id = int.Parse(fields[0]);
-                csvDataRecord.audio_recording_id = int.Parse(fields[1]);
-                csvDataRecord.projects = fields[4];
-                csvDataRecord.site_id = int.Parse(fields[5]);
-                csvDataRecord.site_name = fields[6];
 
-                csvDataRecord.event_start_seconds = TimeSpan.FromSeconds(double.Parse(fields[8]));
-                csvDataRecord.event_duration_seconds = TimeSpan.FromSeconds(double.Parse(fields[10]));
-                csvDataRecord.padding_start_time_seconds = TimeSpan.FromSeconds(double.Parse(fields[13]));
-                csvDataRecord.padding_end_time_seconds   = TimeSpan.FromSeconds(double.Parse(fields[14]));
+                csvDataRecord.AudioEventId = int.Parse(fields[0]);
+                csvDataRecord.AudioRecordingId = int.Parse(fields[1]);
+                csvDataRecord.Projects = fields[4];
+                csvDataRecord.SiteId = int.Parse(fields[5]);
+                csvDataRecord.SiteName = fields[6];
 
-                csvDataRecord.low_frequency_hertz = (int)Math.Round(double.Parse(fields[11]));
-                csvDataRecord.high_frequency_hertz = (int)Math.Round(double.Parse(fields[12]));
-                csvDataRecord.common_tags = fields[15];
-                csvDataRecord.species_tags = fields[16];
-                csvDataRecord.path = fields[20].ToFileInfo();
+                csvDataRecord.EventStartSeconds = TimeSpan.FromSeconds(double.Parse(fields[8]));
+                csvDataRecord.EventDurationSeconds = TimeSpan.FromSeconds(double.Parse(fields[10]));
+                csvDataRecord.PaddingStartTimeSeconds = TimeSpan.FromSeconds(double.Parse(fields[13]));
+                csvDataRecord.PaddingEndTimeSeconds = TimeSpan.FromSeconds(double.Parse(fields[14]));
+
+                csvDataRecord.LowFrequencyHertz = (int)Math.Round(double.Parse(fields[11]));
+                csvDataRecord.HighFrequencyHertz = (int)Math.Round(double.Parse(fields[12]));
+                csvDataRecord.CommonTags = fields[15];
+                csvDataRecord.SpeciesTags = fields[16];
+                csvDataRecord.Path = fields[20].ToFileInfo();
                 return csvDataRecord;
             }
         }
-        // class CsvDataRecord
 
         public class SpeciesCounts
         {
-            public Dictionary<string, int> speciesCounts = new Dictionary<string, int>();
-            public Dictionary<string, int> speciesIDs = new Dictionary<string, int>();
-            public Dictionary<string, int> siteNames = new Dictionary<string, int>();
+            private readonly Dictionary<string, int> speciesCounts = new Dictionary<string, int>();
+            private readonly Dictionary<string, int> speciesIDs = new Dictionary<string, int>();
+            private readonly Dictionary<string, int> siteNames = new Dictionary<string, int>();
 
-            public void AddSpeciesID(string speciesID, string latinInfo)
+            public void AddSpeciesId(string speciesId, string latinInfo)
             {
-                string[] parts1 = speciesID.Split(':');
+                string[] parts1 = speciesId.Split(':');
                 int value = int.Parse(parts1[0]);
                 string commonName = parts1[1];
 
                 string[] parts2 = latinInfo.Split(':');
                 string latinName = "NOT AVAILABLE";
-                if (parts2.Length > 1) latinName = parts2[1];
-
-                string BothNames = commonName + "," + latinName;
-
-                if (!this.speciesIDs.ContainsKey(BothNames))
+                if (parts2.Length > 1)
                 {
-                    this.speciesIDs.Add(BothNames, value);
+                    latinName = parts2[1];
+                }
+
+                string bothNames = commonName + "," + latinName;
+
+                if (!this.speciesIDs.ContainsKey(bothNames))
+                {
+                    this.speciesIDs.Add(bothNames, value);
                 }
                 else
                 if (!this.speciesIDs.ContainsValue(value))
                 {
-                    this.speciesIDs.Add(BothNames + "####", value);
+                    this.speciesIDs.Add(bothNames + "####", value);
                 }
             }
 
-            public void AddSpeciesCount(string speciesID)
+            public void AddSpeciesCount(string speciesId)
             {
-                string[] parts = speciesID.Split(':');
+                string[] parts = speciesId.Split(':');
                 if (this.speciesCounts.ContainsKey(parts[1]))
                 {
                     this.speciesCounts[parts[1]]++;
@@ -593,7 +573,6 @@ namespace AnalysisPrograms
                 {
                     this.speciesCounts.Add(parts[1], 1);
                 }
-
             }
 
             public void AddSiteName(string name)
@@ -606,7 +585,6 @@ namespace AnalysisPrograms
                 {
                     this.siteNames.Add(name, 1);
                 }
-
             }
 
             public void Save(string path)
@@ -623,27 +601,27 @@ namespace AnalysisPrograms
         public class AudioToSonogramResult
         {
             /// <summary>
-            /// ID of the event included in the recording segment
+            /// Gets or sets iD of the event included in the recording segment
             /// </summary>
             public int AudioEventId { get; set; }
 
             /// <summary>
-            /// name of site where recording was made
+            /// Gets or sets name of site where recording was made
             /// </summary>
             public string SiteName { get; set; }
 
             /// <summary>
-            /// class label for this recording
+            /// Gets or sets class label for this recording
             /// </summary>
             public string CommonTags { get; set; }
 
             /// <summary>
-            /// path to spectrogram images of this recording
+            /// Gets or sets path to spectrogram images of this recording
             /// </summary>
             public FileInfo SpectrogramFile { get; set; }
 
             /// <summary>
-            /// snr information for this recording
+            /// Gets or sets snr information for this recording
             /// </summary>
             public SNR.SnrStatistics SnrStatistics { get; set; }
 
@@ -651,20 +629,16 @@ namespace AnalysisPrograms
             /// CONSTRUCT the header for csv file
             ///  audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path
             /// </summary>
-            /// <returns></returns>
-            public string WriteResultAsLineOfCSV()
+            public string WriteResultAsLineOfCsv()
             {
-                string line = string.Format(
-                    "{0},{1},{2},{3:f2},{4:f3},{5:f3},{6:f3},{7:f2},{8}",
-                    this.AudioEventId,
-                    this.SiteName,
-                    this.CommonTags,
-                    this.SnrStatistics.Threshold,
-                    this.SnrStatistics.Snr,
-                    this.SnrStatistics.FractionOfFramesExceedingThreshold,
-                    this.SnrStatistics.FractionOfFramesExceedingOneThirdSnr,
-                    this.SnrStatistics.ExtractDuration.TotalSeconds,
-                    this.SpectrogramFile.FullName);
+                string line =
+                    $"{this.AudioEventId},{this.SiteName}," +
+                    $"{this.CommonTags}," +
+                    $"{this.SnrStatistics.Threshold:f2},{this.SnrStatistics.Snr:f3}," +
+                    $"{this.SnrStatistics.FractionOfFramesExceedingThreshold:f3}," +
+                    $"{this.SnrStatistics.FractionOfFramesExceedingOneThirdSnr:f3}," +
+                    $"{this.SnrStatistics.ExtractDuration.TotalSeconds:f2}," +
+                    $"{this.SpectrogramFile.FullName}";
                 return line;
             }
 
@@ -677,11 +651,10 @@ namespace AnalysisPrograms
             ///  audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path
             /// </para>
             /// </summary>
-            /// <returns></returns>
             public static string GetCsvHeader()
             {
-                const string Header = "audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,Duration(sec),path2Spectrograms";
-                return Header;
+                const string header = "audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,Duration(sec),path2Spectrograms";
+                return header;
             }
         }
 
@@ -697,14 +670,10 @@ namespace AnalysisPrograms
             var list = new List<Image>();
 
             // 1) draw amplitude spectrogram
-            AudioRecording recordingSegment = new AudioRecording(sourceRecording.FullName);
+            var recordingSegment = new AudioRecording(sourceRecording.FullName);
 
-            // default values config
-            SonogramConfig sonoConfig = new SonogramConfig(configDict);
-
-            // disable noise removal for first two spectrograms
-            sonoConfig.NoiseReductionType = NoiseReductionType.None;
-
+            // default values config except disable noise removal for first two spectrograms
+            SonogramConfig sonoConfig = new SonogramConfig(configDict) { NoiseReductionType = NoiseReductionType.None };
             BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
 
             // remove the DC bin
@@ -713,14 +682,14 @@ namespace AnalysisPrograms
             // save spectrogram data at this point - prior to noise reduction
             double[,] spectrogramDataBeforeNoiseReduction = sonogram.Data;
 
-            const int LowPercentile = 20;
-            const double NeighbourhoodSeconds = 0.25;
-            int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * NeighbourhoodSeconds);
-            const double LcnContrastLevel = 0.25;
+            const int lowPercentile = 20;
+            const double neighbourhoodSeconds = 0.25;
+            int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * neighbourhoodSeconds);
+            const double lcnContrastLevel = 0.25;
 
             ////LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
             ////LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
-            sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_ShortRecordings_SubtractAndLCN(sonogram.Data, LowPercentile, neighbourhoodFrames, LcnContrastLevel);
+            sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_ShortRecordings_SubtractAndLCN(sonogram.Data, lowPercentile, neighbourhoodFrames, lcnContrastLevel);
 
             // draw amplitude spectrogram unannotated
             FileInfo outputImage1 = new FileInfo(Path.Combine(outputDirectory.FullName, sourceName + ".amplitd.bmp"));
@@ -746,6 +715,7 @@ namespace AnalysisPrograms
 
             // 3) now draw the standard decibel spectrogram
             sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
+
             // remove the DC bin
             sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, sonogram.Configuration.FreqBinCount);
 
@@ -804,18 +774,17 @@ namespace AnalysisPrograms
             ////double[] oscillationsSpectrum = Oscillations2014.GenerateOscillationDataAndImages(sourceRecording, configDict, saveData, saveImage);
             return result;
         }
-
     }
 
     /// <summary>
     /// This analyzer preprocesses short audio segments a few seconds to maximum 1 minute long for processing by a convolutional Deep NN.
     /// It does not accumulate data or other indices over a long recording.
     /// </summary>
-    public class PreprocessorForConvDNN : IAnalyser2
+    public class PreprocessorForConvDnn : IAnalyser2
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public PreprocessorForConvDNN()
+        public PreprocessorForConvDnn()
         {
             this.DisplayName = "ConvolutionalDNN";
             this.Identifier = "Towsey.PreprocessorForConvDNN";
@@ -831,6 +800,7 @@ namespace AnalysisPrograms
         public string DisplayName { get; private set; }
 
         public string Identifier { get; private set; }
+
         public string Description => "This analyzer preprocesses short audio segments a few seconds to maximum 1 minute long for processing by a convolutional Deep NN. It does not accumulate data or other indices over a long recording.";
 
         public AnalysisSettings DefaultSettings { get; private set; }
@@ -918,5 +888,3 @@ namespace AnalysisPrograms
         }
     }
 }
-
-

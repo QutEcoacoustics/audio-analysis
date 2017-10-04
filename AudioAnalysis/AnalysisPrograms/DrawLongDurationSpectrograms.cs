@@ -88,13 +88,19 @@ namespace AnalysisPrograms
         /// </summary>
         public static Arguments Dev()
         {
+            // the default ld fc spectrogram config file
+            var spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramFalseColourConfig.yml";
+
+            // the default index properties file
+            string indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml";
+
             // INPUT and OUTPUT DIRECTORIES
             //MARINE JASCO TEST
             //var ipdir = @"C:\SensorNetworks\Output\MarineJasco\Towsey.Acoustic";
             //var opdir = @"C:\SensorNetworks\Output\MarineJasco\Towsey.Acoustic\Images";
+            //indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml";
 
             // INPUT and OUTPUT DIRECTORIES
-
             //2010 Oct 13th
             //var ipdir = @"C:\SensorNetworks\Output\SERF\2014May06_100720 Indices OCT2010 SERF\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
             //var opdir = @"C:\SensorNetworks\Output\SERF\SERF_falseColourSpectrogram\SE";
@@ -164,25 +170,33 @@ namespace AnalysisPrograms
             //var ipdir = @"C:\SensorNetworks\Output\TsheringDema\Towsey.Acoustic_OLD4";
             //var opdir = @"C:\SensorNetworks\Output\TsheringDema\Towsey.Acoustic";
 
-            var ipdir = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017\Towsey.Acoustic";
-            var opdir = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017";
+            //var ipdir = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017\Towsey.Acoustic";
+            //var opdir = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017";
 
-            var ipDir = new DirectoryInfo(ipdir);
-            var opDir = new DirectoryInfo(opdir);
+            // PILLAGA FOREST RECORDINGS OF BRAD LAW - High Resolution analysis
+            //string ipdir = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP\Towsey.Acoustic";
+            //string opdir = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP";
+            //spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramConfigHiRes.yml";
+            //indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
 
-            //FileInfo fiSpectrogramConfig = null;
-            var fiSpectrogramConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramFalseColourConfig.yml");
+            // USA WILD-LIFE ACOUSTICS TEST RECORDINGS OF LOSSY COMPRESSION - High Resolution analysis
+            string ipdir = @"D:\SensorNetworks\Output\WildLifeAcoustics\Towsey.Acoustic";
+            string opdir = @"D:\SensorNetworks\Output\WildLifeAcoustics";
+            spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramConfigHiRes.yml";
+            indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
+
+            // Australian WILD-LIFE ACOUSTICS RECORDING Group - from Andrew Skeoch - High Resolution analysis
+            //string ipdir = @"D:\SensorNetworks\Output\BradLawData\AWARG\Towsey.Acoustic";
+            //string opdir = @"D:\SensorNetworks\Output\BradLawData\AWARG";
+            //spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramConfigHiRes.yml";
+            //indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
 
             return new Arguments
             {
-                InputDataDirectory = ipDir,
-                OutputDirectory = opDir,
-
-                // use the default set of index properties in the AnalysisConfig directory.
-                IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
-
-                //IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml".ToFileInfo(),
-                SpectrogramConfigPath = fiSpectrogramConfig,
+                InputDataDirectory = new DirectoryInfo(ipdir),
+                OutputDirectory = new DirectoryInfo(opdir),
+                IndexPropertiesConfig = new FileInfo(indexPropertiesFile),
+                SpectrogramConfigPath = new FileInfo(spectrogramConfigFile),
             };
     }
 

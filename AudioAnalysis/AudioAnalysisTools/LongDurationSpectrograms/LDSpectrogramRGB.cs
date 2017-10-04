@@ -456,33 +456,41 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             var matrix = this.GetMatrix(key);
 
-            // get min, max from index properties file
+            // get min, max normalisation bounds from the index properties file
             var indexProperties = this.spectralIndexProperties[key];
-            double min = indexProperties.NormMin;
-            double max = indexProperties.NormMax;
+            double minBound = indexProperties.NormMin;
+            double maxBound = indexProperties.NormMax;
 
-            // check to determine if user wants to use the automated bound.
+            // check if user wants to use the automated bounds.
             if (this.IndexStats != null)
             {
                 if (indexProperties.CalculateNormMin)
                 {
-                    min = this.IndexStats[key].Mode;
+                    //min = this.IndexStats[key].Mode;
+                    minBound = this.IndexStats[key].Mode - (this.IndexStats[key].StandardDeviation * 0.1);
 
                     // fix case where signal is defective &= zero. We do not want ACI min ever set too low.
-                    if (key.Equals("ACI") && min < 0.3)
+                    if (key.Equals("ACI") && minBound < 0.3)
                     {
-                        min = indexProperties.NormMin;
+                        minBound = indexProperties.NormMin;
                     }
                 }
 
                 if (indexProperties.CalculateNormMax)
                 {
-                    max = this.IndexStats[key].GetValueOfNthPercentile(IndexDistributions.UpperPercentileDefault);
+                    maxBound = this.IndexStats[key].GetValueOfNthPercentile(IndexDistributions.UpperPercentileDefault);
+
+                    // correct for case where max bound = zero. This can happen where ICD is very short i.e. 0.1s.
+                    if (maxBound < 0.0001)
+                    {
+                        maxBound = this.IndexStats[key].Maximum * 0.1;
+                    }
                 }
             }
 
-            Log.Debug("GetNormalisedSpectrogramMatrix(key=" + key + "): min bound=" + min + "      max bound=" + max); // check min, max values
-            matrix = MatrixTools.NormaliseInZeroOne(matrix, min, max);
+            // check min, max values
+            Log.Debug("GetNormalisedSpectrogramMatrix(key=" + key + "): min bound=" + minBound + "      max bound=" + maxBound);
+            matrix = MatrixTools.NormaliseInZeroOne(matrix, minBound, maxBound);
 
             // de-demphasize the background small values
             matrix = MatrixTools.FilterBackgroundValues(matrix, this.BackgroundFilter);

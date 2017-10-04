@@ -14,19 +14,18 @@ AbbreviatedSpeciesName: L.convex
 #DoNoiseReduction: true
 BgNoiseThreshold: 0.1
 
-# The Limnodynastes convex call has three major peaks. The dominant peak is at 1850 or as set above.
-# The second and third peak are at equal gaps below. i.e. dominantFreq-gap and dominantFreq-(2*gap);
-# Set the gap here: should be in range 880 to 970
-DominantFrequency: 1850
+# The Limnodynastes convex call has three major peaks. The dominant peak is at 1850 or as set below.
+# The second and third peaks are at equal gaps below. i.e. dominantFreq-gap and dominantFreq-(2*gap);
+# Set the gap here: should be in range 440 to 500
+TopFrequency: 2100
 
-# Possible future additional parameters to control required call characteristics.
+# Possible future additional parameter to control required call characteristics.
 # PeakGap: 470 
-# MinHz: 850 
 
 # Decibel threshold for the dominant peak: Use this to require a minimum decibel SNR value for a valid call.
-PeakThreshold: 10.0
+PeakThresholdDecibels: 6.0
 # Event threshold - use this to determine FP / FN trade-off for events. CosineSimilarity to template in 0,1.
-EventThreshold: 0.2
+EventThreshold: 0.6
 
 ################################################################################
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
