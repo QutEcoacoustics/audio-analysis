@@ -34,7 +34,7 @@ namespace AcousticWorkbench
                 Method = HttpMethod.Get,
             };
 
-            var response = await this.Client.SendAsync(request);
+            var response = await this.HttpClient.SendAsync(request);
 
             return await this.ProcessApiResult<Media>(response);
         }
@@ -61,7 +61,7 @@ namespace AcousticWorkbench
 
             // this is just blocking until the response is ready to start streaming
             // and NOT blocking until the entire response has been read!
-            var response = await this.Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            var response = await this.HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
             if (response.IsSuccessStatusCode)
             {

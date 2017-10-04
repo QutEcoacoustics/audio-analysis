@@ -32,7 +32,7 @@ namespace AcousticWorkbench
             };
             AddAuthTokenHeader(request.Headers, token);
 
-            var result = await this.Client.SendAsync(request);
+            var result = await this.HttpClient.SendAsync(request);
 
             return await this.ProcessResult(result);
         }
@@ -51,7 +51,7 @@ namespace AcousticWorkbench
                 body = this.SerializeContent(new LoginRequest() { Login = username, Password = password });
             }
 
-            var result = await this.Client.PostAsync(uri, body);
+            var result = await this.HttpClient.PostAsync(uri, body);
 
             return await this.ProcessResult(result);
         }

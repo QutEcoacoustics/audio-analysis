@@ -7,12 +7,14 @@ namespace AnalysisPrograms.EventStatistics
     using System;
     using System.IO;
     using System.Linq;
+    using System.Net;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using AcousticWorkbench.Orchestration;
     using AnalysisBase;
+    using AnalysisBase.ResultBases;
     using AnalysisBase.Segment;
     using AudioAnalysisTools.EventStatistics;
     using global::AcousticWorkbench;
@@ -109,8 +111,17 @@ namespace AnalysisPrograms.EventStatistics
             // read events/annotation file
             Log.Info("Now reading input data");
 
-            // doing a manual CSV read here to get desired column name flexibility
-            var events = Csv.ReadFromCsv<ImportedEvent>(arguments.Source, throwOnMissingField: false).ToArray();
+            // Read events from provided CSV file.
+            // Also tag them with an order index to allow sorting in the same order as they were provided to us.
+            var events = Csv
+                .ReadFromCsv<ImportedEvent>(arguments.Source, throwOnMissingField: false)
+                .Select(
+                    (x, i) =>
+                    {
+                        x.Order = i;
+                        return x;
+                    })
+                .ToArray();
 
             if (events.Length == 0)
             {
@@ -143,6 +154,8 @@ namespace AnalysisPrograms.EventStatistics
             // wait for 1 second per event - this should be an order of magnitude greater than what is needed
             ISegment<AudioRecording>[] segments = await metadataTask.TimeoutAfter(events.Length);
 
+            Log.Info($"Metadata collected, preparing to start analysis");
+
             // finally time to start preparing jobs
             ISourcePreparer preparer = new RemoteSourcePreparer(authenticatedApi, allowSegmentcutting: false);
 
@@ -162,10 +175,21 @@ namespace AnalysisPrograms.EventStatistics
 
             var results = coordinator.Run(segments, analysis, settings);
 
+            var allEvents = results.SelectMany(es => es.Events).ToArray();
+
+            var eventsWithErrors = allEvents.Count(x => ((EventStatistics)x).Error);
+            if (eventsWithErrors > 0)
+            {
+                Log.Warn($"Errors occurred when calculating statistics for {eventsWithErrors} events.");
+            }
+
+            Log.Trace("Sorting event statistics results");
+            Array.Sort(allEvents);
+
             Log.Info("Executing summary");
 
             // TODO: implement if needed
-            analysis.SummariseResults(settings, null, null, null, null, results);
+            analysis.SummariseResults(settings, null, allEvents, null, null, results);
 
             Log.Debug("Summary complete");
 
@@ -180,8 +204,18 @@ namespace AnalysisPrograms.EventStatistics
 
             // NOTE: we are only saving event files
             Log.Info($"Writing results to {resultName}");
-            analysis.WriteEventsFile(resultName.ToFileInfo(), results.SelectMany(es => es.Events));
+            analysis.WriteEventsFile(resultName.ToFileInfo(), allEvents.AsEnumerable());
             Log.Debug("Writing events completed");
+
+            var summaryStats = new
+            {
+                numberEvents = allEvents.Length,
+                durationEvents = allEvents.Sum(x => ((EventStatistics)x).EventDurationSeconds),
+                numberRecordings = allEvents.Select(x => ((EventStatistics)x).AudioRecordingId).Distinct().Count(),
+                durationAudioProcessed = results.Sum(x => x.SegmentAudioDuration.TotalSeconds),
+                remoteAudioDownloaded = (preparer as RemoteSourcePreparer)?.TotalBytesRecieved,
+            };
+            Log.Info("Summary statistics:\n" + Json.SerialiseToString(summaryStats));
 
             Log.Success("Event statistics analysis complete!");
         }

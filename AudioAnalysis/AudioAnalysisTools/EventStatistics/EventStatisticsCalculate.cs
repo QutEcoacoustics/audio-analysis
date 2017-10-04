@@ -78,6 +78,18 @@ namespace AudioAnalysisTools.EventStatistics
             // shift coordinates relative to segment
             var localTemporalTarget = temporalTarget.Shift(-segmentStartOffset);
 
+            if (!recording
+                .Duration
+                .AsRangeFromZero()
+                .IntersectsWith(localTemporalTarget, Topology.MinimumInclusiveMaximumExclusive))
+            {
+                stats.Error = true;
+                stats.ErrorMessage =
+                    $"Audio not long enough ({recording.Duration}) to analyze target ({localTemporalTarget})";
+
+                return stats;
+            }
+
             // convert recording to spectrogram
             int sampleRate = recording.SampleRate;
             double epsilon = recording.Epsilon;

@@ -14,6 +14,7 @@ namespace Acoustics.Shared.Csv
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Drawing;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -80,11 +81,22 @@ namespace Acoustics.Shared.Csv
             {
                 // change the defaults here if you want
                 var settings = new CsvConfiguration()
-                                   {
-                                       HasHeaderRecord = true,
-                                       TrimHeaders = true,
-                                       
-                                   };
+                {
+                    HasHeaderRecord = true,
+
+                    // acoustic workbench outputs faulty data with padded headers
+                    TrimHeaders = true,
+
+                    // ensure we always use InvariantCulture - only reliable way to serialize data
+                    // Additionally R can parse invariant representations of Double.Infinity and
+                    // Double.NaN (whereas it can't in other cultures).
+                    CultureInfo = CultureInfo.InvariantCulture,
+                };
+
+                // ensure dates are always formatted as ISO8601 dates - note: R cannot by default parse proper ISO8601 dates
+                TypeConverterOptionsFactory.AddOptions<DateTimeOffset>(new TypeConverterOptions() { Format = "O" });
+                TypeConverterOptionsFactory.AddOptions<DateTime>(new TypeConverterOptions() { Format = "O" });
+
                 foreach (var classMap in ClassMapsToRegister)
                 {
                     settings.RegisterClassMap(classMap);
@@ -95,11 +107,12 @@ namespace Acoustics.Shared.Csv
         }
 
         /// <summary>
-        /// Serialize results to CSV - if you want the concrete type to be serialized you need to ensure it is downcast before using this method.
+        /// Serialize results to CSV - if you want the concrete type to be serialized you need to ensure
+        /// it is downcast before using this method.
         /// </summary>
         /// <typeparam name="T">The type to serialize.</typeparam>
         /// <param name="destination">The file to create.</param>
-        /// <param name="results"></param>
+        /// <param name="results">The data to serialize.</param>
         public static void WriteToCsv<T>(FileInfo destination, IEnumerable<T> results)
         {
             Contract.Requires(destination != null);
@@ -112,7 +125,6 @@ namespace Acoustics.Shared.Csv
             }
         }
 
-
         /// <summary>
         /// Read an object from a CSV file.
         /// </summary>
@@ -124,8 +136,8 @@ namespace Acoustics.Shared.Csv
         ///
         /// </remarks>
         public static IEnumerable<T> ReadFromCsv<T>(
-            FileInfo source, 
-            bool throwOnMissingField = true, 
+            FileInfo source,
+            bool throwOnMissingField = true,
             Action<CsvReader> readerHook = null)
         {
             Contract.Requires(source != null);
@@ -138,8 +150,8 @@ namespace Acoustics.Shared.Csv
         }
 
         public static IEnumerable<T> ReadFromCsv<T>(
-            string csvText, 
-            bool throwOnMissingField = true, 
+            string csvText,
+            bool throwOnMissingField = true,
             Action<CsvReader> readerHook = null)
         {
             Contract.Requires(csvText != null);
