@@ -95,7 +95,14 @@ namespace AnalysisPrograms.EventStatistics
                     configuration,
                     segmentSettings.SegmentStartOffset);
 
+                if (statistics.Error)
+                {
+                    Log.Warn($"Event statistics failed for {importedEvent.AudioEventId},{temporalRange}," +
+                             $"{spectralRange} in {segmentSettings.SegmentAudioFile}, Duration: {recording.Duration}");
+                }
+
                 // lastly add some metadata to make the results useful
+                statistics.Order = importedEvent.Order;
                 statistics.AudioRecordingId = segment.Source.Id;
                 statistics.AudioRecordingRecordedDate = segment.SourceMetadata.RecordedDate;
                 statistics.AudioEventId = importedEvent.AudioEventId;

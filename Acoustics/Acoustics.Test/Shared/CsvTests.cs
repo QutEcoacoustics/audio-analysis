@@ -24,6 +24,7 @@ namespace Acoustics.Test.Shared
     using global::AnalysisBase.ResultBases;
     using global::AnalysisPrograms.EventStatistics;
     using global::AudioAnalysisTools;
+    using global::AudioAnalysisTools.EventStatistics;
     using global::AudioAnalysisTools.Indices;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -298,6 +299,7 @@ namespace Acoustics.Test.Shared
             var partialExpected = new[]
             {
                 typeof(AcousticEvent.AcousticEventClassMap),
+                typeof(EventStatisticsClassMap),
                 typeof(ImportedEvent.ImportedEventNameClassMap),
             };
 
@@ -373,7 +375,8 @@ namespace Acoustics.Test.Shared
             Assert.That.StringEqualWithDiff(childExpected, childText);
         }
 
-        [TestMethod] public void TestBaseTypesAreSerializedAsEnumerable()
+        [TestMethod]
+        public void TestBaseTypesAreSerializedAsEnumerable()
         {
             var exampleIndices = new SummaryIndexValues();
             IEnumerable<SummaryIndexValues> childArray = exampleIndices.AsArray().AsEnumerable();
@@ -388,6 +391,42 @@ namespace Acoustics.Test.Shared
             var baseText = File.ReadAllText(this.testFile.FullName);
 
             Assert.AreEqual(childText, baseText);
+        }
+
+        [TestMethod]
+        public void TestInvariantCultureIsUsed()
+        {
+            var now = new DateTime(1234567891011121314);
+            var nowOffset = new DateTimeOffset(1234567891011121314, TimeSpan.FromHours(10));
+
+            Csv.WriteToCsv(
+                this.testFile,
+                new[] { new { value = -789123.456, infinity = double.NegativeInfinity, nan = double.NaN, date = now, dateOffset = nowOffset } });
+
+            var actual = File.ReadAllText(this.testFile.FullName);
+            var expected = $@"value,infinity,nan,date,dateOffset
+-789123.456,-Infinity,NaN,3913-03-12T00:31:41.1121314,3913-03-12T00:31:41.1121314+10:00
+".NormalizeToCrLf();
+
+            Assert.AreEqual(expected, actual);
+
+        }
+
+        [TestMethod]
+        public void TestInvariantCultureIsUsedMatrix()
+        {
+            Csv.WriteMatrixToCsv(
+                this.testFile,
+                new[,] { { -789123.456, double.NegativeInfinity,  double.NaN } });
+
+            var actual = File.ReadAllText(this.testFile.FullName);
+
+            var expected = $@"Index,c000000,c000001,c000002
+0,-789123.456,-Infinity,NaN
+".NormalizeToCrLf();
+
+            Assert.AreEqual(expected, actual);
+
         }
 
         private void AssertCsvEqual(string expected, FileInfo actual)

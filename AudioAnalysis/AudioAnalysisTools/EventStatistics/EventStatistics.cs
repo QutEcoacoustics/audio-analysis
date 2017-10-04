@@ -120,6 +120,39 @@ namespace AudioAnalysisTools.EventStatistics
         /// Gets or sets the event's signal-to-noise ratio in decibels.
         /// </summary>
         public double SnrDecibels { get; set; }
+
+        public bool Error { get; set; } = false;
+
+        public string ErrorMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets a metadata field used for sorting results. Not serialized in CSV output.
+        /// </summary>
+        public int Order { get; set; }
+
+        /// <inheritdoc />
+        /// <summary>
+        /// Sorts the results by their <see cref="P:AudioAnalysisTools.EventStatistics.EventStatistics.Order" /> property if it is available otherwise reverts to the base
+        /// class comparison.
+        /// </summary>
+        /// <param name="other">An object to compare with this instance.</param>
+        /// <returns>A value that indicates the relative order of the objects being compared</returns>
+        public override int CompareTo(ResultBase other)
+        {
+            if (other is EventStatistics otherEventStatistics)
+            {
+                var comaprison = this.Order.CompareTo(otherEventStatistics.Order);
+
+                return comaprison == 0 ? base.CompareTo(other) : comaprison;
+            }
+
+            return base.CompareTo(other);
+        }
+
+        public override int CompareTo(object obj)
+        {
+            return this.CompareTo(obj as ResultBase);
+        }
     }
 
     public sealed class EventStatisticsClassMap : CsvClassMap<EventStatistics>
@@ -136,6 +169,8 @@ namespace AudioAnalysisTools.EventStatistics
                 { nameof(EventStatistics.EventEndSeconds), 3 },
                 { nameof(EventStatistics.LowFrequencyHertz), 4 },
                 { nameof(EventStatistics.HighFrequencyHertz), 5 },
+                { nameof(EventStatistics.Error), 999 },
+                { nameof(EventStatistics.ErrorMessage), 1000 },
             };
 
             var index = 6;
@@ -143,7 +178,7 @@ namespace AudioAnalysisTools.EventStatistics
             {
                 var name = propertyMap.Data.Names.First();
 
-                if (name == nameof(EventBase.Score))
+                if (name == nameof(EventBase.Score) || name == nameof(EventStatistics.Order))
                 {
                     propertyMap.Ignore();
                 }

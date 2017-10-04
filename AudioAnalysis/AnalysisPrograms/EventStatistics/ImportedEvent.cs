@@ -28,6 +28,12 @@ namespace AnalysisPrograms.EventStatistics
 
         public double? HighFrequencyHertz { get; set; }
 
+        /// <summary>
+        /// Gets or sets the order, a tag field that allows us to maintain the order of imported events, as provided to
+        /// the program.
+        /// </summary>
+        internal int Order { get; set; }
+
         public bool IsValid()
         {
             return this.AudioEventId.HasValue ||

@@ -106,13 +106,13 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
 
             // the transform block can't `Complete` unless it's output is empty
             // so add a buffer block to store the transform block's output
-            var buffer = new BufferBlock<RemoteSegmentWithData>();
+            var bufferBlock = new BufferBlock<RemoteSegmentWithData>();
 
             // link the two parts of block A
             getRecordingIdBlock.LinkTo(groupRecordingsBlock);
 
             // link the two parts of block B
-            createSegmentsBlock.LinkTo(buffer);
+            createSegmentsBlock.LinkTo(bufferBlock);
 
             // kick off the chain, resolve audio recording ids and group
             foreach (var record in events)
@@ -124,9 +124,14 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
             Log.Trace("Finished posting messages to recording id resolver");
             getRecordingIdBlock.Complete();
 
-            Log.Trace("Begin waiting for ids to resolve");
+            Log.Trace("Waiting for getRecordingIdBlock to resolve");
             await getRecordingIdBlock.Completion;
-            Log.Trace("Finish waiting for ids to resolve");
+            Log.Trace("Waiting for groupRecordingsBlock to resolve");
+            groupRecordingsBlock.Complete();
+            await groupRecordingsBlock.Completion;
+
+            var eventCount = groupedEvents.Sum(kvp => kvp.Value.Count);
+            Log.Trace($"Finished waiting for recording ids to resolve, {eventCount} events grouped into {groupedEvents.Count} recordings");
 
             // now post the grouped audio recordings to the segment generating block
             foreach (var keyValuePair in groupedEvents)
@@ -142,9 +147,28 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
             await createSegmentsBlock.Completion;
             Log.Trace("Finished waiting for metadata downloader");
 
-            if (buffer.TryReceiveAll(out var segments))
+            if (bufferBlock.TryReceiveAll(out var segments))
             {
-                return segments.ToArray();
+                RemoteSegmentWithData[] segmentsArray;
+                int finalEventCount;
+                lock (segments)
+                {
+                    segmentsArray = segments.ToArray();
+
+                    // do some excessive logic checking because we used to have race conditions
+                    finalEventCount = segmentsArray.Sum(x => x.Data.Count);
+                    if (events.Length != finalEventCount)
+                    {
+                        throw new InvalidOperationException(
+                            $"The number of supplied events ({events.Length}) did" +
+                            $" not match the number of events that had metadata resolved ({finalEventCount})" +
+                            " - a race condition has occurred");
+                    }
+                }
+
+                Log.Info($"Metadata generated for {finalEventCount} events, {segmentsArray.Length} segments created");
+
+                return segmentsArray;
             }
             else
             {

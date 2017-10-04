@@ -38,7 +38,7 @@ namespace AcousticWorkbench
                 },
                 out var stringBody);
 
-            var response = await this.Client.PostAsync(uri, body);
+            var response = await this.HttpClient.PostAsync(uri, body);
 
             var audioEvents = await this.ProcessApiResult<AudioEvent[]>(response, stringBody);
 

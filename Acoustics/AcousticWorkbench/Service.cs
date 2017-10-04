@@ -5,6 +5,7 @@
 namespace AcousticWorkbench
 {
     using System;
+    using System.Diagnostics.Contracts;
     using System.Net;
     using System.Net.Http;
     using System.Net.Http.Headers;
@@ -16,9 +17,16 @@ namespace AcousticWorkbench
 
     public abstract class Service
     {
-        public static readonly TimeSpan ClientTimeout = TimeSpan.FromSeconds(120);
-
-        protected readonly HttpClient Client;
+        /// <summary>
+        /// The amount of time to wait for a request to be processed.
+        /// </summary>
+        /// <remarks>
+        /// We dynamically scale this value to the number of CPU cores multiplied by 10 seconds each so that in cases
+        /// where there is back pressure the async requests do not prematurely timeout. This is important because the
+        /// timeout calculation for HttpClient *includes* the time the request is waiting to be sent as well as the
+        /// total request time.
+        /// </remarks>
+        public static readonly TimeSpan ClientTimeout = TimeSpan.FromSeconds(120 + (Environment.ProcessorCount * 10));
 
         private const string ApplicationJson = "application/json";
 
@@ -29,13 +37,23 @@ namespace AcousticWorkbench
 
         private readonly JsonSerializerSettings jsonSerializerSettings;
 
+        static Service()
+        {
+            // control application wide HTTP concurrency. The limit is applied per host and is automatically used
+            // by HttpClient.
+            // https://docs.microsoft.com/en-us/dotnet/framework/network-programming/managing-connections
+            // Since typically the acoustic workbench servers should be able to handle a signficant amount of work, we
+            // up the number of allowed connections so we can make better use of parallel CPUs.
+            ServicePointManager.DefaultConnectionLimit = Math.Min(64, Environment.ProcessorCount * 4);
+        }
+
         protected Service(IApi api)
         {
-            this.Client = new HttpClient();
+            this.HttpClient = new HttpClient();
 
-            this.Client.Timeout = ClientTimeout;
-            this.Client.DefaultRequestHeaders.Accept.Add(MediaTypeWithQualityHeaderValue.Parse(ApplicationJson));
-            this.Client.BaseAddress = api.Base();
+            this.HttpClient.Timeout = ClientTimeout;
+            this.HttpClient.DefaultRequestHeaders.Accept.Add(MediaTypeWithQualityHeaderValue.Parse(ApplicationJson));
+            this.HttpClient.BaseAddress = api.Base();
 
             this.jsonSerializerSettings = new JsonSerializerSettings { ContractResolver = this.defaultContractResolver };
         }
@@ -44,10 +62,12 @@ namespace AcousticWorkbench
             : this((IApi)authenticatedApi)
         {
             this.AuthenticatedApi = authenticatedApi;
-            AddAuthTokenHeader(this.Client.DefaultRequestHeaders, authenticatedApi.Token);
+            AddAuthTokenHeader(this.HttpClient.DefaultRequestHeaders, authenticatedApi.Token);
         }
 
         protected IAuthenticatedApi AuthenticatedApi { get; }
+
+        protected HttpClient HttpClient { get; }
 
         protected static void AddAuthTokenHeader(HttpRequestHeaders headers, string token)
         {
@@ -78,11 +98,30 @@ namespace AcousticWorkbench
         protected async Task<T> ProcessApiResult<T>(HttpResponseMessage response, string requestBody = "")
         {
             var json = await response.Content.ReadAsStringAsync();
-            var result = this.Deserialize<T>(json);
+
+            AcousticWorkbenchResponse<T> result = null;
+            try
+            {
+                result = this.Deserialize<T>(json);
+            }
+            catch (JsonReaderException)
+            {
+                // throw if it was meant to work... if not then we're already in an error case... best effort to get to
+                // error handling block below.
+                if (response.IsSuccessStatusCode)
+                {
+                    throw;
+                }
+            }
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpResponseException(response, result.Meta, requestBody);
+                throw new HttpResponseException(response, result?.Meta, requestBody);
+            }
+
+            if (result == null)
+            {
+                throw new InvalidOperationException("Service has a null data blob that was not caught by error handling");
             }
 
             return result.Data;

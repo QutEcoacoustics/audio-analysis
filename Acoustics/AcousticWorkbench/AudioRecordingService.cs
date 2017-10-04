@@ -22,7 +22,7 @@ namespace AcousticWorkbench
         {
             var uri = this.AuthenticatedApi.GetAudioRecordingUri(audioRecordingId);
 
-            var response = await this.Client.GetAsync(uri);
+            var response = await this.HttpClient.GetAsync(uri);
 
             return await this.ProcessApiResult<AudioRecording>(response);
         }

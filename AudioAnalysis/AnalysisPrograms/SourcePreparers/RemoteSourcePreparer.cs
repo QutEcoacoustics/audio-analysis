@@ -1,9 +1,11 @@
 namespace AnalysisPrograms.SourcePreparers
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Net.Sockets;
     using System.Reflection;
     using System.Threading.Tasks;
     using Acoustics.Shared;
@@ -22,18 +24,20 @@ namespace AnalysisPrograms.SourcePreparers
     /// </summary>
     public class RemoteSourcePreparer : ISourcePreparer
     {
+        private static readonly double[] RetryDelay = { 0.1, 0.5, 5.0 };
         private static readonly ILog Log = LogManager.GetLogger(nameof(RemoteSourcePreparer));
-        private readonly IAuthenticatedApi authenticatedApi;
+        private readonly ConcurrentBag<long> recievedSizeTracker = new ConcurrentBag<long>();
         private readonly bool allowSegmentcutting;
         private readonly MediaService mediaService;
 
         public RemoteSourcePreparer(IAuthenticatedApi authenticatedApi, bool allowSegmentcutting = true)
         {
-            this.authenticatedApi = authenticatedApi;
             this.allowSegmentcutting = allowSegmentcutting;
 
-            this.mediaService = new MediaService(this.authenticatedApi);
+            this.mediaService = new MediaService(authenticatedApi);
         }
+
+        public long TotalBytesRecieved => this.recievedSizeTracker.Sum();
 
         /// <summary>
         /// Prepare an audio file. This will be a single segment of a larger audio file, 
@@ -222,6 +226,69 @@ namespace AnalysisPrograms.SourcePreparers
                 ? (byte)0
                 : (channelSelection == null ? (byte?)null : (byte)channelSelection[0]);
 
+            int attemptCount = 0;
+            while (attemptCount < RetryDelay.Length)
+            {
+                if (attemptCount > 0)
+                {
+                    Log.Debug(
+                        $"Attempting to download media: {recording.Id}, {segment.Offsets} - attempt {attemptCount}");
+
+                    destination.TryDelete();
+                }
+
+                attemptCount++;
+
+                try
+                {
+                    var length = await this.DownloadSegment(
+                        source,
+                        targetSampleRateHz,
+                        recording,
+                        segment,
+                        channel,
+                        destination);
+
+                    // exit retry loop if successful
+                    break;
+                }
+                catch (IOException ioex) when (ioex.InnerException is SocketException)
+                {
+                    Log.Warn($"Media download failed {recording.Id}, {segment.Offsets}", ioex);
+                }
+                catch (RemoteSourcePreparerException rspex) when (attemptCount < RetryDelay.Length)
+                {
+                    Log.Warn($"Media download failed {recording.Id}, {segment.Offsets}", rspex);
+                }
+
+                // back off and then try again
+                await Task.Delay(RetryDelay[attemptCount].Seconds());
+            }
+
+            // finally inspect the bit of audio we downloaded, extract the metadata, and return a file segment
+            var preparedFile = new FileSegment(destination, TimeAlignment.None);
+
+            // do some sanity checks
+            var expectedDuration = segment.Offsets.Size().Seconds();
+            var durationDelta = expectedDuration - preparedFile.TargetFileDuration.Value;
+            if (durationDelta > 1.0.Seconds())
+            {
+                Log.Warn(
+                    $"Downloaded media ({recording.Id}, {segment.Offsets}) did not have expected duration."
+                    + $" Expected: {expectedDuration}, Actual: {preparedFile.TargetFileDuration}");
+            }
+
+            return preparedFile;
+        }
+
+        private async Task<long> DownloadSegment<TSource>(
+            ISegment<TSource> source,
+            int? targetSampleRateHz,
+            AudioRecording recording,
+            RemoteSegment segment,
+            byte? channel,
+            FileInfo destination)
+        {
             Log.Debug($"Downloading media: {recording.Id}, {segment.Offsets}");
             var (stream, contentLength) = await this.mediaService.DownloadMediaWave(
                 recording.Id,
@@ -258,23 +325,12 @@ namespace AnalysisPrograms.SourcePreparers
             {
                 throw new RemoteSourcePreparerException(
                     "Downloaded media has a content length of zero bytes. This means media download has failed."
-                    + $"{recording.Id}, { segment.Offsets} (file: {destination})");
+                    + $"{recording.Id}, {segment.Offsets} (file: {destination})");
             }
 
-            // finally inspect the bit of audio we downloaded, extract the metadata, and return a file segment
-            var preparedFile = new FileSegment(destination, TimeAlignment.None);
+            this.recievedSizeTracker.Add(length);
 
-            // do some sanity checks
-            var expectedDuration = segment.Offsets.Size().Seconds();
-            var durationDelta = expectedDuration - preparedFile.TargetFileDuration.Value;
-            if (durationDelta > 1.0.Seconds())
-            {
-                Log.Warn(
-                    $"Downloaded media ({recording.Id}, {segment.Offsets}) did not have expected duration."
-                    + $" Expected: {expectedDuration}, Actual: {preparedFile.TargetFileDuration}");
-            }
-
-            return preparedFile;
+            return length;
         }
     }
 }
