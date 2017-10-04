@@ -122,7 +122,7 @@ namespace AnalysisPrograms
             // files containing output from event recognizers.
             // Used only to get Event Recognizer files - set eventDirs=null if not used
             DirectoryInfo[] eventDirs = null;
-            string eventFilePattern = "";
+            string eventFilePattern = string.Empty;
 
             // The drive: local = C; work = G; home = E
             string drive = "C"; // the default
@@ -131,6 +131,67 @@ namespace AnalysisPrograms
             string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
             string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_SPT;
 
+            // ########################## CONCATENATION of Sarah Lowe's recordings
+            // The drive: work = G; home = E
+            drive = "G";
+
+            // top level directory
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\ConcatTesting\\TheData"),
+            };
+            string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
+            string opFileStem = "SarahLowe";
+            string opPath = $"{drive}:\\SensorNetworks\\Output\\ConcatTesting\\ConcatOutput";
+            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatSpectrogramFalseColourConfig.yml");
+            FileInfo sunriseDatafile = null;
+            bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
+            dtoStart = new DateTimeOffset(2017, 06, 24, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2017, 07, 02, 0, 0, 0, TimeSpan.Zero);
+            // change PMN to POW because PMN not available in these recordings
+            colorMap2 = "BGN-PMN-R3D";
+
+            // ########################## END of Yvonne's recordings of SM2 and SM4
+
+            /*
+            // ########################## CONCATENATION of Yvonne's recordings of SM2 and SM4
+            // The drive: work = G; home = E
+            drive = "G";
+            // top level directory
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\WavFiles\\TestRecordings\\CompareSM2versusSM4\\MicrophoneTest_AvailaeResult111\\Old_microphone_SM2test"),
+            };
+            string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
+            string opFileStem = "SM2WithOldMics";
+            //string opFileStem = "SM4WithNewMics";
+            string opPath = $"{drive}:\\SensorNetworks\\Output\\WildLifeAcoustics\\MicrophoneTests";
+            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatSpectrogramFalseColourConfig.yml");
+            FileInfo sunriseDatafile = null;
+            bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
+            dtoStart = new DateTimeOffset(2016, 08, 09, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2016, 08, 09, 0, 0, 0, TimeSpan.Zero);
+            // change PMN to POW because PMN not available in these recordings
+            colorMap2 = "BGN-POW-CLS";
+            // ########################## END of Yvonne's recordings of SM2 and SM4
+            */
+
+            /*
+            // ########################## CONCATENATION of Tshering's Bhutan recordings
+            // The drive: work = G; home = E
+            drive = "G";
+
+            // top level directory
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\Bhutan\\DebugConcatenateSourceData"),
+            };
+            string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
+            string opFileStem = "BhutanTest";
+            string opPath = $"{drive}:\\SensorNetworks\\Output\\Bhutan\\DebugConcatenateOutput";
+            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatSpectrogramFalseColourConfig.yml");
+            FileInfo sunriseDatafile = null;
+            bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
+            dtoStart = new DateTimeOffset(2017, 02, 03, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2017, 02, 03, 0, 0, 0, TimeSpan.Zero);
+            // ########################## END of Tshering's recordings
+            */
+
+            /*
             // ########################## CONCATENATION of Kerry Mengersens Data, Puma, South America
             // The drive: work = G; home = E
             drive = "G";
@@ -156,8 +217,8 @@ namespace AnalysisPrograms
             // colour maps for this job
             // colorMap1 = "ACI-ENT-RHZ";
             // colorMap2 = "BGN-POW-SPT";
-
             // ########################## END of Kerry Mengersens Data, Puma, South America
+            */
 
             /*
             // ########################## CONCATENATION of LIZ Znidersic Recordings, Lewin's rail, Tasmania.
@@ -655,9 +716,8 @@ namespace AnalysisPrograms
                 if (indexFiles.Length == 0)
                 {
                     LoggedConsole.WriteErrorLine("\n\nWARNING from method ConcatenateIndexFiles.Execute():");
-                    LoggedConsole.WriteErrorLine("        No files of SUMMARY indices were found.");
-                    LoggedConsole.WriteErrorLine("        Break cycle through days!!! ");
-                    break;
+                    LoggedConsole.WriteErrorLine($"        No files of SUMMARY indices were found for day {thisday}. Ignore this day.");
+                    continue;
                 }
 
                 // CREATE DAY LEVEL OUTPUT DIRECTORY for this day
@@ -683,7 +743,7 @@ namespace AnalysisPrograms
 
                 if (summaryDict == null)
                 {
-                    break;
+                    continue;
                 }
 
                 // REALITY CHECK - check for zero signal and anything else that might indicate defective signal
@@ -720,8 +780,8 @@ namespace AnalysisPrograms
                 if (dirArray.Length == 0)
                 {
                     LoggedConsole.WriteErrorLine("\n\nWARNING from method ConcatenateIndexFiles.Execute():");
-                    LoggedConsole.WriteErrorLine("        No directories of Spectral indices were found.   Break cycle through days!!! ");
-                    break;
+                    LoggedConsole.WriteErrorLine($"        No directories of Spectral indices were found for {thisday}.");
+                    continue;
                 }
 
                 var dictionaryOfSpectralIndices2 = LdSpectrogramStitching.ConcatenateAllSpectralIndexFiles(dirArray, keys, indexGenerationData);
@@ -729,7 +789,7 @@ namespace AnalysisPrograms
                 {
                     LoggedConsole.WriteErrorLine("WARNING from method ConcatenateIndexFiles.Execute():");
                     LoggedConsole.WriteErrorLine("        An empty dictionary of SPECTRAL indices was returned !!! ");
-                    return;
+                    continue;
                 }
 
                 // Calculate the index distribution statistics and write to a json file. Also save as png image

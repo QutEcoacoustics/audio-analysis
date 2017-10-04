@@ -40,14 +40,20 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public static Arguments Dev()
         {
+            Log.Info("Runnung Event Recognizer through the RecognizerEntry.Dev() method.");
+
             // The MULTI-RECOGNISER
             /*
             // Canetoad, Litoria fallax and Limnodynastes convex.
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\MultiLabel\Gympie_CaneToad_Lnasuta_Lfallax.wav";
             //string outputPath    = @"G:\SensorNetworks\Output\Frogs\Multirecognizer_2016December";
-            //string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Ecosounds.MultiRecognizer.yml";
             */
+
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\LitoriaWotjulumensisAndRothii\Lrothii_emerald_river_1014_252497_20131216_180244_30_0.wav";
+            //string recordingPath = @"D:\SensorNetworks\WavFiles\Frogs\SherynBrodie\Lconvex_Lbicolor_GolfC_20170213_183122.wav";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Ecosounds.MultiRecognizer.yml";
+            string outputPath = @"D:\SensorNetworks\Output\Frogs\TestOfRecognizers-2017August";
 
             //Ardea insignis (The White-bellied Herron
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\Heron_commonCall_downsampled.wav";
@@ -58,11 +64,12 @@ namespace AnalysisPrograms.Recognizers.Base
             //string recordingPath = @"E:\SensorNetworks\WavFiles\Bhutan\waklaytar_site3_1379_347093_20160404_062131_40_0.wav";
             //string outputPath = @"G:\SensorNetworks\Output\Bhutan\";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TsheringDema\WBH12HOURS-D_20160403_120000_238min.wav";
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\SecondDeployment\WBH12HOURS-N_20160426_000010.wav";
-            string outputPath = @"C:\SensorNetworks\Output\TsheringDema";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.ArdeaInsignis.yml";
 
-            // Path from Anthony 
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\SecondDeployment\WBH12HOURS-N_20160426_000010.wav";
+            //string outputPath = @"C:\SensorNetworks\Output\TsheringDema";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.ArdeaInsignis.yml";
+
+            // Path from Anthony
             // "C:\Users\Administrator\Desktop\Sensors Analysis\ParallelExecutables\2\AnalysisPrograms.exe" audio2csv - source "Y:\Tshering\WBH_Walaytar\201505 - second deployment\Site2_Waklaytar\24Hours WBH_28032016\WBH12HOURS-D_20160403_120000.wav" - config "C:\Users\Administrator\Desktop\Sensors Analysis\Towsey.ArdeaInsignis.Parallel.yml" - output "Y:\Results\2016Oct31-145124\Tshering\WBH_Walaytar\201505 - second deployment\Site2_Waklaytar\24Hours WBH_28032016\WBH12HOURS-D_20160403_120000.wav" - tempdir F:\2 - m True - n
 
             /*
@@ -83,13 +90,17 @@ namespace AnalysisPrograms.Recognizers.Base
             //Crinia remota
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\CriniaSpecies\EmeraldRiver_CriniaRemota_20140206_032030.wav";
             //string outputPath    = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016November";
-            //string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.CriniaRemota.yml";
+            string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.CriniaRemota.yml";
+            */
 
+            /*
             //Crinia tinnula
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\Crinia\CriniaTinnula.wav";
             //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016October";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Stark.CriniaTinnula.yml";
+            */
 
+            /*
             // Cyclorana novaehollandiae
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\28 Cyclorana novaehollandiae.mp3";
             //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016Sept\Test";
@@ -119,7 +130,9 @@ namespace AnalysisPrograms.Recognizers.Base
             */
 
             // Limnodynastes convex
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
+            //string recordingPath = @"D:\SensorNetworks\WavFiles\Frogs\LimnodynastesSpecies\10 Limnodynastes convexiusculusMONO.wav";
+            //string recordingPath = @"D:\SensorNetworks\WavFiles\Frogs\SherynBrodie\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
+            string recordingPath = @"D:\SensorNetworks\WavFiles\Frogs\SherynBrodie\Lconvex_Paradise_20170206_0220.wav";
             //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\LimnoConvex";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LimnodynastesConvex.yml";
 
@@ -150,16 +163,16 @@ namespace AnalysisPrograms.Recognizers.Base
             //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\Canetoad";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml";
 
-            /*
             // Litoria rothii.
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\49 Litoria rothii.mp3";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\69 Litoria rothii.mp3";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\LitoriaWotjulumensisAndRothii\bickerton_island_1013_255205_20131211_194041_30_0.wav";
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\rothii_bickerton_island_1013_255213_20131212_205130_30_0.wav";
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\rothii_bickerton_island_1013_255213_20131212_205630_30_0.wav";
-            string outputPath = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016October\";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaRothii.yml";
-            */
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\49 Litoria rothii.mp3";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\69 Litoria rothii.mp3";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\LitoriaWotjulumensisAndRothii\bickerton_island_1013_255205_20131211_194041_30_0.wav";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\rothii_bickerton_island_1013_255213_20131212_205130_30_0.wav";
+            //string recordingPath = @"D:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\rothii_bickerton_island_1013_255213_20131212_205630_30_0.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\LitoriaWotjulumensisAndRothii\Lrothii_emerald_river_1014_252497_20131216_180244_30_0.wav";
+            //string outputPath = @"D:\SensorNetworks\Output\Frogs\TestOfRecognizers-2017August\";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaRothii.yml";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.CriniaRemota.yml";
 
             // Litoria rubella
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\50 Litoria rubella.mp3";
@@ -210,23 +223,12 @@ namespace AnalysisPrograms.Recognizers.Base
             };
 
             // #########  NOTE: All other parameters are set in the .yml file assigned to configPath variable above.
-            /*
-            if (!arguments.Source.Exists)
-            {
-                Log.Warn(" >>>>>>>>>>>> WARNING! The Source Recording file cannot be found! This will cause an exception.");
-            }
-            if (!arguments.Config.Exists)
-            {
-                Log.Warn(" >>>>>>>>>>>> WARNING! The Configuration file cannot be found! This will cause an exception.");
-            }
-            */
             return arguments;
         }
 
         /// <summary>
         /// This entrypoint should be used for testing short files (less than 2 minutes)
         /// </summary>
-        /// <param name="arguments"></param>
         public static void Execute(Arguments arguments)
         {
             if (arguments == null)
@@ -330,8 +332,7 @@ namespace AnalysisPrograms.Recognizers.Base
             }
 
             int eventCount = results?.Events?.Length ?? 0;
-            LoggedConsole.WriteLine($"Number of detected events: {eventCount}");
-
+            Log.Info($"Number of detected events: {eventCount}");
             Log.Success(recognizer.Identifier + " recognizer has completed");
         }
     }

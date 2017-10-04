@@ -7,10 +7,8 @@
     using System.IO;
     using System.Linq;
     using System.Text;
-
-    using Shared;
-
     using log4net;
+    using Shared;
 
     /// <summary>
     /// Base abstract class for all audio and spectrogram utilities.
@@ -39,6 +37,17 @@
                 this.Log = LogManager.GetLogger(this.GetType());
             }
         }
+
+        /// <summary>
+        /// Gets or sets ProcessRunnerMaxRetries.
+        /// The maximum number of times a process will attempt a retry after a failure.
+        /// </summary>
+        public int ProcessRunnerMaxRetries { get; set; } = 3;
+
+        /// <summary>
+        /// Gets or sets ProcessRunnerTimeout. That is, how long to wait for a running executable to finish.
+        /// </summary>
+        public TimeSpan ProcessRunnerTimeout { get; set; } = TimeSpan.FromMinutes(3);
 
         /// <summary>
         /// Check that mime type and extension match.
@@ -152,12 +161,12 @@
 
             if (!MediaTypes.IsFileExtRecognised(ext))
             {
-                throw new ArgumentException(string.Format("Extension {0} is not recognised.", ext));
+                throw new ArgumentException($"Extension {ext} is not recognised.");
             }
 
             if (!MediaTypes.IsMediaTypeRecognised(sourceMimeType))
             {
-                throw new ArgumentException(string.Format("Media type {0} is not recognised.", sourceMimeType));
+                throw new ArgumentException($"Media type {sourceMimeType} is not recognised.");
             }
 
         }
@@ -222,7 +231,7 @@
         }
 
         /// <summary>
-        /// Get file extension in uppcase, without dot.
+        /// Get file extension in uppercase, without dot.
         /// </summary>
         /// <param name="file">
         /// The file to get extension from.
@@ -339,7 +348,8 @@
         }
 
         /// <summary>
-        /// Run an executable. Will wait for up to 3 minutes, then kill the process. Will retry up to 3 times if the timeout is reached.
+        /// Run an executable. Will wait for up to <c>ProcessTimeout</c> time,
+        /// then kill the process. Will retry up to 3 times if the timeout is reached.
         /// </summary>
         /// <param name="processRunner">
         /// The process runner.
@@ -352,16 +362,16 @@
         /// </param>
         protected void RunExe(ProcessRunner processRunner, string arguments, string workingDirectory)
         {
+            // set ProcessRunner to have a timeout and retry
+            processRunner.KillProcessOnWaitTimeout = true;
+            processRunner.WaitForExitMilliseconds = Convert.ToInt32(this.ProcessRunnerTimeout.TotalMilliseconds);
+            processRunner.MaxRetries = this.ProcessRunnerMaxRetries;
+            processRunner.WaitForExit = true;
+
             if (this.Log.IsDebugEnabled)
             {
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
-
-                // set ProcessRunner to have a timeout and retry
-                processRunner.KillProcessOnWaitTimeout = true;
-                processRunner.WaitForExitMilliseconds = Convert.ToInt32(TimeSpan.FromMinutes(3).TotalMilliseconds);
-                processRunner.MaxRetries = 3;
-                processRunner.WaitForExit = true;
 
                 processRunner.Run(arguments, workingDirectory);
 

@@ -208,7 +208,7 @@ namespace AudioAnalysisTools.Indices
 
             // Deal with case where the signal waveform is continuous flat with values < 0.001. Has happened!!
             // Although signal appears zero, this condition is required.
-            if (avgSignalEnvelope < 0.001)
+            if (avgSignalEnvelope < 0.0001)
             {
                 Logger.Debug("Segment skipped because avSignalEnvelope is < 0.001!");
                 summaryIndices.ZeroSignal = 1.0;
@@ -424,9 +424,7 @@ namespace AudioAnalysisTools.Indices
             }
 
             // YES WE WILL DO CLUSTERING! to determine cluster count (spectral diversity) and spectral persistence.
-            // Only use midband AMPLITDUE SPECTRUM. In June 2016, the mid-band (i.e. the bird-band) was set to lowerBound=1000Hz, upperBound=8000hz.
-            // NOTE: Clustering is performed only on the midBandAmplSpectrogram of the noise reduced decibelSpectrogram.
-            // NOTE: The amplitudeSpectrogram is already noise reduced at this stage.
+            // Only use midband decibel SPECTRUM. In June 2016, the mid-band (i.e. the bird-band) was set to lowerBound=1000Hz, upperBound=8000hz.
             // Actually do clustering of binary spectra. Must first threshold
             double binaryThreshold = SpectralClustering.DefaultBinaryThresholdInDecibels;
             var midBandSpectrogram = MatrixTools.Submatrix(deciBelSpectrogram, 0, lowerBinBound, deciBelSpectrogram.GetLength(0) - 1, middleBinBound);

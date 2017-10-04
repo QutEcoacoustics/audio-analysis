@@ -308,7 +308,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             writer.WriteConfigValue(AnalysisKeys.NoiseReductionType, this.NoiseReductionType.ToString());
             if (this.NoiseReductionParameter > 1.0)
             {
-                writer.WriteConfigValue(SNR.KeySnr.key_DYNAMIC_RANGE, this.NoiseReductionParameter.ToString("F1"));
+                writer.WriteConfigValue(SNR.KeyDynamicRange, this.NoiseReductionParameter.ToString("F1"));
             }
 
             writer.WriteLine("#");

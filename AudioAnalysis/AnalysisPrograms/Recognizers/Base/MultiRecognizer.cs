@@ -5,7 +5,12 @@
 // <summary>
 //   Defines the MultiRecognizer type.
 //
-// The action type, i.e. the first argument on the command line to call this analysis, should be "EventRecognizer".
+// The action type is EventRecognizer.
+//     i.e. the first argument on the command line to call this analysis, should be "EventRecognizer".
+// The DEV arguments for this action are in the class RecognizerEntry.cs, in the Dev method.
+// In particular, look under the comment: // The MULTI-RECOGNISER
+//     string configPath    = path\AudioAnalysis\AnalysisConfigFiles\Ecosounds.MultiRecognizer.yml";
+// eg: string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Ecosounds.MultiRecognizer.yml";
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 namespace AnalysisPrograms.Recognizers.Base
@@ -16,27 +21,20 @@ namespace AnalysisPrograms.Recognizers.Base
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-    using Acoustics.Tools.Wav;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
     using log4net;
-
     using TowseyLibrary;
 
     public class MultiRecognizer : RecognizerBase
     {
-
         public override string Author => "Ecosounds";
 
         public override string SpeciesName => "MultiRecognizer";
@@ -97,7 +95,6 @@ namespace AnalysisPrograms.Recognizers.Base
                     output.Plots.ForEach(p => p.ScaleDataArray(sonogram.FrameCount));
 
                     plots.AddRange(output.Plots);
-
                 }
             }
 
@@ -126,8 +123,8 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public static RecognizerResults DoCallRecognition(string name, TimeSpan segmentStartOffset, AudioRecording recording, Lazy<IndexCalculateResult[]> indices, DirectoryInfo outputDirectory, int imageWidth)
         {
-            Log.Debug("Looking for recognizer and config files for " + name);
             // load up the standard config file for this species
+            Log.Debug("Looking for recognizer and config files for " + name);
             var configurationFile = ConfigFile.ResolveConfigFile(name + ".yml");
             var configuration = (dynamic)Yaml.Deserialise(configurationFile);
 
@@ -141,8 +138,8 @@ namespace AnalysisPrograms.Recognizers.Base
                 Log.Warn("Sample rate of provided file does does match");
             }
 
-            Log.Info("MultiRecognizer: Executing single recognizer " + name);
             // execute it
+            Log.Info("MultiRecognizer: Executing single recognizer " + name);
             RecognizerResults result = recognizer.Recognize(
                 recording,
                 configuration,
@@ -171,18 +168,17 @@ namespace AnalysisPrograms.Recognizers.Base
 
             // reduce score array down to imageWidth;
             double[] scoreValues = new double[imageWidth];
-            int index = 0;
             for (int i = 0; i < imageWidth; i++)
             {
-                index = (int)Math.Round((scores.Length / (double)imageWidth) * (double)i);
+                var index = (int)Math.Round((scores.Length / (double)imageWidth) * i);
                 scoreValues[i] = scores[index];
             }
 
-            int trackHeight = 20;
-            Brush brush = Brushes.Red;
-            Color[] color = { Color.Blue, Color.LightGreen, Color.Red, Color.Orange, Color.Purple };
-            Font stringFont = new Font("Tahoma", 8);
+            //Color[] color = { Color.Blue, Color.LightGreen, Color.Red, Color.Orange, Color.Purple };
             //Font stringFont = new Font("Arial", 6);
+            Font stringFont = new Font("Tahoma", 8);
+            Brush brush = Brushes.Red;
+            int trackHeight = 20;
 
             var trackImage = new Bitmap(imageWidth, trackHeight);
             Graphics g2 = Graphics.FromImage(trackImage);
@@ -192,14 +188,18 @@ namespace AnalysisPrograms.Recognizers.Base
                 int value = (int)Math.Round(scoreValues[x] * trackHeight);
                 for (int y = 1; y < value; y++)
                 {
-                    if (y > trackHeight) break;
+                    if (y > trackHeight)
+                    {
+                        break;
+                    }
+
                     trackImage.SetPixel(x, trackHeight - y, Color.Black);
                 }
             }
+
             g2.DrawString(name, stringFont, brush, new PointF(1, 1));
             g2.DrawRectangle(new Pen(Color.Gray), 0, 0, imageWidth - 1, trackHeight - 1);
             return trackImage;
         }
-
     }
 }

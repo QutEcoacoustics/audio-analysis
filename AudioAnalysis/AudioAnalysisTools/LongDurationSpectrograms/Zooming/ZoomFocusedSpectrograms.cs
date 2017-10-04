@@ -107,7 +107,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 startTimeOfMaxImage = focalTime - halfMaxImageDuration;
             TimeSpan startTimeOfData = TimeSpan.FromMinutes(Math.Floor(startTimeOfMaxImage.TotalMinutes));
 
-            List<double[]> frameData = ReadFrameData(inputDirectory, fileStem, startTimeOfMaxImage, maxImageDuration, zoomConfig, indexGeneration.SegmentDuration);
+            List<double[]> frameData = ReadFrameData(inputDirectory, fileStem, startTimeOfMaxImage, maxImageDuration, zoomConfig, indexGeneration.MaximumSegmentDuration.Value);
 
             // get the index data to add into the
             TimeSpan imageScale1 = TimeSpan.FromSeconds(0.1);
