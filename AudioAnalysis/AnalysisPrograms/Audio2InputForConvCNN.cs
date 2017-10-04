@@ -160,7 +160,7 @@ namespace AnalysisPrograms
             DirectoryInfo output = arguments.Output;
 
             // 2. get the config dictionary
-            var configDict = GetConfigurationForConvCNN(configFile);
+            var configDict = GetConfigurationForConvCnn(configFile);
 
             // print out the parameters
             LoggedConsole.WriteLine("\nPARAMETERS");
