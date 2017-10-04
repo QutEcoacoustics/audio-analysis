@@ -111,8 +111,8 @@ namespace AnalysisPrograms
             {
                 return new AnalysisSettings
                            {
-                               SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                               SegmentMinDuration = TimeSpan.FromSeconds(20),
+                               AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
+                               AnalysisMinSegmentDuration = TimeSpan.FromSeconds(20),
                                SegmentMediaType = MediaTypes.MediaTypeWav,
                                SegmentOverlapDuration = TimeSpan.Zero,
                            };
@@ -156,7 +156,7 @@ namespace AnalysisPrograms
             }
 
             var recording = new AudioRecording(audioFile);
-            var segmentDuration = recording.Duration();
+            var segmentDuration = recording.Duration;
             if (recording.SampleRate != aedConfiguration.ResampleRate)
             {
                 throw new ArgumentException(
@@ -177,7 +177,6 @@ namespace AnalysisPrograms
             return Tuple.Create(events, recording, sonogram);
         }
 
-
         public static AcousticEvent[] CallAed(BaseSonogram sonogram, AedConfiguration aedConfiguration, TimeSpan segmentStartOffset, TimeSpan segmentDuration)
         {
             Log.Info("AED start");
@@ -194,7 +193,7 @@ namespace AnalysisPrograms
                     Tuple.Create(
                         (double)aedConfiguration.BandpassMinimum.Value,
                         (double)aedConfiguration.BandpassMaximum.Value);
-                aedOptions.BandPassFilter = bandPassFilter.ToOption();
+                aedOptions.BandPassFilter = new FSharpOption<Tuple<double, double>>(bandPassFilter);
             }
 
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(aedOptions,   sonogram.Data);
@@ -209,6 +208,7 @@ namespace AnalysisPrograms
                     }
 
                     return new AcousticEvent(
+                        segmentStartOffset,
                         o,
                         sonogram.NyquistFrequency,
                         sonogram.Configuration.FreqBinCount,
@@ -216,16 +216,13 @@ namespace AnalysisPrograms
                         sonogram.FrameStep,
                         sonogram.FrameCount)
                     {
-                        SegmentStartOffset = segmentStartOffset,
                         BorderColour = aedConfiguration.AedEventColor,
                         HitColour = aedConfiguration.AedHitColor,
-                        SegmentDuration = segmentDuration,
+                        SegmentDurationSeconds = segmentDuration.TotalSeconds,
                     };
                 }).ToArray();
             return events;
         }
-
-
 
         public static Arguments Dev(object obj)
         {
@@ -249,7 +246,6 @@ namespace AnalysisPrograms
             return image.GetImage();
         }
 
-
         public static void Execute(Arguments arguments)
         {
             if (arguments == null)
@@ -267,7 +263,6 @@ namespace AnalysisPrograms
             DirectoryInfo outputDir = arguments.Output.Combine(EcosoundsAedIdentifier);
             outputDir.Create();
 
-
             Log.Info("# Output folder =" + outputDir);
             Log.Info("# Recording file: " + recodingFile.Name);
 
@@ -283,7 +278,6 @@ namespace AnalysisPrograms
             image.Save(outputImagePath.FullName, ImageFormat.Png);
             Log.Info("Image saved to: " + outputImagePath.FullName);
 
-
             // output csv
             var outputCsvPath = outputDir.CombineFile(recodingBaseName + ".Events.csv");
             WriteEventsFileStatic(outputCsvPath, results.Item1);
@@ -292,42 +286,40 @@ namespace AnalysisPrograms
             TowseyLibrary.Log.WriteLine("Finished");
         }
 
-
-        public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
-            FileInfo audioFile = analysisSettings.AudioFile;
+            FileInfo audioFile = segmentSettings.SegmentAudioFile;
 
             var aedConfig = GetAedParametersFromConfigFileOrDefaults(analysisSettings.Configuration);
 
-            var results = Detect(audioFile, aedConfig, analysisSettings.SegmentStartOffset.Value);
+            var results = Detect(audioFile, aedConfig, segmentSettings.SegmentStartOffset);
 
-            var analysisResults = new AnalysisResult2(analysisSettings, results.Item2.Duration());
+            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, results.Item2.Duration());
             analysisResults.AnalysisIdentifier = this.Identifier;
             analysisResults.Events = results.Item1;
             BaseSonogram sonogram = results.Item3;
 
-            if (analysisSettings.EventsFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
-                this.WriteEventsFile(analysisSettings.EventsFile, analysisResults.Events);
-                analysisResults.EventsFile = analysisSettings.EventsFile;
+                this.WriteEventsFile(segmentSettings.SegmentEventsFile, analysisResults.Events);
+                analysisResults.EventsFile = segmentSettings.SegmentEventsFile;
             }
 
-            if (analysisSettings.SummaryIndicesFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
                 analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
 
-                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
-                analysisResults.SummaryIndicesFile = analysisSettings.SummaryIndicesFile;
+                this.WriteSummaryIndicesFile(segmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
+                analysisResults.SummaryIndicesFile = segmentSettings.SegmentSummaryIndicesFile;
             }
 
-
             // save image of sonograms
-            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 Image image = DrawSonogram(sonogram, results.Item1);
-                image.Save(analysisSettings.ImageFile.FullName, ImageFormat.Png);
-                analysisResults.ImageFile = analysisSettings.ImageFile;
+                image.Save(segmentSettings.SegmentImageFile.FullName, ImageFormat.Png);
+                analysisResults.ImageFile = segmentSettings.SegmentImageFile;
             }
 
             return analysisResults;

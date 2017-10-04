@@ -43,7 +43,7 @@
             double thresholdSD = 0.1;       //Set threshold to 1/5th of a standard deviation of the background noise.
             maxDuration = double.MaxValue;  //Do not constrain maximum length of events.
 
-            var tuple = AcousticEvent.GetSegmentationEvents(sonogram, doSegmentation, minHz, maxHz, smoothWindow, thresholdSD, minDuration, maxDuration);
+            var tuple = AcousticEvent.GetSegmentationEvents(sonogram, doSegmentation, TimeSpan.Zero, minHz, maxHz, smoothWindow, thresholdSD, minDuration, maxDuration);
             var segmentEvents = tuple.Item1;
             intensity = tuple.Item5;
             Log.WriteLine("Number of segments={0}", segmentEvents.Count);
@@ -58,8 +58,19 @@
             //EXTRACT SCORES AND ACOUSTIC EVENTS
             scores = GetOscillationScores(hits, minHz, maxHz, sonogram.FBinWidth);
             double[] oscFreq = GetOscillationFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
-            events = ConvertODScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, sonogram.Configuration.FreqBinCount, scoreThreshold,
-                                            minDuration, maxDuration, sonogram.Configuration.SourceFName);
+            events = ConvertODScores2Events(
+                scores,
+                oscFreq,
+                minHz,
+                maxHz,
+                sonogram.FramesPerSecond,
+                sonogram.FBinWidth,
+                sonogram.Configuration.FreqBinCount,
+                scoreThreshold,
+                minDuration,
+                maxDuration,
+                sonogram.Configuration.SourceFName,
+                TimeSpan.Zero);
 
             //events = segmentEvents;  //#################################### to see segment events in output image.
             DateTime endTime2 = DateTime.Now;
@@ -496,15 +507,26 @@
         /// <param name="maxHz">upper freq bound of the acoustic event</param>
         /// <param name="framesPerSec">the time scale required by AcousticEvent class</param>
         /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
+        /// <param name="freqBinCount"></param>
         /// <param name="scoreThreshold">OD score must exceed this threshold to count as an event</param>
         /// <param name="minDuration">duration of event must exceed this to count as an event</param>
         /// <param name="maxDuration">duration of event must be less than this to count as an event</param>
         /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
+        /// <param name="segmentStartOffset"></param>
         /// <returns></returns>
-        public static List<AcousticEvent> ConvertODScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz,
-                                                               double framesPerSec, double freqBinWidth, int freqBinCount,
-                                                               double scoreThreshold, double minDuration, double maxDuration,
-                                                               string fileName)
+        public static List<AcousticEvent> ConvertODScores2Events(
+            double[] scores,
+            double[] oscFreq,
+            int minHz,
+            int maxHz,
+            double framesPerSec,
+            double freqBinWidth,
+            int freqBinCount,
+            double scoreThreshold,
+            double minDuration,
+            double maxDuration,
+            string fileName,
+            TimeSpan segmentStartOffset)
         {
             int count = scores.Length;
 
@@ -529,7 +551,7 @@
                         double endTime = i * frameOffset;
                         double duration = endTime - startTime;
                         if ((duration < minDuration) || (duration > maxDuration)) continue; //skip events with duration shorter than threshold
-                        AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
+                        AcousticEvent ev = new AcousticEvent(segmentStartOffset, startTime, duration, minHz, maxHz);
                         ev.Name = "OscillationEvent"; //default name
                         ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                         ev.FileName = fileName;

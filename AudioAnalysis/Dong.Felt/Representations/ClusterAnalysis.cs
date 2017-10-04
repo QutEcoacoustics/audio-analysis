@@ -407,24 +407,27 @@
             var rotateDoubleMatrix = MatrixTools.MatrixRotate90Clockwise(doubleMatrix);
             /// based on spectrogram intensity matrix directly
             //var rotateDoubleMatrix = sonogram.Data;
-            var aedOptions = new AedOptions(sonogram.NyquistFrequency)
+
+            throw new NotImplementedException("Intentionally broken in refactor");
+            AedOptions aedOptions = null; /*new AedOptions(sonogram.NyquistFrequency)
                                  {
                                      IntensityThreshold = 0.5,
                                      //IntensityThreshold = 10.0,
                                      SmallAreaThreshold = 30,
-                                     BandPassFilter = Tuple.Create(500.0, 9000.0).ToOption(),
+                                     BandPassFilter =  null, //Tuple.Create(500.0, 9000.0),
                                      DoNoiseRemoval = false,
                                      LargeAreaHorizontal = Default.SeparateStyle.Skip,
                                      LargeAreaVeritical = Default.SeparateStyle.Skip,
                                      //LargeAreaHorizontal = Default.SeparateStyle.NewVertical(new Default.SeparateParameters(5000, 10, 10, false)),
                                      //LargeAreaVeritical = Default.SeparateStyle.NewHorizontal(new Default.SeparateParameters(2000, 20, 10, false))
-                                 };
+                                 };*/
             var oblongs = AcousticEventDetection.detectEvents(aedOptions, rotateDoubleMatrix);
              //=> to call a anonymous method
             var events = oblongs.Select(
                 o =>
                 {
                     var e = new AcousticEvent(
+                        TimeSpan.Zero,
                         o,
                         sonogram.NyquistFrequency,
                         sonogram.Configuration.FreqBinCount,
@@ -459,7 +462,8 @@
             var rotateDoubleMatrix = MatrixTools.MatrixRotate90Clockwise(doubleMatrix);
             /// based on spectrogram intensity matrix directly
             //var rotateDoubleMatrix = sonogram.Data;
-            var aedOptions = new AedOptions(sonogram.NyquistFrequency)
+            throw new NotImplementedException("Intentionally broken in refactor");
+            AedOptions aedOptions = null; /*new AedOptions(sonogram.NyquistFrequency)
             {
                 IntensityThreshold = 0.5,
                 SmallAreaThreshold = 50,
@@ -469,13 +473,14 @@
                 LargeAreaVeritical = Default.SeparateStyle.Skip,
                 //LargeAreaHorizontal = Default.SeparateStyle.NewVertical(new Default.SeparateParameters(5000, 10, 10, false)),
                 //LargeAreaVeritical = Default.SeparateStyle.NewHorizontal(new Default.SeparateParameters(2000, 20, 10, false))
-            };
+            };*/
             var oblongs = AcousticEventDetection.detectEvents(aedOptions, rotateDoubleMatrix);
             //=> to call a anonymous method
             var events = oblongs.Select(
                 o =>
                 {
                     var e = new AcousticEvent(
+                        TimeSpan.Zero,
                         o,
                         sonogram.NyquistFrequency,
                         sonogram.Configuration.FreqBinCount,
@@ -555,10 +560,10 @@
                         // so split the event into 2 small events
                         // To further check whether the energy in the splitted events are sparse
                         var e1 = new AcousticEvent();
-                        e1.TimeStart = 0.0;
-                        e1.TimeEnd = 0.0;
-                        e1.MinFreq = e.MinFreq;
-                        e1.MaxFreq = e.MaxFreq;
+                        e1.SetEventPositionRelative(TimeSpan.Zero, 0, 0);
+
+                        e1.LowFrequencyHertz = e.LowFrequencyHertz;
+                        e1.HighFrequencyHertz = e.HighFrequencyHertz;
                         var o = new Oblong(e.Oblong.RowTop, e.Oblong.ColumnLeft, e.Oblong.RowBottom, e.Oblong.ColumnRight);
                         e1.Oblong = o;
                         e1.Oblong.RowBottom = e.Oblong.RowTop + splitRowIndex - 1;
@@ -567,10 +572,10 @@
                         result.Add(e1);
 
                         var e2 = new AcousticEvent();
-                        e2.TimeStart = 0.0;
-                        e2.TimeEnd = 0.0;
-                        e2.MinFreq = e.MinFreq;
-                        e2.MaxFreq = e.MaxFreq;
+                        e2.SetEventPositionRelative(TimeSpan.Zero, 0, 0);
+
+                        e2.LowFrequencyHertz = e.LowFrequencyHertz;
+                        e2.HighFrequencyHertz = e.HighFrequencyHertz;
                         var o2 = new Oblong(e.Oblong.RowTop, e.Oblong.ColumnLeft, e.Oblong.RowBottom, e.Oblong.ColumnRight);
                         e2.Oblong = o2;
                         e2.Oblong.RowTop = e.Oblong.RowTop + splitRowIndex;

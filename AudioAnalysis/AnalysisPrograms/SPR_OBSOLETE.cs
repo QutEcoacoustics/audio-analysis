@@ -73,7 +73,6 @@
             string opPath        = outputDir + opFName;
             Log.WriteIfVerbose("# Output folder =" + outputDir);
 
-
             // A: READ PARAMETER VALUES FROM INI FILE
             var config = new ConfigDictionary(iniPath);
             Dictionary<string, string> dict = config.GetTable();
@@ -97,7 +96,6 @@
 
             double eventThreshold = double.Parse(dict[key_EVENT_THRESHOLD]);     //min score for an acceptable event
             int DRAW_SONOGRAMS = Convert.ToInt16(dict[key_DRAW_SONOGRAMS]);
-
 
             // B: CHECK to see if conversion from .MP3 to .WAV is necessary
             var destinationAudioFile = recordingPath;
@@ -148,9 +146,16 @@
                 scores = result3.Item1;
                 hits = DataTools.AddMatrices(mHori, mVert);
 
-                predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, whip_MinHz, whip_MaxHz,
-                                                              sonogram.FramesPerSecond, sonogram.FBinWidth,
-                                                              eventThreshold, minDuration, maxDuration);
+                predictedEvents = AcousticEvent.ConvertScoreArray2Events(
+                    scores,
+                    whip_MinHz,
+                    whip_MaxHz,
+                    sonogram.FramesPerSecond,
+                    sonogram.FBinWidth,
+                    eventThreshold,
+                    minDuration,
+                    maxDuration,
+                    TimeSpan.Zero);
                 foreach (AcousticEvent ev in predictedEvents)
                 {
                     ev.FileName = audioFileName;
@@ -193,8 +198,16 @@
                 scores = DataTools.PeriodicityDetection(scores, minPeriod_frames, maxPeriod_frames);
 
                 //extract events
-                predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, whistle_MinHz, whistle_MaxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
-                                                              eventThreshold, minDuration, maxDuration);
+                predictedEvents = AcousticEvent.ConvertScoreArray2Events(
+                    scores,
+                    whistle_MinHz,
+                    whistle_MaxHz,
+                    sonogram.FramesPerSecond,
+                    sonogram.FBinWidth,
+                    eventThreshold,
+                    minDuration,
+                    maxDuration,
+                    TimeSpan.Zero);
                 foreach (AcousticEvent ev in predictedEvents)
                 {
                     ev.FileName = audioFileName;
@@ -228,9 +241,16 @@
                 scores = result3.Item1;
                 hits = DataTools.AddMatrices(mHori, mVert);
 
-                predictedEvents = AcousticEvent.ConvertIntensityArray2Events(scores, whistle_MinHz, whistle_MaxHz,
-                                                              sonogram.FramesPerSecond, sonogram.FBinWidth,
-                                                              eventThreshold, 0.5, maxDuration);
+                predictedEvents = AcousticEvent.ConvertIntensityArray2Events(
+                    scores,
+                    TimeSpan.Zero,
+                    whistle_MinHz,
+                    whistle_MaxHz,
+                    sonogram.FramesPerSecond,
+                    sonogram.FBinWidth,
+                    eventThreshold,
+                    0.5,
+                    maxDuration);
                 foreach (AcousticEvent ev in predictedEvents)
                 {
                     ev.FileName = audioFileName;
@@ -245,7 +265,6 @@
             Log.WriteIfVerbose("Number of Events: " + count);
             string str = string.Format("{0}\t{1}\t{2}", callName, sigDuration, count);
             FileTools.WriteTextFile(opPath, AcousticEvent.WriteEvents(predictedEvents, str).ToString());
-
 
             // SAVE IMAGE
             string imageName = outputDir + audioFileName;
@@ -271,7 +290,6 @@
                     DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold);
                 }
 
-
             Log.WriteIfVerbose("Image saved to: " + imagePath);
             //string savePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath);
             //string suffix = string.Empty;
@@ -282,8 +300,6 @@
             LoggedConsole.WriteLine("\nFINISHED RECORDING!");
             Console.ReadLine();
         }
-
-
 
         public static double[,] MarkLine(double[,] m, int degrees, int lineLength, double intensityThreshold, double sensitivity)
         {
@@ -342,7 +358,6 @@
             return mOut;
         }// MarkLine()
 
-
         //public static Tuple<double[,]> doNoiseRemoval(BaseSonogram sonogram, double intensityThreshold, int smallLengthThreshold)
         //{
         //    Log.WriteLine("Wiener filter start");
@@ -355,8 +370,6 @@
 
         //    return Tuple.Create(w);
         //}
-
-
 
         public static Tuple<double[]> DetectWhipBird(double[,] mHori, double[,] mVert,
                                                  int minBound_Whistle, int maxBound_Whistle, int optimumWhistleDuration,
@@ -422,8 +435,6 @@
             return tuple;
         }//end detect Whipbird
 
-
-
         public static Tuple<double[]> DetectCurlew(double[,] rising, double[,] falling,
                                          int minBound_Whistle, int maxBound_Whistle, int whistleDuration, int lineLength)
         {
@@ -483,7 +494,6 @@
             var tuple = Tuple.Create(scores);
             return tuple;
         }//end detect Curlew
-
 
         public static void DrawSonogram(BaseSonogram sonogram, string path, double[,] hits, double[] scores,
                                 List<AcousticEvent> predictedEvents, double eventThreshold)

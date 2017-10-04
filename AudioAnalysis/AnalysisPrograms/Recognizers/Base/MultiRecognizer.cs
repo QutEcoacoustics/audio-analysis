@@ -41,13 +41,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public override RecognizerResults Recognize(
-            AudioRecording audioRecording,
-            dynamic configuration,
-            TimeSpan segmentStartOffset,
-            Lazy<IndexCalculateResult[]> getSpectralIndexes,
-            DirectoryInfo outputDirectory,
-            int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             // this is a multi recognizer - it does no actual analysis itself
 

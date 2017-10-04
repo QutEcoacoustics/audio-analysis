@@ -14,11 +14,6 @@ namespace AnalysisBase.ResultBases
     /// </summary>
     public class SummaryIndexBase : ResultBase
     {
-
-
-
         public int RankOrder { get; set; }
-
-
     }
 }

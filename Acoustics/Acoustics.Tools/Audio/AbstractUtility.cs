@@ -419,17 +419,17 @@
 
             if (file == null)
             {
-                throw new ArgumentNullException("file");
+                throw new ArgumentNullException(nameof(file));
             }
 
             if (!File.Exists(file.FullName))
             {
-                throw new ArgumentException("File does not exist: " + file, "file");
+                throw new ArgumentException("File does not exist: " + file, nameof(file));
             }
 
             if (file.Length < 1)
             {
-                throw new ArgumentException("File exists, but does not contain anything: " + file, "file");
+                throw new ArgumentException("File exists, but does not contain anything: " + file, nameof(file));
             }
         }
 
@@ -449,7 +449,7 @@
                 throw new ArgumentException(
                     "Bit rate " + value + " is not valid for mp3. Must be one of: "
                     + string.Join(", ", bitRates.Select(i => i.ToString(CultureInfo.InvariantCulture))),
-                    "value");
+                    nameof(value));
             }
         }
 

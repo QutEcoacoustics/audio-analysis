@@ -2,7 +2,6 @@
 //https://wiki.qut.edu.au/display/mquter/Audio+Analysis+Processing+Architecture
 //
 
-
 namespace AnalysisPrograms
 {
 
@@ -61,9 +60,6 @@ namespace AnalysisPrograms
         //public const string key_MAX_FREQ = "maxFreq";
         public const string key_SCORE = "score";
         public const string key_PERIODICITY = "periodicity";
-
-
-
 
         //KEYS TO OUTPUT INDICES
         public static string key_COUNT     = "count";
@@ -185,7 +181,7 @@ namespace AnalysisPrograms
         {
             string opFileName = "temp.wav";
             //######################################################################
-            var results = Analysis(fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
+            var results = Analysis(fiSegmentOfSourceFile, configDict, diOutputDir, opFileName, TimeSpan.Zero);
             //######################################################################
 
             if (results == null) return null;
@@ -194,7 +190,6 @@ namespace AnalysisPrograms
             var scores = results.Item3;
             var predictedEvents = results.Item4;
             var recordingTimeSpan = results.Item5;
-
 
             double segmentDuration = double.Parse(configDict[key_SEGMENT_DURATION]);
             double segmentStartMinute = segmentDuration * iter;
@@ -212,14 +207,13 @@ namespace AnalysisPrograms
                 {
                     ev.FileName = fName;
                     //ev.Name = analysisName; //name is the periodicity
-                    ev.SegmentDuration = recordingTimeSpan;
+                    ev.SegmentDurationSeconds = recordingTimeSpan.TotalSeconds;
                 }
                 //write events to a data table to return.
                 dataTable = WriteEvents2DataTable(segmentStartMinute, recordingTimeSpan, predictedEvents);
                 string sortString = key_START_ABS + " ASC";
                 dataTable = DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
             }
-
 
             //draw images of sonograms
             int DRAW_SONOGRAMS = int.Parse(configDict[key_DRAW_SONOGRAMS]);         // options to draw sonogram
@@ -244,7 +238,7 @@ namespace AnalysisPrograms
             string opFileName = newFileNameWithoutExtention + ".wav";
 
             //######################################################################
-            var results = Analysis(fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
+            var results = Analysis(fiSegmentOfSourceFile, configDict, diOutputDir, opFileName, TimeSpan.Zero);
             //######################################################################
             var sonogram = results.Item1;
             var hits = results.Item2;
@@ -264,10 +258,14 @@ namespace AnalysisPrograms
         /// Does the Analysis
         /// Returns a DataTable
         /// </summary>
+        /// <param name="fiSegmentOfSourceFile"></param>
+        /// <param name="configDict"></param>
+        /// <param name="diOutputDir"></param>
+        /// <param name="opFileName"></param>
+        /// <param name="segmentStartOffset"></param>
         /// <param name="config"></param>
         /// <param name="segmentAudioFile"></param>
-        public static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, TimeSpan>
-                                        Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir, string opFileName)
+        public static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, TimeSpan> Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir, string opFileName, TimeSpan segmentStartOffset)
         {
             //set default values
             int bandWidth = 500; //detect bars in bands of this width.
@@ -287,9 +285,8 @@ namespace AnalysisPrograms
             double frameDuration = frameSize / (double)sr;
             double frameOffset   = frameDuration * (1 - windowOverlap); //seconds between start of each frame
             double framesPerSecond = 1 / frameOffset;
-            TimeSpan tsRecordingtDuration = recording.Duration();
+            TimeSpan tsRecordingtDuration = recording.Duration;
             int colStep = (int)Math.Round(bandWidth / binWidth);
-
 
             //i: GET SONOGRAM AS MATRIX
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
@@ -332,7 +329,7 @@ namespace AnalysisPrograms
                 if (maxRow >= rowCount) maxRow = rowCount-1;
 
                 Oblong o = new Oblong(minRow, minCol, maxRow, maxCol);
-                var ae = new AcousticEvent(o, results2.NyquistFreq, frameSize, frameDuration, frameOffset, frameCount);
+                var ae = new AcousticEvent(segmentStartOffset, o, results2.NyquistFreq, frameSize, frameDuration, frameOffset, frameCount);
                 ae.Name = string.Format("p={0:f0}", periodicity);
                 ae.Score = item[key_SCORE];
                 ae.ScoreNormalised = item[key_SCORE] / 0.5;
@@ -362,7 +359,6 @@ namespace AnalysisPrograms
 
             return Tuple.Create(sonogram, hitsMatrix, amplitudeArray, acousticEvents, tsRecordingtDuration);
         } //Analysis()
-
 
         public static Tuple<List<Dictionary<string, double>>, double[]> DetectGratingEvents(double[,] matrix, int colStep, double intensityThreshold)
         {
@@ -415,14 +411,12 @@ namespace AnalysisPrograms
             return Tuple.Create(events2return, array2return);
         }//end DetectGratingEvents()
 
-
         static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, double[] scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
             //Log.WriteLine("# Start to draw image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
             double maxScore = 32.0; //assume max period = 64.
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-
 
             //System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
             //img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
@@ -435,7 +429,6 @@ namespace AnalysisPrograms
             if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             return image.GetImage();
         } //DrawSonogram()
-
 
         public static DataTable WriteEvents2DataTable(double segmentStartMinute, TimeSpan tsSegmentDuration, List<AcousticEvent> predictedEvents)
         {
@@ -464,7 +457,6 @@ namespace AnalysisPrograms
             }
             return dataTable;
         }
-
 
         /// <summary>
         /// Converts a DataTable of events to a datatable where one row = one minute of indices
@@ -500,7 +492,6 @@ namespace AnalysisPrograms
             return newtable;
         }
 
-
         //public static List<Dictionary<string, double>> ExtractMyPeriodicEvents(double[] intensity, double[] periodicity, double intensityThreshold)
         //{
         //    //could do a possible adjustment of the threshold for period.
@@ -521,8 +512,6 @@ namespace AnalysisPrograms
         //    } //foreach
         //    return list;
         //} //ExtractPeriodicEvents()
-
-
 
         //public static List<Dictionary<string, double>> ExtractPeriodicEvents(double[] intensity, double[] periodicity, double intensityThreshold)
         //{

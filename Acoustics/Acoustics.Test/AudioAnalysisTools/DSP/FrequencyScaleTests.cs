@@ -13,6 +13,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
+    using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
     using TowseyLibrary;
@@ -346,7 +347,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var freqScale = new FrequencyScale(sampleRate / 2, windowSize, 1000);
             var outputImagePath = Path.Combine(this.outputDirectory.FullName, "Signal1_LinearFreqScale.png");
 
-            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics, "cos");
+            var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Consine);
             var sonoConfig = new SonogramConfig
             {
                 WindowSize = freqScale.WindowSize,
@@ -403,7 +404,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
             var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
             var outputImagePath = Path.Combine(this.outputDirectory.FullName, "Signal2_OctaveFreqScale.png");
-            var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics, "cos");
+            var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Consine);
 
             // init the default sonogram config
             var sonoConfig = new SonogramConfig

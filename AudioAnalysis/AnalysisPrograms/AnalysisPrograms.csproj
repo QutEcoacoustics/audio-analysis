@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AnalysisPrograms</RootNamespace>
     <AssemblyName>AnalysisPrograms</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <StartupObject>AnalysisPrograms.MainEntry</StartupObject>
     <TargetZone>LocalIntranet</TargetZone>
@@ -96,6 +96,7 @@
     <CodeContractsSuggestReadonly>True</CodeContractsSuggestReadonly>
     <CodeContractsSkipAnalysisIfCannotConnectToCache>False</CodeContractsSkipAnalysisIfCannotConnectToCache>
     <CodeContractsBeingOptimisticOnExternal>True</CodeContractsBeingOptimisticOnExternal>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -106,6 +107,7 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\Release\AnalysisPrograms.XML</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'AudioAnalysis|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
@@ -120,6 +122,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Core|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
@@ -137,15 +140,17 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="alglibnet2">
       <HintPath>..\..\Extra Assemblies\alglibnet2.dll</HintPath>
     </Reference>
     <Reference Include="CsvHelper, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
-      <HintPath>..\packages\CsvHelper.2.7.0\lib\net40-client\CsvHelper.dll</HintPath>
+      <HintPath>..\packages\CsvHelper.2.16.2.0\lib\net40\CsvHelper.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+    <Reference Include="FSharp.Core, Version=4.4.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\FSharp.Core.4.2.3\lib\net45\FSharp.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FSharp.PowerPack, Version=4.0.0.1, Culture=neutral, processorArchitecture=MSIL">
@@ -162,18 +167,28 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\FSPowerPack.Parallel.Seq.Community.3.0.0.0\Lib\Net40\FSharp.PowerPack.Parallel.Seq.dll</HintPath>
     </Reference>
-    <Reference Include="log4net">
-      <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.8\lib\net40-full\log4net.dll</HintPath>
     </Reference>
     <Reference Include="MathNet.Numerics, Version=2.6.1.30, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MathNet.Numerics.2.6.2\lib\net40\MathNet.Numerics.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Threading.Tasks, Version=1.0.12.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Threading.Tasks.Extensions, Version=1.0.12.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Threading.Tasks.Extensions.Desktop, Version=1.0.168.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.Extensions.Desktop.dll</HintPath>
+    </Reference>
     <Reference Include="PowerArgs">
       <HintPath>..\..\Extra Assemblies\PowerArgs\PowerArgs.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -182,7 +197,33 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Drawing" />
-    <Reference Include="System.ValueTuple, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+    <Reference Include="System.IO, Version=2.6.10.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.1.1.10\lib\net40\System.IO.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net40\System.Net.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net40\System.Net.Http.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.Primitives, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net40\System.Net.Http.Primitives.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Remoting" />
+    <Reference Include="System.Threading.Tasks, Version=2.6.10.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.1.1.10\lib\net40\System.Threading.Tasks.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Dataflow, Version=4.5.24.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Tpl.Dataflow.4.5.24\lib\portable-net45+win8+wpa81\System.Threading.Tasks.Dataflow.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.4.0-preview2-25405-01\lib\portable-net40+sl4+win8+wp8\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq">
@@ -204,17 +245,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AcousticHiResIndicesPlusRecognizers.cs" />
+    <Compile Include="AcousticWorkbench.Orchestration\EventMetadataResolver.cs" />
+    <Compile Include="AcousticWorkbench.Orchestration\RemoteSegment.cs" />
     <Compile Include="AED.cs" />
     <Compile Include="AnalyseLongRecordings\AnalyseLongRecording.cs" />
     <Compile Include="AnalyseLongRecordings\AnalyseLongRecordings.Arguments.cs" />
     <Compile Include="AnalyseLongRecordings\AnalyseLongRecordings.Dev.cs" />
     <Compile Include="AnalysesAvailable.cs" />
-    <Compile Include="AnalysisTemplate.cs" />
     <Compile Include="Audio2Sonogram.cs" />
     <Compile Include="AudioCutter.cs" />
     <Compile Include="AudioFileCheck.cs" />
     <Compile Include="Draw\Zooming\DrawZoomingSpectrograms.Arguments.cs" />
     <Compile Include="Draw\Zooming\DrawZoomingSpectrograms.Dev.cs" />
+    <Compile Include="EventStatistics\EventStatisticsEntry.Arguments.cs" />
+    <Compile Include="EventStatistics\EventStatisticsAnalysis.cs" />
+    <Compile Include="EventStatistics\EventStatisticsEntry.cs" />
+    <Compile Include="EventStatistics\ImportedEvent.cs" />
     <Compile Include="LitoriaFallax_OBSOLETE.cs" />
     <Compile Include="LimnodynastesConvex_OBSOLETE.cs" />
     <Compile Include="CanetoadOld_OBSOLETE.cs" />
@@ -255,13 +301,15 @@
     <Compile Include="Recognizers\LitoriaOlong.cs" />
     <Compile Include="Recognizers\LitoriaFallax.cs" />
     <Compile Include="Recognizers\RhinellaMarina.cs" />
+    <Compile Include="SourcePreparers\RemoteSourcePreparer.cs" />
     <Compile Include="SourcePreparers\LocalSourcePreparer.cs" />
+    <Compile Include="SourcePreparers\RemoteSourcePreparerException.cs" />
     <Compile Include="SURFAnalysis.cs" />
     <Compile Include="OscillationsGeneric.cs" />
     <Compile Include="DifferenceSpectrogram.cs" />
     <Compile Include="Dong.Felt.Main.cs" />
     <Compile Include="DrawLongDurationSpectrograms.cs" />
-    <Compile Include="DummyAnalyser.cs" />
+    <Compile Include="DummyAnalysis.cs" />
     <Compile Include="EPR.cs" />
     <Compile Include="FileRenamer.cs" />
     <Compile Include="Frogs_OBSOLETE.cs" />
@@ -281,12 +329,10 @@
     <Compile Include="LSKiwi3.cs" />
     <Compile Include="LSKiwiHelper.cs" />
     <Compile Include="LSKiwiROC.cs" />
-    <Compile Include="MultiAnalyser_OBSOLETE.cs" />
     <Compile Include="OscillationRecogniser.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PlanesTrainsAndAutomobiles.cs" />
-    <Compile Include="Production\Runner.cs" />
     <Compile Include="Rain_OBSOLETE.cs" />
     <Compile Include="RheobatrachusSilus.cs" />
     <Compile Include="Sandpit.cs" />
@@ -313,6 +359,10 @@
     <ProjectReference Include="..\..\Acoustics\Acoustics.Tools\Acoustics.Tools.csproj">
       <Project>{0338570E-5A77-4A2E-8E17-7955C36AE1F7}</Project>
       <Name>Acoustics.Tools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Acoustics\AcousticWorkbench\AcousticWorkbench.csproj">
+      <Project>{e92afa1b-b089-4cc3-b765-3b4cff84e294}</Project>
+      <Name>AcousticWorkbench</Name>
     </ProjectReference>
     <ProjectReference Include="..\AED\AED\AED.fsproj">
       <Project>{993980a0-8d06-4635-8296-40e9fff9c301}</Project>
@@ -375,9 +425,8 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.0-beta001\analyzers\dotnet\cs\Newtonsoft.Json.dll" />
-    <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.0-beta001\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
-    <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.0-beta001\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.0-beta004\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.0-beta004\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -459,5 +508,7 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
   </Target>
+  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
 </Project>

@@ -35,16 +35,16 @@ namespace AudioAnalysisTools.DSP
         /// CONSTRUCTOR
         /// Calling this constructor assumes a full-scale linear freq scale is required
         /// </summary>
-        public FrequencyScale(int nyquist, int frameSize, int herzLinearGridInterval)
+        public FrequencyScale(int nyquist, int frameSize, int hertzLinearGridInterval)
         {
             this.ScaleType = FreqScaleType.Linear;
             this.Nyquist = nyquist;
             this.WindowSize = frameSize;
             this.FinalBinCount = frameSize / 2;
-            this.HerzLinearGridInterval = herzLinearGridInterval;
+            this.HertzLinearGridInterval = hertzLinearGridInterval;
             this.LinearBound = nyquist;
             this.BinBounds = this.GetLinearBinBounds();
-            this.GridLineLocations = GetLinearGridLineLocations(nyquist, this.HerzLinearGridInterval, this.FinalBinCount);
+            this.GridLineLocations = GetLinearGridLineLocations(nyquist, this.HertzLinearGridInterval, this.FinalBinCount);
         }
 
         /// <summary>
@@ -61,10 +61,10 @@ namespace AudioAnalysisTools.DSP
                 this.Nyquist = 11025;
                 this.WindowSize = 512;
                 this.FinalBinCount = 256;
-                this.HerzLinearGridInterval = 1000;
+                this.HertzLinearGridInterval = 1000;
                 this.LinearBound = this.Nyquist;
                 this.BinBounds = this.GetLinearBinBounds();
-                this.GridLineLocations = GetLinearGridLineLocations(this.Nyquist, this.HerzLinearGridInterval, 256);
+                this.GridLineLocations = GetLinearGridLineLocations(this.Nyquist, this.HertzLinearGridInterval, 256);
             }
             else if (fst == FreqScaleType.Mel)
             {
@@ -75,9 +75,9 @@ namespace AudioAnalysisTools.DSP
                 this.Nyquist = 11025;
                 this.WindowSize = 512;
                 this.FinalBinCount = 256;
-                this.HerzLinearGridInterval = 1000;
+                this.HertzLinearGridInterval = 1000;
                 this.LinearBound = this.Nyquist;
-                this.GridLineLocations = GetLinearGridLineLocations(this.Nyquist, this.HerzLinearGridInterval, 256);
+                this.GridLineLocations = GetLinearGridLineLocations(this.Nyquist, this.HertzLinearGridInterval, 256);
             }
             else
             {
@@ -114,7 +114,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Gets or sets herz interval between gridlines when using a linear scale
         /// </summary>
-        public int HerzLinearGridInterval { get; set; }
+        public int HertzLinearGridInterval { get; set; }
 
         /// <summary>
         /// Gets or sets top end of the linear part of an Octave Scale spectrogram
@@ -271,7 +271,7 @@ namespace AudioAnalysisTools.DSP
             // assume mel scale grid lines will only go up to 10 kHz.
             var vScale = new int[10, 2];
 
-            //LoggedConsole.WriteLine("minMel=" + minMel.ToString("F1") + " melRange=" + melRange + " herzLinearGridInterval=" + herzLinearGridInterval + " imageHt=" + imageHt + " pixelPerMel=" + pixelPerMel);
+            //LoggedConsole.WriteLine("minMel=" + minMel.ToString("F1") + " melRange=" + melRange + " hertzLinearGridInterval=" + hertzLinearGridInterval + " imageHt=" + imageHt + " pixelPerMel=" + pixelPerMel);
 
             for (int f = minFreq + 1; f < maxFreq; f++)
             {

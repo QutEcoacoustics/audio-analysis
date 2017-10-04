@@ -5,7 +5,6 @@
 //od  "C:\SensorNetworks\WavFiles\Canetoad\DM420010_128m_00s__130m_00s - Toads.mp3" C:\SensorNetworks\Output\OD_CaneToad\CaneToad_DetectionParams.txt events.txt
 //
 
-
 namespace AnalysisPrograms
 {
     using System;
@@ -36,9 +35,6 @@ namespace AnalysisPrograms
         //od "C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav" C:\SensorNetworks\Output\OD_KoalaMaleForeplay_LargeTestSet\KoalaMaleForeplay_Params.txt events.txt
         //BRIDGE CREEK
         //od "C:\SensorNetworks\WavFiles\Length1_2_4_8_16mins\BridgeCreek_1min.wav" C:\SensorNetworks\Output\TestWavDuration\DurationTest_Params.txt events.txt
-
-
-
 
         //Keys to recognise identifiers in PARAMETERS - INI file.
         //public static string key_FILE_EXT        = "FILE_EXT";
@@ -89,7 +85,6 @@ namespace AnalysisPrograms
             string opFName   = "OcillationReconiserResults.cav";
             string opPath    = outputDir + opFName;
             Log.WriteIfVerbose("# Output folder =" + outputDir);
-
 
             //READ PARAMETER VALUES FROM INI FILE
             var config = new ConfigDictionary(iniPath);
@@ -143,7 +138,6 @@ namespace AnalysisPrograms
             StringBuilder sb = AcousticEvent.WriteEvents(predictedEvents, str);
             FileTools.WriteTextFile(opPath, sb.ToString());
 
-
             //draw images of sonograms
             string imagePath = outputDir + Path.GetFileNameWithoutExtension(arguments.Source.Name) + ".png";
             if (DRAW_SONOGRAMS == 2)
@@ -158,10 +152,6 @@ namespace AnalysisPrograms
 
             Log.WriteLine("# Finished recording:- " + arguments.Source.Name);
         }
-
-
-
-
 
         public static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, double[], TimeSpan> Execute_ODDetect(FileInfo wavPath,
             bool doSegmentation, int minHz, int maxHz, double frameOverlap, double dctDuration, double dctThreshold, int minOscilFreq, int maxOscilFreq,
@@ -204,7 +194,6 @@ namespace AnalysisPrograms
             return Tuple.Create(sonogram, hits, scores, predictedEvents, segments, analysisTime);
 
         }//end CaneToadRecogniser
-
 
         public static void DrawSonogram(BaseSonogram sonogram, string path, double[,] hits, double[] scores,
                                         List<AcousticEvent> predictedEvents, double eventThreshold, double[] intensity)

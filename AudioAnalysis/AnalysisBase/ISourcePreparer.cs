@@ -3,6 +3,8 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Threading.Tasks;
+    using Segment;
 
     /// <summary>
     /// Interface for preparing source files.
@@ -33,7 +35,13 @@
         /// <returns>
         /// The prepared file.
         /// </returns>
-        FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz);
+        Task<FileSegment> PrepareFile(
+            DirectoryInfo outputDirectory,
+            string source,
+            string outputMediaType,
+            TimeSpan startOffset,
+            TimeSpan endOffset,
+            int targetSampleRateHz);
 
         /// <summary>
         /// Prepare an audio file. This will be a single segment of a larger audio file, modified based on the analysisSettings.
@@ -47,12 +55,6 @@
         /// <param name="outputMediaType">
         ///     The output Media Type.
         /// </param>
-        /// <param name="startOffset">
-        ///     The start Offset from start of entire original file.
-        /// </param>
-        /// <param name="endOffset">
-        ///     The end Offset from start of entire original file.
-        /// </param>
         /// <param name="targetSampleRateHz">
         ///     The target Sample Rate Hz.
         /// </param>
@@ -64,7 +66,14 @@
         /// <returns>
         /// The prepared file.
         /// </returns>
-        FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz, DirectoryInfo temporaryFilesDirectory, int[] channelSelection, bool? mixDownToMono);
+        Task<FileSegment> PrepareFile<TSource>(
+            DirectoryInfo outputDirectory,
+            ISegment<TSource> source,
+            string outputMediaType,
+            int? targetSampleRateHz,
+            DirectoryInfo temporaryFilesDirectory,
+            int[] channelSelection,
+            bool? mixDownToMono);
 
         /// <summary>
         /// Calculate the file segments for analysis.
@@ -78,6 +87,11 @@
         /// <returns>
         /// Enumerable of file segments.
         /// </returns>
-        IEnumerable<FileSegment> CalculateSegments(IEnumerable<FileSegment> fileSegments, AnalysisSettings settings);
+        /// <remarks>
+        /// This API does not fit with the other two. We should consider factoring it out.
+        /// </remarks>
+        IEnumerable<ISegment<TSource>> CalculateSegments<TSource>(
+            IEnumerable<ISegment<TSource>> fileSegments,
+            AnalysisSettings settings);
     }
 }

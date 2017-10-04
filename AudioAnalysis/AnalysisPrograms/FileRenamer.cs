@@ -112,7 +112,6 @@
             Log.Info("Finished.");
         }
 
-
         /// <summary>
         /// Determine new files names and rename if not a dry run.
         /// </summary>
@@ -173,7 +172,6 @@
 
             //var modifiedRecordingStart = lastModified.Round(TimeSpan.FromSeconds(15))
             //                             - duration.Round(TimeSpan.FromSeconds(15));
-
 
             //// DateTime rounded = new DateTime(((now.Ticks + 25000000) / 50000000) * 50000000);
 

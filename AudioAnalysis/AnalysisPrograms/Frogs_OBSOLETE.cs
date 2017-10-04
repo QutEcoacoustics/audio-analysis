@@ -16,6 +16,8 @@
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using AnalysisBase;
+    using AnalysisBase.Extensions;
+    using AnalysisBase.ResultBases;
     using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -23,8 +25,8 @@
     using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
-    [Obsolete]
-    public class Frogs_OBSOLETE : IAnalyser
+    [Obsolete("This code most likely does not work. It should be ported to the new recognizer code base immediately.")]
+    public class Frogs_OBSOLETE : AbstractStrongAnalyser
     {
 
         public class Arguments : AnalyserArguments
@@ -33,7 +35,6 @@
 
         public static string key_FROG_DATA = "FROG_DATA_FILE";
 
-
         //OTHER CONSTANTS
         public const string AnalysisName = "Frogs";
         public const int ResampleRate = 17640;
@@ -41,13 +42,12 @@
         //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
         public const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
 
-
-        public string DisplayName
+        public override string DisplayName
         {
             get { return AnalysisName; }
         }
 
-        public string Identifier
+        public override string Identifier
         {
             get { return "Towsey." + AnalysisName; }
         }
@@ -98,10 +98,6 @@
                     Source = recordingPath.ToFileInfo(),
                     Config = configPath.ToFileInfo(),
                     Output = outputDir.ToDirectoryInfo(),
-                    TmpWav = segmentFName,
-                    Events = eventsFname,
-                    Indices = indicesFname,
-                    Sgram = sonogramFname,
                     Start = tsStart.TotalSeconds,
                     Duration = tsDuration.TotalSeconds,
                 };
@@ -116,45 +112,6 @@
 
             Execute(arguments);
 
-            if (executeDev)
-            {
-                var csvEvents = arguments.Output.CombineFile(arguments.Events);
-                if (!csvEvents.Exists)
-                {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvEvents.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-                var csvIndicies = arguments.Output.CombineFile(arguments.Indices);
-                if (!csvIndicies.Exists)
-                {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvIndicies.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-                var image = arguments.Output.CombineFile(arguments.Sgram);
-                if (image.Exists)
-                {
-                    TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(ImageViewer);
-                    process.Run(image.FullName, arguments.Output.FullName);
-                }
-
-                LoggedConsole.WriteLine("\n\n# Finished analysis:- " + arguments.Source.FullName);
-            }
         }
 
         /// <summary>
@@ -165,11 +122,31 @@
         {
             Contract.Requires(arguments != null);
 
-            AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
             TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
             TimeSpan tsDuration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
 
-            string outputDir    = analysisSettings.ConfigFile.Directory.FullName;
+            string outputDir = arguments.Output.FullName;
+
+            // EXTRACT THE REQUIRED RECORDING SEGMENT
+            FileInfo sourceF = arguments.Source;
+            FileInfo tempF = TempFileHelper.NewTempFile(arguments.Output);
+            if (tempF.Exists) { tempF.Delete(); }
+
+            // GET INFO ABOUT THE SOURCE and the TARGET files - esp need the sampling rate
+            AudioUtilityModifiedInfo preparedFile;
+
+            if (tsDuration == TimeSpan.Zero)  // Process entire file
+            {
+                preparedFile = AudioFilePreparer.PrepareFile(sourceF, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate }, arguments.Output);
+            }
+            else
+            {
+                preparedFile = AudioFilePreparer.PrepareFile(sourceF, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, arguments.Output);
+            }
+
+            var (analysisSettings, segmentSettings) = arguments.ToAnalysisSettings(
+                sourceSegment: preparedFile.SourceInfo.ToSegment(),
+                preparedSegment: preparedFile.TargetInfo.ToSegment());
 
             //get the data file to identify frog calls. Check it exists and then store full path in dictionary.
             string frogParametersPath = analysisSettings.ConfigDict[key_FROG_DATA];
@@ -184,61 +161,43 @@
             }
             analysisSettings.ConfigDict[key_FROG_DATA] = fi_FrogData.FullName; // store full path in the dictionary.
 
-
-            // EXTRACT THE REQUIRED RECORDING SEGMENT
-            FileInfo fiSource = analysisSettings.SourceFile;
-            FileInfo tempF    = analysisSettings.AudioFile;
-            if (tempF.Exists) { tempF.Delete(); }
-
-            // GET INFO ABOUT THE SOURCE and the TARGET files - esp need the sampling rate
-            AudioUtilityModifiedInfo beforeAndAfterInfo;
-
-            if (tsDuration == TimeSpan.Zero)  // Process entire file
-            {
-                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate }, analysisSettings.AnalysisBaseTempDirectoryChecked);
-            }
-            else
-            {
-                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
-            }
-
-            // Store source sample rate - may need during the analysis if have upsampled the source.
-            analysisSettings.SampleRateOfOriginalAudioFile = beforeAndAfterInfo.SourceInfo.SampleRate;
-
             // DO THE ANALYSIS
             // #############################################################################################################################################
-            IAnalyser analyser = new Frogs_OBSOLETE();
-            AnalysisResult result = analyser.Analyse(analysisSettings);
+            IAnalyser2 analyser = new Frogs_OBSOLETE();
+            AnalysisResult2 result = analyser.Analyze(analysisSettings, segmentSettings);
+
+            throw new NotImplementedException("Intentionally broken");
+            /*
             DataTable dt = result.Data;
             if (dt == null) { throw new InvalidOperationException("Data table of results is null"); }
             // #############################################################################################################################################
 
             // ADD IN ADDITIONAL INFO TO RESULTS TABLE
             AddContext2Table(dt, tsStart, result.AudioDuration);
-            CsvTools.DataTable2CSV(dt, analysisSettings.EventsFile.FullName);
+            CsvTools.DataTable2CSV(dt, segmentSettings.SegmentEventsFile.FullName);
             // DataTableTools.WriteTable(augmentedTable);
+            */
         }
 
-        public AnalysisResult Analyse(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
-            var fiAudioF    = analysisSettings.AudioFile;
-            var diOutputDir = analysisSettings.AnalysisInstanceOutputDirectory;
-
-            var result = new AnalysisResult();
-            result.AnalysisIdentifier = this.Identifier;
-            result.SettingsUsed = analysisSettings;
-            result.Data = null;
+            var fiAudioF    = segmentSettings.SegmentAudioFile;
+            var diOutputDir = segmentSettings.SegmentOutputDirectory;
 
             //######################################################################
-            var results = Analysis(fiAudioF, analysisSettings);
+            var results = Analysis(fiAudioF, analysisSettings, segmentSettings.Segment.SourceMetadata.SampleRate, segmentSettings.SegmentStartOffset);
             //######################################################################
 
-            if (results == null) return result; //nothing to process
+            if (results == null) return null; //nothing to process (broken)
             var sonogram = results.Item1;
             var hits = results.Item2;
             var scores = results.Item3;
             var predictedEvents = results.Item4;
             var recordingTimeSpan = results.Item5;
+
+            var result = new AnalysisResult2(analysisSettings, segmentSettings, recordingTimeSpan);
+            result.AnalysisIdentifier = this.Identifier;
+            result.MiscellaneousResults["dataTable"] = null;
 
             DataTable dataTable = null;
 
@@ -250,7 +209,7 @@
                 {
                     ev.FileName = fName;
                     //ev.Name = analysisName; //TEMPORARY DISABLE
-                    ev.SegmentDuration = recordingTimeSpan;
+                    ev.SegmentDurationSeconds = recordingTimeSpan.TotalSeconds;
                 }
                 //write events to a data table to return.
                 dataTable = WriteEvents2DataTable(predictedEvents);
@@ -258,56 +217,82 @@
                 dataTable = DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
             }
 
-            if ((analysisSettings.EventsFile != null) && (dataTable != null))
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
-                CsvTools.DataTable2CSV(dataTable, analysisSettings.EventsFile.FullName);
+                CsvTools.DataTable2CSV(dataTable, segmentSettings.SegmentEventsFile.FullName);
             }
             else
                 result.EventsFile = null;
 
-            if ((analysisSettings.SummaryIndicesFile != null) && (dataTable != null))
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
                 double scoreThreshold = 0.01;
                 if (analysisSettings.ConfigDict.ContainsKey(AnalysisKeys.IntensityThreshold))
                     scoreThreshold = ConfigDictionary.GetDouble(AnalysisKeys.IntensityThreshold, analysisSettings.ConfigDict);
                 TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of i minute
                 var indicesDT = this.ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
-                CsvTools.DataTable2CSV(indicesDT, analysisSettings.SummaryIndicesFile.FullName);
+                CsvTools.DataTable2CSV(indicesDT, segmentSettings.SegmentSummaryIndicesFile.FullName);
             }
             else
-                result.IndicesFile = null;
+                result.SummaryIndices = null;
 
             //save image of sonograms
-            if (analysisSettings.SegmentSaveBehavior.ShouldSave(result.Data.Rows.Count))
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(predictedEvents.Count))
             {
-                string imagePath = analysisSettings.ImageFile.FullName;
+                string imagePath = segmentSettings.SegmentImageFile.FullName;
                 Image image = DrawSonogram(sonogram, hits, scores, predictedEvents);
                 image.Save(imagePath, ImageFormat.Png);
             }
 
-            result.Data = dataTable;
-            result.ImageFile = analysisSettings.ImageFile;
-            result.AudioDuration = recordingTimeSpan;
+            result.MiscellaneousResults["dataTable"] = dataTable;
+            result.ImageFile = segmentSettings.SegmentImageFile;
+
             //result.DisplayItems = { { 0, "example" }, { 1, "example 2" }, }
             //result.OutputFiles = { { "exmaple file key", new FileInfo("Where's that file?") } }
             return result;
-        } //Analyze()
+        }
 
+        public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
+        {
+            throw new NotImplementedException();
+        }
 
+        public override void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
+        {
+            throw new NotImplementedException();
+        }
 
+        public override List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void SummariseResults(
+            AnalysisSettings settings,
+            FileSegment inputFileSegment,
+            EventBase[] events,
+            SummaryIndexBase[] indices,
+            SpectralIndexBase[] spectralIndices,
+            AnalysisResult2[] results)
+        {
+            // noop
+        }
+//Analyze()
 
         /// <summary>
         /// ################ THE KEY ANALYSIS METHOD
         /// Returns a DataTable
         /// </summary>
         /// <param name="fiSegmentOfSourceFile"></param>
+        /// <param name="analysisSettings"></param>
+        /// <param name="originalSampleRate"></param>
+        /// <param name="segmentStartOffset"></param>
         /// <param name="configDict"></param>
         /// <param name="diOutputDir"></param>
-        public static Tuple<BaseSonogram, double[,], List<Plot>, List<AcousticEvent>, TimeSpan>
-                                                                                   Analysis(FileInfo fiSegmentOfSourceFile, AnalysisSettings analysisSettings)
+        public static Tuple<BaseSonogram, double[,], List<Plot>, List<AcousticEvent>, TimeSpan> Analysis(FileInfo fiSegmentOfSourceFile, AnalysisSettings analysisSettings, int originalSampleRate, TimeSpan segmentStartOffset)
         {
             Dictionary<string, string> configDict = analysisSettings.ConfigDict;
-            int originalAudioNyquist = (int)analysisSettings.SampleRateOfOriginalAudioFile / 2; // original sample rate can be anything 11.0-44.1 kHz.
+            int originalAudioNyquist = originalSampleRate / 2; // original sample rate can be anything 11.0-44.1 kHz.
 
             //set default values - ignore those set by user
             int frameSize = 32;
@@ -341,7 +326,7 @@
             sonoConfig.WindowOverlap = windowOverlap;
             //sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
             sonoConfig.NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD");   //must do noise removal
-            TimeSpan tsRecordingtDuration = recording.Duration();
+            TimeSpan tsRecordingtDuration = recording.Duration;
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
             double frameOffset = sonoConfig.GetFrameOffset(sr);
@@ -371,7 +356,6 @@
                 if (tracks[i].Length < minFrameLength) tracks.Remove(tracks[i]);
             } // foreach track
 
-
             foreach (SpectralTrack track in tracks) // find any periodicity in the track and calculate its score.
             {
                 SpectralTrack.DetectTrackPeriodicity(track, xCorrelationLength, listOfFrequencyBins, sonogram.FramesPerSecond);
@@ -383,7 +367,7 @@
             var plots = CreateScorePlots(tracks, rowCount, topBin);
 
             //iv: CONVERT TRACKS TO ACOUSTIC EVENTS
-            List<AcousticEvent> frogEvents = SpectralTrack.ConvertTracks2Events(tracks);
+            List<AcousticEvent> frogEvents = SpectralTrack.ConvertTracks2Events(tracks, segmentStartOffset);
 
             // v: GET FROG IDs
             //var frogEvents = new List<AcousticEvent>();
@@ -401,7 +385,6 @@
 
             return Tuple.Create(sonogram, hitsMatrix, plots, frogEvents, tsRecordingtDuration);
         } //Analysis()
-
 
         /// <summary>
         /// Given the passed feature values (freq and oscRate) calculate p(Data|h[i]) for all hypotheses indexed by i.
@@ -427,7 +410,6 @@
                 List<double> targets = new List<double>();
                 targets.Add((double)((int)row["DominantFreq-Hz"]));
                 targets.Add((double)((int)row["OscRate-cyclesPerSec"]));
-
 
                 probScore[i] = GetNaiveBayesScore(targets.ToArray(), data.ToArray());
             }
@@ -462,98 +444,96 @@
             return dataProb;
         }
 
-
-
         public static void ClassifyFrogEvent(AcousticEvent ae)
         {
             double oscRate = 1 / ae.Periodicity;
 
-            if ((ae.DominantFreq > 3350) && (ae.DominantFreq < 3550) && (oscRate > 160) && (oscRate < 190) && (ae.Score > 0.20) && (ae.Duration > 0.05) && (ae.Duration < 0.3))
+            if ((ae.DominantFreq > 3350) && (ae.DominantFreq < 3550) && (oscRate > 160) && (oscRate < 190) && (ae.Score > 0.20) && (ae.EventDurationSeconds > 0.05) && (ae.EventDurationSeconds < 0.3))
             {
                 ae.Name = "Assa darlingtoni";
             }
             else
-            if ((ae.DominantFreq > 4600) && (ae.DominantFreq < 4900) && (oscRate > 15) && (oscRate < 25) && (ae.Score > 0.20) && (ae.Duration > 0.05) && (ae.Duration < 0.5))
+            if ((ae.DominantFreq > 4600) && (ae.DominantFreq < 4900) && (oscRate > 15) && (oscRate < 25) && (ae.Score > 0.20) && (ae.EventDurationSeconds > 0.05) && (ae.EventDurationSeconds < 0.5))
             {
                 ae.Name = "Crinia deserticola";
             }
             else
-            if ((ae.DominantFreq > 2600) && (ae.DominantFreq < 2800) && (oscRate > 20) && (oscRate < 30) && (ae.Score > 0.50) && (ae.Duration > 0.05) && (ae.Duration < 0.5))
+            if ((ae.DominantFreq > 2600) && (ae.DominantFreq < 2800) && (oscRate > 20) && (oscRate < 30) && (ae.Score > 0.50) && (ae.EventDurationSeconds > 0.05) && (ae.EventDurationSeconds < 0.5))
             {
                 ae.Name = "Crinia signifera";
             }
             else
-            if ((ae.DominantFreq > 2100) && (ae.DominantFreq < 2300) && (oscRate > 145) && (oscRate < 165) && (ae.Score > 0.50) && (ae.Duration > 0.5))
+            if ((ae.DominantFreq > 2100) && (ae.DominantFreq < 2300) && (oscRate > 145) && (oscRate < 165) && (ae.Score > 0.50) && (ae.EventDurationSeconds > 0.5))
             {
                 ae.Name = "Cyclorana brevipes";
             }
             else
-            if ((ae.DominantFreq > 600) && (ae.DominantFreq < 700) && (oscRate > 10) && (oscRate < 14) && (ae.Score > 1.00) && (ae.Duration > 0.3))
+            if ((ae.DominantFreq > 600) && (ae.DominantFreq < 700) && (oscRate > 10) && (oscRate < 14) && (ae.Score > 1.00) && (ae.EventDurationSeconds > 0.3))
             {
                     ae.Name = "Heleioporus australiacus";
             }
             else
-            if ((ae.DominantFreq > 1350) && (ae.DominantFreq < 1650) && (oscRate > 40) && (oscRate < 80) && (ae.Score > 0.3) && (ae.Duration > 0.3))
+            if ((ae.DominantFreq > 1350) && (ae.DominantFreq < 1650) && (oscRate > 40) && (oscRate < 80) && (ae.Score > 0.3) && (ae.EventDurationSeconds > 0.3))
             {
                 ae.Name = "GBH"; // the oscillation rate of the GBF increases from slow to fast, 30 - 80
             }
             else
-            if ((ae.DominantFreq > 650) && (ae.DominantFreq < 750) && (oscRate > 13) && (oscRate < 15) && (ae.Score > 1.00) && (ae.Duration > 0.3))
+            if ((ae.DominantFreq > 650) && (ae.DominantFreq < 750) && (oscRate > 13) && (oscRate < 15) && (ae.Score > 1.00) && (ae.EventDurationSeconds > 0.3))
             {
                 ae.Name = "Lechriodus fletcheri";
             }
             else
-            if ((ae.DominantFreq > 1400) && (ae.DominantFreq < 1700) && (oscRate > 68) && (oscRate < 88) && (ae.Score > 0.15) && (ae.Duration > 0.1))
+            if ((ae.DominantFreq > 1400) && (ae.DominantFreq < 1700) && (oscRate > 68) && (oscRate < 88) && (ae.Score > 0.15) && (ae.EventDurationSeconds > 0.1))
             {
                 ae.Name = "Limnodynastes fletcheri";
             }
             else
-            if ((ae.DominantFreq > 1600) && (ae.DominantFreq < 1900) && (oscRate > 14) && (oscRate < 20) && (ae.Score > 0.50) && (ae.Duration > 0.1) && (ae.Duration < 0.5))
+            if ((ae.DominantFreq > 1600) && (ae.DominantFreq < 1900) && (oscRate > 14) && (oscRate < 20) && (ae.Score > 0.50) && (ae.EventDurationSeconds > 0.1) && (ae.EventDurationSeconds < 0.5))
             {
                 ae.Name = "Limnodynastes tasmaniensis";
             }
             else
-            if ((ae.DominantFreq > 1100) && (ae.DominantFreq < 1500) && (oscRate > 110) && (oscRate < 150) && (ae.Score > 0.3) && (ae.Duration > 0.2) && (ae.Duration < 1.0))
+            if ((ae.DominantFreq > 1100) && (ae.DominantFreq < 1500) && (oscRate > 110) && (oscRate < 150) && (ae.Score > 0.3) && (ae.EventDurationSeconds > 0.2) && (ae.EventDurationSeconds < 1.0))
             {
                 ae.Name = "Litoria aurea";
             }
             else
-            if ((ae.DominantFreq > 2900) && (ae.DominantFreq < 3200) && (oscRate > 9) && (oscRate < 12) && (ae.Score > 1.00) && (ae.Duration > 0.2) && (ae.Duration < 1.5))
+            if ((ae.DominantFreq > 2900) && (ae.DominantFreq < 3200) && (oscRate > 9) && (oscRate < 12) && (ae.Score > 1.00) && (ae.EventDurationSeconds > 0.2) && (ae.EventDurationSeconds < 1.5))
             {
                 ae.Name = "Litoria brevipalmata";
             }
             else
-            if ((ae.DominantFreq > 1500) && (ae.DominantFreq < 1700) && (oscRate > 35) && (oscRate < 55) && (ae.Score > 0.50) && (ae.Duration > 0.2) && (ae.Duration < 1.5))
+            if ((ae.DominantFreq > 1500) && (ae.DominantFreq < 1700) && (oscRate > 35) && (oscRate < 55) && (ae.Score > 0.50) && (ae.EventDurationSeconds > 0.2) && (ae.EventDurationSeconds < 1.5))
             {
                 ae.Name = "Litoria citropa";
             }
             else
-            if ((ae.DominantFreq > 2700) && (ae.DominantFreq < 3000) && (oscRate > 90) && (oscRate < 120) && (ae.Score > 1.00) && (ae.Duration > 0.2) && (ae.Duration < 1.0))
+            if ((ae.DominantFreq > 2700) && (ae.DominantFreq < 3000) && (oscRate > 90) && (oscRate < 120) && (ae.Score > 1.00) && (ae.EventDurationSeconds > 0.2) && (ae.EventDurationSeconds < 1.0))
             {
                 ae.Name = "Litoria gracilenta";
             }
             else
-            if ((ae.DominantFreq > 960) && (ae.DominantFreq < 1300) && (oscRate > 10) && (oscRate < 16) && (ae.Score > 1.00) && (ae.Duration > 0.1))
+            if ((ae.DominantFreq > 960) && (ae.DominantFreq < 1300) && (oscRate > 10) && (oscRate < 16) && (ae.Score > 1.00) && (ae.EventDurationSeconds > 0.1))
             {
                 ae.Name = "Litoria lesueuri";
             }
             else
-            if ((ae.DominantFreq > 2050) && (ae.DominantFreq < 2200) && (oscRate > 35) && (oscRate < 45) && (ae.Score > 1.00) && (ae.Duration > 0.1) && (ae.Duration < 0.5))
+            if ((ae.DominantFreq > 2050) && (ae.DominantFreq < 2200) && (oscRate > 35) && (oscRate < 45) && (ae.Score > 1.00) && (ae.EventDurationSeconds > 0.1) && (ae.EventDurationSeconds < 0.5))
             {
                 ae.Name = "Litoria littlejohni";
             }
             else
-            if ((ae.DominantFreq > 2650) && (ae.DominantFreq < 2950) && (oscRate > 14) && (oscRate < 20) && (ae.Score > 1.00) && (ae.Duration > 0.1) && (ae.Duration < 1.5))
+            if ((ae.DominantFreq > 2650) && (ae.DominantFreq < 2950) && (oscRate > 14) && (oscRate < 20) && (ae.Score > 1.00) && (ae.EventDurationSeconds > 0.1) && (ae.EventDurationSeconds < 1.5))
             {
                 ae.Name = "Litoria olongburensis";
             }
             else
-            if ((ae.DominantFreq > 1750) && (ae.DominantFreq < 2050) && (oscRate > 15) && (oscRate < 25) && (ae.Score > 1.00) && (ae.Duration > 0.5) && (ae.Duration < 2.0))
+            if ((ae.DominantFreq > 1750) && (ae.DominantFreq < 2050) && (oscRate > 15) && (oscRate < 25) && (ae.Score > 1.00) && (ae.EventDurationSeconds > 0.5) && (ae.EventDurationSeconds < 2.0))
             {
                 ae.Name = "Litoria peronii";
             }
             else
-            if ((ae.DominantFreq > 800) && (ae.DominantFreq < 1100) && (oscRate > 62) && (oscRate < 82) && (ae.Score > 0.50) && (ae.Duration > 0.3))
+            if ((ae.DominantFreq > 800) && (ae.DominantFreq < 1100) && (oscRate > 62) && (oscRate < 82) && (ae.Score > 0.50) && (ae.EventDurationSeconds > 0.3))
             {
                 ae.Name = "Mixophyes fleayi";
             }
@@ -563,67 +543,67 @@
                 ae.Name = "Mixophyes fasciolatus";
             }
             else
-            if ((ae.DominantFreq > 700) && (ae.DominantFreq < 800) && (oscRate > 80) && (oscRate < 90) && (ae.Score > 0.20) && (ae.Duration > 0.2))
+            if ((ae.DominantFreq > 700) && (ae.DominantFreq < 800) && (oscRate > 80) && (oscRate < 90) && (ae.Score > 0.20) && (ae.EventDurationSeconds > 0.2))
             {
                 ae.Name = "Mixophyes iteratus";
             }
             else
-            if ((ae.DominantFreq > 1350) && (ae.DominantFreq < 1550) && (oscRate > 19) && (oscRate < 23) && (ae.Score > 1.00) && (ae.Duration > 0.1))
+            if ((ae.DominantFreq > 1350) && (ae.DominantFreq < 1550) && (oscRate > 19) && (oscRate < 23) && (ae.Score > 1.00) && (ae.EventDurationSeconds > 0.1))
             {
                 ae.Name = "Neobatrachus sudelli";
             }
             else
-            if ((ae.DominantFreq > 2100) && (ae.DominantFreq < 2400) && (oscRate > 90) && (oscRate < 120) && (ae.Score > 0.05) && (ae.Duration > 0.1))
+            if ((ae.DominantFreq > 2100) && (ae.DominantFreq < 2400) && (oscRate > 90) && (oscRate < 120) && (ae.Score > 0.05) && (ae.EventDurationSeconds > 0.1))
             {
                 ae.Name = "Paracrinia haswelli";
             }
             else
-            if ((ae.DominantFreq > 450) && (ae.DominantFreq < 650) && (oscRate > 100) && (oscRate < 130) && (ae.Score > 0.5) && (ae.Duration > 0.01))
+            if ((ae.DominantFreq > 450) && (ae.DominantFreq < 650) && (oscRate > 100) && (oscRate < 130) && (ae.Score > 0.5) && (ae.EventDurationSeconds > 0.01))
             {
                 ae.Name = "Philoria kundagungan";
             }
             else
-            if ((ae.DominantFreq > 400) && (ae.DominantFreq < 600) && (oscRate > 62) && (oscRate < 82) && (ae.Score > 0.5) && (ae.Duration > 0.1))
+            if ((ae.DominantFreq > 400) && (ae.DominantFreq < 600) && (oscRate > 62) && (oscRate < 82) && (ae.Score > 0.5) && (ae.EventDurationSeconds > 0.1))
             {
                 ae.Name = "Philoria loveridgei";
             }
             else
-            if ((ae.DominantFreq > 960) && (ae.DominantFreq < 1250) && (oscRate > 20) && (oscRate < 45) && (ae.Score > 0.5) && (ae.Duration > 0.05))
+            if ((ae.DominantFreq > 960) && (ae.DominantFreq < 1250) && (oscRate > 20) && (oscRate < 45) && (ae.Score > 0.5) && (ae.EventDurationSeconds > 0.05))
             {
                 ae.Name = "Philoria sphagnicolus";
             }
             else
-            if ((ae.DominantFreq > 2650) && (ae.DominantFreq < 2950) && (oscRate > 67) && (oscRate < 85) && (ae.Score > 0.2) && (ae.Duration > 0.1))
+            if ((ae.DominantFreq > 2650) && (ae.DominantFreq < 2950) && (oscRate > 67) && (oscRate < 85) && (ae.Score > 0.2) && (ae.EventDurationSeconds > 0.1))
             {
                 ae.Name = "Pseudophryne australis";
             }
             else
-            if ((ae.DominantFreq > 2300) && (ae.DominantFreq < 2600) && (oscRate > 45) && (oscRate < 55) && (ae.Score > 0.50) && (ae.Duration > 0.2))
+            if ((ae.DominantFreq > 2300) && (ae.DominantFreq < 2600) && (oscRate > 45) && (oscRate < 55) && (ae.Score > 0.50) && (ae.EventDurationSeconds > 0.2))
             {
                 ae.Name = "Pseudophryne coriacea";
             }
             else
-            if ((ae.DominantFreq > 2400) && (ae.DominantFreq < 2700) && (oscRate > 40) && (oscRate < 50) && (ae.Score > 0.5) && (ae.Duration > 0.2))
+            if ((ae.DominantFreq > 2400) && (ae.DominantFreq < 2700) && (oscRate > 40) && (oscRate < 50) && (ae.Score > 0.5) && (ae.EventDurationSeconds > 0.2))
             {
                 ae.Name = "Pseudophryne raveni";
             }
             else
-            if ((ae.DominantFreq > 2100) && (ae.DominantFreq < 2400) && (oscRate > 35) && (oscRate < 48) && (ae.Score > 1.00) && (ae.Duration > 0.4))
+            if ((ae.DominantFreq > 2100) && (ae.DominantFreq < 2400) && (oscRate > 35) && (oscRate < 48) && (ae.Score > 1.00) && (ae.EventDurationSeconds > 0.4))
             {
                 ae.Name = "Uperoleia fusca";
             }
             else
-            if ((ae.DominantFreq > 2300) && (ae.DominantFreq < 2500) && (oscRate > 135) && (oscRate < 155) && (ae.Score > 0.30) && (ae.Duration > 0.1) && (ae.Duration < 0.5))
+            if ((ae.DominantFreq > 2300) && (ae.DominantFreq < 2500) && (oscRate > 135) && (oscRate < 155) && (ae.Score > 0.30) && (ae.EventDurationSeconds > 0.1) && (ae.EventDurationSeconds < 0.5))
             {
                 ae.Name = "Uperoleia laevigata";
             }
             else
-            if ((ae.DominantFreq > 2100) && (ae.DominantFreq < 2300) && (oscRate > 27) && (oscRate < 37) && (ae.Score > 0.30) && (ae.Duration < 0.2))
+            if ((ae.DominantFreq > 2100) && (ae.DominantFreq < 2300) && (oscRate > 27) && (oscRate < 37) && (ae.Score > 0.30) && (ae.EventDurationSeconds < 0.2))
             {
                 ae.Name = "Uperoleia rugosa";
             }
             else
-            if ((ae.DominantFreq > 2700) && (ae.DominantFreq < 3000) && (oscRate > 80) && (oscRate < 100) && (ae.Score > 0.10) && (ae.Duration < 1.0))
+            if ((ae.DominantFreq > 2700) && (ae.DominantFreq < 3000) && (oscRate > 80) && (oscRate < 100) && (ae.Score > 0.10) && (ae.EventDurationSeconds < 1.0))
             {
                 ae.Name = "Uperoleia tyleri";
             }
@@ -666,7 +646,6 @@
             return plots;
         } // CreateScorePlots()
 
-
         static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> plots, List<AcousticEvent> predictedEvents)
         {
             bool doHighlightSubband = false; bool add1kHzLines = false;
@@ -685,9 +664,6 @@
             if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             return image.GetImage();
         } //DrawSonogram()
-
-
-
 
         public static DataTable WriteEvents2DataTable(List<AcousticEvent> predictedEvents)
         {
@@ -718,7 +694,7 @@
                 DataRow row = dataTable.NewRow();
                 row[AnalysisKeys.EventStartAbs] = (double)ev.TimeStart;  //Set now - will overwrite later
                 row[AnalysisKeys.EventStartSec] = (double)ev.TimeStart;  //EvStartSec
-                row[AnalysisKeys.EventDuration] = (double)ev.Duration;   //duration in seconds
+                row[AnalysisKeys.EventDuration] = (double)ev.EventDurationSeconds;   //duration in seconds
                 //row[AudioAnalysisTools.Keys.EVENT_INTENSITY] = (double)ev.kiwi_intensityScore;   //
                 row[AnalysisKeys.EventName] = (string)ev.Name;   //
                 row[AnalysisKeys.DominantFrequency] = (double)ev.DominantFreq;
@@ -729,9 +705,6 @@
             }
             return dataTable;
         }
-
-
-
 
         /// <summary>
         /// Converts a DataTable of events to a datatable where one row = one minute of indices
@@ -767,7 +740,6 @@
             return newtable;
         }
 
-
         public static void AddContext2Table(DataTable dt, TimeSpan segmentStartMinute, TimeSpan recordingTimeSpan)
         {
             if (!dt.Columns.Contains(AnalysisKeys.KeySegmentDuration)) dt.Columns.Add(AnalysisKeys.KeySegmentDuration, typeof(double));
@@ -781,7 +753,6 @@
                 row[AnalysisKeys.EventStartMin] = start;
             }
         } //AddContext2Table()
-
 
         public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
         {
@@ -852,8 +823,6 @@
             return Tuple.Create(dt, table2Display);
         } // ProcessCsvFile()
 
-
-
         /// <summary>
         /// takes a data table of indices and normalises column values to values in [0,1].
         /// </summary>
@@ -894,7 +863,6 @@
             return processedtable;
         }
 
-
         public string DefaultConfiguration
         {
             get
@@ -903,18 +871,17 @@
             }
         }
 
-
         public AnalysisSettings DefaultSettings
         {
             get
             {
                 return new AnalysisSettings
                 {
-                    SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                    SegmentMinDuration = TimeSpan.FromSeconds(30),
+                    AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
+                    AnalysisMinSegmentDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
+                    AnalysisTargetSampleRate = ResampleRate,
                 };
             }
         }

@@ -153,18 +153,19 @@
                 displayCsvImage = ConfigDictionary.GetBoolean(AnalysisKeys.DisplayCsvImage, (settings.ConfigDict));
 
             //initilise classes that will do the analysis
-            this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles ? SaveBehavior.Always : SaveBehavior.Never, saveSonogramImages ? SaveBehavior.Always : SaveBehavior.Never, saveIntermediateCsvFiles)
-            {
-                DeleteFinished = (!saveIntermediateWavFiles), // create and delete directories
-                IsParallel = doParallelProcessing,         // ########### PARALLEL OR SEQUENTIAL ??????????????
-                SubFoldersUnique = false,
-            };
+            var preparer = new LocalSourcePreparer();
+            this.analysisCoordinator = new AnalysisCoordinator(
+                preparer,
+                saveIntermediateWavFiles ? SaveBehavior.Always : SaveBehavior.Never,
+                false,
+                false);
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
             //################# PROCESS THE RECORDING #####################################################################################
-            var results = this.analysisCoordinator.Run(audioFile, analyser, settings);
+            Log.Warn("The next line was intentional broken because this code is unsupported");
+            AnalysisResult2[] results = null; //this.analysisCoordinator.Run(audioFile, analyser, settings);
 
             if (results == null)
             {
@@ -192,7 +193,7 @@
             if (eventsDatatable != null) eventsCount = eventsDatatable.Rows.Count;
             int indicesCount = 0;
             if (indicesDatatable != null) indicesCount = indicesDatatable.Rows.Count;
-            var opdir = results.ElementAt(0).SettingsUsed.AnalysisInstanceOutputDirectory;
+            var opdir = results.ElementAt(0).SettingsUsed.SegmentOutputDirectory;
             string fName = Path.GetFileNameWithoutExtension(audioFile.Name) + "_" + analyser.Identifier;
             var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
 

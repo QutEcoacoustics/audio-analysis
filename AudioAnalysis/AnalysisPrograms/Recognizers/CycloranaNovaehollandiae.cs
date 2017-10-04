@@ -57,7 +57,6 @@ namespace AnalysisPrograms.Recognizers
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
         /// </summary>
@@ -148,7 +147,7 @@ namespace AnalysisPrograms.Recognizers
                     NoiseReductionParameter = 0.1,
                 };
 
-            TimeSpan recordingDuration = recording.Duration();
+            TimeSpan recordingDuration = recording.Duration;
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
 
@@ -186,14 +185,13 @@ namespace AnalysisPrograms.Recognizers
                 ae =>
                     {
                         ae.SpeciesName = speciesName;
-                        ae.SegmentStartOffset = segmentStartOffset;
-                        ae.SegmentDuration = recordingDuration;
+                        ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                        ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
                         ae.Name = abbreviatedSpeciesName;
                     });
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
             var plots = new List<Plot> { plot };
-
 
             this.WriteDebugImage(recording.BaseName, outputDirectory, sonogram, acousticEvents, plots, hits);
 
@@ -206,8 +204,6 @@ namespace AnalysisPrograms.Recognizers
             };
 
         }
-
-
 
         public void WriteDebugImage(string recordingFileName, DirectoryInfo outputDirectory, BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {

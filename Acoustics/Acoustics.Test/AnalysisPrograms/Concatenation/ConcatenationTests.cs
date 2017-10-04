@@ -10,6 +10,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
     using Acoustics.Shared;
     using global::AnalysisPrograms;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
+    using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
     using TowseyLibrary;

@@ -15,7 +15,7 @@ namespace AudioAnalysisTools.DSP
     /// <summary>
     /// digital signal processing FILTERS methods
     /// </summary>
-    public static class DspFilters
+    public static partial class DspFilters
     {
         public const double Pi = Math.PI;
 
@@ -28,7 +28,7 @@ namespace AudioAnalysisTools.DSP
             var freqScale = new FrequencyScale(sampleRate / 2, windowSize, 1000);
             string path = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\SineSignal1.png";
 
-            var recording = GenerateTestSignal(sampleRate, duration, harmonics, "cos");
+            var recording = GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Consine);
             var sonoConfig = new SonogramConfig
             {
                 WindowSize = freqScale.WindowSize,
@@ -79,7 +79,7 @@ namespace AudioAnalysisTools.DSP
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
             var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
             string path = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\SineSignal2.png";
-            var recording = GenerateTestSignal(sampleRate, duration, harmonics, "cos");
+            var recording = GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Consine);
 
             // init the default sonogram config
             var sonoConfig = new SonogramConfig
@@ -121,7 +121,7 @@ namespace AudioAnalysisTools.DSP
 
             foreach (int h in harmonics)
             {
-                LoggedConsole.WriteLine($"Harmonic {h}Herz should be in bin {freqScale.GetBinIdForHerzValue(h)}");
+                LoggedConsole.WriteLine($"Harmonic {h}Hertz should be in bin {freqScale.GetBinIdForHerzValue(h)}");
             }
 
             // spectrogram without framing, annotation etc
@@ -131,17 +131,29 @@ namespace AudioAnalysisTools.DSP
             image.Save(path);
         }
 
-        public static AudioRecording GenerateTestSignal
-            (int sampleRate, double duration, int[] harmonics, string waveType)
+        public static AudioRecording GenerateTestRecording(int sampleRate, double duration, int[] harmonics, WaveType waveType)
+        {
+            var signal = GenerateTestSignal(sampleRate, duration, harmonics, waveType);
+
+            var wr = new WavReader(signal, 1, 16, sampleRate);
+            var recording = new AudioRecording(wr);
+            return recording;
+        }
+
+        public static double[] GenerateTestSignal(int sampleRate, double duration, int[] harmonics, WaveType waveType)
         {
             double[] signal = null;
-            if (waveType.ToLower().StartsWith("cos"))
+            if (waveType == WaveType.Consine)
             {
                 signal = GetSignalOfAddedCosines(sampleRate, duration, harmonics);
             }
-            else if (waveType.ToLower().StartsWith("sin"))
+            else if (waveType == WaveType.Sine)
             {
                 signal = GetSignalOfAddedSines(sampleRate, duration, harmonics);
+            }
+            else
+            {
+                throw new ArgumentException("Unknown WaveType", nameof(waveType));
             }
 
             if (signal == null)
@@ -149,9 +161,7 @@ namespace AudioAnalysisTools.DSP
                 throw new Exception("A signal was not generated. Fatal error!");
             }
 
-            var wr = new WavReader(signal, 1, 16, sampleRate);
-            var recording = new AudioRecording(wr);
-            return recording;
+            return signal;
         }
 
         /// <summary>

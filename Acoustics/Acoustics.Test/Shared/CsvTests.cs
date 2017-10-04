@@ -10,12 +10,23 @@
 namespace Acoustics.Test.Shared
 {
     using System;
+    using System.Collections;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Text;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+    using CsvHelper;
     using CsvHelper.TypeConversion;
+    using Fasterflect;
+    using global::AnalysisBase.ResultBases;
+    using global::AnalysisPrograms.EventStatistics;
+    using global::AudioAnalysisTools;
+    using global::AudioAnalysisTools.EventStatistics;
+    using global::AudioAnalysisTools.Indices;
+    using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
     using TowseyLibrary;
@@ -23,18 +34,30 @@ namespace Acoustics.Test.Shared
     [TestClass]
     public class CsvTests
     {
-
         private static readonly double[,] TestMatrix =
             {
                 { 1.0, 2.0, 3.0, 4.0 },
                 { 5.0, 6.0, 7.0, 8.0 },
                 { 9.0, 10.0, 11.0, 12.0 },
                 { 13.0, 14.0, 15.0, 16.0 },
-                { 17.0, 18.0, 19.0, 20.0 }
+                { 17.0, 18.0, 19.0, 20.0 },
             };
 
         private DirectoryInfo outputDirectory;
         private FileInfo testFile;
+
+        static CsvTests()
+        {
+            // pump static class initializers - it seems when running multiple tests that sometimes
+            // these classes are not discovered.
+
+            AcousticEvent aev = new AcousticEvent();
+            ImportedEvent iev = new ImportedEvent();
+
+            var configuration = Csv.DefaultConfiguration;
+            IDictionary csvMaps = (IDictionary)configuration.Maps.GetFieldValue("data");
+            Debug.WriteLine("initializing static types" + aev + iev + csvMaps.Count);
+        }
 
         [TestInitialize]
         public void Setup()
@@ -137,7 +160,6 @@ namespace Acoustics.Test.Shared
             this.AssertCsvEqual(expected, this.testFile);
         }
 
-
         [TestMethod]
         public void TestWriteAndReadSimpleMatrix()
         {
@@ -171,7 +193,6 @@ namespace Acoustics.Test.Shared
 
             CollectionAssert.AreEqual(TestMatrix, matrix);
         }
-
 
         [TestMethod]
         public void TestWriteAndThenReadDifferentOrders()
@@ -248,6 +269,164 @@ namespace Acoustics.Test.Shared
             Assert.IsNotNull(actual.InnerException);
             StringAssert.Contains(actual.Message, "Row");
             StringAssert.Contains(actual.Message, "Field Name");
+        }
+
+        [TestMethod]
+        public void ReaderHookIsExposed()
+        {
+            var file = Path.GetRandomFileName().ToFileInfo();
+
+            var testString = @"SomeNumber,SomeTimeSpan,A,B,C,D
+123,0:0:0.456,1,2,3,4";
+
+            File.WriteAllText(file.FullName, testString);
+
+            string[] headers = null;
+            var result = Csv.ReadFromCsv<CsvTestClass>(file, false, (reader) =>
+            {
+                headers = reader.FieldHeaders;
+            });
+
+            var expected = new[] { "SomeNumber", "SomeTimeSpan", "A", "B", "C", "D" };
+            CollectionAssert.AreEqual(expected, headers);
+        }
+
+        [TestMethod]
+        public void TestCsvClassMapsAreAutomaticallyRegistered()
+        {
+            // add a spot check of well known class maps to ensure the automatic searcher is finding the class maps
+
+            var partialExpected = new[]
+            {
+                typeof(AcousticEvent.AcousticEventClassMap),
+                typeof(EventStatisticsClassMap),
+                typeof(ImportedEvent.ImportedEventNameClassMap),
+            };
+
+            CollectionAssert.IsSubsetOf(partialExpected, Csv.ClassMapsToRegister.Select(x => x.GetType()).ToArray());
+        }
+
+        [TestMethod]
+        public void TestAcousticEventClassMap()
+        {
+            var ae = new AcousticEvent();
+
+            var result = new StringBuilder();
+            using (var str = new StringWriter(result))
+            {
+                var writer = new CsvWriter(str, Csv.DefaultConfiguration);
+
+                writer.WriteRecords(records: new[] { ae });
+            }
+
+            var actual = result.ToString();
+
+            foreach (var property in AcousticEvent.AcousticEventClassMap.IgnoredProperties.Except(AcousticEvent.AcousticEventClassMap.RemappedProperties))
+            {
+                Assert.IsFalse(
+                    actual.Contains(property, StringComparison.InvariantCultureIgnoreCase),
+                    $"output CSV should not contain text '{property}'.{Environment.NewLine}Actual: {actual}");
+            }
+
+            StringAssert.Contains(actual, "EventEndSeconds");
+        }
+
+        [TestMethod]
+        public void TestImportedEventClassMap()
+        {
+            string[] names = new[] { "AudioEventId", "audioEventId", "audio_event_id" };
+
+            foreach (var name in names)
+            {
+                int value = Environment.TickCount;
+                string csv = $"{name}{Environment.NewLine}{value}";
+
+                var result = Csv.ReadFromCsv<ImportedEvent>(csv, throwOnMissingField: false).ToArray();
+
+                Assert.AreEqual(1, result.Length);
+                Assert.AreEqual(value, result[0].AudioEventId);
+            }
+        }
+
+        [TestMethod]
+        public void TestBaseTypesAreNotSerializedAsArray()
+        {
+            var exampleIndices = new SummaryIndexValues();
+            SummaryIndexValues[] childArray = { exampleIndices, };
+            SummaryIndexBase[] baseArray = { exampleIndices, };
+
+            var baseExpected = $@"{nameof(SummaryIndexBase.RankOrder)},{nameof(SummaryIndexBase.FileName)},{nameof(SummaryIndexBase.ResultStartSeconds)},{nameof(SummaryIndexBase.SegmentDurationSeconds)},{nameof(SummaryIndexBase.ResultMinute)}
+0,,0,0,0
+".NormalizeToCrLf();
+            var childExpected = $@"NoFile,ZeroSignal,HighAmplitudeIndex,ClippingIndex,AvgSignalAmplitude,BackgroundNoise,Snr,AvgSnrOfActiveFrames,Activity,EventsPerSecond,HighFreqCover,MidFreqCover,LowFreqCover,AcousticComplexity,TemporalEntropy,EntropyOfAverageSpectrum,AvgEntropySpectrum,EntropyOfVarianceSpectrum,VarianceEntropySpectrum,EntropyOfPeaksSpectrum,EntropyPeaks,EntropyOfCoVSpectrum,ClusterCount,ThreeGramCount,Ndsi,SptDensity,{nameof(SummaryIndexBase.RankOrder)},{nameof(SummaryIndexBase.FileName)},{nameof(SummaryIndexBase.ResultStartSeconds)},{nameof(SummaryIndexBase.SegmentDurationSeconds)},{nameof(SummaryIndexBase.ResultMinute)}
+0,0,0,0,-100,-100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,0,0,0
+".NormalizeToCrLf();
+
+            Csv.WriteToCsv(this.testFile, childArray);
+
+            var childText = File.ReadAllText(this.testFile.FullName);
+
+            Csv.WriteToCsv(this.testFile, baseArray);
+
+            var baseText = File.ReadAllText(this.testFile.FullName);
+
+            Assert.AreNotEqual(childText, baseText);
+            Assert.That.StringEqualWithDiff(baseExpected, baseText);
+            Assert.That.StringEqualWithDiff(childExpected, childText);
+        }
+
+        [TestMethod]
+        public void TestBaseTypesAreSerializedAsEnumerable()
+        {
+            var exampleIndices = new SummaryIndexValues();
+            IEnumerable<SummaryIndexValues> childArray = exampleIndices.AsArray().AsEnumerable();
+            IEnumerable<SummaryIndexBase> baseArray = exampleIndices.AsArray().AsEnumerable();
+
+            Csv.WriteToCsv(this.testFile, childArray);
+
+            var childText = File.ReadAllText(this.testFile.FullName);
+
+            Csv.WriteToCsv(this.testFile, baseArray);
+
+            var baseText = File.ReadAllText(this.testFile.FullName);
+
+            Assert.AreEqual(childText, baseText);
+        }
+
+        [TestMethod]
+        public void TestInvariantCultureIsUsed()
+        {
+            var now = new DateTime(1234567891011121314);
+            var nowOffset = new DateTimeOffset(1234567891011121314, TimeSpan.FromHours(10));
+
+            Csv.WriteToCsv(
+                this.testFile,
+                new[] { new { value = -789123.456, infinity = double.NegativeInfinity, nan = double.NaN, date = now, dateOffset = nowOffset } });
+
+            var actual = File.ReadAllText(this.testFile.FullName);
+            var expected = $@"value,infinity,nan,date,dateOffset
+-789123.456,-Infinity,NaN,3913-03-12T00:31:41.1121314,3913-03-12T00:31:41.1121314+10:00
+".NormalizeToCrLf();
+
+            Assert.AreEqual(expected, actual);
+
+        }
+
+        [TestMethod]
+        public void TestInvariantCultureIsUsedMatrix()
+        {
+            Csv.WriteMatrixToCsv(
+                this.testFile,
+                new[,] { { -789123.456, double.NegativeInfinity,  double.NaN } });
+
+            var actual = File.ReadAllText(this.testFile.FullName);
+
+            var expected = $@"Index,c000000,c000001,c000002
+0,-789123.456,-Infinity,NaN
+".NormalizeToCrLf();
+
+            Assert.AreEqual(expected, actual);
+
         }
 
         private void AssertCsvEqual(string expected, FileInfo actual)

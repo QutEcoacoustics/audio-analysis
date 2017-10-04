@@ -46,7 +46,6 @@ namespace AnalysisPrograms.Recognizers
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
         /// </summary>
@@ -77,12 +76,10 @@ namespace AnalysisPrograms.Recognizers
             var recognizerConfig = new LitoriaNasutaConfig();
             recognizerConfig.ReadConfigFile(configuration);
 
-
             // BETTER TO SET THESE. IGNORE USER!
             // this default framesize seems to work
             const int frameSize = 1024;
             const double windowOverlap = 0.0;
-
 
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
@@ -116,18 +113,26 @@ namespace AnalysisPrograms.Recognizers
             //double[] topBand = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, maxBin + 3, (rowCount - 1), maxBin + 9);
             //double[] botBand = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin - 3, (rowCount - 1), minBin - 9);
 
-
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            var acousticEvents = AcousticEvent.ConvertScoreArray2Events(amplitudeArray, recognizerConfig.MinHz, recognizerConfig.MaxHz, sonogram.FramesPerSecond,
-                                                                          freqBinWidth, decibelThreshold,
-                                                                          recognizerConfig.MinDuration, recognizerConfig.MaxDuration);
+            var acousticEvents = AcousticEvent.ConvertScoreArray2Events(
+                amplitudeArray,
+                recognizerConfig.MinHz,
+                recognizerConfig.MaxHz,
+                sonogram.FramesPerSecond,
+                freqBinWidth,
+                decibelThreshold,
+                recognizerConfig.MinDuration,
+                recognizerConfig.MaxDuration,
+                segmentStartOffset);
+
             double[,] hits = null;
             var prunedEvents = new List<AcousticEvent>();
 
             acousticEvents.ForEach(ae =>
             {
                 ae.SpeciesName = recognizerConfig.SpeciesName;
-                ae.SegmentDuration = recordingDuration;
+                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
                 ae.Name = recognizerConfig.AbbreviatedSpeciesName;
             });
 
@@ -168,7 +173,6 @@ namespace AnalysisPrograms.Recognizers
             };
         }
     }
-
 
     internal class LitoriaNasutaOLDConfig
     {

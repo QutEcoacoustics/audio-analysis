@@ -112,7 +112,7 @@ namespace AnalysisPrograms.Recognizers
                 NoiseReductionParameter = noiseReductionParameter,
             };
 
-            var recordingDuration = recording.Duration();
+            var recordingDuration = recording.Duration;
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
             int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
@@ -188,14 +188,15 @@ namespace AnalysisPrograms.Recognizers
                 freqBinWidth,
                 eventThreshold,
                 minDuration,
-                maxDuration);
+                maxDuration,
+                segmentStartOffset);
 
             // ######################################################################
             acousticEvents.ForEach(ae =>
             {
                 ae.SpeciesName = speciesName;
-                ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = recordingDuration;
+                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
                 ae.Name = abbreviatedSpeciesName;
             });
 

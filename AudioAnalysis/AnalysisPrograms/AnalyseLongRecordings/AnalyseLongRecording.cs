@@ -40,7 +40,7 @@ Output  to  directory: {1}
 ##### FINISHED FILE ###################################################
 ";
 
-        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(nameof(AnalyseLongRecording));
 
         public static void Execute(Arguments arguments)
         {
@@ -95,7 +95,7 @@ Output  to  directory: {1}
             dynamic configuration = Yaml.Deserialise(configFile);
 
             SaveBehavior saveIntermediateWavFiles = (SaveBehavior?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? SaveBehavior.Never;
-            bool saveIntermediateCsvFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
+            bool saveIntermediateDataFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
             SaveBehavior saveSonogramsImages = (SaveBehavior?)configuration[AnalysisKeys.SaveSonogramImages] ?? SaveBehavior.Never;
             bool doParallelProcessing = (bool?)configuration[AnalysisKeys.ParallelProcessing] ?? false;
 
@@ -140,14 +140,12 @@ Output  to  directory: {1}
                 defaultBehavior = FileSegment.FileDateBehavior.Required;
             }
 
-            // 3. initilise AnalysisCoordinator class that will do the analysis
-            var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonogramsImages, saveIntermediateCsvFiles, arguments.Channels, arguments.MixDownToMono)
-            {
-                // create and delete directories
-                DeleteFinished = true,
-                IsParallel = doParallelProcessing,
-                SubFoldersUnique = false,
-            };
+            // 3. initilize AnalysisCoordinator class that will do the analysis
+            var analysisCoordinator = new AnalysisCoordinator(
+                new LocalSourcePreparer(),
+                saveIntermediateWavFiles,
+                false,
+                doParallelProcessing);
 
             // 4. get the segment of audio to be analysed
             // if tiling output, specify that FileSegment needs to be able to read the date
@@ -163,28 +161,31 @@ Output  to  directory: {1}
                 Log.Debug("Neither start nor end segment offsets provided. Therefore both were ignored.");
             }
 
-            // 5. initialise the analyser
-            var analyser = FindAndCheckAnalyser(analysisIdentifier);
+            // 5. initialize the analyzer
+            var analyzer = FindAndCheckAnalyser(analysisIdentifier);
 
-            // 6. initialise the analysis settings object
-            var analysisSettings = analyser.DefaultSettings;
+            // 6. initialize the analysis settings object
+            var analysisSettings = analyzer.DefaultSettings;
             analysisSettings.ConfigFile = configFile;
             analysisSettings.Configuration = configuration;
-            analysisSettings.SourceFile = sourceAudio;
-            analysisSettings.AnalysisBaseOutputDirectory = outputDirectory;
-            analysisSettings.AnalysisBaseTempDirectory = tempFilesDirectory;
+            analysisSettings.AnalysisOutputDirectory = outputDirectory;
+            analysisSettings.AnalysisTempDirectory = tempFilesDirectory;
+            analysisSettings.AnalysisDataSaveBehavior = saveIntermediateDataFiles;
+            analysisSettings.AnalysisImageSaveBehavior = saveSonogramsImages;
+            analysisSettings.AnalysisChannelSelection = arguments.Channels;
+            analysisSettings.AnalysisMixDownToMono = arguments.MixDownToMono;
 
             // #SEGMENT_DURATION=minutes, SEGMENT_OVERLAP=seconds   FOR EXAMPLE: SEGMENT_DURATION=5  and SEGMENT_OVERLAP=10
             // set the segment offset i.e. time between consecutive segment starts - the key used for this in config file = "SEGMENT_DURATION"
             try
             {
                 int rawDuration = configuration[AnalysisKeys.SegmentDuration];
-                analysisSettings.SegmentMaxDuration = TimeSpan.FromMinutes(rawDuration);
+                analysisSettings.AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(rawDuration);
             }
             catch (Exception ex)
             {
-                analysisSettings.SegmentMaxDuration = TimeSpan.FromMinutes(1.0);
-                Log.Warn("Can't read SegmentMaxDuration from config file (exceptions squashed, default value of " + analysisSettings.SegmentMaxDuration + " used)");
+                analysisSettings.AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1.0);
+                Log.Warn("Can't read AnalysisMaxSegmentDuration from config file (exceptions squashed, default value of " + analysisSettings.AnalysisMaxSegmentDuration + " used)");
             }
 
             try
@@ -202,19 +203,16 @@ Output  to  directory: {1}
             try
             {
                 int resampleRate = configuration[AnalysisKeys.ResampleRate];
-                analysisSettings.SegmentTargetSampleRate = resampleRate;
+                analysisSettings.AnalysisTargetSampleRate = resampleRate;
             }
             catch (Exception ex)
             {
-                Log.Warn("Can't read SegmentTargetSampleRate from config file (exceptions squashed, default value  of " + analysisSettings.SegmentTargetSampleRate + " used)");
+                Log.Warn("Can't read AnalysisTargetSampleRate from config file (exceptions squashed, default value  of " + analysisSettings.AnalysisTargetSampleRate + " used)");
             }
-
-            // Execute a pre analyzer hook
-            analyser.BeforeAnalyze(analysisSettings);
 
             // 7. ####################################### DO THE ANALYSIS ###################################
             LoggedConsole.WriteLine("START ANALYSIS ...");
-            var analyserResults = analysisCoordinator.Run(fileSegment, analyser, analysisSettings);
+            var analyserResults = analysisCoordinator.Run(fileSegment, analyzer, analysisSettings);
 
             // ##############################################################################################
             // 8. PROCESS THE RESULTS
@@ -261,31 +259,27 @@ Output  to  directory: {1}
 #endif
             var duration = fileSegment.TargetFileDuration.Value;
 
-            ResultsTools.ConvertEventsToIndices(analyser, mergedEventResults, ref mergedIndicesResults, duration, scoreThreshold);
+            ResultsTools.ConvertEventsToIndices(analyzer, mergedEventResults, ref mergedIndicesResults, duration, scoreThreshold);
             int eventsCount = mergedEventResults?.Length ?? 0;
             int numberOfRowsOfIndices = mergedIndicesResults?.Length ?? 0;
 
             // 10. Allow analysers to post-process
 
             // TODO: remove results directory if possible
-            var instanceOutputDirectory = analyserResults.First().SettingsUsed.AnalysisInstanceOutputDirectory;
-
-            // this allows the summariser to write results to the same output directory as each analysis segment
-            analysisSettings.AnalysisInstanceOutputDirectory = instanceOutputDirectory;
-            Debug.Assert(analysisSettings.AnalysisInstanceOutputDirectory == instanceOutputDirectory, "The instance result directory should be the same as the base analysis directory");
-            Debug.Assert(analysisSettings.SourceFile == fileSegment.TargetFile);
+            var instanceOutputDirectory =
+                AnalysisCoordinator.GetNamedDirectory(analysisSettings.AnalysisOutputDirectory, analyzer);
 
             // 11. IMPORTANT - this is where IAnalyser2's post processor gets called.
             // Produces all spectrograms and images of SPECTRAL INDICES.
             // Long duration spectrograms are drawn IFF analysis type is Towsey.Acoustic
-            analyser.SummariseResults(analysisSettings, fileSegment, mergedEventResults, mergedIndicesResults, mergedSpectralIndexResults, analyserResults);
+            analyzer.SummariseResults(analysisSettings, fileSegment, mergedEventResults, mergedIndicesResults, mergedSpectralIndexResults, analyserResults);
 
             // 12. SAVE THE RESULTS
             string fileNameBase = Path.GetFileNameWithoutExtension(sourceAudio.Name);
 
-            var eventsFile = ResultsTools.SaveEvents(analyser, fileNameBase, instanceOutputDirectory, mergedEventResults);
-            var indicesFile = ResultsTools.SaveSummaryIndices(analyser, fileNameBase, instanceOutputDirectory, mergedIndicesResults);
-            var spectraFile = ResultsTools.SaveSpectralIndices(analyser, fileNameBase, instanceOutputDirectory, mergedSpectralIndexResults);
+            var eventsFile = ResultsTools.SaveEvents(analyzer, fileNameBase, instanceOutputDirectory, mergedEventResults);
+            var indicesFile = ResultsTools.SaveSummaryIndices(analyzer, fileNameBase, instanceOutputDirectory, mergedIndicesResults);
+            var spectraFile = ResultsTools.SaveSpectralIndices(analyzer, fileNameBase, instanceOutputDirectory, mergedSpectralIndexResults);
 
             // 13. THIS IS WHERE SUMMARY INDICES ARE PROCESSED
             //     Convert summary indices to black and white tracks image
@@ -345,7 +339,7 @@ Output  to  directory: {1}
 
         public static IAnalyser2 FindAndCheckAnalyser(string analysisIdentifier)
         {
-            var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly).ToList();
+            var analysers = AnalysisCoordinator.GetAnalyzers(typeof(MainEntry).Assembly).ToList();
             IAnalyser2 analyser = analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
             if (analyser == null)
             {

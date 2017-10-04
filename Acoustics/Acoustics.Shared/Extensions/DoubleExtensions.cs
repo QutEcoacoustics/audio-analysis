@@ -19,6 +19,16 @@ namespace System
             return TimeSpan.FromSeconds(seconds);
         }
 
+        public static TimeSpan Seconds(this int seconds)
+        {
+            return TimeSpan.FromSeconds(seconds);
+        }
+
+        public static TimeSpan Seconds(this long seconds)
+        {
+            return TimeSpan.FromSeconds(seconds);
+        }
+
         /// <summary>
         /// Round a number to `digits` significant places.
         /// Sourced from: http://stackoverflow.com/questions/374316/round-a-double-to-x-significant-figures

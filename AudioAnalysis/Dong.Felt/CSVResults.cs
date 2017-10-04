@@ -34,6 +34,8 @@
 
         public static AcousticEvent CsvToAcousticEvent(FileInfo file)
         {
+            throw new NotImplementedException("Old code purposely broken in refactor");
+            /*
             var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
             var header = lines.Take(1).ToList();
             var lines1 = lines.Skip(1);
@@ -46,15 +48,15 @@
             {
                 if (csvRow[3] != "")
                 {
-                    result.MinFreq = int.Parse(csvRow[1]);
-                    result.MaxFreq = int.Parse(csvRow[2]);
+                    result.LowFrequencyHertz = int.Parse(csvRow[1]);
+                    result.HighFrequencyHertz = int.Parse(csvRow[2]);
                     result.TimeStart = double.Parse(csvRow[3]);
                     result.TimeEnd = double.Parse(csvRow[4]);
-                    result.Duration = double.Parse(csvRow[5]);
+                    result.EventDurationSeconds = double.Parse(csvRow[5]);
                     //result.FreqBinCount = int.Parse(csvRow[6]);
                 }
             }
-            return result;
+            return result;*/
         }
 
         public static List<MFCC> CsvToMFCC(FileInfo file)

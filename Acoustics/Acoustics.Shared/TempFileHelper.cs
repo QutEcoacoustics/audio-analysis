@@ -14,7 +14,7 @@
         /// Gets a valid temp directory.
         /// Directory will exist.
         /// </summary>
-        public static DirectoryInfo TempDir()
+        public static DirectoryInfo TempDir(bool ensureNew = false)
         {
             var tempDirString = "TempDir";
             var tempDirSet = ConfigurationManager.AppSettings.AllKeys.Any(i => i == tempDirString);
@@ -29,6 +29,11 @@
             if (string.IsNullOrEmpty(tempDir))
             {
                 tempDir = Path.GetTempPath();
+            }
+
+            if (ensureNew)
+            {
+                tempDir = Path.Combine(tempDir, GetStrongerRandomFileName(extension: false));
             }
 
             if (!Directory.Exists(tempDir))

@@ -123,8 +123,10 @@ namespace AnalysisPrograms.Recognizers
                 NoiseReductionParameter = 0.2,
             };
 
+            TimeSpan recordingDuration = recording.Duration;
             //int sr = recording.SampleRate;
             //double freqBinWidth = sr / (double)sonoConfig.WindowSize;
+
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
             //int rowCount = sonogram.Data.GetLength(0);
@@ -158,8 +160,8 @@ namespace AnalysisPrograms.Recognizers
             acousticEvents.ForEach(ae =>
             {
                 ae.SpeciesName = speciesName;
-                ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = recording.Duration();
+                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
                 ae.Name = abbreviatedSpeciesName;
             });
 

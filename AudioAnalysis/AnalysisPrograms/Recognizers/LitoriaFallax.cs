@@ -51,7 +51,6 @@ namespace AnalysisPrograms.Recognizers
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
         /// </summary>
@@ -135,7 +134,7 @@ namespace AnalysisPrograms.Recognizers
             };
 
             // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
-            TimeSpan recordingDuration = recording.Duration();
+            TimeSpan recordingDuration = recording.Duration;
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
@@ -171,7 +170,8 @@ namespace AnalysisPrograms.Recognizers
             acousticEvents.ForEach(ae =>
             {
                 ae.SpeciesName = speciesName;
-                ae.SegmentDuration = recordingDuration;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
                 ae.Name = abbreviatedSpeciesName;
             });
 

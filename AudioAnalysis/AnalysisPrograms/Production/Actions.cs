@@ -20,6 +20,7 @@ namespace AnalysisPrograms.Production
     using AudioAnalysisTools;
     using Dong.Felt;
     using Draw.Zooming;
+    using EventStatistics;
     using PowerArgs;
     using Recognizers.Base;
 
@@ -94,18 +95,16 @@ namespace AnalysisPrograms.Production
             return DrawSummaryIndexTracks.Main;
         }
 
+        [ArgDescription("Event statistics accepts a list of events to analyze and returns a data file of statistics")]
+        public EventStatistics.EventStatisticsEntry.Arguments EventStatisticsArgs { get; set; }
+        public static Action<EventStatisticsEntry.Arguments> EventStatistics()
+        {
+            return EventStatisticsEntry.Execute;
+        }
+
         #endregion
 
         #region Analyses of single, short (one minute) segments of audio
-
-        [ArgDescription("Calls MultiAnalyser.Execute():  Entry point for running multiple species recognizers at same time. Only use on short recordings (< 2mins)")]
-        public MultiAnalyser_OBSOLETE.Arguments MultiAnalyserArgs { get; set; }
-        public static Action<MultiAnalyser_OBSOLETE.Arguments> MultiAnalyser()
-        {
-            // IAnalyser - currently recognizes five different calls: human, crow, canetoad, machine and koala.
-            // Execute() signed off: Michael Towsey 27th July 2012
-            return MultiAnalyser_OBSOLETE.Dev;
-        }
 
         [ArgDescription("The entry point for all species or event recognizers. Only to be used on short recordings (< 2 mins).")]
         public RecognizerEntry.Arguments EventRecognizerArgs { get; set; }
@@ -247,13 +246,6 @@ namespace AnalysisPrograms.Production
             return OscillationsGeneric.Main;
         }
 
-        public Runner.Arguments ProductionArgs { get; set; }
-        public static Action<Runner.Arguments> Production()
-        {
-            // Production Analysis runs - for running on mono or to run as fast as possible
-            return Runner.Run;
-        }
-
         [ArgDescription("Calls Rain.Dev():  Used to recognise one minute segments of rain. Revise code if intend to use.")]
         public Rain_OBSOLETE.Arguments RainArgs { get; set; }
         public static Action<Rain_OBSOLETE.Arguments> Rain()
@@ -295,7 +287,6 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.SpeciesAccumulationCurve.Execute;
         }
 
-
         [ArgDescription("Calls SPT.Execute():  spt = Spectral Peak Tracking. Probably not useful anymore.")]
         public SPT.Arguments SptArgs { get; set; }
         public static Action<SPT.Arguments> Spt()
@@ -333,14 +324,6 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.Sandpit.Dev;
         }
 
-        [ArgDescription("Calls AnalysisTemplate.Dev():  A template for producing IAnalysis classes.")]
-        public AnalysisTemplate.Arguments TestArgs { get; set; }
-        public static Action<AnalysisTemplate.Arguments> Test()
-        {
-            // A template for producing IAnalysis classes.
-            return AnalysisTemplate.Dev;
-        }
-
         [ArgDescription("Calls Create4Sonograms.Main(). Creates a set of four spectrograms derived using different algorithms.")]
         public Create4Sonograms.Arguments Create4SonogramsArgs { get; set; }
         public static Action<Create4Sonograms.Arguments> Create4Sonograms()
@@ -349,10 +332,10 @@ namespace AnalysisPrograms.Production
         }
 
         [ArgDescription("Test only. ")]
-        public DummyAnalyser.Arguments DummyArgs { get; set; }
-        public static Action<DummyAnalyser.Arguments> Dummy()
+        public DummyAnalysis.Arguments DummyArgs { get; set; }
+        public static Action<DummyAnalysis.Arguments> Dummy()
         {
-            return DummyAnalyser.Execute;
+            return DummyAnalysis.Execute;
         }
 
         public FileRenamer.Arguments FileRenamerArgs { get; set; }

@@ -22,7 +22,10 @@ namespace AnalysisPrograms
     using System.Reflection;
     using System.Runtime.Serialization;
     using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
+    using EventStatistics;
     using log4net.Appender;
     using log4net.Core;
     using log4net.Filter;
@@ -87,6 +90,25 @@ namespace AnalysisPrograms
 #endif
                 return false;
             }
+        }
+
+        public static bool IsDebuggerAttached => Debugger.IsAttached;
+
+        public static void ExecuteAsync<T>(Func<T, Task> task, T arguments)
+        {
+            Log.Debug("Executing supplied method as an async block");
+            //var source = new CancellationTokenSource();
+            Console.CancelKeyPress += (s, e) =>
+            {
+                e.Cancel = false;
+                //source.Cancel();
+            };
+
+            var asyncTask = task(arguments);
+
+            asyncTask.ConfigureAwait(false).GetAwaiter().GetResult();
+
+            Log.Debug("Executing supplied method as an async block has completed");
         }
 
         private static void AttachExceptionHandler()
@@ -157,7 +179,6 @@ namespace AnalysisPrograms
             Contract.Requires(arguments != null);
             Contract.Requires(arguments.ActionArgsProperty != null);
 
-
             // just a pointer for executing dev methods
             // however, actions with no args get a plain old Object, so don't log in that case
             if (arguments.EmptyArgActionValue && arguments.ActionArgsProperty.PropertyType != typeof(object))
@@ -168,7 +189,7 @@ namespace AnalysisPrograms
                     throw new ArgumentException("Must provide arguments to an analysis in a RELEASE build.");
                 }
 
-                Log.Warn("Empty (null) analysis arguments recieved. A Dev method should be executed.");
+                Log.Warn("Empty (null) analysis arguments received. A Dev method should be executed.");
             }
 
             arguments.Invoke();
@@ -377,7 +398,6 @@ namespace AnalysisPrograms
                 {
                     //innerExceptions.AppendLine();
                     Log.Fatal("\n\n" + depthString + "> Inner exception:", exception);
-
 
                     if (exception is AggregateException) {
                         PrintAggregateException(exception, ref innerExceptions, depth++);

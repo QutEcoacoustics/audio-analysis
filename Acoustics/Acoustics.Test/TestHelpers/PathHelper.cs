@@ -77,8 +77,6 @@ namespace Acoustics.Test.TestHelpers
 
         public static void DeleteTempDir(DirectoryInfo dir)
         {
-            var baseDir = "." + Path.DirectorySeparatorChar;
-
             try
             {
                 Directory.Delete(dir.FullName, true);

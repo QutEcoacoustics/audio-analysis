@@ -4,10 +4,13 @@
 
 namespace AudioAnalysisTools.EventStatistics
 {
+    using System;
+
+    [Serializable]
     public class EventStatisticsConfiguration
     {
-        public int FrameSize { get; set; }
+        public int FrameSize { get; set; } = 512;
 
-        public int FrameStep { get; set; }
+        public int FrameStep { get; set; } = 512;
     }
 }

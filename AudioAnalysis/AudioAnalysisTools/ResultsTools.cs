@@ -53,7 +53,6 @@ namespace AudioAnalysisTools
                 for (int resultIndex = 0; resultIndex < items.Length; resultIndex++)
                 {
                     var item = items[resultIndex];
-                    item.SegmentDuration = result.SegmentAudioDuration;
 
                     // correct specific details
                     correctionFunc(result, item, index, resultIndex);
@@ -99,7 +98,7 @@ namespace AudioAnalysisTools
             else if (events == null && indices != null)
             {
                 // no-op, no events to convert, but indices already calculated
-                Log.Debug("No events recieved, indices already given, no further action");
+                Log.Debug("No events received, indices already given, no further action");
             }
             else if (events != null && indices == null)
             {
@@ -109,8 +108,7 @@ namespace AudioAnalysisTools
                     events,
                     IndexUnitTime,
                     durationOfTheOriginalAudioFile,
-                    scoreThreshold,
-                    absolute: true);
+                    scoreThreshold);
             }
             else if (events != null && indices != null)
             {

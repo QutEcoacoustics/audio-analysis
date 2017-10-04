@@ -44,7 +44,6 @@ namespace AnalysisPrograms
     using TowseyLibrary;
     using System.Drawing;
 
-
     /// <summary>
     /// First argument on command line to call this action is "drawEasyImage"
     /// </summary>
@@ -78,7 +77,6 @@ namespace AnalysisPrograms
                 set { this.timeSpanOffsetHint = value; }
             }
 
-
             //[ArgDescription("User specified file containing a list of indices and their properties.")]
             //[Production.ArgExistingFile(Extension = ".yml")]
             //[ArgPosition(1)]
@@ -106,7 +104,6 @@ namespace AnalysisPrograms
 
             //string opFileStem = "Woondum3-2015";
             //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\Woondum3"),   };
-
 
             // The filter pattern finds summary index files
             string fileFilter = "*SummaryIndices.csv";
@@ -167,7 +164,6 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine();
                 //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
             }
-
 
             // PATTERN SEARCH FOR SUMMARY INDEX FILES.
             //string pattern = "*__Towsey.Acoustic.Indices.csv";
@@ -277,7 +273,6 @@ namespace AnalysisPrograms
             Font stringFont = new Font("Arial", 8);
             string[] monthNames = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
-
             // for drawing the y-axis scale
             int scaleWidth = trackHeight + 7;
             var yAxisScale = new Bitmap(scaleWidth, rowCount + (2 * trackHeight));
@@ -379,7 +374,6 @@ namespace AnalysisPrograms
 
             } // over days
 
-
             // draw on civil dawn and dusk lines
             int startdayOfYear = ((DateTimeOffset)startDate).DayOfYear;
             int endDayOfYear   = ((DateTimeOffset)endDate).DayOfYear;
@@ -410,8 +404,6 @@ namespace AnalysisPrograms
             compositeBmp2 = (Bitmap)ImageTools.CombineImagesVertically(imageList);
             var outputFileName = Path.Combine(opDir.FullName, arguments.FileStemName + "." + rep + ".EASY.png");
             compositeBmp2.Save(outputFileName);
-
-
 
         } // Execute()
     }

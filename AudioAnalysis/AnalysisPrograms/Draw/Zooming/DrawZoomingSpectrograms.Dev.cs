@@ -92,7 +92,6 @@ namespace AnalysisPrograms.Draw.Zooming
             string config =
                 @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramHiResConfig.yml";
 
-
             return new Arguments
             {
                 // use the default set of index properties in the AnalysisConfig directory.

@@ -19,6 +19,7 @@ namespace AnalysisPrograms
     using Acoustics.Shared.Csv;
     using Acoustics.Tools;
     using AnalysisBase;
+    using AnalysisBase.Extensions;
     using AnalysisBase.ResultBases;
     using Production;
     using Recognizers;
@@ -70,11 +71,11 @@ namespace AnalysisPrograms
             {
                 return new AnalysisSettings
                            {
-                               SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                               SegmentMinDuration = TimeSpan.FromSeconds(15),
+                               AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
+                               AnalysisMinSegmentDuration = TimeSpan.FromSeconds(15),
                                SegmentMediaType = MediaTypes.MediaTypeWav,
                                SegmentOverlapDuration = TimeSpan.Zero,
-                               SegmentTargetSampleRate = RESAMPLE_RATE,
+                               AnalysisTargetSampleRate = RESAMPLE_RATE,
                            };
             }
         }
@@ -155,10 +156,6 @@ namespace AnalysisPrograms
                     arguments.Source = RecordingPath.ToFileInfo();
                     arguments.Config = ConfigPath.ToFileInfo();
                     arguments.Output = OutputDir.ToDirectoryInfo();
-                    arguments.TmpWav = segmentFName;
-                    arguments.Events = eventsFname;
-                    arguments.Indices = indicesFname;
-                    arguments.Sgram = sonogramFname;
                     arguments.Start = start.TotalSeconds;
                     arguments.Duration = duration.TotalSeconds;
                 }
@@ -177,48 +174,6 @@ namespace AnalysisPrograms
             }
 
             Execute(arguments);
-
-            if (executeDev)
-            {
-                FileInfo csvEvents = arguments.Output.CombineFile(arguments.Events);
-                if (!csvEvents.Exists)
-                {
-                    TowseyLibrary.Log.WriteLine(
-                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvEvents.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-
-                FileInfo csvIndicies = arguments.Output.CombineFile(arguments.Indices);
-                if (!csvIndicies.Exists)
-                {
-                    TowseyLibrary.Log.WriteLine(
-                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvIndicies.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-
-                FileInfo image = arguments.Output.CombineFile(arguments.Sgram);
-                if (image.Exists)
-                {
-                    var process = new ProcessRunner(ImageViewer);
-                    process.Run(image.FullName, arguments.Output.FullName);
-                }
-
-                LoggedConsole.WriteLine("\n\n# Finished analysis:- " + arguments.Source.FullName);
-            }
         }
 
         /// <summary>
@@ -232,13 +187,10 @@ namespace AnalysisPrograms
         {
             Contract.Requires(arguments != null);
 
-            AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
             TimeSpan start = TimeSpan.FromSeconds(arguments.Start ?? 0);
             TimeSpan duration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT
-            // TODO: add a .wavV extension
-            FileInfo tempF = analysisSettings.AudioFile;
             var audioUtilityRequest = new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE };
             if (duration == TimeSpan.Zero)
             {
@@ -260,15 +212,17 @@ namespace AnalysisPrograms
                 arguments.Source,
                 MediaTypes.MediaTypeWav,
                 audioUtilityRequest,
-                analysisSettings.AnalysisBaseTempDirectoryChecked);
+                arguments.Output);
 
-            analysisSettings.AudioFile = preparedFile.TargetInfo.SourceFile;
+            var (analysisSettings, segmentSettings) = arguments.ToAnalysisSettings(
+                sourceSegment: preparedFile.SourceInfo.ToSegment(),
+                preparedSegment: preparedFile.TargetInfo.ToSegment());
 
             // DO THE ANALYSIS
             /* ############################################################################################################################################# */
             IAnalyser2 analyser = new CanetoadOld_OBSOLETE();
             analyser.BeforeAnalyze(analysisSettings);
-            AnalysisResult2 result = analyser.Analyze(analysisSettings);
+            AnalysisResult2 result = analyser.Analyze(analysisSettings, segmentSettings);
             /* ############################################################################################################################################# */
 
             if (result.Events.Length > 0)
@@ -286,18 +240,18 @@ namespace AnalysisPrograms
             }
         }
 
-        public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
-            FileInfo audioFile = analysisSettings.AudioFile;
+            FileInfo audioFile = segmentSettings.SegmentAudioFile;
 
             // execute actual analysis
             dynamic configuration = analysisSettings.Configuration;
             var recording = new AudioRecording(audioFile.FullName);
             Log.Debug("Canetoad sample rate:" + recording.SampleRate);
 
-            RecognizerResults results = Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero, analysisSettings.AnalysisInstanceOutputDirectory);
+            RecognizerResults results = Analysis(recording, configuration, segmentSettings.SegmentStartOffset, segmentSettings.SegmentOutputDirectory);
 
-            var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
+            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
 
             BaseSonogram sonogram = results.Sonogram;
             double[,] hits = results.Hits;
@@ -306,28 +260,28 @@ namespace AnalysisPrograms
 
             analysisResults.Events = predictedEvents.ToArray();
 
-            if (analysisSettings.EventsFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
-                this.WriteEventsFile(analysisSettings.EventsFile, analysisResults.Events);
-                analysisResults.EventsFile = analysisSettings.EventsFile;
+                this.WriteEventsFile(segmentSettings.SegmentEventsFile, analysisResults.Events);
+                analysisResults.EventsFile = segmentSettings.SegmentEventsFile;
             }
 
-            if (analysisSettings.SummaryIndicesFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
                 analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
 
-                analysisResults.SummaryIndicesFile = analysisSettings.SummaryIndicesFile;
-                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
+                analysisResults.SummaryIndicesFile = segmentSettings.SegmentSummaryIndicesFile;
+                this.WriteSummaryIndicesFile(segmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
-            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
-                string imagePath = analysisSettings.ImageFile.FullName;
+                string imagePath = segmentSettings.SegmentImageFile.FullName;
                 const double EventThreshold = 0.1;
                 Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, EventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
-                analysisResults.ImageFile = analysisSettings.ImageFile;
+                analysisResults.ImageFile = segmentSettings.SegmentImageFile;
             }
 
             return analysisResults;
@@ -360,11 +314,6 @@ namespace AnalysisPrograms
         }
 
         #endregion
-
-
-
-
-
 
         #region Methods
 

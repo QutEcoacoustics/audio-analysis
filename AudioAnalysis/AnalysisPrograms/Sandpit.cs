@@ -96,7 +96,7 @@ namespace AnalysisPrograms
                 // SpectralClustering.TESTMETHOD_SpectralClustering();
                 // DspFilters.TestMethod_GenerateSignal1();
                 // DspFilters.TestMethod_GenerateSignal2();
-                // EventStatsticsCalculate.TestCalculateEventStatistics();
+                // EventStatisticsCalculate.TestCalculateEventStatistics();
             }
 
             if (false)
@@ -105,7 +105,7 @@ namespace AnalysisPrograms
                 int sampleRate = 22050;
                 double duration = 420; // signal duration in seconds = 7 minutes
                 int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
-                var recording = DspFilters.GenerateTestSignal(sampleRate, duration, harmonics, "cosine");
+                var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Consine);
                 var outputDirectory = new DirectoryInfo(@"C:\SensorNetworks\SoftwareTests\TestLongDurationRecordings");
                 var recordingPath = outputDirectory.CombineFile("TemporaryRecording.wav");
                 WavWriter.WriteWavFileViaFfmpeg(recordingPath, recording.WavReader);
@@ -624,8 +624,8 @@ namespace AnalysisPrograms
             //HERVE GLOTIN: This is used to analyse the BIRD50 data set.
             // In order to analyse the short recordings in BIRD50 dataset, need following change to code:
             // need to modify    AudioAnalysis.AnalysisPrograms.AcousticIndices.cs #line648
-            // need to change    SegmentMinDuration = TimeSpan.FromSeconds(20),
-            // to                SegmentMinDuration = TimeSpan.FromSeconds(1),
+            // need to change    AnalysisMinSegmentDuration = TimeSpan.FromSeconds(20),
+            // to                AnalysisMinSegmentDuration = TimeSpan.FromSeconds(1),
             if (false)
             {
                 HerveGlotinCollaboration.HiRes3();
@@ -989,8 +989,6 @@ namespace AnalysisPrograms
             } // CALCULATE MUTUAL INFORMATION
 
             Console.WriteLine("# Finished Sandpit Task!");
-            Console.ReadLine();
-            Environment.Exit(0);
         }
     }
 }

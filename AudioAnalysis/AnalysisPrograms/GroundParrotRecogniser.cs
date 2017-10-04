@@ -114,7 +114,7 @@ namespace AnalysisPrograms
         {
             Tuple<AcousticEvent[], AudioRecording, BaseSonogram> aed = Aed.Detect(wavFilePath, aedConfiguration, segmentStartOffset);
 
-            var events = aed.Item1.Select(ae => Util.fcornersToRect(ae.TimeStart, ae.TimeEnd, ae.MaxFreq, ae.MinFreq)).ToList();
+            var events = aed.Item1.Select(ae => Util.fcornersToRect(ae.TimeStart, ae.TimeEnd, ae.HighFrequencyHertz, ae.LowFrequencyHertz)).ToList();
 
             Log.Debug("EPR start");
 
@@ -132,13 +132,17 @@ namespace AnalysisPrograms
             foreach (var rectScore in eprRects)
             {
                 var ae = new AcousticEvent(
-                    rectScore.Item1.Left, rectScore.Item1.Right - rectScore.Item1.Left, rectScore.Item1.Bottom, rectScore.Item1.Top);
+                    segmentStartOffset,
+                    rectScore.Item1.Left,
+                    rectScore.Item1.Right - rectScore.Item1.Left,
+                    rectScore.Item1.Bottom,
+                    rectScore.Item1.Top);
                 ae.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                 ae.SetTimeAndFreqScales(sonogram.NyquistFrequency, sonogram.Configuration.WindowSize, 0 );
                 ae.SetScores(rectScore.Item2, 0, 1);
                 ae.BorderColour = aedConfiguration.AedEventColor;
-                ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = aed.Item2.Duration();
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                ae.SegmentDurationSeconds = aed.Item2.Duration.TotalSeconds;
 
                 eprEvents.Add(ae);
             }
@@ -172,7 +176,7 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine();
             foreach (AcousticEvent ae in eprEvents)
             {
-                LoggedConsole.WriteLine(ae.TimeStart + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
+                LoggedConsole.WriteLine(ae.TimeStart + "," + ae.EventDurationSeconds + "," + ae.LowFrequencyHertz + "," + ae.HighFrequencyHertz);
             }
 
             LoggedConsole.WriteLine();
@@ -189,7 +193,6 @@ namespace AnalysisPrograms
 
         }
 
-
         #endregion
 
         #region helper methods
@@ -202,7 +205,6 @@ namespace AnalysisPrograms
         {
             return (double?)configuration[KeyNormalizedMinScore] ?? Default.eprNormalisedMinScore;
         }
-
 
         /// <summary>
         /// Takes the template defined by Birgit and converts it to integer bins using the user supplied time & hz scales
@@ -243,6 +245,7 @@ namespace AnalysisPrograms
                 Oblong o = new Oblong(t1, f1, t2, f2);
                 gpTemplate.Add(
                     new AcousticEvent(
+                        TimeSpan.Zero,
                         o,
                         sonogram.NyquistFrequency,
                         sonogram.Configuration.FreqBinCount,
@@ -250,6 +253,7 @@ namespace AnalysisPrograms
                         sonogram.FrameStep,
                         sonogram.FrameCount));
             }
+
             return gpTemplate;
         }
 
@@ -274,9 +278,9 @@ namespace AnalysisPrograms
             }
         }
 
-        public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
-            FileInfo audioFile = analysisSettings.AudioFile;
+            FileInfo audioFile = segmentSettings.SegmentAudioFile;
 
             var eprNormalizedMinScore = GetEprParametersFromConfigFileOrDefaults(analysisSettings.Configuration);
 
@@ -287,36 +291,35 @@ namespace AnalysisPrograms
             var rawAedConfig = Yaml.Deserialise(aedConfigFile);
             var aedConfig = Aed.GetAedParametersFromConfigFileOrDefaults(rawAedConfig);
 
-            Tuple<BaseSonogram, List<AcousticEvent>> results = Detect(audioFile, aedConfig, eprNormalizedMinScore, analysisSettings.SegmentStartOffset.Value);
+            Tuple<BaseSonogram, List<AcousticEvent>> results = Detect(audioFile, aedConfig, eprNormalizedMinScore, segmentSettings.SegmentStartOffset);
 
-            var analysisResults = new AnalysisResult2(analysisSettings, results.Item1.Duration)
+            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, results.Item1.Duration)
                                       {
                                           AnalysisIdentifier = this.Identifier,
                                           Events = results.Item2.ToArray(),
                                       };
             BaseSonogram sonogram = results.Item1;
 
-            if (analysisSettings.EventsFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
-                this.WriteEventsFile(analysisSettings.EventsFile, analysisResults.Events);
-                analysisResults.EventsFile = analysisSettings.EventsFile;
+                this.WriteEventsFile(segmentSettings.SegmentEventsFile, analysisResults.Events);
+                analysisResults.EventsFile = segmentSettings.SegmentEventsFile;
             }
 
-            if (analysisSettings.SummaryIndicesFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
                 analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
 
-                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
+                this.WriteSummaryIndicesFile(segmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
-
             // save image of sonograms
-            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 Image image = Aed.DrawSonogram(sonogram, results.Item2);
-                image.Save(analysisSettings.ImageFile.FullName, ImageFormat.Png);
-                analysisResults.ImageFile = analysisSettings.ImageFile;
+                image.Save(segmentSettings.SegmentImageFile.FullName, ImageFormat.Png);
+                analysisResults.ImageFile = segmentSettings.SegmentImageFile;
             }
 
             return analysisResults;

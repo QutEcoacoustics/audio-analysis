@@ -16,7 +16,6 @@ namespace System
 
     public static class EnumerableExtensions
     {
-        #region Public Methods and Operators
 
         public static bool IsNullOrEmpty<T>(this IEnumerable<T> items)
         {
@@ -288,6 +287,17 @@ namespace System
             }
         }
 
-        #endregion
+        public static bool All(this IEnumerable<bool> sequence)
+        {
+            foreach (var item in sequence)
+            {
+                if (!item)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 }

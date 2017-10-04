@@ -88,12 +88,13 @@ namespace AnalysisPrograms.Recognizers
             //      string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             //      string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
-            //RecognizerResults results = this.Gruntwork1(audioRecording, configuration, outputDirectory);
-            RecognizerResults results = this.Gruntwork2(audioRecording, configuration, outputDirectory);
+            //RecognizerResults results = Gruntwork1(audioRecording, configuration, outputDirectory, segmentStartOffset);
+            RecognizerResults results = Gruntwork2(audioRecording, configuration, outputDirectory, segmentStartOffset);
+
             return results;
         }
 
-        internal RecognizerResults Gruntwork1(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory)
+        internal RecognizerResults Gruntwork1(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
         {
             // make a spectrogram
             double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 0.1;
@@ -276,7 +277,7 @@ namespace AnalysisPrograms.Recognizers
 
                 double startTime = point.X * frameStepInSeconds;
                 double durationTime = eventWidth * frameStepInSeconds;
-                var newEvent = new AcousticEvent(startTime, durationTime, bottomFreqForEvent, topFreqForEvent)
+                var newEvent = new AcousticEvent(segmentStartOffset, startTime, durationTime, bottomFreqForEvent, topFreqForEvent)
                 {
                     //Name = string.Empty, // remove name because it hides spectral content of the event.
                     Name = "L.c" + templateId,
@@ -323,7 +324,7 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// New and alternative version of Lconvex recogniser because discovered that the call is more variable than I first realised.
         /// </summary>
-        internal RecognizerResults Gruntwork2(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory)
+        internal RecognizerResults Gruntwork2(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
         {
             // make a spectrogram
             double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 0.1;
@@ -477,7 +478,7 @@ namespace AnalysisPrograms.Recognizers
 
                 double startTime = (s - callHalfWidth) * frameStepInSeconds;
                 double durationTime = callFrameWidth * frameStepInSeconds;
-                var newEvent = new AcousticEvent(startTime, durationTime, bottomFreqForEvent, topFreqForEvent)
+                var newEvent = new AcousticEvent(segmentStartOffset, startTime, durationTime, bottomFreqForEvent, topFreqForEvent)
                 {
                     //Name = string.Empty, // remove name because it hides spectral content of the event.
                     Name = "Lc" + templateIds[s],
@@ -583,7 +584,6 @@ namespace AnalysisPrograms.Recognizers
 
             return templates;
         }
-
         private static void ScanEventScores(double[] band, List<double[]> templates, out double maxScore, out int eventBottomBin, out int id)
         {
             // check that have not been passed a zero spectrum. If so return appropriate values
@@ -656,7 +656,7 @@ namespace AnalysisPrograms.Recognizers
             return maxScore;
         }
 
-        private static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
+        public static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {
             const bool doHighlightSubband = false;
             const bool add1KHzLines = true;

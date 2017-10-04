@@ -27,20 +27,20 @@ namespace AnalysisPrograms
 
         public override string Identifier => "Towsey.ChannelIntegrity";
 
-        public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
             // boilerplate Analyzer
-            var audioFile = analysisSettings.AudioFile;
-            var sampleRate = analysisSettings.SampleRateOfOriginalAudioFile;
+            var audioFile = segmentSettings.SegmentAudioFile;
+            var sampleRate = segmentSettings.Segment.SourceMetadata.SampleRate;
             var recording = new AudioRecording(audioFile.FullName);
-            var outputDirectory = analysisSettings.AnalysisInstanceOutputDirectory;
+            var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
-            var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
+            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
             analysisResults.AnalysisIdentifier = this.Identifier;
 
             var result = new ChannelIntegrityIndices()
                 {
-                    StartOffset = analysisSettings.SegmentStartOffset.Value,
+                    ResultStartSeconds = segmentSettings.SegmentStartOffset.TotalSeconds,
                 };
 
             // do some sanity checks
@@ -48,7 +48,6 @@ namespace AnalysisPrograms
             {
                 throw new InvalidAudioChannelException($"The channel integrity analyzer requires exactly two channels but {recording.WavReader.Channels} channels found in file ({audioFile.FullName}");
             }
-
 
             // actual analysis
             double[] channelLeft = recording.WavReader.GetChannel(0);
@@ -63,7 +62,7 @@ namespace AnalysisPrograms
             double midDecibelBias;
             double highDecibelBias;
 
-            ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate.Value, out similarityIndex,
+            ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate, out similarityIndex,
                                               out decibelIndex, out avDecibelBias, out medianDecibelBias,
                                               out lowDecibelBias, out midDecibelBias, out highDecibelBias);
 
@@ -76,7 +75,6 @@ namespace AnalysisPrograms
             result.MidFreqDecibelBias  = midDecibelBias;
             result.HighFreqDecibelBias = highDecibelBias;
 
-
             double zeroCrossingFractionLeft;
             double zeroCrossingFractionRight;
             ChannelIntegrity.ZeroCrossingIndex(channelLeft, channelRight, out zeroCrossingFractionLeft, out zeroCrossingFractionRight);
@@ -88,18 +86,18 @@ namespace AnalysisPrograms
             analysisResults.SummaryIndices = new SummaryIndexBase[] { result };
             analysisResults.SpectralIndices = new SpectralIndexBase[0];
 
-            if (analysisSettings.SummaryIndicesFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
-                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
-                analysisResults.SummaryIndicesFile = analysisSettings.SummaryIndicesFile;
+                this.WriteSummaryIndicesFile(segmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
+                analysisResults.SummaryIndicesFile = segmentSettings.SegmentSummaryIndicesFile;
             }
 
-            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 throw new NotImplementedException();
             }
 
-            if (analysisSettings.SpectrumIndicesDirectory != null)
+            if (false && analysisSettings.AnalysisDataSaveBehavior)
             {
                 throw new NotImplementedException();
             }

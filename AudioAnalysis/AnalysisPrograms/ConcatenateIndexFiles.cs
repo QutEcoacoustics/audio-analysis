@@ -1107,7 +1107,7 @@ namespace AnalysisPrograms
                     StartOffset = unitTime.Multiply(i),
                     EventsTotal = eventsPerUnitTime[i],
                     EventsTotalThresholded = bigEvsPerUnitTime[i],
-                    SegmentDuration = absolute ? unitTime : duration
+                    AnalysisIdealSegmentDuration = absolute ? unitTime : duration
                 };
 
                 indices[i] = newIndex;

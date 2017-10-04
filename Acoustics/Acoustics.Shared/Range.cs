@@ -11,37 +11,48 @@ namespace Acoustics.Shared
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
 
     /// <summary>
-    /// Range of Min-Max.
+    /// Represents a range between two points on the same dimenson.
+    /// This type does not encode any notion of endpoint clusivity - we do not know if a range is left-open, right-open,
+    /// open, or closed.
     /// </summary>
     /// <typeparam name="T">
-    /// Type of range.
+    /// The type used to represent the points in this range.
     /// </typeparam>
-    public class Range<T> : IEquatable<Range<T>> where T : struct
+    public struct Range<T> : IEquatable<Range<T>>, IComparable<Range<T>>
+        where T : struct, IComparable<T>
     {
-        /// <summary>
-        /// Gets or sets Minimum.
-        /// </summary>
-        public T Minimum { get; set; }
+        public Range(T minimum, T maximum)
+        {
+            if (minimum.CompareTo(maximum) == 1)
+            {
+                throw new ArgumentException(
+                    $"Range's minimum ({minimum}) must be less than the maximum ({maximum})",
+                    nameof(minimum));
+            }
+
+            this.Minimum = minimum;
+            this.Maximum = maximum;
+        }
 
         /// <summary>
-        /// Gets or sets Maximum.
+        /// Gets the Minimum.
         /// </summary>
-        public T Maximum { get; set; }
+        public T Minimum { get; }
+
+        /// <summary>
+        /// Gets the Maximum.
+        /// </summary>
+        public T Maximum { get; }
 
         /// <summary>
         /// Equals operator.
         /// </summary>
-        /// <param name="first">
-        /// The first.
-        /// </param>
-        /// <param name="second">
-        /// The second.
-        /// </param>
-        /// <returns>
-        /// True if equsl, otherwise false.
-        /// </returns>
+        /// <param name="first">The first range.</param>
+        /// <param name="second">The second range.</param>
+        /// <returns>True if equal, otherwise false.</returns>
         public static bool operator ==(Range<T> first, Range<T> second)
         {
             return first.Equals(second);
@@ -64,6 +75,36 @@ namespace Acoustics.Shared
             return !(first == second);
         }
 
+        public bool Contains(T scalar, Topology type = Topology.Default)
+        {
+            return ScalarEqualOrGreaterThanAnchor(scalar, this.Minimum, type) && ScalarEqualOrLessThanAnchor(scalar, this.Maximum, type);
+        }
+
+        public bool IntersectsWith(Range<T> range, Topology type = Topology.Default)
+        {
+            return (ScalarEqualOrGreaterThanAnchor(range.Maximum, this.Minimum, type) &&
+                    ScalarEqualOrLessThanAnchor(range.Minimum, this.Maximum, type));
+        }
+
+        public bool TryGetUnion(Range<T> range, out Range<T> union)
+        {
+            if (this.IntersectsWith(range, Topology.Closed))
+            {
+                T newMin = this.Minimum.CompareTo(range.Minimum) < 0 ? this.Minimum : range.Minimum;
+                T newMax = this.Maximum.CompareTo(range.Maximum) > 0 ? this.Maximum : range.Maximum;
+
+                union = new Range<T>(newMin, newMax);
+                return true;
+            }
+
+            union = default(Range<T>);
+            return false;
+        }
+
+        public bool IsEmpty => this.Minimum.Equals(this.Maximum);
+
+        public bool IsDefault => this.Equals(default(Range<T>));
+
         /// <summary>
         /// Indicates whether the current object is equal to another object of the same type.
         /// </summary>
@@ -75,13 +116,7 @@ namespace Acoustics.Shared
         /// </param>
         public bool Equals(Range<T> other)
         {
-            if ((object)other == null)
-            {
-                return false;
-            }
-
-            return EqualityComparer<T>.Default.Equals(this.Maximum, other.Maximum) &&
-                   EqualityComparer<T>.Default.Equals(this.Minimum, other.Minimum);
+            return this.Minimum.Equals(other.Minimum) && this.Maximum.Equals(other.Maximum);
         }
 
         /// <summary>
@@ -95,15 +130,12 @@ namespace Acoustics.Shared
         /// </returns>
         public override bool Equals(object obj)
         {
-            if (obj == null)
+            if (ReferenceEquals(null, obj))
             {
                 return false;
             }
 
-            // If parameter cannot be cast return false.
-            var p = obj as Range<T>;
-
-            return (object)p != null && this.Equals(p);
+            return obj is Range<T> && this.Equals((Range<T>)obj);
         }
 
         /// <summary>
@@ -114,78 +146,102 @@ namespace Acoustics.Shared
         /// </returns>
         public override int GetHashCode()
         {
-            return this.Minimum.GetHashCode() ^ this.Maximum.GetHashCode();
+            unchecked
+            {
+                return (this.Minimum.GetHashCode() * 397) ^ this.Maximum.GetHashCode();
+            }
         }
 
         /// <summary>
-        /// Get string representation.
+        /// Gets string representation of the Range.
+        /// Note: our range has no notion of inclusive or exclusive endpoints, thus the square bracket notation is
+        /// technially incorrectly representing this value.
         /// </summary>
         /// <returns>
         /// String representation.
         /// </returns>
         public override string ToString()
         {
-            return this.Minimum + " - " + this.Maximum;
+            return $"Range: [{this.Minimum}, {this.Maximum}]";
         }
 
-        /// <summary>
-        /// Get count number of randoms ranges of rangeAmount between rangeOverMin and rangeOverMax.
-        /// </summary>
-        /// <param name="rangeOverMin">
-        /// The range over min.
-        /// </param>
-        /// <param name="rangeOverMax">
-        /// The range over max.
-        /// </param>
-        /// <param name="rangeAmount">
-        /// The range amount.
-        /// </param>
-        /// <param name="count">
-        /// The number of ranges.
-        /// </param>
-        /// <returns>
-        /// Enumerable of ranges.
-        /// </returns>
-        /// <exception cref="ArgumentException">
-        /// The rangeOverMin must be less than rangeOverMax.
-        /// </exception>
-        /// <exception cref="ArgumentException">
-        /// The rangeAmount must be larger than the difference between rangeOverMin and rangeOverMax.
-        /// </exception>
-        public static IEnumerable<Range<int>> GetRandomRanges(int rangeOverMin, int rangeOverMax, int rangeAmount, int count)
+        public int CompareTo(Range<T> other)
         {
-            if (rangeOverMin >= rangeOverMax)
+            var minimumComparison = this.Minimum.CompareTo(other.Minimum);
+
+            if (minimumComparison != 0)
             {
-                throw new ArgumentException("The rangeOverMin must be less than rangeOverMax.", "rangeOverMin");
+                return minimumComparison;
             }
 
-            if (rangeAmount > rangeOverMax - rangeOverMin)
-            {
-                throw new ArgumentException("The rangeAmount must be less than or equal to the difference between rangeOverMin and rangeOverMax.", "rangeAmount");
-            }
-
-            var random = new Random();
-
-            for (var index = 0; index < count; index++)
-            {
-                var randomPoint = random.Next(rangeOverMin, rangeOverMax);
-                var lowerRange = randomPoint - rangeAmount;
-
-                if (lowerRange < 0)
-                {
-                    lowerRange = 0;
-                }
-
-                var upperRange = lowerRange + rangeAmount;
-
-                if (upperRange > rangeOverMax)
-                {
-                    upperRange = rangeOverMax;
-                    lowerRange = rangeOverMax - rangeAmount;
-                }
-
-                yield return new Range<int> { Minimum = lowerRange, Maximum = upperRange };
-            }
+            return this.Maximum.CompareTo(other.Maximum);
         }
+
+        private static bool ScalarEqualOrGreaterThanAnchor(T scalar, T anchor, Topology anchorTopology)
+        {
+            int comparison = anchor.CompareTo(scalar);
+            bool result = false;
+            switch (comparison)
+            {
+                case -1:
+                    {
+                        result = true;
+                        break;
+                    }
+                case 0:
+                    {
+                        result = (anchorTopology & Topology.LeftClosedRightOpen) == Topology.LeftClosedRightOpen;
+                        break;
+                    }
+                case 1:
+                    {
+                        result = false;
+                        break;
+                    }
+            }
+
+            return result;
+        }
+        private static bool ScalarEqualOrLessThanAnchor(T scalar, T anchor, Topology anchorTopology)
+        {
+            int comparison = anchor.CompareTo(scalar);
+            bool result = false;
+            switch (comparison)
+            {
+                case -1:
+                {
+                    result = false;
+                    break;
+                }
+                case 0:
+                {
+                    result = (anchorTopology & Topology.LeftOpenRightClosed) == Topology.LeftOpenRightClosed;
+                    break;
+                }
+                case 1:
+                {
+                    result = true;
+                    break;
+                }
+            }
+
+            return result;
+        }
+    }
+
+    [Flags]
+    public enum Topology
+    {
+        Open = 0x0,
+        LeftClosedRightOpen = 0x01,
+        LeftOpenRightClosed = 0x02,
+        Closed = 0x3,
+
+        Exclusive = Open,
+        MinimumInclusiveMaximumExclusive = LeftClosedRightOpen,
+        MinimumExclusiveMaximumInclusive = LeftOpenRightClosed,
+        Inclusive = Closed,
+
+        Default = LeftClosedRightOpen
     }
 }

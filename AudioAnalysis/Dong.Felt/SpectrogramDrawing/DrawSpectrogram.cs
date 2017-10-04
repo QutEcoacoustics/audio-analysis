@@ -235,9 +235,9 @@
             var query = new Candidates();
             var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
             query.StartTime = queryInfo.TimeStart * 1000;
-            query.EndTime = query.StartTime + queryInfo.Duration * 1000;
-            query.MaxFrequency = queryInfo.MaxFreq;
-            query.MinFrequency = queryInfo.MinFreq;
+            query.EndTime = query.StartTime + queryInfo.EventDurationSeconds * 1000;
+            query.MaxFrequency = queryInfo.HighFrequencyHertz;
+            query.MinFrequency = queryInfo.LowFrequencyHertz;
             query.SourceFilePath = queryAudioFilePath;
             candidates.Insert(0, query);
             var querycsvFilePath = new FileInfo(queryCsvFilePath);
@@ -321,7 +321,7 @@
                 {
                     var acousticEventlistForQuery = new List<AcousticEvent>();
 
-                    var queryAcousticEvent = new AcousticEvent(startTime, duration,
+                    var queryAcousticEvent = new AcousticEvent(TimeSpan.Zero, startTime, duration,
                         candidates[i].MinFrequency, candidates[i].MaxFrequency);
                     queryAcousticEvent.BorderColour = Color.Crimson;
                     acousticEventlistForQuery.Add(queryAcousticEvent);
@@ -340,7 +340,7 @@
                 else
                 {
                     var acousticEventlistForCandidate = new List<AcousticEvent>();
-                    var candAcousticEvent = new AcousticEvent(startTime, duration,
+                    var candAcousticEvent = new AcousticEvent(TimeSpan.Zero, startTime, duration,
                         candidates[i].MinFrequency, candidates[i].MaxFrequency);
                     candAcousticEvent.BorderColour = Color.Green;
                     acousticEventlistForCandidate.Add(candAcousticEvent);
@@ -386,9 +386,9 @@
             var query = new Candidates();
             var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
             query.StartTime = queryInfo.TimeStart * 1000;
-            query.EndTime = query.StartTime + queryInfo.Duration * 1000;
-            query.MaxFrequency = queryInfo.MaxFreq;
-            query.MinFrequency = queryInfo.MinFreq;
+            query.EndTime = query.StartTime + queryInfo.EventDurationSeconds * 1000;
+            query.MaxFrequency = queryInfo.HighFrequencyHertz;
+            query.MinFrequency = queryInfo.LowFrequencyHertz;
             query.SourceFilePath = queryAudioFilePath;
             candidates.Insert(0, query);
             var querycsvFilePath = new FileInfo(queryCsvFilePath);
@@ -445,9 +445,9 @@
             var query = new Candidates();
             var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
             query.StartTime = queryInfo.TimeStart * 1000;
-            query.EndTime = query.StartTime + queryInfo.Duration * 1000;
-            query.MaxFrequency = queryInfo.MaxFreq;
-            query.MinFrequency = queryInfo.MinFreq;
+            query.EndTime = query.StartTime + queryInfo.EventDurationSeconds * 1000;
+            query.MaxFrequency = queryInfo.HighFrequencyHertz;
+            query.MinFrequency = queryInfo.LowFrequencyHertz;
             query.SourceFilePath = queryAudioFilePath;
             candidates.Insert(0, query);
             var querycsvFilePath = new FileInfo(queryCsvFilePath);
@@ -535,9 +535,9 @@
             var query = new Candidates();
             var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
             query.StartTime = queryInfo.TimeStart * 1000;
-            query.EndTime = query.StartTime + queryInfo.Duration * 1000;
-            query.MaxFrequency = queryInfo.MaxFreq;
-            query.MinFrequency = queryInfo.MinFreq;
+            query.EndTime = query.StartTime + queryInfo.EventDurationSeconds * 1000;
+            query.MaxFrequency = queryInfo.HighFrequencyHertz;
+            query.MinFrequency = queryInfo.LowFrequencyHertz;
             query.SourceFilePath = queryAudioFilePath;
             candidates.Insert(0, query);
             var pathString = Path.Combine(tempDirectory.FullName, Path.GetFileName(queryAudioFilePath), featurePropSet);
@@ -631,10 +631,9 @@
                 if (i == 0)
                 {
                     var acousticEventlistForQuery = new List<AcousticEvent>();
-                    var queryAcousticEvent = new AcousticEvent(startTime, duration,
+                    var queryAcousticEvent = new AcousticEvent(TimeSpan.Zero, startTime, duration,
                         candidates[i].MinFrequency, candidates[i].MaxFrequency);
-                    queryAcousticEvent.Duration = queryAcousticEvent.Duration;
-                    queryAcousticEvent.TimeEnd = startTime + queryAcousticEvent.Duration;
+
                     queryAcousticEvent.BorderColour = Color.Crimson;
                     acousticEventlistForQuery.Add(queryAcousticEvent);
                     scores.Add(candidates[i].Score);
@@ -654,7 +653,7 @@
                 else
                 {
                     var acousticEventlistForCandidate = new List<AcousticEvent>();
-                    var candAcousticEvent = new AcousticEvent(startTime, duration,
+                    var candAcousticEvent = new AcousticEvent(TimeSpan.Zero, startTime, duration,
                         candidates[i].MinFrequency, candidates[i].MaxFrequency);
                     candAcousticEvent.BorderColour = Color.Green;
                     acousticEventlistForCandidate.Add(candAcousticEvent);
@@ -730,16 +729,15 @@
                 var eventList = new List<AcousticEvent>();
                 if (i == 0)
                 {
-                    var queryAcousticEvent = new AcousticEvent(startTime, duration,
+                    var queryAcousticEvent = new AcousticEvent(TimeSpan.Zero, startTime, duration,
                         candidates[i].MinFrequency, candidates[i].MaxFrequency);
-                    queryAcousticEvent.Duration = queryAcousticEvent.Duration;
-                    queryAcousticEvent.TimeEnd = startTime + queryAcousticEvent.Duration;
+
                     queryAcousticEvent.BorderColour = Color.Crimson;
                     eventList.Add(queryAcousticEvent);
                 }
                 else
                 {
-                    var candAcousticEvent = new AcousticEvent(startTime, duration,
+                    var candAcousticEvent = new AcousticEvent(TimeSpan.Zero, startTime, duration,
                         candidates[i].MinFrequency, candidates[i].MaxFrequency);
                     candAcousticEvent.BorderColour = Color.Green;
                     eventList.Add(candAcousticEvent);
@@ -837,12 +835,11 @@
                 {
                     var acousticEventlistForQuery = new List<AcousticEvent>();
 
-                    var queryAcousticEvent = new AcousticEvent(startTime, duration,
+                    var queryAcousticEvent = new AcousticEvent(TimeSpan.Zero, startTime, duration,
                         candidates[i].MinFrequency, candidates[i].MaxFrequency);
-                    queryAcousticEvent.MaxFreq = queryAcousticEvent.MaxFreq * compressConfig.FreqCompressRate;
-                    queryAcousticEvent.MinFreq = queryAcousticEvent.MinFreq * compressConfig.FreqCompressRate;
-                    queryAcousticEvent.Duration = queryAcousticEvent.Duration * compressConfig.TimeCompressRate;
-                    queryAcousticEvent.TimeEnd = startTime + queryAcousticEvent.Duration;
+                    queryAcousticEvent.HighFrequencyHertz = queryAcousticEvent.HighFrequencyHertz * compressConfig.FreqCompressRate;
+                    queryAcousticEvent.LowFrequencyHertz = queryAcousticEvent.LowFrequencyHertz * compressConfig.FreqCompressRate;
+
                     queryAcousticEvent.BorderColour = Color.Crimson;
                     acousticEventlistForQuery.Add(queryAcousticEvent);
                     Image image = DrawSonogram(spectrogram, scores, acousticEventlistForQuery,
@@ -861,12 +858,11 @@
                 else
                 {
                     var acousticEventlistForCandidate = new List<AcousticEvent>();
-                    var candAcousticEvent = new AcousticEvent(startTime, duration,
+                    var candAcousticEvent = new AcousticEvent(TimeSpan.Zero, startTime, duration,
                         candidates[i].MinFrequency, candidates[i].MaxFrequency);
-                    candAcousticEvent.MaxFreq = candAcousticEvent.MaxFreq * compressConfig.FreqCompressRate;
-                    candAcousticEvent.MinFreq = candAcousticEvent.MinFreq * compressConfig.FreqCompressRate;
-                    candAcousticEvent.Duration = candAcousticEvent.Duration * compressConfig.TimeCompressRate;
-                    candAcousticEvent.TimeEnd = startTime + candAcousticEvent.Duration;
+                    candAcousticEvent.HighFrequencyHertz = candAcousticEvent.HighFrequencyHertz * compressConfig.FreqCompressRate;
+                    candAcousticEvent.LowFrequencyHertz = candAcousticEvent.LowFrequencyHertz * compressConfig.FreqCompressRate;
+
                     candAcousticEvent.BorderColour = Color.Green;
                     acousticEventlistForCandidate.Add(candAcousticEvent);
                     Image image = DrawSonogram(spectrogram, scores, acousticEventlistForCandidate, eventThreshold, null);
