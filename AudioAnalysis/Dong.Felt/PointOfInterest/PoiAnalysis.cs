@@ -141,6 +141,7 @@ namespace Dong.Felt
             for (int index = 0; index < numberOfFakes; index++)
             {
                 events[index] = new AcousticEvent(
+                    TimeSpan.Zero,
                     rand.NextDouble() * minTime,
                     rand.NextDouble() * duration,
                     minFrequency * rand.NextDouble(),

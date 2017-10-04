@@ -541,8 +541,7 @@ namespace Acoustics.Test.Tools
 
                 Assert.IsTrue(
                     TestHelper.CompareTimeSpans(utilInfoOutput.Duration.Value, end - start, maxVariance),
-                    compareResult + ". Info input: " + infoInput + "." + Environment.NewLine + "Info output: "
-                    + infoOutput);
+                    compareResult + ". Info input: " + infoInput + "." + Environment.NewLine + "Info output: " + infoOutput);
 
                 PathHelper.DeleteTempDir(dir);
             }

@@ -33,19 +33,19 @@ namespace AudioAnalysisTools.Indices
             this.SummaryIndexValues = new SummaryIndexValues(durationOfResult, indexProperties)
                                           {
                                               // give the results object an offset value so it can be sorted.
-                                              StartOffset =
-                                                  subsegmentOffsetFromStartOfSource,
-                                              SegmentDuration =
-                                                  durationOfResult,
+                                              ResultStartSeconds =
+                                                  subsegmentOffsetFromStartOfSource.TotalSeconds,
+                                              SegmentDurationSeconds =
+                                                  durationOfResult.TotalSeconds,
                                           };
 
             this.SpectralIndexValues = new SpectralIndexValues(freqBinCount, indexProperties)
                                            {
                                                // give the results object an offset value so it can be sorted.
-                                               StartOffset =
-                                                   subsegmentOffsetFromStartOfSource,
-                                               SegmentDuration =
-                                                   durationOfResult,
+                                               ResultStartSeconds =
+                                                   subsegmentOffsetFromStartOfSource.TotalSeconds,
+                                               SegmentDurationSeconds =
+                                                   durationOfResult.TotalSeconds,
                                            };
         }
 
@@ -88,7 +88,7 @@ namespace AudioAnalysisTools.Indices
 
         public SummaryIndexValues(TimeSpan wavDuration, Dictionary<string, IndexProperties> indexProperties)
         {
-            this.SegmentDuration = wavDuration;
+            this.SegmentDurationSeconds = wavDuration.TotalSeconds;
 
             // initialize with default values stored values in the dictionary of index properties.
             foreach (var kvp in indexProperties)

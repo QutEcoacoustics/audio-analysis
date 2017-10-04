@@ -50,7 +50,6 @@ namespace AnalysisPrograms.Recognizers
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
         /// </summary>
@@ -82,7 +81,6 @@ namespace AnalysisPrograms.Recognizers
             // common properties
             var speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             var abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-
 
             int minHz = (int)configuration[AnalysisKeys.MinHz];
             int maxHz = (int)configuration[AnalysisKeys.MaxHz];
@@ -118,11 +116,8 @@ namespace AnalysisPrograms.Recognizers
                 maxOscilFreq);
             //windowOverlap = 0.75; // previous default
 
-
             // DEBUG: Following line used to search for where indeterminism creeps into the spectrogram values which vary from run to run.
             //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.BaseName+"_RecordingSamples.csv"), recording.WavReader.GetChannel(0));
-
-
 
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
@@ -138,7 +133,7 @@ namespace AnalysisPrograms.Recognizers
             };
 
             // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
-            TimeSpan recordingDuration = recording.Duration();
+            TimeSpan recordingDuration = recording.Duration;
             //int sr = recording.SampleRate;
             //double freqBinWidth = sr / (double)sonoConfig.WindowSize;
 
@@ -181,24 +176,22 @@ namespace AnalysisPrograms.Recognizers
                 out events,
                 out hits);
 
-
             // DEBUG: Following line used to search for where indeterminism creeps into the event detection
             //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.BaseName+"_ScoreArray.csv"), scores);
-
 
             var prunedEvents = new List<AcousticEvent>();
 
             foreach (AcousticEvent ae in events)
             {
                 //if (ae.Duration < minDurationOfReleaseCall) { continue; }
-                if (ae.Duration < minDurationOfAdvertCall) { continue; }
-                if (ae.Duration > maxDuration)             { continue; }
+                if (ae.EventDurationSeconds < minDurationOfAdvertCall) { continue; }
+                if (ae.EventDurationSeconds > maxDuration)             { continue; }
 
                 // add additional info
                 ae.SpeciesName = speciesName;
                 ae.Name = abbreviatedSpeciesName;
-                ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = recordingDuration;
+                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
                 prunedEvents.Add(ae);
 
                 //if (ae.Duration >= minDurationOfAdvertCall)
@@ -230,8 +223,6 @@ namespace AnalysisPrograms.Recognizers
             };
 
         }
-
-
 
         /// <summary>
         /// This test checks a score array (array of doubles) against a standard or benchmark previously stored.
@@ -277,8 +268,6 @@ namespace AnalysisPrograms.Recognizers
             }
             Log.Info("Completed benchmark test for the Canetoad recognizer.");
         }
-
-
 
         /// <summary>
         /// This test checks an array of acoustic events (array of EventBase) against a standard or benchmark previously stored.
@@ -339,8 +328,6 @@ namespace AnalysisPrograms.Recognizers
             }
             Log.Info("Completed benchmark test for the Canetoad recognizer.");
         }
-
-
 
     }
 }

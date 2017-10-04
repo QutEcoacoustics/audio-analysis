@@ -95,7 +95,6 @@
         public static string key_LINE_LENGTH        = "SPR_LINE_LENGTH";          // Used when preparing syntactic PR template.
         public static string key_DRAW_SONOGRAMS     = "DRAW_SONOGRAMS";
 
-
         public static Arguments Dev()
         {
             throw new NotImplementedException();
@@ -149,7 +148,7 @@
             // iii: Extract the event as TEMPLATE
             // #############################################################################################################################################
             Log.WriteLine("# Start extracting target event.");
-            var results = Execute_Extraction(recording, eventStart, eventEnd, minHz, maxHz, frameOverlap, dBThreshold);
+            var results = Execute_Extraction(recording, eventStart, eventEnd, minHz, maxHz, frameOverlap, dBThreshold, TimeSpan.Zero);
             var sonogram           = results.Item1;
             var extractedEvent     = results.Item2;
             var template           = results.Item3;  // event's matrix of target values before noise removal
@@ -186,16 +185,21 @@
             Log.WriteLine("# Finished everything!");
         }
 
-
-        public static Tuple<BaseSonogram, AcousticEvent, double[,], double[], double[,]> Execute_Extraction(AudioRecording recording,
-            double eventStart, double eventEnd, int minHz, int maxHz, double frameOverlap, double backgroundThreshold)
+        public static Tuple<BaseSonogram, AcousticEvent, double[,], double[], double[,]> Execute_Extraction(
+            AudioRecording recording,
+            double eventStart,
+            double eventEnd,
+            int minHz,
+            int maxHz,
+            double frameOverlap,
+            double backgroundThreshold,
+            TimeSpan segmentStartOffset)
         {
             //ii: MAKE SONOGRAM
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName = recording.BaseName;
             //sonoConfig.WindowSize = windowSize;
             sonoConfig.WindowOverlap = frameOverlap;
-
 
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
@@ -217,7 +221,7 @@
                                                          minHz, maxHz, false, sonogram.NyquistFrequency, sonogram.FBinWidth);
 
             // create acoustic event with defined boundaries
-            AcousticEvent ae = new AcousticEvent(eventStart, eventEnd - eventStart, minHz, maxHz);
+            AcousticEvent ae = new AcousticEvent(segmentStartOffset, eventStart, eventEnd - eventStart, minHz, maxHz);
             ae.SetTimeAndFreqScales(sonogram.FramesPerSecond, sonogram.FBinWidth);
 
             //truncate noise
@@ -229,8 +233,6 @@
 
             return Tuple.Create(sonogram, ae, target, noiseSubband, targetMinusNoise);
         }//end Execute_Extraction()
-
-
 
         public static void DrawSonogram(BaseSonogram sonogram, string path, AcousticEvent ae)
         {

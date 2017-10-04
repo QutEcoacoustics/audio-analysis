@@ -67,7 +67,6 @@
             FileInfo opPath = outputDir.CombineFile(opFName);
             Log.WriteIfVerbose("# Output folder =" + outputDir);
 
-
             //READ PARAMETER VALUES FROM INI FILE
             var config = new ConfigDictionary(iniPath);
             Dictionary<string, string> dict = config.GetTable();
@@ -168,12 +167,11 @@
 
             //iii: DETECT SEGMENTS
             Log.WriteLine("# Start event detection");
-            var tuple = AcousticEvent.GetSegmentationEvents((SpectrogramStandard)sonogram, minHz, maxHz, smoothWindow,
+            var tuple = AcousticEvent.GetSegmentationEvents((SpectrogramStandard)sonogram, TimeSpan.Zero , minHz, maxHz, smoothWindow,
                                                                       thresholdSD, minDuration, maxDuration);
             var tuple2 = Tuple.Create(sonogram, tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5);
             return tuple2;
         }//end Execute_Segmentation
-
 
         public static void DrawSonogram(BaseSonogram sonogram, string path, List<AcousticEvent> predictedEvents, double eventThreshold, double[] segmentation)
         {

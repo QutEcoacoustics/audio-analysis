@@ -150,7 +150,7 @@ namespace AnalysisPrograms.Recognizers
 
                 //#############################################################################################################################################
                 //DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-                var results = Analysis(recording, sonoConfig, recognizerConfig, this.ReturnDebugImage);
+                var results = Analysis(recording, sonoConfig, recognizerConfig, this.ReturnDebugImage, segmentStartOffset);
 
                 // ######################################################################
 
@@ -189,8 +189,8 @@ namespace AnalysisPrograms.Recognizers
 
                     ae.Name = recognizerConfig.AbbreviatedSpeciesName;
                     ae.SpeciesName = recognizerConfig.SpeciesName;
-                    ae.SegmentStartOffset = segmentStartOffset;
-                    ae.SegmentDuration = recordingDuration;
+                    ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                    ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
                     prunedEvents.Add(ae);
                 }
 
@@ -228,11 +228,18 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// THE KEY ANALYSIS METHOD
         /// </summary>
+        /// <param name="recording"></param>
+        /// <param name="sonoConfig"></param>
+        /// <param name="lrConfig"></param>
+        /// <param name="returnDebugImage"></param>
+        /// <param name="segmentStartOffset"></param>
+        /// <returns></returns>
         private static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, Image> Analysis(
             AudioRecording recording,
             SonogramConfig sonoConfig,
             LewinsRailConfig lrConfig,
-            bool returnDebugImage)
+            bool returnDebugImage,
+            TimeSpan segmentStartOffset)
         {
             if (recording == null)
             {
@@ -333,6 +340,7 @@ namespace AnalysisPrograms.Recognizers
 
             //iii: CONVERT SCORES TO ACOUSTIC EVENTS
             intensity = DataTools.filterMovingAverage(intensity, 5);
+
             var predictedEvents = AcousticEvent.ConvertScoreArray2Events(
                 intensity,
                 lowerBandMinHz,
@@ -341,7 +349,9 @@ namespace AnalysisPrograms.Recognizers
                 freqBinWidth,
                 eventThreshold,
                 minDuration,
-                maxDuration);
+                maxDuration,
+                segmentStartOffset);
+
             CropEvents(predictedEvents, upperArray);
             var hits = new double[rowCount, colCount];
 

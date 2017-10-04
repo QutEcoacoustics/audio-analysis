@@ -161,7 +161,6 @@
         // GROUND PARROT
         // epr2 "C:\SensorNetworks\WavFiles\GroundParrot\Aug2010_Site1\audio\DM420013_0342m_00s__0344m_00s.mp3" C:\SensorNetworks\Output\EPR_GroundParrot\EPR_GroundParrot_Params.txt gp1
 
-
         // Keys to recognise identifiers in PARAMETERS - INI file.
         public static string key_CALL_NAME          = "CALL_NAME";
         public static string key_DO_SEGMENTATION    = "DO_SEGMENTATION";
@@ -181,7 +180,6 @@
         public static string key_DONT_CARE_NH       = "DONT_CARE_BOUNDARY";       // Used when preparing trinary template.
         public static string key_LINE_LENGTH        = "SPR_LINE_LENGTH";          // Used when preparing syntactic PR template.
         public static string key_DRAW_SONOGRAMS     = "DRAW_SONOGRAMS";
-
 
         public class Arguments : SourceAndConfigArguments
         {
@@ -258,7 +256,6 @@
             //sonoConfig.WindowSize = windowSize;
             sonoConfig.WindowOverlap = frameOverlap;
 
-
             // iv: generate the sonogram
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
@@ -301,7 +298,6 @@
             //Log.WriteLine("SD ={0}", SD);
             Log.WriteLine("Th ={0}", dctThreshold); //normalised threshhold
 
-
             // #############################################################################################################################################
             // vii: LOOK FOR GROUND PARROTS USING TEMPLATE
             var template = GroundParrotRecogniser.ReadGroundParrotTemplateAsList(sonogram);
@@ -319,11 +315,8 @@
             string sonogramImagePath = outputDir + Path.GetFileNameWithoutExtension(recordingFileName) + ".png";
             DrawSonogram(sonogram, sonogramImagePath, dBArray, dBThreshold / maxDB, odScores, dctThreshold, gpScores, template);
 
-
             Log.WriteLine("# Finished everything!");
         } // Dev()
-
-
 
         public static double[] DetectEPR(List<AcousticEvent> template, BaseSonogram sonogram, double[] odScores, double odThreshold)
         {
@@ -416,7 +409,6 @@
                 image.Save(path);
             }
         } //end DrawSonogram
-
 
     } // end class
 }

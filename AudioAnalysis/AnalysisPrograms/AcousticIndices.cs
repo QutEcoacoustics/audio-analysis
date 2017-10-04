@@ -234,9 +234,9 @@ namespace AnalysisPrograms
             var acousticConfiguration = AcousticIndicesParsedConfiguration.FromConfigFile(
                 analysisSettings.Configuration,
                 analysisSettings.ConfigFile,
-                analysisSettings.SegmentMaxDuration.Value);
+                analysisSettings.AnalysisMaxSegmentDuration.Value);
 
-            analysisSettings.AnalyzerSpecificConfiguration = acousticConfiguration;
+            analysisSettings.AnalysisAnalyzerSpecificConfiguration = acousticConfiguration;
         }
 
         [Serializable]
@@ -272,7 +272,6 @@ namespace AnalysisPrograms
                         throw new ConfigFileException("If TileImageOutput is set then RequireDateInFilename must be set as well");
                     }
                 }
-
 
                 // set IndexCalculationDuration i.e. duration of a subsegment
                 TimeSpan indexCalculationDuration;
@@ -330,26 +329,26 @@ namespace AnalysisPrograms
             public FileInfo ConfigFile { get; set; }
         }
 
-        public AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        public AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
-            var acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)analysisSettings.AnalyzerSpecificConfiguration;
+            var acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)analysisSettings.AnalysisAnalyzerSpecificConfiguration;
 
-            var audioFile = analysisSettings.AudioFile;
+            var audioFile = segmentSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
-            var outputDirectory = analysisSettings.AnalysisInstanceOutputDirectory;
+            var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
-            var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
+            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
             analysisResults.AnalysisIdentifier = this.Identifier;
 
             // calculate indices for each subsegment
             IndexCalculateResult[] subsegmentResults = CalculateIndicesInSubsegments(
                 recording,
-                analysisSettings.SegmentStartOffset.Value,
-                analysisSettings.SegmentDuration.Value,
+                segmentSettings.SegmentStartOffset,
+                segmentSettings.AnalysisIdealSegmentDuration,
                 acousticIndicesParsedConfiguration.IndexCalculationDuration,
                 acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
                 acousticIndicesParsedConfiguration.IndexPropertiesFile,
-                analysisSettings.SampleRateOfOriginalAudioFile.Value,
+                segmentSettings.Segment.SourceMetadata.SampleRate,
                 analysisSettings.Configuration);
 
             var trackScores = new List<Plot>(subsegmentResults.Length);
@@ -360,8 +359,8 @@ namespace AnalysisPrograms
             for (int i = 0; i < subsegmentResults.Length; i++)
             {
                 var indexCalculateResult = subsegmentResults[i];
-                indexCalculateResult.SummaryIndexValues.FileName = analysisSettings.SourceFile.Name;
-                indexCalculateResult.SpectralIndexValues.FileName = analysisSettings.SourceFile.Name;
+                indexCalculateResult.SummaryIndexValues.FileName = segmentSettings.Segment.SourceMetadata.Identifier;
+                indexCalculateResult.SpectralIndexValues.FileName = segmentSettings.Segment.SourceMetadata.Identifier;
 
                 analysisResults.SummaryIndices[i] = indexCalculateResult.SummaryIndexValues;
                 analysisResults.SpectralIndices[i] = indexCalculateResult.SpectralIndexValues;
@@ -372,25 +371,25 @@ namespace AnalysisPrograms
                 }
             }
 
-            if (analysisSettings.SummaryIndicesFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
-                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
-                analysisResults.SummaryIndicesFile = analysisSettings.SummaryIndicesFile;
+                this.WriteSummaryIndicesFile(segmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
+                analysisResults.SummaryIndicesFile = segmentSettings.SegmentSummaryIndicesFile;
             }
 
-            if (analysisSettings.SpectrumIndicesDirectory != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
                 analysisResults.SpectraIndicesFiles =
                     this.WriteSpectrumIndicesFilesCustom(
-                        analysisSettings.SpectrumIndicesDirectory,
-                        Path.GetFileNameWithoutExtension(analysisSettings.AudioFile.Name),
+                        segmentSettings.SegmentSpectrumIndicesDirectory,
+                        Path.GetFileNameWithoutExtension(segmentSettings.SegmentAudioFile.Name),
                         analysisResults.SpectralIndices);
             }
 
             // write the segment spectrogram (typically of one minute duration) to CSV
             // this is required if you want to produced zoomed spectrograms at a resolution greater than 0.2 seconds/pixel
             bool saveSonogramData = (bool?)analysisSettings.Configuration[AnalysisKeys.SaveSonogramData] ?? false;
-            if (saveSonogramData || analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
+            if (saveSonogramData || analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 var sonoConfig = new SonogramConfig(); // default values config
                 sonoConfig.SourceFName = recording.FilePath;
@@ -413,9 +412,9 @@ namespace AnalysisPrograms
                 // remove the DC row of the spectrogram
                 sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
 
-                if (analysisSettings.ImageFile != null)
+                if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave())
                 {
-                    string imagePath = Path.Combine(outputDirectory.FullName, analysisSettings.ImageFile.Name);
+                    string imagePath = Path.Combine(outputDirectory.FullName, segmentSettings.SegmentImageFile.Name);
 
                     // NOTE: hits (SPT in this case) is intentionally not supported
                     var image = DrawSonogram(sonogram, null, trackScores, tracks);
@@ -440,7 +439,7 @@ namespace AnalysisPrograms
 
         public void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
         {
-            Csv.WriteToCsv(destination, results);
+            Csv.WriteToCsv(destination, results.Cast<SummaryIndexValues>());
         }
 
         public List<FileInfo> WriteSpectrumIndicesFilesCustom(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
@@ -465,17 +464,17 @@ namespace AnalysisPrograms
             return this.WriteSpectrumIndicesFilesCustom(destination, fileNameBase, results);
         }
 
-        public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold, bool absolute = false)
+        public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold)
         {
             throw new NotImplementedException();
         }
 
         public void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, SummaryIndexBase[] indices, SpectralIndexBase[] spectralIndices, AnalysisResult2[] results)
         {
-            var acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)settings.AnalyzerSpecificConfiguration;
+            var acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)settings.AnalysisAnalyzerSpecificConfiguration;
 
-            var sourceAudio = inputFileSegment.TargetFile;
-            var resultsDirectory = settings.AnalysisInstanceOutputDirectory;
+            var sourceAudio = inputFileSegment.Source;
+            var resultsDirectory = AnalysisCoordinator.GetNamedDirectory(settings.AnalysisOutputDirectory, this);
             bool tileOutput = acousticIndicesParsedConfiguration.TileOutput;
 
             int frameWidth = 512;
@@ -496,7 +495,7 @@ namespace AnalysisPrograms
              */
             var indexConfigData = new IndexGenerationData()
                 {
-                    RecordingType = inputFileSegment.TargetFile.Extension,
+                    RecordingType = inputFileSegment.Source.Extension,
                     RecordingStartDate = inputFileSegment.TargetFileStartDate,
                     SampleRateOriginal = inputFileSegment.TargetFileSampleRate.Value,
                     SampleRateResampled = sampleRate,
@@ -505,7 +504,7 @@ namespace AnalysisPrograms
                     IndexCalculationDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration,
                     BGNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
                     MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
-                    MaximumSegmentDuration = settings.SegmentMaxDuration,
+                    MaximumSegmentDuration = settings.AnalysisMaxSegmentDuration,
                     BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
                     LongDurationSpectrogramConfig = ldSpectrogramConfig,
                 };
@@ -640,7 +639,7 @@ namespace AnalysisPrograms
                     @"A multi-channel recording MUST be mixed down to MONO before calculating acoustic indices!");
             }
 
-            double recordingDuration = recording.Duration().TotalSeconds;
+            double recordingDuration = recording.Duration.TotalSeconds;
             double subsegmentDuration = indexCalculationDuration.TotalSeconds;
 
             // intentional possible null ref, throw if not null
@@ -693,11 +692,10 @@ namespace AnalysisPrograms
 
         public AnalysisSettings DefaultSettings => new AnalysisSettings
         {
-            SegmentMaxDuration = TimeSpan.FromMinutes(1),
-            SegmentMinDuration = TimeSpan.FromSeconds(1),
+            AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
+            AnalysisMinSegmentDuration = TimeSpan.FromSeconds(1),
             SegmentMediaType = MediaTypes.MediaTypeWav,
             SegmentOverlapDuration = TimeSpan.Zero,
-            SegmentTargetSampleRate = AnalysisTemplate.ResampleRate,
         };
     }
 

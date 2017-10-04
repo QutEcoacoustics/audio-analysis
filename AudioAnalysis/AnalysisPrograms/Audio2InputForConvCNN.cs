@@ -234,8 +234,6 @@ namespace AnalysisPrograms
                     // TO TEST SMALL PORTION OF DATA because total data is too large.
                     doPreprocessing = false || parentDirectoryName.Equals("0");
 
-                    /* ############################################################################## */
-
                     if (!sourceRecording.Exists)
                     {
                         fileInCsvDoesNotExist++;
@@ -442,6 +440,7 @@ namespace AnalysisPrograms
 
             // 4: Delete the temp file
             File.Delete(tempAudioSegment.FullName);
+
             return result;
         }
 
@@ -791,8 +790,8 @@ namespace AnalysisPrograms
             this.Identifier = "Towsey.PreprocessorForConvDNN";
             this.DefaultSettings = new AnalysisSettings()
             {
-                SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                SegmentMinDuration = TimeSpan.FromSeconds(20),
+                AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
+                AnalysisMinSegmentDuration = TimeSpan.FromSeconds(20),
                 SegmentMediaType = MediaTypes.MediaTypeWav,
                 SegmentOverlapDuration = TimeSpan.Zero,
             };
@@ -811,16 +810,16 @@ namespace AnalysisPrograms
             // noop
         }
 
-        public AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        public AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
-            var audioFile = analysisSettings.AudioFile;
+            var audioFile = segmentSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
-            var outputDirectory = analysisSettings.AnalysisInstanceOutputDirectory;
+            var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
-            var analysisResult = new AnalysisResult2(analysisSettings, recording.Duration());
+            var analysisResult = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
             dynamic configuration = Yaml.Deserialise(analysisSettings.ConfigFile);
 
-            bool saveCsv = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
+            bool saveCsv = analysisSettings.AnalysisDataSaveBehavior;
 
             if ((bool?)configuration[AnalysisKeys.MakeSoxSonogram] == true)
             {
@@ -831,25 +830,25 @@ namespace AnalysisPrograms
             var configurationDictionary = new Dictionary<string, string>((Dictionary<string, string>)configuration);
             configurationDictionary[ConfigKeys.Recording.Key_RecordingCallName] = audioFile.FullName;
             configurationDictionary[ConfigKeys.Recording.Key_RecordingFileName] = audioFile.Name;
-            var soxImage = new FileInfo(Path.Combine(analysisSettings.AnalysisInstanceOutputDirectory.FullName, audioFile.Name + ".SOX.png"));
+            var soxImage = new FileInfo(Path.Combine(segmentSettings.SegmentOutputDirectory.FullName, audioFile.Name + ".SOX.png"));
 
             var spectrogramResult = Audio2Sonogram.GenerateFourSpectrogramImages(
                 audioFile,
                 soxImage,
                 configurationDictionary,
-                dataOnly: analysisSettings.ImageFile == null,
+                dataOnly: analysisSettings.AnalysisImageSaveBehavior.ShouldSave(),
                 makeSoxSonogram: false);
 
             // this analysis produces no results!
             // but we still print images (that is the point)
-            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResult.Events.Length))
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResult.Events.Length))
             {
-                Debug.Assert(analysisSettings.ImageFile.Exists);
+                Debug.Assert(segmentSettings.SegmentImageFile.Exists);
             }
 
             if (saveCsv)
             {
-                var basename = Path.GetFileNameWithoutExtension(analysisSettings.AudioFile.Name);
+                var basename = Path.GetFileNameWithoutExtension(segmentSettings.SegmentAudioFile.Name);
                 var spectrogramCsvFile = outputDirectory.CombineFile(basename + ".Spectrogram.csv");
                 Csv.WriteMatrixToCsv(spectrogramCsvFile, spectrogramResult.DecibelSpectrogram.Data, TwoDimensionalArray.RowMajor);
             }
@@ -872,7 +871,7 @@ namespace AnalysisPrograms
             throw new NotImplementedException();
         }
 
-        public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold, bool absolute = false)
+        public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold)
         {
             throw new NotImplementedException();
         }

@@ -144,7 +144,6 @@
             public FileInfo Output { get; set; }
         }
 
-
         /// <summary>
         /// Note to michael, consider returning true false to indicate program exit - never use Environment.Exit
         /// </summary>
@@ -155,7 +154,6 @@
             DateTime tStart = DateTime.Now;
             Log.Verbosity = 1;
             Log.WriteLine("# Start Time = " + tStart);
-
 
             if(false)
             {
@@ -198,7 +196,6 @@
                 return;
             }
 
-
             //i: Set up the dir and file names
             // next four lines from January 2012
             // string inputDir        = @"C:\SensorNetworks\WavFiles\SpeciesRichness\";
@@ -227,9 +224,6 @@
             //string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\17Oct2010";
             //string indicesFilePath = Path.Combine(inputDir, "0f2720f2-0caa-460a-8410-df24b9318814_101017-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
             //string callsFileName = "SE_2010Oct17_Calls.csv";
-
-
-
 
             string callOccurenceFilePath = Path.Combine(inputDir, callsFileName);
             Log.WriteLine("Directory:          " + inputDir);
@@ -278,7 +272,6 @@
                 int[] finalRowSums = DataTools.GetRowSums(callMatrix);
                 int totalSum = finalRowSums.Sum();
                 LoggedConsole.WriteLine("remaining species =" + totalSum);
-
 
                 return;
 
@@ -341,14 +334,12 @@
                 NormalDist.AverageAndSD(samples180, out avFixed180Sample, out sdFixed180Sample);
                 NormalDist.AverageAndSD(samples240, out avFixed240Sample, out sdFixed240Sample);
 
-
                 LoggedConsole.WriteLine("% of total species identified in fixed samples");
                 LoggedConsole.WriteLine("samples\t10\t30\t60\t90\t120\t180\t240");
                 LoggedConsole.WriteLine("mean % \t{0:f1}\t{1:f1}\t{2:f1}\t{3:f1}\t{4:f1}\t{5:f1}\t{6:f1}", avFixed10Sample, avFixed30Sample, avFixed60Sample, avFixed90Sample, avFixed120Sample, avFixed180Sample, avFixed240Sample);
                 LoggedConsole.WriteLine("std dev\t{0:f2}\t{1:f2}\t{2:f2}\t{3:f2}\t{4:f2}\t{5:f2}\t{6:f2}", sdFixed10Sample, sdFixed30Sample, sdFixed60Sample, sdFixed90Sample, sdFixed120Sample, sdFixed180Sample, sdFixed240Sample);
 
             } // ######################## END OF RANDOM SAMPLING #############################
-
 
             //random sampling OVER FIXED INTERVAL GIVEN START and END
             if (false)
@@ -395,8 +386,6 @@
                 //LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", SpeciesAccumulationStats.SAMPLE_1HOUR, avFixedSample, sdFixedSample);
             }
 
-
-
             // ######################## SMART SAMPLING #############################
             if (true)
             {
@@ -409,7 +398,6 @@
                 foreach (string name in headers) LoggedConsole.WriteLine(count + "\t" + headers[count++]);
                 LoggedConsole.WriteLine();
                 var table = CsvTools.ReadCSVToTable(indicesFilePath, true); // read csv file to table.
-
 
                 //###############################################################################################################################################
                 // OPTION 1: USE FOLLOWING two lines to rank by just a single column of acoustic indices matrix.
@@ -451,7 +439,6 @@
                 //OptimsedRankOrder(table, callMatrix, callingSpeciesList.Count);
 
             } // ######################## END SMART SAMPLING #############################
-
 
             DateTime tEnd = DateTime.Now;
             TimeSpan timeSpan = tEnd - tStart;
@@ -510,12 +497,10 @@
             //LoggedConsole.WriteLine("\n\n");
             Log.WriteLine("###### " + fileCount + " #### Process Recording: " + fileName + " ###############################");
 
-
             DateTime tEnd = DateTime.Now;
             TimeSpan duration = tEnd - tStart;
             Log.WriteLine("###### Elapsed Time = " + duration.TotalSeconds + " #####################################\n");
         }
-
 
         //#########################################################################################################################################################
 
@@ -587,7 +572,6 @@
             double wt4 = 0.1;//H[varSpectrum]
             double wt5 = 0.4;//number of clusters
             double wt6 = 0.1;//av cluster duration
-
 
             LoggedConsole.WriteLine("Index weights:  {0}={1}; {2}={3}; {4}={5}; {6}={7}; {8}={9}; {10}={11}",
                                                header1, wt1, header2, wt2, header3, wt3, header4, wt4, header5, wt5, header6, wt6);
@@ -706,7 +690,6 @@
             return rankOrder;
         }
 
-
         public static void OptimsedRankOrder(DataTable table, byte[,] callMatrix, int speciesCount)
         {
             //                   {  1,    2,    3,   4,    5,  0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6,  1.7,   1.8, 0.0, 0.0, 0.0, 0.0 };
@@ -786,8 +769,6 @@
             } // i
         }
 
-
-
         public static int[] RandomSampleFromRankOrder(int[] rankOrder, int seed)
         {
             int distributionlength = rankOrder.Length;
@@ -845,8 +826,6 @@
             return bgBias;
         }
 
-
-
         public static int[] GetAccumulationCurve(byte[,] occurenceMatrix, int[] sampleOrder)
         {
             int N = sampleOrder.Length;           //maximum Sample Number
@@ -878,7 +857,6 @@
             }
             return accumlationCurve;
         }
-
 
         public static Tuple<List<string>, List<string>, byte[,]> READ_CALL_OCCURENCE_CSV_DATA(string occurenceFile)
         {

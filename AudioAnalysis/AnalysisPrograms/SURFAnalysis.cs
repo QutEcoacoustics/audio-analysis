@@ -66,8 +66,6 @@ namespace AnalysisPrograms
             }
         }
 
-
-
         private static Arguments Dev()
         {
             DateTime time = DateTime.Now;
@@ -88,7 +86,6 @@ namespace AnalysisPrograms
 
             throw new NoDeveloperMethodException();
         }
-
 
         public static void Main(Arguments arguments)
         {
@@ -124,9 +121,7 @@ namespace AnalysisPrograms
             // string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
             // int resampleRate = (int?)configuration[AnalysisKeys.ResampleRate] ?? AppConfigHelper.DefaultTargetSampleRate;
 
-
             var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
-
 
             configDict[AnalysisKeys.AddAxes] = ((bool?)configuration[AnalysisKeys.AddAxes] ?? true).ToString();
             configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true;
@@ -142,7 +137,6 @@ namespace AnalysisPrograms
             {
                 LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
             }
-
 
             //set up the output file
             //string header = "File Name, MinFreq(Hz), MaxFreq(Hz), StartTime(s), EndTime(s), Duration(s), Annotated by expert(Y-1/N-0),Correct Annotation(Y-1/N-0)";
@@ -186,7 +180,6 @@ namespace AnalysisPrograms
                 writer.WriteLine(line);
             }
 
-
             // ####################################################################
             result = AnalyseOneRecording(targtWavfile, configDict, record.event_start_seconds, record.event_end_seconds,
                                              record.low_frequency_hertz, record.high_frequency_hertz, opDir);
@@ -208,8 +201,6 @@ namespace AnalysisPrograms
                 writer.WriteLine(line);
             }
         } // end MAIN()
-
-
 
         public static AudioToSonogramResult AnalyseOneRecording(FileInfo sourceRecording, Dictionary<string, string> configDict, TimeSpan localEventStart, TimeSpan localEventEnd,
                                                                 int minHz, int maxHz, DirectoryInfo opDir)
@@ -247,9 +238,6 @@ namespace AnalysisPrograms
             result.SnrStatistics = SNR.Calculate_SNR_ShortRecording(tempAudioSegment, configDict, localEventStart, eventDuration, minHz, maxHz, threshold);
             return result;
         }
-
-
-
 
         /// <summary>
         /// In line class used to store a single record read from a line of the csv file;
@@ -297,17 +285,11 @@ namespace AnalysisPrograms
         }
         // class CsvDataRecord
 
-
-
-
-
-
         public class SpeciesCounts
         {
             public Dictionary<string, int> speciesCounts = new Dictionary<string, int>();
             public Dictionary<string, int> speciesIDs = new Dictionary<string, int>();
             public Dictionary<string, int> siteNames = new Dictionary<string, int>();
-
 
             public void AddSpeciesID(string speciesID, string latinInfo)
             {
@@ -331,7 +313,6 @@ namespace AnalysisPrograms
                     this.speciesIDs.Add(BothNames + "####", value);
                 }
             }
-
 
             public void AddSpeciesCount(string speciesID)
             {
@@ -367,9 +348,6 @@ namespace AnalysisPrograms
                 Csv.WriteToCsv(new FileInfo(path + "Sites.csv"), this.siteNames);
             }
         }
-
-
-
 
         /// <summary>
         /// In line class used to return results from the static method GenerateFourSpectrogramImages();
@@ -493,7 +471,6 @@ namespace AnalysisPrograms
 
     }
 
-
     /// <summary>
     /// This analyzer preprocesses short audio segments a few seconds to maximum 1 minute long for processing by a convolutional Deep NN.
     /// It does not accumulate data or other indices over a long recording.
@@ -508,8 +485,8 @@ namespace AnalysisPrograms
             this.Identifier = "Towsey.SURFAnalysis";
             this.DefaultSettings = new AnalysisSettings()
             {
-                SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                SegmentMinDuration = TimeSpan.FromSeconds(20),
+                AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
+                AnalysisMinSegmentDuration = TimeSpan.FromSeconds(20),
                 SegmentMediaType = MediaTypes.MediaTypeWav,
                 SegmentOverlapDuration = TimeSpan.Zero,
             };
@@ -527,16 +504,16 @@ namespace AnalysisPrograms
             // noop
         }
 
-        public AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        public AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
-            var audioFile = analysisSettings.AudioFile;
+            var audioFile = segmentSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
-            var outputDirectory = analysisSettings.AnalysisInstanceOutputDirectory;
+            var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
-            var analysisResult = new AnalysisResult2(analysisSettings, recording.Duration());
+            var analysisResult = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
             dynamic configuration = Yaml.Deserialise(analysisSettings.ConfigFile);
 
-            bool saveCsv = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
+            bool saveCsv = analysisSettings.AnalysisDataSaveBehavior;
 
             if ((bool?)configuration[AnalysisKeys.MakeSoxSonogram] == true)
             {
@@ -547,25 +524,25 @@ namespace AnalysisPrograms
             var configurationDictionary = new Dictionary<string, string>((Dictionary<string, string>)configuration);
             configurationDictionary[ConfigKeys.Recording.Key_RecordingCallName] = audioFile.FullName;
             configurationDictionary[ConfigKeys.Recording.Key_RecordingFileName] = audioFile.Name;
-            var soxImage = new FileInfo(Path.Combine(analysisSettings.AnalysisInstanceOutputDirectory.FullName, audioFile.Name + ".SOX.png"));
+            var soxImage = new FileInfo(Path.Combine(segmentSettings.SegmentOutputDirectory.FullName, audioFile.Name + ".SOX.png"));
 
             var spectrogramResult = Audio2Sonogram.GenerateFourSpectrogramImages(
                 audioFile,
                 soxImage,
                 configurationDictionary,
-                dataOnly: analysisSettings.ImageFile == null,
+                dataOnly: analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResult.Events.Length),
                 makeSoxSonogram: false);
 
             // this analysis produces no results!
             // but we still print images (that is the point)
-            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResult.Events.Length))
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResult.Events.Length))
             {
-                Debug.Assert(analysisSettings.ImageFile.Exists);
+                Debug.Assert(segmentSettings.SegmentImageFile.Exists);
             }
 
             if (saveCsv)
             {
-                var basename = Path.GetFileNameWithoutExtension(analysisSettings.AudioFile.Name);
+                var basename = Path.GetFileNameWithoutExtension(segmentSettings.SegmentAudioFile.Name);
                 var spectrogramCsvFile = outputDirectory.CombineFile(basename + ".Spectrogram.csv");
                 Csv.WriteMatrixToCsv(spectrogramCsvFile, spectrogramResult.DecibelSpectrogram.Data, TwoDimensionalArray.RowMajor);
             }
@@ -588,7 +565,7 @@ namespace AnalysisPrograms
             throw new NotImplementedException();
         }
 
-        public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold, bool absolute = false)
+        public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold)
         {
             throw new NotImplementedException();
         }

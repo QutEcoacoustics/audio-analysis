@@ -45,7 +45,7 @@ namespace AnalysisBase
         }
 
         /// <inheritdoc/>
-        public abstract AnalysisResult2 Analyze(AnalysisSettings analysisSettings);
+        public abstract AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings);
 
         /// <inheritdoc/>
         public abstract void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results);
@@ -57,7 +57,7 @@ namespace AnalysisBase
         public abstract List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results);
 
         /// <inheritdoc />
-        public virtual SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold, bool absolute = false)
+        public virtual SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold)
         {
 
             if (duration == TimeSpan.Zero)
@@ -85,9 +85,9 @@ namespace AnalysisBase
             foreach (var anEvent in events)
             {
                 // note: absolute determines what value is used
-                // EventStartSeconds (relative to segment)
+                // EventStartSeconds (relative to ~~segment~~, 2017-09: RELATIVE TO RECORDING)
                 // StartOffset (relative to recording)
-                double eventStart = absolute ? anEvent.StartOffset.TotalSeconds : anEvent.EventStartSeconds;
+                double eventStart = anEvent.EventStartSeconds;
                 double eventScore = anEvent.Score;
                 var timeUnit = (int)(eventStart / unitTime.TotalSeconds);
 
@@ -109,10 +109,10 @@ namespace AnalysisBase
             {
                 var newIndex = new EventIndex
                                    {
-                                       StartOffset = unitTime.Multiply(i),
+                                       ResultStartSeconds = unitTime.Multiply(i).TotalSeconds,
                                        EventsTotal = eventsPerUnitTime[i],
                                        EventsTotalThresholded = bigEvsPerUnitTime[i],
-                                       SegmentDuration = absolute ? unitTime : duration,
+                                       SegmentDurationSeconds = unitTime.TotalSeconds,
                                    };
 
                 indices[i] = newIndex;

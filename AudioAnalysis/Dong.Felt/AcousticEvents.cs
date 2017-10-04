@@ -990,7 +990,7 @@
                     var timePosition2 = listOfEvents[j].TimeStart;
 
                     var positionDifference = Math.Abs(timePosition1 - timePosition2);
-                    if (positionDifference <= listOfEvents[i].Duration)
+                    if (positionDifference <= listOfEvents[i].EventDurationSeconds)
                     {
                         listOfEvents.Remove(listOfEvents[i]);
                         j--;

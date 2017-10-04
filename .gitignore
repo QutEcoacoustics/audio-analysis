@@ -44,6 +44,8 @@ obj/**
 bin/*
 obj/*
 
+.vs
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*

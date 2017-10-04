@@ -39,7 +39,7 @@
                     "Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3",
                     new AudioUtilityInfo
                         {
-                            Duration = TimeSpan.FromMinutes(3) + TimeSpan.FromSeconds(59.987),
+                            Duration = TimeSpan.FromMinutes(4) + TimeSpan.FromSeconds(0.031),
                             SampleRate = 22050,
                             ChannelCount = 1,
                             BitsPerSecond = 96000,

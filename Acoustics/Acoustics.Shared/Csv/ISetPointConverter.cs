@@ -19,8 +19,8 @@ namespace Acoustics.Shared.Csv
 
     public class CsvSetPointConverter : ITypeConverter
     {
-        public const string InnerFieldDelimitter = "*";
-        public const string InnerItemDelimitter = ";";
+        public const string InnerFieldDelimiter = "*";
+        public const string InnerItemDelimiter = ";";
 
         public string ConvertToString(TypeConverterOptions options, object value)
         {
@@ -43,9 +43,9 @@ namespace Acoustics.Shared.Csv
             foreach (var point in set)
             {
                 sb.Append(point.X.ToString(options.CultureInfo.NumberFormat));
-                sb.Append(InnerFieldDelimitter);
+                sb.Append(InnerFieldDelimiter);
                 sb.Append(point.Y.ToString(options.CultureInfo.NumberFormat));
-                sb.Append(InnerItemDelimitter);
+                sb.Append(InnerItemDelimiter);
             }
 
             return sb.ToString();
@@ -59,7 +59,7 @@ namespace Acoustics.Shared.Csv
             }
 
             var items = text.Split(
-                new[] { InnerFieldDelimitter, InnerItemDelimitter },
+                new[] { InnerFieldDelimiter, InnerItemDelimiter },
                 StringSplitOptions.RemoveEmptyEntries);
 
             var result = new HashSet<Point>();

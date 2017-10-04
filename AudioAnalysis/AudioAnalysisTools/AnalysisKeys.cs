@@ -50,7 +50,7 @@ namespace AudioAnalysisTools
         public const string OscilDetection2014SensitivityThreshold = "OscilDetection2014SensitivityThreshold";
         public const string SaveIntermediateCsvFiles = "SaveIntermediateCsvFiles";
         public const string SaveIntermediateWavFiles = "SaveIntermediateWavFiles";
-        public const string SegmentDuration = "SegmentDuration";
+        public const string SegmentDuration = "AnalysisIdealSegmentDuration";
         public const string SegmentOverlap = "SegmentOverlap";
         public const string SpeciesName = "SpeciesName";
         public const string AbbreviatedSpeciesName = "AbbreviatedSpeciesName";
@@ -87,7 +87,7 @@ namespace AudioAnalysisTools
         // KEYS TO CSV HEADERS FOR SUMMARY INDEX
         public const string KeyRankOrder = "RankOrder";
         public const string KeyStartMinute = "StartMinute";
-        public const string KeySegmentDuration = "SegmentDuration";
+        public const string KeySegmentDuration = "AnalysisIdealSegmentDuration";
         public const string KeyAvSignalAmplitude = "AvSignalAmplitude";
         public const string KeyCallDensity = "CallDensity";
         public const string KeySnrScore = "SNRscore";

@@ -8,6 +8,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using Acoustics.Shared;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.WavTools;
+    using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
     using TowseyLibrary;

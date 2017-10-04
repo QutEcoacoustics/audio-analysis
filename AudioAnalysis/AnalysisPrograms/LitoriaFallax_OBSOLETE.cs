@@ -70,11 +70,11 @@ namespace AnalysisPrograms
 
         public override AnalysisSettings DefaultSettings => new AnalysisSettings
             {
-                SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                SegmentMinDuration = TimeSpan.FromSeconds(30),
+                AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
+                AnalysisMinSegmentDuration = TimeSpan.FromSeconds(30),
                 SegmentMediaType = MediaTypes.MediaTypeWav,
                 SegmentOverlapDuration = TimeSpan.Zero,
-                SegmentTargetSampleRate = ResampleRate,
+                AnalysisTargetSampleRate = ResampleRate,
             };
 
         public override string DisplayName => "Litoria fallax";
@@ -129,10 +129,6 @@ namespace AnalysisPrograms
                     arguments.Source = RecordingPath.ToFileInfo();
                     arguments.Config = ConfigPath.ToFileInfo();
                     arguments.Output = OutputDir.ToDirectoryInfo();
-                    arguments.TmpWav = segmentFName;
-                    arguments.Events = eventsFname;
-                    arguments.Indices = indicesFname;
-                    arguments.Sgram = sonogramFname;
                     arguments.Start = start.TotalSeconds;
                     arguments.Duration = duration.TotalSeconds;
                 }
@@ -151,49 +147,6 @@ namespace AnalysisPrograms
             }
 
             Execute(arguments);
-
-            if (executeDev)
-            {
-                FileInfo csvEvents = arguments.Output.CombineFile(arguments.Events);
-                if (!csvEvents.Exists)
-                {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvEvents.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-
-                FileInfo csvIndicies = arguments.Output.CombineFile(arguments.Indices);
-                if (!csvIndicies.Exists)
-                {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvIndicies.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-
-                FileInfo image = arguments.Output.CombineFile(arguments.Sgram);
-                if (image.Exists)
-                {
-                    throw new NotSupportedException("YOU CAN'T DO THIS!");
-                    //var process = new ProcessRunner(ImageViewer);
-                    //process.Run(image.FullName, arguments.Output.FullName);
-                }
-
-                LoggedConsole.WriteLine("\n\n# Finished analysis:- " + arguments.Source.FullName);
-            }
         }
 
         /// <summary>
@@ -207,12 +160,12 @@ namespace AnalysisPrograms
         {
             Contract.Requires(arguments != null);
 
-            AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
+            var (analysisSettings, segmentSettings) = arguments.ToAnalysisSettings();
             TimeSpan start = TimeSpan.FromSeconds(arguments.Start ?? 0);
             TimeSpan duration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT
-            FileInfo tempF = analysisSettings.AudioFile;
+            FileInfo tempF = segmentSettings.SegmentAudioFile;
             if (duration == TimeSpan.Zero)
             {
                 // Process entire file
@@ -220,7 +173,7 @@ namespace AnalysisPrograms
                     arguments.Source,
                     tempF,
                     new AudioUtilityRequest { TargetSampleRate = ResampleRate },
-                    analysisSettings.AnalysisBaseTempDirectoryChecked);
+                    analysisSettings.AnalysisTempDirectoryFallback);
             }
             else
             {
@@ -233,7 +186,7 @@ namespace AnalysisPrograms
                             OffsetStart = start,
                             OffsetEnd = start.Add(duration),
                         },
-                    analysisSettings.AnalysisBaseTempDirectoryChecked);
+                    analysisSettings.AnalysisTempDirectoryFallback);
             }
 
             // DO THE ANALYSIS
@@ -241,7 +194,7 @@ namespace AnalysisPrograms
             IAnalyser2 analyser = new LitoriaFallax_OBSOLETE();
             //IAnalyser2 analyser = new Canetoad();
             analyser.BeforeAnalyze(analysisSettings);
-            AnalysisResult2 result = analyser.Analyze(analysisSettings);
+            AnalysisResult2 result = analyser.Analyze(analysisSettings, segmentSettings);
             /* ############################################################################################################################################# */
 
             if (result.Events.Length > 0)
@@ -254,15 +207,15 @@ namespace AnalysisPrograms
             }
         }
 
-        public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
-            FileInfo audioFile = analysisSettings.AudioFile;
+            FileInfo audioFile = segmentSettings.SegmentAudioFile;
 
             // execute actual analysis
             Dictionary<string, string> configuration = analysisSettings.Configuration;
-            LitoriaFallaxResults results = Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
+            LitoriaFallaxResults results = Analysis(audioFile, configuration, segmentSettings.SegmentStartOffset);
 
-            var analysisResults = new AnalysisResult2(analysisSettings, results.RecordingDuration);
+            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, results.RecordingDuration);
 
             BaseSonogram sonogram = results.Sonogram;
             double[,] hits = results.Hits;
@@ -271,27 +224,27 @@ namespace AnalysisPrograms
 
             analysisResults.Events = predictedEvents.ToArray();
 
-            if (analysisSettings.EventsFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
-                this.WriteEventsFile(analysisSettings.EventsFile, analysisResults.Events);
-                analysisResults.EventsFile = analysisSettings.EventsFile;
+                this.WriteEventsFile(segmentSettings.SegmentEventsFile, analysisResults.Events);
+                analysisResults.EventsFile = segmentSettings.SegmentEventsFile;
             }
 
-            if (analysisSettings.SummaryIndicesFile != null)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
                 analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
 
-                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
+                this.WriteSummaryIndicesFile(segmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
-            if (analysisSettings.SegmentSaveBehavior.ShouldSave(analysisResults.Events.Length))
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
-                string imagePath = analysisSettings.ImageFile.FullName;
+                string imagePath = segmentSettings.SegmentImageFile.FullName;
                 const double EventThreshold = 0.1;
                 Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, EventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
-                analysisResults.ImageFile = analysisSettings.ImageFile;
+                analysisResults.ImageFile = segmentSettings.SegmentImageFile;
             }
 
             return analysisResults;
@@ -325,11 +278,6 @@ namespace AnalysisPrograms
 
         #endregion
 
-
-
-
-
-
         #region Methods
 
         /// <summary>
@@ -344,7 +292,6 @@ namespace AnalysisPrograms
             var recording = new AudioRecording(segmentOfSourceFile.FullName);
             return Analysis(recording, configDict, segmentStartOffset);
         }
-
 
         /// <summary>
         /// THE KEY ANALYSIS METHOD
@@ -365,7 +312,6 @@ namespace AnalysisPrograms
             TimeSpan segmentStartOffset)
         {
             // WARNING: TODO TODO TODO = this method simply duplicates the CANETOAD analyser!!!!!!!!!!!!!!!!!!!!! ###################
-
 
             int minHz = int.Parse(configDict[AnalysisKeys.MinHz]);
             int maxHz = int.Parse(configDict[AnalysisKeys.MaxHz]);
@@ -394,7 +340,6 @@ namespace AnalysisPrograms
             // min score for an acceptable event
             double eventThreshold = double.Parse(configDict[AnalysisKeys.EventThreshold]);
 
-
             // The default was 512 for Canetoad.
             // Framesize = 128 seems to work for Littoria fallax.
             const int FrameSize = 128;
@@ -414,7 +359,7 @@ namespace AnalysisPrograms
                                  };
 
             // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
-            TimeSpan recordingDuration = recording.Duration();
+            TimeSpan recordingDuration = recording.Duration;
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
 
@@ -457,14 +402,12 @@ namespace AnalysisPrograms
             acousticEvents.ForEach(ae =>
                     {
                         ae.SpeciesName = configDict[AnalysisKeys.SpeciesName];
-                        ae.SegmentStartOffset = segmentStartOffset;
-                        ae.SegmentDuration = recordingDuration;
+                        ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                        ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
                         ae.Name = AbbreviatedName;
                     });
 
             var plot = new Plot(AnalysisName, scores, eventThreshold);
-
-
 
             // DEBUG ONLY ################################ TEMPORARY ################################
             // Draw a standard spectrogram and mark of hites etc.
@@ -481,7 +424,6 @@ namespace AnalysisPrograms
                 sonoBmp.Save(filePath2);
             }
             // END DEBUG ################################ TEMPORARY ################################
-
 
             return new LitoriaFallaxResults
             {

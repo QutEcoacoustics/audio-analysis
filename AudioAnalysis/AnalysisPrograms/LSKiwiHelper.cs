@@ -33,7 +33,6 @@
         public static string key_BANDWIDTH_SCORE = "BandwidthScore";
         public static string key_COMBO_SCORE     = "ComboScore";
 
-
         //public static string[] DefaultRulesLSKiwi2 = {
         //                                   "EXCLUDE_IF_RULE="+LSKiwiHelper.key_BANDWIDTH_SCORE+"_LT_0.3",
         //                                   "EXCLUDE_IF_RULE="+LSKiwiHelper.key_INTENSITY_SCORE+"_LT_0.10",
@@ -66,7 +65,6 @@
         //public const string XLSViewer   = @"C:\Program Files (x86)\Microsoft Office\Office12\EXCEL.EXE";
         public const string XLSViewer   = @"C:\Program Files\Microsoft Office\Office14\EXCEL.EXE";
 
-
         public static Dictionary<string, double> GetFeatureWeights(string configPath)
         {
 
@@ -97,10 +95,6 @@
             }
             return excludeRules;
         } //GetExcludeRules()
-
-
-
-
 
         //filter events using the exclude rules - just changes the event's normalised score
         public static AcousticEvent FilterEvent(AcousticEvent ae, List<string[]> rules)
@@ -134,7 +128,6 @@
             return ae;
         }
 
-
         public static double CalculateAverageEventScore(AcousticEvent ae, double[] scoreArray)
         {
             int start = ae.Oblong.RowTop;
@@ -145,7 +138,6 @@
             for (int i = start; i <= end; i++) sum += scoreArray[i];
             return sum / (double)length;
         }
-
 
        public static DataTable MergeAdjacentPredictions(DataTable dt)
        {
@@ -175,7 +167,6 @@
 
            return dt;
        }
-
 
     } // class LSKiwiHelper
 }

@@ -12,7 +12,9 @@ namespace Acoustics.Shared.Csv
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Drawing;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -32,7 +34,7 @@ namespace Acoustics.Shared.Csv
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private static readonly List<CsvClassMap> ClassMapsToRegister = new List<CsvClassMap>();
+        public static ReadOnlyCollection<CsvClassMap> ClassMapsToRegister { get; }
 
         static Csv()
         {
@@ -52,14 +54,20 @@ namespace Acoustics.Shared.Csv
                          .SelectMany(s => s.GetTypes())
                          .Where(type.IsAssignableFrom);
 
-            // initialise and store
+            // initialize and store
+            var classMaps = new List<CsvClassMap>(10);
             foreach (var classMapType in classMapTypes)
             {
                 var instance = classMapType.CreateInstance() as CsvClassMap;
-                ClassMapsToRegister.Add(instance);
+                classMaps.Add(instance);
             }
+
+            ClassMapsToRegister = new ReadOnlyCollection<CsvClassMap>(classMaps);
         }
 
+        /// <summary>
+        /// Registers CsvHelper type converters that can allow serialization of complex types.
+        /// </summary>
         public static void RegisterAnalysisProgramsTypeConverters()
         {
             // This is a manually maintained method
@@ -72,9 +80,22 @@ namespace Acoustics.Shared.Csv
             {
                 // change the defaults here if you want
                 var settings = new CsvConfiguration()
-                                   {
-                                       HasHeaderRecord = true,
-                                   };
+                {
+                    HasHeaderRecord = true,
+
+                    // acoustic workbench outputs faulty data with padded headers
+                    TrimHeaders = true,
+
+                    // ensure we always use InvariantCulture - only reliable way to serialize data
+                    // Additionally R can parse invariant representations of Double.Infinity and
+                    // Double.NaN (whereas it can't in other cultures).
+                    CultureInfo = CultureInfo.InvariantCulture,
+                };
+
+                // ensure dates are always formatted as ISO8601 dates - note: R cannot by default parse proper ISO8601 dates
+                TypeConverterOptionsFactory.AddOptions<DateTimeOffset>(new TypeConverterOptions() { Format = "O" });
+                TypeConverterOptionsFactory.AddOptions<DateTime>(new TypeConverterOptions() { Format = "O" });
+
                 foreach (var classMap in ClassMapsToRegister)
                 {
                     settings.RegisterClassMap(classMap);
@@ -85,11 +106,12 @@ namespace Acoustics.Shared.Csv
         }
 
         /// <summary>
-        /// Serialize results to CSV - if you want the concrete type to be serialized you need to ensure it is downcast before using this method.
+        /// Serialize results to CSV - if you want the concrete type to be serialized you need to ensure
+        /// it is downcast before using this method.
         /// </summary>
         /// <typeparam name="T">The type to serialize.</typeparam>
         /// <param name="destination">The file to create.</param>
-        /// <param name="results">results data to be written to file</param>
+        /// <param name="results">The data to serialize.</param>
         public static void WriteToCsv<T>(FileInfo destination, IEnumerable<T> results)
         {
             Contract.Requires(destination != null);
@@ -103,46 +125,72 @@ namespace Acoustics.Shared.Csv
         }
 
         /// <summary>
+        /// Read an object from a CSV file.
+        /// </summary>
+        /// <remarks>
         /// This has not been tested yet! Contact anthony if you have problems.
         /// IMPORTANT NOTE:
         /// If I get an exception, how do I tell what line the exception is on?
         /// There is a lot of information held in Exception.Data["CsvHelper"]
-        /// </summary>
-        public static IEnumerable<T> ReadFromCsv<T>(FileInfo source, bool throwOnMissingField = true)
+        /// </remarks>
+        public static IEnumerable<T> ReadFromCsv<T>(
+            FileInfo source,
+            bool throwOnMissingField = true,
+            Action<CsvReader> readerHook = null)
         {
             Contract.Requires(source != null);
 
             // using CSV Helper
             using (var stream = source.OpenText())
             {
-                try
+                return ReadFromCsv<T>(readerHook, stream);
+            }
+        }
+
+        public static IEnumerable<T> ReadFromCsv<T>(
+            string csvText,
+            bool throwOnMissingField = true,
+            Action<CsvReader> readerHook = null)
+        {
+            Contract.Requires(csvText != null);
+
+            // using CSV Helper
+            using (var stream = new StringReader(csvText))
+            {
+                return ReadFromCsv<T>(readerHook, stream);
+            }
+        }
+
+        private static IEnumerable<T> ReadFromCsv<T>(Action<CsvReader> readerHook, TextReader stream)
+        {
+            try
+            {
+                var configuration = DefaultConfiguration;
+                configuration.WillThrowOnMissingField = false;
+                var reader = new CsvReader(stream, configuration);
+
+                IEnumerable<T> results = reader.GetRecords<T>();
+
+                var readFromCsv = results.ToArray();
+
+                readerHook?.Invoke(reader);
+
+                return readFromCsv;
+            }
+            catch (CsvTypeConverterException ctce)
+            {
+                Log.Debug($"Error doing type conversion - dictionary contains {ctce.Data.Count} entries");
+
+                // The CsvHelper exception messages are particularly unhelpful... let us fix this
+                if (ctce.Data.Count > 0)
                 {
-                    var configuration = DefaultConfiguration;
-                    configuration.WillThrowOnMissingField = false;
-                    var reader = new CsvReader(stream, configuration);
-                    IEnumerable<T> results = reader.GetRecords<T>();
+                    var parserData = ctce.Data.ToDictDebugString();
+                    var newMessage = ctce.Message + Environment.NewLine + parserData;
 
-                    // had to disable the yield here so i could fix this csv exception shit
-                    //foreach (var result in results)
-                    //{
-                    //    yield return result;
-                    //}
-                    return results.ToArray();
+                    throw new CsvTypeConverterException(newMessage, ctce);
                 }
-                catch (CsvTypeConverterException ctce)
-                {
-                    Log.Debug($"Error doing type conversion - dictionary contains {ctce.Data.Count} entries");
 
-                    // The CsvHelper exception messages are particularly unhelpful... let us fix this
-                    if (ctce.Data.Count > 0)
-                    {
-                        var parserData = ctce.Data.ToDictDebugString();
-                        var newMessage = ctce.Message + Environment.NewLine + parserData;
-                        throw new CsvTypeConverterException(newMessage, ctce);
-                    }
-
-                    throw;
-                }
+                throw;
             }
         }
 

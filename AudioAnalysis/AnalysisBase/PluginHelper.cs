@@ -99,27 +99,10 @@
             throw new ArgumentException("Could not locate directory: " + dir, "dir");
         }
 
-        public IEnumerable<IAnalyser> GetPluginsSimple(IEnumerable<DirectoryInfo> pluginBaseDirs)
-        {
-            // AnalysisPrograms.exe
-            // "*.dll", "*.exe"
-            var plugins = Plugins.GetPlugins<IAnalyser>("IAnalysis", pluginBaseDirs, "AnalysisPrograms.exe");
-            //plugins.AddRange(Plugins.GetPlugins<IAnalysis>("IAnalysis"));
-
-            return plugins;
-        }
-
-        public IEnumerable<IAnalyser2> GetPluginsMef(IEnumerable<DirectoryInfo> pluginBaseDirs)
-        {
-            this.Compose(pluginBaseDirs, "AnalysisPrograms.exe");
-
-            return this.AnalysisPlugins;
-        }
-
         private void Compose(IEnumerable<DirectoryInfo> pluginBaseDirs, string searchPattern)
         {
             var registration = new RegistrationBuilder();
-            registration.ForTypesDerivedFrom<IAnalyser>().Export<IAnalyser>();
+            registration.ForTypesDerivedFrom<IAnalyser2>().Export<IAnalyser2>();
             registration.ForTypesDerivedFrom<ISourcePreparer>().Export<ISourcePreparer>();
 
             var assemblyCatalog = new AssemblyCatalog(typeof(PluginHelper).Assembly);
@@ -130,7 +113,6 @@
             {
                 aggregateCatalog.Catalogs.Add(new DirectoryCatalog(dir.FullName, searchPattern, registration));
             }
-
 
             var container = new CompositionContainer(aggregateCatalog);
             container.ComposeParts(this);

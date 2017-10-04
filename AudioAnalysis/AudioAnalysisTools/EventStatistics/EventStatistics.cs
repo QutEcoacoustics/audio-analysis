@@ -5,12 +5,21 @@
 namespace AudioAnalysisTools.EventStatistics
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+    using Acoustics.Shared.Csv;
+    using AcousticWorkbench;
     using AnalysisBase.ResultBases;
+    using CsvHelper.Configuration;
     using DSP;
     using TowseyLibrary;
     using WavTools;
 
     /// <summary>
+    /// The data class that holds event statistics
+    /// </summary>
+    /// <remarks>
     /// Note that EventBase already has getters/setters for:
     /// TimeSpan SegmentStartOffset
     /// double Score
@@ -19,18 +28,46 @@ namespace AudioAnalysisTools.EventStatistics
     /// ..
     /// NOTE: When MinHz equals null, this indicates that the event is broad band or has undefined frequency. The event is an instant.
     ///       When MinHz has a value, this indicates the event is a point in time/frequency space.
-    /// </summary>
+    /// </remarks>
     public class EventStatistics : EventBase
     {
-        public TimeSpan EventStart { get; set; }
+        public EventStatistics()
+        {
+            base.LowFrequencyHertz = 0;
+        }
 
-        public TimeSpan EventEnd { get; set; }
+        public long? AudioEventId { get; set; }
 
-        public TimeSpan Duration { get; set; }
+        public long? AudioRecordingId { get; set; }
 
-        public double MeanDecibel { get; set; }
+        public string ListenUrl
+        {
+            get
+            {
+                if (this.AudioRecordingId.HasValue)
+                {
+                    return Api.Default.GetListenUri(
+                        this.AudioRecordingId.Value,
+                        Math.Floor(this.ResultStartSeconds)).ToString();
+                }
 
-        public double TemporalStdDevDb { get; set; }
+                return string.Empty;
+            }
+        }
+
+        public DateTimeOffset? AudioRecordingRecordedDate { get; set; }
+
+        // Note: EventStartSeconds is in base class
+
+        public double EventEndSeconds { get; set; }
+
+        public double EventDurationSeconds => this.EventEndSeconds - this.EventStartSeconds;
+
+        public DateTimeOffset? EventStartDate => this.AudioRecordingRecordedDate?.AddSeconds(this.ResultStartSeconds);
+
+        public double MeanDecibels { get; set; }
+
+        public double TemporalStdDevDecibels { get; set; }
 
         /// <summary>
         /// Gets or sets the relative location of the temporal max within the acoustic event.
@@ -38,21 +75,23 @@ namespace AudioAnalysisTools.EventStatistics
         /// </summary>
         public double TemporalMaxRelative { get; set; }
 
-        /// <summary>
-        /// Gets or sets the bottom frequency bound of the acoustic event in Herz
-        /// </summary>
-        public int FreqLow { get; set; }
+        public new double LowFrequencyHertz
+        {
+            get { return base.LowFrequencyHertz.Value; }
+            set { base.LowFrequencyHertz = value; }
+        }
 
         /// <summary>
-        /// Gets or sets the Top frequency bound of the acoustic event in Herz
+        /// Gets or sets the top frequency bound of the acoustic event in Hertz
+        /// Note: MinHz implemented in base class.
         /// </summary>
-        public int FreqTop { get; set; }
+        public double HighFrequencyHertz { get; set; }
 
-        public int BandWidth { get; set; }
+        public double Bandwidth => this.HighFrequencyHertz - this.LowFrequencyHertz;
 
         public int DominantFrequency { get; set; }
 
-        public double FreqBinStdDevDb { get; set; }
+        public double FreqBinStdDevDecibels { get; set; }
 
         /// <summary>
         /// Gets or sets the SpectralCentroid.
@@ -81,5 +120,85 @@ namespace AudioAnalysisTools.EventStatistics
         /// Gets or sets the event's signal-to-noise ratio in decibels.
         /// </summary>
         public double SnrDecibels { get; set; }
+
+        public bool Error { get; set; } = false;
+
+        public string ErrorMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets a metadata field used for sorting results. Not serialized in CSV output.
+        /// </summary>
+        public int Order { get; set; }
+
+        /// <inheritdoc />
+        /// <summary>
+        /// Sorts the results by their <see cref="P:AudioAnalysisTools.EventStatistics.EventStatistics.Order" /> property if it is available otherwise reverts to the base
+        /// class comparison.
+        /// </summary>
+        /// <param name="other">An object to compare with this instance.</param>
+        /// <returns>A value that indicates the relative order of the objects being compared</returns>
+        public override int CompareTo(ResultBase other)
+        {
+            if (other is EventStatistics otherEventStatistics)
+            {
+                var comaprison = this.Order.CompareTo(otherEventStatistics.Order);
+
+                return comaprison == 0 ? base.CompareTo(other) : comaprison;
+            }
+
+            return base.CompareTo(other);
+        }
+
+        public override int CompareTo(object obj)
+        {
+            return this.CompareTo(obj as ResultBase);
+        }
+    }
+
+    public sealed class EventStatisticsClassMap : CsvClassMap<EventStatistics>
+    {
+        public EventStatisticsClassMap()
+        {
+            this.AutoMap();
+
+            var ordered = new Dictionary<string, int>()
+            {
+                { nameof(EventStatistics.AudioEventId), 0 },
+                { nameof(EventStatistics.AudioRecordingId), 1 },
+                { nameof(EventStatistics.EventStartSeconds), 2 },
+                { nameof(EventStatistics.EventEndSeconds), 3 },
+                { nameof(EventStatistics.LowFrequencyHertz), 4 },
+                { nameof(EventStatistics.HighFrequencyHertz), 5 },
+                { nameof(EventStatistics.Error), 999 },
+                { nameof(EventStatistics.ErrorMessage), 1000 },
+            };
+
+            var index = 6;
+            foreach (var propertyMap in this.PropertyMaps.OrderBy(x => x.Data.Names.First()))
+            {
+                var name = propertyMap.Data.Names.First();
+
+                if (name == nameof(EventBase.Score) || name == nameof(EventStatistics.Order))
+                {
+                    propertyMap.Ignore();
+                }
+
+                if (name == nameof(EventBase.LowFrequencyHertz) &&
+                    propertyMap.Data.Property.DeclaringType == typeof(EventBase))
+                {
+                    propertyMap.Ignore();
+                }
+
+                if (ordered.TryGetValue(name, out var orderedIndex))
+                {
+                    propertyMap.Data.Index = orderedIndex;
+                }
+                else
+                {
+                    propertyMap.Data.Index = index;
+                    index++;
+                }
+            }
+        }
     }
 }

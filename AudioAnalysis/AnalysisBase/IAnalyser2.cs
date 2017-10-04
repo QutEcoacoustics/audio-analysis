@@ -55,12 +55,13 @@ namespace AnalysisBase
         /// Run analysis using the given analysis settings.
         /// </summary>
         /// <param name="analysisSettings">
-        /// The analysis Settings.
+        ///     The analysis Settings.
         /// </param>
+        /// <param name="segmentSettings">The settings unique to the current segment being analyzed.</param>
         /// <returns>
         /// The results of the analysis.
         /// </returns>
-        AnalysisResult2 Analyze(AnalysisSettings analysisSettings);
+        AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings);
 
         /// <summary>
         /// Ensures abstract types are downcast by the analyzer and written to file.
@@ -91,9 +92,8 @@ namespace AnalysisBase
         /// <param name="unitTime">The unit time of the summary indices to produce.</param>
         /// <param name="duration">The duration of audio for the period analyzed that produced <c>events</c>.</param>
         /// <param name="scoreThreshold">A threshold to filter out low-scoring events.</param>
-        /// <param name="absolute"></param>
         /// <returns>A set of summary indices that describe the input events.</returns>
-        SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold, bool absolute = false);
+        SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold);
 
         /// <summary>
         /// Post-processing for an entire analysis.

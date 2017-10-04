@@ -18,23 +18,24 @@ namespace AnalysisBase.ResultBases
     {
         private double eventStartSeconds;
 
-        private TimeSpan segmentStartOffset;
+        private double segmentStartSeconds;
 
         /// <summary>
         /// Gets or sets the time the current audio segment is offset from the start of the file/recording.
-        ///
         /// </summary>
-        public TimeSpan SegmentStartOffset
+        /// <remarks>
+        /// <see cref="EventStartSeconds"/> will always be greater than or equal to <see cref="SegmentStartSeconds"/>.
+        /// </remarks>
+        public double SegmentStartSeconds
         {
             get
             {
-                return this.segmentStartOffset;
+                return this.segmentStartSeconds;
             }
 
             set
             {
-                this.segmentStartOffset = value;
-                this.StartOffset = value.Add(TimeSpan.FromSeconds(this.EventStartSeconds));
+                this.segmentStartSeconds = value;
             }
         }
 
@@ -43,11 +44,14 @@ namespace AnalysisBase.ResultBases
 
         /// <summary>
         /// Gets or sets the Event's Start Seconds.
-        /// IMPORTANT: This field is time offset relative to the current segment.
-        ///            The  time offset relative to the start of the original file can be found in <c>ResultBase.StartOffset</c>.
-        /// Setting this field will update <c>ResultBase.StartOffset</c>.
+        /// IMPORTANT: This field is time offset relative to the recording.
+        /// It automatically updates <see cref="ResultBase.ResultStartSeconds"/> when set.
         /// </summary>
-        public double EventStartSeconds
+        /// <remarks>
+        /// 2017-09: This field USED to be offset relative to the current segment.
+        /// 2017-09: This field is NOW equivalent to <see cref="ResultBase.ResultStartSeconds"/>
+        /// </remarks>
+        public virtual double EventStartSeconds
         {
             get
             {
@@ -57,34 +61,22 @@ namespace AnalysisBase.ResultBases
             set
             {
                 this.eventStartSeconds = value;
-                this.StartOffset = this.SegmentStartOffset.Add(TimeSpan.FromSeconds(value));
+                base.ResultStartSeconds = value;
             }
         }
 
         /// <summary>
-        /// AudioAnalysisTools.Keys.MIN_HZ
+        /// Gets or sets the bottom frequency bound of the acoustic event.
         /// NOTE: When MinHz is set to null, this indicates that the event is broad band or has undefined frequency. The event is an instant.
         ///       When MinHz has a value, this indicates the event is a point in time/frequency space.
+        ///       Implementers may implement their own MaxHz if needed.
         /// </summary>
-        public double? MinHz { get; protected set; }
+        public virtual double? LowFrequencyHertz { get; protected set; }
 
-        //// THIS IS REMOVED because the IComparer on ResultBase should achieve a similar effect,
-        //// provided both EventStartSeconds and SegmentStartOffset are set.
-//        /// <summary>
-//        /// events should be sorted based on their EventStartSeconds property
-//        /// </summary>
-//        /// <param name="other"></param>
-//        /// <returns></returns>
-//        public override int CompareTo(ResultBase other)
-//        {
-//            var result = base.CompareTo(other);
-//
-//            if (result != 0)
-//            {
-//                return result;
-//            }
-//
-//            return this.EventStartSeconds.CompareTo(((EventBase)other).EventStartSeconds);
-//        }
+        protected void SetEventStartRelative(TimeSpan segmentStart, double eventStartSegmentRelative)
+        {
+            this.SegmentStartSeconds = segmentStart.TotalSeconds;
+            this.EventStartSeconds = this.SegmentStartSeconds + eventStartSegmentRelative;
+        }
     }
 }

@@ -44,10 +44,19 @@
             // smooth the scores - window=11 has been the DEFAULT. Now letting user set this.
             scores = DataTools.filterMovingAverage(scores, smoothingWindow);
             double[] oscFreq = GetOscillationFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
-            events = ConvertOscillationScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
-                                                     minDuration, maxDuration, sonogram.Configuration.SourceFName);
+            events = ConvertOscillationScores2Events(
+                scores,
+                oscFreq,
+                minHz,
+                maxHz,
+                sonogram.FramesPerSecond,
+                sonogram.FBinWidth,
+                scoreThreshold,
+                minDuration,
+                maxDuration,
+                sonogram.Configuration.SourceFName,
+                TimeSpan.Zero);
         }
-
 
         public static void Execute(SpectrogramStandard sonogram, int minHz, int maxHz,
                            double dctDuration, int minOscilFreq, int maxOscilFreq, double dctThreshold, double scoreThreshold,
@@ -60,7 +69,6 @@
                                                minDuration, maxDuration, scoreSmoothingWindow,
                                                out scores, out events, out hits);
         }
-
 
         /// <summary>
         /// Detects oscillations in a given freq bin.
@@ -108,8 +116,6 @@
             //string bmpPath = @"C:\SensorNetworks\Output\cosines.png";
             //ImageTools.DrawMatrix(cosines, bmpPath, true);
 
-
-
             for (int c = minBin; c <= maxBin; c++)//traverse columns - skip DC column
             {
                 var dctArray = new double[dctLength];
@@ -148,7 +154,6 @@
                     //    for (int i = 0; i < dctLength; i++) hits[r + i, c] = midOscilFreq;
                     //}
 
-
                     // DEBUGGING
                     // DataTools.MinMax(dctCoeff, out min, out max);
                      //DataTools.writeBarGraph(dctArray);
@@ -165,7 +170,6 @@
             }
             return hits;
         }
-
 
         public static double[] DetectOscillations(double[] ipArray, double framesPerSecond, double dctDuration, double minOscilFreq, double maxOscilFreq, double dctThreshold)
         {
@@ -227,7 +231,6 @@
                 //    for (int i = 0; i < dctLength; i++) hits[r + i, c] = midOscilFreq;
                 //}
 
-
                 // DEBUGGING
                 // DataTools.MinMax(dctCoeff, out min, out max);
                 //DataTools.writeBarGraph(dctArray);
@@ -270,7 +273,6 @@
             return cleanMatrix;
         } //end method RemoveIsolatedOscillations()
 
-
         /// <summary>
         /// Converts the hits derived from the oscilation detector into a score for each frame.
         /// NOTE: The oscillation detector skips every second row, so score must be adjusted for this.
@@ -300,7 +302,6 @@
             }
             return scores;
         }//end method GetODScores()
-
 
         public static double[] GetOscillationFrequency(double[,] hits, int minHz, int maxHz, double freqBinWidth)
         {
@@ -338,14 +339,24 @@
         /// <param name="maxHz">upper freq bound of the acoustic event</param>
         /// <param name="framesPerSec">the time scale required by AcousticEvent class</param>
         /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
-        /// <param name="maxDurationThreshold"></param>
-        /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
         /// <param name="maxScoreThreshold"></param>
         /// <param name="minDurationThreshold"></param>
+        /// <param name="maxDurationThreshold"></param>
+        /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
+        /// <param name="segmentStartOffset"></param>
         /// <returns></returns>
-        public static List<AcousticEvent> ConvertOscillationScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz, double framesPerSec,
-                                                                         double freqBinWidth, double maxScoreThreshold,
-                                                                         double minDurationThreshold, double maxDurationThreshold, string fileName)
+        public static List<AcousticEvent> ConvertOscillationScores2Events(
+            double[] scores,
+            double[] oscFreq,
+            int minHz,
+            int maxHz,
+            double framesPerSec,
+            double freqBinWidth,
+            double maxScoreThreshold,
+            double minDurationThreshold,
+            double maxDurationThreshold,
+            string fileName,
+            TimeSpan segmentStartOffset)
         {
             //double minThreshold = 0.1;
             //double scoreThreshold = minThreshold; //set this to the minimum threshold to start with
@@ -377,7 +388,7 @@
                         double duration = (i - startFrame + 1)  * frameOffset;
                         if (duration < minDurationThreshold) continue; //skip events with duration shorter than threshold
                         if (duration > maxDurationThreshold) continue; //skip events with duration longer than threshold
-                        var ev = new AcousticEvent(startTime, duration, minHz, maxHz);
+                        var ev = new AcousticEvent(segmentStartOffset, startTime, duration, minHz, maxHz);
                         ev.Name = "Oscillation"; //default name
                         //ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                         ev.FileName = fileName;
@@ -398,11 +409,9 @@
                 //else
                 //if ((scores[i] <= minThreshold) && (minThreshold <= scoreThreshold)) scoreThreshold *= 0.95;
 
-
             } //end of pass over all frames
             return events;
         }//end method ConvertODScores2Events()
-
 
         /// <summary>
         /// Calculates the optimal frame overlap for the given sample rate, frame width and max oscilation or pulse rate.

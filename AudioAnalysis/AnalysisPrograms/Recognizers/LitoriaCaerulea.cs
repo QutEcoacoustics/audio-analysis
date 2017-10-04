@@ -43,7 +43,6 @@ namespace AnalysisPrograms.Recognizers
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
         /// </summary>
@@ -100,7 +99,6 @@ namespace AnalysisPrograms.Recognizers
                 NoiseReductionParameter = 0.0,
             };
 
-
             TimeSpan recordingDuration = recording.WavReader.Time;
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
@@ -148,17 +146,25 @@ namespace AnalysisPrograms.Recognizers
             var croakPlot1 = new Plot(text1, normalisedScores, normalisedThreshold);
 
             // extract potential croak events from the array of croak candidate
-            var croakEvents = AcousticEvent.ConvertScoreArray2Events(croakScoreArray, recognizerConfig.MinHz, recognizerConfig.MaxHz, sonogram.FramesPerSecond,
-                                                                          freqBinWidth, recognizerConfig.EventThreshold,
-                                                                          recognizerConfig.MinCroakDuration, recognizerConfig.MaxCroakDuration);
+            var croakEvents = AcousticEvent.ConvertScoreArray2Events(
+                croakScoreArray,
+                recognizerConfig.MinHz,
+                recognizerConfig.MaxHz,
+                sonogram.FramesPerSecond,
+                freqBinWidth,
+                recognizerConfig.EventThreshold,
+                recognizerConfig.MinCroakDuration,
+                recognizerConfig.MaxCroakDuration,
+                segmentStartOffset);
+
             // add necesary info into the candidate events
             var prunedEvents = new List<AcousticEvent>();
             foreach (var ae in croakEvents)
             {
                 // add additional info
                 ae.SpeciesName = speciesName;
-                ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = recordingDuration;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
                 ae.Name = recognizerConfig.AbbreviatedSpeciesName;
                 prunedEvents.Add(ae);
             }
@@ -168,7 +174,6 @@ namespace AnalysisPrograms.Recognizers
             DataTools.Normalise(croakScoreArray, decibelThreshold, out normalisedScores, out normalisedThreshold);
             var text2 = string.Format($"Croak events (threshold={decibelThreshold})");
             var croakPlot2 = new Plot(text2, normalisedScores, normalisedThreshold);
-
 
             // Look for oscillations in the difference array
             // duration of DCT in seconds
@@ -180,24 +185,30 @@ namespace AnalysisPrograms.Recognizers
             double maxOscRate = 1 / recognizerConfig.MinPeriod;
             var dctScores = Oscillations2012.DetectOscillations(croakScoreArray, framesPerSecond, dctDuration, minOscRate, maxOscRate, dctThreshold);
 
-
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            var events = AcousticEvent.ConvertScoreArray2Events(dctScores, recognizerConfig.MinHz, recognizerConfig.MaxHz, sonogram.FramesPerSecond,
-                                                                          freqBinWidth, recognizerConfig.EventThreshold,
-                                                                          recognizerConfig.MinDuration, recognizerConfig.MaxDuration);
+            var events = AcousticEvent.ConvertScoreArray2Events(
+                dctScores,
+                recognizerConfig.MinHz,
+                recognizerConfig.MaxHz,
+                sonogram.FramesPerSecond,
+                freqBinWidth,
+                recognizerConfig.EventThreshold,
+                recognizerConfig.MinDuration,
+                recognizerConfig.MaxDuration,
+                segmentStartOffset);
+
             double[,] hits = null;
             prunedEvents = new List<AcousticEvent>();
             foreach (var ae in events)
             {
                 // add additional info
                 ae.SpeciesName = speciesName;
-                ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = recordingDuration;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
                 ae.Name = recognizerConfig.AbbreviatedSpeciesName;
                 prunedEvents.Add(ae);
             }
-
 
             // do a recognizer test.
             if (MainEntry.InDEBUG)
@@ -207,7 +218,6 @@ namespace AnalysisPrograms.Recognizers
             }
 
             var scoresPlot = new Plot(this.DisplayName, dctScores, recognizerConfig.EventThreshold);
-
 
             if (true)
             {
@@ -223,9 +233,6 @@ namespace AnalysisPrograms.Recognizers
                 var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, this.SpeciesName, "png", "DebugSpectrogram");
                 debugImage.Save(debugPath);
             }
-
-
-
 
             return new RecognizerResults()
             {
