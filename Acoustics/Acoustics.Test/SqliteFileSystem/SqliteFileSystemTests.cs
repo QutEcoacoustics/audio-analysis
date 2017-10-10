@@ -115,6 +115,12 @@ namespace Acoustics.Test.SqliteFileSystem
             Assert.IsTrue(getLastWriteTime - before < timeTaken );
         }
 
+        [DataTestMethod]
+        public void TestOpenFileImpl()
+        {
+            
+        }
+
 
 
 

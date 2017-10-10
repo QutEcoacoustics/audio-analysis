@@ -4,9 +4,11 @@ using System.Text;
 
 namespace SqliteFileSystem
 {
+    using System.IO;
     using System.Runtime.CompilerServices;
     using Microsoft.Data.Sqlite;
 
+    
     public static class Adapter
     {
         public const string SchemaVersion = "1.0.0";
@@ -49,6 +51,18 @@ EXISTS (SELECT name FROM sqlite_master WHERE type = 'table' AND name = '{MetaTab
             using (var command = new SqliteCommand(commandText, connection))
             {
                 return command.ExecuteNonQuery();
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Stream ExecuteNonQueryStream(SqliteConnection connection, string commandText)
+        {
+            using (var command = new SqliteCommand(commandText, connection))
+            {
+                command.CreateParameter();
+                var reader = command.ExecuteReader();
+
+                return reader.GetStream(0);
             }
         }
 

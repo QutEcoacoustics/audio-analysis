@@ -1,4 +1,5 @@
-﻿namespace SqLiteFileSystem
+﻿// ReSharper disable once CheckNamespace
+namespace Zio.FileSystems.Additional
 {
     using System;
 
