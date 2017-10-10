@@ -15,6 +15,7 @@ namespace Acoustics.Test.SqliteFileSystem
     using TestHelpers;
     using Zio;
     using Zio.FileSystems;
+    using Zio.FileSystems.Additional;
 
     [TestClass]
     public class SqliteFileSystemConstructionTests
