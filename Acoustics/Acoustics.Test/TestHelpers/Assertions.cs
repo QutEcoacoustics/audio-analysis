@@ -6,6 +6,7 @@ namespace Acoustics.Test.TestHelpers
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -15,6 +16,18 @@ namespace Acoustics.Test.TestHelpers
 
     public static class Assertions
     {
+        [DebuggerHidden]
+        public static void AreClose(this Assert assert, long expected, long actual, long delta, string message = null)
+        {
+            var actualDelta = Math.Abs(expected - actual);
+            if (actualDelta > delta)
+            {
+                message = message == null ? string.Empty : message + "\n";
+                Assert.Fail(
+                    $"{message}Actual delta ({actualDelta}) between expected value ({expected}) and actual value ({actual}) was not less than {delta}");
+            }
+        }
+
         public static void DirectoryExists(this Assert assert, DirectoryInfo directory)
         {
             DirectoryExists(assert, directory.FullName);

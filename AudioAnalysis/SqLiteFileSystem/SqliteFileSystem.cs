@@ -1,15 +1,13 @@
-﻿using System;
-
-// ReSharper disable once CheckNamespace
-namespace Zio.FileSystems.Additional
+﻿namespace Zio.FileSystems.Community.SqliteFileSystem
 {
+    using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
-    using global::SqliteFileSystem;
+    using FileSystems;
     using Microsoft.Data.Sqlite;
     using Zio;
-    using Zio.FileSystems;
+    using static FileSystemExceptionHelper;
 
     /// <summary>
     /// Implements a virtual file system backed by a SQLite3 file database.
@@ -20,13 +18,18 @@ namespace Zio.FileSystems.Additional
     /// <para>
     /// Thie file system has no notion of locking or security. It may be implemented in the future if it is needed.
     /// </para>
+    /// <para>
+    /// Note: Microsoft.Data.Sqlite does not implement GetStream or GetBytes so all blobs will be buffered to memory.
+    /// This has the potential to change with https://github.com/aspnet/Microsoft.Data.Sqlite/issues/18
+    /// </para>
+    /// <para>
+    /// This file system is designed to store many small files in a similar fashion to a zip file. Try to avoid storing
+    /// any blobs that are much bigger than traditional disk block/sector sizes.
+    /// </para>
     /// </remarks>
     public class SqliteFileSystem : FileSystem
     {
-        
-
-        private readonly SqliteConnection connection;
-        private readonly string connectionString;
+        internal SqliteConnection Connection { get; }
         private readonly SqliteOpenMode mode;
 
         static SqliteFileSystem()
@@ -62,20 +65,21 @@ namespace Zio.FileSystems.Additional
 
         private SqliteFileSystem(SqliteConnectionStringBuilder builder)
         {
-            this.connectionString = builder.ToString();
+            this.ConnectionString = builder.ToString();
             this.mode = builder.Mode;
-            this.connection = new SqliteConnection(this.connectionString);
+            this.Connection = new SqliteConnection(this.ConnectionString);
+            this.IsReadOnly = this.mode == SqliteOpenMode.ReadOnly;
 
-            this.connection.Open();
+            this.Connection.Open();
 
             // ensure schema exists in this file
-            var schemaValid = Adapter.ExecuteScalarBool(this.connection, Adapter.VerifySchema);
+            var schemaValid = Adapter.ExecuteScalarBool(this.Connection, Adapter.VerifySchema);
 
             if (!schemaValid)
             {
                try
                 {
-                    Adapter.ExecuteNonQuery(this.connection, Adapter.CreateSchema);
+                    Adapter.ExecuteNonQuery(this.Connection, Adapter.CreateSchema);
                 }
                 catch (SqliteException se)
                 {
@@ -86,7 +90,7 @@ namespace Zio.FileSystems.Additional
             }
 
             // check schema version matches
-            this.SchemaVersion = Adapter.ExecuteScalarString(this.connection, Adapter.GetSchemaVersion);
+            this.SchemaVersion = Adapter.ExecuteScalarString(this.Connection, Adapter.GetSchemaVersion);
 
             if (this.SchemaVersion != Adapter.SchemaVersion)
             {
@@ -97,11 +101,13 @@ namespace Zio.FileSystems.Additional
         public string SchemaVersion { get; }
 
 
-        public bool IsReadOnly => this.mode == SqliteOpenMode.ReadOnly;
+        public bool IsReadOnly { get; }
+
+        public string ConnectionString { get; }
 
         public new void Dispose()
         {
-            this.connection.Dispose();
+            this.Connection.Dispose();
             base.Dispose();
         }
 
@@ -109,7 +115,7 @@ namespace Zio.FileSystems.Additional
         {
             if (disposing)
             {
-                this.connection.Dispose();
+                this.Connection.Dispose();
             }
 
             base.Dispose(disposing);
@@ -117,7 +123,7 @@ namespace Zio.FileSystems.Additional
 
         public string GetSqliteVersion()
         {
-            return Adapter.ExecuteScalarString(this.connection, "select sqlite_version();");
+            return Adapter.ExecuteScalarString(this.Connection, "select sqlite_version();");
         }
 
         protected override void CreateDirectoryImpl(UPath path)
@@ -152,12 +158,12 @@ namespace Zio.FileSystems.Additional
 
         protected override long GetFileLengthImpl(UPath path)
         {
-            throw new NotImplementedException();
+            return Adapter.ExecuteScalarLong(this.Connection, Adapter.FileLength, path.FullName);
         }
 
         protected override bool FileExistsImpl(UPath path)
         {
-            return Adapter.ExecuteScalarLong(this.connection, Adapter.FileExists, path.FullName) == 1;
+            return Adapter.ExecuteScalarLong(this.Connection, Adapter.FileExists, path.FullName) == 1;
         }
 
         protected override void MoveFileImpl(UPath srcPath, UPath destPath)
@@ -172,8 +178,8 @@ namespace Zio.FileSystems.Additional
 
         protected override Stream OpenFileImpl(UPath path, FileMode mode, FileAccess access, FileShare share)
         {
-            throw new NotImplementedException();
             // original implmentation lifted from: https://raw.githubusercontent.com/xoofx/zio/06e59868adaacd3fc9d174c992009a6a2520f659/src/Zio/FileSystems/MemoryFileSystem.cs
+            // all notion of locking has been stripped but should probably be readded
 
             if (mode == FileMode.Append && (access & FileAccess.Read) != 0)
             {
@@ -190,10 +196,7 @@ namespace Zio.FileSystems.Additional
             var isWriting = (access & FileAccess.Write) != 0;
             var isExclusive = share == FileShare.None;
 
-            /*
-            //EnterFileSystemShared();
-            //DirectoryNode parentDirectory = null;
-            //FileNode fileNodeToRelease = null;
+
             try
             {
                 // Append: Opens the file if it exists and seeks to the end of the file, or creates a new file. 
@@ -276,7 +279,7 @@ namespace Zio.FileSystems.Additional
                     }
                     else
                     {
-                        throw SqliteFileSystem.FileSystemExceptionHelper.NewFileNotFoundException(path);
+                        throw NewFileNotFoundException(path);
                     }
                 }
 
@@ -288,10 +291,12 @@ namespace Zio.FileSystems.Additional
                     // This is not completely accurate to throw an exception (as we have been called with an option to OpenOrCreate)
                     // But we assume that between the beginning of the method and here, the filesystem is not changing, and 
                     // if it is, it is an unfortunate conrurrency
-                    if (!exists)
+                    if (exists)
                     {
                         throw NewDestinationFileExistException(path);
                     }
+
+                    Adapter.CreateFile(this.Connection, path);
                 }
                 else
                 {
@@ -306,8 +311,8 @@ namespace Zio.FileSystems.Additional
                 // todo: optimize for sending streams
 
                 // Create a memory file stream
-                var stream = new MemoryStream();
-                var stream = new MemoryFileStream(this, fileNode, isReading, isWriting, isExclusive);
+                
+                var stream = new DatabaseBackedMemoryStream(this.Connection, path, isReading, isWriting);
                 if (shouldAppend)
                 {
                     stream.Position = stream.Length;
@@ -322,12 +327,32 @@ namespace Zio.FileSystems.Additional
             {
 
             }
-            */
         }
 
         protected override FileAttributes GetAttributesImpl(UPath path)
         {
-            throw new NotImplementedException();
+            var fileType = this.EnsureExists(path);
+
+            // this filesystem does not encode any special attributes
+            FileAttributes attributes;
+            switch (fileType)
+            {
+                case Adapter.Node.File:
+                    attributes = FileAttributes.Normal;
+                    break;
+                case Adapter.Node.Directory:
+                    attributes = FileAttributes.Directory;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            if (this.IsReadOnly)
+            {
+                return attributes | FileAttributes.ReadOnly;
+            }
+
+            return attributes;
         }
 
         protected override void SetAttributesImpl(UPath path, FileAttributes attributes)
@@ -370,14 +395,33 @@ namespace Zio.FileSystems.Additional
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override string ConvertPathToInternalImpl(UPath path)
         {
-            throw new NotImplementedException();
+            return path.FullName;
         }
 
+        /// <inheritdoc />
         protected override UPath ConvertPathFromInternalImpl(string innerPath)
         {
-            throw new NotImplementedException();
+            return new UPath(innerPath);
+        }
+
+        private Adapter.Node SafeExists(UPath path)
+        {
+            return (Adapter.Node)Adapter.ExecuteScalarLong(this.Connection, Adapter.FileOrDirectoryExists, path.FullName);
+        }
+
+        private Adapter.Node EnsureExists(UPath path)
+        {
+            var node = this.SafeExists(path);
+
+            if (node == Adapter.Node.NotFound)
+            {
+                throw NewFileNotFoundException(path);
+            }
+
+            return node;
         }
     }
 }
