@@ -1,5 +1,5 @@
 ﻿// ReSharper disable once CheckNamespace
-namespace Zio.FileSystems.Additional
+namespace Zio.FileSystems.Community
 {
     using System;
 

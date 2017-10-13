@@ -286,6 +286,7 @@
     <Compile Include="AudioAnalysisTools\TileImage\TilerTests.cs" />
     <Compile Include="Shared\RangeTests.cs" />
     <Compile Include="SqliteFileSystem\AdapterTests.cs" />
+    <Compile Include="SqliteFileSystem\DatabaseBackedMemoryStreamTests.cs" />
     <Compile Include="SqliteFileSystem\SqliteFileSystemTests.cs" />
     <Compile Include="SqliteFileSystem\SqliteFileSystemConstructionTests.cs" />
     <Compile Include="TestHelpers\Factories\AudioRecordingFactory.cs" />
