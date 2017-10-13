@@ -8,14 +8,13 @@ namespace Acoustics.Test.SqliteFileSystem
 {
     using System.Diagnostics;
     using System.IO;
-    using global::SqliteFileSystem;
     using Microsoft.Data.Sqlite;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using SqLiteFileSystem;
     using TestHelpers;
     using Zio;
     using Zio.FileSystems;
-    using Zio.FileSystems.Additional;
+    using Zio.FileSystems.Community;
+    using Zio.FileSystems.Community.SqliteFileSystem;
 
     [TestClass]
     public class SqliteFileSystemConstructionTests

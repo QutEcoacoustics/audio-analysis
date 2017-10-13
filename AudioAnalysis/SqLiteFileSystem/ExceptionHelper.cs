@@ -2,10 +2,11 @@
 // This file is licensed under the BSD-Clause 2 license. 
 // See the license.txt file in the project root for more information.
 
-using System.IO;
-
-namespace SqliteFileSystem
+namespace Zio.FileSystems.Community.SqliteFileSystem
 {
+    using System.IO;
+    using Zio;
+
     /// <summary>
     /// Lifted from https://raw.githubusercontent.com/xoofx/zio/78b66d29c857b450e495c31b38f7ed4021ebec8e/src/Zio/FileSystemExceptionHelper.cs
     /// so excpetions are formatted in a similar manner.

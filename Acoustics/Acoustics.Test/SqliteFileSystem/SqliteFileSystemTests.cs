@@ -10,22 +10,22 @@ namespace Acoustics.Test.SqliteFileSystem
     using System.IO;
     using Microsoft.Data.Sqlite;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using SqLiteFileSystem;
     using TestHelpers;
     using Zio;
     using Zio.FileSystems;
+    using Zio.FileSystems.Community;
+    using Zio.FileSystems.Community.SqliteFileSystem;
 
     [TestClass]
     public class SqliteFileSystemTests
     {
 
         protected DirectoryInfo outputDirectory;
-        private FileInfo testFile;
+        private FileInfo testDatabase;
         private PhysicalFileSystem localFileSystem;
-        private SqliteFileSystem sqliteFileSystem;
+        private SqliteFileSystem fs;
         private readonly System.Random random;
-        private (string Name, byte[] Data) testData;
-        private readonly UPath root = (UPath)"/";
+        private (UPath Path, byte[] Data) testData;
 
         public SqliteFileSystemTests()
         {
@@ -36,20 +36,20 @@ namespace Acoustics.Test.SqliteFileSystem
         [TestInitialize]
         public void Setup()
         {
-            this.testFile = PathHelper.GetTempFile("sqlite3");
-            this.outputDirectory = this.testFile.Directory;
+            this.testDatabase = PathHelper.GetTempFile("sqlite3");
+            this.outputDirectory = this.testDatabase.Directory;
             this.localFileSystem = new PhysicalFileSystem();
-            this.sqliteFileSystem = new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadWriteCreate);
+            this.fs = new SqliteFileSystem(this.testDatabase.FullName, SqliteOpenMode.ReadWriteCreate);
 
 
-            this.testData = this.GenerateTestData();
+            this.testData = GenerateTestData(this.random);
         }
 
         [TestCleanup]
         public void Cleanup()
         {
             this.localFileSystem.Dispose();
-            this.sqliteFileSystem.Dispose();
+            this.fs.Dispose();
 
             Debug.WriteLine("Deleting output directory:" + this.outputDirectory.FullName);
 
@@ -61,18 +61,18 @@ namespace Acoustics.Test.SqliteFileSystem
             return Path.GetRandomFileName();
         }
 
-        private (string Name, byte[] Data) GenerateTestData()
+        public static (UPath Path, byte[] Data) GenerateTestData(System.Random random, string path = null)
         {
             var data = new byte[1024];
-            this.random.NextBytes(data);
+            random.NextBytes(data);
 
-            return (GetRandomName(), data);
+            return (path ?? UPath.Root / GetRandomName(), data);
         }
 
         [TestMethod]
         public void TestGetVersion()
         {
-            var version = this.sqliteFileSystem.GetSqliteVersion();
+            var version = this.fs.GetSqliteVersion();
 
             Debug.WriteLine($"Sqlite version obtained: {version}");
 
@@ -84,41 +84,80 @@ namespace Acoustics.Test.SqliteFileSystem
         public void TestFileNotExists()
         {
             var path = UPath.Root / GetRandomName();
-            var exists = this.sqliteFileSystem.FileExists(path);
+            var exists = this.fs.FileExists(path);
 
             Assert.IsFalse(exists);
         }
 
         [TestMethod]
-        public void FileCreation()
+        public void TestFileExists()
         {
-            var path = UPath.Root / this.testData.Name;
+            AdapterTests.InsertBlobManually(this.fs.Connection, this.testData);
+            
+            var path = this.testData.Path;
+            var exists = this.fs.FileExists(path);
+
+            Assert.IsTrue(exists);
+        }
+
+        [TestMethod]
+        public void GetAttributesThrowsForNotExists()
+        {
+            var path = UPath.Root / GetRandomName();
+
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.GetAttributes(path));
+        }
+
+        [TestMethod]
+        public void GetAttributesReturnsReadOnlyWhenConnectionReadOnly()
+        {
+            this.fs.WriteAllBytes(this.testData.Path, this.testData.Data);
+            
+
+            var readonlyFs = new SqliteFileSystem(this.testDatabase.FullName, SqliteOpenMode.ReadOnly);
+
+            Assert.IsTrue(readonlyFs.FileExists(this.testData.Path));
+            Assert.AreEqual(
+                FileAttributes.Normal | FileAttributes.ReadOnly,
+                readonlyFs.GetAttributes(this.testData.Path));
+        }
+
+        [TestMethod]
+        public void TestFile()
+        {
+            var path = this.testData.Path;
+
+            Assert.IsFalse(this.fs.FileExists(path));
 
             var before = DateTime.Now;
-            this.sqliteFileSystem.WriteAllBytes(path, this.testData.Data);
-            var after = DateTime.Now;
+            this.fs.WriteAllBytes(path, this.testData.Data);
+            
 
-            Assert.IsTrue(this.sqliteFileSystem.FileExists(path));
-            Assert.AreEqual(1024, this.sqliteFileSystem.GetFileLength(path));
+            Assert.IsTrue(this.fs.FileExists(path));
+            Assert.AreEqual(1024, this.fs.GetFileLength(path));
 
-            var attributes = this.sqliteFileSystem.GetAttributes(path);
+            var attributes = this.fs.GetAttributes(path);
             Assert.AreEqual(FileAttributes.Normal, attributes);
 
-            var creationTime = this.sqliteFileSystem.GetCreationTime(path);
-            var lastAccessTime = this.sqliteFileSystem.GetCreationTime(path);
-            var getLastWriteTime = this.sqliteFileSystem.GetCreationTime(path);
+            var creationTime = this.fs.GetCreationTime(path);
+            var lastAccessTime = this.fs.GetLastAccessTime(path);
+            var getLastWriteTime = this.fs.GetLastWriteTime(path);
 
-            var timeTaken = after - before;
-            
-            Assert.IsTrue(creationTime - before < timeTaken );
-            Assert.IsTrue(lastAccessTime - before < timeTaken );
-            Assert.IsTrue(getLastWriteTime - before < timeTaken );
+            Assert.That.AreClose(creationTime.Ticks     , before.Ticks, 15_000_0);
+            Assert.That.AreClose(lastAccessTime.Ticks,    before.Ticks, 15_000_0);
+            Assert.That.AreClose(getLastWriteTime.Ticks,  before.Ticks, 15_000_0);
+
+            var actualBytes = this.fs.ReadAllBytes(path);
+            CollectionAssert.AreEqual(this.testData.Data, actualBytes);
+
+
         }
 
         [DataTestMethod]
-        public void TestOpenFileImpl()
+        public void TestDirectory()
         {
-            
+            //var attributes = this.fs.GetAttributes(path);
+            //Assert.AreEqual(FileAttributes.Directory, attributes);
         }
 
 
