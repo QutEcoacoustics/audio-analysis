@@ -44,14 +44,16 @@ environment:
 init:
   #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - echo Starting Build
-  # Determine whether or not we should tag and release
-  - ps: $env:RELEASE_COMMIT = $env:APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED -ilike "*\[release\]*"; $env:SHOULD_RELEASE = ($env:RELEASE_COMMIT -ieq "true") -or $env:APPVEYOR_SCHEDULED_BUILD; 
-  - ps: ls env:* -Include SHOULD*,APPVEYOR_SCHEDULED_BUILD*,APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED*,RELEASE_COMMIT
   #- git lfs install --skip-smudge
 
 before_build:
   # Download fresh lfs assets
   - git lfs pull
+  # Determine whether or not we should tag and release
+  # if the last tag hash matches the current build hash then we should not duplicate a release
+  - ps: $env:TAG_NOT_PREVIOUSLY_RELEASED = ($(git tag -l --format="%(objectname)") -notcontains $env:APPVEYOR_REPO_COMMIT)
+  - ps: $env:RELEASE_COMMIT = $env:APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED -ilike "*\[release\]*"; $env:SHOULD_RELEASE = ($env:RELEASE_COMMIT -ieq "true") -or ($env:APPVEYOR_SCHEDULED_BUILD -and ($env:TAG_NOT_PREVIOUSLY_RELEASED -ieq "true");
+  - ps: ls env:* -Include SHOULD*,APPVEYOR_SCHEDULED_BUILD*,APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED*,RELEASE_COMMIT,TAG_NOT_PREVIOUSLY_RELEASED
   # Restore packages 
   - cd AudioAnalysis
   - nuget restore
