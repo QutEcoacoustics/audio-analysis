@@ -32,6 +32,7 @@ namespace Zio.FileSystems.Community.SqliteFileSystem
         private readonly bool canRead;
         private readonly bool canWrite;
         private int isDisposed;
+        private bool shouldFlush;
 
         public DatabaseBackedMemoryStream(SqliteConnection connection, UPath path, bool canRead, bool canWrite)
             : base(DefaultCapacity)
@@ -39,8 +40,8 @@ namespace Zio.FileSystems.Community.SqliteFileSystem
             this.connection = connection;
             this.path = path;
 
-            this.canWrite = canWrite;
-            this.canRead = canRead;
+            // temporaily allow writing so we can read the blob into the memory stream
+            this.canWrite = true;
 
             // read in the blob
             var blob = Adapter.GetBlob(connection, path);
@@ -48,6 +49,9 @@ namespace Zio.FileSystems.Community.SqliteFileSystem
             // write the blob to our in-memory backing store
             base.Write(blob, 0, blob.Length);
             base.Position = 0;
+            this.shouldFlush = false;
+            this.canWrite = canWrite;
+            this.canRead = canRead;
         }
 
         public override bool CanRead => this.isDisposed == 0 && this.canRead;
@@ -83,8 +87,13 @@ namespace Zio.FileSystems.Community.SqliteFileSystem
         {
             this.CheckNotDisposed();
 
-            // inefficient operation ToArray creates a copy of the array
-            Adapter.SetBlob(this.connection, this.path, base.ToArray());
+            // don't write an update unless it is needed
+            if (this.shouldFlush)
+            {
+                // inefficient operation ToArray creates a copy of the array
+                Adapter.SetBlob(this.connection, this.path, base.ToArray());
+                this.shouldFlush = false;
+            }
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -124,6 +133,7 @@ namespace Zio.FileSystems.Community.SqliteFileSystem
             }
 
             base.Write(buffer, offset, count);
+            this.shouldFlush = true;
         }
 
         private void CheckNotDisposed()
