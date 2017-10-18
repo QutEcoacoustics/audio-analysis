@@ -83,7 +83,7 @@ namespace Acoustics.Test.SqliteFileSystem
             }
         }
 
-        private static void AssertBlobMetadata(
+        public static void AssertBlobMetadata(
             SqliteConnection connection,
             int expectedLength,
             long expectedAccessed,
@@ -92,7 +92,7 @@ namespace Acoustics.Test.SqliteFileSystem
             string path = "/test.blob")
         {
             using (var command = new SqliteCommand(
-                $"SELECT length(blob), accessed, created, modified FROM files WHERE path = '{path}'",
+                $"SELECT length(blob), accessed, created, written FROM files WHERE path = '{path}'",
                 connection))
             {
                 var reader = command.ExecuteReader();
@@ -114,16 +114,30 @@ namespace Acoustics.Test.SqliteFileSystem
             {
                 connection.Open();
 
-                // before test, everything should be set up according to mock data
-                AssertBlobMetadata(connection, 1024, 0, 0, 0);
+                var results = new List<TimeSpan>(10);
+                var lastNow = 0L;
+                for (var i = 0; i < 10; i++)
+                {
 
-                var now = Now;
-                var blob = Adapter.GetBlob(connection, UPath.Root / "test.blob");
+                    // before test, everything should be set up according to mock data
+                    AssertBlobMetadata(connection, 1024, lastNow, 0, 0);
 
-                CollectionAssert.AreEqual(prepared.blobData, blob);
+                    var now = Now;
+                    var timer = Stopwatch.StartNew();
+                    var blob = Adapter.GetBlob(connection, UPath.Root / "test.blob");
 
-                // now the accessed date should have been updated
-                AssertBlobMetadata(connection, 1024, now, 0, 0);
+                    timer.Stop();
+                    results.Add(timer.Elapsed);
+
+                    CollectionAssert.AreEqual(prepared.blobData, blob);
+
+                    // now the accessed date should have been updated
+                    AssertBlobMetadata(connection, 1024, now, 0, 0);
+                    lastNow = now;
+                }
+
+                var average = results.Average(x => x.TotalSeconds);
+                Debug.WriteLine($"10 getblobs took an average of {average} seconds.\nRaw: { string.Join(", ", results) }");
             }
         }
 

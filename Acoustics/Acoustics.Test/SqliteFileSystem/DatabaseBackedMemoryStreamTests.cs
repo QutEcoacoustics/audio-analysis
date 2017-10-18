@@ -46,8 +46,11 @@ namespace Acoustics.Test.SqliteFileSystem
             using (var connection = new SqliteConnection(prepared.ConnectionString))
             {
                 connection.Open();
+                AdapterTests.AssertBlobMetadata(connection, 1024, 0, 0, 0);
+                var now = Date.Now;
                 using (var stream = new DatabaseBackedMemoryStream(connection, UPath.Root / "test.blob", true, true))
                 {
+                    AdapterTests.AssertBlobMetadata(connection, 1024, now, 0, 0);
 
                     Assert.IsTrue(stream.CanRead);
                     Assert.IsTrue(stream.CanSeek);
@@ -61,6 +64,9 @@ namespace Acoustics.Test.SqliteFileSystem
                     Assert.AreEqual(1024, read);
                     CollectionAssert.AreEqual(prepared.blobData, actualBlob);
                 }
+
+                // the meta data should not have been updated because no changes were made
+                AdapterTests.AssertBlobMetadata(connection, 1024, now, 0, 0);
             }
         }
 
