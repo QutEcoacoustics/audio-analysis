@@ -14,7 +14,8 @@
     /// </summary>
     /// <remarks>
     /// Note: the file system stored in the SQLite database is a *flat* file system. Thus there is no such thing as
-    /// directories and directory support is emulated by this implementation.
+    /// directories and directory support is emulated by this implementation. Generally, get operations are simulated
+    /// and set operations fail silently.
     /// <para>
     /// Thie file system has no notion of locking or security. It may be implemented in the future if it is needed.
     /// </para>
@@ -31,6 +32,7 @@
     {
         internal SqliteConnection Connection { get; }
         private readonly SqliteOpenMode mode;
+        private bool throwOnDirectorySet = false;
 
         static SqliteFileSystem()
         {
@@ -148,7 +150,10 @@
 
         protected override void CopyFileImpl(UPath srcPath, UPath destPath, bool overwrite)
         {
-            throw new NotImplementedException();
+            this.SetCheck(false);
+            this.EnsureExists(srcPath);
+
+            Adapter.CopyFile(this.Connection, srcPath, destPath, overwrite);
         }
 
         protected override void ReplaceFileImpl(UPath srcPath, UPath destPath, UPath destBackupPath, bool ignoreMetadataErrors)
@@ -188,10 +193,13 @@
                     nameof(access));
             }
 
+            if (mode != FileMode.Open)
+            {
+                this.SetCheck(false);
+            }
+
             // no support for sharing or locking files
-
-
-
+            
             var isReading = (access & FileAccess.Read) != 0;
             var isWriting = (access & FileAccess.Write) != 0;
             var isExclusive = share == FileShare.None;
@@ -311,7 +319,6 @@
                 // todo: optimize for sending streams
 
                 // Create a memory file stream
-                
                 var stream = new DatabaseBackedMemoryStream(this.Connection, path, isReading, isWriting);
                 if (shouldAppend)
                 {
@@ -357,37 +364,40 @@
 
         protected override void SetAttributesImpl(UPath path, FileAttributes attributes)
         {
+            var fileType = this.EnsureExists(path);
+            this.SetCheck(fileType == Adapter.Node.Directory);
+
             throw new NotImplementedException();
         }
 
         protected override DateTime GetCreationTimeImpl(UPath path)
         {
-            throw new NotImplementedException();
+            return this.GetTimeStamps(path).Created.ToLocalTime();
         }
-
+        
         protected override void SetCreationTimeImpl(UPath path, DateTime time)
         {
-            throw new NotImplementedException();
+            this.SetTimeStamps(Adapter.FilesCreated, path, time);
         }
 
         protected override DateTime GetLastAccessTimeImpl(UPath path)
         {
-            throw new NotImplementedException();
+            return this.GetTimeStamps(path).Accessed.ToLocalTime();
         }
 
         protected override void SetLastAccessTimeImpl(UPath path, DateTime time)
         {
-            throw new NotImplementedException();
+            this.SetTimeStamps(Adapter.FilesAccessed, path, time);
         }
 
         protected override DateTime GetLastWriteTimeImpl(UPath path)
         {
-            throw new NotImplementedException();
+            return this.GetTimeStamps(path).Written.ToLocalTime();
         }
 
         protected override void SetLastWriteTimeImpl(UPath path, DateTime time)
         {
-            throw new NotImplementedException();
+            this.SetTimeStamps(Adapter.FilesWritten, path, time);
         }
 
         protected override IEnumerable<UPath> EnumeratePathsImpl(UPath path, string searchPattern, SearchOption searchOption, SearchTarget searchTarget)
@@ -423,5 +433,74 @@
 
             return node;
         }
+
+        private long GetValueSafe(string query, UPath path)
+        {
+            var result = Adapter.ExecuteScalarLongNullable(this.Connection, query, path.FullName);
+
+            if (result.HasValue)
+            {
+                return result.Value;
+            }
+
+            throw NewFileNotFoundException(path);
+        }
+
+        private (DateTime Accessed, DateTime Created, DateTime Written) GetTimeStamps(UPath path)
+        {
+            var fileType = this.SafeExists(path);
+
+            (DateTime Accessed, DateTime Created, DateTime Written) result;
+
+            switch (fileType)
+            {
+                case Adapter.Node.NotFound:
+                    result = (DefaultFileTime, DefaultFileTime, DefaultFileTime);
+                    break;
+                case Adapter.Node.File:
+                    result = Adapter.GetFileTimeStamps(this.Connection, path);
+                    break;
+                case Adapter.Node.Directory:
+                    result = Adapter.GetDirectoryTimeStamps(this.Connection, path);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            return result;
+        }
+        private void SetTimeStamps(string field, UPath path, DateTime value)
+        {
+            var fileType = this.EnsureExists(path);
+
+            switch (fileType)
+            {
+                case Adapter.Node.File:
+                    this.SetCheck(false);
+                    break;
+                case Adapter.Node.Directory:
+                    this.SetCheck(true);
+                    break;
+                case Adapter.Node.NotFound:
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            Adapter.SetTimeStamp(this.Connection, path, field, value);
+        }
+
+        private void SetCheck(bool isDirectory)
+        {
+            if (isDirectory && this.throwOnDirectorySet)
+            {
+                throw new SqliteFileSystemException("Modification of directories is not allowed - this is a flat file system");
+            }
+
+            if (this.IsReadOnly)
+            {
+                throw NewReadOnlyException();
+            }
+        }
+
     }
 }

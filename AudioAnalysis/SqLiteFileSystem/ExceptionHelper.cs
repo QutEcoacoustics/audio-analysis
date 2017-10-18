@@ -4,6 +4,7 @@
 
 namespace Zio.FileSystems.Community.SqliteFileSystem
 {
+    using System;
     using System.IO;
     using Zio;
 
@@ -31,6 +32,16 @@ namespace Zio.FileSystems.Community.SqliteFileSystem
         public static IOException NewDestinationFileExistException(UPath path)
         {
             return new IOException($"The destination path `{path}` is an existing file");
+        }
+
+        public static IOException NewFileExistsException(UPath path, Exception innerException)
+        {
+            return new IOException($"The file `{path}` already exists", innerException);
+        }
+
+        public static IOException NewReadOnlyException()
+        {
+            return new IOException("This filesystem is read-only");
         }
     }
 }
