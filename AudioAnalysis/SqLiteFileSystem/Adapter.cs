@@ -3,6 +3,7 @@
     using System;
     using System.Data;
     using System.Diagnostics;
+    using System.Linq;
     using System.Runtime.CompilerServices;
     using Microsoft.Data.Sqlite;
     using Zio;
@@ -17,14 +18,28 @@
         }
 
         public const string SchemaVersion = "1.0.0";
-        private const string FilesTable = "files";
-        private const string FilesPath = "path";
-        private const string FilesCreated = "created";
-        private const string FilesAccessed = "accessed";
-        private const string FilesWritten = "written";
-        private const string UnnamedParameter1 = "unnamed1";
+        internal const string FilesTable = "files";
+        internal const string FilesPath = "path";
+        internal const string FilesCreated = "created";
+        internal const string FilesAccessed = "accessed";
+        internal const string FilesWritten = "written";
+        internal const string UnnamedParameter1 = "unnamed1";
+        internal const string FilesDestPath = "dest_path";
+
+
+
+        internal static readonly string FileTimeStamps = $"SELECT {FilesAccessed},{FilesCreated},{FilesWritten}  FROM {FilesTable} WHERE {FilesPath} = @{FilesPath} LIMIT 1";
+        internal static readonly string DirectoryTimeStamps = $@"
+SELECT MAX({FilesAccessed}),MIN({FilesCreated}),MAX({FilesWritten})
+FROM {FilesTable}
+WHERE {FilesPath} LIKE @{FilesPath} + '{UPath.DirectorySeparator}_%'
+LIMIT 1";
+
+        internal static readonly Func<string, string> FileTimeStampUpdate = (field) =>
+            $"UPDATE {FilesTable} SET {field} = @{field} WHERE {FilesPath} = @{FilesPath};";
 
         internal static readonly string FileExists = $"SELECT EXISTS(SELECT 1 FROM {FilesTable} WHERE {FilesPath} = @{UnnamedParameter1} LIMIT 1)";
+
         /// this is a flat file system... directories only exist if there are files 'in them'. Thus we only search for 
         /// files which have at least one / and then at least one of more file name characters afterwards
         internal static readonly string DirectoryExists = $"SELECT EXISTS(SELECT 1 FROM {FilesTable} WHERE {FilesPath} LIKE @{UnnamedParameter1} + '{UPath.DirectorySeparator}_%' LIMIT 1)";
@@ -68,6 +83,12 @@ COMMIT;";
         internal static readonly string DeleteFile =
             $@"DELETE FROM {FilesTable} WHERE {FilesPath} = @{FilesPath}";
 
+        internal static readonly Func<bool, string> CopyFileQuery = (overwrite) => $@"
+INSERT { (overwrite ? "OR REPLACE" : "OR ABORT") } INTO {FilesTable}
+SELECT @{FilesDestPath}, {FilesBlob}, @{FilesAccessed}, @{FilesCreated}, {FilesWritten}
+FROM {FilesTable}
+WHERE {FilesPath} = @{FilesPath}";
+
         private const string FilesBlob = "blob";
 
         private const string MetaTable = "meta";
@@ -98,7 +119,7 @@ COMMIT;";
                     Debug.Assert(reader.NextResult());
                     reader.Read();
 
-                    return reader.GetFieldValue<byte[]>(0);
+                    return reader.IsDBNull(0) ? null : reader.GetFieldValue<byte[]>(0);
                 }
             }
         }
@@ -118,12 +139,14 @@ COMMIT;";
                 // note: created will be ignored if it is an INSERT instead of an UPDATE
                 command.Parameters.AddWithValue(FilesCreated, now);
                 command.Parameters.AddWithValue(FilesWritten, now);
-                var affected = command.ExecuteNonQuery();
 
-                if (affected != 1)
-                {
-                    throw new InvalidOperationException($"Storing blob at {path} failed because affected rows did not equal 1.");
-                }
+                    var affected = command.ExecuteNonQuery();
+
+                    if (affected != 1)
+                    {
+                        throw new InvalidOperationException(
+                            $"Storing blob at {path} failed because affected rows did not equal 1.");
+                    }
 
                 return affected;
             }
@@ -142,6 +165,96 @@ COMMIT;";
                 return command.ExecuteNonQuery();
             }
         }
+
+        internal static void CopyFile(SqliteConnection connection, UPath path, UPath destination, bool overwrite)
+        {
+            var now = Date.Now;
+            string query = CopyFileQuery(overwrite);
+            using (var command = new SqliteCommand(query, connection))
+            {
+                command.Parameters.AddWithValue(FilesPath, path.FullName);
+                command.Parameters.AddWithValue(FilesDestPath, destination.FullName);
+
+                command.Parameters.AddWithValue(FilesAccessed, now);
+                command.Parameters.AddWithValue(FilesCreated, now);
+                int affected;
+                try
+                {
+                    affected = command.ExecuteNonQuery();
+                }
+                catch (SqliteException sex) when (sex.SqliteErrorCode == SQLitePCL.raw.SQLITE_CONSTRAINT)
+                {
+                    throw FileSystemExceptionHelper.NewFileExistsException(destination, sex);
+                }
+
+                if (affected != 1)
+                {
+                    throw new InvalidOperationException(
+                        $"Copying file form {path} to {destination} failed because affected rows did not equal 1.");
+                }
+            }
+        }
+
+        internal static (DateTime Accessed, DateTime Created, DateTime Written) GetFileTimeStamps(SqliteConnection connection, UPath path)
+        {
+            using (var command = new SqliteCommand(FileTimeStamps, connection))
+            {
+                command.Parameters.AddWithValue(FilesPath, path.FullName);
+
+                using (var reader = command.ExecuteReader())
+                {
+                    Debug.Assert(reader.Read());
+
+
+                    return (
+                        Date.FromTicks(reader.GetFieldValue<long>(0)),
+                        Date.FromTicks(reader.GetFieldValue<long>(1)),
+                        Date.FromTicks(reader.GetFieldValue<long>(2)));
+                }
+            }
+        }
+
+        internal static void SetTimeStamp(SqliteConnection connection, UPath path, string field, DateTime value)
+        {
+            var validFields = new[] { FilesAccessed, FilesCreated, FilesWritten };
+
+            if (!validFields.Contains(field))
+            {
+                throw new ArgumentException($"Supplied field `{field}` is not valid");
+            }
+
+            using (var command = new SqliteCommand(FileTimeStampUpdate(field), connection))
+            {
+                command.Parameters.AddWithValue(field, Date.ToTicks(value));
+                command.Parameters.AddWithValue(FilesPath, path.FullName);
+
+                var result = command.ExecuteNonQuery();
+                if (result != 1)
+                {
+                    throw new InvalidOperationException($"Updating timestamp at {path} failed because affected rows did not equal 1.");
+                }
+            }
+        }
+
+        internal static (DateTime Accessed, DateTime Created, DateTime Written) GetDirectoryTimeStamps(SqliteConnection connection, UPath path)
+        {
+            using (var command = new SqliteCommand(DirectoryTimeStamps, connection))
+            {
+                command.Parameters.AddWithValue(FilesPath, path.FullName);
+
+                using (var reader = command.ExecuteReader())
+                {
+                    Debug.Assert(reader.Read());
+
+                    return (
+                        Date.FromTicks(reader.GetFieldValue<long>(0)), 
+                        Date.FromTicks(reader.GetFieldValue<long>(0)),
+                        Date.FromTicks(reader.GetFieldValue<long>(0)));
+                }
+            }
+        }
+
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static string ExecuteScalarString(SqliteConnection connection, string commandText)
@@ -181,5 +294,18 @@ COMMIT;";
                 return (long)command.ExecuteScalar();
             }
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static long? ExecuteScalarLongNullable(SqliteConnection connection, string commandText, string param1)
+        {
+            using (var command = new SqliteCommand(commandText, connection))
+            {
+                command.Parameters.AddWithValue(UnnamedParameter1, param1);
+                return (long?)command.ExecuteScalar();
+            }
+        }
+
+
+
     }
 }
