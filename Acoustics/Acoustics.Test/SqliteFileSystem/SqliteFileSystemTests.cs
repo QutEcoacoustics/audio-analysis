@@ -241,8 +241,41 @@ namespace Acoustics.Test.SqliteFileSystem
             Assert.IsTrue(this.fs.FileExists(path));
             CollectionAssert.AreEqual(actualBytes, this.fs.ReadAllBytes(movePath));
 
-            // modify timestamps
+
+            // move throws when destination exists
+            Assert.ThrowsException<IOException>(() => this.fs.MoveFile(path, movePath));
+
+            // test enumerate files
+            var allFiles = this.fs.EnumeratePaths(UPath.Root);
+            CollectionAssert.AreEquivalent(new [] {path, movePath}, allFiles.ToList());
+
+            var allDirs = this.fs.EnumerateDirectories(UPath.Root).ToList();
+            Assert.AreEqual(0, allDirs.Count);
+
+            // check replace file
+            var replaceFile = GenerateTestData(this.random);
+            this.fs.WriteAllBytes(replaceFile.Path, replaceFile.Data);
+            var replaceFileTimestamps = Adapter.GetFileTimeStamps(this.fs.Connection, replaceFile.Path);
+            var moveFileTimestamps = Adapter.GetFileTimeStamps(this.fs.Connection, movePath);
             var now = DateTime.Now;
+            this.fs.ReplaceFile(replaceFile.Path, movePath, movePath + ".bak", true);
+            Assert.IsTrue(this.fs.FileExists(movePath));
+            Assert.IsTrue(this.fs.FileExists(movePath + ".bak"));
+            Assert.IsFalse(this.fs.FileExists(replaceFile.Path));
+            CollectionAssert.AreEqual(replaceFile.Data, this.fs.ReadAllBytes(movePath));
+            CollectionAssert.AreEqual(actualBytes, this.fs.ReadAllBytes(movePath + ".bak"));
+
+            var actualBackupFileTimestamps = Adapter.GetFileTimeStamps(this.fs.Connection, replaceFile.Path);
+            var actualMoveFileTimestamps = Adapter.GetFileTimeStamps(this.fs.Connection, movePath);
+            Assert.AreEqual(moveFileTimestamps.Accessed, actualBackupFileTimestamps.Accessed);
+            Assert.AreEqual(moveFileTimestamps.Created, actualBackupFileTimestamps.Created);
+            Assert.AreEqual(moveFileTimestamps.Written, actualBackupFileTimestamps.Written);
+            Assert.AreEqual(replaceFileTimestamps.Accessed, actualMoveFileTimestamps.Accessed);
+            Assert.AreEqual(moveFileTimestamps.Created, actualMoveFileTimestamps.Created);
+            Assert.AreEqual(replaceFileTimestamps.Written , actualMoveFileTimestamps.Written);
+
+            // modify timestamps
+            now = DateTime.Now;
             this.fs.SetLastAccessTime(path, now);
             this.fs.SetCreationTime(path, now + 1.0.Seconds());
             this.fs.SetLastWriteTime(path, now + 2.0.Seconds());
@@ -255,23 +288,6 @@ namespace Acoustics.Test.SqliteFileSystem
             Assert.That.AreClose(creationTime, now + 1.0.Seconds(), 0.Seconds());
             Assert.That.AreClose(lastWriteTime, now + 2.0.Seconds(), 0.Seconds());
 
-            // test enumerate files
-            var allFiles = this.fs.EnumeratePaths(UPath.Root);
-            CollectionAssert.AreEquivalent(new [] {path, movePath}, allFiles.ToList());
-
-            var allDirs = this.fs.EnumerateDirectories(UPath.Root).ToList();
-            Assert.AreEqual(0, allDirs.Count);
-
-            // check replace file
-            var replaceFile = GenerateTestData(this.random);
-            this.fs.WriteAllBytes(replaceFile.Path, replaceFile.Data);
-            this.fs.ReplaceFile(replaceFile.Path, movePath, movePath + ".bak", true);
-            Assert.IsTrue(this.fs.FileExists(movePath));
-            Assert.IsTrue(this.fs.FileExists(movePath + ".bak"));
-            Assert.IsFalse(this.fs.FileExists(replaceFile.Path));
-            CollectionAssert.AreEqual(replaceFile.Data, this.fs.ReadAllBytes(movePath));
-            CollectionAssert.AreEqual(actualBytes, this.fs.ReadAllBytes(movePath + ".bak"));
-
             // check set attributes has no effect (this file system does not encode attributes)
             this.fs.SetAttributes(path, FileAttributes.ReadOnly);
             Assert.AreEqual(FileAttributes.Normal, this.fs.GetAttributes(path));
@@ -283,14 +299,37 @@ namespace Acoustics.Test.SqliteFileSystem
             Assert.IsTrue(this.fs.FileExists(movePath));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         public void TestDirectory()
         {
             //var attributes = this.fs.GetAttributes(path);
             //Assert.AreEqual(FileAttributes.Directory, attributes);
         }
 
+        [TestMethod]
+        public void TestEnumeratePaths()
+        {
+            this.fs.WriteAllText("/a/b/c/d/e/test.txt", "Hello");
+            this.fs.WriteAllText("/a/b/c/d/e/hello.txt", "World");
+            this.fs.WriteAllText("/a/b/c/box.txt", "I'm Mr. Meeseeks");
+            this.fs.WriteAllText("/a/b/c/box2.txt", "Look at me");
+            this.fs.WriteAllText("/a/b/box3.txt", "Existence is pain");
+            this.fs.WriteAllText("/nothing.txt", "When you know nothing matters, the universe is yours");
 
+            var paths = this.fs.EnumeratePaths("/a/b", "*", SearchOption.AllDirectories, SearchTarget.Both).ToList();
+            CollectionAssert.AreEquivalent(new UPath[]
+            {
+                "/a/b",
+                "/a/b/c",
+                "/a/b/c/d",
+                "/a/b/c/d/e",
+                "/a/b/c/d/e/test.txt",
+                "/a/b/c/d/e/hello.txt",
+                "/a/b/c/box.txt",
+                "/a/b/c/box2.txt",
+                "/a/b/box3.txt",
+            }, paths);
+        }
 
 
     }
