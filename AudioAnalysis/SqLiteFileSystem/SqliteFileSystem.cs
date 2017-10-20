@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
+    using System.Linq;
     using FileSystems;
     using Microsoft.Data.Sqlite;
     using Zio;
@@ -151,14 +152,21 @@
         protected override void CopyFileImpl(UPath srcPath, UPath destPath, bool overwrite)
         {
             this.SetCheck(false);
-            this.EnsureExists(srcPath);
+            this.EnsureFileExists(srcPath);
 
             Adapter.CopyFile(this.Connection, srcPath, destPath, overwrite);
         }
 
         protected override void ReplaceFileImpl(UPath srcPath, UPath destPath, UPath destBackupPath, bool ignoreMetadataErrors)
         {
-            throw new NotImplementedException();
+            this.SetCheck(false);
+            this.EnsureFileExists(srcPath);
+            this.EnsureFileExists(destPath);
+            
+            // Note: metadata errors has no effect in this filesystem
+
+            Adapter.ReplaceFile(this.Connection, srcPath, destPath, destBackupPath);
+
         }
 
         protected override long GetFileLengthImpl(UPath path)
@@ -173,7 +181,10 @@
 
         protected override void MoveFileImpl(UPath srcPath, UPath destPath)
         {
-            throw new NotImplementedException();
+            this.SetCheck(false);
+            this.EnsureFileExists(srcPath);
+
+            Adapter.MoveFile(this.Connection, srcPath, destPath);
         }
 
         protected override void DeleteFileImpl(UPath path)
@@ -402,7 +413,51 @@
 
         protected override IEnumerable<UPath> EnumeratePathsImpl(UPath path, string searchPattern, SearchOption searchOption, SearchTarget searchTarget)
         {
-            throw new NotImplementedException();
+            var pattern = SearchPattern.Parse(ref path, ref searchPattern);
+
+            var paths = Adapter.ListPaths(this.Connection, path, searchOption);
+
+            // Remember directories do not exist in this file system
+            // I can't work out how to easily filter directory components within SQLite's query language, so
+            // we'll just have to do it here.
+            HashSet<UPath> foundDirectories = new HashSet<UPath>();
+            var searchDepth = path.FullName.Count(c => c == UPath.DirectorySeparator);
+            foreach (var foundPath in paths)
+            {
+                if (searchTarget != SearchTarget.File)
+                {
+                    var parent = foundPath.GetDirectory();
+
+                    // have we seen this directory before?
+                    if (!foundDirectories.Contains(parent))
+                    {
+                        // if not yield it and all it's parent directories
+                        var fragments = parent.Split();
+                        var directory = path;
+                        for (int i = searchDepth; i <= fragments.Count; i++)
+                        {
+                            // construct a fragment directory (or if at end, it's the whole directory)
+                            directory = i == searchDepth ? directory : directory / fragments[i-1];
+                            bool added = foundDirectories.Add(directory);
+                            if (added)
+                            {
+                                if (pattern.Match(directory))
+                                {
+                                    yield return directory;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (searchTarget != SearchTarget.Directory)
+                {
+                    if (pattern.Match(foundPath))
+                    {
+                        yield return foundPath;
+                    }
+                }
+            }
         }
 
         /// <inheritdoc />
@@ -433,18 +488,15 @@
 
             return node;
         }
-
-        private long GetValueSafe(string query, UPath path)
+        private void EnsureFileExists(UPath path)
         {
-            var result = Adapter.ExecuteScalarLongNullable(this.Connection, query, path.FullName);
-
-            if (result.HasValue)
+            if (!this.FileExistsImpl(path))
             {
-                return result.Value;
+                throw NewFileNotFoundException(path);
             }
-
-            throw NewFileNotFoundException(path);
         }
+
+
 
         private (DateTime Accessed, DateTime Created, DateTime Written) GetTimeStamps(UPath path)
         {
