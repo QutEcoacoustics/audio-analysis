@@ -1,8 +1,10 @@
 ﻿namespace Zio.FileSystems.Community.SqliteFileSystem
 {
     using System;
+    using System.Collections.Generic;
     using System.Data;
     using System.Diagnostics;
+    using System.IO;
     using System.Linq;
     using System.Runtime.CompilerServices;
     using Microsoft.Data.Sqlite;
@@ -25,14 +27,21 @@
         internal const string FilesWritten = "written";
         internal const string UnnamedParameter1 = "unnamed1";
         internal const string FilesDestPath = "dest_path";
+        internal const string FilesBackupPath = "backup_path";
+        internal const string NowParam = "date_now";
 
-
+        private static string MakeFileFilter(string paramName, bool includeSubDirectories)
+        {
+            var baseFilter = $"{FilesPath} LIKE @{paramName} || '_%'";
+            var thisDirFilter = $"AND {FilesPath} NOT LIKE @{paramName} || '_%{UPath.DirectorySeparator}%'";
+            return baseFilter + (includeSubDirectories ? string.Empty : thisDirFilter);
+        }
 
         internal static readonly string FileTimeStamps = $"SELECT {FilesAccessed},{FilesCreated},{FilesWritten}  FROM {FilesTable} WHERE {FilesPath} = @{FilesPath} LIMIT 1";
         internal static readonly string DirectoryTimeStamps = $@"
 SELECT MAX({FilesAccessed}),MIN({FilesCreated}),MAX({FilesWritten})
 FROM {FilesTable}
-WHERE {FilesPath} LIKE @{FilesPath} + '{UPath.DirectorySeparator}_%'
+WHERE {MakeFileFilter(FilesPath, true)}
 LIMIT 1";
 
         internal static readonly Func<string, string> FileTimeStampUpdate = (field) =>
@@ -42,7 +51,7 @@ LIMIT 1";
 
         /// this is a flat file system... directories only exist if there are files 'in them'. Thus we only search for 
         /// files which have at least one / and then at least one of more file name characters afterwards
-        internal static readonly string DirectoryExists = $"SELECT EXISTS(SELECT 1 FROM {FilesTable} WHERE {FilesPath} LIKE @{UnnamedParameter1} + '{UPath.DirectorySeparator}_%' LIMIT 1)";
+        internal static readonly string DirectoryExists = $"SELECT EXISTS(SELECT 1 FROM {FilesTable} WHERE {MakeFileFilter(UnnamedParameter1, true)} LIMIT 1)";
 
         internal static readonly string FileOrDirectoryExists = $@"SELECT CASE
 WHEN ({FileExists}) = 1 THEN {(int)Node.File}
@@ -88,6 +97,21 @@ INSERT { (overwrite ? "OR REPLACE" : "OR ABORT") } INTO {FilesTable}
 SELECT @{FilesDestPath}, {FilesBlob}, @{FilesAccessed}, @{FilesCreated}, {FilesWritten}
 FROM {FilesTable}
 WHERE {FilesPath} = @{FilesPath}";
+
+        internal static readonly string MoveFileQuery = $@"UPDATE {FilesTable} SET {FilesPath} = @{FilesDestPath} WHERE {FilesPath} = @{FilesPath}";
+        internal static readonly Func<bool, string> ReplaceFileQuery = (keepBackup) =>
+        {
+            var backup = keepBackup
+                ? $"UPDATE OR REPLACE {FilesTable} SET {FilesPath} = @{FilesBackupPath}, {FilesAccessed} = @{NowParam}, {FilesCreated} = @{NowParam}, {FilesWritten} = @{NowParam} WHERE {FilesPath} = @{FilesDestPath};"
+                : string.Empty;
+             return $@"BEGIN;
+{backup}
+UPDATE {(keepBackup ? "OR ABORT" : "OR REPLACE")} {FilesTable} SET {FilesPath} = @{FilesDestPath}, {FilesCreated} = @{FilesCreated} WHERE {FilesPath} = @{FilesPath};
+END;";
+        };
+
+        internal static readonly string ListFilesQuery = $@"SELECT {FilesPath} FROM {FilesTable} WHERE {MakeFileFilter(FilesPath, false)}";
+        internal static readonly string ListFilesRecursiveQuery = $@"SELECT {FilesPath} FROM {FilesTable} WHERE {MakeFileFilter(FilesPath, true)}";
 
         private const string FilesBlob = "blob";
 
@@ -140,13 +164,13 @@ WHERE {FilesPath} = @{FilesPath}";
                 command.Parameters.AddWithValue(FilesCreated, now);
                 command.Parameters.AddWithValue(FilesWritten, now);
 
-                    var affected = command.ExecuteNonQuery();
+                var affected = command.ExecuteNonQuery();
 
-                    if (affected != 1)
-                    {
-                        throw new InvalidOperationException(
-                            $"Storing blob at {path} failed because affected rows did not equal 1.");
-                    }
+                if (affected != 1)
+                {
+                    throw new InvalidOperationException(
+                        $"Storing blob at {path} failed because affected rows did not equal 1.");
+                }
 
                 return affected;
             }
@@ -166,13 +190,13 @@ WHERE {FilesPath} = @{FilesPath}";
             }
         }
 
-        internal static void CopyFile(SqliteConnection connection, UPath path, UPath destination, bool overwrite)
+        internal static void CopyFile(SqliteConnection connection, UPath source, UPath destination, bool overwrite)
         {
             var now = Date.Now;
             string query = CopyFileQuery(overwrite);
             using (var command = new SqliteCommand(query, connection))
             {
-                command.Parameters.AddWithValue(FilesPath, path.FullName);
+                command.Parameters.AddWithValue(FilesPath, source.FullName);
                 command.Parameters.AddWithValue(FilesDestPath, destination.FullName);
 
                 command.Parameters.AddWithValue(FilesAccessed, now);
@@ -190,7 +214,74 @@ WHERE {FilesPath} = @{FilesPath}";
                 if (affected != 1)
                 {
                     throw new InvalidOperationException(
-                        $"Copying file form {path} to {destination} failed because affected rows did not equal 1.");
+                        $"Copying file form {source} to {destination} failed because affected rows did not equal 1.");
+                }
+            }
+        }
+
+        internal static void MoveFile(SqliteConnection connection, UPath source, UPath destination)
+        {
+            var now = Date.Now;
+            using (var command = new SqliteCommand(MoveFileQuery, connection))
+            {
+                command.Parameters.AddWithValue(FilesPath, source.FullName);
+                command.Parameters.AddWithValue(FilesDestPath, destination.FullName);
+                
+                int affected;
+                try
+                {
+                    affected = command.ExecuteNonQuery();
+                }
+                catch (SqliteException sex) when (sex.SqliteErrorCode == SQLitePCL.raw.SQLITE_CONSTRAINT)
+                {
+                    throw FileSystemExceptionHelper.NewFileExistsException(destination, sex);
+                }
+
+                if (affected != 1)
+                {
+                    throw new InvalidOperationException(
+                        $"Copying file form {source} to {destination} failed because affected rows did not equal 1.");
+                }
+            }
+        }
+
+        internal static void ReplaceFile(SqliteConnection connection, UPath source, UPath destination, UPath destBackupPath)
+        {
+            var makeBackup = !destBackupPath.IsNull;
+            var now = Date.Now;
+            var destinationCreated = GetFileTimeStamps(connection, destination).Created;
+            using (var command = new SqliteCommand(ReplaceFileQuery(makeBackup), connection))
+            {
+                command.Parameters.AddWithValue(FilesPath, source.FullName);
+                command.Parameters.AddWithValue(FilesDestPath, destination.FullName);
+                command.Parameters.AddWithValue(FilesBackupPath, destBackupPath.FullName);
+
+                command.Parameters.AddWithValue(NowParam, now);
+                command.Parameters.AddWithValue(FilesCreated, Date.ToTicks(destinationCreated));
+
+                int affected = command.ExecuteNonQuery();
+
+                if (affected != 2)
+                {
+                    throw new InvalidOperationException(
+                        $"Replacing file {destination} with {source }failed because affected rows did not equal 2.");
+                }
+            }
+        }
+
+        internal static IEnumerable<UPath> ListPaths(SqliteConnection connection, UPath searchPath, SearchOption searchOption)
+        {
+            var query = searchOption == SearchOption.AllDirectories ? ListFilesRecursiveQuery : ListFilesQuery;
+            using (var command = new SqliteCommand(query, connection))
+            {
+                command.Parameters.AddWithValue(FilesPath, searchPath.FullName);
+                using (var reader = command.ExecuteReader())
+                {
+
+                    while (reader.Read())
+                    {
+                        yield return (UPath)reader.GetString(0);
+                    }
                 }
             }
         }
