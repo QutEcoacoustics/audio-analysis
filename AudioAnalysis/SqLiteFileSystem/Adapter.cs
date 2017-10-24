@@ -296,7 +296,6 @@ END;";
                 {
                     Debug.Assert(reader.Read());
 
-
                     return (
                         Date.FromTicks(reader.GetFieldValue<long>(0)),
                         Date.FromTicks(reader.GetFieldValue<long>(1)),
