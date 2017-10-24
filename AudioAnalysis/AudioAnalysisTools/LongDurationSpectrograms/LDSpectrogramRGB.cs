@@ -178,12 +178,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // the Herz scale
             int nyquist = indexGenerationData.SampleRateResampled / 2;
+            int yAxisTicInterval = config.YAxisTicInterval;
+
             int frameSize = indexGenerationData.FrameLength;
             FreqScaleType fst;
             switch (config.FreqScale)
             {
                 case "Linear":
-                    this.FreqScale = new FrequencyScale(nyquist, frameSize, hertzLinearGridInterval: 1000);
+                    this.FreqScale = new FrequencyScale(nyquist, frameSize, hertzLinearGridInterval: yAxisTicInterval);
                     break;
                 case "Mel":
                     fst = FreqScaleType.Mel;
