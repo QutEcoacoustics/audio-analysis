@@ -34,14 +34,34 @@ namespace Zio.FileSystems.Community.SqliteFileSystem
             return new IOException($"The destination path `{path}` is an existing file");
         }
 
-        public static IOException NewFileExistsException(UPath path, Exception innerException)
+        public static IOException NewDestinationDuplicateException(UPath path, Exception innerException)
+        {
+            return new IOException($"The destination path `{path}` contains a duplicate file - cannot create a file when it already exists", innerException);
+        }
+
+        public static IOException NewFileExistsException(UPath path, Exception innerException = null)
         {
             return new IOException($"The file `{path}` already exists", innerException);
+        }
+
+        public static IOException NewNotFileException(UPath path, Exception innerException = null)
+        {
+            return new IOException($"The source directory `{path}` is a file", innerException);
+        }
+
+        public static IOException NewDirectoryNotEmptyException(UPath path)
+        {
+            return new IOException($"The directory `{path}` is not empty");
         }
 
         public static IOException NewReadOnlyException()
         {
             return new IOException("This filesystem is read-only");
+        }
+
+        public static IOException NewDirectoryNotFileException(UPath path)
+        {
+            throw new UnauthorizedAccessException($"The path {path} is not a file");
         }
     }
 }

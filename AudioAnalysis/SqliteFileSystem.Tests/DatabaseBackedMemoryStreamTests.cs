@@ -1,21 +1,18 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-namespace Acoustics.Test.SqliteFileSystem
+﻿namespace SqliteFileSystem.Tests
 {
     using System;
     using System.Diagnostics;
     using System.IO;
-    using Acoustics.Tools.Wav;
+    using Helpers;
     using Microsoft.Data.Sqlite;
-    using TestHelpers;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Zio;
     using Zio.FileSystems.Community.SqliteFileSystem;
-    using Random = TestHelpers.Random;
 
     [TestClass]
     public class DatabaseBackedMemoryStreamTests
     {
-        protected DirectoryInfo outputDirectory;
+        private DirectoryInfo outputDirectory;
         private FileInfo testFile;
         private System.Random random;
         private byte[] sampleBlob;
@@ -23,9 +20,9 @@ namespace Acoustics.Test.SqliteFileSystem
         [TestInitialize]
         public void Setup()
         {
-            this.testFile = PathHelper.GetTempFile("sqlite3");
+            this.testFile = TestHelper.GetTempFile("sqlite3");
             this.outputDirectory = this.testFile.Directory;
-            this.random = Random.GetRandom();
+            this.random = TestHelper.GetRandom();
             this.sampleBlob = new byte[1024];
 
             this.random.NextBytes(this.sampleBlob);
@@ -36,21 +33,21 @@ namespace Acoustics.Test.SqliteFileSystem
         {
             Debug.WriteLine("Deleting output directory:" + this.outputDirectory.FullName);
 
-            PathHelper.DeleteTempDir(this.outputDirectory);
+            TestHelper.DeleteTempDir(this.outputDirectory);
         }
 
         [TestMethod]
         public void TestDatabaseBackedMemoryStream()
         {
-            var prepared = AdapterTests.PrepareDatabaseAndBlob(this.testFile.FullName, this.random);
+            var prepared = TestHelper.PrepareDatabaseAndBlob(this.testFile.FullName, this.random);
             using (var connection = new SqliteConnection(prepared.ConnectionString))
             {
                 connection.Open();
-                AdapterTests.AssertBlobMetadata(connection, 1024, 0, 0, 0);
+                TestHelper.AssertBlobMetadata(connection, 1024, 0, 0, 0);
                 var now = Date.Now;
                 using (var stream = new DatabaseBackedMemoryStream(connection, UPath.Root / "test.blob", true, true))
                 {
-                    AdapterTests.AssertBlobMetadata(connection, 1024, now, 0, 0);
+                    TestHelper.AssertBlobMetadata(connection, 1024, now, 0, 0);
 
                     Assert.IsTrue(stream.CanRead);
                     Assert.IsTrue(stream.CanSeek);
@@ -66,7 +63,7 @@ namespace Acoustics.Test.SqliteFileSystem
                 }
 
                 // the meta data should not have been updated because no changes were made
-                AdapterTests.AssertBlobMetadata(connection, 1024, now, 0, 0);
+                TestHelper.AssertBlobMetadata(connection, 1024, now, 0, 0);
             }
         }
 
@@ -74,7 +71,7 @@ namespace Acoustics.Test.SqliteFileSystem
         [TestMethod]
         public void TestDatabaseBackedMemoryStreamWriting()
         {
-            var prepared = AdapterTests.PrepareDatabaseAndBlob(this.testFile.FullName, this.random);
+            var prepared = TestHelper.PrepareDatabaseAndBlob(this.testFile.FullName, this.random);
 
             var additionalBytes = new byte[512];
             this.random.NextBytes(additionalBytes);

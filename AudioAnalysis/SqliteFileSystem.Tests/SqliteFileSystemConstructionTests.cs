@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Acoustics.Test.SqliteFileSystem
+﻿namespace SqliteFileSystem.Tests
 {
+    using System;
     using System.Diagnostics;
     using System.IO;
+    using Helpers;
     using Microsoft.Data.Sqlite;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
     using Zio;
     using Zio.FileSystems;
     using Zio.FileSystems.Community;
@@ -27,7 +22,7 @@ namespace Acoustics.Test.SqliteFileSystem
         [TestInitialize]
         public void Setup()
         {
-            this.testFile = PathHelper.GetTempFile("sqlite3");
+            this.testFile = TestHelper.GetTempFile("sqlite3");
             this.outputDirectory = this.testFile.Directory;
             this.localFileSystem = new PhysicalFileSystem();
         }
@@ -37,7 +32,7 @@ namespace Acoustics.Test.SqliteFileSystem
         {
             Debug.WriteLine("Deleting output directory:" + this.outputDirectory.FullName);
 
-            PathHelper.DeleteTempDir(this.outputDirectory);
+            TestHelper.DeleteTempDir(this.outputDirectory);
         }
 
         [TestMethod]
@@ -55,7 +50,8 @@ namespace Acoustics.Test.SqliteFileSystem
         {
             using (var fs = new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.Memory))
             {
-                Assert.IsFalse(this.testFile.RefreshInfo().Exists);
+                this.testFile.Refresh();
+                Assert.IsFalse(this.testFile.Exists);
                 Assert.IsFalse(fs.IsReadOnly);
             }
         }
@@ -63,11 +59,12 @@ namespace Acoustics.Test.SqliteFileSystem
         [TestMethod]
         public void TestConstructorReadOnly()
         {
-            Assert.That.ExceptionMatches<SqliteException>(
+            Assert.ThrowsException<SqliteException>(
                 () => new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadOnly),
                 "unable to open database file");
 
-            Assert.IsFalse(this.testFile.RefreshInfo().Exists);
+            this.testFile.Refresh();
+            Assert.IsFalse(this.testFile.Exists);
 
             using (new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadWriteCreate))
             {
@@ -77,7 +74,8 @@ namespace Acoustics.Test.SqliteFileSystem
             // try again
             using (var fs = new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadOnly))
             {
-                Assert.IsTrue(this.testFile.RefreshInfo().Exists);
+                this.testFile.Refresh();
+                Assert.IsTrue(this.testFile.Exists);
                 Assert.IsTrue(fs.IsReadOnly);
             }
         }
@@ -85,11 +83,12 @@ namespace Acoustics.Test.SqliteFileSystem
         [TestMethod]
         public void TestConstructorReadWrite()
         {
-            Assert.That.ExceptionMatches<SqliteException>(
+            Assert.ThrowsException<SqliteException>(
                 () => new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadWrite),
                 "unable to open database file");
 
-            Assert.IsFalse(this.testFile.RefreshInfo().Exists);
+            this.testFile.Refresh();
+            Assert.IsFalse(this.testFile.Exists);
 
             using (new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadWriteCreate))
             {
@@ -99,7 +98,8 @@ namespace Acoustics.Test.SqliteFileSystem
             // try again
             using (var fs = new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadWrite))
             {
-                Assert.IsTrue(this.testFile.RefreshInfo().Exists);
+                this.testFile.Refresh();
+                Assert.IsTrue(this.testFile.Exists);
                 Assert.IsFalse(fs.IsReadOnly);
             }
         }
@@ -109,7 +109,8 @@ namespace Acoustics.Test.SqliteFileSystem
         {
             using (var fs = new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadWriteCreate))
             {
-                Assert.IsTrue(this.testFile.RefreshInfo().Exists);
+                this.testFile.Refresh();
+                Assert.IsTrue(this.testFile.Exists);
                 Assert.IsFalse(fs.IsReadOnly);
             }
         }
@@ -124,16 +125,16 @@ namespace Acoustics.Test.SqliteFileSystem
             }
 
             // ensure a schema has been created
-            string hasFileTable = (string)this.DirectQuery("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'files';");
-            string hasMetaTable = (string)this.DirectQuery("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'meta';");
+            string hasFileTable = (string)TestHelper.DirectQuery("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'files';", this.testFile.FullName);
+            string hasMetaTable = (string)TestHelper.DirectQuery("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'meta';", this.testFile.FullName);
 
             Assert.AreEqual("files", hasFileTable);
             Assert.AreEqual("meta", hasMetaTable);
 
-            string versionMatches = (string)this.DirectQuery("SELECT version FROM meta LIMIT 1;");
+            string versionMatches = (string)TestHelper.DirectQuery("SELECT version FROM meta LIMIT 1;", this.testFile.FullName);
             Assert.AreEqual(Adapter.SchemaVersion, versionMatches);
 
-            long pageSize = (long)this.DirectQuery("PRAGMA page_size;");
+            long pageSize = (long)TestHelper.DirectQuery("PRAGMA page_size;", this.testFile.FullName);
             Assert.AreEqual(Adapter.PageSize, pageSize);
 
             Debug.WriteLine($"Version: {versionMatches}, Page Size: {pageSize}");
@@ -150,29 +151,18 @@ namespace Acoustics.Test.SqliteFileSystem
             }
 
             // ensure a schema has been created
-            int? affected = (int?)this.DirectQuery(
+            int? affected = (int?)TestHelper.DirectQuery(
                 "UPDATE meta SET version = '0.5.0';",
+                this.testFile.FullName,
                 "ReadWrite");
 
 
             Assert.AreEqual(affected, null);
             
-            Assert.That.ExceptionMatches<SqliteFileSystemException>(
+            Assert.ThrowsException<SqliteFileSystemException>(
                 () => new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadOnly),
                 "Schema version 0.5.0 does not match library required version 1.0.0");
         }
 
-        private object DirectQuery(string query, string mode = "ReadOnly")
-        {
-            using (var connection = new SqliteConnection($"Data source='{this.testFile.FullName}';Mode={mode}"))
-            {
-                connection.Open();
-
-                using (var command = new SqliteCommand(query, connection))
-                {
-                    return command.ExecuteScalar();
-                }
-            }
-        }
     }
 }
