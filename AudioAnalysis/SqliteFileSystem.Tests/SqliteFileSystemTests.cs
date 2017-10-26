@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Acoustics.Test.SqliteFileSystem
+﻿namespace SqliteFileSystem.Tests
 {
+    using System;
     using System.Diagnostics;
     using System.IO;
+    using System.Linq;
+    using System.Reflection;
+    using Helpers;
     using Microsoft.Data.Sqlite;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
     using Zio;
     using Zio.FileSystems;
-    using Zio.FileSystems.Community;
     using Zio.FileSystems.Community.SqliteFileSystem;
 
     [TestClass]
@@ -24,25 +20,25 @@ namespace Acoustics.Test.SqliteFileSystem
         private FileInfo testDatabase;
         private PhysicalFileSystem localFileSystem;
         private SqliteFileSystem fs;
-        private readonly System.Random random;
+        private readonly Random random;
         private (UPath Path, byte[] Data) testData;
 
         public SqliteFileSystemTests()
         {
-            this.random = Random.GetRandom();
+            this.random = TestHelper.GetRandom();
 
         }
 
         [TestInitialize]
         public void Setup()
         {
-            this.testDatabase = PathHelper.GetTempFile("sqlite3");
+            this.testDatabase = TestHelper.GetTempFile("sqlite3");
             this.outputDirectory = this.testDatabase.Directory;
             this.localFileSystem = new PhysicalFileSystem();
             this.fs = new SqliteFileSystem(this.testDatabase.FullName, SqliteOpenMode.ReadWriteCreate);
 
 
-            this.testData = GenerateTestData(this.random);
+            this.testData = TestHelper.GenerateTestData(this.random);
         }
 
         [TestCleanup]
@@ -53,20 +49,7 @@ namespace Acoustics.Test.SqliteFileSystem
 
             Debug.WriteLine("Deleting output directory:" + this.outputDirectory.FullName);
 
-            PathHelper.DeleteTempDir(this.outputDirectory);
-        }
-
-        private static string GetRandomName()
-        {
-            return Path.GetRandomFileName();
-        }
-
-        public static (UPath Path, byte[] Data) GenerateTestData(System.Random random, string path = null)
-        {
-            var data = new byte[1024];
-            random.NextBytes(data);
-
-            return (path ?? UPath.Root / GetRandomName(), data);
+             TestHelper.DeleteTempDir(this.outputDirectory);
         }
 
         [TestMethod]
@@ -83,7 +66,7 @@ namespace Acoustics.Test.SqliteFileSystem
         [TestMethod]
         public void TestFileNotExists()
         {
-            var path = UPath.Root / GetRandomName();
+            var path = UPath.Root / TestHelper.GetRandomName();
             var exists = this.fs.FileExists(path);
 
             Assert.IsFalse(exists);
@@ -92,7 +75,7 @@ namespace Acoustics.Test.SqliteFileSystem
         [TestMethod]
         public void TestFileExists()
         {
-            AdapterTests.InsertBlobManually(this.fs.Connection, this.testData);
+            TestHelper.InsertBlobManually(this.fs.Connection, this.testData);
             
             var path = this.testData.Path;
             var exists = this.fs.FileExists(path);
@@ -103,7 +86,7 @@ namespace Acoustics.Test.SqliteFileSystem
         [TestMethod]
         public void GetAttributesThrowsForNotExists()
         {
-            var path = UPath.Root / GetRandomName();
+            var path = UPath.Root / TestHelper.GetRandomName();
 
             Assert.ThrowsException<FileNotFoundException>(() => this.fs.GetAttributes(path));
         }
@@ -125,7 +108,7 @@ namespace Acoustics.Test.SqliteFileSystem
         [TestMethod]
         public void GetTimesReturnsDefaultsWhenFilesDoNotExist()
         {
-            var path = UPath.Root / GetRandomName();
+            var path = UPath.Root / TestHelper.GetRandomName();
 
             Assert.AreEqual(FileSystem.DefaultFileTime, this.fs.GetCreationTime(path));
             Assert.AreEqual(FileSystem.DefaultFileTime, this.fs.GetLastWriteTime(path));
@@ -133,13 +116,13 @@ namespace Acoustics.Test.SqliteFileSystem
         }
 
         [DataTestMethod]
-        [DataRow(FileMode.Open, true)]
-        [DataRow(FileMode.Append, false)]
-        [DataRow(FileMode.Create, false)]
-        [DataRow(FileMode.CreateNew, false)]
-        [DataRow(FileMode.OpenOrCreate, false)]
-        [DataRow(FileMode.Truncate, false)]
-        public void TestFileOpenReadOnly(FileMode openMode, bool shouldSucceed)
+        [DataRow(FileMode.Open, true, typeof(IOException))]
+        [DataRow(FileMode.Append, false, typeof(ArgumentException))]
+        [DataRow(FileMode.Create, false, typeof(IOException))]
+        [DataRow(FileMode.CreateNew, false, typeof(IOException))]
+        [DataRow(FileMode.OpenOrCreate, false, typeof(IOException))]
+        [DataRow(FileMode.Truncate, false, typeof(IOException))]
+        public void TestFileOpenReadOnly(FileMode openMode, bool shouldSucceed, Type excpectedExceptionType)
         {
             this.fs.WriteAllBytes(this.testData.Path, this.testData.Data);
             var readonlyFs = new SqliteFileSystem(this.testDatabase.FullName, SqliteOpenMode.ReadOnly);
@@ -153,14 +136,20 @@ namespace Acoustics.Test.SqliteFileSystem
             }
             else
             {
-                Assert.ThrowsException<IOException>(
-                    () => readonlyFs.OpenFile(this.testData.Path, openMode, FileAccess.ReadWrite));
+                var assertionMethod = typeof(Assert).GetMethod(nameof(Assert.ThrowsException), new []{typeof(Action)});
+
+                var genericAssert = assertionMethod.MakeGenericMethod(excpectedExceptionType);
+
+                void Assertion() => readonlyFs.OpenFile(this.testData.Path, openMode, FileAccess.ReadWrite);
+
+                genericAssert.Invoke(Assert.That, new object[] { (Action)Assertion });
             }
         }
 
         [TestMethod]
         public void TestFileDeleteCopyMoveReadOnly()
         {
+
             this.fs.WriteAllBytes(this.testData.Path, this.testData.Data);
             var readonlyFs = new SqliteFileSystem(this.testDatabase.FullName, SqliteOpenMode.ReadOnly);
 
@@ -213,7 +202,7 @@ namespace Acoustics.Test.SqliteFileSystem
             CollectionAssert.AreEqual(this.testData.Data, actualBytes);
 
             // copy the file
-            var copyPath = UPath.Root / GetRandomName();
+            var copyPath = UPath.Root / TestHelper.GetRandomName();
             this.fs.CopyFile(path, copyPath, true);
 
             Assert.IsTrue(this.fs.FileExists(path));
@@ -234,7 +223,7 @@ namespace Acoustics.Test.SqliteFileSystem
             Assert.AreEqual(lastWriteTime, copyWriteTime);
 
             // Test move file
-            var movePath = UPath.Root / GetRandomName();
+            var movePath = UPath.Root / TestHelper.GetRandomName();
             this.fs.MoveFile(copyPath, movePath);
             Assert.IsTrue(this.fs.FileExists(movePath));
             Assert.IsFalse(this.fs.FileExists(copyPath));
@@ -252,49 +241,55 @@ namespace Acoustics.Test.SqliteFileSystem
             Assert.AreEqual(0, allDirs.Count);
 
             // check replace file
-            var replaceFile = GenerateTestData(this.random);
-            this.fs.WriteAllBytes(replaceFile.Path, replaceFile.Data);
-            var replaceLastAccessTime = this.fs.GetLastAccessTime(replaceFile.Path);
-            var replaceCreationTime = this.fs.GetCreationTime(replaceFile.Path);
-            var replaceLastWriteTime = this.fs.GetLastWriteTime(replaceFile.Path);
+            var replacedFile = TestHelper.GenerateTestData(this.random);
+            this.fs.WriteAllBytes(replacedFile.Path, replacedFile.Data);
+            var replaceLastAccessTime = this.fs.GetLastAccessTime(replacedFile.Path);
+            var replaceCreationTime = this.fs.GetCreationTime(replacedFile.Path);
+            var replaceLastWriteTime = this.fs.GetLastWriteTime(replacedFile.Path);
             var moveLastAccessTime = this.fs.GetLastAccessTime(movePath);
             var moveCreationTime = this.fs.GetCreationTime(movePath);
             var moveLastWriteTime = this.fs.GetLastWriteTime(movePath);
 
-            var now = DateTime.Now;
-            this.fs.ReplaceFile(replaceFile.Path, movePath, movePath + ".bak", true);
+            this.fs.ReplaceFile(replacedFile.Path, movePath, movePath + ".bak", true);
+
             Assert.IsTrue(this.fs.FileExists(movePath));
             Assert.IsTrue(this.fs.FileExists(movePath + ".bak"));
-            Assert.IsFalse(this.fs.FileExists(replaceFile.Path));
-            CollectionAssert.AreEqual(replaceFile.Data, this.fs.ReadAllBytes(movePath));
+            Assert.IsFalse(this.fs.FileExists(replacedFile.Path));
+
+            TestHelper.AssertBlobMetadata(
+                this.fs.Connection,
+                1024,
+                replaceLastAccessTime.ToUniversalTime(),
+                moveCreationTime.ToUniversalTime(),
+                replaceLastWriteTime.ToUniversalTime(),
+                movePath.FullName,
+                TimeSpan.Zero);
+
+            TestHelper.AssertBlobMetadata(
+                this.fs.Connection,
+                1024,
+                moveLastAccessTime.ToUniversalTime(),
+                moveCreationTime.ToUniversalTime(),
+                moveLastWriteTime.ToUniversalTime(),
+                (movePath + ".bak"),
+                TimeSpan.Zero);
+
+            CollectionAssert.AreEqual(replacedFile.Data, this.fs.ReadAllBytes(movePath));
             CollectionAssert.AreEqual(actualBytes, this.fs.ReadAllBytes(movePath + ".bak"));
 
-            var actualBackupAccessTime = this.fs.GetLastAccessTime(replaceFile.Path);
-            var actualBackupCreationTime = this.fs.GetCreationTime(replaceFile.Path);
-            var actualBackupLastWriteTime = this.fs.GetLastWriteTime(replaceFile.Path);
-            var actualMoveLastAccessTime = this.fs.GetLastAccessTime(movePath);
-            var actualMoveCreationTime = this.fs.GetCreationTime(movePath);
-            var actualMoveLastWriteTime = this.fs.GetLastWriteTime(movePath);
-            Assert.AreEqual(moveLastAccessTime, actualBackupAccessTime);
-            Assert.AreEqual(moveCreationTime, actualBackupCreationTime);
-            Assert.AreEqual(moveLastWriteTime, actualBackupLastWriteTime);
-            Assert.AreEqual(replaceLastAccessTime, actualMoveLastAccessTime);
-            Assert.AreEqual(moveCreationTime, actualMoveCreationTime);
-            Assert.AreEqual(replaceLastWriteTime, actualMoveLastWriteTime);
-
             // modify timestamps
-            now = DateTime.Now;
+            var now = DateTime.Now;
             this.fs.SetLastAccessTime(path, now);
-            this.fs.SetCreationTime(path, now + 1.0.Seconds());
-            this.fs.SetLastWriteTime(path, now + 2.0.Seconds());
+            this.fs.SetCreationTime(path, now.AddSeconds(1.0));
+            this.fs.SetLastWriteTime(path, now.AddSeconds(2.0));
 
             lastAccessTime = this.fs.GetLastAccessTime(path);
             creationTime = this.fs.GetCreationTime(path);
             lastWriteTime = this.fs.GetLastWriteTime(path);
 
-            Assert.That.AreClose(lastAccessTime, now, 0.Seconds());
-            Assert.That.AreClose(creationTime, now + 1.0.Seconds(), 0.Seconds());
-            Assert.That.AreClose(lastWriteTime, now + 2.0.Seconds(), 0.Seconds());
+            Assert.That.AreClose(lastAccessTime, now, TimeSpan.Zero);
+            Assert.That.AreClose(creationTime, now.AddSeconds(1.0), TimeSpan.Zero);
+            Assert.That.AreClose(lastWriteTime, now.AddSeconds(2.0), TimeSpan.Zero);
 
             // check set attributes has no effect (this file system does not encode attributes)
             this.fs.SetAttributes(path, FileAttributes.ReadOnly);
@@ -305,13 +300,6 @@ namespace Acoustics.Test.SqliteFileSystem
             this.fs.DeleteFile(path);
             Assert.IsFalse(this.fs.FileExists(path));
             Assert.IsTrue(this.fs.FileExists(movePath));
-        }
-
-        [TestMethod]
-        public void TestDirectory()
-        {
-            //var attributes = this.fs.GetAttributes(path);
-            //Assert.AreEqual(FileAttributes.Directory, attributes);
         }
 
         [TestMethod]
@@ -339,6 +327,275 @@ namespace Acoustics.Test.SqliteFileSystem
             }, paths);
         }
 
+        [TestMethod]
+        public void TestDirectory()
+        {
+            // Note: some of the following tests may seem non-sensical because directories do not "exist"
+            // in this file system. As such mehthods like `CreateDirectory` are usually no-ops.
 
+            Assert.IsTrue(this.fs.DirectoryExists("/"));
+
+            // Test CreateDirectory
+            this.fs.CreateDirectory("/test");
+            Assert.IsFalse(this.fs.DirectoryExists("/test"));
+            this.fs.WriteAllText("/test/text.txt", "Hello");
+            Assert.IsTrue(this.fs.DirectoryExists("/test"));
+            Assert.IsFalse(this.fs.DirectoryExists("/test2"));
+
+            // Test CreateDirectory (sub folders)
+            this.fs.WriteAllText("/test/test1/test2/test3/test.txt", "hello world");
+            Assert.IsTrue(this.fs.DirectoryExists("/test/test1/test2/test3"));
+            Assert.IsTrue(this.fs.DirectoryExists("/test/test1/test2"));
+            Assert.IsTrue(this.fs.DirectoryExists("/test/test1"));
+            Assert.IsTrue(this.fs.DirectoryExists("/test"));
+
+            // Test DeleteDirectory
+            this.fs.DeleteDirectory("/test/test1/test2/test3", true);
+            Assert.IsFalse(this.fs.DirectoryExists("/test/test1/test2/test3"));
+            // parent nodes deleted because there are no files in them
+            Assert.IsFalse(this.fs.DirectoryExists("/test/test1/test2"));
+            Assert.IsFalse(this.fs.DirectoryExists("/test/test1"));
+            Assert.IsTrue(this.fs.DirectoryExists("/test"));
+
+            // Test MoveDirectory
+            this.fs.WriteAllText("/test/test1/test2/world.txt", "world hello");
+            this.fs.MoveDirectory("/test", "/test2");
+            Assert.IsTrue(this.fs.DirectoryExists("/test2/test1/test2"));
+            Assert.IsTrue(this.fs.DirectoryExists("/test2/test1"));
+            Assert.IsTrue(this.fs.DirectoryExists("/test2"));
+            Assert.IsTrue(this.fs.FileExists("/test2/text.txt"));
+            Assert.IsTrue(this.fs.FileExists("/test2/test1/test2/world.txt"));
+
+            // Test MoveDirectory to sub directory
+            this.fs.MoveDirectory("/test2", "/testsub/testx");
+            Assert.IsFalse(this.fs.DirectoryExists("/test2"));
+            Assert.IsTrue(this.fs.DirectoryExists("/testsub/testx/test1/test2"));
+            Assert.IsTrue(this.fs.DirectoryExists("/testsub/testx/test1"));
+            Assert.IsTrue(this.fs.DirectoryExists("/testsub/testx"));
+
+            // Test DeleteDirectory - recursive
+            this.fs.DeleteDirectory("/testsub", true);
+            Assert.IsFalse(this.fs.DirectoryExists("/testsub/testx/test1/test2"));
+            Assert.IsFalse(this.fs.DirectoryExists("/testsub/testx/test1"));
+            Assert.IsFalse(this.fs.DirectoryExists("/testsub/testx"));
+            Assert.IsFalse(this.fs.DirectoryExists("/testsub"));
+        }
+
+        [TestMethod]
+        public void TestDirectoryExceptions()
+        {
+            Assert.ThrowsException<DirectoryNotFoundException>(() => this.fs.DeleteDirectory("/dir", true));
+
+            Assert.ThrowsException<DirectoryNotFoundException>(() => this.fs.MoveDirectory("/dir1", "/dir2"));
+
+            Assert.ThrowsException<UnauthorizedAccessException>(() => this.fs.CreateDirectory("/"));
+
+            this.fs.WriteAllText("/dir1/txt.txt", "hello");
+            Assert.ThrowsException<UnauthorizedAccessException>(() => this.fs.DeleteFile("/dir1"));
+            Assert.ThrowsException<IOException>(() => this.fs.MoveDirectory("/dir1", "/dir1"));
+
+            this.fs.WriteAllText("/toto.txt", "test");
+            Assert.ThrowsException<IOException>(() => this.fs.CreateDirectory("/toto.txt"));
+            Assert.ThrowsException<IOException>(() => this.fs.DeleteDirectory("/toto.txt", true));
+            Assert.ThrowsException<IOException>(() => this.fs.MoveDirectory("/toto.txt", "/test"));
+
+            this.fs.WriteAllText("/dir2/txtr.txt", "World");
+            Assert.ThrowsException<IOException>(() => this.fs.MoveDirectory("/dir1", "/dir2"));
+        }
+
+        [TestMethod]
+        public void TestMoveFileDifferentDirectory()
+        {
+            this.fs.WriteAllText("/toto.txt", "content");
+
+            this.fs.CreateDirectory("/dir");
+
+            this.fs.MoveFile("/toto.txt", "/dir/titi.txt");
+
+            Assert.IsFalse(this.fs.FileExists("/toto.txt"));
+            Assert.IsTrue(this.fs.FileExists("/dir/titi.txt"));
+
+            Assert.AreEqual("content", this.fs.ReadAllText("/dir/titi.txt"));
+        }
+
+        [TestMethod]
+        [Ignore("Don't support locking yet")]
+        public void TestDirectoryDeleteAndOpenFile()
+        {
+            this.fs.CreateDirectory("/dir");
+            this.fs.WriteAllText("/dir/toto.txt", "content");
+            var stream = this.fs.OpenFile("/dir/toto.txt", FileMode.Open, FileAccess.Read);
+
+            Assert.ThrowsException<IOException>(() => this.fs.DeleteFile("/dir/toto.txt"));
+            Assert.ThrowsException<IOException>(() => this.fs.DeleteDirectory("/dir", true));
+
+            stream.Dispose();
+            this.fs.SetAttributes("/dir/toto.txt", FileAttributes.ReadOnly);
+            Assert.ThrowsException<UnauthorizedAccessException>(() => this.fs.DeleteDirectory("/dir", true));
+            this.fs.SetAttributes("/dir/toto.txt", FileAttributes.Normal);
+            this.fs.DeleteDirectory("/dir", true);
+
+            var entries = this.fs.EnumeratePaths("/").ToList();
+            Assert.AreEqual(0, entries.Count);
+        }
+
+        [TestMethod]
+        [Ignore("Don't support locking yet")]
+        public void TestOpenFileMultipleRead()
+        {
+            this.fs.WriteAllText("/toto.txt", "content");
+
+            Assert.IsTrue(this.fs.FileExists("/toto.txt"));
+
+            using (var tmp = this.fs.OpenFile("/toto.txt", FileMode.Open, FileAccess.Read))
+            {
+                Assert.ThrowsException<IOException>(() => this.fs.OpenFile("/toto.txt", FileMode.Open, FileAccess.Read, FileShare.Read));
+            }
+
+            var stream1 = this.fs.OpenFile("/toto.txt", FileMode.Open, FileAccess.Read, FileShare.Read);
+            var stream2 = this.fs.OpenFile("/toto.txt", FileMode.Open, FileAccess.Read, FileShare.Read);
+
+            stream1.ReadByte();
+            Assert.AreEqual<long>(1, stream1.Position);
+
+            stream2.ReadByte();
+            stream2.ReadByte();
+            Assert.AreEqual<long>(2, stream2.Position);
+
+            stream1.Dispose();
+            stream2.Dispose();
+
+            // We try to write back on the same file after closing
+            this.fs.WriteAllText("/toto.txt", "content2");
+        }
+
+        [TestMethod]
+        public void TestOpenFileCreateNewAlreadyExist()
+        {
+            this.fs.WriteAllText("/toto.txt", "content");
+
+            Assert.ThrowsException<IOException>(() =>
+            {
+                using (var stream = this.fs.OpenFile("/toto.txt", FileMode.CreateNew, FileAccess.Write))
+                {
+                }
+            });
+
+            Assert.ThrowsException<IOException>(() =>
+            {
+                using (var stream = this.fs.OpenFile("/toto.txt", FileMode.CreateNew, FileAccess.Write, FileShare.ReadWrite))
+                {
+                }
+            });
+        }
+
+        [TestMethod]
+        public void TestMoveDirectorySubFolderFail()
+        {
+            this.fs.WriteAllText("/dir/dir1/txt.txt", "Scary Terry");
+            
+            Assert.ThrowsException<IOException>(() => this.fs.MoveDirectory("/dir", "/dir/dir1/dir2"));
+        }
+
+        [TestMethod]
+        public void TestReplaceFileSameFileFail()
+        {
+            this.fs.WriteAllText("/toto.txt", "content");
+            Assert.ThrowsException<IOException>(() => this.fs.ReplaceFile("/toto.txt", "/toto.txt", null, true));
+
+            this.fs.WriteAllText("/tata.txt", "content2");
+
+            Assert.ThrowsException<IOException>(() => this.fs.ReplaceFile("/toto.txt", "/tata.txt", "/toto.txt", true));
+        }
+
+
+        [TestMethod]
+        public void TestDeleteDirectoryNonEmpty()
+        {
+            this.fs.WriteAllText("/dir/dir1/txt.txt", "Oh geez Rick");
+            Assert.ThrowsException<IOException>(() => this.fs.DeleteDirectory("/dir", false));
+        }
+
+        [TestMethod]
+        public void TestInvalidCharacter()
+        {
+            Assert.ThrowsException<NotSupportedException>(() => this.fs.CreateDirectory("/toto/ta:ta"));
+        }
+
+        [TestMethod]
+        public void TestFileExceptions()
+        {
+            this.fs.WriteAllText("/dir1/file.txt", "Wubbadubbadubdub");
+
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.GetFileLength("/toto.txt"));
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.CopyFile("/toto.txt", "/toto.bak.txt", true));
+            Assert.ThrowsException<UnauthorizedAccessException>(() => this.fs.CopyFile("/dir1", "/toto.bak.txt", true));
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.MoveFile("/toto.txt", "/titi.txt"));
+
+            // If the file to be deleted does not exist, no exception is thrown.
+            this.fs.DeleteFile("/toto.txt");
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.OpenFile("/toto.txt", FileMode.Open, FileAccess.Read));
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.OpenFile("/toto.txt", FileMode.Truncate, FileAccess.Write));
+
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.GetFileLength("/dir1/toto.txt"));
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.CopyFile("/dir1/toto.txt", "/toto.bak.txt", true));
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.MoveFile("/dir1/toto.txt", "/titi.txt"));
+
+            // If the file to be deleted does not exist, no exception is thrown.
+            this.fs.DeleteFile("/dir1/toto.txt");
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.OpenFile("/dir1/toto.txt", FileMode.Open, FileAccess.Read));
+
+            this.fs.WriteAllText("/toto.txt", "yo");
+            this.fs.CopyFile("/toto.txt", "/titi.txt", false);
+            this.fs.CopyFile("/toto.txt", "/titi.txt", true);
+
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.GetFileLength("/dir1"));
+
+            var defaultTime = new DateTime(1601, 01, 01, 0, 0, 0, DateTimeKind.Utc).ToLocalTime();
+            Assert.AreEqual(defaultTime, this.fs.GetCreationTime("/dest"));
+            Assert.AreEqual(defaultTime, this.fs.GetLastWriteTime("/dest"));
+            Assert.AreEqual(defaultTime, this.fs.GetLastAccessTime("/dest"));
+
+            // We don't support locking
+            /*
+            using (var stream1 = fs.OpenFile("/toto.txt", FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                Assert.ThrowsException<IOException>(() =>
+                {
+                    using (var stream2 = fs.OpenFile("/toto.txt", FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+                    {
+                    }
+                });
+            }
+            */
+
+            Assert.ThrowsException<UnauthorizedAccessException>(() => this.fs.OpenFile("/dir1", FileMode.Open, FileAccess.Read));
+
+            // directories are made automatically, these examples should not fail (does fail because file does not exist)
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.OpenFile("/dir/toto.txt", FileMode.Open, FileAccess.Read));
+
+            // directories are made automatically, these examples should not fail
+            this.fs.CopyFile("/toto.txt", "/dest/toto.txt", true);
+
+            Assert.ThrowsException<IOException>(() => this.fs.CopyFile("/toto.txt", "/titi.txt", false));
+
+            Assert.ThrowsException<IOException>(() => this.fs.CopyFile("/toto.txt", "/dir1", true));
+
+            // directories are made automatically, these examples should not fail
+            this.fs.MoveFile("/toto.txt", "/dest/toto2.txt");
+            this.fs.MoveFile("/dest/toto2.txt", "/toto.txt");
+
+
+            this.fs.WriteAllText("/titi.txt", "yo2");
+            Assert.ThrowsException<IOException>(() => this.fs.MoveFile("/toto.txt", "/titi.txt"));
+
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.ReplaceFile("/1.txt", "/1.txt", default(UPath), true));
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.ReplaceFile("/1.txt", "/2.txt", "/1.txt", true));
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.ReplaceFile("/1.txt", "/2.txt", "/2.txt", true));
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.ReplaceFile("/1.txt", "/2.txt", "/3.txt", true));
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.ReplaceFile("/toto.txt", "/dir/2.txt", "/3.txt", true));
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.ReplaceFile("/toto.txt", "/2.txt", "/3.txt", true));
+            Assert.ThrowsException<FileNotFoundException>(() => this.fs.ReplaceFile("/toto.txt", "/2.txt", "/toto.txt", true));
+        }
     }
 }

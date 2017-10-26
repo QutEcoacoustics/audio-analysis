@@ -131,28 +131,71 @@
 
         protected override void CreateDirectoryImpl(UPath path)
         {
-            throw new NotImplementedException();
+            this.SetCheck(true);
+
+            var node = this.SafeExists(path);
+            switch (node)
+            {
+                case Adapter.Node.File:
+                    throw NewFileExistsException(path, null);
+                case Adapter.Node.Directory:
+                    return;
+                case Adapter.Node.NotFound:
+                    // flat file system... creating a directory has no effect
+                    return;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         protected override bool DirectoryExistsImpl(UPath path)
         {
-            throw new NotImplementedException();
+            if (path == UPath.Root)
+            {
+                return true;
+            }
+
+            // Note: this will only return true IFF there is a file with the parent path of the directory
+            // because directories do not actually exist in this file system.
+            return Adapter.ExecuteScalarLong(this.Connection, Adapter.DirectoryExists, path.FullName) == 1;
         }
 
         protected override void MoveDirectoryImpl(UPath srcPath, UPath destPath)
         {
-            throw new NotImplementedException();
+            this.SetCheck(true);
+            this.EnsureDirectoryExists(srcPath);
+            this.EnsureDestinationNotExists(destPath);
+
+            this.CheckNotSubDirectory(srcPath, destPath);
+
+            Adapter.MoveDirectory(this.Connection, srcPath, destPath);
         }
 
         protected override void DeleteDirectoryImpl(UPath path, bool isRecursive)
         {
-            throw new NotImplementedException();
-        }
+            this.SetCheck(true);
+
+            this.EnsureDirectoryExists(path);
+
+            // non-recursive can only delete empty directories... which do not exist on our file system
+            if (isRecursive)
+            {
+                Adapter.DeleteDirectory(this.Connection, path);
+            }
+            else
+            {
+                throw NewDirectoryNotEmptyException(path);
+            }
+    }
 
         protected override void CopyFileImpl(UPath srcPath, UPath destPath, bool overwrite)
         {
             this.SetCheck(false);
             this.EnsureFileExists(srcPath);
+            if (this.DirectoryExists(destPath))
+            {
+                throw NewDestinationDirectoryExistException(destPath);
+            }
 
             Adapter.CopyFile(this.Connection, srcPath, destPath, overwrite);
         }
@@ -162,15 +205,25 @@
             this.SetCheck(false);
             this.EnsureFileExists(srcPath);
             this.EnsureFileExists(destPath);
+            if (srcPath == destPath)
+            {
+                throw new IOException($"Cannot replace a file with itself");
+            }
+
+            if (!destBackupPath.IsNull && srcPath == destBackupPath)
+            {
+                throw new IOException("Source file cannot be the same file as the backup file");
+            }
             
             // Note: metadata errors has no effect in this filesystem
 
             Adapter.ReplaceFile(this.Connection, srcPath, destPath, destBackupPath);
-
         }
 
         protected override long GetFileLengthImpl(UPath path)
         {
+            this.EnsureFileExists(path, true);
+
             return Adapter.ExecuteScalarLong(this.Connection, Adapter.FileLength, path.FullName);
         }
 
@@ -189,7 +242,22 @@
 
         protected override void DeleteFileImpl(UPath path)
         {
-            throw new NotImplementedException();
+            this.SetCheck(false);
+
+            var node = this.SafeExists(path);
+            switch (node)
+            {
+                    
+                case Adapter.Node.File:
+                    Adapter.DeleteFile(this.Connection, path);
+                    break;
+                case Adapter.Node.Directory:
+                    throw new UnauthorizedAccessException($"Access to path `{path}` is denied.");
+                case Adapter.Node.NotFound:
+                    return;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         protected override Stream OpenFileImpl(UPath path, FileMode mode, FileAccess access, FileShare share)
@@ -253,7 +321,14 @@
                 //         an UnauthorizedAccessException exception is thrown.
 
                 // does the file exist?
-                bool exists = this.FileExistsImpl(path);
+                var node = this.SafeExists(path);
+
+                if (node == Adapter.Node.Directory)
+                {
+                    throw NewDirectoryNotFileException(path);
+                }
+
+                bool exists = node == Adapter.Node.File;
 
                 bool shouldTruncate = false;
                 bool shouldAppend = false;
@@ -378,7 +453,8 @@
             var fileType = this.EnsureExists(path);
             this.SetCheck(fileType == Adapter.Node.Directory);
 
-            throw new NotImplementedException();
+            // this FileSystem does not support FileAttributes
+            return;
         }
 
         protected override DateTime GetCreationTimeImpl(UPath path)
@@ -488,11 +564,57 @@
 
             return node;
         }
-        private void EnsureFileExists(UPath path)
+
+        private void EnsureFileExists(UPath path, bool notFoundForDirectory = false)
         {
-            if (!this.FileExistsImpl(path))
+            var node = this.SafeExists(path);
+            switch (node)
             {
-                throw NewFileNotFoundException(path);
+                case Adapter.Node.File:
+                    return;
+                case Adapter.Node.Directory:
+                    if (notFoundForDirectory)
+                    {
+                        throw NewFileNotFoundException(path);
+                    }
+
+                    throw NewDirectoryNotFileException(path);
+                case Adapter.Node.NotFound:
+                    throw NewFileNotFoundException(path);
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private void EnsureDirectoryExists(UPath path)
+        {                   
+            var node = this.SafeExists(path);
+            switch (node)
+            {
+                case Adapter.Node.File:
+                    throw NewNotFileException(path);
+                case Adapter.Node.Directory:
+                    return;
+                case Adapter.Node.NotFound:
+                    throw NewDirectoryNotFoundException(path);
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private void EnsureDestinationNotExists(UPath path)
+        {
+            var node = this.SafeExists(path);
+            switch (node)
+            {
+                case Adapter.Node.File:
+                    throw NewDestinationFileExistException(path);
+                case Adapter.Node.Directory:
+                    throw NewDestinationDirectoryExistException(path);
+                case Adapter.Node.NotFound:
+                    return;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -552,6 +674,31 @@
             {
                 throw NewReadOnlyException();
             }
+        }
+
+        private void CheckNotSubDirectory(UPath srcPath, UPath destPath)
+        {
+            // Same directory move
+            if (srcPath == destPath)
+            {
+                throw new IOException(
+                    $"Cannot move the source directory `{srcPath}` to a a sub-folder of itself `{destPath}`");
+            }
+
+            // Check that Destination folder is not a subfolder of source directory
+
+            var checkParentDestDirectory = destPath.GetDirectory();
+            while (checkParentDestDirectory != null)
+            {
+                if (checkParentDestDirectory == srcPath)
+                {
+                    throw new IOException(
+                        $"Cannot move the source directory `{srcPath}` to a a sub-folder of itself `{destPath}`");
+                }
+
+                checkParentDestDirectory = checkParentDestDirectory.GetDirectory();
+            }
+
         }
 
     }
