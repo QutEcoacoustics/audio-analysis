@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Acoustics.Test.SqliteFileSystem
+﻿namespace SqliteFileSystem.Tests
 {
+    using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
+    using System.Linq;
+    using Helpers;
     using Microsoft.Data.Sqlite;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
     using Zio;
-    using Zio.FileSystems;
     using Zio.FileSystems.Community.SqliteFileSystem;
-    using static Zio.FileSystems.Community.SqliteFileSystem.Date;
 
     [TestClass]
     public class AdapterTests
@@ -28,9 +23,9 @@ namespace Acoustics.Test.SqliteFileSystem
         [TestInitialize]
         public void Setup()
         {
-            this.testFile = PathHelper.GetTempFile("sqlite3");
+            this.testFile = TestHelper.GetTempFile("sqlite3");
             this.outputDirectory = this.testFile.Directory;
-            this.random = Random.GetRandom();
+            this.random = TestHelper.GetRandom();
             
         }
 
@@ -39,76 +34,13 @@ namespace Acoustics.Test.SqliteFileSystem
         {
             Debug.WriteLine("Deleting output directory:" + this.outputDirectory.FullName);
 
-            PathHelper.DeleteTempDir(this.outputDirectory);
-        }
-
-        /// <summary>
-        ///  manually add a blob so we can test other parts of the code
-        /// </summary>
-        /// <param name="random"></param>
-        /// <returns></returns>
-        public static (string ConnectionString, UPath blobPath, byte[] blobData) PrepareDatabaseAndBlob(
-            string testFile,
-            System.Random random)
-        {
-            var testData = SqliteFileSystemTests.GenerateTestData(random, "/test.blob");
-
-            // create a new empty database - mainly doing this to get a schema
-            using (var fs = new SqliteFileSystem(testFile, SqliteOpenMode.ReadWriteCreate))
-            {
-            }
-
-            var connectionString = $"Data source='{testFile}';Mode={SqliteOpenMode.ReadWrite}";
-            using (var connection = new SqliteConnection(connectionString))
-            {
-                connection.Open();
-
-                InsertBlobManually(connection, testData);
-            }
-
-            return (connectionString, testData.Path, testData.Data);
-        }
-
-        public static void InsertBlobManually(SqliteConnection connection, (UPath Path, byte[] Data) testData)
-        {
-// add a blob we can read
-            using (var command = new SqliteCommand(
-                "INSERT INTO files VALUES ('" + testData.Path.FullName + "', @blob, 0, 0, 0)",
-                connection))
-            {
-                var parameter = new SqliteParameter("blob", SqliteType.Blob) { Value = testData.Data };
-                command.Parameters.Add(parameter);
-
-                command.ExecuteNonQuery();
-            }
-        }
-
-        public static void AssertBlobMetadata(
-            SqliteConnection connection,
-            int expectedLength,
-            long expectedAccessed,
-            long expectedCreated,
-            long expectedModified,
-            string path = "/test.blob")
-        {
-            using (var command = new SqliteCommand(
-                $"SELECT length(blob), accessed, created, written FROM files WHERE path = '{path}'",
-                connection))
-            {
-                var reader = command.ExecuteReader();
-
-                Assert.IsTrue(reader.Read());
-                Assert.AreEqual(expectedLength, reader.GetInt32(0));
-                Assert.That.AreClose(expectedAccessed, reader.GetInt64(1), 15_000_0);
-                Assert.That.AreClose(expectedCreated, reader.GetInt64(2),  15_000_0);
-                Assert.That.AreClose(expectedModified, reader.GetInt64(3), 15_000_0);
-            }
+            TestHelper.DeleteTempDir(this.outputDirectory);
         }
 
         [TestMethod]
         public void GetBlobTest()
         {
-            var prepared = PrepareDatabaseAndBlob(this.testFile.FullName, this.random);
+            var prepared = TestHelper.PrepareDatabaseAndBlob(this.testFile.FullName, this.random);
 
             using (var connection = new SqliteConnection(prepared.ConnectionString))
             {
@@ -120,9 +52,9 @@ namespace Acoustics.Test.SqliteFileSystem
                 {
 
                     // before test, everything should be set up according to mock data
-                    AssertBlobMetadata(connection, 1024, lastNow, 0, 0);
+                    TestHelper.AssertBlobMetadata(connection, 1024, lastNow, 0, 0);
 
-                    var now = Now;
+                    var now = Date.Now;
                     var timer = Stopwatch.StartNew();
                     var blob = Adapter.GetBlob(connection, UPath.Root / "test.blob");
 
@@ -132,7 +64,7 @@ namespace Acoustics.Test.SqliteFileSystem
                     CollectionAssert.AreEqual(prepared.blobData, blob);
 
                     // now the accessed date should have been updated
-                    AssertBlobMetadata(connection, 1024, now, 0, 0);
+                    TestHelper.AssertBlobMetadata(connection, 1024, now, 0, 0);
                     lastNow = now;
                 }
 
@@ -144,64 +76,64 @@ namespace Acoustics.Test.SqliteFileSystem
         [TestMethod]
         public void SetBlobTestInsert()
         {
-            var prepared = PrepareDatabaseAndBlob(this.testFile.FullName, this.random);
+            var prepared = TestHelper.PrepareDatabaseAndBlob(this.testFile.FullName, this.random);
 
             using (var connection = new SqliteConnection(prepared.ConnectionString))
             {
                 connection.Open();
 
                 // before test, everything should be set up according to mock data
-                AssertBlobMetadata(connection, 1024, 0, 0, 0);
+                TestHelper.AssertBlobMetadata(connection, 1024, 0, 0, 0);
 
                 // insert an entirely new blob
-                var newBlob = SqliteFileSystemTests.GenerateTestData(this.random);
+                var newBlob = TestHelper.GenerateTestData(this.random);
 
-                var now = Now;
+                var now = Date.Now;
                 Adapter.SetBlob(connection, UPath.Root / newBlob.Path, newBlob.Data);
 
                 // now all dates should have been updated on the new blob
-                AssertBlobMetadata(connection, 1024, 0, 0, 0);
-                AssertBlobMetadata(connection, 1024, now, now, now, newBlob.Path.FullName);
+                TestHelper.AssertBlobMetadata(connection, 1024, 0, 0, 0);
+                TestHelper.AssertBlobMetadata(connection, 1024, now, now, now, newBlob.Path.FullName);
 
-                var now2 = Now;
+                var now2 = Date.Now;
                 var blob = Adapter.GetBlob(connection, newBlob.Path.FullName);
 
                 CollectionAssert.AreEqual(newBlob.Data, blob);
 
                 // now the accessed date should have been updated
-                AssertBlobMetadata(connection, 1024, 0, 0, 0);
-                AssertBlobMetadata(connection, 1024, now2, now, now, newBlob.Path.FullName);
+                TestHelper.AssertBlobMetadata(connection, 1024, 0, 0, 0);
+                TestHelper.AssertBlobMetadata(connection, 1024, now2, now, now, newBlob.Path.FullName);
             }
         }
 
         [TestMethod]
         public void SetBlobTestUpdate()
         {
-            var prepared = PrepareDatabaseAndBlob(this.testFile.FullName, this.random);
+            var prepared = TestHelper.PrepareDatabaseAndBlob(this.testFile.FullName, this.random);
 
             using (var connection = new SqliteConnection(prepared.ConnectionString))
             {
                 connection.Open();
 
                 // before test, everything should be set up according to mock data
-                AssertBlobMetadata(connection, 1024, 0, 0, 0);
+                TestHelper.AssertBlobMetadata(connection, 1024, 0, 0, 0);
 
                 // overwrite the blob
-                var newBlob = SqliteFileSystemTests.GenerateTestData(this.random, "/test.blob");
+                var newBlob = TestHelper.GenerateTestData(this.random, "/test.blob");
 
-                var now = Now;
+                var now = Date.Now;
                 Adapter.SetBlob(connection, UPath.Root / "test.blob", newBlob.Data);
 
                 // now the accessed date and modified date should have been updated
-                AssertBlobMetadata(connection, 1024, now, 0, now);
+                TestHelper.AssertBlobMetadata(connection, 1024, now, 0, now);
 
-                var now2 = Now;
+                var now2 = Date.Now;
                 var blob = Adapter.GetBlob(connection, UPath.Root / "test.blob");
 
                 CollectionAssert.AreEqual(newBlob.Data, blob);
 
                 // now the accessed date should have been updated
-                AssertBlobMetadata(connection, 1024, now2, 0, now);
+                TestHelper.AssertBlobMetadata(connection, 1024, now2, 0, now);
             }
         }
 
