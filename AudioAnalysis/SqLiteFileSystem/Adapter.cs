@@ -37,7 +37,7 @@
             return baseFilter + (includeSubDirectories ? string.Empty : thisDirFilter);
         }
 
-        internal static readonly string FileTimeStamps = $"SELECT {FilesAccessed},{FilesCreated},{FilesWritten}  FROM {FilesTable} WHERE {FilesPath} = @{FilesPath} LIMIT 1";
+        internal static readonly string FileTimeStamps = $"SELECT {FilesAccessed},{FilesCreated},{FilesWritten} FROM {FilesTable} WHERE {FilesPath} = @{FilesPath} LIMIT 1";
         internal static readonly string DirectoryTimeStamps = $@"
 SELECT MAX({FilesAccessed}),MIN({FilesCreated}),MAX({FilesWritten})
 FROM {FilesTable}
@@ -83,13 +83,13 @@ UPDATE {FilesTable} SET {FilesAccessed} = @{FilesAccessed} WHERE {FilesPath} = @
 COMMIT;";
         internal static readonly string StoreBlob =
             $@"BEGIN;
-UPDATE {FilesTable} SET {FilesBlob} = @{FilesBlob}, {FilesAccessed} = @{FilesAccessed} , {FilesWritten} = @{FilesWritten} WHERE {FilesPath} = @{FilesPath};
+UPDATE {FilesTable} SET {FilesBlob} = @{FilesBlob}, {FilesAccessed} = @{FilesAccessed}, {FilesWritten} = @{FilesWritten} WHERE {FilesPath} = @{FilesPath};
 INSERT INTO {FilesTable} ({FilesPath}, {FilesBlob}, {FilesAccessed}, {FilesCreated}, {FilesWritten}) SELECT @{FilesPath}, @{FilesBlob}, @{FilesAccessed}, @{FilesCreated}, @{FilesWritten} WHERE changes() = 0;
 COMMIT;";
         internal static readonly string InsertFile =
             $@"INSERT INTO {FilesTable} ({FilesPath}, {FilesBlob}, {FilesAccessed}, {FilesCreated}, {FilesWritten}) VALUES (@{FilesPath}, x'', @{FilesAccessed}, @{FilesCreated}, @{FilesWritten})";
 
-        internal static readonly string DeleteFile =
+        internal static readonly string DeleteFileQuery =
             $@"DELETE FROM {FilesTable} WHERE {FilesPath} = @{FilesPath}";
 
         internal static readonly Func<bool, string> CopyFileQuery = (overwrite) => $@"
@@ -102,16 +102,22 @@ WHERE {FilesPath} = @{FilesPath}";
         internal static readonly Func<bool, string> ReplaceFileQuery = (keepBackup) =>
         {
             var backup = keepBackup
-                ? $"UPDATE OR REPLACE {FilesTable} SET {FilesPath} = @{FilesBackupPath}, {FilesAccessed} = @{NowParam}, {FilesCreated} = @{NowParam}, {FilesWritten} = @{NowParam} WHERE {FilesPath} = @{FilesDestPath};"
-                : string.Empty;
+                ? $"UPDATE OR REPLACE {FilesTable} SET {FilesPath} = @{FilesBackupPath} WHERE {FilesPath} = @{FilesDestPath};"
+                : $"DELETE FROM {FilesTable} WHERE {FilesPath} = @{FilesDestPath};";
              return $@"BEGIN;
 {backup}
-UPDATE {(keepBackup ? "OR ABORT" : "OR REPLACE")} {FilesTable} SET {FilesPath} = @{FilesDestPath}, {FilesCreated} = @{FilesCreated} WHERE {FilesPath} = @{FilesPath};
+UPDATE OR ABORT {FilesTable} SET {FilesPath} = @{FilesDestPath}, {FilesCreated} = @{FilesCreated} WHERE {FilesPath} = @{FilesPath};
 END;";
         };
 
         internal static readonly string ListFilesQuery = $@"SELECT {FilesPath} FROM {FilesTable} WHERE {MakeFileFilter(FilesPath, false)}";
         internal static readonly string ListFilesRecursiveQuery = $@"SELECT {FilesPath} FROM {FilesTable} WHERE {MakeFileFilter(FilesPath, true)}";
+
+        internal static readonly string DeleteDirectoryQuery =
+            $@"DELETE FROM {FilesTable} WHERE {MakeFileFilter(FilesPath, true)}";
+
+        internal static readonly string MoveDirectoryQuery =
+            $@"UPDATE OR ABORT {FilesTable} SET {FilesPath} = (@{FilesDestPath} || substr({FilesPath}, length(@{FilesPath}) + 1)) WHERE {MakeFileFilter(FilesPath, true)}";
 
         private const string FilesBlob = "blob";
 
@@ -219,6 +225,27 @@ END;";
             }
         }
 
+        internal static void DeleteFile(SqliteConnection connection, UPath source)
+        {
+            using (var command = new SqliteCommand(DeleteFileQuery, connection))
+            {
+                command.Parameters.AddWithValue(FilesPath, source.FullName);
+
+                int affected = command.ExecuteNonQuery();
+
+                if (affected == 0)
+                {
+                    FileSystemExceptionHelper.NewFileNotFoundException(source);
+                }
+
+                if (affected > 1)
+                {
+                    throw new InvalidOperationException(
+                        $"Deleting file form {source} failed because affected rows did not equal 1.");
+                }
+            }
+        }
+
         internal static void MoveFile(SqliteConnection connection, UPath source, UPath destination)
         {
             var now = Date.Now;
@@ -248,7 +275,6 @@ END;";
         internal static void ReplaceFile(SqliteConnection connection, UPath source, UPath destination, UPath destBackupPath)
         {
             var makeBackup = !destBackupPath.IsNull;
-            var now = Date.Now;
             var destinationCreated = GetFileTimeStamps(connection, destination).Created;
             using (var command = new SqliteCommand(ReplaceFileQuery(makeBackup), connection))
             {
@@ -256,7 +282,6 @@ END;";
                 command.Parameters.AddWithValue(FilesDestPath, destination.FullName);
                 command.Parameters.AddWithValue(FilesBackupPath, destBackupPath.FullName);
 
-                command.Parameters.AddWithValue(NowParam, now);
                 command.Parameters.AddWithValue(FilesCreated, Date.ToTicks(destinationCreated));
 
                 int affected = command.ExecuteNonQuery();
@@ -296,10 +321,14 @@ END;";
                 {
                     Debug.Assert(reader.Read());
 
-                    return (
-                        Date.FromTicks(reader.GetFieldValue<long>(0)),
-                        Date.FromTicks(reader.GetFieldValue<long>(1)),
-                        Date.FromTicks(reader.GetFieldValue<long>(2)));
+
+                    var accessed = Date.FromTicks(reader.GetFieldValue<long>(0));
+                    var created = Date.FromTicks(reader.GetFieldValue<long>(1));
+                    var written = Date.FromTicks(reader.GetFieldValue<long>(2));
+
+                    Debug.Assert(!reader.Read());
+
+                    return (accessed, created, written);
                 }
             }
         }
@@ -344,6 +373,51 @@ END;";
             }
         }
 
+        internal static void DeleteDirectory(SqliteConnection connection, UPath source)
+        {
+            using (var command = new SqliteCommand(DeleteDirectoryQuery, connection))
+            {
+                command.Parameters.AddWithValue(FilesPath, source.FullName);
+
+                int affected = command.ExecuteNonQuery();
+
+                if (affected == 0)
+                {
+                    throw FileSystemExceptionHelper.NewDirectoryNotFoundException(source);
+                }
+
+                if (affected < 1)
+                {
+                    throw new InvalidOperationException(
+                        $"Deleting file form {source} failed because affected rows did not equal 1.");
+                }
+            }
+        }
+
+        internal static void MoveDirectory(SqliteConnection connection, UPath source, UPath destination)
+        {
+            using (var command = new SqliteCommand(MoveDirectoryQuery, connection))
+            {
+                command.Parameters.AddWithValue(FilesPath, source.FullName);
+                command.Parameters.AddWithValue(FilesDestPath, destination.FullName);
+
+                int affected;
+                try
+                {
+                    affected = command.ExecuteNonQuery();
+                }
+                catch (SqliteException sex) when (sex.SqliteErrorCode == SQLitePCL.raw.SQLITE_CONSTRAINT)
+                {
+                    throw FileSystemExceptionHelper.NewDestinationDuplicateException(destination, sex);
+                }
+
+                if (affected < 2)
+                {
+                    throw new InvalidOperationException(
+                        $"Moving directory file form {source} to {destination} failed because affected rows were not greater or equal than 2.");
+                }
+            }
+        }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

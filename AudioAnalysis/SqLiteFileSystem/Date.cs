@@ -33,12 +33,7 @@
 
         public static void OverrideNow(DateTime dateTime)
         {
-            if (dateTime.Kind != DateTimeKind.Utc)
-            {
-                throw new ArgumentException("must be DateTimeKind.Utc", nameof(dateTime));
-            }
-
-            nowOverride = dateTime.Ticks;
+            nowOverride = ToTicks(dateTime);
         }
 
         public static void ResetNow()
