@@ -10,7 +10,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>FeltRunner</RootNamespace>
     <AssemblyName>FeltRunner</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <Name>FELT.Runner</Name>
