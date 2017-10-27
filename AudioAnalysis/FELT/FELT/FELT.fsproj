@@ -10,7 +10,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>FELT</RootNamespace>
     <AssemblyName>FELT</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <Name>FELT</Name>
