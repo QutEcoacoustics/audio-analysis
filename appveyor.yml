@@ -11,6 +11,7 @@ skip_commits:
     - 'AudioAnalysis/Matlab/**/*'
     - 'AudioAnalysis/RCode/**/*'
     - '**/*.md'
+    - 'doc/**/*'
 
 # Do not run a build on new tags - we use tags to create releases, which can
 # only occur after sucessful build on another branch
