@@ -110,6 +110,7 @@ namespace AnalysisPrograms
         /// <summary>
         /// To get to this DEV method, the FIRST AND ONLY command line argument must be "concatenateIndexFiles"
         /// </summary>
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static Arguments Dev()
         {
             // set the default values here

@@ -64,6 +64,7 @@
 
         // felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-050000.wav"  C:\SensorNetworks\Output\FELT_MultiOutput_5templates\templateList.txt  C:\SensorNetworks\Output\FELT_MultiOutput_5templates
 
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static Arguments Dev()
         {
             throw new NotImplementedException();
