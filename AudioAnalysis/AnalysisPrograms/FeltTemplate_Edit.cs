@@ -30,6 +30,7 @@
         // LEWINS RAIL
         // edittemplate_felt C:\SensorNetworks\Output\FELT_LewinsRail1\FELT_LewinsRail1_params.txt
 
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static Arguments Dev()
         {
             throw new NotImplementedException();

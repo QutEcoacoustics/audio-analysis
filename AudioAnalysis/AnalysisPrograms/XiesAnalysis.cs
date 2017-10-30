@@ -42,6 +42,7 @@
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(XiesAnalysis));
 
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         internal static Arguments Dev()
         {
             throw new NotImplementedException();

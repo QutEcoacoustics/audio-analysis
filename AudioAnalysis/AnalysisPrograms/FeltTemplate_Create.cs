@@ -95,6 +95,7 @@
         public static string key_LINE_LENGTH        = "SPR_LINE_LENGTH";          // Used when preparing syntactic PR template.
         public static string key_DRAW_SONOGRAMS     = "DRAW_SONOGRAMS";
 
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static Arguments Dev()
         {
             throw new NotImplementedException();
