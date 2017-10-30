@@ -31,6 +31,7 @@
         {
         }
 
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static Arguments Dev()
         {
             //Following lines are used for the debug command line.

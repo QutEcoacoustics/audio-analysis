@@ -23,6 +23,7 @@ namespace AnalysisPrograms.Draw.Zooming
         {
             if (arguments == null)
             {
+                throw new NotSupportedException();
                 arguments = Dev();
             }
 

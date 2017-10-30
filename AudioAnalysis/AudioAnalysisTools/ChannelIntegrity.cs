@@ -43,6 +43,7 @@ namespace AudioAnalysisTools
 
     public static class ChannelIntegrity
     {
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static Arguments Dev()
         {
             //FileInfo audioFile = new FileInfo(@"C:\SensorNetworks\WavFiles\Gympie\20151029_064553_Gympie_bad.wav");
