@@ -9,8 +9,10 @@ namespace AnalysisPrograms.Draw.Zooming
     using Acoustics.Shared;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
+    using AudioAnalysisTools.LongDurationSpectrograms.Zooming;
     using log4net;
     using PowerArgs;
+    using Production;
 
     /// <summary>
     /// Renders index data as false color images at various scales, with various styles.
@@ -43,23 +45,26 @@ namespace AnalysisPrograms.Draw.Zooming
             }
 
             LoggedConsole.WriteLine(description);
-            LoggedConsole.WriteLine("# Spectrogram Zooming config  : " + arguments.SpectrogramTilingConfig);
+
+            var io = FileSystemProvider.GetInputOutputFileSystems(arguments.SourceDirectory, arguments.Output);
+
+            LoggedConsole.WriteLine("# Spectrogram Zooming config  : " + arguments.SpectrogramZoomingConfig);
             LoggedConsole.WriteLine("# Input Directory             : " + arguments.SourceDirectory);
             LoggedConsole.WriteLine("# Output Directory            : " + arguments.Output);
 
             var common = new ZoomArguments();
 
-            common.SpectrogramZoomingConfig = Yaml.Deserialise<SpectrogramZoomingConfig>(arguments.SpectrogramTilingConfig);
+            common.SpectrogramZoomingConfig = Yaml.Deserialise<SpectrogramZoomingConfig>(arguments.SpectrogramZoomingConfig);
 
             // search for index properties config
-            var indexPropertiesPath = IndexProperties.Find(common.SpectrogramZoomingConfig, arguments.SpectrogramTilingConfig);
+            var indexPropertiesPath = IndexProperties.Find(common.SpectrogramZoomingConfig, arguments.SpectrogramZoomingConfig);
             Log.Debug("Using index properties file: " + indexPropertiesPath.FullName);
 
             // load the index properties
             common.IndexProperties = IndexProperties.GetIndexProperties(indexPropertiesPath);
 
             // get the indexDistributions and the indexGenerationData AND the common.OriginalBasename
-            common.CheckForNeededFiles(arguments.SourceDirectory);
+            common.CheckForNeededFiles(arguments.SourceDirectory.ToDirectoryInfo());
 
             LoggedConsole.WriteLine("# File name of recording      : " + common.OriginalBasename);
 
@@ -79,8 +84,8 @@ namespace AnalysisPrograms.Draw.Zooming
 
                     const int ImageWidth = 1500;
                     ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(
-                        arguments.SourceDirectory,
-                        arguments.Output,
+                        arguments.SourceDirectory.ToDirectoryInfo(),
+                        arguments.Output.ToDirectoryInfo(),
                         common,
                         focalTime,
                         ImageWidth);
@@ -89,7 +94,7 @@ namespace AnalysisPrograms.Draw.Zooming
                     // Create the super tiles for a full set of recordings
                     ZoomTiledSpectrograms.DrawTiles(
                         arguments.SourceDirectory,
-                        arguments.Output,
+                        arguments.Output.ToDirectoryInfo(),
                         common,
                         Acoustic.TowseyAcoustic);
 

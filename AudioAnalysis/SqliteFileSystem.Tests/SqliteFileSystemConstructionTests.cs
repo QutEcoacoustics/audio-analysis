@@ -48,7 +48,7 @@
         [TestMethod]
         public void TestConstructorInMemory()
         {
-            using (var fs = new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.Memory))
+            using (var fs = new SqliteFileSystem(this.testFile.FullName, OpenMode.Memory))
             {
                 this.testFile.Refresh();
                 Assert.IsFalse(this.testFile.Exists);
@@ -60,19 +60,19 @@
         public void TestConstructorReadOnly()
         {
             Assert.ThrowsException<SqliteException>(
-                () => new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadOnly),
+                () => new SqliteFileSystem(this.testFile.FullName, OpenMode.ReadOnly),
                 "unable to open database file");
 
             this.testFile.Refresh();
             Assert.IsFalse(this.testFile.Exists);
 
-            using (new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadWriteCreate))
+            using (new SqliteFileSystem(this.testFile.FullName, OpenMode.ReadWriteCreate))
             {
                 // touch the db first
             }
 
             // try again
-            using (var fs = new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadOnly))
+            using (var fs = new SqliteFileSystem(this.testFile.FullName, OpenMode.ReadOnly))
             {
                 this.testFile.Refresh();
                 Assert.IsTrue(this.testFile.Exists);
@@ -84,19 +84,19 @@
         public void TestConstructorReadWrite()
         {
             Assert.ThrowsException<SqliteException>(
-                () => new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadWrite),
+                () => new SqliteFileSystem(this.testFile.FullName, OpenMode.ReadWrite),
                 "unable to open database file");
 
             this.testFile.Refresh();
             Assert.IsFalse(this.testFile.Exists);
 
-            using (new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadWriteCreate))
+            using (new SqliteFileSystem(this.testFile.FullName, OpenMode.ReadWriteCreate))
             {
                 // touch the db first
             }
 
             // try again
-            using (var fs = new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadWrite))
+            using (var fs = new SqliteFileSystem(this.testFile.FullName, OpenMode.ReadWrite))
             {
                 this.testFile.Refresh();
                 Assert.IsTrue(this.testFile.Exists);
@@ -107,7 +107,7 @@
         [TestMethod]
         public void TestConstructorReadWriteCreate()
         {
-            using (var fs = new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadWriteCreate))
+            using (var fs = new SqliteFileSystem(this.testFile.FullName, OpenMode.ReadWriteCreate))
             {
                 this.testFile.Refresh();
                 Assert.IsTrue(this.testFile.Exists);
@@ -119,7 +119,7 @@
         public void TestAutomaticSchemaCreation()
         {
             // create a new empty database
-            using (var fs = new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadWriteCreate))
+            using (var fs = new SqliteFileSystem(this.testFile.FullName, OpenMode.ReadWriteCreate))
             {
                 
             }
@@ -145,7 +145,7 @@
         public void EnsureSchemaMismatchesThrow()
         {
             // create a new empty database
-            using (var fs = new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadWriteCreate))
+            using (var fs = new SqliteFileSystem(this.testFile.FullName, OpenMode.ReadWriteCreate))
             {
 
             }
@@ -160,7 +160,7 @@
             Assert.AreEqual(affected, null);
             
             Assert.ThrowsException<SqliteFileSystemException>(
-                () => new SqliteFileSystem(this.testFile.FullName, SqliteOpenMode.ReadOnly),
+                () => new SqliteFileSystem(this.testFile.FullName, OpenMode.ReadOnly),
                 "Schema version 0.5.0 does not match library required version 1.0.0");
         }
 

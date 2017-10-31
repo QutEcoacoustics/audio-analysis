@@ -14,7 +14,7 @@ SegmentDuration: 1
 #SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 
-# IndexCalculationDuration: units=seconds (default=60 seconds; use 0.2 for zooming spectrogram tiles)
+# IndexCalculationDuration: units=seconds (default=60 seconds; use 0.1 for zooming spectrogram tiles)
 # The Timespan (in seconds) over which summary and spectral indices are calculated
 IndexCalculationDuration: 60.0
 

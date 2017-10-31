@@ -3,28 +3,24 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
-namespace AudioAnalysisTools.LongDurationSpectrograms
+namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 {
     using System;
     using System.Collections.Generic;
-    using System.Configuration;
     using System.Diagnostics;
     using System.Drawing;
     using System.Globalization;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
-
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Contracts;
     using Indices;
-    using TileImage;
-
     using log4net;
-
+    using TileImage;
     using TowseyLibrary;
-    using Zooming;
+    using Zio;
+    using SpectrogramType = LongDurationSpectrograms.SpectrogramType;
 
     public static class ZoomTiledSpectrograms
     {
@@ -35,8 +31,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// THIS IS ENTRY METHOD FOR TILING SPECTROGRAMS.
         /// </summary>
         public static void DrawTiles(
-            DirectoryInfo inputDirectory,
-            DirectoryInfo outputDirectory,
+            AnalysisIo io,
+            DirectoryEntry inputDirectory,
+            /*DirectoryEntry outputDirectory,*/
             ZoomArguments common,
             string analysisTag)
         {
@@ -52,30 +49,28 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             string fileStem = common.OriginalBasename;
 
-            // scales for false color images in seconds per pixel.
-            double[] indexScale = zoomConfig.SpectralIndexScale;
+            // scales for false color index spectrograms images in seconds per pixel.
+            double[] indexScales = zoomConfig.SpectralIndexScale;
 
-            // default scales for standard spectrograms in seconds per pixel.
-            double[] standardScale = zoomConfig.SpectralFrameScale;
+            // default scales for standard (FFT) spectrograms in seconds per pixel.
+            double[] standardScales = zoomConfig.SpectralFrameScale;
 
-            if (indexScale.IsNullOrEmpty())
+            if (indexScales.IsNullOrEmpty())
             {
-                throw new InvalidOperationException("SpectralIndexScale is null or empty " +
-                                                    " we need at least some scales to render zooming spectrograms");
+                throw new InvalidOperationException(
+                    $"{nameof(SpectrogramZoomingConfig.SpectralIndexScale)} is null or empty " +
+                    " we need at least some scales to render zooming spectrograms");
             }
 
-            var shouldRenderStandardScale = standardScale.IsNullOrEmpty();
+            var shouldRenderStandardScale = standardScales.IsNullOrEmpty();
             if (shouldRenderStandardScale)
             {
                 Log.Warn("Standard spectrograms will not be rendered");
             }
 
-            var allImageScales = indexScale.Concat(standardScale).ToArray();
-            Log.Info("Tiling at scales: " +
-                     allImageScales.Aggregate(
-                         string.Empty,
-                         (s, d) => s + d.ToString(CultureInfo.InvariantCulture) + ", "));
+            var allImageScales = indexScales.Concat(standardScales).ToArray();
 
+            Log.Info("Tiling at scales: " +allImageScales.ToCommaSeparatedList());
 
             TilingProfile namingPattern;
             switch (zoomConfig.TilingProfile)
@@ -130,7 +125,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // pass it scales for x and y-axis
             // also pass it unit scale relations (between unit scale and unit height/width) to use as a reference point
             var tiler = new Tiler(
-                outputDirectory,
+                UPath.Root,
                 namingPattern,
                 xScales: new SortedSet<double>(allImageScales),
                 xUnitScale: XNominalUnitScale,
@@ -142,10 +137,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
             var (spectra, filteredIndexProperties) = LoadSpectra(inputDirectory, analysisTag, fileStem, indexProperties);
 
-
             // TOP MOST ZOOMED-OUT IMAGES
             Log.Info("START DRAWING ZOOMED-OUT INDEX SPECTROGRAMS");
-            foreach (double scale in indexScale)
+            foreach (double scale in indexScales)
             {
                 Log.Info("Starting scale: " + scale);
                 TimeSpan imageScale = TimeSpan.FromSeconds(scale);
@@ -199,7 +193,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                 filteredIndexProperties,
                                 zoomConfig,
                                 minuteToLoad,
-                                standardScale,
+                                standardScales,
                                 fileStem,
                                 indexGeneration,
                                 namingPattern.ChromeOption);

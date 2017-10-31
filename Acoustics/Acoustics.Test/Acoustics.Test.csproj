@@ -307,6 +307,8 @@
     <Compile Include="AnalysisPrograms\AcousticWorkbench.Orchestration\EventMetadataResolverTests.cs" />
     <Compile Include="AnalysisPrograms\AnalyzeLongRecordings\TestAnalyzeLongRecording.cs" />
     <Compile Include="AnalysisPrograms\Concatenation\ConcatenationTests.cs" />
+    <Compile Include="AnalysisPrograms\Draw\Zooming\DrawZoomingTests.cs" />
+    <Compile Include="AnalysisPrograms\Production\FileSystemProviderTests.cs" />
     <Compile Include="AnalysisPrograms\SourcePreparers\RemoteSourcePreparerTests.cs" />
     <Compile Include="AnalysisPrograms\SourcePreparers\LocalSourcePreparerTests.cs" />
     <Compile Include="ArrayExtensionsTests.cs" />
@@ -387,6 +389,10 @@
     <ProjectReference Include="..\..\AudioAnalysis\AudioAnalysisTools\AudioAnalysisTools.csproj">
       <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>
       <Name>AudioAnalysisTools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\AudioAnalysis\SqLiteFileSystem\SqliteFileSystem.csproj">
+      <Project>{364B812E-4E3D-415E-BE10-2928028EE7B6}</Project>
+      <Name>SqliteFileSystem</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\AudioAnalysis\TowseyLibrary\TowseyLibrary.csproj">
       <Project>{7C6831FD-F60C-4F7B-8E6A-35E850174411}</Project>
