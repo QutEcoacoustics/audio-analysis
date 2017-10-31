@@ -35,7 +35,7 @@
             this.testDatabase = TestHelper.GetTempFile("sqlite3");
             this.outputDirectory = this.testDatabase.Directory;
             this.localFileSystem = new PhysicalFileSystem();
-            this.fs = new SqliteFileSystem(this.testDatabase.FullName, SqliteOpenMode.ReadWriteCreate);
+            this.fs = new SqliteFileSystem(this.testDatabase.FullName, OpenMode.ReadWriteCreate);
 
 
             this.testData = TestHelper.GenerateTestData(this.random);
@@ -97,7 +97,7 @@
             this.fs.WriteAllBytes(this.testData.Path, this.testData.Data);
 
 
-            var readonlyFs = new SqliteFileSystem(this.testDatabase.FullName, SqliteOpenMode.ReadOnly);
+            var readonlyFs = new SqliteFileSystem(this.testDatabase.FullName, OpenMode.ReadOnly);
 
             Assert.IsTrue(readonlyFs.FileExists(this.testData.Path));
             Assert.AreEqual(
@@ -125,7 +125,7 @@
         public void TestFileOpenReadOnly(FileMode openMode, bool shouldSucceed, Type excpectedExceptionType)
         {
             this.fs.WriteAllBytes(this.testData.Path, this.testData.Data);
-            var readonlyFs = new SqliteFileSystem(this.testDatabase.FullName, SqliteOpenMode.ReadOnly);
+            var readonlyFs = new SqliteFileSystem(this.testDatabase.FullName, OpenMode.ReadOnly);
 
             if (shouldSucceed)
             {
@@ -151,7 +151,7 @@
         {
 
             this.fs.WriteAllBytes(this.testData.Path, this.testData.Data);
-            var readonlyFs = new SqliteFileSystem(this.testDatabase.FullName, SqliteOpenMode.ReadOnly);
+            var readonlyFs = new SqliteFileSystem(this.testDatabase.FullName, OpenMode.ReadOnly);
 
           Assert.ThrowsException<IOException>(
                     () => readonlyFs.DeleteFile(this.testData.Path));

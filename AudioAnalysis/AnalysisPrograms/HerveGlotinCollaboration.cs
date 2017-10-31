@@ -10,6 +10,7 @@
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
+    using AudioAnalysisTools.LongDurationSpectrograms.Zooming;
     using Draw.Zooming;
     using TowseyLibrary;
 
@@ -152,35 +153,35 @@
                     var zoomingArguments = new DrawZoomingSpectrograms.Arguments
                     {
                         // use the default set of index properties in the AnalysisConfig directory.
-                        SourceDirectory = csvDir.ToDirectoryInfo(),
-                        Output = zoomOutputDir.ToDirectoryInfo(),
-                        SpectrogramTilingConfig = hiResZoomConfigPath.ToFileInfo(),
+                        SourceDirectory = csvDir,
+                        Output = zoomOutputDir,
+                        SpectrogramZoomingConfig = hiResZoomConfigPath.ToFileInfo(),
 
                         // draw a focused multi-resolution pyramid of images
                         ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Focused,
                         //FocusMinute = (int)focalMinute,
                     };
 
-                    LoggedConsole.WriteLine("# Spectrogram Zooming config  : " + zoomingArguments.SpectrogramTilingConfig);
+                    LoggedConsole.WriteLine("# Spectrogram Zooming config  : " + zoomingArguments.SpectrogramZoomingConfig);
                     LoggedConsole.WriteLine("# Input Directory             : " + zoomingArguments.SourceDirectory);
                     LoggedConsole.WriteLine("# Output Directory            : " + zoomingArguments.Output);
 
                     var common = new ZoomArguments();
-                    common.SpectrogramZoomingConfig = Yaml.Deserialise<SpectrogramZoomingConfig>(zoomingArguments.SpectrogramTilingConfig);
-                    var indexPropertiesPath = IndexProperties.Find(common.SpectrogramZoomingConfig, zoomingArguments.SpectrogramTilingConfig);
+                    common.SpectrogramZoomingConfig = Yaml.Deserialise<SpectrogramZoomingConfig>(zoomingArguments.SpectrogramZoomingConfig);
+                    var indexPropertiesPath = IndexProperties.Find(common.SpectrogramZoomingConfig, zoomingArguments.SpectrogramZoomingConfig);
                     LoggedConsole.WriteLine("Using index properties file: " + indexPropertiesPath.FullName);
                     common.IndexProperties = IndexProperties.GetIndexProperties(indexPropertiesPath);
 
                     // get the indexDistributions and the indexGenerationData AND the //common.OriginalBasename
-                    common.CheckForNeededFiles(zoomingArguments.SourceDirectory);
+                    common.CheckForNeededFiles(zoomingArguments.SourceDirectory.ToDirectoryInfo());
                     // Create directory if not exists
-                    if (!zoomingArguments.Output.Exists)
+                    if (!zoomingArguments.Output.ToDirectoryInfo().Exists)
                     {
-                        zoomingArguments.Output.Create();
+                        Directory.CreateDirectory(zoomingArguments.Output);
                     }
 
-                    ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(zoomingArguments.SourceDirectory,
-                                                                            zoomingArguments.Output,
+                    ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(zoomingArguments.SourceDirectory.ToDirectoryInfo(),
+                                                                            zoomingArguments.Output.ToDirectoryInfo(),
                                                                             common,
                                                                             TimeSpan.FromMinutes(focalMinute),
                                                                             imageWidth);

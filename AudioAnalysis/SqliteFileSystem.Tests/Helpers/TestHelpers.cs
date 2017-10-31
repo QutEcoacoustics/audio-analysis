@@ -77,11 +77,11 @@ namespace SqliteFileSystem.Tests.Helpers
             var testData = TestHelper.GenerateTestData(random, "/test.blob");
 
             // create a new empty database - mainly doing this to get a schema
-            using (var fs = new SqliteFileSystem(testFile, SqliteOpenMode.ReadWriteCreate))
+            using (var fs = new SqliteFileSystem(testFile, OpenMode.ReadWriteCreate))
             {
             }
 
-            var connectionString = $"Data source='{testFile}';Mode={SqliteOpenMode.ReadWrite}";
+            var connectionString = $"Data source='{testFile}';Mode={OpenMode.ReadWrite}";
             using (var connection = new SqliteConnection(connectionString))
             {
                 connection.Open();

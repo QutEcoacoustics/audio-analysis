@@ -45,8 +45,8 @@
         {
         }
 
-        public SqliteFileSystem(string databasePath, SqliteOpenMode mode)
-            : this(BuildConnection(databasePath, mode))
+        public SqliteFileSystem(string databasePath, OpenMode mode)
+            : this(BuildConnection(databasePath, (SqliteOpenMode)mode))
         {
         }
 
