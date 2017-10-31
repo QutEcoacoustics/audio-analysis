@@ -220,8 +220,12 @@
     <Reference Include="YamlDotNet.Dynamic">
       <HintPath>..\..\Extra Assemblies\YamlDotNet\YamlDotNet.Dynamic.dll</HintPath>
     </Reference>
+    <Reference Include="Zio, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\AudioAnalysis\packages\Zio.0.3.1\lib\net45\Zio.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnalysisIo.cs" />
     <Compile Include="AppConfigHelper.cs" />
     <Compile Include="Base58.cs" />
     <Compile Include="Binary.cs" />
@@ -257,6 +261,7 @@
     <Compile Include="Extensions\StringCaseExtensions.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Extensions\TupleExtensions.cs" />
+    <Compile Include="Extensions\ZioExtensions.cs" />
     <Compile Include="FileDateHelpers.cs" />
     <Compile Include="FileNameHelpers.cs" />
     <Compile Include="Formatters.cs" />
@@ -275,7 +280,6 @@
     <Compile Include="PropertyComparer.cs" />
     <Compile Include="Range.cs" />
     <Compile Include="ResultProperty.cs" />
-    <Compile Include="SqlServerTypes\Loader.cs" />
     <Compile Include="StatDescriptive.cs" />
     <Compile Include="StringKeyValueStore.cs" />
     <Compile Include="TempFileHelper.cs" />

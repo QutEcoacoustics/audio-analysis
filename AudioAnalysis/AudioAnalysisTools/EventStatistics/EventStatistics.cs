@@ -47,8 +47,9 @@ namespace AudioAnalysisTools.EventStatistics
                 if (this.AudioRecordingId.HasValue)
                 {
                     return Api.Default.GetListenUri(
-                        this.AudioRecordingId.Value,
-                        Math.Floor(this.ResultStartSeconds)).ToString();
+                            this.AudioRecordingId.Value,
+                            Math.Floor(this.ResultStartSeconds))
+                        .ToString();
                 }
 
                 return string.Empty;
@@ -153,50 +154,50 @@ namespace AudioAnalysisTools.EventStatistics
         {
             return this.CompareTo(obj as ResultBase);
         }
-    }
 
-    public sealed class EventStatisticsClassMap : CsvClassMap<EventStatistics>
-    {
-        public EventStatisticsClassMap()
+        public sealed class EventStatisticsClassMap : CsvClassMap<EventStatistics>
         {
-            this.AutoMap();
-
-            var ordered = new Dictionary<string, int>()
+            public EventStatisticsClassMap()
             {
-                { nameof(EventStatistics.AudioEventId), 0 },
-                { nameof(EventStatistics.AudioRecordingId), 1 },
-                { nameof(EventStatistics.EventStartSeconds), 2 },
-                { nameof(EventStatistics.EventEndSeconds), 3 },
-                { nameof(EventStatistics.LowFrequencyHertz), 4 },
-                { nameof(EventStatistics.HighFrequencyHertz), 5 },
-                { nameof(EventStatistics.Error), 999 },
-                { nameof(EventStatistics.ErrorMessage), 1000 },
-            };
+                this.AutoMap();
 
-            var index = 6;
-            foreach (var propertyMap in this.PropertyMaps.OrderBy(x => x.Data.Names.First()))
-            {
-                var name = propertyMap.Data.Names.First();
+                var ordered = new Dictionary<string, int>()
+                {
+                    { nameof(EventStatistics.AudioEventId), 0 },
+                    { nameof(EventStatistics.AudioRecordingId), 1 },
+                    { nameof(EventStatistics.EventStartSeconds), 2 },
+                    { nameof(EventStatistics.EventEndSeconds), 3 },
+                    { nameof(EventStatistics.LowFrequencyHertz), 4 },
+                    { nameof(EventStatistics.HighFrequencyHertz), 5 },
+                    { nameof(EventStatistics.Error), 999 },
+                    { nameof(EventStatistics.ErrorMessage), 1000 },
+                };
 
-                if (name == nameof(EventBase.Score) || name == nameof(EventStatistics.Order))
+                var index = 6;
+                foreach (var propertyMap in this.PropertyMaps.OrderBy(x => x.Data.Names.First()))
                 {
-                    propertyMap.Ignore();
-                }
+                    var name = propertyMap.Data.Names.First();
 
-                if (name == nameof(EventBase.LowFrequencyHertz) &&
-                    propertyMap.Data.Property.DeclaringType == typeof(EventBase))
-                {
-                    propertyMap.Ignore();
-                }
+                    if (name == nameof(EventBase.Score) || name == nameof(EventStatistics.Order))
+                    {
+                        propertyMap.Ignore();
+                    }
 
-                if (ordered.TryGetValue(name, out var orderedIndex))
-                {
-                    propertyMap.Data.Index = orderedIndex;
-                }
-                else
-                {
-                    propertyMap.Data.Index = index;
-                    index++;
+                    if (name == nameof(EventBase.LowFrequencyHertz) &&
+                        propertyMap.Data.Property.DeclaringType == typeof(EventBase))
+                    {
+                        propertyMap.Ignore();
+                    }
+
+                    if (ordered.TryGetValue(name, out var orderedIndex))
+                    {
+                        propertyMap.Data.Index = orderedIndex;
+                    }
+                    else
+                    {
+                        propertyMap.Data.Index = index;
+                        index++;
+                    }
                 }
             }
         }

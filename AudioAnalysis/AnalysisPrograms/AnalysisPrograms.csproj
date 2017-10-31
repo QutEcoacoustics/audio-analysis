@@ -242,6 +242,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Extra Assemblies\YamlDotNet\YamlDotNet.Dynamic.dll</HintPath>
     </Reference>
+    <Reference Include="Zio, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Zio.0.3.1\lib\net45\Zio.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AcousticHiResIndicesPlusRecognizers.cs" />
@@ -271,6 +274,7 @@
     <Compile Include="Draw\Zooming\DrawZoomingSpectrograms.cs" />
     <Compile Include="HerveGlotinCollaboration.cs" />
     <Compile Include="HighResolutionAcousticIndices.cs" />
+    <Compile Include="Production\FileSystemProvider.cs" />
     <Compile Include="Recognizers\Base\IEventRecognizer.cs" />
     <Compile Include="Recognizers\Base\MultiRecognizer.cs" />
     <Compile Include="Recognizers\Base\RecognizerBase.cs" />
@@ -387,6 +391,10 @@
     <ProjectReference Include="..\QutBioacosutics.Xie\QutBioacosutics.Xie.csproj">
       <Project>{15741ead-ecd6-42f8-ab13-ea4ae636936e}</Project>
       <Name>QutBioacosutics.Xie</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SqLiteFileSystem\SqliteFileSystem.csproj">
+      <Project>{364b812e-4e3d-415e-be10-2928028ee7b6}</Project>
+      <Name>SqliteFileSystem</Name>
     </ProjectReference>
     <ProjectReference Include="..\TowseyLibrary\TowseyLibrary.csproj">
       <Project>{7c6831fd-f60c-4f7b-8e6a-35e850174411}</Project>
