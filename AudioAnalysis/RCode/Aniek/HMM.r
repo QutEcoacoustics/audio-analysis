@@ -99,6 +99,23 @@ jpeg("/Volumes/Nifty/QUT/HMM/statetransitioncombcd.jpeg", 1000, 1000, quality = 
 plot(hmm_combcd$model,vertex.label='names',combine.slices = 0.05)
 dev.off()
 
+####### Create a fasta file format of the hidden state sequence for the model with both sites
+#creates a list of the hidden state sequences which can be used to write out a fasta file
+makeseqlist = function(stateseq,numberdays){
+  seqlist = list()
+  for (i in seq(1,numberdays,1)){
+    seqlist[[i]] = t(stateseq)[,i]
+    i = i+ 1
+  }
+  return(seqlist)
+}
+
+hidstateseqcombcd = hidpaths_combcd[,][,]
+listseqcombcd = makeseqlist(hidstateseqcombcd,794)
+write.fasta(listseqcombcd, names = names(combcd), file.out = "/Volumes/Nifty/QUT/HMM/hiddenstates/fastafiles/listseqcombcd.txt")
+hiddenstatesequencecombcd = readBStringSet("/Volumes/Nifty/QUT/HMM/hiddenstates/fastafiles/listseqcombcd.txt", format="fasta",
+                                                  nrec=-1L, skip=0L, seek.first.rec=FALSE, use.names=TRUE)
+letterFcombcd = letterFrequency(hiddenstatesequencecombcd, uniqueLetters(hiddenstatesequencecombcd))
 ####### split hiddenstatepath data on seasons for Gympie
 #days since the start of the experiment that correspond with the start and ending date of the season
 winter =  c(346:397,1:71)
@@ -112,19 +129,9 @@ spring_hidstateseqgympie = hidpaths_combcd[spring,][1:length(spring),]
 summer_hidstateseqgympie = hidpaths_combcd[summer,][1:length(summer),]
 autumn_hidstateseqgympie = hidpaths_combcd[autumn,][1:length(autumn),]
 
-#creates a list of the hidden state sequences which can be used to write out a fasta file
-makeseqlist = function(season,numberdays){
-  seqlist = list()
-  for (i in seq(1,numberdays,1)){
-    seqlist[[i]] = t(season)[,i]
-    i = i+ 1
-  }
-return(seqlist)
-}
-
-#Create a list containing the hidden state sequences and write out a fasta file
+#Create a list containing the hidden state sequences and write out a fasta file for gympie
 wintergympiecd = makeseqlist(winter_hidstateseqgympie, length(winter))
-write.fasta(wintergympiecd, names = names(combcd)[winter], file.out = "/Volumes/Nifty/QUT/HMM/hiddenstates/fastafiles/wintergympiecd.txt")
+write.fasta(wintergympiecd, names = names(combcd)[winter], nbchar = 33, file.out = "/Volumes/Nifty/QUT/HMM/hiddenstates/fastafiles/wintergympiecd.txt")
 
 springgympiecd = makeseqlist(spring_hidstateseqgympie, length(spring))
 write.fasta(springgympiecd, names = names(combcd)[spring], file.out = "/Volumes/Nifty/QUT/HMM/hiddenstates/fastafiles/springgympiecd.txt")
@@ -135,6 +142,31 @@ write.fasta(summergympiecd, names = names(combcd)[summer], file.out = "/Volumes/
 autumngympiecd = makeseqlist(autumn_hidstateseqgympie, length(autumn))
 write.fasta(autumngympiecd, names = names(combcd)[autumn], file.out = "/Volumes/Nifty/QUT/HMM/hiddenstates/fastafiles/autumngympiecd.txt")
 
-test = readBStringSet("/Volumes/Nifty/QUT/HMM/hiddenstates/fastafiles/wintergympiecd.txt", format="fasta",
+#Hidden state sequence of gympie starting at civil dawn for just winter
+hiddenstatesequencewintergympiecd = readBStringSet("/Volumes/Nifty/QUT/HMM/hiddenstates/fastafiles/wintergympiecd.txt", format="fasta",
                       nrec=-1L, skip=0L, seek.first.rec=FALSE, use.names=TRUE)
-letterFrequency(test, uniqueLetters(test))
+
+######WOONDUM#####
+#days since the start of the experiment that correspond with the start and ending date of the season
+winter_w =  winter+397
+spring_w = spring+397
+summer_w = summer+397
+autumn_w = autumn+397
+
+#the hidden state sequences for each season in a stslist format 
+winter_hidstateseqwoondum = hidpaths_combcd[winter_w,][1:length(winter_w),]
+spring_hidstateseqwoondum = hidpaths_combcd[spring_w,][1:length(spring_w),]
+summer_hidstateseqwoondum = hidpaths_combcd[summer_w,][1:length(summer_w),]
+autumn_hidstateseqwoondum = hidpaths_combcd[autumn_w,][1:length(autumn_w),]
+#Create a list containing the hidden state sequences and write out a fasta file for woondum
+winterwoondumcd = makeseqlist(winter_hidstateseqwoondum, length(winter))
+write.fasta(winterwoondumcd, names = names(combcd)[winter], file.out = "/Volumes/Nifty/QUT/HMM/hiddenstates/fastafiles/winterwoondumcd.txt")
+
+springwoondumcd = makeseqlist(spring_hidstateseqwoondum, length(spring))
+write.fasta(springwoondumcd, names = names(combcd)[spring], file.out = "/Volumes/Nifty/QUT/HMM/hiddenstates/fastafiles/springwoondumcd.txt")
+
+summerwoondumcd = makeseqlist(summer_hidstateseqwoondum, length(summer))
+write.fasta(summerwoondumcd, names = names(combcd)[summer], file.out = "/Volumes/Nifty/QUT/HMM/hiddenstates/fastafiles/summerwoondumcd.txt")
+
+autumnwoondumcd = makeseqlist(autumn_hidstateseqwoondum, length(autumn))
+write.fasta(autumnwoondumcd, names = names(combcd)[autumn], file.out = "/Volumes/Nifty/QUT/HMM/hiddenstates/fastafiles/autumnwoondumcd.txt")
