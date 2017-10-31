@@ -35,6 +35,7 @@ namespace AnalysisPrograms
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
+    using AudioAnalysisTools.LongDurationSpectrograms.Zooming;
     using PowerArgs;
     using TowseyLibrary;
 
