@@ -135,8 +135,11 @@ namespace AnalysisPrograms
             // The drive: work = G; home = E
             drive = "G";
 
+            /*
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\ConcatTesting\\TheData"),
+            DirectoryInfo[] dataDirs =
+            {
+                new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\ConcatTesting\\TheData"),
             };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
             string opFileStem = "SarahLowe";
@@ -146,10 +149,11 @@ namespace AnalysisPrograms
             bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
             dtoStart = new DateTimeOffset(2017, 06, 24, 0, 0, 0, TimeSpan.Zero);
             dtoEnd = new DateTimeOffset(2017, 07, 02, 0, 0, 0, TimeSpan.Zero);
+
             // change PMN to POW because PMN not available in these recordings
             colorMap2 = "BGN-PMN-R3D";
-
-            // ########################## END of Yvonne's recordings of SM2 and SM4
+            */
+            // ########################## END of Sarah Lowe's recordings
 
             /*
             // ########################## CONCATENATION of Yvonne's recordings of SM2 and SM4
@@ -171,6 +175,22 @@ namespace AnalysisPrograms
             colorMap2 = "BGN-POW-CLS";
             // ########################## END of Yvonne's recordings of SM2 and SM4
             */
+
+            // ########################## CONCATENATION of Yvonne's BAT recordings
+            // The drive: work = G; home = E
+            drive = "G";
+            // top level directory AVAILAE JOB #181
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\WavFiles\\Bats\\YvonneBats_Gympie20170906\\GympieNP"),
+            };
+            string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
+            string opFileStem = "GympieBATS_2017August";
+            string opPath = $"{drive}:\\SensorNetworks\\Output\\Bats\\Bats2";
+            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\Output\\Bats\\config\\SpectrogramFalseColourConfig.yml");
+            FileInfo sunriseDatafile = null;
+            bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
+            dtoStart = new DateTimeOffset(2017, 08, 10, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2017, 08, 10, 0, 0, 0, TimeSpan.Zero);
+            // ########################## END of Yvonne's BAT recordings
 
             /*
             // ########################## CONCATENATION of Tshering's Bhutan recordings
@@ -460,12 +480,11 @@ namespace AnalysisPrograms
             }
 
             verbose = arguments.Verbose;
-            IndexMatrices.Verbose = verbose;
 
             if (arguments.InputDataDirectory != null)
             {
                 arguments.InputDataDirectories =
-                    (arguments.InputDataDirectories ?? new DirectoryInfo[0]).Concat(new[] { arguments.InputDataDirectory}).ToArray();
+                    (arguments.InputDataDirectories ?? new DirectoryInfo[0]).Concat(new[] { arguments.InputDataDirectory }).ToArray();
             }
 
             if (verbose)
@@ -638,7 +657,8 @@ namespace AnalysisPrograms
 
                 var dictionaryOfSummaryIndices = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, resultsDir, indexGenerationData, opFileStem);
 
-                // REALITY CHECK - check for continuous zero indices or anything else that might indicate defective signal or incomplete analysis of recordings
+                // REALITY CHECK - check for continuous zero indices or anything else that might indicate defective signal
+                // or incomplete analysis of recordings
                 var indexErrors = ErroneousIndexSegments.DataIntegrityCheck(dictionaryOfSummaryIndices);
                 ErroneousIndexSegments.WriteErrorsToFile(indexErrors, resultsDir, opFileStem);
 
@@ -951,12 +971,12 @@ namespace AnalysisPrograms
             Console.WriteLine($"Final number of ribbons/days = {imageFiles.Length}");
         } //ConcatenateRibbonImages
 
-        static void AddTidalInfo(Bitmap image, SunAndMoon.SunMoonTides[] tidalInfo, DateTimeOffset dto)
+        public static void AddTidalInfo(Bitmap image, SunAndMoon.SunMoonTides[] tidalInfo, DateTimeOffset dto)
         {
-            Pen yellowPen = new Pen(Brushes.Yellow);
-            Pen cyanPen = new Pen(Brushes.Lime, 2);
-            Pen whitePen = new Pen(Brushes.White, 2);
-            Graphics spgCanvas = Graphics.FromImage(image);
+            var yellowPen = new Pen(Brushes.Yellow);
+            var cyanPen = new Pen(Brushes.Lime, 2);
+            var whitePen = new Pen(Brushes.White, 2);
+            var spgCanvas = Graphics.FromImage(image);
 
             foreach (SunAndMoon.SunMoonTides smt in tidalInfo)
             {
@@ -1334,6 +1354,7 @@ namespace AnalysisPrograms
             DirectoryInfo[] dataDirs =
             {
                 new DirectoryInfo(dataDir.FullName + "\\Indonesia_2Reduced"),
+
                 //new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2Reduced"),
                 //new DirectoryInfo($"{drive}:\\Work\\GitHub\\audio-analysis\\Acoustics\\Acoustics.Test\\TestResources\\Concatenation\\Indonesia20160726"),
             };
@@ -1373,6 +1394,5 @@ namespace AnalysisPrograms
             Log.Success("Completed Concatenation Test 4 where ConcatenateEverythingYouCanLayYourHandsOn = true");
             Console.WriteLine("\n\n");
         }
-
     }
 }

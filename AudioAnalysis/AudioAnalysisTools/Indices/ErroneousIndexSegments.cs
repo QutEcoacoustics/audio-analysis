@@ -30,16 +30,20 @@ namespace AudioAnalysisTools.Indices
         // #####################################################################################################################
 
         /// <summary>
-        /// Does three data integrity checks.
+        /// Does two or three data integrity checks.
         /// </summary>
         /// <param name="summaryIndices">a dictionary of summary indices</param>
+        /// <param name="icd">index calculation duration</param>
         /// <returns>a list of erroneous segments</returns>
         public static List<ErroneousIndexSegments> DataIntegrityCheck(Dictionary<string, double[]> summaryIndices)
         {
+            // Integrity check 1
             var errors = DataIntegrityCheckForNoRecording(summaryIndices);
+
+            // Integrity check 2
             errors.AddRange(DataIntegrityCheckForZeroSignal(summaryIndices));
 
-            // this error check not done for time being - a bit unrealistic
+            // Integrity check 3. This error check not done for time being - a bit unrealistic
             // errors.AddRange(DataIntegrityCheckIndices(summaryIndices));
             return errors;
         }
@@ -48,6 +52,7 @@ namespace AudioAnalysisTools.Indices
         /// Does three data integrity checks.
         /// </summary>
         /// <param name="spectralIndices">a dictionary of spectral indices</param>
+        /// <param name="icd">index calculation duration</param>
         /// <returns>a list of erroneous segments</returns>
         public static List<ErroneousIndexSegments> DataIntegrityCheck(Dictionary<string, double[,]> spectralIndices)
         {
@@ -355,6 +360,11 @@ namespace AudioAnalysisTools.Indices
             return bmp;
         }
 
+        /// <summary>
+        /// Draws a error patch based on properties of the erro type.
+        /// </summary>
+        /// <param name="height">height in pixels of the error patch</param>
+        /// <param name="textInVerticalOrientation">orientation of error text should match orientation of the patch</param>
         public Bitmap DrawErrorPatch(int height, bool textInVerticalOrientation)
         {
             int width = this.EndPosition - this.StartPosition + 1;
