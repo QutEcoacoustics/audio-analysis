@@ -47,23 +47,27 @@ namespace AnalysisPrograms.Production
         /// <param name="path"></param>
         /// <param name="readOnly"></param>
         /// <returns></returns>
-        public static IFileSystem DetermineFileSystem(string path, bool readOnly = false)
+        public static (IFileSystem, DirectoryEntry) DetermineFileSystem(string path, bool readOnly = false)
         {
             var emptyPath = string.IsNullOrWhiteSpace(path);
 
             Log.Debug($"Determining file system for {path}");
 
             IFileSystem fileSystem;
+            DirectoryEntry baseEntry;
 
             if (emptyPath)
             {
                 fileSystem = new PhysicalFileSystem();
+                baseEntry = fileSystem.GetDirectoryEntry(
+                    fileSystem.ConvertPathFromInternal(Directory.GetCurrentDirectory()));
             }
             else if (Directory.Exists(path))
             {
                 var physicalFileSystem = new PhysicalFileSystem();
                 var internalPath = physicalFileSystem.ConvertPathFromInternal(path);
                 fileSystem = new SubFileSystem(physicalFileSystem, internalPath);
+                baseEntry = fileSystem.GetDirectoryEntry(UPath.Root);
             }
             else
             {
@@ -80,11 +84,13 @@ namespace AnalysisPrograms.Production
                         throw new NotSupportedException(
                             $"Cannot determine file system for given extension {extension}");
                 }
+
+                baseEntry = new DirectoryEntry(fileSystem, UPath.Root);
             }
 
             Log.Debug($"Filesystem for {path} is {fileSystem.GetType().Name}");
 
-            return fileSystem;
+            return (fileSystem, baseEntry);
         }
 
         public static AnalysisIo GetInputOutputFileSystems(string inputPath, string outputPath)

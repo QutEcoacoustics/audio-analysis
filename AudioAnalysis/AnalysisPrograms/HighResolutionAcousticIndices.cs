@@ -224,7 +224,7 @@ namespace AnalysisPrograms
                     var zoomingArguments = new DrawZoomingSpectrograms.Arguments
                     {
                         // use the default set of index properties in the AnalysisConfig directory.
-                        SourceDirectory = arguments.CsvDirectory,
+                        SourceDirectory = arguments.CsvDirectory.FullName,
                         Output = arguments.ZoomOutputDir.FullName,
                         SpectrogramZoomingConfig = arguments.HiResZoomConfig,
 
@@ -244,14 +244,14 @@ namespace AnalysisPrograms
                     common.IndexProperties = IndexProperties.GetIndexProperties(indexPropertiesPath);
 
                     // get the indexDistributions and the indexGenerationData AND the //common.OriginalBasename
-                    common.CheckForNeededFiles(zoomingArguments.SourceDirectory);
+                    common.CheckForNeededFiles(zoomingArguments.SourceDirectory.ToDirectoryInfo());
                     // Create directory if not exists
                     if (!Directory.Exists(zoomingArguments.Output))
                     {
                         Directory.CreateDirectory(zoomingArguments.Output);
                     }
 
-                    ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(zoomingArguments.SourceDirectory,
+                    ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(zoomingArguments.SourceDirectory.ToDirectoryInfo(),
                                                                             zoomingArguments.Output.ToDirectoryInfo(),
                                                                             common,
                                                                             TimeSpan.FromMinutes(focalMinute),
