@@ -21,7 +21,7 @@ namespace Acoustics.Test.AnalysisPrograms.Production
         [DataRow(null)]
         public void TestFullFileSystem(string path)
         {
-            var fs = FileSystemProvider.DetermineFileSystem(path);
+            var fs = FileSystemProvider.DetermineFileSystem(path).Item1;
 
             Assert.IsInstanceOfType(fs, typeof(PhysicalFileSystem));
         }
@@ -29,7 +29,7 @@ namespace Acoustics.Test.AnalysisPrograms.Production
         [TestMethod]
         public void TestSubFileSystem()
         {
-            var fs = FileSystemProvider.DetermineFileSystem(this.outputDirectory.FullName);
+            var fs = FileSystemProvider.DetermineFileSystem(this.outputDirectory.FullName).Item1;
 
             Assert.IsInstanceOfType(fs, typeof(SubFileSystem));
 
@@ -40,7 +40,7 @@ namespace Acoustics.Test.AnalysisPrograms.Production
         public void TestSqliteFileSystem()
         {
             var path = this.outputDirectory.FullName + "\\test.sqlite3";
-            var fs = FileSystemProvider.DetermineFileSystem(path);
+            var fs = FileSystemProvider.DetermineFileSystem(path).Item1;
 
             Assert.IsInstanceOfType(fs, typeof(SqliteFileSystem));
 

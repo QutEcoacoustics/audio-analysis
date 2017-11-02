@@ -8,6 +8,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
     using global::AudioAnalysisTools.TileImage;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
+    using Zio;
 
     [TestClass]
     public class AbsoluteDateTimeTilerTests
@@ -36,7 +37,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
             this.outputDirectory = PathHelper.GetTempDir();
 
             this.tiler = new Tiler(
-                this.outputDirectory,
+                this.outputDirectory.ToDirectoryEntry(),
                 this.tilingProfile,
                 new SortedSet<double>() { 60.0 },
                 60.0,
@@ -80,7 +81,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
         public void TestPaddingANonBlockTime()
         {
             this.tiler = new Tiler(
-                this.outputDirectory,
+                this.outputDirectory.ToDirectoryEntry(),
                 this.tilingProfileNotRoundStart,
                 new SortedSet<double>() { 60.0 },
                 60.0,

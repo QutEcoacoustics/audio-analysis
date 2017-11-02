@@ -318,6 +318,7 @@
     <Compile Include="AudioAnalysisTools\EventStatistics\EventStatisticsCalculateTests.cs" />
     <Compile Include="AudioAnalysisTools\Indices\ClusterIndexTest.cs" />
     <Compile Include="AudioAnalysisTools\Indices\IndexCalculateTest.cs" />
+    <Compile Include="AudioAnalysisTools\Indices\IndexMatricesTests.cs" />
     <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\LdSpectrogramConfigTests.cs" />
     <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\LdSpectrogramStitchingTests.cs" />
     <Compile Include="AudioAnalysisTools\Oscillations2014\OscillationTests.cs" />

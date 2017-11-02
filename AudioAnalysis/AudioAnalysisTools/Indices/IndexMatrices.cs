@@ -496,83 +496,16 @@ namespace AudioAnalysisTools.Indices
         /// This method reads spectrogram csv files where the first row contains column names
         /// and the first column contains row/time names.
         /// </summary>
-        /// <param name="csvPath"></param>
+        /// <param name="csvFile"></param>
         /// <param name="binCount"></param>
         /// <returns></returns>
-        public static double[,] ReadSpectrogram(FileInfo csvPath, out int binCount)
+        public static double[,] ReadSpectrogram(FileInfo csvFile, out int binCount)
         {
-            //TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor;
-            //double[,] matrix = Csv.ReadMatrixFromCsv<double>(csvPath, dimensionality);
-            // MICHAEL: the new Csv class can read this in, and optionally transpose as it reads
-            double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath.FullName);
-            binCount = matrix.GetLength(1) - 1; // -1 because first bin is the index numbers
-            // calculate the window/frame that was used to generate the spectra. This value is only used to place grid lines on the final images
+            double[,] matrix = Csv.ReadMatrixFromCsv<double>(csvFile, TwoDimensionalArray.Normal);
+            binCount = matrix.GetLength(1);
 
-            // remove left most column - consists of index numbers
-            matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, binCount);
             return matrix;
         }
-
-/*
-        public static Dictionary<string, double[,]> ReadCsvFiles(FileInfo[] paths, string[] keys)
-        {
-            string warning = null;
-
-            Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
-            for (int i = 0; i < keys.Length; i++)
-            {
-                DateTime now1 = DateTime.Now;
-
-                // get the path containing keys[i]
-                FileInfo file = null;
-                for (int p = 0; p < paths.Length; p++)
-                {
-                    if (paths[p].Name.Contains(keys[i]))
-                    {
-                        file = paths[p];
-                        break;
-                    }
-                }
-
-                if (file.Exists)
-                {
-                    int freqBinCount;
-                    double[,] matrix = IndexMatrices.ReadSpectrogram(file, out freqBinCount);
-                    matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-                    spectrogramMatrices.Add(keys[i], matrix);
-                }
-                else
-                {
-                    if (warning == null)
-                    {
-                        warning = "\nWARNING: from method IndexMatrices.ReadCsvFiles()";
-                    }
-
-                    warning += "\n      {0} File does not exist: {1}".Format2(keys[i], file.FullName);
-                }
-
-                if (IndexMatrices.Verbose)
-                { 
-                    DateTime now2 = DateTime.Now;
-                    TimeSpan et = now2 - now1;
-                    LoggedConsole.WriteLine("Time to read spectral index file <" + keys[i] + "> = " + et.TotalSeconds + " seconds");
-                }
-            }
-
-            if (warning != null)
-            {
-                LoggedConsole.WriteLine(warning);
-            }
-
-            if (spectrogramMatrices.Count == 0)
-            {
-                LoggedConsole.WriteLine("WARNING: from method IndexMatrices.ReadCsvFiles()");
-                LoggedConsole.WriteLine("         NO FILES were read from the passed paths");
-            }
-
-            return spectrogramMatrices;
-        }
-        */
 
         /// <summary>
         /// returns dictionary of spectral indices.

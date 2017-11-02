@@ -16,6 +16,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
     using TestHelpers;
+    using Zio;
 
     [TestClass]
     public class TilerTests
@@ -32,7 +33,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
             this.outputDirectory = PathHelper.GetTempDir();
 
             this.tiler = new Tiler(
-                this.outputDirectory,
+                this.outputDirectory.ToDirectoryEntry(),
                 this.tilingProfile,
                 new SortedSet<double>() { 60.0, 24, 12, 6, 2, 1 },
                 60.0,
@@ -121,7 +122,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
             List<ISuperTile> moqCurrent = new List<ISuperTile>(testCases.Length),
                              moqNext = new List<ISuperTile>(testCases.Length);
             var tilerMock = new Mock<Tiler>(
-                this.outputDirectory,
+                this.outputDirectory.ToDirectoryEntry(),
                 this.tilingProfile,
                 new SortedSet<double>() { 60.0, 24, 12, 6, 2, 1 },
                 60.0,
@@ -139,17 +140,17 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
 
             tilerMock.Object.TileMany(testCases);
 
-            const ISuperTile Empty = null;
+            const ISuperTile empty = null;
             var expected = new[]
                                {
-                                   Tuple.Create(Empty, testCases[5]), Tuple.Create(testCases[5], Empty),
-                                   Tuple.Create(Empty, Empty), Tuple.Create(Empty, testCases[0]),
-                                   Tuple.Create(testCases[0], testCases[1]), Tuple.Create(testCases[1], Empty),
-                                   Tuple.Create(Empty, Empty), Tuple.Create(Empty, testCases[4]),
+                                   Tuple.Create(empty, testCases[5]), Tuple.Create(testCases[5], empty),
+                                   Tuple.Create(empty, empty), Tuple.Create(empty, testCases[0]),
+                                   Tuple.Create(testCases[0], testCases[1]), Tuple.Create(testCases[1], empty),
+                                   Tuple.Create(empty, empty), Tuple.Create(empty, testCases[4]),
                                    Tuple.Create(testCases[4], testCases[3]), Tuple.Create(testCases[3], testCases[2]),
-                                   Tuple.Create(testCases[2], Empty), Tuple.Create(Empty, Empty),
-                                   Tuple.Create(Empty, testCases[6]), Tuple.Create(testCases[6], Empty),
-                                   Tuple.Create(Empty, Empty),
+                                   Tuple.Create(testCases[2], empty), Tuple.Create(empty, empty),
+                                   Tuple.Create(empty, testCases[6]), Tuple.Create(testCases[6], empty),
+                                   Tuple.Create(empty, empty),
                                };
 
             Assert.AreEqual(expected.Length, moqCurrent.Count);
@@ -426,7 +427,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
 
             // scale size results in two images drawn
             var singleScaleTiler = new Tiler(
-                this.outputDirectory,
+                this.outputDirectory.ToDirectoryEntry(),
                 this.tilingProfile,
                 new SortedSet<double>() { 0.16 },
                 60.0,
@@ -468,7 +469,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
 
             // scale size results in two images drawn
             var singleScaleTiler = new Tiler(
-                this.outputDirectory,
+                this.outputDirectory.ToDirectoryEntry(),
                 this.tilingProfile,
                 new SortedSet<double>() { 0.16 },
                 60.0,
@@ -507,7 +508,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
                 };
 
             var singleScaleTiler = new Tiler(
-                this.outputDirectory,
+                this.outputDirectory.ToDirectoryEntry(),
                 this.tilingProfile,
                 new SortedSet<double>() { 0.16 },
                 60.0,

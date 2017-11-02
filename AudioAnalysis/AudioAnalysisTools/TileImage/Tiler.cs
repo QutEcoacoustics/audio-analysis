@@ -14,40 +14,55 @@ namespace AudioAnalysisTools.TileImage
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
     using log4net;
     using TowseyLibrary;
+    using Zio;
 
     public class Tiler
     {
-        #region Fields
-
         private const double Epsilon = 1.0 / (2.0 * TimeSpan.TicksPerSecond);
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly SortedSet<Layer> calculatedLayers;
-        private readonly DirectoryInfo outputDirectory;
+        private readonly DirectoryEntry output;
         private readonly TilingProfile profile;
         private readonly Dictionary<double, HashSet<Tuple<int, int>>> superTileHistory = new Dictionary<double, HashSet<Tuple<int, int>>>();
         private readonly Dictionary<string, Tuple<bool, bool>> tileNameHistory = new Dictionary<string, Tuple<bool, bool>>();
 
-        #endregion
-
-        #region Constructors and Destructors
-
         public Tiler(
-            DirectoryInfo outputDirectory,
+            DirectoryEntry output,
             TilingProfile profile,
             SortedSet<double> scales,
             double unitScale,
             int unitLength)
-            : this(outputDirectory, profile, scales, unitScale, unitLength, scales, unitScale, unitLength)
+            : this(output, profile, scales, unitScale, unitLength, scales, unitScale, unitLength)
         {
         }
 
         public Tiler(
-            DirectoryInfo outputDirectory,
+            DirectoryEntry output,
+            TilingProfile profile,
+            double xUnitScale,
+            int unitWidth,
+            double yUnitScale,
+            int unitHeight)
+            : this(
+                output,
+                profile,
+                new SortedSet<double>() { xUnitScale },
+                xUnitScale,
+                unitWidth,
+                new SortedSet<double>() { yUnitScale },
+                yUnitScale,
+                unitHeight)
+        {
+        }
+
+        public Tiler(
+            DirectoryEntry output,
             TilingProfile profile,
             SortedSet<double> xScales,
             double xUnitScale,
@@ -56,7 +71,7 @@ namespace AudioAnalysisTools.TileImage
             double yUnitScale,
             int unitHeight)
         {
-            this.outputDirectory = outputDirectory;
+            this.output = output;
             this.profile = profile;
 
             this.calculatedLayers = this.CalculateLayers(
@@ -70,54 +85,15 @@ namespace AudioAnalysisTools.TileImage
             this.WriteImages = true;
         }
 
-        public Tiler(
-            DirectoryInfo outputDirectory,
-            TilingProfile profile,
-            double xUnitScale,
-            int unitWidth,
-            double yUnitScale,
-            int unitHeight)
-            : this(
-                outputDirectory,
-                profile,
-                new SortedSet<double>() { xUnitScale },
-                xUnitScale,
-                unitWidth,
-                new SortedSet<double>() { yUnitScale },
-                yUnitScale,
-                unitHeight)
-        {
-        }
+        public SortedSet<Layer> CalculatedLayers => this.calculatedLayers;
 
-        #endregion
-
-        #region Public Properties
-
-        public SortedSet<Layer> CalculatedLayers
-        {
-            get
-            {
-                return this.calculatedLayers;
-            }
-        }
-
-        public DirectoryInfo OutputDirectory
-        {
-            get
-            {
-                return this.outputDirectory;
-            }
-        }
+        public UPath OutputDirectory => this.output.Path;
 
         /// <summary>
         /// Gets or sets a value indicating whether images are written.
         /// Dirty hack to short circuit Tile's functionality for unit testing
         /// </summary>
         internal bool WriteImages { get; set; }
-
-        #endregion
-
-        #region Public Methods and Operators
 
         /// <summary>
         /// Split one large image (a super tile) into smaller tiles
@@ -353,9 +329,9 @@ namespace AudioAnalysisTools.TileImage
                     }
 
                     // write tile to disk
-                    string outputTilePath = this.OutputDirectory.CombineFile(name + ".png").FullName;
+                    UPath outputTilePath = this.output.Path / (name + "." + MediaTypes.ExtPng);
                     Log.Debug("Saving tile: " + outputTilePath);
-                    tileImage.Save(outputTilePath);
+                    tileImage.Save(this.output.FileSystem, outputTilePath);
                 }
             }
         }
@@ -372,8 +348,6 @@ namespace AudioAnalysisTools.TileImage
                 }
             }
         }
-
-        #endregion
 
         /// <summary>
         /// Returns a set of rectangles that can be used to compose a baseRectangle
@@ -450,8 +424,6 @@ namespace AudioAnalysisTools.TileImage
 
             return parts.OrderBy(ic => ic.YBias).ThenBy(ic => ic.XBias).ToArray();
         }
-
-        #region Methods
 
         private void CheckForTileDuplication(ISuperTile superTile)
         {
@@ -690,7 +662,5 @@ namespace AudioAnalysisTools.TileImage
 
             return results;
         }
-
-        #endregion
     }
 }
