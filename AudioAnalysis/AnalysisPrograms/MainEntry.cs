@@ -49,6 +49,8 @@ namespace AnalysisPrograms
             // note: Exception handling can be found in CurrentDomainOnUnhandledException
             Execute(Arguments);
 
+            LogProgramStats();
+
             HangBeforeExit();
 
             // finally return error level

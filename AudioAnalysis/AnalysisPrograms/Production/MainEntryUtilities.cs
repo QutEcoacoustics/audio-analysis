@@ -548,5 +548,19 @@ namespace AnalysisPrograms
 //            LoggedConsole.WriteErrorLine("Clean wrapper ERROR");
 //            LoggedConsole.WriteFatalLine("Clean wrapper FATAL", new Exception("I'm a fake"));
         }
+
+        private static void LogProgramStats()
+        {
+            var thisProcess = Process.GetCurrentProcess();
+            var stats = new
+            {
+                Runtime = (DateTime.Now - thisProcess.StartTime).TotalSeconds,
+                PeakWorkingSet = thisProcess.PeakWorkingSet64,
+            };
+
+            var statsString = "Programs stats:\n" + Json.SerialiseToString(stats, prettyPrint: true);
+
+            NoConsole.Log.Debug(statsString);
+        }
     }
 }
