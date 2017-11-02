@@ -583,7 +583,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             bmpNeg.Save(Path.Combine(outputDirectory.FullName, outputFileName + ".COLNEG.png"));
 
-            string key = InitialiseIndexProperties.KEYspectralBGN;
+            string key = InitialiseIndexProperties.KeYspectralBgn;
             if (!this.SpectrogramMatrices.ContainsKey(key))
             {
                 LoggedConsole.WriteLine("\nWARNING: SG {0} does not contain key: {1}", outputFileName, key);

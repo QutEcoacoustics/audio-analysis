@@ -13,12 +13,23 @@ namespace Acoustics.Shared
 
     public class AnalysisIo
     {
-        public AnalysisIo(IFileSystem input, IFileSystem output, IFileSystem temp)
+        public AnalysisIo((IFileSystem FileSystem, FileSystemEntry Base) input, (IFileSystem FileSystem, DirectoryEntry Base) output, (IFileSystem FileSystem, DirectoryEntry Base)? temp)
         {
-            this.Input = input;
-            this.Output = output;
-            this.Temp = temp ?? input;
+            this.Input = input.FileSystem;
+            this.InputBase = input.Base;
+
+            this.Output = output.FileSystem;
+            this.OutputBase = output.Base;
+
+            this.Temp = (temp ?? input).FileSystem;
+            this.TempBase = (DirectoryEntry)(temp ?? input).Base;
         }
+
+        public FileSystemEntry InputBase { get; set; }
+
+        public DirectoryEntry OutputBase { get; set; }
+
+        public DirectoryEntry TempBase { get; set; }
 
         public IFileSystem Input { get; }
 

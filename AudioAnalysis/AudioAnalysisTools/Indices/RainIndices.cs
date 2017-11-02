@@ -22,8 +22,8 @@ namespace AudioAnalysisTools.Indices
 
     public static class RainIndices
     {
-        public const string header_rain   = InitialiseIndexProperties.keyRAIN;
-        public const string header_cicada = InitialiseIndexProperties.keyCICADA;
+        public const string header_rain   = InitialiseIndexProperties.KeyRain;
+        public const string header_cicada = InitialiseIndexProperties.KeyCicada;
         public const string header_negative = "none";
 
 

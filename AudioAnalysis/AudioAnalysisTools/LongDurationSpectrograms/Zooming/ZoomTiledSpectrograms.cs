@@ -32,7 +32,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
         /// </summary>
         public static void DrawTiles(
             AnalysisIo io,
-            DirectoryEntry inputDirectory,
+            /*DirectoryEntry inputDirectory,*/
             /*DirectoryEntry outputDirectory,*/
             ZoomArguments common,
             string analysisTag)
@@ -125,7 +125,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             // pass it scales for x and y-axis
             // also pass it unit scale relations (between unit scale and unit height/width) to use as a reference point
             var tiler = new Tiler(
-                UPath.Root,
+                io.OutputBase,
                 namingPattern,
                 xScales: new SortedSet<double>(allImageScales),
                 xUnitScale: XNominalUnitScale,
@@ -135,7 +135,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
                 unitHeight: namingPattern.TileHeight);
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
-            var (spectra, filteredIndexProperties) = LoadSpectra(inputDirectory, analysisTag, fileStem, indexProperties);
+            var (spectra, filteredIndexProperties) = LoadSpectra(io, analysisTag, fileStem, indexProperties);
 
             // TOP MOST ZOOMED-OUT IMAGES
             Log.Info("START DRAWING ZOOMED-OUT INDEX SPECTROGRAMS");
@@ -188,7 +188,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 
 
                             var superTilingResults = DrawSuperTilesFromSingleFrameSpectrogram(
-                                inputDirectory,
+                                null /*inputDirectory*/, //TODO:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                                 ldsConfig,
                                 filteredIndexProperties,
                                 zoomConfig,
@@ -215,19 +215,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 
                     next = minute + 1 < minuteCount ? generateStandardSpectrogramGenerator(minute + 1) : null;
 
-                        // for each scale level of the results
-                        for (int i = 0; i < current.Value.Length; i++)
-                        {
-                            // finally tile the output
-                            Log.Debug("Begin tile production for minute: " + minute);
-                            tiler.Tile(
-                                previous?.Value[i],
-                                current.Value[i],
-                                next?.Value[i]);
-                            Log.Debug("Begin tile production for minute: " + minute);
-                        }
-
-                    
+                    // for each scale level of the results
+                    for (int i = 0; i < current.Value.Length; i++)
+                    {
+                        // finally tile the output
+                        Log.Debug("Begin tile production for minute: " + minute);
+                        tiler.Tile(
+                            previous?.Value[i],
+                            current.Value[i],
+                            next?.Value[i]);
+                        Log.Debug("Begin tile production for minute: " + minute);
+                    }
                 }
             }
 
@@ -235,7 +233,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
         }
 
         private static (Dictionary<string, double[,]>, Dictionary<string, IndexProperties>) LoadSpectra(
-            DirectoryInfo inputDirectory,
+            AnalysisIo io,
             string analysisTag,
             string fileStem,
             Dictionary<string, IndexProperties> indexProperties)
@@ -245,7 +243,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 
             Stopwatch timer = Stopwatch.StartNew();
             Dictionary<string, double[,]> spectra = IndexMatrices.ReadCsvFiles(
-                inputDirectory,
+                null /*inputDirectory*/, //TODO:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!,
                 fileStem + FilenameHelpers.BasenameSeparator + analysisTag,
                 keys);
             timer.Stop();

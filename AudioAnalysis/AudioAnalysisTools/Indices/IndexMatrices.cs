@@ -473,17 +473,13 @@ namespace AudioAnalysisTools.Indices
         /// This method reads spectrogram csv files where the first row contains column names
         /// and the first column contains row/time names.
         /// </summary>
-        public static double[,] ReadSpectrogram(FileInfo csvPath, out int binCount)
+        /// <param name="csvFile"></param>
+        /// <param name="binCount"></param>
+        /// <returns></returns>
+        public static double[,] ReadSpectrogram(FileInfo csvFile, out int binCount)
         {
-            //TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor;
-            //double[,] matrix = Csv.ReadMatrixFromCsv<double>(csvPath, dimensionality);
-            // MICHAEL: the new Csv class can read this in, and optionally transpose as it reads
-            double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath.FullName);
-            binCount = matrix.GetLength(1) - 1; // -1 because first bin is the index numbers
-            // calculate the window/frame that was used to generate the spectra. This value is only used to place grid lines on the final images
-
-            // remove left most column - consists of index numbers
-            matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, binCount);
+            double[,] matrix = Csv.ReadMatrixFromCsv<double>(csvFile, TwoDimensionalArray.Normal);
+            binCount = matrix.GetLength(1);
             return matrix;
         }
 
