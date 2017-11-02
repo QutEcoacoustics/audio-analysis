@@ -93,8 +93,7 @@ namespace AnalysisPrograms.Draw.Zooming
                 case Arguments.ZoomActionType.Tile:
                     // Create the super tiles for a full set of recordings
                     ZoomTiledSpectrograms.DrawTiles(
-                        arguments.SourceDirectory,
-                        arguments.Output.ToDirectoryInfo(),
+                        io,
                         common,
                         Acoustic.TowseyAcoustic);
 

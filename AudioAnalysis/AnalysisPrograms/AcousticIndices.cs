@@ -34,6 +34,7 @@ namespace AnalysisPrograms
     using PowerArgs;
     using Production;
     using TowseyLibrary;
+    using Zio;
 
     public class Acoustic : IAnalyser2
     {
@@ -588,7 +589,7 @@ namespace AnalysisPrograms
             // pad out image so it produces a whole number of tiles
             // this solves the asymmetric right padding of short audio files
             var width = (int)(Math.Ceiling(image.Width / Scale) * Scale);
-            var tiler = new Tiler(outputDirectory, tilingProfile, Scale, width, 1.0, image.Height);
+            var tiler = new Tiler(outputDirectory.ToDirectoryEntry(), tilingProfile, Scale, width, 1.0, image.Height);
 
             // prepare super tile
             var tile = new TimeOffsetSingleLayerSuperTile() { Image = image, TimeOffset = gap, Scale = scale};
