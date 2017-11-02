@@ -22,10 +22,14 @@ namespace AnalysisPrograms.Draw.Zooming
             [ArgDescription("When doing a `Focused` stack, which minute to center on. Accepts partial minutes.")]
             public float? FocusMinute { get; set; }
 
-            [ArgDescription(FileSystemProvider.DestinationFileSystem)]
+            [ArgDescription(FileSystemProvider.DestinationPath)]
             [ArgRequired]
             [ArgPosition(3)]
             public string Output { get; set; }
+
+            [ArgDescription(FileSystemProvider.DestinationFormat)]
+            [ArgOneOfThese("", FileSystemProvider.SqlitePattern)]
+            public string OutputFormat { get; set; }
 
             [ArgDescription("The source directory of files output from Towsey.Acoustic (the Index analysis) to operate on")]
             [ArgPosition(2)]

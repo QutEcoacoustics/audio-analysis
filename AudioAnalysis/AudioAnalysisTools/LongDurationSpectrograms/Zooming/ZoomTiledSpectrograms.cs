@@ -32,8 +32,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
         /// </summary>
         public static void DrawTiles(
             AnalysisIo io,
-            /*DirectoryEntry inputDirectory,*/
-            /*DirectoryEntry outputDirectory,*/
             ZoomArguments common,
             string analysisTag)
         {
