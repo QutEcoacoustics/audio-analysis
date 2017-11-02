@@ -23,10 +23,12 @@ namespace AnalysisPrograms.Production
     /// </summary>
     public static class FileSystemProvider
     {
-        public const string DestinationFileSystem =
-                "A destination path to write output to. The path can be a directory or a file that has an \".sqlite3\" extension.";
+        public const string DestinationPath =
+            "A destination path to write output to. The path should be a directory";
 
-        private const string SqlitePattern = ".sqlite3";
+        public const string DestinationFormat = "If empty, will write files. If \"sqlite3\" files will be written to a Sqlite3 database.";
+
+        public const string SqlitePattern = "sqlite3";
 
         private static readonly ILog Log = LogManager.GetLogger(nameof(FileSystemProvider));
 
@@ -75,7 +77,7 @@ namespace AnalysisPrograms.Production
 
                 switch (extension)
                 {
-                    case SqlitePattern:
+                    case "." + SqlitePattern:
                         fileSystem = new SqliteFileSystem(
                             path,
                             readOnly ? OpenMode.ReadOnly : OpenMode.ReadWriteCreate);

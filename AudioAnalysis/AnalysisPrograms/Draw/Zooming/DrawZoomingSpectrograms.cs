@@ -6,6 +6,7 @@
 namespace AnalysisPrograms.Draw.Zooming
 {
     using System;
+    using System.IO;
     using Acoustics.Shared;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
@@ -25,8 +26,7 @@ namespace AnalysisPrograms.Draw.Zooming
         {
             if (arguments == null)
             {
-                throw new NotSupportedException();
-                arguments = Dev();
+                throw new NoDeveloperMethodException();
             }
 
             string description;
@@ -45,8 +45,6 @@ namespace AnalysisPrograms.Draw.Zooming
             }
 
             LoggedConsole.WriteLine(description);
-
-            var io = FileSystemProvider.GetInputOutputFileSystems(arguments.SourceDirectory, arguments.Output);
 
             LoggedConsole.WriteLine("# Spectrogram Zooming config  : " + arguments.SpectrogramZoomingConfig);
             LoggedConsole.WriteLine("# Input Directory             : " + arguments.SourceDirectory);
@@ -67,6 +65,10 @@ namespace AnalysisPrograms.Draw.Zooming
             common.CheckForNeededFiles(arguments.SourceDirectory.ToDirectoryInfo());
 
             LoggedConsole.WriteLine("# File name of recording      : " + common.OriginalBasename);
+
+            var io = FileSystemProvider.GetInputOutputFileSystems(
+                arguments.SourceDirectory,
+                Path.Combine(arguments.Output));
 
             switch (arguments.ZoomAction)
             {
