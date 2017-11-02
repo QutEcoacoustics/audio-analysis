@@ -60,9 +60,8 @@ namespace AudioAnalysisTools.Indices
                     continue;
                 }
 
-                Log.Debug("Reading of file started: " + files[i].FullName);
+                // Log.Debug("Reading of file started: " + files[i].FullName);
                 var rowsOfCsvFile = Csv.ReadFromCsv<SummaryIndexValues>(files[i], throwOnMissingField: false);
-                //Log.Trace("Reading of file finished: " + files[i].FullName);
 
                 summaryIndices.AddRange(rowsOfCsvFile);
 
@@ -213,30 +212,29 @@ namespace AudioAnalysisTools.Indices
 
             foreach (string key in keys)
             {
-                DateTime now1 = DateTime.Now;
+                //DateTime now1 = DateTime.Now;
                 string pattern = "*__" + analysisType + "." + key + ".csv";
                 var files = GetFilesInDirectories(dirs, pattern);
 
                 if (files.Length == 0)
                 {
-                    LoggedConsole.WriteWarnLine("WARNING: No csv files found for KEY=" + key);
+                    LoggedConsole.WriteWarnLine($"{key} WARNING: No csv files found for KEY=" + key);
                     continue;
                 }
 
-                List<double[,]> matrices = ConcatenateSpectralIndexFilesWithTimeCheck(files, indexCalcTimeSpan);
+                List<double[,]> matrices = ConcatenateSpectralIndexFilesWithTimeCheck(files, indexCalcTimeSpan, key);
                 double[,] m = MatrixTools.ConcatenateMatrixRows(matrices);
 
                 //Dictionary<string, double[,]> dict = spectralIndexValues.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
-
                 m = MatrixTools.MatrixRotate90Anticlockwise(m);
                 spectrogramMatrices.Add(key, m);
 
-                var now2 = DateTime.Now;
-                var et = now2 - now1;
-                if (verbose)
-                {
-                    LoggedConsole.WriteLine($"\t\tTime to read <{key}> spectral index files = {et.TotalSeconds:f2} seconds");
-                }
+                //var now2 = DateTime.Now;
+                //var et = now2 - now1;
+                //if (verbose)
+                //{
+                //    LoggedConsole.WriteLine($"\t\tTime to read <{key}> spectral index files = {et.TotalSeconds:f2} seconds");
+                //}
             }
 
             return spectrogramMatrices;
@@ -248,7 +246,8 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         /// <param name="files">All the passed files will be concatenated. Filtering needs to be done somewhere else.</param>
         /// <param name="indexCalcDuration">used to match rows of indices to elapsed time in file names</param>
-        public static List<double[,]> ConcatenateSpectralIndexFilesWithTimeCheck(FileInfo[] files, TimeSpan indexCalcDuration)
+        /// <param name="key">this is used only in case need to write an error message. It identifies the key.</param>
+        public static List<double[,]> ConcatenateSpectralIndexFilesWithTimeCheck(FileInfo[] files, TimeSpan indexCalcDuration, string key)
         {
             TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
             var datesAndFiles = new (DateTimeOffset date, FileInfo file)[files.Length];
@@ -260,14 +259,14 @@ namespace AudioAnalysisTools.Indices
                 var file = files[f];
                 if (!file.Exists)
                 {
-                    LoggedConsole.WriteWarnLine("WARNING: Concatenation Time Check: MISSING FILE: {files[f].FullName}");
+                    LoggedConsole.WriteWarnLine($"WARNING: {key} Concatenation Time Check: MISSING FILE: {files[f].FullName}");
                     continue;
                 }
 
                 DateTimeOffset startDto;
                 if (!FileDateHelpers.FileNameContainsDateTime(file.Name, out startDto, offsetHint))
                 {
-                    LoggedConsole.WriteWarnLine("WARNING: Concatenation Time Check: INVALID DateTime in File Name {file.Name}");
+                    LoggedConsole.WriteWarnLine($"WARNING: {key} Concatenation Time Check: INVALID DateTime in File Name {file.Name}");
                 }
 
                 datesAndFiles[f] = (startDto, file);
@@ -313,7 +312,7 @@ namespace AudioAnalysisTools.Indices
 
                 if (accumulatedRowMinutes < elapsedMinutesInFileNames)
                 {
-                    string str1 = $"Concatenation: Elapsed Time Mismatch ERROR in csvFile {i + 1}/{files.Length}: {accumulatedRowMinutes} accumulatedRowMinutes != {elapsedMinutesInFileNames} elapsedMinutesInFileNames";
+                    string str1 = $"{key} Concatenation: Elapsed Time Mismatch ERROR in csvFile {i + 1}/{files.Length}: {accumulatedRowMinutes} accumulatedRowMinutes != {elapsedMinutesInFileNames} elapsedMinutesInFileNames";
                     LoggedConsole.WriteWarnLine(str1);
 
                     int scalingfactor = (int)Math.Round(60.0 / indexCalcDuration.TotalSeconds);
@@ -367,7 +366,7 @@ namespace AudioAnalysisTools.Indices
             FileInfo[] files = dirInfo.GetFiles(pattern, SearchOption.AllDirectories);
             if (files.Length == 0)
             {
-                LoggedConsole.WriteErrorLine("No match - Empty list of files");
+                LoggedConsole.WriteErrorLine($"No file names match pattern <{pattern}>. Returns empty list of files");
             }
 
             Array.Sort(files, (f1, f2) => f1.Name.CompareTo(f2.Name));
@@ -397,10 +396,11 @@ namespace AudioAnalysisTools.Indices
                 fileList.AddRange(files);
             }
 
-            if (fileList.Count == 0)
-            {
-                LoggedConsole.WriteErrorLine("No match - Empty list of files");
-            }
+            //if (fileList.Count == 0)
+            //{
+            //    // No need for this warning. It comes later.
+            //    LoggedConsole.WriteErrorLine($"No file names match pattern <{pattern}>. Returns empty list of files");
+            //}
 
             FileInfo[] returnList = fileList.ToArray();
             Array.Sort(returnList, (f1, f2) => f1.Name.CompareTo(f2.Name));
