@@ -180,16 +180,16 @@ namespace AnalysisPrograms
             // The drive: work = G; home = E
             drive = "G";
             // top level directory AVAILAE JOB #181
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\WavFiles\\Bats\\YvonneBats_Gympie20170906\\GympieNP"),
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\OutputDataSets\\YvonneBats_Gympie20170906"),
             };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
             string opFileStem = "GympieBATS_2017August";
-            string opPath = $"{drive}:\\SensorNetworks\\Output\\Bats\\Bats2";
+            string opPath = $"{drive}:\\SensorNetworks\\Output\\Bats\\Bats3";
             var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\Output\\Bats\\config\\SpectrogramFalseColourConfig.yml");
             FileInfo sunriseDatafile = null;
             bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
-            dtoStart = new DateTimeOffset(2017, 08, 10, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2017, 08, 10, 0, 0, 0, TimeSpan.Zero);
+            dtoStart = new DateTimeOffset(2017, 08, 08, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2017, 08, 08, 0, 0, 0, TimeSpan.Zero);
             // ########################## END of Yvonne's BAT recordings
 
             /*
@@ -643,6 +643,7 @@ namespace AnalysisPrograms
                 if (totalTimespan > TimeSpan.FromDays(3))
                 {
                     LoggedConsole.WriteErrorLine("# WARNING: You are attempting to concatenate MORE THAN three days of recording!!!!");
+                    LoggedConsole.WriteErrorLine("# WARNING: This is not a good idea!!!!!");
                 }
 
                 string dateString = $"{startDateTimeOffset.Year}{startDateTimeOffset.Month:D2}{startDateTimeOffset.Day:D2}";
