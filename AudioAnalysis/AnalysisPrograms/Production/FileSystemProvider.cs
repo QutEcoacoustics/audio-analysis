@@ -30,6 +30,8 @@ namespace AnalysisPrograms.Production
 
         public const string SqlitePattern = "sqlite3";
 
+        public static readonly string[] AllFormats = { SqlitePattern };
+
         private static readonly ILog Log = LogManager.GetLogger(nameof(FileSystemProvider));
 
         public enum Options
@@ -100,6 +102,18 @@ namespace AnalysisPrograms.Production
             var input = DetermineFileSystem(inputPath);
             var output = DetermineFileSystem(outputPath);
             return new AnalysisIo(input, output, null);
+        }
+
+        public static string MakePath(string directory, string baseName, string format)
+        {
+            if (string.IsNullOrEmpty(format))
+            {
+                return directory;
+            }
+
+            Contract.Requires(AllFormats.Contains(format));
+
+            return Path.Combine(directory, baseName + "." + format);
         }
     }
 

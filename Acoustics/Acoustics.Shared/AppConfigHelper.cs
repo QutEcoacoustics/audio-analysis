@@ -30,7 +30,10 @@ namespace Acoustics.Shared
         /// </summary>
         public const string Iso8601FileCompatibleDateFormat = "yyyyMMddTHHmmsszzz";
 
+        public const string Iso8601FileCompatibleDateFormatUtcWithFractionalSeconds = "yyyyMMddTHHmmss.FFF\\Z";
+
         public const string StandardDateFormatUtc = "yyyyMMdd-HHmmssZ";
+
         public const string StandardDateFormatUtcWithFractionalSeconds = "yyyyMMdd-HHmmss.FFFZ";
 
         public static string FileDateFormatUtc

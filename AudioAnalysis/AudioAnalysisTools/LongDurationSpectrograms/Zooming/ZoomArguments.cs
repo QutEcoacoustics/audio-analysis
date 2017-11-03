@@ -23,6 +23,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 
         public FileInfo IndexDistributionsFile { get; set; }
 
+        public bool OmitBasename { get; set; }
+
         /// <summary>
         /// Read in required files.
         /// We expect a valid indices output directory (the input directory in this action)

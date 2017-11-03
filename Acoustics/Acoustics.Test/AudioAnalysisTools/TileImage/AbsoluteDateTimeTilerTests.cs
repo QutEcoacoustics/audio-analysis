@@ -17,6 +17,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
         private Tiler tiler;
         private DirectoryInfo outputDirectory;
         private AbsoluteDateTilingProfile tilingProfileNotRoundStart;
+        private readonly DateTimeOffset dateTimeOffset = new DateTimeOffset(2015, 04, 10, 3, 30, 15, 123, TimeSpan.FromHours(10));
 
         [TestInitialize]
         public void Setup()
@@ -30,7 +31,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
             this.tilingProfileNotRoundStart = new AbsoluteDateTilingProfile(
                 "Filename",
                 "Tile",
-                new DateTimeOffset(2015, 04, 10, 3, 30, 0, TimeSpan.FromHours(10)),
+                this.dateTimeOffset,
                 256,
                 60);
 
@@ -51,6 +52,18 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
         public void Cleanup()
         {
             PathHelper.DeleteTempDir(this.outputDirectory);
+        }
+
+        [TestMethod]
+        public void TestNamingPattern()
+        {
+            var profile = new AbsoluteDateTilingProfile("Basename", "Tag", this.dateTimeOffset, 256, 300);
+
+            Assert.AreEqual("Basename__Tag_20150409T173015.123Z_60", profile.GetFileBaseName(this.tiler.CalculatedLayers, this.tiler.CalculatedLayers.First(), new Point(0, 0)));
+
+            var profile2 = new AbsoluteDateTilingProfile("", "Tag", this.dateTimeOffset, 256, 300);
+
+            Assert.AreEqual("Tag_20150409T173015.123Z_60", profile2.GetFileBaseName(this.tiler.CalculatedLayers, this.tiler.CalculatedLayers.First(), new Point(0, 0)));
         }
 
         [TestMethod]
