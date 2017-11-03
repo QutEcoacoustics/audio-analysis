@@ -151,7 +151,7 @@ namespace AnalysisPrograms.Recognizers.Base
             Acoustic.AcousticIndicesParsedConfiguration acousticIndicesParsedConfiguration)
         {
             dynamic highResolutionConfiguration = acousticIndicesParsedConfiguration.Configuration;
-            var dictionaryOfSpectra = indexResults.Select(icr => icr.SpectralIndexValues).ToArray().ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
+            var dictionaryOfSpectra = indexResults.Select(icr => icr.SpectralIndexValues).ToArray().ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.Rotate90ClockWise);
 
             FileInfo ipConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile;
             double hiResScale = acousticIndicesParsedConfiguration.IndexCalculationDuration.TotalSeconds;
@@ -237,7 +237,7 @@ namespace AnalysisPrograms.Recognizers.Base
             TimeSpan imageScale = TimeSpan.FromSeconds(lowResolution);
             TimeSpan dataScale = highResolutionParsedConfiguration.IndexCalculationDuration;
 
-            var dictionaryOfSpectra = indexResults.Select(icr => icr.SpectralIndexValues).ToArray().ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
+            var dictionaryOfSpectra = indexResults.Select(icr => icr.SpectralIndexValues).ToArray().ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.Rotate90ClockWise);
 
             var spectralSelection = IndexMatrices.CompressIndexSpectrograms(dictionaryOfSpectra, imageScale, dataScale);
             // check that have not compressed matrices to zero length
