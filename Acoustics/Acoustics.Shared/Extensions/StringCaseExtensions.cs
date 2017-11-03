@@ -1,4 +1,8 @@
-﻿/*
+﻿// <copyright file="StringCaseExtensions.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+/*
  * Copyright Vadim Orekhov 2017
  * Sourced from https://github.com/vad3x/case-extensions
  * License: MIT
