@@ -304,7 +304,7 @@ namespace AnalysisPrograms
 
             //double backgroundFilter = 0.0; // 0.0 means small values are removed.
             double backgroundFilter = 0.75;  // 0.75 means small values are accentuated.
-            string analysisType = "Towsey.Acoustic";
+            string analysisType = Acoustic.TowseyAcoustic;
             string[] keys = LDSpectrogramRGB.GetArrayOfAvailableKeys();
 
             //LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
@@ -314,12 +314,8 @@ namespace AnalysisPrograms
 
             if (spectra == null)
             {
-                var sw = Stopwatch.StartNew();
-
                 //C:\SensorNetworks\Output\BIRD50\Training\ID0001\Towsey.Acoustic\ID0001__Towsey.Acoustic.ACI
-                spectra = IndexMatrices.ReadCsvFiles(inputDirectory, fileStem + "__" + analysisType, keys);
-                sw.Stop();
-                LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
+                spectra = IndexMatrices.ReadSpectralIndices(inputDirectory, fileStem, analysisType, keys);
             }
 
             // note: the spectra are oriented as per visual orientation, i.e. xAxis = time frames
@@ -455,7 +451,7 @@ namespace AnalysisPrograms
 
         public static Image DrawRidgeSpectrograms(DirectoryInfo inputDirectory, FileInfo ipConfig, string fileStem, double scale, Dictionary<string, double[,]> spectra = null)
         {
-            string analysisType = "Towsey.Acoustic";
+            string analysisType = Acoustic.TowseyAcoustic;
 
             //double backgroundFilter = 0.0; // 0.0 means small values are removed.
             double backgroundFilter = 0.75;  // 0.75 means small values are accentuated.
@@ -467,12 +463,8 @@ namespace AnalysisPrograms
             // read the csv files of the indices in keys array
             if (spectra == null)
             {
-                var sw = Stopwatch.StartNew();
-
                 //C:\SensorNetworks\Output\BIRD50\Training\ID0001\Towsey.Acoustic\ID0001__Towsey.Acoustic.ACI
-                spectra = IndexMatrices.ReadCsvFiles(inputDirectory, fileStem + "__" + analysisType, keys);
-                sw.Stop();
-                LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
+                spectra = IndexMatrices.ReadSpectralIndices(inputDirectory, fileStem, analysisType, keys);
             }
 
             var cs1 = new LDSpectrogramRGB(minuteOffset: TimeSpan.Zero, xScale: dataScale, sampleRate: 22050, frameWidth: 512, colourMap: null)

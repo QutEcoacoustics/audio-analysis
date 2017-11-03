@@ -1,4 +1,8 @@
-﻿namespace Acoustics.Shared
+﻿// <copyright file="FileNameHelpers.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace Acoustics.Shared
 {
     using System;
     using System.Collections.Generic;
@@ -21,12 +25,6 @@
         /// <summary>
         /// Return an absolute path for a result file.
         /// </summary>
-        /// <param name="outputDirectory"></param>
-        /// <param name="orignalFile"></param>
-        /// <param name="analysisTag"></param>
-        /// <param name="newExtension"></param>
-        /// <param name="otherSegments"></param>
-        /// <returns></returns>
         public static string AnalysisResultPath(
             DirectoryInfo outputDirectory,
             FileInfo orignalFile,
@@ -42,12 +40,6 @@
         /// <summary>
         /// Return an absolute path for a result file.
         /// </summary>
-        /// <param name="outputDirectory"></param>
-        /// <param name="baseName"></param>
-        /// <param name="analysisTag"></param>
-        /// <param name="newExtension"></param>
-        /// <param name="otherSegments"></param>
-        /// <returns></returns>
         public static string AnalysisResultPath(
             DirectoryInfo outputDirectory,
             string baseName,
@@ -63,14 +55,9 @@
         /// <summary>
         /// Return a relative file name only (no directory) for a result file.
         /// </summary>
-        /// <param name="baseName"></param>
-        /// <param name="analysisTag"></param>
-        /// <param name="newExtension"></param>
-        /// <param name="otherSegments"></param>
-        /// <returns></returns>
         public static string AnalysisResultName(string baseName, string analysisTag, string newExtension, params string[] otherSegments)
         {
-            if (string.IsNullOrWhiteSpace(baseName))
+            if (baseName == null)
             {
                 throw new ArgumentException("Invalid file stem / base name supplied");
             }
@@ -85,7 +72,7 @@
                 baseName = baseName.Replace(BasenameSeparator, SegmentSeparator);
             }
 
-            var filename = baseName + BasenameSeparator + analysisTag;
+            var filename = baseName + (string.IsNullOrEmpty(baseName) ? string.Empty : BasenameSeparator) + analysisTag;
 
             if (otherSegments.Length > 0)
             {
@@ -99,7 +86,6 @@
 
             return filename;
         }
-
 
         public static void ParseAnalysisFileName(
             FileInfo file,
@@ -159,9 +145,6 @@
         /// Matches a very specific format:
         /// e.g. "4c77b524-1857-4550-afaa-c0ebe5e3960a_20101013_003000+1000_Towsey.Acoustic.ACI.csv"
         /// </summary>
-        /// <param name="filename"></param>
-        /// <param name="analysisTag"></param>
-        /// <returns></returns>
         public static bool TryParseOldStyleCsvFileName(string filename, out string analysisTag)
         {
             analysisTag = string.Empty;

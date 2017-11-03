@@ -259,7 +259,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             // finally read in the dictionary of spectra
             string analysisType = "Towsey.Acoustic";
             var keys = LDSpectrogramRGB.GetArrayOfAvailableKeys();
-            var dictionaryOfSpectra = IndexMatrices.ReadCsvFiles(resultsDirectory, recordingName + "__" + analysisType, keys);
+            var dictionaryOfSpectra = IndexMatrices.ReadSpectralIndices(resultsDirectory, recordingName, analysisType, keys);
 
             LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
                     inputDirectory: resultsDirectory,
