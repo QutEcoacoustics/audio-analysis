@@ -180,11 +180,13 @@
                         Directory.CreateDirectory(zoomingArguments.Output);
                     }
 
-                    ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(zoomingArguments.SourceDirectory.ToDirectoryInfo(),
-                                                                            zoomingArguments.Output.ToDirectoryInfo(),
-                                                                            common,
-                                                                            TimeSpan.FromMinutes(focalMinute),
-                                                                            imageWidth);
+                    ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(
+                        zoomingArguments.SourceDirectory.ToDirectoryInfo(),
+                        zoomingArguments.Output.ToDirectoryInfo(),
+                        common,
+                        TimeSpan.FromMinutes(focalMinute),
+                        imageWidth,
+                        Acoustic.TowseyAcoustic);
 
                     // DRAW THE VARIOUS IMAGES
                     string fileStem = fileName;

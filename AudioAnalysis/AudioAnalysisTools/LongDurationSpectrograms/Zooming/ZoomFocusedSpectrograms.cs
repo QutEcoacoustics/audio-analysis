@@ -36,12 +36,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
     public static class ZoomFocusedSpectrograms
     {
-        public static void DrawStackOfZoomedSpectrograms(
-            DirectoryInfo inputDirectory,
-            DirectoryInfo outputDirectory,
-            ZoomArguments common,
-            TimeSpan focalTime,
-            int imageWidth)
+        public static void DrawStackOfZoomedSpectrograms(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory, ZoomArguments common, TimeSpan focalTime, int imageWidth, string analysisType)
         {
             var zoomConfig = common.SpectrogramZoomingConfig;
             LdSpectrogramConfig ldsConfig = common.SpectrogramZoomingConfig.LdSpectrogramConfig;
@@ -51,15 +46,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var indexProperties = common.IndexProperties;
 
             string fileStem = common.OriginalBasename;
-            string analysisType = "Towsey.Acoustic";
-            var dataScale = indexGeneration.IndexCalculationDuration;
+            
+            TimeSpan dataScale  = indexGeneration.IndexCalculationDuration;
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
-            var sw = Stopwatch.StartNew();
+
             string[] keys = { "ACI", "BGN", "CVR", "DIF", "ENT", "EVN", "PMN", "POW", "RHZ", "RVT", "RPS", "RNG", "SUM", "SPT" };
-            Dictionary<string, double[,]> spectra = IndexMatrices.ReadCsvFiles(inputDirectory, fileStem + "__" + analysisType, keys);
-            sw.Stop();
-            LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
+            indexProperties = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(indexProperties);
+            Dictionary<string, double[,]> spectra = IndexMatrices.ReadSpectralIndices(inputDirectory, fileStem, analysisType, keys);
 
             // standard scales in seconds per pixel.
             double[] imageScales = { 60, 24, 12, 6, 2, 1, 0.6, 0.2 };

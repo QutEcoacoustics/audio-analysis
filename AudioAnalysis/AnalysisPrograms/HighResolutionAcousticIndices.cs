@@ -251,11 +251,13 @@ namespace AnalysisPrograms
                         Directory.CreateDirectory(zoomingArguments.Output);
                     }
 
-                    ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(zoomingArguments.SourceDirectory.ToDirectoryInfo(),
-                                                                            zoomingArguments.Output.ToDirectoryInfo(),
-                                                                            common,
-                                                                            TimeSpan.FromMinutes(focalMinute),
-                                                                            imageWidth);
+                    ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(
+                        zoomingArguments.SourceDirectory.ToDirectoryInfo(),
+                        zoomingArguments.Output.ToDirectoryInfo(),
+                        common,
+                        TimeSpan.FromMinutes(focalMinute),
+                        imageWidth,
+                        Acoustic.TowseyAcoustic);
 
                     // DRAW THE VARIOUS IMAGES
                     // i.e. greyscale images, ridge spectrogram and two-maps spectrograms.

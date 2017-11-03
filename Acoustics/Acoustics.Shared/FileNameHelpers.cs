@@ -55,7 +55,7 @@ namespace Acoustics.Shared
         /// </summary>
         public static string AnalysisResultName(string baseName, string analysisTag, string newExtension, params string[] otherSegments)
         {
-            if (string.IsNullOrWhiteSpace(baseName))
+            if (baseName == null)
             {
                 throw new ArgumentException("Invalid file stem / base name supplied");
             }
@@ -70,7 +70,7 @@ namespace Acoustics.Shared
                 baseName = baseName.Replace(BasenameSeparator, SegmentSeparator);
             }
 
-            var filename = baseName + BasenameSeparator + analysisTag;
+            var filename = baseName + (string.IsNullOrEmpty(baseName) ? string.Empty : BasenameSeparator) + analysisTag;
 
             if (otherSegments.Length > 0)
             {
