@@ -7,6 +7,6 @@ namespace AudioAnalysisTools.DSP
     public enum WaveType
         {
             Sine,
-            Consine
+            Consine,
         }
 }
