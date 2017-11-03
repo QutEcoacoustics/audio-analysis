@@ -347,7 +347,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 {
                     if (warning == null)
                     {
-                        warning = "\nWARNING: from method LDSpectrogramRGB.ReadCsvFiles()";
+                        warning = "\nWARNING: from method LDSpectrogramRGB.ReadSpectralIndices()";
                     }
 
                     warning += "\n      {0} File does not exist: {1}".Format2(keys[i], path);
@@ -362,7 +362,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             if (this.SpectrogramMatrices.Count == 0)
             {
-                LoggedConsole.WriteLine("WARNING: from method LDSpectrogramRGB.ReadCsvFiles()");
+                LoggedConsole.WriteLine("WARNING: from method LDSpectrogramRGB.ReadSpectralIndices()");
                 LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
                 allOk = false;
             }

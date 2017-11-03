@@ -866,7 +866,7 @@ namespace AnalysisPrograms
                 // write spectrogram to disk as CSV file
                 var filename = FilenameHelpers.AnalysisResultPath(destination, fileNameBase, identifier + "." + kvp.Key, "csv").ToFileInfo();
                 spectralIndexFiles.Add(filename);
-                Csv.WriteMatrixToCsv(filename, kvp.Value, TwoDimensionalArray.ColumnMajorFlipped);
+                Csv.WriteMatrixToCsv(filename, kvp.Value, TwoDimensionalArray.Rotate90ClockWise);
             }
 
             Log.Debug("Finished writing spectral indices");

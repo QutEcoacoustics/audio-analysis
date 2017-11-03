@@ -419,7 +419,7 @@ namespace AnalysisPrograms
 
             // #################################################################
             // store spectral matrices for later production of spectrogram images.
-            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
+            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.Rotate90ClockWise);
 
 
             // #################################################################
@@ -739,7 +739,7 @@ namespace AnalysisPrograms
             // this is the most efficient way to do this
             // gather up numbers and strings store in memory, write to disk one time
             // this method also AUTOMATICALLY SORTS because it uses array indexing
-            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
+            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.Rotate90ClockWise);
 
             // Calculate the index distribution statistics and write to a json file. Also save as png image
             var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectra, resultsDirectory, basename);
