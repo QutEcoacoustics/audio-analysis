@@ -11,6 +11,7 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -19,6 +20,8 @@ namespace AudioAnalysisTools.Indices
     using Fasterflect;
     using log4net;
     using TowseyLibrary;
+
+    using Zio;
 
     public static class IndexMatrices
     {
@@ -237,7 +240,7 @@ namespace AudioAnalysisTools.Indices
                 List<double[,]> matrices = ConcatenateSpectralIndexFilesWithTimeCheck(files, indexCalcTimeSpan);
                 double[,] m = MatrixTools.ConcatenateMatrixRows(matrices);
 
-                //Dictionary<string, double[,]> dict = spectralIndexValues.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
+                //Dictionary<string, double[,]> dict = spectralIndexValues.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.Rotate90ClockWise);
 
                 m = MatrixTools.MatrixRotate90Anticlockwise(m);
                 spectrogramMatrices.Add(key, m);
@@ -304,7 +307,7 @@ namespace AudioAnalysisTools.Indices
                     continue;
                 }
 
-                var matrix = Csv.ReadMatrixFromCsv<double>(file, TwoDimensionalArray.Normal);
+                var matrix = Csv.ReadMatrixFromCsv<double>(file, TwoDimensionalArray.None);
                 matrices.Add(matrix);
 
                 // track the row counts
@@ -495,13 +498,16 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// This method reads spectrogram csv files where the first row contains column names
         /// and the first column contains row/time names.
+        /// Note: no rotation of data is done!
         /// </summary>
-        /// <param name="csvFile"></param>
-        /// <param name="binCount"></param>
-        /// <returns></returns>
         public static double[,] ReadSpectrogram(FileInfo csvFile, out int binCount)
         {
-            double[,] matrix = Csv.ReadMatrixFromCsv<double>(csvFile, TwoDimensionalArray.Normal);
+            return ReadSpectrogram(csvFile.ToFileEntry(), out binCount);
+        }
+
+        public static double[,] ReadSpectrogram(FileEntry csvFile, out int binCount, TwoDimensionalArray transform = TwoDimensionalArray.None)
+        {
+            double[,] matrix = Csv.ReadMatrixFromCsv<double>(csvFile, transform);
             binCount = matrix.GetLength(1);
 
             return matrix;
@@ -511,9 +517,6 @@ namespace AudioAnalysisTools.Indices
         /// returns dictionary of spectral indices.
         /// Assumes both arrays of same length and keys correspond to file name. Just too lazy to do it better!
         /// </summary>
-        /// <param name="files"></param>
-        /// <param name="keys"></param>
-        /// <returns></returns>
         public static Dictionary<string, double[,]> ReadSummaryIndexFiles(FileInfo[] files, string[] keys)
         {
             int count = files.Length;
@@ -528,53 +531,60 @@ namespace AudioAnalysisTools.Indices
             return dict;
         }
 
-        public static Dictionary<string, double[,]> ReadCsvFiles(DirectoryInfo ipdir, string fileName, string[] keys)
+        public static Dictionary<string, double[,]> ReadSpectralIndices(DirectoryInfo ipdir, string fileName, string analysisTag, string[] keys)
+        {
+            return ReadSpectralIndices(ipdir.ToDirectoryEntry(), fileName, analysisTag, keys);
+        }
+
+        public static Dictionary<string, double[,]> ReadSpectralIndices(DirectoryEntry ipdir, string fileName, string analysisTag, string[] keys)
         {
             // parallel reading of CSV files
-            var readData = keys
-                .AsParallel()
-                .Select(key => ReadInSingleCsvFile(ipdir, fileName, key))
+            var readData = keys.AsParallel()
+                .Select(ReadInSingleCsvFile)
                 .Where(x => x != null);
 
             // actual work done here
-            // ReSharper disable PossibleInvalidOperationException
-            var spectrogramMatrices = readData.ToDictionary(kvp => kvp.Value.Key, kvp => kvp.Value.Value);
+            Stopwatch timer = Stopwatch.StartNew();
+
+            // ReSharper disable once PossibleInvalidOperationException
+            var spectrogramMatrices = readData.ToDictionary(kvp => kvp.Value.Item1, kvp => kvp.Value.Item2);
+
             // ReSharper restore PossibleInvalidOperationException
+            timer.Stop();
+            Log.Info($"Time to read spectral index files = {timer.Elapsed.TotalSeconds} seconds");
 
             if (spectrogramMatrices.Count == 0)
             {
-                LoggedConsole.WriteLine("WARNING: from method IndexMatrices.ReadCsvFiles()");
-                LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
+                LoggedConsole.WriteWarnLine(
+                    "WARNING: from method IndexMatrices.ReadSpectralIndices()\n\t\tNO FILES were read from this directory: "
+                    + ipdir);
             }
 
             return spectrogramMatrices;
-        }
 
-        private static KeyValuePair<string, double[,]>? ReadInSingleCsvFile(DirectoryInfo ipdir, string fileName, string indexKey)
-        {
-            //Log.Info($"Starting to read CSV file for index {indexKey}");
-            //Stopwatch timer = Stopwatch.StartNew();
-
-            FileInfo file = new FileInfo(Path.Combine(ipdir.FullName, fileName + "." + indexKey + ".csv"));
-            double[,] matrix;
-            if (file.Exists)
+            (string, double[,])? ReadInSingleCsvFile(string indexKey)
             {
-                int freqBinCount;
-                matrix = ReadSpectrogram(file, out freqBinCount);
-                matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-                //this.FrameLength = freqBinCount * 2;
-            }
-            else
-            {
-                Log.Warn(
-                    "\nWARNING: from method IndexMatrices.ReadCsvFiles()"
-                    + $"\n      {indexKey} File does not exist: {file.FullName}");
-                return null;
-            }
+                Log.Info($"Starting to read CSV file for index {indexKey}");
+                Stopwatch singleTimer = Stopwatch.StartNew();
 
-            //timer.Stop();
-            //Log.Info($"Time to read spectral index file <{indexKey}> = {timer.Elapsed.TotalSeconds} seconds");
-            return new KeyValuePair<string, double[,]>(indexKey, matrix);
+                var file = ipdir.CombineFile(FilenameHelpers.AnalysisResultName(fileName, analysisTag + "." + indexKey, "csv"));
+                double[,] matrix;
+                if (file.Exists)
+                {
+                    int freqBinCount;
+                    matrix = ReadSpectrogram(file, out freqBinCount, TwoDimensionalArray.Rotate90AntiClockWise);
+                    //matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+                }
+                else
+                {
+                    Log.Warn("IndexMatrices.ReadSpectralIndices(): {indexKey} File does not exist: {file.FullName}");
+                    return null;
+                }
+
+                singleTimer.Stop();
+                Log.Debug($"Time to read spectral index file <{indexKey}> = {singleTimer.Elapsed.TotalSeconds} seconds");
+                return (indexKey, matrix);
+            }
         }
 
         /// <summary>
@@ -582,10 +592,6 @@ namespace AudioAnalysisTools.Indices
         /// In all cases, the compression is done by taking the average.
         /// The method got more complicated in June 2016 when refactored it to cope with recording blocks less than one minute long.
         /// </summary>
-        /// <param name="spectra"></param>
-        /// <param name="imageScale"></param>
-        /// <param name="dataScale"></param>
-        /// <returns></returns>
         public static Dictionary<string, double[,]> CompressIndexSpectrograms(Dictionary<string, double[,]> spectra, TimeSpan imageScale, TimeSpan dataScale)
         {
             int scalingFactor = (int)Math.Round(imageScale.TotalMilliseconds / dataScale.TotalMilliseconds);

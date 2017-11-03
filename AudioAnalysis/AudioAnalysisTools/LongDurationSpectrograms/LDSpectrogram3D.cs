@@ -773,7 +773,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         //        // reads all known files spectral indices
         //        Logger.Info("Reading spectra files from disk");
-        //        cs1.ReadCsvFiles(configuration.InputDirectoryInfo, configuration.BaseName);
+        //        cs1.ReadSpectralIndices(configuration.InputDirectoryInfo, configuration.BaseName);
 
         //        if (cs1.GetCountOfSpectrogramMatrices() == 0)
         //        {

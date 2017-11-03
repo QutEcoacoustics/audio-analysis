@@ -82,7 +82,7 @@ namespace System
         public static Dictionary<string, T[,]> ToTwoDimensionalArray<T, TBase>(
             this IList<TBase> items,
             Dictionary<string, Func<TBase, T[]>> selectors,
-            TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor)
+            TwoDimensionalArray dimensionality = TwoDimensionalArray.None)
         {
             // This code is covered by unit tests Acoustics.Test - change the unit tests before you change the class!
             Contract.Requires(items != null);
@@ -94,10 +94,9 @@ namespace System
             foreach (var kvp in selectors)
             {
                 var current = kvp.Value(items[0]);
-                var value = dimensionality == TwoDimensionalArray.RowMajor ? new T[itemCount, current.Length] : new T[current.Length, itemCount];
+                var value = dimensionality == TwoDimensionalArray.None ? new T[itemCount, current.Length] : new T[current.Length, itemCount];
                 result.Add(kvp.Key, value);
             }
-
 
             Parallel.ForEach(
                 selectors,
@@ -114,13 +113,13 @@ namespace System
                             {
                                 switch (dimensionality)
                                 {
-                                    case TwoDimensionalArray.RowMajor:
+                                    case TwoDimensionalArray.None:
                                         result[key][i, j] = line[j];
                                         break;
-                                    case TwoDimensionalArray.ColumnMajor:
+                                    case TwoDimensionalArray.Transpose:
                                         result[key][j, i] = line[j];
                                         break;
-                                    case TwoDimensionalArray.ColumnMajorFlipped:
+                                    case TwoDimensionalArray.Rotate90ClockWise:
                                         result[key][lineLength - 1 - j, i] = line[j];
                                         break;
                                     default:
@@ -136,14 +135,14 @@ namespace System
         public static TBase[] FromTwoDimensionalArray<TBase, T>(
             this Dictionary<string, T[,]> items,
             Dictionary<string, Action<TBase, T[]>> setters,
-            TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor) where TBase : new()
+            TwoDimensionalArray dimensionality = TwoDimensionalArray.None) where TBase : new()
         {
             // This code is covered by unit tests Acoustics.Test - change the unit tests before you change the class!
             Contract.Requires(items != null);
             Contract.Requires(setters != null);
 
             // assume all matrices contain the same number of elements
-            int major = dimensionality == TwoDimensionalArray.RowMajor ? 0 : 1;
+            int major = dimensionality == TwoDimensionalArray.None ? 0 : 1;
             int minor = major == 1 ? 0 : 1;
             var itemCount = items.First().Value.GetLength(major);
 
@@ -173,13 +172,13 @@ namespace System
                             {
                                 switch (dimensionality)
                                 {
-                                    case TwoDimensionalArray.RowMajor:
+                                    case TwoDimensionalArray.None:
                                         line[j] = matrix[i, j];
                                         break;
-                                    case TwoDimensionalArray.ColumnMajor:
+                                    case TwoDimensionalArray.Transpose:
                                         line[j] = matrix[j, i];
                                         break;
-                                    case TwoDimensionalArray.ColumnMajorFlipped:
+                                    case TwoDimensionalArray.Rotate90ClockWise:
                                         line[j] = matrix[lineLength - 1 - j, i];
                                         break;
                                     default:
