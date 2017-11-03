@@ -191,7 +191,6 @@ namespace Acoustics.Tools.Wav
 
         /// <summary>
         /// Gets or sets the samples.
-        /// Have removed protection from setter to allow replacing samples with filtered signal.
         /// </summary>
         public double[] Samples
         {
@@ -205,7 +204,7 @@ namespace Acoustics.Tools.Wav
                 return this.samples;
             }
 
-            set
+            private set
             {
                 this.samples = value;
             }
@@ -214,6 +213,7 @@ namespace Acoustics.Tools.Wav
         /// <summary>
         /// Gets Time - the duration of the data.
         /// NOTE: this value has been rounded to the nearest millisecond!
+        /// See <see cref="ExactDurationSeconds"/> for a precise value.
         /// </summary>
         public TimeSpan Time { get; private set; }
 
@@ -262,7 +262,7 @@ namespace Acoustics.Tools.Wav
         }
 
         /// <summary>
-        /// Sub-samples audio.
+        /// Sub-samples audio. Obsolete - we recommend you resample with ffmpeg/SoX.
         /// </summary>
         /// <param name="interval">
         /// Keeps every <paramref name="interval"/> sample.
@@ -369,6 +369,7 @@ namespace Acoustics.Tools.Wav
             // http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
             // https://msdn.microsoft.com/en-us/library/windows/hardware/ff538802(v=vs.85).aspx
             // https://sourceforge.net/u/earnie/winapi/winapi/ci/winsup-w32api/tree/include/mmreg.h#l79
+
             if (!BitConverter.IsLittleEndian)
             {
                 throw new NotSupportedException("System.BitConverter expects little endian.");
@@ -454,7 +455,7 @@ namespace Acoustics.Tools.Wav
                             else
                             {
                                 var message = "Cannot parse WAV header." +
-                                              $" Error: Only takes 0x0001 was: 0x{format:X}";
+                                              $" Error: Only takes 0x0001 (PCM) was: 0x{format:X}";
                                 throw new InvalidOperationException(message);
                             }
 
@@ -509,7 +510,7 @@ namespace Acoustics.Tools.Wav
 
                                 // NOTE: not used
                                 // dwChannelMask
-                                // Specifies the assignment of channels in the multichannel stream to speaker 
+                                // Specifies the assignment of channels in the multichannel stream to speaker
                                 // positions. The encoding is the same as that used for the ActiveSpeakerPositions
                                 uint channelMask = BitConverter.ToUInt32(data, offset);
                                 offset += 4;
