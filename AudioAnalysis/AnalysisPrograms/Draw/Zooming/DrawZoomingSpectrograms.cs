@@ -64,11 +64,15 @@ namespace AnalysisPrograms.Draw.Zooming
             // get the indexDistributions and the indexGenerationData AND the common.OriginalBasename
             common.CheckForNeededFiles(arguments.SourceDirectory.ToDirectoryInfo());
 
+            common.OmitBasename = !string.IsNullOrEmpty(arguments.OutputFormat);
+
             LoggedConsole.WriteLine("# File name of recording      : " + common.OriginalBasename);
 
+            // create file systems for reading input and writing output
             var io = FileSystemProvider.GetInputOutputFileSystems(
                 arguments.SourceDirectory,
-                Path.Combine(arguments.Output));
+                FileSystemProvider.MakePath(arguments.Output, common.OriginalBasename, arguments.OutputFormat))
+                .EnsureInputIsDirectory();
 
             switch (arguments.ZoomAction)
             {
@@ -90,7 +94,8 @@ namespace AnalysisPrograms.Draw.Zooming
                         arguments.Output.ToDirectoryInfo(),
                         common,
                         focalTime,
-                        ImageWidth);
+                        ImageWidth,
+                        Acoustic.TowseyAcoustic);
                     break;
                 case Arguments.ZoomActionType.Tile:
                     // Create the super tiles for a full set of recordings

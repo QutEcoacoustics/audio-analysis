@@ -12,6 +12,9 @@ namespace Zio
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+
+    using Acoustics.Shared.Contracts;
+
     using FileSystems;
 
     public static class ZioExtensions
@@ -28,9 +31,47 @@ namespace Zio
             return new DirectoryEntry(FileSystem, directory.ToUPath());
         }
 
-        public static DirectoryEntry ToFileEntry(this FileInfo file)
+        public static FileEntry ToFileEntry(this FileInfo file)
         {
-            return new DirectoryEntry(FileSystem, file.ToUPath());
+            return new FileEntry(FileSystem, file.ToUPath());
+        }
+
+        public static DirectoryEntry ToDirectoryEntry(this string directory)
+        {
+            return new DirectoryEntry(FileSystem, FileSystem.ConvertPathFromInternal(directory));
+        }
+
+        public static FileEntry ToFileEntry(this string file)
+        {
+            return new FileEntry(FileSystem, FileSystem.ConvertPathFromInternal(file));
+        }
+
+        public static DirectoryEntry Combine(this DirectoryEntry directoryInfo, params string[] str)
+        {
+            Contract.Requires(directoryInfo != null);
+            Contract.Requires(str != null && str.Length > 0);
+
+            UPath merged = directoryInfo.Path;
+            foreach (var fragment in str)
+            {
+                merged = merged / fragment;
+            }
+
+            return new DirectoryEntry(directoryInfo.FileSystem, merged);
+        }
+
+        public static FileEntry CombineFile(this DirectoryEntry directoryInfo, params string[] str)
+        {
+            Contract.Requires(directoryInfo != null);
+            Contract.Requires(str != null && str.Length > 0);
+
+            UPath merged = directoryInfo.Path;
+            foreach (var fragment in str)
+            {
+                merged = merged / fragment;
+            }
+
+            return new FileEntry(directoryInfo.FileSystem, merged);
         }
 
         /// <summary>
@@ -70,6 +111,21 @@ namespace Zio
             {
                 bitmap.Save(fileStream, format);
             }
+        }
+
+        public static StreamReader OpenText(this IFileSystem fileSystem, UPath path)
+        {
+            using (var stream = fileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                return new StreamReader(stream, Encoding.UTF8, true);
+            }
+        }
+
+        public static StreamReader OpenText(this FileEntry file)
+        {
+            var stream = file.FileSystem.OpenFile(file.Path, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+            return new StreamReader(stream, Encoding.UTF8, true);
         }
     }
 }
