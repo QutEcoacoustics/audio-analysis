@@ -39,6 +39,8 @@ namespace AnalysisPrograms
     using PowerArgs;
     using TowseyLibrary;
 
+    using Zio;
+
     /// <summary>
     /// First argument on command line to call this action is "ColourSpectrogram"
     /// </summary>
@@ -217,8 +219,8 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine();
             }
 
-            (FileInfo indexGenerationDataFile, FileInfo indexDistributionsFile) =
-                ZoomArguments.CheckNeededFilesExist(arguments.InputDataDirectory);
+            (FileEntry indexGenerationDataFile, FileEntry indexDistributionsFile) =
+                ZoomParameters.CheckNeededFilesExist(arguments.InputDataDirectory.ToDirectoryEntry());
 
             var indexGenerationData = Json.Deserialise<IndexGenerationData>(indexGenerationDataFile);
 

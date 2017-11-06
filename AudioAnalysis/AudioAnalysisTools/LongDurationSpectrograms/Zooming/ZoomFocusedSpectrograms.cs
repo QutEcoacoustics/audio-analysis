@@ -32,12 +32,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
     public static class ZoomFocusedSpectrograms
     {
-        public static void DrawStackOfZoomedSpectrograms(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory, ZoomArguments common, TimeSpan focalTime, int imageWidth, string analysisType)
+        public static void DrawStackOfZoomedSpectrograms(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory, ZoomParameters common, TimeSpan focalTime, int imageWidth, string analysisType)
         {
             var zoomConfig = common.SpectrogramZoomingConfig;
             LdSpectrogramConfig ldsConfig = common.SpectrogramZoomingConfig.LdSpectrogramConfig;
-            var distributions = IndexDistributions.Deserialize(common.IndexDistributionsFile);
-            var indexGeneration = Json.Deserialise<IndexGenerationData>(common.IndexGenerationDataFile);
+            var distributions = common.IndexDistributions;
+            var indexGeneration = common.IndexGenerationData;
             var indexProperties = common.IndexProperties;
 
             string fileStem     = common.OriginalBasename;

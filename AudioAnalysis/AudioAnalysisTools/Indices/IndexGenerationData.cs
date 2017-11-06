@@ -12,6 +12,8 @@ namespace AudioAnalysisTools.Indices
     using Acoustics.Shared;
     using LongDurationSpectrograms;
 
+    using Zio;
+
     public class IndexGenerationData
     {
         public const string FileNameFragment = "IndexGenerationData";
@@ -76,20 +78,22 @@ namespace AudioAnalysisTools.Indices
         /// If IndexCalculationDuration is set to a brief duration such as 0.2 seconds, then
         /// the backgroundnoise will be calculated from N seconds before the current subsegment to N seconds after => N secs + subseg duration + N secs
         /// </summary>
-        public TimeSpan BGNoiseNeighbourhood { get; set; }
+        public TimeSpan BgNoiseNeighbourhood { get; set; }
+
+        public string RecordingBasename { get; set; }
 
         /// <summary>
         /// Returns the index generation data from file in passed directory.
         /// </summary>
-        public static IndexGenerationData GetIndexGenerationData(DirectoryInfo directory)
+        public static IndexGenerationData GetIndexGenerationData(DirectoryEntry directory)
         {
             return Json.Deserialise<IndexGenerationData>(FindFile(directory));
         }
 
-        public static FileInfo FindFile(DirectoryInfo directory)
+        public static FileEntry FindFile(DirectoryEntry directory)
         {
             const string Pattern = "*" + FileNameFragment + "*";
-            return directory.GetFiles(Pattern).Single();
+            return directory.EnumerateFiles(Pattern).Single();
         }
     }
 }

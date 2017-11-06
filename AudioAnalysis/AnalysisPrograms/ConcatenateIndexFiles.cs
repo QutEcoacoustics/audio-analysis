@@ -38,6 +38,8 @@ namespace AnalysisPrograms
     using PowerArgs;
     using TowseyLibrary;
 
+    using Zio;
+
     /// <summary>
     /// First argument on command line to call this action is "concatenateIndexFiles"
     ///
@@ -585,7 +587,7 @@ namespace AnalysisPrograms
             if (arguments.DrawImages)
             {
                 // get the IndexGenerationData file from the first directory
-                indexGenerationData = IndexGenerationData.GetIndexGenerationData(csvFiles[0].Directory);
+                indexGenerationData = IndexGenerationData.GetIndexGenerationData(csvFiles[0].Directory.ToDirectoryEntry());
                 if (indexGenerationData.RecordingStartDate == null)
                 {
                     indexGenerationData.RecordingStartDate = startDate;

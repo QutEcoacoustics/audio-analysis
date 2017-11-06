@@ -26,6 +26,11 @@ namespace Zio
             return FileSystem.ConvertPathFromInternal(file.FullName);
         }
 
+        public static string ToOsPath(this UPath path)
+        {
+            return FileSystem.ConvertPathToInternal(path);
+        }
+
         public static DirectoryEntry ToDirectoryEntry(this DirectoryInfo directory)
         {
             return new DirectoryEntry(FileSystem, directory.ToUPath());
@@ -44,6 +49,16 @@ namespace Zio
         public static FileEntry ToFileEntry(this string file)
         {
             return new FileEntry(FileSystem, FileSystem.ConvertPathFromInternal(file));
+        }
+
+        public static FileInfo ToFileInfo(this FileEntry file)
+        {
+            Contract.Requires(file != null);
+            Contract.Requires(
+                file.FileSystem is PhysicalFileSystem,
+                $"To convert the path {file} back to a physical filesystem, it must be from a physical file system");
+
+            return new FileInfo(file.Path.ToOsPath());
         }
 
         public static DirectoryEntry Combine(this DirectoryEntry directoryInfo, params string[] str)

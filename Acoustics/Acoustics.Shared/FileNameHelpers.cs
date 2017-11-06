@@ -11,6 +11,8 @@ namespace Acoustics.Shared
     using System.Text;
     using System.Text.RegularExpressions;
 
+    using Zio;
+
     /// <summary>
     /// A set of helper methods used to create/read consistently encoded filenames
     /// </summary>
@@ -89,6 +91,15 @@ namespace Acoustics.Shared
 
         public static void ParseAnalysisFileName(
             FileInfo file,
+            out string originalBaseName,
+            out string analysisTag,
+            out string[] otherSegments)
+        {
+            ParseAnalysisFileName(file.Name, out originalBaseName, out analysisTag, out otherSegments);
+        }
+
+        public static void ParseAnalysisFileName(
+            FileEntry file,
             out string originalBaseName,
             out string analysisTag,
             out string[] otherSegments)
