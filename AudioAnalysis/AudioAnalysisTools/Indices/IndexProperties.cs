@@ -27,6 +27,13 @@ namespace AudioAnalysisTools.Indices
     using YamlDotNet.Dynamic;
     using YamlDotNet.Serialization;
 
+    using Zio;
+
+    public interface IIndexPropertyReferenceConfiguration
+    {
+        string IndexPropertiesConfig { get; set; }
+    }
+
     /// <summary>
     /// This class stores the properties of a particular index.
     /// THIS CLASS DOES NOT STORE THE VALUE OF THE INDEX - the value is stored in class IndexValues.
@@ -207,7 +214,6 @@ namespace AudioAnalysisTools.Indices
             //double[] values = this.NormaliseIndexValues(array);
             double[] values = DataTools.NormaliseInZeroOne(array, this.NormMin, this.NormMax);
 
-
             int trackWidth = dataLength + IndexDisplay.TrackEndPanelWidth;
             int trackHeight = IndexDisplay.DefaultTrackHeight;
             Color[] grayScale = ImageTools.GrayScale();
@@ -241,6 +247,7 @@ namespace AudioAnalysisTools.Indices
                 {
                     bmp.SetPixel(i, trackHeight - y - 1, barColor);
                 }
+
                 // draw upper boundary
                 bmp.SetPixel(i, 0, Color.Gray);
             }
@@ -261,11 +268,9 @@ namespace AudioAnalysisTools.Indices
                     g.DrawImage(errorBmp, errorSegment.StartPosition, 1);
                 }
             }
+
             return bmp;
         }
-
-
-
 
         private static readonly Dictionary<string, Dictionary<string, IndexProperties>> CachedProperties = new Dictionary<string, Dictionary<string, IndexProperties>>();
 
@@ -277,9 +282,12 @@ namespace AudioAnalysisTools.Indices
         /// Returns a cached set of configuration properties.
         /// WARNING CACHED!
         /// </summary>
-        /// <param name="configFile"></param>
-        /// <returns></returns>
         public static Dictionary<string, IndexProperties> GetIndexProperties(FileInfo configFile)
+        {
+            return GetIndexProperties(configFile.ToFileEntry());
+        }
+
+        public static Dictionary<string, IndexProperties> GetIndexProperties(FileEntry configFile)
         {
             // AT: the effects of this method have been significantly altered
             // a) caching introduced - unknown effects for parallelism and dodgy file rewriting stuff
@@ -319,13 +327,26 @@ namespace AudioAnalysisTools.Indices
                 return null;
             }
 
-            return Find((string)configuration[AnalysisKeys.KeyIndexPropertiesConfig], originalConfigFile);
+            return Find((string)configuration[AnalysisKeys.KeyIndexPropertiesConfig], originalConfigFile.ToFileEntry()).ToFileInfo();
         }
 
         /// <summary>
         /// Locate and IndexPropertiesConfig.yml file from the IndexPropertiesConfig key in a config file.
         /// </summary>
-        public static FileInfo Find(IIndexPropertyReferenceConfiguration configuration, FileInfo originalConfigFile)
+        public static FileEntry Find(IIndexPropertyReferenceConfiguration configuration, FileInfo originalConfigFile)
+        {
+            if (configuration == null)
+            {
+                return null;
+            }
+
+            return Find(configuration.IndexPropertiesConfig, originalConfigFile.ToFileEntry());
+        }
+
+        /// <summary>
+        /// Locate and IndexPropertiesConfig.yml file from the IndexPropertiesConfig key in a config file.
+        /// </summary>
+        public static FileEntry Find(IIndexPropertyReferenceConfiguration configuration, FileEntry originalConfigFile)
         {
             if (configuration == null)
             {
@@ -335,20 +356,14 @@ namespace AudioAnalysisTools.Indices
             return Find(configuration.IndexPropertiesConfig, originalConfigFile);
         }
 
-        public static FileInfo Find(string relativePath, FileInfo originalConfigFile)
+        public static FileEntry Find(string relativePath, FileEntry originalConfigFile)
         {
-            FileInfo configFile;
             var found = ConfigFile.TryResolveConfigFile(
                 relativePath,
-                new[] { originalConfigFile.Directory },
-                out configFile);
+                new[] { originalConfigFile.Parent },
+                out var configFile);
 
             return found ? configFile : null;
         }
-    }
-
-    public interface IIndexPropertyReferenceConfiguration
-    {
-        string IndexPropertiesConfig { get; set; }
     }
 }

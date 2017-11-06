@@ -54,6 +54,7 @@ namespace AnalysisPrograms.Production
         public static (IFileSystem, DirectoryEntry) DetermineFileSystem(string path, bool readOnly = false)
         {
             var emptyPath = string.IsNullOrWhiteSpace(path);
+            var extension = Path.GetExtension(path);
 
             Log.Debug($"Determining file system for {path}");
 
@@ -66,17 +67,16 @@ namespace AnalysisPrograms.Production
                 baseEntry = fileSystem.GetDirectoryEntry(
                     fileSystem.ConvertPathFromInternal(Directory.GetCurrentDirectory()));
             }
-            else if (Directory.Exists(path))
+            else if (Directory.Exists(path) || extension == string.Empty)
             {
                 var physicalFileSystem = new PhysicalFileSystem();
                 var internalPath = physicalFileSystem.ConvertPathFromInternal(path);
+                physicalFileSystem.CreateDirectory(internalPath);
                 fileSystem = new SubFileSystem(physicalFileSystem, internalPath);
                 baseEntry = fileSystem.GetDirectoryEntry(UPath.Root);
             }
             else
             {
-                var extension = Path.GetExtension(path);
-
                 switch (extension)
                 {
                     case "." + SqlitePattern:

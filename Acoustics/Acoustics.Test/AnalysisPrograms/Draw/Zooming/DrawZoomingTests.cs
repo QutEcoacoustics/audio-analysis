@@ -8,8 +8,12 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+
+    using global::AnalysisPrograms;
     using global::AnalysisPrograms.AnalyseLongRecordings;
     using global::AnalysisPrograms.Draw.Zooming;
+    using global::AnalysisPrograms.Production;
+
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
@@ -20,10 +24,10 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
     [TestClass]
     public class DrawZoomingTests : OutputDirectoryTest
     {
-        private DirectoryInfo resultsDirectory;
+        public static DirectoryInfo ResultsDirectory { get; set; }
 
         [ClassInitialize]
-        public void ClassInitialize()
+        public static void ClassInitialize(TestContext context)
         {
             // calculate indices
             var recordingPath = PathHelper.ResolveAsset("Recordings", "OxleyCreek_site_1_1060_244333_20140529T081358+1000_120_0.wav");
@@ -32,24 +36,27 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
             {
                 Source = recordingPath,
                 Config = configPath,
-                Output = this.outputDirectory,
-                TempDir = this.outputDirectory.Combine("Temp"),
+                Output = SharedDirectory,
+                TempDir = SharedDirectory.Combine("Temp"),
             };
 
+            context.WriteLine($"{DateTime.Now} generating indices fixture data");
+            MainEntry.SetLogVerbosity(LogVerbosity.Warn, true);
             AnalyseLongRecording.Execute(arguments);
+            MainEntry.SetLogVerbosity(LogVerbosity.Debug, true);
+            context.WriteLine($"{DateTime.Now} finished generting fixture");
 
-            this.resultsDirectory = this.outputDirectory.Combine("Towsey.Acoustic");
+            ResultsDirectory = SharedDirectory.Combine("Towsey.Acoustic");
 
             // do some basic checks that the indices were generated
-            var listOfFiles = this.resultsDirectory.EnumerateFiles().ToArray();
-            Assert.AreEqual(33, listOfFiles.Length);
+            var listOfFiles = ResultsDirectory.EnumerateFiles().ToArray();
+            Assert.AreEqual(20, listOfFiles.Length);
             var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
             Assert.AreEqual(16, csvCount);
             var jsonCount = listOfFiles.Count(f => f.Name.EndsWith(".json"));
             Assert.AreEqual(2, jsonCount);
             var pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
-            Assert.AreEqual(0, pngCount);
-
+            Assert.AreEqual(2, pngCount);
         }
 
         /// <summary>
@@ -65,7 +72,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
                 new DrawZoomingSpectrograms.Arguments()
                 {
                     Output = zoomOutput.FullName,
-                    SourceDirectory = resultsDirectory.FullName,
+                    SourceDirectory = ResultsDirectory.FullName,
                     SpectrogramZoomingConfig = PathHelper.ResolveConfigFile("SpectrogramZoomingConfig.yml"),
                     ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Tile,
                 });
@@ -86,7 +93,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
                 new DrawZoomingSpectrograms.Arguments()
                 {
                     Output = zoomOutput.FullName,
-                    SourceDirectory = resultsDirectory.FullName,
+                    SourceDirectory = ResultsDirectory.FullName,
                     SpectrogramZoomingConfig = PathHelper.ResolveConfigFile("SpectrogramZoomingConfig.yml"),
                     ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Tile,
                 });

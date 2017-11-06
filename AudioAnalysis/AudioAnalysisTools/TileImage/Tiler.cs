@@ -477,6 +477,11 @@ namespace AudioAnalysisTools.TileImage
                 return lengthToSplit / tileLength;
             }
 
+            if (lengthToSplit < tileLength)
+            {
+                return 1;
+            }
+
             if (layerPadding == 0)
             {
                 return Math.Ceiling((double)lengthToSplit / tileLength);

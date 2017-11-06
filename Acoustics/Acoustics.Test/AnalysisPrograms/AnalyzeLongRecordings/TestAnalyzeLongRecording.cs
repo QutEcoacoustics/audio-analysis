@@ -17,6 +17,8 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
     using TestHelpers;
     using TowseyLibrary;
 
+    using Zio;
+
     /// <summary>
     /// Test methods for the various standard Sonograms or Spectrograms
     /// Notes on TESTS: (from Anthony in email @ 05/04/2017)
@@ -138,6 +140,9 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             // draw array just to check peaks are in correct places - just for debugging purposes
             var ldsBgnSpectrumFile = this.outputDirectory.CombineFile("Spectrum1.png");
             GraphsAndCharts.DrawGraph(array, "LD BGN SPECTRUM Linear", ldsBgnSpectrumFile);
+
+            var generationData = Json.Deserialise<IndexGenerationData>(IndexGenerationData.FindFile(resultsDirectory.ToDirectoryEntry()));
+            Assert.AreEqual("TemporaryRecording1", generationData.RecordingBasename);
         }
 
         /// <summary>

@@ -26,6 +26,8 @@ namespace AnalysisPrograms
 
     using TowseyLibrary;
 
+    using Zio;
+
     public static class HighResolutionAcousticIndices
     {
 
@@ -237,14 +239,8 @@ namespace AnalysisPrograms
                     LoggedConsole.WriteLine("# Input Directory             : " + zoomingArguments.SourceDirectory);
                     LoggedConsole.WriteLine("# Output Directory            : " + zoomingArguments.Output);
 
-                    var common = new ZoomArguments();
-                    common.SpectrogramZoomingConfig = Yaml.Deserialise<SpectrogramZoomingConfig>(zoomingArguments.SpectrogramZoomingConfig);
-                    var indexPropertiesPath = IndexProperties.Find(common.SpectrogramZoomingConfig, zoomingArguments.SpectrogramZoomingConfig);
-                    LoggedConsole.WriteLine("Using index properties file: " + indexPropertiesPath.FullName);
-                    common.IndexProperties = IndexProperties.GetIndexProperties(indexPropertiesPath);
+                    var common = new ZoomParameters(zoomingArguments.SourceDirectory.ToDirectoryEntry(), zoomingArguments.SpectrogramZoomingConfig.ToFileEntry(), false);
 
-                    // get the indexDistributions and the indexGenerationData AND the //common.OriginalBasename
-                    common.CheckForNeededFiles(zoomingArguments.SourceDirectory.ToDirectoryInfo());
                     // Create directory if not exists
                     if (!Directory.Exists(zoomingArguments.Output))
                     {
