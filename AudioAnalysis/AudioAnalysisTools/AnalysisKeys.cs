@@ -14,7 +14,7 @@ namespace AudioAnalysisTools
         // KEYS TO PARAMETERS IN CONFIG FILE
         public const string AnnotateSonogram = "AnnotateSonogram";
         public const string AnalysisName = "AnalysisName";
-        public const string BGNoiseNeighbourhood = "BGNoiseNeighbourhood";
+        public const string BGNoiseNeighbourhood = "BgNoiseNeighbourhood";
         public const string CallDuration = "CallDuration";
         public const string DctDuration = "DctDuration";
         public const string DctThreshold = "DctThreshold";

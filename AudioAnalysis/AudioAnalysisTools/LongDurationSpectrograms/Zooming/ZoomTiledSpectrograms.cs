@@ -32,7 +32,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
         /// </summary>
         public static void DrawTiles(
             AnalysisIoInputDirectory io,
-            ZoomArguments common,
+            ZoomParameters common,
             string analysisTag)
         {
             Log.Info("Begin Draw Super Tiles");
@@ -41,8 +41,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 
             var zoomConfig = common.SpectrogramZoomingConfig;
             LdSpectrogramConfig ldsConfig = common.SpectrogramZoomingConfig.LdSpectrogramConfig;
-            var distributions = IndexDistributions.Deserialize(common.IndexDistributionsFile);
-            var indexGeneration = Json.Deserialise<IndexGenerationData>(common.IndexGenerationDataFile);
+            var distributions = common.IndexDistributions;
+            var indexGeneration = common.IndexGenerationData;
             var indexProperties = common.IndexProperties;
 
             string fileStem = common.OriginalBasename;
@@ -70,52 +70,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 
             Log.Info("Tiling at scales: " + allImageScales.ToCommaSeparatedList());
 
-            TilingProfile namingPattern;
-            switch (zoomConfig.TilingProfile)
-            {
-                case nameof(PanoJsTilingProfile):
-                    namingPattern = new PanoJsTilingProfile();
-
-                    if (zoomConfig.TileWidth != namingPattern.TileWidth)
-                    {
-                        throw new ConfigFileException("TileWidth must match the default PanoJS TileWidth of " +
-                                                      namingPattern.TileWidth);
-                    }
-
-                    break;
-                case nameof(AbsoluteDateTilingProfile):
-                    // Zooming spectrograms use multiple color profiles at different levels
-                    // therefore unable to set a useful tag (like ACI-ENT-EVN).
-                    if (indexGeneration.RecordingStartDate != null)
-                    {
-                        var tilingStartDate = GetNearestTileBoundary(
-                            zoomConfig.TileWidth,
-                            XNominalUnitScale,
-                            (DateTimeOffset)indexGeneration.RecordingStartDate);
-
-                        // if we're not writing tiles to disk, omit the basename because whatever the container format is
-                        // it will have the base name attached
-                        namingPattern = new AbsoluteDateTilingProfile(
-                            common.OmitBasename ? string.Empty : fileStem,
-                            "BLENDED.Tile",
-                            tilingStartDate,
-                            indexGeneration.FrameLength / 2,
-                            zoomConfig.TileWidth);
-                    }
-                    else
-                    {
-                        throw new ArgumentNullException(
-                            nameof(zoomConfig.TilingProfile),
-                            "`RecordingStateDate` from the `IndexGenerationData.json` cannot be null when `AbsoluteDateTilingProfile` specified");
-                    }
-
-                    break;
-                default:
-                    throw new ConfigFileException(
-                        $"The {nameof(zoomConfig.TilingProfile)} configuration property was set to an unsupported value - no profile known by that name");
-            }
-
-            Log.Info($"Tiling using {namingPattern.GetType().Name}, Tile Width: {namingPattern.TileWidth}, Height: {namingPattern.TileHeight}");
+            // determine what naming format to use for tiles
+            var namingPattern = GetTilingProfile(common, zoomConfig, indexGeneration);
 
             // pad out image so it produces a whole number of tiles
             // this solves the asymmetric right padding of short audio files
@@ -134,17 +90,114 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
                 yUnitScale: 1.0,
                 unitHeight: namingPattern.TileHeight);
 
-            // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
             // TODO: does this load all spectra? even ones we don't need...
             var (spectra, filteredIndexProperties) = LoadSpectra(io, analysisTag, fileStem, indexProperties);
 
+            GenerateIndexSpectrogramTiles(indexScales, ldsConfig, filteredIndexProperties, zoomConfig, spectra, indexGeneration, fileStem, namingPattern, tiler);
+
+            // ####################### DRAW ZOOMED-IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
+            if (shouldRenderStandardScale)
+            {
+                GenerateStandardSpectrogramTiles(spectra, indexGeneration, ldsConfig, filteredIndexProperties, zoomConfig, standardScales, fileStem, namingPattern, tiler);
+            }
+
+            Log.Success("Tiling complete");
+        }
+
+        private static void GenerateStandardSpectrogramTiles(
+            Dictionary<string, double[,]> spectra,
+            IndexGenerationData indexGeneration,
+            LdSpectrogramConfig ldsConfig,
+            Dictionary<string, IndexProperties> filteredIndexProperties,
+            SpectrogramZoomingConfig zoomConfig,
+            double[] standardScales,
+            string fileStem,
+            TilingProfile namingPattern,
+            Tiler tiler)
+        {
+            Log.Info("START DRAWING ZOOMED-IN FRAME SPECTROGRAMS");
+
+            TimeSpan dataDuration =
+                TimeSpan.FromTicks(spectra["POW"].GetLength(1) * indexGeneration.IndexCalculationDuration.Ticks);
+            var segmentDurationInSeconds = (int)indexGeneration.MaximumSegmentDuration.Value.TotalSeconds;
+
+            var minuteCount = (int)Math.Ceiling(dataDuration.TotalMinutes);
+
+            // window the standard spectrogram generation so that we can provide adjacent supertiles to the
+            // tiler, so that bordering / overlapping tiles (for cases where tile size != multiple of supertile size)
+            // don't render partial tiles (i.e. bad/partial rendering of image)
+
+            // this is the function generator
+            // use of Lazy means results will only be evaluated once
+            // and only when needed. This is useful for sliding window.
+            Lazy<TimeOffsetSingleLayerSuperTile[]> GenerateStandardSpectrogramGenerator(int minuteToLoad)
+            {
+                return new Lazy<TimeOffsetSingleLayerSuperTile[]>(
+                    () =>
+                        {
+                            Log.Info("Starting generation for minute: " + minuteToLoad);
+
+                            var superTilingResults = DrawSuperTilesFromSingleFrameSpectrogram(
+                                null /*inputDirectory*/, //TODO:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                ldsConfig,
+                                filteredIndexProperties,
+                                zoomConfig,
+                                minuteToLoad,
+                                standardScales,
+                                fileStem,
+                                indexGeneration,
+                                namingPattern.ChromeOption);
+
+                            return superTilingResults;
+                        });
+            }
+
+            Lazy<TimeOffsetSingleLayerSuperTile[]> previous = null;
+            Lazy<TimeOffsetSingleLayerSuperTile[]> current = null;
+            Lazy<TimeOffsetSingleLayerSuperTile[]> next = null;
+            for (int minute = 0; minute < minuteCount; minute++)
+            {
+                Log.Trace("Starting loop for minute" + minute);
+
+                // shift each value back
+                previous = current;
+                current = next ?? GenerateStandardSpectrogramGenerator(minute);
+
+                next = minute + 1 < minuteCount ? GenerateStandardSpectrogramGenerator(minute + 1) : null;
+
+                // for each scale level of the results
+                for (int i = 0; i < current.Value.Length; i++)
+                {
+                    // finally tile the output
+                    Log.Debug("Begin tile production for minute: " + minute);
+                    tiler.Tile(previous?.Value[i], current.Value[i], next?.Value[i]);
+                    Log.Debug("Begin tile production for minute: " + minute);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Derives false colour varying-resolution multi-index spectrograms from provided spectral indices.
+        /// </summary>
+        private static void GenerateIndexSpectrogramTiles(
+            double[] indexScales,
+            LdSpectrogramConfig ldsConfig,
+            Dictionary<string, IndexProperties> filteredIndexProperties,
+            SpectrogramZoomingConfig zoomConfig,
+            Dictionary<string, double[,]> spectra,
+            IndexGenerationData indexGeneration,
+            string fileStem,
+            TilingProfile namingPattern,
+            Tiler tiler)
+        {
             // TOP MOST ZOOMED-OUT IMAGES
             Log.Info("START DRAWING ZOOMED-OUT INDEX SPECTROGRAMS");
+
             foreach (double scale in indexScales)
             {
                 Log.Info("Starting scale: " + scale);
                 TimeSpan imageScale = TimeSpan.FromSeconds(scale);
-                TimeOffsetSingleLayerSuperTile[] superTiles = DrawSuperTilesAtScaleFromIndexSpectrograms(
+                var superTiles = DrawSuperTilesAtScaleFromIndexSpectrograms(
                     ldsConfig,
                     filteredIndexProperties,
                     zoomConfig,
@@ -159,75 +212,61 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
                 tiler.TileMany(superTiles);
                 Log.Debug("Completed writing index tiles for " + scale);
             }
+        }
 
-            // ####################### DRAW ZOOMED-IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
-            if (shouldRenderStandardScale)
+        private static TilingProfile GetTilingProfile(
+            ZoomParameters common,
+            SpectrogramZoomingConfig zoomConfig,
+            IndexGenerationData indexGeneration)
+        {
+            TilingProfile namingPattern;
+            switch (zoomConfig.TilingProfile)
             {
-                Log.Info("START DRAWING ZOOMED-IN FRAME SPECTROGRAMS");
+                case nameof(PanoJsTilingProfile):
+                    namingPattern = new PanoJsTilingProfile();
 
-                TimeSpan dataDuration = TimeSpan.FromTicks(spectra["POW"].GetLength(1) *
-                                                           indexGeneration.IndexCalculationDuration.Ticks);
-                var segmentDurationInSeconds = (int)indexGeneration.MaximumSegmentDuration.Value.TotalSeconds;
-
-                var minuteCount = (int)Math.Ceiling(dataDuration.TotalMinutes);
-
-                // window the standard spectrogram generation so that we can provide adjacent supertiles to the
-                // tiler, so that bordering / overlapping tiles (for cases where tile size != multiple of supertile size)
-                // don't render partial tiles (i.e. bad/partial rendering of image)
-
-                // this is the function generator
-                // use of Lazy means results will only be evaluated once
-                // and only when needed. This is useful for sliding window.
-                Lazy<TimeOffsetSingleLayerSuperTile[]> GenerateStandardSpectrogramGenerator(int minuteToLoad)
-                {
-                    return new Lazy<TimeOffsetSingleLayerSuperTile[]>(
-                        () =>
-                            {
-                                Log.Info("Starting generation for minute: " + minuteToLoad);
-
-                                var superTilingResults = DrawSuperTilesFromSingleFrameSpectrogram(
-                                    null /*inputDirectory*/, //TODO:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                    ldsConfig,
-                                    filteredIndexProperties,
-                                    zoomConfig,
-                                    minuteToLoad,
-                                    standardScales,
-                                    fileStem,
-                                    indexGeneration,
-                                    namingPattern.ChromeOption);
-
-                                return superTilingResults;
-                            });
-                }
-
-                Lazy<TimeOffsetSingleLayerSuperTile[]> previous = null;
-                Lazy<TimeOffsetSingleLayerSuperTile[]> current = null;
-                Lazy<TimeOffsetSingleLayerSuperTile[]> next = null;
-                for (int minute = 0; minute < minuteCount; minute++)
-                {
-                    Log.Trace("Starting loop for minute" + minute);
-
-                    // shift each value back
-                    previous = current;
-                    current = next ?? GenerateStandardSpectrogramGenerator(minute);
-
-                    next = minute + 1 < minuteCount ? GenerateStandardSpectrogramGenerator(minute + 1) : null;
-
-                    // for each scale level of the results
-                    for (int i = 0; i < current.Value.Length; i++)
+                    if (zoomConfig.TileWidth != namingPattern.TileWidth)
                     {
-                        // finally tile the output
-                        Log.Debug("Begin tile production for minute: " + minute);
-                        tiler.Tile(
-                            previous?.Value[i],
-                            current.Value[i],
-                            next?.Value[i]);
-                        Log.Debug("Begin tile production for minute: " + minute);
+                        throw new ConfigFileException(
+                            "TileWidth must match the default PanoJS TileWidth of " + namingPattern.TileWidth);
                     }
-                }
+
+                    break;
+                case nameof(AbsoluteDateTilingProfile):
+                    // Zooming spectrograms use multiple color profiles at different levels
+                    // therefore unable to set a useful tag (like ACI-ENT-EVN).
+                    if (indexGeneration.RecordingStartDate != null)
+                    {
+                        var tilingStartDate = GetNearestTileBoundary(
+                            zoomConfig.TileWidth,
+                            XNominalUnitScale,
+                            (DateTimeOffset)indexGeneration.RecordingStartDate);
+
+                        // if we're not writing tiles to disk, omit the basename because whatever the container format is
+                        // it will have the base name attached
+                        namingPattern = new AbsoluteDateTilingProfile(
+                            common.OmitBasename ? string.Empty : common.OriginalBasename,
+                            "BLENDED.Tile",
+                            tilingStartDate,
+                            indexGeneration.FrameLength / 2,
+                            zoomConfig.TileWidth);
+                    }
+                    else
+                    {
+                        throw new ArgumentNullException(
+                            nameof(zoomConfig.TilingProfile),
+                            "`RecordingStateDate` from the `IndexGenerationData.json` cannot be null when `AbsoluteDateTilingProfile` specified");
+                    }
+
+                    break;
+                default:
+                    throw new ConfigFileException(
+                        $"The {nameof(zoomConfig.TilingProfile)} configuration property was set to an unsupported value - no profile known by that name");
             }
 
-            Log.Info("Tiling complete");
+            Log.Info(
+                $"Tiling using {namingPattern.GetType().Name}, Tile Width: {namingPattern.TileWidth}, Height: {namingPattern.TileHeight}");
+            return namingPattern;
         }
 
         private static (Dictionary<string, double[,]>, Dictionary<string, IndexProperties>) LoadSpectra(

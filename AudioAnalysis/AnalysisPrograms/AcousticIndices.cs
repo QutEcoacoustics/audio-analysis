@@ -498,13 +498,14 @@ namespace AnalysisPrograms
             var indexConfigData = new IndexGenerationData()
                 {
                     RecordingType = inputFileSegment.Source.Extension,
+                    RecordingBasename = basename,
                     RecordingStartDate = inputFileSegment.TargetFileStartDate,
                     SampleRateOriginal = inputFileSegment.TargetFileSampleRate.Value,
                     SampleRateResampled = sampleRate,
                     FrameLength = frameWidth,
                     FrameStep = (int?)settings.Configuration[AnalysisKeys.FrameStep] ?? (int?)settings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculateConfig.DefaultWindowSize,
                     IndexCalculationDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration,
-                    BGNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
+                    BgNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
                     MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
                     MaximumSegmentDuration = settings.AnalysisMaxSegmentDuration,
                     BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,

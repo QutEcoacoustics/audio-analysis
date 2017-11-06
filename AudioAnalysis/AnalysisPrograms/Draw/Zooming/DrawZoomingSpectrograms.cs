@@ -15,6 +15,8 @@ namespace AnalysisPrograms.Draw.Zooming
     using PowerArgs;
     using Production;
 
+    using Zio;
+
     /// <summary>
     /// Renders index data as false color images at various scales, with various styles.
     /// </summary>
@@ -50,21 +52,10 @@ namespace AnalysisPrograms.Draw.Zooming
             LoggedConsole.WriteLine("# Input Directory             : " + arguments.SourceDirectory);
             LoggedConsole.WriteLine("# Output Directory            : " + arguments.Output);
 
-            var common = new ZoomArguments();
-
-            common.SpectrogramZoomingConfig = Yaml.Deserialise<SpectrogramZoomingConfig>(arguments.SpectrogramZoomingConfig);
-
-            // search for index properties config
-            var indexPropertiesPath = IndexProperties.Find(common.SpectrogramZoomingConfig, arguments.SpectrogramZoomingConfig);
-            Log.Debug("Using index properties file: " + indexPropertiesPath.FullName);
-
-            // load the index properties
-            common.IndexProperties = IndexProperties.GetIndexProperties(indexPropertiesPath);
-
-            // get the indexDistributions and the indexGenerationData AND the common.OriginalBasename
-            common.CheckForNeededFiles(arguments.SourceDirectory.ToDirectoryInfo());
-
-            common.OmitBasename = !string.IsNullOrEmpty(arguments.OutputFormat);
+            var common = new ZoomParameters(
+                arguments.SourceDirectory.ToDirectoryEntry(),
+                arguments.SpectrogramZoomingConfig.ToFileEntry(),
+                !string.IsNullOrEmpty(arguments.OutputFormat));
 
             LoggedConsole.WriteLine("# File name of recording      : " + common.OriginalBasename);
 

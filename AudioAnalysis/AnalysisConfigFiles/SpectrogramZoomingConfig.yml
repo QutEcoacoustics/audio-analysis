@@ -1,12 +1,10 @@
 ---
-#UnitsOfTime: "second"
 SpectralFrameDuration: 0.02
 TileWidth: 300
 # How to tile, valid values:
 # - PanoJsTilingProfile
 # - AbsoluteDateTilingProfile
 TilingProfile: AbsoluteDateTilingProfile
-ScaleUnits: "SecondsPerPixel"
 SpectralIndexScale: 
     - 60
     - 24

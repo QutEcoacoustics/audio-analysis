@@ -547,6 +547,46 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
 
         }
 
+        [TestMethod]
+        public void EnsureReallyShortRecordingsWork()
+        {
+            var testBitmap = new Bitmap(2, 300);
+            using (var graphics = Graphics.FromImage(testBitmap))
+            {
+                var graphicsUnit = GraphicsUnit.Pixel;
+                graphics.FillRectangle(Brushes.Red, testBitmap.GetBounds(ref graphicsUnit));
+            }
+
+            var superTile = new TimeOffsetSingleLayerSuperTile()
+                {
+                    Image = testBitmap,
+                    Scale = TimeSpan.FromSeconds(60.0),
+                    TimeOffset = TimeSpan.Zero,
+                    SpectrogramType = SpectrogramType.Index,
+                };
+            this.tiler.Tile(superTile);
+
+            var producedFiles = this.outputDirectory.GetFiles();
+
+            Assert.AreEqual(1, producedFiles.Length);
+
+            // produced image should have 180px of transparency, 2px of color, and then 118px of transparency
+            var expected = new Bitmap(300, 300);
+            using (var graphics = Graphics.FromImage(expected))
+            {
+                graphics.FillRectangle(Brushes.Red, new Rectangle(180, 0, 2, 300));
+            }
+
+            var expectedImages = new[] { expected };
+
+            for (int i = 0; i < expectedImages.Length; i++)
+            {
+                var producedImage = Image.FromFile(producedFiles[i].FullName);
+                var areEqual = BitmapEquals((Bitmap)expectedImages[i], (Bitmap)producedImage);
+                Assert.IsTrue(areEqual, "Bitmaps were not equal {0}, {1}", expectedImages[i], producedFiles[i].Name);
+            }
+        }
+
         /// <summary>
         /// 2B.abcd = Rect.FromLTRB(100, 100, 200, 200)
         ///

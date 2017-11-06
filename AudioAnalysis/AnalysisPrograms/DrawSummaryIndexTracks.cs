@@ -17,6 +17,8 @@
     using PowerArgs;
     using TowseyLibrary;
 
+    using Zio;
+
     public class DrawSummaryIndexTracks
     {
         public class Arguments
@@ -116,7 +118,7 @@
             arguments.Output.CreateParentDirectories();
 
             // Find required index generation data
-            var igd = IndexGenerationData.GetIndexGenerationData(arguments.InputCsv.Directory);
+            var igd = IndexGenerationData.GetIndexGenerationData(arguments.InputCsv.Directory.ToDirectoryEntry());
 
             // Convert summary indices to image
             string fileName = Path.GetFileNameWithoutExtension(arguments.InputCsv.Name);

@@ -276,7 +276,7 @@
     <Compile Include="LongDurationSpectrograms\SuperTile.cs" />
     <Compile Include="LongDurationSpectrograms\Zooming\SpectrogramZoomingConfig.cs" />
     <Compile Include="LongDurationSpectrograms\Zooming\ZoomCommon.cs" />
-    <Compile Include="LongDurationSpectrograms\Zooming\ZoomArguments.cs" />
+    <Compile Include="LongDurationSpectrograms\Zooming\ZoomParameters.cs" />
     <Compile Include="LongDurationSpectrograms\Zooming\ZoomTiledSpectrograms.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogram3D.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogramConfig.cs" />
