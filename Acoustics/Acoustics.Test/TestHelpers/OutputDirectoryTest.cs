@@ -10,6 +10,8 @@ namespace Acoustics.Test.TestHelpers
     [TestClass]
     public class OutputDirectoryTest
     {
+        protected static DirectoryInfo SharedDirectory { get; } = PathHelper.GetTempDir();
+
         protected DirectoryInfo outputDirectory;
 
         [TestInitialize]
@@ -22,6 +24,12 @@ namespace Acoustics.Test.TestHelpers
         public void Cleanup()
         {
             PathHelper.DeleteTempDir(this.outputDirectory);
+        }
+
+        [ClassCleanup]
+        public static void CleanupStatic()
+        {
+            PathHelper.DeleteTempDir(SharedDirectory);
         }
     }
 }

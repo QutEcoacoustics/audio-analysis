@@ -476,8 +476,13 @@ namespace AnalysisPrograms
 
         private static void ModifyVerbosity(MainEntryArguments arguments)
         {
+            SetLogVerbosity(arguments.LogLevel, arguments.QuietConsole);
+        }
+
+        public static void SetLogVerbosity(LogVerbosity logVerbosity, bool quietConsole)
+        {
             Level modifiedLevel;
-            switch (arguments.LogLevel)
+            switch (logVerbosity)
             {
                 case LogVerbosity.None:
                     modifiedLevel = Level.Off;
@@ -511,14 +516,14 @@ namespace AnalysisPrograms
             repository.Root.Level = modifiedLevel;
             repository.Threshold = modifiedLevel;
 
-            if (arguments.QuietConsole)
+            if (quietConsole)
             {
                 var appenders = repository.GetAppenders();
 
                 foreach (var appender in appenders)
                 {
-                    if (appender is ConsoleAppender || appender is ManagedColoredConsoleAppender ||
-                        appender is ColoredConsoleAppender)
+                    if (appender is ConsoleAppender || appender is ManagedColoredConsoleAppender
+                        || appender is ColoredConsoleAppender)
                     {
                         ((AppenderSkeleton)appender).Threshold = Level.Notice;
                     }
@@ -527,26 +532,26 @@ namespace AnalysisPrograms
 
             repository.RaiseConfigurationChanged(EventArgs.Empty);
 
-            Log.Debug("Log level changed to: " + arguments.LogLevel);
+            Log.Debug("Log level changed to: " + logVerbosity);
 
             // log test
-//            Log.Debug("Log test DEBUG");
-//            Log.Info("Log test INFO");
-//            Log.Success("Log test SUCCESS");
-//            Log.Warn("Log test WARN");
-//            Log.Error("Log test ERROR");
-//            Log.Fatal("Log test FATAL");
-//            Log.Trace("Log test TRACE");
-//            Log.Verbose("Log test VERBOSE");
-//            LoggedConsole.Log.Info("Clean log INFO");
-//            LoggedConsole.Log.Success("Clean log SUCCESS");
-//            LoggedConsole.Log.Warn("Clean log WARN");
-//            LoggedConsole.Log.Error("Clean log ERROR");
-//            LoggedConsole.WriteLine("Clean wrapper INFO");
-//            LoggedConsole.WriteSuccessLine("Clean wrapper SUCCESS");
-//            LoggedConsole.WriteWarnLine("Clean wrapper WARN");
-//            LoggedConsole.WriteErrorLine("Clean wrapper ERROR");
-//            LoggedConsole.WriteFatalLine("Clean wrapper FATAL", new Exception("I'm a fake"));
+            //            Log.Debug("Log test DEBUG");
+            //            Log.Info("Log test INFO");
+            //            Log.Success("Log test SUCCESS");
+            //            Log.Warn("Log test WARN");
+            //            Log.Error("Log test ERROR");
+            //            Log.Fatal("Log test FATAL");
+            //            Log.Trace("Log test TRACE");
+            //            Log.Verbose("Log test VERBOSE");
+            //            LoggedConsole.Log.Info("Clean log INFO");
+            //            LoggedConsole.Log.Success("Clean log SUCCESS");
+            //            LoggedConsole.Log.Warn("Clean log WARN");
+            //            LoggedConsole.Log.Error("Clean log ERROR");
+            //            LoggedConsole.WriteLine("Clean wrapper INFO");
+            //            LoggedConsole.WriteSuccessLine("Clean wrapper SUCCESS");
+            //            LoggedConsole.WriteWarnLine("Clean wrapper WARN");
+            //            LoggedConsole.WriteErrorLine("Clean wrapper ERROR");
+            //            LoggedConsole.WriteFatalLine("Clean wrapper FATAL", new Exception("I'm a fake"));
         }
 
         private static void LogProgramStats()

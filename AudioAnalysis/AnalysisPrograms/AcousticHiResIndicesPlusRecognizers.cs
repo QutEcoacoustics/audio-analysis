@@ -295,7 +295,7 @@ namespace AnalysisPrograms
             TimeSpan bgNoiseNeighborhood;
             try
             {
-                int bgnNh = configuration[AnalysisKeys.BGNoiseNeighbourhood];
+                int bgnNh = configuration[AnalysisKeys.BgNoiseNeighbourhood];
                 bgNoiseNeighborhood = TimeSpan.FromSeconds(bgnNh);
             }
             catch (Exception ex)
@@ -723,7 +723,7 @@ namespace AnalysisPrograms
                                           FrameLength = frameWidth,
                                           FrameStep = settings.Configuration[AnalysisKeys.FrameStep],
                                           IndexCalculationDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration,
-                                          BGNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
+                                          BgNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
                                           MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
                                           BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
                                           LongDurationSpectrogramConfig = ldSpectrogramConfig,

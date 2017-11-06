@@ -7,11 +7,11 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace AudioAnalysisTools.LongDurationSpectrograms
+namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 {
     using System;
 
-    using Indices;
+    using AudioAnalysisTools.Indices;
 
     public class SpectrogramZoomingConfig : IIndexPropertyReferenceConfiguration
     {

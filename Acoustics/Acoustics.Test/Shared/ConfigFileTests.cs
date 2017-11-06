@@ -19,6 +19,8 @@ namespace Acoustics.Test.Shared
 
     using MSTestExtensions;
 
+    using Zio;
+
     [TestClass]
     public class ConfigFileTests : BaseTest
     {
@@ -99,8 +101,7 @@ namespace Acoustics.Test.Shared
             // the below file will not exist
             var config = TempFileHelper.NewTempFile();
 
-            FileInfo foundConfig;
-            var actual = ConfigFile.TryResolveConfigFile(config.FullName, null, out foundConfig);
+            var actual = ConfigFile.TryResolveConfigFile(config.FullName, null, out _);
 
             Assert.IsFalse(actual);
         }
@@ -140,8 +141,7 @@ namespace Acoustics.Test.Shared
         {
             string config = "doesNotExist.yml";
 
-            FileInfo foundConfig;
-            Assert.IsFalse(ConfigFile.TryResolveConfigFile(config, null, out foundConfig));
+            Assert.IsFalse(ConfigFile.TryResolveConfigFile(config, null, out _));
         }
 
         [TestCleanup]

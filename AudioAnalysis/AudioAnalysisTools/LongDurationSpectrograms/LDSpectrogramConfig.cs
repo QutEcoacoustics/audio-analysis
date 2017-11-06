@@ -18,12 +18,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     /// </summary>
     public class LdSpectrogramConfig
     {
-        #region Fields
-
-        #endregion
-
-        #region Constructors and Destructors
-
         /// <summary>
         /// Initializes a new instance of the <see cref="LdSpectrogramConfig"/> class.
         /// CONSTRUCTOR
@@ -38,10 +32,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.FreqScale = "Linear";
             this.YAxisTicInterval = 1000;
         }
-
-        #endregion
-
-        #region Public Properties
 
         /// <summary>
         /// Gets or sets the type of freq scale.
@@ -106,10 +96,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 double freqBinWidth = sampleRate / frameWidth;
                 return (int)Math.Round(this.YAxisTicInterval / freqBinWidth);
         }
-
-        #endregion
-
-        #region Public Methods and Operators
 
         /// <summary>
         /// READS A YAML CONFIG FILE into a dynamic variable and then transfers all values into the appropriate config class
@@ -178,15 +164,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return keys;
         }
 
-        public void WriteConfigToYaml(FileInfo path)
-        {
-            Yaml.Serialise(path, this);
-        }
-
         public string[] GetKeys()
         {
             return GetKeys(this.ColorMap1, this.ColorMap2);
         }
-        #endregion
     }
 }
