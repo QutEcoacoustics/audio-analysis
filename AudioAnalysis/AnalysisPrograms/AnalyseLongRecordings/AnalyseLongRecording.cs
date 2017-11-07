@@ -97,7 +97,6 @@ Output  to  directory: {1}
             SaveBehavior saveIntermediateWavFiles = (SaveBehavior?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? SaveBehavior.Never;
             bool saveIntermediateDataFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
             SaveBehavior saveSonogramsImages = (SaveBehavior?)configuration[AnalysisKeys.SaveSonogramImages] ?? SaveBehavior.Never;
-            bool doParallelProcessing = (bool?)configuration[AnalysisKeys.ParallelProcessing] ?? false;
 
             bool filenameDate = (bool?)configuration[AnalysisKeys.RequireDateInFilename] ?? false;
 
@@ -145,7 +144,7 @@ Output  to  directory: {1}
                 new LocalSourcePreparer(),
                 saveIntermediateWavFiles,
                 false,
-                doParallelProcessing);
+                arguments.Parallel);
 
             // 4. get the segment of audio to be analysed
             // if tiling output, specify that FileSegment needs to be able to read the date
