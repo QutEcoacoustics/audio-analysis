@@ -3,6 +3,14 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Zio.FileSystems.Community.SqliteFileSystem</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Zio.FileSystems.Community.SqliteFileSystem</PackageId>
+    <Authors>Anthony Truskinger</Authors>
+    <Company />
+    <Description />
+    <Copyright>Anthony Truskinger</Copyright>
+    <AssemblyName>Zio.FileSystems.Community.SqliteFileSystem</AssemblyName>
+    <Product>Zio.FileSystems.Community.SqliteFileSystem</Product>
   </PropertyGroup>
 
   <ItemGroup>
