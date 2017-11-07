@@ -62,5 +62,4 @@ SaveIntermediateCsvFiles: false
 SaveSonogramImages: Never
 DoNoiseReduction: false
 BgNoiseThreshold: 3.0
-ParallelProcessing: true
 ...

@@ -12,7 +12,6 @@ SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: true
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never
-ParallelProcessing: true
 
 IndexPropertiesConfig: ".\\IndexPropertiesConfig.yml"
 AedConfig: ".\\Ecosounds.AED.yml"

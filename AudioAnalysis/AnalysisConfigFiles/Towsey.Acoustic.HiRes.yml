@@ -56,8 +56,6 @@ SaveSonogramImages: Never
 # TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
 SaveSonogramData: false
 
-ParallelProcessing: false
-
 # if true an additional set of images will be produced that are tiles
 # if true, RequireDateInFilename must be set
 TileImageOutput: false
