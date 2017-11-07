@@ -479,7 +479,7 @@ namespace AnalysisPrograms
             SetLogVerbosity(arguments.LogLevel, arguments.QuietConsole);
         }
 
-        public static void SetLogVerbosity(LogVerbosity logVerbosity, bool quietConsole)
+        public static void SetLogVerbosity(LogVerbosity logVerbosity, bool quietConsole = false)
         {
             Level modifiedLevel;
             switch (logVerbosity)

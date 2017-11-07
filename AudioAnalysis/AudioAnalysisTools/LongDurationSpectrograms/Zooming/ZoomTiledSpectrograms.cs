@@ -42,7 +42,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             var zoomConfig = common.SpectrogramZoomingConfig;
             LdSpectrogramConfig ldsConfig = common.SpectrogramZoomingConfig.LdSpectrogramConfig;
             var distributions = common.IndexDistributions;
-            var indexGeneration = common.IndexGenerationData;
+            var indexGenerationData = common.IndexGenerationData;
             var indexProperties = common.IndexProperties;
 
             string fileStem = common.OriginalBasename;
@@ -60,7 +60,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
                     " we need at least some scales to render zooming spectrograms");
             }
 
-            var shouldRenderStandardScale = standardScales.IsNullOrEmpty();
+            var shouldRenderStandardScale = !standardScales.IsNullOrEmpty();
             if (shouldRenderStandardScale)
             {
                 Log.Warn("Standard spectrograms will not be rendered");
@@ -71,7 +71,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             Log.Info("Tiling at scales: " + allImageScales.ToCommaSeparatedList());
 
             // determine what naming format to use for tiles
-            var namingPattern = GetTilingProfile(common, zoomConfig, indexGeneration);
+            var namingPattern = GetTilingProfile(common, zoomConfig, indexGenerationData);
 
             // pad out image so it produces a whole number of tiles
             // this solves the asymmetric right padding of short audio files
@@ -93,12 +93,31 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             // TODO: does this load all spectra? even ones we don't need...
             var (spectra, filteredIndexProperties) = LoadSpectra(io, analysisTag, fileStem, indexProperties);
 
-            GenerateIndexSpectrogramTiles(indexScales, ldsConfig, filteredIndexProperties, zoomConfig, spectra, indexGeneration, fileStem, namingPattern, tiler);
+            // false color index tiles
+            GenerateIndexSpectrogramTiles(
+                indexScales,
+                ldsConfig,
+                filteredIndexProperties,
+                zoomConfig,
+                spectra,
+                indexGenerationData,
+                fileStem,
+                namingPattern,
+                tiler);
 
-            // ####################### DRAW ZOOMED-IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
+            // standard fft frame spectrograms
             if (shouldRenderStandardScale)
             {
-                GenerateStandardSpectrogramTiles(spectra, indexGeneration, ldsConfig, filteredIndexProperties, zoomConfig, standardScales, fileStem, namingPattern, tiler);
+                GenerateStandardSpectrogramTiles(
+                    spectra,
+                    indexGenerationData,
+                    ldsConfig,
+                    filteredIndexProperties,
+                    zoomConfig,
+                    standardScales,
+                    fileStem,
+                    namingPattern,
+                    tiler);
             }
 
             Log.Success("Tiling complete");
@@ -185,7 +204,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             Dictionary<string, IndexProperties> filteredIndexProperties,
             SpectrogramZoomingConfig zoomConfig,
             Dictionary<string, double[,]> spectra,
-            IndexGenerationData indexGeneration,
+            IndexGenerationData indexGenerationData,
             string fileStem,
             TilingProfile namingPattern,
             Tiler tiler)
@@ -196,6 +215,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             foreach (double scale in indexScales)
             {
                 Log.Info("Starting scale: " + scale);
+
+                if (indexGenerationData.RecordingDuration.TotalSeconds < scale)
+                {
+                    Log.Warn($"Skipping scale step {scale} because recording duration ({indexGenerationData.RecordingDuration}) is less than 1px of scale");
+                    continue;
+                }
+
+                // TODO: eventual optimisation, remove concept of super tiles
+                // TODO: optimisation, cache aggregation layers (currently every layer is raggregated from base level)
                 TimeSpan imageScale = TimeSpan.FromSeconds(scale);
                 var superTiles = DrawSuperTilesAtScaleFromIndexSpectrograms(
                     ldsConfig,
@@ -203,7 +231,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
                     zoomConfig,
                     imageScale,
                     spectra,
-                    indexGeneration,
+                    indexGenerationData,
                     fileStem,
                     namingPattern.ChromeOption);
 

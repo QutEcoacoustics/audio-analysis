@@ -77,6 +77,9 @@ namespace AnalysisPrograms.Production
             }
             else
             {
+                // ensure parent directory exists on disk
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+
                 switch (extension)
                 {
                     case "." + SqlitePattern:
@@ -104,7 +107,7 @@ namespace AnalysisPrograms.Production
             return new AnalysisIo(input, output, null);
         }
 
-        public static string MakePath(string directory, string baseName, string format)
+        public static string MakePath(string directory, string baseName, string format, string tag)
         {
             if (string.IsNullOrEmpty(format))
             {
@@ -113,7 +116,7 @@ namespace AnalysisPrograms.Production
 
             Contract.Requires(AllFormats.Contains(format));
 
-            return Path.Combine(directory, baseName + "." + format);
+            return Path.Combine(directory, FilenameHelpers.AnalysisResultName(baseName, tag, format));
         }
     }
 

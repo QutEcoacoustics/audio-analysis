@@ -82,6 +82,8 @@ namespace AudioAnalysisTools.Indices
 
         public string RecordingBasename { get; set; }
 
+        public TimeSpan RecordingDuration { get; set; }
+
         /// <summary>
         /// Returns the index generation data from file in passed directory.
         /// </summary>
