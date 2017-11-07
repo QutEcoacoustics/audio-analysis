@@ -30,7 +30,6 @@ DisplayCsvImage: false
 DoNoiseReduction: true
 BgNoiseThreshold: 3.0
 SonogramBackgroundThreshold: 4.0
-ParallelProcessing: true
 
 IndexPropertiesConfig: ".\\IndexPropertiesConfig.yml"
 ...
