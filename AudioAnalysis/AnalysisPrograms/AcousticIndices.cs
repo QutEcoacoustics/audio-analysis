@@ -500,6 +500,7 @@ namespace AnalysisPrograms
                     RecordingType = inputFileSegment.Source.Extension,
                     RecordingBasename = basename,
                     RecordingStartDate = inputFileSegment.TargetFileStartDate,
+                    RecordingDuration = inputFileSegment.TargetFileDuration.Value,
                     SampleRateOriginal = inputFileSegment.TargetFileSampleRate.Value,
                     SampleRateResampled = sampleRate,
                     FrameLength = frameWidth,

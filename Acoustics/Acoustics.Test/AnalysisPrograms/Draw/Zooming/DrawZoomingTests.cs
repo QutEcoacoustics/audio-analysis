@@ -21,6 +21,9 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
 
+    using Zio;
+    using Zio.FileSystems.Community.SqliteFileSystem;
+
     [TestClass]
     public class DrawZoomingTests : OutputDirectoryTest
     {
@@ -41,9 +44,9 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
             };
 
             context.WriteLine($"{DateTime.Now} generating indices fixture data");
-            MainEntry.SetLogVerbosity(LogVerbosity.Warn, true);
+            MainEntry.SetLogVerbosity(LogVerbosity.Warn, false);
             AnalyseLongRecording.Execute(arguments);
-            MainEntry.SetLogVerbosity(LogVerbosity.Debug, true);
+            MainEntry.SetLogVerbosity(LogVerbosity.Debug, false);
             context.WriteLine($"{DateTime.Now} finished generting fixture");
 
             ResultsDirectory = SharedDirectory.Combine("Towsey.Acoustic");
@@ -77,31 +80,47 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
                     ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Tile,
                 });
 
-            Assert.Fail();
+            var filesProduced = zoomOutput.EnumerateFiles().ToArray();
+
+            // there are 16 zoom levels, but the test recording is only 2min long
+            // at scale 240, we're rendering <1px of content and that tile is not generated
+            Assert.AreEqual(15, filesProduced.Length);
+
+            // not sure what else to test - generally exceptions should be thrown if anything goes wrong
         }
 
         /// <summary>
         /// Tests the rendering of zooming spectrograms for a minute of audio indices
         /// </summary>
         [TestMethod]
-        [Timeout(45_000)]
+        //[Timeout(45_000)]
         public void TestGenerateTilesSqlite()
         {
             // generate the zooming spectrograms
-            var zoomOutput = this.outputDirectory.CombineFile("Zooming/tiles.sqlite3");
+            var zoomOutput = this.outputDirectory.Combine("Zooming");
             DrawZoomingSpectrograms.Execute(
                 new DrawZoomingSpectrograms.Arguments()
                 {
                     Output = zoomOutput.FullName,
+                    OutputFormat = "sqlite3",
                     SourceDirectory = ResultsDirectory.FullName,
                     SpectrogramZoomingConfig = PathHelper.ResolveConfigFile("SpectrogramZoomingConfig.yml"),
                     ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Tile,
                 });
 
-            Assert.IsTrue(File.Exists(zoomOutput.FullName));
-            Assert.Fail();
-        }
+            var tiles = zoomOutput.CombineFile("OxleyCreek_site_1_1060_244333_20140529T081358+1000_120_0__Tiles.sqlite3");
+            Assert.IsTrue(tiles.Exists);
 
-       
+            using (var fs = new SqliteFileSystem(tiles.FullName, OpenMode.ReadOnly))
+            {
+                var files = fs.EnumerateFiles(UPath.Root).ToArray();
+
+                // there are 16 zoom levels, but the test recording is only 2min long
+                // at scale 240, we're rendering <1px of content and that tile is not generated
+                Assert.AreEqual(15, files.Length);
+            }
+
+            // not sure what else to test - generally exceptions should be thrown if anything goes wrong
+        }
     }
 }
