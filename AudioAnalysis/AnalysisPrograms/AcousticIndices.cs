@@ -297,7 +297,7 @@ namespace AnalysisPrograms
                 TimeSpan bgNoiseNeighborhood;
                 try
                 {
-                    int bgnNh = configuration[AnalysisKeys.BGNoiseNeighbourhood];
+                    int bgnNh = configuration[AnalysisKeys.BgNoiseNeighbourhood];
                     bgNoiseNeighborhood = TimeSpan.FromSeconds(bgnNh);
                 }
                 catch (Exception ex)
