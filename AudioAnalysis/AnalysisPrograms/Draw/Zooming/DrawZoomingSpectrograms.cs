@@ -62,7 +62,7 @@ namespace AnalysisPrograms.Draw.Zooming
             // create file systems for reading input and writing output
             var io = FileSystemProvider.GetInputOutputFileSystems(
                 arguments.SourceDirectory,
-                FileSystemProvider.MakePath(arguments.Output, common.OriginalBasename, arguments.OutputFormat))
+                FileSystemProvider.MakePath(arguments.Output, common.OriginalBasename, arguments.OutputFormat, "Tiles"))
                 .EnsureInputIsDirectory();
 
             switch (arguments.ZoomAction)
