@@ -5,6 +5,7 @@
 namespace Acoustics.Test.AudioAnalysisTools.Indices
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
 
     using Acoustics.Shared.Csv;
@@ -93,6 +94,21 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
                 Assert.AreEqual(expected, (double)actualEnumerator.Current, 1E-14, $"delta: {expected - (double)actualEnumerator.Current}");
             }
+        }
+
+        [TestMethod]
+        public void CompressIndexSpectrogramsTest()
+        {
+            var spectra = new Dictionary<string, double[,]>()
+                {
+                    { "Test", new double[,] { { 1, 2, 3, 5 } } },
+                };
+
+            Assert.ThrowsException<ArgumentException>(
+                () => IndexMatrices.CompressIndexSpectrograms(
+                    spectra,
+                    TimeSpan.FromSeconds(60),
+                    TimeSpan.FromSeconds(80)));
         }
     }
 }

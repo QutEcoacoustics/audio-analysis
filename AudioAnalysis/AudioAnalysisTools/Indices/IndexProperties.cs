@@ -21,6 +21,7 @@ namespace AudioAnalysisTools.Indices
 
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
+    using Acoustics.Shared.Contracts;
 
     using TowseyLibrary;
 
@@ -289,6 +290,8 @@ namespace AudioAnalysisTools.Indices
 
         public static Dictionary<string, IndexProperties> GetIndexProperties(FileEntry configFile)
         {
+            Contract.RequiresNotNull(configFile, nameof(configFile));
+
             // AT: the effects of this method have been significantly altered
             // a) caching introduced - unknown effects for parallelism and dodgy file rewriting stuff
             // b) static deserialization utilized (instead of dynamic)

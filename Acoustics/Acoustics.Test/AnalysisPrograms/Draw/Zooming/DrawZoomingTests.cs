@@ -17,6 +17,8 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
+    using global::AudioAnalysisTools.LongDurationSpectrograms.Zooming;
+
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
@@ -66,7 +68,41 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
         /// Tests the rendering of zooming spectrograms for a minute of audio indices
         /// </summary>
         [TestMethod]
-        [Timeout(45_000)]
+        public void TestGenerateTilesFailsWithInvalidScales()
+        {
+            PathHelper.ResolveConfigFile("IndexPropertiesConfig.HiRes.yml").CopyTo(this.outputDirectory.CombineFile("IndexPropertiesConfig.HiRes.yml").FullName);
+
+            void SetupAndRun(params double[] scales)
+            {
+                SpectrogramZoomingConfig config = new SpectrogramZoomingConfig();
+                config.SpectralIndexScale = scales;
+                config.IndexPropertiesConfig = ".\\IndexPropertiesConfig.HiRes.yml";
+
+                var newConfigFile = this.outputDirectory.CombineFile("SpectrogramZoomingConfig.yml");
+                Yaml.Serialise(newConfigFile, config);
+
+                // generate the zooming spectrograms
+                DrawZoomingSpectrograms.Execute(
+                    new DrawZoomingSpectrograms.Arguments()
+                        {
+                            Output = this.outputDirectory.FullName,
+                            SourceDirectory = ResultsDirectory.FullName,
+                            SpectrogramZoomingConfig = newConfigFile,
+                            ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Tile,
+                        });
+            }
+
+            Assert.ThrowsException<InvalidScaleException>(() => SetupAndRun(0.125));
+            Assert.ThrowsException<InvalidScaleException>(() => SetupAndRun(-3));
+            Assert.ThrowsException<InvalidScaleException>(() => SetupAndRun(0));
+            Assert.ThrowsException<InvalidScaleException>(() => SetupAndRun(0.01));
+            Assert.ThrowsException<InvalidScaleException>(() => SetupAndRun(13.33));
+        }
+
+        /// <summary>
+        /// Tests the rendering of zooming spectrograms for a minute of audio indices
+        /// </summary>
+        [TestMethod]
         public void TestGenerateTiles()
         {
             // generate the zooming spectrograms
@@ -82,9 +118,14 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
 
             var filesProduced = zoomOutput.EnumerateFiles().ToArray();
 
-            // there are 16 zoom levels, but the test recording is only 2min long
+            // there are 11 zoom levels in the default config, but the test recording is only 2min long
             // at scale 240, we're rendering <1px of content and that tile is not generated
-            Assert.AreEqual(15, filesProduced.Length);
+            // for scales 120-1.0 only one tile is produced (subtotal: 10)
+            // for 0.5: 2 tiles (subtotal: 12)
+            // for 0.25: 3 tiles (subtotal: 15)
+            // for 0.125: 6 tiles (subtotal: 21)
+            Assert.AreEqual(21, filesProduced.Length);
+            Assert.AreEqual(6, filesProduced.Count(x => x.Name.Contains("0.125")));
 
             // not sure what else to test - generally exceptions should be thrown if anything goes wrong
         }
@@ -113,11 +154,16 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
 
             using (var fs = new SqliteFileSystem(tiles.FullName, OpenMode.ReadOnly))
             {
-                var files = fs.EnumerateFiles(UPath.Root).ToArray();
+                var filesProduced = fs.EnumerateFiles(UPath.Root).ToArray();
 
-                // there are 16 zoom levels, but the test recording is only 2min long
+                // there are 11 zoom levels in the default config, but the test recording is only 2min long
                 // at scale 240, we're rendering <1px of content and that tile is not generated
-                Assert.AreEqual(15, files.Length);
+                // for scales 120-1.0 only one tile is produced (subtotal: 10)
+                // for 0.5: 2 tiles (subtotal: 12)
+                // for 0.25: 3 tiles (subtotal: 15)
+                // for 0.125: 6 tiles (subtotal: 21)
+                Assert.AreEqual(21, filesProduced.Length);
+                Assert.AreEqual(6, filesProduced.Count(x => x.GetName().Contains("0.125")));
             }
 
             // not sure what else to test - generally exceptions should be thrown if anything goes wrong

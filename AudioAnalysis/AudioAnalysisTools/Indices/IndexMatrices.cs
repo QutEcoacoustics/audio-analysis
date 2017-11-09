@@ -16,6 +16,7 @@ namespace AudioAnalysisTools.Indices
     using System.Linq;
     using System.Reflection;
     using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
     using Fasterflect;
     using log4net;
@@ -588,13 +589,24 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// compresses the spectral index data in the temporal direction by a factor dervied from the data scale and required image scale.
+        /// compresses the spectral index data in the temporal direction by a factor dervied from the data scale and
+        /// required image scale.
         /// In all cases, the compression is done by taking the average.
-        /// The method got more complicated in June 2016 when refactored it to cope with recording blocks less than one minute long.
+        /// The method got more complicated in June 2016 when refactored it to cope with recording blocks less than
+        /// one minute long.
         /// </summary>
-        public static Dictionary<string, double[,]> CompressIndexSpectrograms(Dictionary<string, double[,]> spectra, TimeSpan imageScale, TimeSpan dataScale)
+        public static Dictionary<string, double[,]> CompressIndexSpectrograms(
+            Dictionary<string, double[,]> spectra,
+            TimeSpan imageScale,
+            TimeSpan dataScale)
         {
-            int scalingFactor = (int)Math.Round(imageScale.TotalMilliseconds / dataScale.TotalMilliseconds);
+            var rawScalingFactor = imageScale.Ticks / (double)dataScale.Ticks;
+            int scalingFactor = (int)Math.Round(rawScalingFactor);
+
+            Contract.Requires(
+                Math.Abs(scalingFactor - rawScalingFactor) < 0.0000001,
+                "CompressIndexSpectrograms only supports rescaling between factors that produce integer ratios");
+
             var compressedSpectra = new Dictionary<string, double[,]>();
             int step = scalingFactor - 1;
 
@@ -611,9 +623,12 @@ namespace AudioAnalysisTools.Indices
                 int colCount = matrix.GetLength(1);
 
                 int compressionWindow = scalingFactor;
-                int compressedLength = (colCount / scalingFactor);
+                int compressedLength = colCount / scalingFactor;
                 if (compressedLength < 1)
+                {
                     compressedLength = 1;
+                }
+
                 var newMatrix = new double[rowCount, compressedLength];
                 double[] tempArray = new double[scalingFactor];
                 int maxColCount = colCount - scalingFactor;
@@ -638,47 +653,56 @@ namespace AudioAnalysisTools.Indices
                                 tempArray[i] = matrix[r, c + i] * matrix[r, c + i];
                             }
 
-                            double entropy = DataTools.Entropy_normalised(tempArray);
-                            if (double.IsNaN(entropy)) entropy = 1.0;
+                            double entropy = DataTools.EntropyNormalised(tempArray);
+                            if (double.IsNaN(entropy))
+                            {
+                                entropy = 1.0;
+                            }
+
                             newMatrix[r, colIndex] = 1 - entropy;
                         }
                     }
                 }
-                else
+                else if ((key == "ACI") && (scalingFactor > 1))
+                {
                     // THE ACI matrix requires separate calculation
-                    if ((key == "ACI") && (scalingFactor > 1))
-                    {
-                        double[] DIFArray = new double[scalingFactor];
-                        double[] SUMArray = new double[scalingFactor];
-                        for (int r = 0; r < rowCount; r++)
-                        {
-                            for (int c = 0; c <= maxColCount; c += step)
-                            {
-                                var colIndex = c / scalingFactor;
-                                for (int i = 0; i < compressionWindow; i++)
-                                {
-                                    DIFArray[i] = spectra["DIF"][r, c + i];
-                                    SUMArray[i] = spectra["SUM"][r, c + i];
-                                }
 
-                                newMatrix[r, colIndex] = DIFArray.Sum() / SUMArray.Sum();
-                            }
-                        }
-                    }
-                    else // average all other spectral indices
+                    double[] DIFArray = new double[scalingFactor];
+                    double[] SUMArray = new double[scalingFactor];
+                    for (int r = 0; r < rowCount; r++)
                     {
-                        matrix = spectra[key];
-                        for (int r = 0; r < rowCount; r++)
+                        for (int c = 0; c <= maxColCount; c += step)
                         {
-                            for (int c = 0; c <= maxColCount; c += step)
+                            var colIndex = c / scalingFactor;
+                            for (int i = 0; i < compressionWindow; i++)
                             {
-                                var colIndex = c / scalingFactor;
-                                for (int i = 0; i < compressionWindow; i++)
-                                tempArray[i] = matrix[r, c + i];
-                                newMatrix[r, colIndex] = tempArray.Average();
+                                DIFArray[i] = spectra["DIF"][r, c + i];
+                                SUMArray[i] = spectra["SUM"][r, c + i];
                             }
+
+                            newMatrix[r, colIndex] = DIFArray.Sum() / SUMArray.Sum();
                         }
                     }
+                }
+                else
+                {
+                    // average all other spectral indices
+
+                    matrix = spectra[key];
+                    for (int r = 0; r < rowCount; r++)
+                    {
+                        for (int c = 0; c <= maxColCount; c += step)
+                        {
+                            var colIndex = c / scalingFactor;
+                            for (int i = 0; i < compressionWindow; i++)
+                            {
+                                tempArray[i] = matrix[r, c + i];
+                            }
+
+                            newMatrix[r, colIndex] = tempArray.Average();
+                        }
+                    }
+                }
 
                 compressedSpectra[key] = newMatrix;
             }

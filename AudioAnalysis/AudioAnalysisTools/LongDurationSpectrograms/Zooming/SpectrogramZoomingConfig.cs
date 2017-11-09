@@ -12,6 +12,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
     using System;
 
     using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.TileImage;
 
     public class SpectrogramZoomingConfig : IIndexPropertyReferenceConfiguration
     {
@@ -55,9 +56,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
         /// </summary>
         public double[] SpectralIndexScale { get; set; } = { 60, 24, 12, 6, 2, 1, 0.6, 0.2 };
 
-        public int TileWidth { get; set; }
+        public int TileWidth { get; set; } = 180;
 
-        public string TilingProfile { get; set; }
+        public string TilingProfile { get; set; } = nameof(AbsoluteDateTilingProfile);
 
         public double UpperNormalizationBoundForDecibelSpectrograms { get; set; } = -30;
 
@@ -67,9 +68,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             return scaleFactor;
         }
 
-        public int ScalingFactorSpectralIndex(double scaleValueSecondsPerPixel, double indexCalculationDuration)
+        public double ScalingFactorSpectralIndex(double scaleValueSecondsPerPixel, double indexCalculationDuration)
         {
-            var scaleFactor = (int)Math.Round(scaleValueSecondsPerPixel / indexCalculationDuration);
+            var scaleFactor = scaleValueSecondsPerPixel / indexCalculationDuration;
             return scaleFactor;
         }
 
