@@ -20,6 +20,22 @@ namespace Acoustics.Shared.Contracts
     public class Contract
     {
         /// <summary>
+        /// Require the supplied value to be not null, otherwise throw a argument null exception.
+        /// </summary>
+        /// <param name="value">Whether or not the exception should be thrown</param>
+        /// <param name="name">The name of the argument that was null</param>
+        /// <param name="message">The message to add to the exception if the check fails</param>
+        [DebuggerHidden]
+        [ContractAnnotation("value:null => halt")]
+        public static void RequiresNotNull(object value, string name = "", string message = "Precondition failed - value was null")
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(name, message);
+            }
+        }
+
+        /// <summary>
         /// Require the supplied boolean to be true, otherwise throw an exception.
         /// </summary>
         /// <typeparam name="T">The type of exception to throw</typeparam>

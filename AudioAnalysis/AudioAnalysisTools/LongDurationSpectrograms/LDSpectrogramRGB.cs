@@ -639,8 +639,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 LoggedConsole.WriteLine("WARNING: From method ColourSpectrogram.DrawBlendedFalseColourSpectrogram() line 662");
                 LoggedConsole.WriteLine("         There is no Matrix for one or more spectral indices.");
-                LoggedConsole.WriteLine("         Null image returned");
-                return null;
+                throw new ArgumentException("Required spectral matrices are not available");
             }
 
             string[] rgbMap1 = colorMap1.Split('-');

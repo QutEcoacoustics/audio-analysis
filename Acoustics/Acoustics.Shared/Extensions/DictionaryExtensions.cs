@@ -10,6 +10,8 @@ namespace System.Collections.Generic
     using System.Linq;
     using System.Text;
 
+    using Acoustics.Shared.Contracts;
+
     public static class DictionaryExtensions
     {
 
@@ -27,6 +29,13 @@ namespace System.Collections.Generic
             }
 
             return "{" + string.Join(",",  items) + "}";
+        }
+
+        public static TValue FirstValue<TKey, TValue>(this Dictionary<TKey, TValue> dictionary)
+        {
+            Contract.Requires<ArgumentNullException>(dictionary != null, "dictionary was null");
+
+            return dictionary.Values.First();
         }
     }
 }
