@@ -243,7 +243,7 @@ namespace AudioAnalysisTools.Indices
             summaryIndices.AvgSnrOfActiveFrames = activity.ActiveAvDb;
 
             // vii. ENTROPY of ENERGY ENVELOPE -- 1-Ht because want measure of concentration of acoustic energy.
-            double entropy = DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope));
+            double entropy = DataTools.EntropyNormalised(DataTools.SquareValues(signalEnvelope));
             summaryIndices.TemporalEntropy = 1 - entropy;
 
             // Note that the spectrogram has had the DC bin removed. i.e. has only 256 columns.

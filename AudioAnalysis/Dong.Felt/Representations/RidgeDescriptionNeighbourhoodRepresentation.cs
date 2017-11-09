@@ -575,8 +575,8 @@
                         }
                     }
                 }
-                var columnEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(columnEnergy));
-                var rowEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(rowEnergy));
+                var columnEnergyEntropy = DataTools.EntropyNormalised(DataTools.SquareValues(columnEnergy));
+                var rowEnergyEntropy = DataTools.EntropyNormalised(DataTools.SquareValues(rowEnergy));
                 if (double.IsNaN(columnEnergyEntropy))
                 {
                     this.ColumnEnergyEntropy = 1;
@@ -697,8 +697,8 @@
                         }
                     }
                 }
-                var columnEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(columnEnergy));
-                var rowEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(rowEnergy));
+                var columnEnergyEntropy = DataTools.EntropyNormalised(DataTools.SquareValues(columnEnergy));
+                var rowEnergyEntropy = DataTools.EntropyNormalised(DataTools.SquareValues(rowEnergy));
                 if (double.IsNaN(columnEnergyEntropy))
                 {
                     this.ColumnEnergyEntropy = 1;
@@ -807,8 +807,8 @@
                         }
                     }
                 }
-                var columnEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(columnEnergy));
-                var rowEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(rowEnergy));
+                var columnEnergyEntropy = DataTools.EntropyNormalised(DataTools.SquareValues(columnEnergy));
+                var rowEnergyEntropy = DataTools.EntropyNormalised(DataTools.SquareValues(rowEnergy));
                 if (double.IsNaN(columnEnergyEntropy))
                 {
                     this.ColumnEnergyEntropy = 1;
@@ -1044,8 +1044,8 @@
                         }
                     }
                 }
-                var columnEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(columnEnergy));
-                var rowEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(rowEnergy));
+                var columnEnergyEntropy = DataTools.EntropyNormalised(DataTools.SquareValues(columnEnergy));
+                var rowEnergyEntropy = DataTools.EntropyNormalised(DataTools.SquareValues(rowEnergy));
                 if (double.IsNaN(columnEnergyEntropy))
                 {
                     this.ColumnEnergyEntropy = 1;
@@ -1185,8 +1185,8 @@
                         }
                     }
                 }
-                var columnEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(columnEnergy));
-                var rowEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(rowEnergy));
+                var columnEnergyEntropy = DataTools.EntropyNormalised(DataTools.SquareValues(columnEnergy));
+                var rowEnergyEntropy = DataTools.EntropyNormalised(DataTools.SquareValues(rowEnergy));
                 if (double.IsNaN(columnEnergyEntropy))
                 {
                     this.ColumnEnergyEntropy = 1;
@@ -1364,8 +1364,8 @@
                         }
                     }
                 }
-                var columnEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(columnEnergy));
-                var rowEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(rowEnergy));
+                var columnEnergyEntropy = DataTools.EntropyNormalised(DataTools.SquareValues(columnEnergy));
+                var rowEnergyEntropy = DataTools.EntropyNormalised(DataTools.SquareValues(rowEnergy));
                 if (double.IsNaN(columnEnergyEntropy))
                 {
                     this.ColumnEnergyEntropy = 1;

@@ -27,7 +27,7 @@ namespace AudioAnalysisTools
                 double[] column = MatrixTools.GetColumn(spectrogram, j);
 
                 // ENTROPY of freq bin
-                tenSp[j] = DataTools.Entropy_normalised(DataTools.SquareValues(column));
+                tenSp[j] = DataTools.EntropyNormalised(DataTools.SquareValues(column));
             }
 
             return tenSp;
@@ -50,7 +50,7 @@ namespace AudioAnalysisTools
             // Entropy is a measure of ENERGY dispersal, therefore must square the amplitude.
             var tuple = SpectrogramTools.CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram(amplitudeSpectrogram);
             double[] averageSpectrum = DataTools.Subarray(tuple.Item1, lowerBinBound, reducedFreqBinCount); // remove low band
-            double entropyOfAvSpectrum = DataTools.Entropy_normalised(averageSpectrum); // ENTROPY of spectral averages
+            double entropyOfAvSpectrum = DataTools.EntropyNormalised(averageSpectrum); // ENTROPY of spectral averages
             if (double.IsNaN(entropyOfAvSpectrum))
             {
                 entropyOfAvSpectrum = 1.0;
@@ -58,7 +58,7 @@ namespace AudioAnalysisTools
 
             // v: ENTROPY OF VARIANCE SPECTRUM - at this point the spectrogram is a noise reduced amplitude spectrogram
             double[] varianceSpectrum = DataTools.Subarray(tuple.Item2, lowerBinBound, reducedFreqBinCount); // remove low band
-            double entropyOfVarianceSpectrum = DataTools.Entropy_normalised(varianceSpectrum);      // ENTROPY of spectral variances
+            double entropyOfVarianceSpectrum = DataTools.EntropyNormalised(varianceSpectrum);      // ENTROPY of spectral variances
             if (double.IsNaN(entropyOfVarianceSpectrum))
             {
                 entropyOfVarianceSpectrum = 1.0;
@@ -79,7 +79,7 @@ namespace AudioAnalysisTools
                 }
             }
 
-            double entropyOfCoeffOfVarSpectrum = DataTools.Entropy_normalised(coeffOfVarSpectrum);   // ENTROPY of Coeff Of Variance spectrum
+            double entropyOfCoeffOfVarSpectrum = DataTools.EntropyNormalised(coeffOfVarSpectrum);   // ENTROPY of Coeff Of Variance spectrum
             if (double.IsNaN(entropyOfVarianceSpectrum))
             {
                 entropyOfCoeffOfVarSpectrum = 1.0;
@@ -100,7 +100,7 @@ namespace AudioAnalysisTools
             //     First extract High band SPECTROGRAM which is now noise reduced
             var midBandSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, upperBinBound - 1);
             var tupleAmplitudePeaks = SpectrogramTools.HistogramOfSpectralPeaks(midBandSpectrogram);
-            double entropyOfPeakFreqDistr = DataTools.Entropy_normalised(tupleAmplitudePeaks.Item1);
+            double entropyOfPeakFreqDistr = DataTools.EntropyNormalised(tupleAmplitudePeaks.Item1);
             if (double.IsNaN(entropyOfPeakFreqDistr))
             {
                 entropyOfPeakFreqDistr = 1.0;
