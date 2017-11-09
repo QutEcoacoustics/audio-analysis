@@ -190,9 +190,6 @@
     <Reference Include="PowerArgs">
       <HintPath>..\..\Extra Assemblies\PowerArgs\PowerArgs.dll</HintPath>
     </Reference>
-    <Reference Include="SqliteFileSystem, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SqliteFileSystem.1.0.0\lib\netstandard2.0\SqliteFileSystem.dll</HintPath>
-    </Reference>
     <Reference Include="SQLitePCLRaw.batteries_green, Version=1.0.0.0, Culture=neutral, PublicKeyToken=a84b7dcfb1391f7f, processorArchitecture=MSIL">
       <HintPath>..\packages\SQLitePCLRaw.bundle_green.1.1.7\lib\net45\SQLitePCLRaw.batteries_green.dll</HintPath>
     </Reference>
@@ -263,6 +260,9 @@
     </Reference>
     <Reference Include="Zio, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Zio.0.3.1\lib\net45\Zio.dll</HintPath>
+    </Reference>
+    <Reference Include="Zio.FileSystems.Community.SqliteFileSystem, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Zio.FileSystems.Community.SqliteFileSystem.1.0.0\lib\netstandard2.0\Zio.FileSystems.Community.SqliteFileSystem.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

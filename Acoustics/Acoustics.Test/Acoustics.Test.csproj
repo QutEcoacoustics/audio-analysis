@@ -325,6 +325,7 @@
     <Compile Include="AudioAnalysisTools\StandardSpectrograms\SonogramTests.cs" />
     <Compile Include="AudioAnalysisTools\TileImage\AbsoluteDateTimeTilerTests.cs" />
     <Compile Include="AudioAnalysisTools\TileImage\TilerTests.cs" />
+    <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\Zooming\ZoomTiledSpectrogramTests.cs" />
     <Compile Include="DotNetVersionTests.cs" />
     <Compile Include="Shared\RangeTests.cs" />
     <Compile Include="TestHelpers\Factories\AudioRecordingFactory.cs" />
