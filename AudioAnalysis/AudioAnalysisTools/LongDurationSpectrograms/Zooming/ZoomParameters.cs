@@ -27,7 +27,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 
             // search for index properties config
             var indexPropertiesPath = Indices.IndexProperties.Find(this.SpectrogramZoomingConfig, config);
-            Log.Debug("Using index properties file: " + indexPropertiesPath.FullName);
+            Log.Debug("Using index properties file: " + indexPropertiesPath?.FullName);
 
             // load the index properties
             this.IndexProperties = Indices.IndexProperties.GetIndexProperties(indexPropertiesPath);

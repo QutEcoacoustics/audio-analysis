@@ -53,12 +53,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             // default scales for standard (FFT) spectrograms in seconds per pixel.
             double[] standardScales = zoomConfig.SpectralFrameScale;
 
-            if (indexScales.IsNullOrEmpty())
-            {
-                throw new InvalidOperationException(
-                    $"{nameof(SpectrogramZoomingConfig.SpectralIndexScale)} is null or empty " +
-                    " we need at least some scales to render zooming spectrograms");
-            }
+            ValidateScales(indexScales, indexGenerationData.IndexCalculationDuration.TotalSeconds);
 
             var shouldRenderStandardScale = !standardScales.IsNullOrEmpty();
             if (shouldRenderStandardScale)
@@ -123,6 +118,33 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             Log.Success("Tiling complete");
         }
 
+        private static void ValidateScales(double[] indexScales, double dataScale)
+        {
+            if (indexScales.IsNullOrEmpty())
+            {
+                throw new InvalidScaleException(
+                    $"{nameof(SpectrogramZoomingConfig.SpectralIndexScale)} is null or empty "
+                    + " we need at least some scales to render zooming spectrograms");
+            }
+
+            foreach (var scale in indexScales)
+            {
+                var rawScalingFactor = scale / dataScale;
+                int scalingFactor = (int)Math.Round(rawScalingFactor);
+
+                Contract.Requires<InvalidScaleException>(
+                    Math.Abs(scalingFactor - rawScalingFactor) < 0.0000001,
+                    $"Index scales must be integer factors of the data scale `{dataScale}` - provided scale `{scale}` was not valid");
+
+                if (scalingFactor < 1)
+                {
+                    throw new InvalidScaleException(
+                        "Index scale ratio to index calculation duration must be >=1 but was instead "
+                        + scalingFactor.ToString());
+                }
+            }
+        }
+
         private static void GenerateStandardSpectrogramTiles(
             Dictionary<string, double[,]> spectra,
             IndexGenerationData indexGeneration,
@@ -138,7 +160,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 
             TimeSpan dataDuration =
                 TimeSpan.FromTicks(spectra["POW"].GetLength(1) * indexGeneration.IndexCalculationDuration.Ticks);
-            var segmentDurationInSeconds = (int)indexGeneration.MaximumSegmentDuration.Value.TotalSeconds;
+            TimeSpan duration = indexGeneration.RecordingDuration;
+
+            Contract.Requires(
+                (dataDuration - duration).Absolute() < indexGeneration.IndexCalculationDuration,
+                "The expected amount of data was not supplied");
 
             var minuteCount = (int)Math.Ceiling(dataDuration.TotalMinutes);
 
@@ -265,7 +291,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
                     // therefore unable to set a useful tag (like ACI-ENT-EVN).
                     if (indexGeneration.RecordingStartDate != null)
                     {
-                        var tilingStartDate = GetNearestTileBoundary(
+                        var tilingStartDate = GetPreviousTileBoundary(
                             zoomConfig.TileWidth,
                             XNominalUnitScale,
                             (DateTimeOffset)indexGeneration.RecordingStartDate);
@@ -315,7 +341,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             return (spectra, indexProperties);
         }
 
-        public static DateTimeOffset GetNearestTileBoundary(int tileWidth, double scale, DateTimeOffset recordingStartDate)
+        public static DateTimeOffset GetPreviousTileBoundary(int tileWidth, double scale, DateTimeOffset recordingStartDate)
         {
             // if recording does not start on an absolutely aligned hour of the day
             // align it, then adjust where the tiling starts from, and calculate the offset for the super tile (the gap)
@@ -410,13 +436,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
         {
             Contract.Requires(!spectra.IsNullOrEmpty(), "ERROR: NO SPECTRAL DATA SUPPLIED");
 
-            // check that scalingFactor >= 1.0
-            double scalingFactor = zoomingConfig.ScalingFactorSpectralIndex(imageScale.TotalSeconds, indexGeneration.IndexCalculationDuration.TotalSeconds);
-            Contract.Requires(scalingFactor >= 1.0, "ERROR: Scaling Factor < 1.0");
-
             // calculate source data duration from column count of arbitrary matrix
             TimeSpan dataScale = indexGeneration.IndexCalculationDuration;
-            double[,] matrix = spectra["ACI"]; // assume this key will always be present!!
+            double[,] matrix = spectra.First().Value;
             TimeSpan sourceDataDuration = TimeSpan.FromSeconds(matrix.GetLength(1) * dataScale.TotalSeconds);
 
             int tileWidth = zoomingConfig.TileWidth;
@@ -477,10 +499,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
         {
             Contract.Requires(!spectra.IsNullOrEmpty());
 
-            // check that scalingFactor >= 1.0
-            double scalingFactor = Math.Round(imageScale.TotalMilliseconds / dataScale.TotalMilliseconds);
-            Contract.Requires(scalingFactor >= 1.0);
-
             // calculate start time by combining DatetimeOffset with minute offset.
             TimeSpan sourceMinuteOffset = indexGenerationData.MinuteOffset;
             if (indexGenerationData.RecordingStartDate.HasValue)
@@ -490,7 +508,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             }
 
             // calculate data duration from column count of abitrary matrix
-            var matrix = spectra["ACI"]; // assume this key will always be present!!
+            var matrix = spectra.First().Value;
             int columnCount = matrix.GetLength(1);
             TimeSpan dataDuration = TimeSpan.FromSeconds(columnCount * dataScale.TotalSeconds);
 
