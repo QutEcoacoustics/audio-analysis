@@ -154,7 +154,7 @@ namespace AudioAnalysisTools.Indices
             rainIndices.bgNoise = results3.NoiseMode;                         //bg noise in dB
             rainIndices.snr = results3.Snr;                               //snr
             rainIndices.avSig_dB = 20 * Math.Log10(signal.Average());        //10 times log of amplitude squared
-            rainIndices.temporalEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(signal)); //ENTROPY of ENERGY ENVELOPE
+            rainIndices.temporalEntropy = DataTools.EntropyNormalised(DataTools.SquareValues(signal)); //ENTROPY of ENERGY ENVELOPE
             rainIndices.spikes = spikeIndex;
 
             // ii: calculate the bin id of boundary between mid and low frequency spectrum
@@ -163,7 +163,7 @@ namespace AudioAnalysisTools.Indices
 
             // iii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM - at this point the spectrogram is still an amplitude spectrogram
             var tuple = SpectrogramTools.CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram(midbandSpectrogram);
-            rainIndices.spectralEntropy = DataTools.Entropy_normalised(tuple.Item1); //ENTROPY of spectral averages
+            rainIndices.spectralEntropy = DataTools.EntropyNormalised(tuple.Item1); //ENTROPY of spectral averages
             if (double.IsNaN(rainIndices.spectralEntropy)) rainIndices.spectralEntropy = 1.0;
 
             // iv: CALCULATE Acoustic Complexity Index on the AMPLITUDE SPECTRUM

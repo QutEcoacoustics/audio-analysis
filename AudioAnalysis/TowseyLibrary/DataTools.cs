@@ -3776,7 +3776,7 @@ namespace TowseyLibrary
         /// <summary>
         /// returns the entropy of a vector of values normalized for vector length
         /// </summary>
-        public static double Entropy_normalised(double[] v)
+        public static double EntropyNormalised(double[] v)
         {
             //some safety checks but unlikely to happen
             int posCount = v.Count(p => p > 0.0);
@@ -3795,7 +3795,7 @@ namespace TowseyLibrary
             return Entropy(pmf2) / normFactor;
         }
 
-        public static double Entropy_normalised(int[] v)
+        public static double EntropyNormalised(int[] v)
         {
             //some safety checks but unlikely to happen
             int posCount = v.Count(p => p > 0.0);
@@ -3847,14 +3847,14 @@ namespace TowseyLibrary
                 rowProbs[r] = rowSums[r] / (double)totalSum;
             }
 
-            //double Hrows = DataTools.Entropy_normalised(rowProbs);
+            //double Hrows = DataTools.EntropyNormalised(rowProbs);
             double[] colProbs = new double[colCount]; //pmf = probability mass funciton
             for (int c = 0; c < colCount; c++) // for all time frames
             {
                 colProbs[c] = colSums[c] / (double)totalSum;
             }
 
-            //double Hcols = DataTools.Entropy_normalised(colProbs);
+            //double Hcols = DataTools.EntropyNormalised(colProbs);
             double[,] matrixProbs = new double[rowCount, colCount];
             for (int r = 0; r < rowCount; r++) // for all time frames
             {
