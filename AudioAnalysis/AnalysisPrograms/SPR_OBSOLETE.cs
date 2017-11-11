@@ -507,8 +507,8 @@
             using (Image_MultiTrack image = new Image_MultiTrack(img))
             {
                 //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
-                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-                image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+                image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+                image.AddTrack(ImageTrack.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
                 double maxScore = 50.0;
                 throw new NotImplementedException("AT:Don't know how to fix following line");
                 ////image.AddSuperimposedMatrix(hits, maxScore);
@@ -518,7 +518,7 @@
                 //    DataTools.MinMax(intensity, out min, out max);
                 //    double threshold_norm = eventThreshold / max; //min = 0.0;
                 //    intensity = DataTools.NormaliseMatrixValues(intensity);
-                //    image.AddTrack(Image_Track.GetScoreTrack(intensity, 0.0, 1.0, eventThreshold));
+                //    image.AddTrack(ImageTrack.GetScoreTrack(intensity, 0.0, 1.0, eventThreshold));
                 //}
                 //image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount);
                 image.Save(path);

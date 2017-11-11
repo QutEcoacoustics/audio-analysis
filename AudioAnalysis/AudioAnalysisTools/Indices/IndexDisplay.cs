@@ -11,6 +11,9 @@ namespace AudioAnalysisTools.Indices
     using System.Linq;
     using System.Reflection;
     using AnalysisBase.ResultBases;
+
+    using AudioAnalysisTools.StandardSpectrograms;
+
     using log4net;
     using LongDurationSpectrograms;
     using TowseyLibrary;
@@ -162,18 +165,18 @@ namespace AudioAnalysisTools.Indices
             int imageWidth = X_offset + scaleLength + TrackEndPanelWidth;
             TimeSpan scaleDuration = TimeSpan.FromMinutes(scaleLength);
             int imageHt = trackHeight * (listOfBitmaps.Count + 4); //+3 for title and top and bottom time tracks
-            Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, titleText);
-            //Bitmap time1Bmp = Image_Track.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, graphWidth, TrackHeight, "Time (hours)");
+            Bitmap titleBmp = ImageTrack.DrawTitleTrack(imageWidth, trackHeight, titleText);
+            //Bitmap time1Bmp = ImageTrack.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, graphWidth, TrackHeight, "Time (hours)");
             TimeSpan xAxisPixelDuration = indexCalculationDuration;
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * graphWidth);
-            Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(fullDuration, graphWidth, trackHeight);
+            Bitmap timeBmp1 = ImageTrack.DrawTimeRelativeTrack(fullDuration, graphWidth, trackHeight);
             Bitmap timeBmp2 = timeBmp1;
             Bitmap suntrack = null;
             DateTimeOffset? dateTimeOffset = recordingStartDate;
             if (dateTimeOffset.HasValue)
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
-                timeBmp2 = Image_Track.DrawTimeTrack(fullDuration, dateTimeOffset, graphWidth, trackHeight);
+                timeBmp2 = ImageTrack.DrawTimeTrack(fullDuration, dateTimeOffset, graphWidth, trackHeight);
                 suntrack = SunAndMoon.AddSunTrackToImage(scaleLength, dateTimeOffset, sunriseDataFile);
             }
 
@@ -336,7 +339,7 @@ namespace AudioAnalysisTools.Indices
         //    {
         //        if (values[i].Length == 0) continue;
         //        array = values[i];
-        //        listOfBitmaps.Add(Image_Track.DrawBarScoreTrack(order, array, imageWidth, threshold, headers[i]));
+        //        listOfBitmaps.Add(ImageTrack.DrawBarScoreTrack(order, array, imageWidth, threshold, headers[i]));
         //    }
 
         //    // last track is weighted index
@@ -345,14 +348,14 @@ namespace AudioAnalysisTools.Indices
         //    //bool doNormalise = false;
         //    //if (doNormalise) array = DataTools.NormaliseMatrixValues(values[x]);
         //    ////if (values[x].Length > 0)
-        //    ////    bitmaps.Add(Image_Track.DrawColourScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
+        //    ////    bitmaps.Add(ImageTrack.DrawColourScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
         //    //if (values[x].Length > 0)
-        //    //    listOfBitmaps.Add(Image_Track.DrawBarScoreTrack(order, array, imageWidth, threshold, headers[x])); //assumed to be weighted index
+        //    //    listOfBitmaps.Add(ImageTrack.DrawBarScoreTrack(order, array, imageWidth, threshold, headers[x])); //assumed to be weighted index
 
         //    //set up the composite image parameters
         //    int imageHt = trackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
-        //    Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
-        //    Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, DrawSummaryIndices.TimeScale, imageWidth, trackHeight, "Time (hours)");
+        //    Bitmap titleBmp = ImageTrack.DrawTitleTrack(imageWidth, trackHeight, title);
+        //    Bitmap timeBmp = ImageTrack.DrawTimeTrack(duration, DrawSummaryIndices.TimeScale, imageWidth, trackHeight, "Time (hours)");
 
         //    //draw the composite bitmap
         //    Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image

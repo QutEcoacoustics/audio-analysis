@@ -271,15 +271,15 @@
             using (Image_MultiTrack image = new Image_MultiTrack(img))
             {
                 //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
-                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-                image.AddTrack(Image_Track.GetScoreTrack(DataTools.ScaleArray(array1, length), 0.0, array1[maxIndex1], 5));
-                image.AddTrack(Image_Track.GetScoreTrack(DataTools.ScaleArray(array2, length), 0.0, array2[maxIndex2], 0.5));
+                image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+                image.AddTrack(ImageTrack.GetScoreTrack(DataTools.ScaleArray(array1, length), 0.0, array1[maxIndex1], 5));
+                image.AddTrack(ImageTrack.GetScoreTrack(DataTools.ScaleArray(array2, length), 0.0, array2[maxIndex2], 0.5));
                 for (int i = 0; i < scores.Count; i++)
                 {
                     int maxIndex = DataTools.GetMaxIndex(scores[i]);
                     double max = scores[i][maxIndex];
                     if (max <= 0.0) max = 1.0;
-                    image.AddTrack(Image_Track.GetScoreTrack(DataTools.ScaleArray(scores[i], length), 0.0, max, 0.1));
+                    image.AddTrack(ImageTrack.GetScoreTrack(DataTools.ScaleArray(scores[i], length), 0.0, max, 0.1));
                 }
                 image.Save(path);
             } // using

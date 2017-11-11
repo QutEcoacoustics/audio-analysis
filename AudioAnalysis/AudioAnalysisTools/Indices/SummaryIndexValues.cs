@@ -10,6 +10,9 @@ namespace AudioAnalysisTools.Indices
     using System.Drawing;
     using Acoustics.Shared;
     using AnalysisBase.ResultBases;
+
+    using AudioAnalysisTools.StandardSpectrograms;
+
     using Fasterflect;
     using TowseyLibrary;
 

@@ -561,7 +561,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.StartOffset, fullDuration, xAxisPixelDuration, this.FreqScale);
             const int trackHeight = 20;
-            var timeBmp = Image_Track.DrawTimeTrack(fullDuration, this.RecordingStartDate, bmp.Width, trackHeight);
+            var timeBmp = ImageTrack.DrawTimeTrack(fullDuration, this.RecordingStartDate, bmp.Width, trackHeight);
             var array = new Image[2];
             array[0] = bmp;
             array[1] = timeBmp;
@@ -704,10 +704,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int imageHt = bmp2.Height + bmp1.Height + trackHeight + trackHeight + trackHeight;
             var title =
                 $"FALSE COLOUR and BACKGROUND NOISE SPECTROGRAMS      (scale: hours x kHz)      (colour: R-G-B = {this.ColorMap})         {Meta.OrganizationTag}  ";
-            var titleBmp = Image_Track.DrawTitleTrack(bmp2.Width, trackHeight, title);
+            var titleBmp = ImageTrack.DrawTitleTrack(bmp2.Width, trackHeight, title);
             var timeScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
             var offsetMinute = TimeSpan.Zero;
-            var timeBmp = Image_Track.DrawTimeTrack(fullDuration, offsetMinute, timeScale, bmp2.Width, trackHeight, "hours");
+            var timeBmp = ImageTrack.DrawTimeTrack(fullDuration, offsetMinute, timeScale, bmp2.Width, trackHeight, "hours");
 
             var compositeBmp = new Bitmap(bmp2.Width, imageHt); //get canvas for entire image
             var gr = Graphics.FromImage(compositeBmp);
@@ -1071,7 +1071,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp1.Width);
 
             int trackHeight = 18;
-            Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(fullDuration, bmp1.Width, trackHeight);
+            Bitmap timeBmp1 = ImageTrack.DrawTimeRelativeTrack(fullDuration, bmp1.Width, trackHeight);
             Bitmap timeBmp2 = (Bitmap)timeBmp1.Clone();
             Bitmap suntrack = null;
 
@@ -1079,7 +1079,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             if (dateTimeOffset.HasValue)
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
-                timeBmp2 = Image_Track.DrawTimeTrack(fullDuration, cs.RecordingStartDate, bmp1.Width, trackHeight);
+                timeBmp2 = ImageTrack.DrawTimeTrack(fullDuration, cs.RecordingStartDate, bmp1.Width, trackHeight);
                 suntrack = SunAndMoon.AddSunTrackToImage(bmp1.Width, dateTimeOffset, cs.SunriseDataFile);
             }
 

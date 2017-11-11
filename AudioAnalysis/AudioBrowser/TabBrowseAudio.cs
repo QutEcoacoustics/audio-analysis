@@ -699,7 +699,7 @@
             {
                 if (values[i].Length == 0) continue;
                 array = values[i];
-                listOfBitmaps.Add(Image_Track.DrawBarScoreTrack(order, array, imageWidth, threshold, headers[i]));
+                listOfBitmaps.Add(ImageTrack.DrawBarScoreTrack(order, array, imageWidth, threshold, headers[i]));
             }
 
             // last track is weighted index
@@ -708,16 +708,16 @@
             //bool doNormalise = false;
             //if (doNormalise) array = DataTools.NormaliseMatrixValues(values[x]);
             ////if (values[x].Length > 0)
-            ////    bitmaps.Add(Image_Track.DrawColourScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
+            ////    bitmaps.Add(ImageTrack.DrawColourScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
             //if (values[x].Length > 0)
-            //    listOfBitmaps.Add(Image_Track.DrawBarScoreTrack(order, array, imageWidth, threshold, headers[x])); //assumed to be weighted index
+            //    listOfBitmaps.Add(ImageTrack.DrawBarScoreTrack(order, array, imageWidth, threshold, headers[x])); //assumed to be weighted index
 
             //set up the composite image parameters
             int imageHt = trackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
-            Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
+            Bitmap titleBmp = ImageTrack.DrawTitleTrack(imageWidth, trackHeight, title);
 
             TimeSpan timeDuration = TimeSpan.FromMinutes(duration);
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(timeDuration, TimeSpan.Zero, IndexDisplay.TimeScale, imageWidth, trackHeight, "Time (hours)");
+            Bitmap timeBmp = ImageTrack.DrawTimeTrack(timeDuration, TimeSpan.Zero, IndexDisplay.TimeScale, imageWidth, trackHeight, "Time (hours)");
 
             //draw the composite bitmap
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image

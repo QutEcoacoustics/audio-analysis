@@ -12,6 +12,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using AnalysisBase.ResultBases;
+
+    using AudioAnalysisTools.StandardSpectrograms;
+
     using Indices;
     using TowseyLibrary;
 
@@ -378,18 +381,18 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var compositeBmp = ImageTools.CombineImagesInLine(images.ToArray());
 
             var fullDuration = TimeSpan.FromMinutes(compositeBmp.Width);
-            var timeBmp = Image_Track.DrawTimeTrack(fullDuration, minOffset, xAxisTicInterval, compositeBmp.Width, trackHeight, "hours");
+            var timeBmp = ImageTrack.DrawTimeTrack(fullDuration, minOffset, xAxisTicInterval, compositeBmp.Width, trackHeight, "hours");
 
             var gr = Graphics.FromImage(compositeBmp);
             int halfHeight = compositeBmp.Height / 2;
 
             //add in the title bars
             string title = $"24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = BGN-AVG-CVR)         {Meta.OrganizationTag}  ";
-            var titleBmp = Image_Track.DrawTitleTrack(compositeBmp.Width, trackHeight, title);
+            var titleBmp = ImageTrack.DrawTitleTrack(compositeBmp.Width, trackHeight, title);
             int offset = 0;
             gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
             title = $"24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = ACI-ENT-EVN)         {Meta.OrganizationTag}  ";
-            titleBmp = Image_Track.DrawTitleTrack(compositeBmp.Width, trackHeight, title);
+            titleBmp = ImageTrack.DrawTitleTrack(compositeBmp.Width, trackHeight, title);
             offset = halfHeight;
             gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
 
