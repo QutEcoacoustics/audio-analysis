@@ -2,20 +2,22 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-namespace AudioAnalysisTools
+namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
     using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.Linq;
+
     using Acoustics.Shared;
     using Acoustics.Tools.Wav;
-    using DSP;
-    using LongDurationSpectrograms;
-    using StandardSpectrograms;
+
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.LongDurationSpectrograms;
+    using AudioAnalysisTools.WavTools;
+
     using TowseyLibrary;
-    using WavTools;
 
     /// <summary>
     /// Sonogram type.
@@ -282,7 +284,7 @@ namespace AudioAnalysisTools
             FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)image, gridLineLocations);
 
             var titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
-            var timeBmp = Image_Track.DrawTimeTrack(this.Duration, image.Width);
+            var timeBmp = ImageTrack.DrawTimeTrack(this.Duration, image.Width);
             var list = new List<Image> { titleBar, timeBmp, image, timeBmp };
             var compositeImage = ImageTools.CombineImagesVertically(list);
             return compositeImage;

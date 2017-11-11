@@ -36,6 +36,8 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.LongDurationSpectrograms.Zooming;
+    using AudioAnalysisTools.StandardSpectrograms;
+
     using PowerArgs;
     using TowseyLibrary;
 
@@ -424,7 +426,7 @@ namespace AnalysisPrograms
             string title = fileStem;
             var titleImage = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
             int trackHeight = 20;
-            var timeScale = Image_Track.DrawTimeRelativeTrack(fullDuration, image1.Width, trackHeight);
+            var timeScale = ImageTrack.DrawTimeRelativeTrack(fullDuration, image1.Width, trackHeight);
 
             colourMap = args.ColourMap2 ?? LDSpectrogramRGB.DefaultColorMap2;
             var image2 = cs1.DrawFalseColourSpectrogramChromeless("NEGATIVE", colourMap);

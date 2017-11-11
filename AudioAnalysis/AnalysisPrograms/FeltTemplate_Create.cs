@@ -244,8 +244,8 @@
             using (Image_MultiTrack image = new Image_MultiTrack(img))
             {
                 //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
-                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-                image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+                image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+                image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
                 var aes = new List<AcousticEvent>();
                 aes.Add(ae);
                 image.AddEvents(aes, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);

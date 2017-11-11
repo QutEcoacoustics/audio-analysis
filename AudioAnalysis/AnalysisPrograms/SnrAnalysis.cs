@@ -320,10 +320,10 @@
             //int factor = 10;  //compression factor
             //using (var image3 = new Image_MultiTrack(sonogram.GetImage_ReducedSonogram(factor)))
             //{
-            //image3.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            //image3.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image3.Image.Width));
-            //image3.AddTrack(Image_Track.GetDecibelTrack(sonogram));
-            //image3.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            //image3.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration));
+            //image3.AddTrack(ImageTrack.GetWavEnvelopeTrack(recording, image3.Image.Width));
+            //image3.AddTrack(ImageTrack.GetDecibelTrack(sonogram));
+            //image3.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
             //path = outputFolder + wavFileName + "_reduced.png"
             //image3.Save(path);
             //}
@@ -331,9 +331,9 @@
             //DISPLAY IMAGE SUB BAND HIGHLIGHT and SNR DATA
             //doHighlightSubband = true;
             //var image4 = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            //image4.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            ////image4.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image4.SonoImage.Width));
-            //image4.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            //image4.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration));
+            ////image4.AddTrack(ImageTrack.GetWavEnvelopeTrack(recording, image4.SonoImage.Width));
+            //image4.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
             ////path = outputFolder + wavFileName + "_subband.png"
             //image4.Save(path);
         }

@@ -34,6 +34,8 @@ namespace AnalysisPrograms
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
+    using AudioAnalysisTools.StandardSpectrograms;
+
     using log4net;
     using PowerArgs;
     using TowseyLibrary;
@@ -1043,8 +1045,8 @@ namespace AnalysisPrograms
             var duration = new TimeSpan(0, indexArray.Length, 0);
 
             int trackHeight = 20;
-            Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(duration, indexArray.Length, trackHeight);
-            Bitmap timeBmp2 = Image_Track.DrawTimeTrack(duration, startTime, indexArray.Length, trackHeight);
+            Bitmap timeBmp1 = ImageTrack.DrawTimeRelativeTrack(duration, indexArray.Length, trackHeight);
+            Bitmap timeBmp2 = ImageTrack.DrawTimeTrack(duration, startTime, indexArray.Length, trackHeight);
 
             var imageList = new List<Image> { titleBar, timeBmp1, image, timeBmp2 };
             var compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
