@@ -111,6 +111,9 @@ namespace AudioAnalysisTools.TileImage
         /// it will paint forward/backward by using either the end of the current segment and the start
         /// of the next segment or the end of the previous segment and the start of the current segment.
         /// </summary>
+        /// <param name="previous">
+        /// The previous super tile. Null if nothing beforehand.
+        /// </param>
         /// <param name="current">
         /// The super tile currently being operated on.
         /// </param>
@@ -145,24 +148,22 @@ namespace AudioAnalysisTools.TileImage
                 yOffset = current.OffsetY;
 
             // determine padding needed
-            int paddingX, paddingY;
-            int startTileEdgeX, startTileEdgeY;
             int superTileOffsetInLayerX = this.AlignSuperTileInLayer(
                 layer.Width,
                 layer.XTiles,
                 this.profile.TileWidth,
                 current.OffsetX,
                 current.Image.Width,
-                out paddingX,
-                out startTileEdgeX);
+                out var paddingX,
+                out var startTileEdgeX);
             int superTileOffsetInLayerY = this.AlignSuperTileInLayer(
                 layer.Height,
                 layer.YTiles,
                 this.profile.TileHeight,
                 current.OffsetY,
                 current.Image.Height,
-                out paddingY,
-                out startTileEdgeY);
+                out var paddingY,
+                out var startTileEdgeY);
 
             var deltaTileEdgeSuperTileX = superTileOffsetInLayerX - startTileEdgeX;
             var deltaTileEdgeSuperTileY = superTileOffsetInLayerY - startTileEdgeY;
@@ -191,20 +192,18 @@ namespace AudioAnalysisTools.TileImage
                     // Note: best case: Neutral X Bias
                     // Note: no support for anything other than Neutral y Bias
 
-
                     // determine how to paint it
                     // supertile relative
                     int layerLeft = (i * this.profile.TileWidth) + startTileEdgeX,
-                        superTileLeft = layerLeft - (paddingX);
+                        superTileLeft = layerLeft - paddingX;
                     int layerTop = (j * this.profile.TileHeight) + startTileEdgeY,
-                        superTileTop = layerTop - (paddingY);
+                        superTileTop = layerTop - paddingY;
 
                     // construct the resulting name of the tile to produced
                     string name = this.profile.GetFileBaseName(
                         this.calculatedLayers,
                         layer,
                         new Point(layerLeft, layerTop));
-
 
                     // make destination image
                     var tileImage = new Bitmap(
@@ -664,6 +663,9 @@ namespace AudioAnalysisTools.TileImage
 
                 scaleIndex++;
             }
+
+            xEnumerator.Dispose();
+            yEnumerator.Dispose();
 
             return results;
         }

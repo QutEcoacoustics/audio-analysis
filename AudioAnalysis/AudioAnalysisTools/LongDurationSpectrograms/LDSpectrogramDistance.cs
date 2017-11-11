@@ -44,7 +44,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var outputDirectory = ((string)configuration.OutputDirectory).ToDirectoryInfo();
 
             // First, need to make an optional cast:
-            // int? minuteOffset = confirguration.MinuteOffset;
+            // int? minuteOffset = confirguration.AnalysisStartOffset;
 
             // Second,  have a few options:
             // if (!minuteOffset.HasValue) {
@@ -53,7 +53,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // OR       minuteOffset = minuteOffset == null ? 0 : minuteoffset.Value;
 
             // ORRR - all in one line!
-            // int minuteOffset = (int?)configuration.MinuteOffset ?? 0;
+            // int minuteOffset = (int?)configuration.AnalysisStartOffset ?? 0;
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string map = configuration.ColorMap;
