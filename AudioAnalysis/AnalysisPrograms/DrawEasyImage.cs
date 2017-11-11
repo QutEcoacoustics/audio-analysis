@@ -44,6 +44,8 @@ namespace AnalysisPrograms
     using TowseyLibrary;
     using System.Drawing;
 
+    using AudioAnalysisTools.StandardSpectrograms;
+
     /// <summary>
     /// First argument on command line to call this action is "drawEasyImage"
     /// </summary>
@@ -381,7 +383,7 @@ namespace AnalysisPrograms
             SunAndMoon.AddSunRiseSetLinesToImage((Bitmap)bitmap, arguments.BrisbaneSunriseDatafile, startdayOfYear, endDayOfYear, dayPixelHeight);
 
             // add the time scales
-            Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(oneDay, graphWidth, trackHeight);
+            Bitmap timeBmp1 = ImageTrack.DrawTimeRelativeTrack(oneDay, graphWidth, trackHeight);
             var imageList = new List<Image>();
             imageList.Add(timeBmp1);
             imageList.Add(bitmap);
@@ -398,7 +400,7 @@ namespace AnalysisPrograms
             string startString = $"{startDate.Value.Year}/{startDate.Value.Month}/{startDate.Value.Day}";
             string   endString = $"{endDate.Value.Year}/{endDate.Value.Month}/{endDate.Value.Day}";
             string title = $"EASY:   {arguments.FileStemName}    From {startString} to {endString}                          Indices: {indicesDescription}";
-            Bitmap titleBar = Image_Track.DrawTitleTrack(compositeBmp2.Width, trackHeight, title);
+            Bitmap titleBar = ImageTrack.DrawTitleTrack(compositeBmp2.Width, trackHeight, title);
             imageList = new List<Image>();
             imageList.Add(titleBar);
             imageList.Add(compositeBmp2);

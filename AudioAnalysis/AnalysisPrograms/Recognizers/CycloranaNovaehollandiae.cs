@@ -216,11 +216,11 @@ namespace AnalysisPrograms.Recognizers
                 bool add1kHzLines = true;
                 Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
 
-                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+                image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
                 if (scores != null)
                 {
                     foreach (Plot plot in scores)
-                        image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
+                        image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
                             //assumes data normalised in 0,1
                 }
                 if (hits != null) image.OverlayRainbowTransparency(hits);

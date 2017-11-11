@@ -248,7 +248,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             Image_MultiTrack mti = new Image_MultiTrack(img);
             if (addScale)
             {
-                mti.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond)); //add time scale
+                mti.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond)); //add time scale
             }
 
             bool addSegmentationTrack = false;
@@ -261,11 +261,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             if (addSegmentationTrack)
             {
-                mti.AddTrack(Image_Track.GetSegmentationTrack(sonogram)); //add segmentation track
+                mti.AddTrack(ImageTrack.GetSegmentationTrack(sonogram)); //add segmentation track
             }
 
             return mti;
-            //mti.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram)); //add segmentation track
+            //mti.AddTrack(ImageTrack.GetWavEnvelopeTrack(sonogram)); //add segmentation track
         }//Sonogram2MultiTrackImage()
 
         public static Image Sonogram2Image(BaseSonogram sonogram, Dictionary<string, string> configDict, double[,] hits, List<Plot> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
@@ -276,7 +276,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 foreach (Plot plot in scores)
                 {
-                    multiTrackImage.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
+                    multiTrackImage.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
                 }
             }
 

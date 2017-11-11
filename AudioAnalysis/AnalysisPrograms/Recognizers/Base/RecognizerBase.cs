@@ -28,6 +28,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
 
     using TowseyLibrary;
@@ -324,14 +325,14 @@ namespace AnalysisPrograms.Recognizers.Base
             ////img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
 
             ////Image_MultiTrack image = new Image_MultiTrack(img);
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
 
             if (scores != null)
             {
                 foreach (var plot in scores)
                 {
-                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
+                    image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
                 }
             }
 
@@ -422,11 +423,11 @@ namespace AnalysisPrograms.Recognizers.Base
             const bool add1KHzLines = true;
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines));
 
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             if (scores != null)
             {
                 foreach (var plot in scores)
-                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
+                    image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
             }
             if (hits != null) image.OverlayRainbowTransparency(hits);
 

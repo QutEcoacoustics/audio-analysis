@@ -234,10 +234,10 @@ namespace AnalysisPrograms
         {
             var image = new Image_MultiTrack(sonogram.GetImage(false, true));
 
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
 
-            ////image.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram, image.sonogramImage.Width));
-            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            ////image.AddTrack(ImageTrack.GetWavEnvelopeTrack(sonogram, image.sonogramImage.Width));
+            image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
             image.AddEvents(
                 events,
                 sonogram.NyquistFrequency,

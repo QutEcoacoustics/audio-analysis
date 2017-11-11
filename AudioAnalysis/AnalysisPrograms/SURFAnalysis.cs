@@ -409,7 +409,7 @@ namespace AnalysisPrograms
             image = sonogram.GetImageAnnotatedWithLinearHerzScale(image, "AMPLITUDE SPECTROGRAM + LCN + ridge detection");
             list.Add(image);
 
-            Image envelopeImage = Image_Track.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
+            Image envelopeImage = ImageTrack.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
             list.Add(envelopeImage);
 
             // 3) now draw the standard decibel spectrogram
@@ -421,7 +421,7 @@ namespace AnalysisPrograms
             image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM");
             list.Add(image);
 
-            Image segmentationImage = Image_Track.DrawSegmentationTrack(
+            Image segmentationImage = ImageTrack.DrawSegmentationTrack(
                 sonogram,
                 EndpointDetectionConfiguration.K1Threshold,
                 EndpointDetectionConfiguration.K2Threshold,
