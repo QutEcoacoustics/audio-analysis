@@ -9,6 +9,7 @@
 
 namespace AudioAnalysisTools.TileImage
 {
+    using System;
     using System.Drawing;
 
     public interface ISuperTile
@@ -19,6 +20,6 @@ namespace AudioAnalysisTools.TileImage
 
         int OffsetY { get; }
 
-        Image Image { get; set; }
+        Image Image { get; }
     }
 }

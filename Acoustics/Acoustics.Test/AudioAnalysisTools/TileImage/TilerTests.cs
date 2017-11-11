@@ -80,43 +80,17 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
         [TestMethod]
         public void TestTileManyGroupsTilesByScaleAndSortsByOffset()
         {
+            
+
             ISuperTile[] testCases =
                 {
-                    new TimeOffsetSingleLayerSuperTile()
-                        {
-                            Scale = TimeSpan.FromSeconds(60.0),
-                            TimeOffset = TimeSpan.FromMinutes(0),
-                        },
-                    new TimeOffsetSingleLayerSuperTile()
-                        {
-                            Scale = TimeSpan.FromSeconds(60.0),
-                            TimeOffset = TimeSpan.FromMinutes(1),
-                        },
-                    new TimeOffsetSingleLayerSuperTile()
-                        {
-                            Scale = TimeSpan.FromSeconds(30.0),
-                            TimeOffset = TimeSpan.FromMinutes(16),
-                        },
-                    new TimeOffsetSingleLayerSuperTile()
-                        {
-                            Scale = TimeSpan.FromSeconds(30.0),
-                            TimeOffset = TimeSpan.FromMinutes(15.5),
-                        },
-                    new TimeOffsetSingleLayerSuperTile()
-                        {
-                            Scale = TimeSpan.FromSeconds(30.0),
-                            TimeOffset = TimeSpan.FromMinutes(15.0),
-                        },
-                    new TimeOffsetSingleLayerSuperTile()
-                        {
-                            Scale = TimeSpan.FromSeconds(120.0),
-                            TimeOffset = TimeSpan.FromMinutes(0),
-                        },
-                    new TimeOffsetSingleLayerSuperTile()
-                        {
-                            Scale = TimeSpan.FromSeconds(1.0),
-                            TimeOffset = TimeSpan.FromMinutes(0),
-                        },
+                    MakeTile(60, 0),
+                    MakeTile(60, 1),
+                    MakeTile(30, 16),
+                    MakeTile(30, 15.5),
+                    MakeTile(30, 15),
+                    MakeTile(120, 0),
+                    MakeTile(1, 0),
                 };
 
             List<ISuperTile> moqCurrent = new List<ISuperTile>(testCases.Length),
@@ -166,83 +140,13 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
 
         private readonly ISuperTile[] superTileTestCases =
             {
-                new TimeOffsetSingleLayerSuperTile()
-                    {
-                        Scale =
-                            TimeSpan
-                            .FromSeconds
-                            (24),
-                        TimeOffset =
-                            TimeSpan
-                            .FromMinutes
-                            (0),
-                    },
-                new TimeOffsetSingleLayerSuperTile()
-                    {
-                        Scale =
-                            TimeSpan
-                            .FromSeconds
-                            (24),
-                        TimeOffset =
-                            TimeSpan
-                            .FromMinutes
-                            (1),
-                    },
-                new TimeOffsetSingleLayerSuperTile()
-                    {
-                        Scale =
-                            TimeSpan
-                            .FromSeconds
-                            (12),
-                        TimeOffset =
-                            TimeSpan
-                            .FromMinutes
-                            (16),
-                    },
-                new TimeOffsetSingleLayerSuperTile()
-                    {
-                        Scale =
-                            TimeSpan
-                            .FromSeconds
-                            (12),
-                        TimeOffset =
-                            TimeSpan
-                            .FromMinutes
-                            (15.5),
-                    },
-                new TimeOffsetSingleLayerSuperTile()
-                    {
-                        Scale =
-                            TimeSpan
-                            .FromSeconds
-                            (12),
-                        TimeOffset =
-                            TimeSpan
-                            .FromMinutes
-                            (15.0),
-                    },
-                new TimeOffsetSingleLayerSuperTile()
-                    {
-                        Scale =
-                            TimeSpan
-                            .FromSeconds
-                            (60),
-                        TimeOffset =
-                            TimeSpan
-                            .FromMinutes
-                            (0),
-                    },
-                new TimeOffsetSingleLayerSuperTile()
-                    {
-                        Scale =
-                            TimeSpan
-                            .FromSeconds
-                            (1.0),
-                        TimeOffset =
-                            TimeSpan
-                            .FromMinutes
-                            (0),
-                    },
+                MakeTile(24, 0),
+                MakeTile(24, 1),
+                MakeTile(12, 16),
+                MakeTile(12, 15.5),
+                MakeTile(12, 15),
+                MakeTile(60, 0),
+                MakeTile(1.0, 0),
             };
 
         [TestMethod]
@@ -254,11 +158,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
                 this.superTileTestCases.Concat(
                     new[]
                         {
-                            new TimeOffsetSingleLayerSuperTile()
-                                {
-                                    Scale = TimeSpan.FromSeconds(60.0),
-                                    TimeOffset = TimeSpan.FromMinutes(0),
-                                },
+                            MakeTile(60, 0),
                         }));
         }
 
@@ -269,24 +169,19 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
 
             this.tiler.TileMany(this.superTileTestCases);
 
-            this.tiler.Tile(
-                new TimeOffsetSingleLayerSuperTile
-                    {
-                        Scale = TimeSpan.FromSeconds(30.0),
-                        TimeOffset = TimeSpan.FromMinutes(15.5),
-                    });
+            this.tiler.Tile(MakeTile(30, 15.5));
         }
 
         [TestMethod]
         public void Test60Resolution()
         {
             var testBitmap = new Bitmap(PathHelper.ResolveAssetPath("1440px2.png"));
-            var superTile = new TimeOffsetSingleLayerSuperTile()
-                                {
-                                    Image = testBitmap,
-                                    Scale = TimeSpan.FromSeconds(60.0),
-                                    TimeOffset = TimeSpan.Zero,
-                                };
+            var superTile = new TimeOffsetSingleLayerSuperTile(
+                TimeSpan.Zero,
+                SpectrogramType.Index,
+                60.Seconds(),
+                testBitmap,
+                TimeSpan.Zero);
             this.tiler.Tile(superTile);
 
             ////Debug.WriteLine(this.outputDirectory.FullName);
@@ -318,12 +213,12 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
         public void Test1Resolution()
         {
             var testBitmap = new Bitmap(PathHelper.ResolveAssetPath("Farmstay_ECLIPSE3_201_scale-1.0_supertile-1.png"));
-            var superTile = new TimeOffsetSingleLayerSuperTile()
-                                {
-                                    Image = testBitmap,
-                                    Scale = TimeSpan.FromSeconds(1.0),
-                                    TimeOffset = TimeSpan.FromHours(1.0),
-                                };
+            var superTile = new TimeOffsetSingleLayerSuperTile(
+                TimeSpan.Zero,
+                SpectrogramType.Index,
+                1.Seconds(),
+                testBitmap,
+                TimeSpan.FromHours(1));
             this.tiler.Tile(superTile);
 
             ////Debug.WriteLine(this.outputDirectory.FullName);
@@ -392,12 +287,12 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
         public void EnsureSameTileNotRenderedTwice()
         {
             var testBitmap = new Bitmap(PathHelper.ResolveAssetPath("Farmstay_ECLIPSE3_201_scale-1.0_supertile-1.png"));
-            var superTile = new TimeOffsetSingleLayerSuperTile()
-                                {
-                                    Image = testBitmap,
-                                    Scale = TimeSpan.FromSeconds(1.0),
-                                    TimeOffset = TimeSpan.FromHours(1.0),
-                                };
+            var superTile = new TimeOffsetSingleLayerSuperTile(
+                TimeSpan.Zero,
+                SpectrogramType.Index,
+                1.Seconds(),
+                testBitmap,
+                TimeSpan.FromHours(1));
 
             this.tiler.Tile(superTile);
 
@@ -411,18 +306,18 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
         {
             ISuperTile[] testCases =
                 {
-                    new TimeOffsetSingleLayerSuperTile()
-                        {
-                            Scale = TimeSpan.FromSeconds(0.16),
-                            TimeOffset = TimeSpan.FromMinutes(0),
-                            Image = new Bitmap(PathHelper.ResolveAssetPath("60s@0.16pxps_0.png")),
-                        },
-                    new TimeOffsetSingleLayerSuperTile()
-                        {
-                            Scale = TimeSpan.FromSeconds(0.16),
-                            TimeOffset = TimeSpan.FromMinutes(1),
-                            Image = new Bitmap(PathHelper.ResolveAssetPath("60s@0.16pxps_1.png")),
-                        },
+                    new TimeOffsetSingleLayerSuperTile(
+                        TimeSpan.Zero,
+                        SpectrogramType.Index,
+                        0.16.Seconds(),
+                        new Bitmap(PathHelper.ResolveAssetPath("60s@0.16pxps_0.png")),
+                        TimeSpan.FromMinutes(0)),
+                    new TimeOffsetSingleLayerSuperTile(
+                        TimeSpan.Zero,
+                        SpectrogramType.Index,
+                        0.16.Seconds(),
+                        new Bitmap(PathHelper.ResolveAssetPath("60s@0.16pxps_1.png")),
+                        TimeSpan.FromMinutes(1)),
                 };
 
             // scale size results in two images drawn
@@ -453,18 +348,8 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
         {
             ISuperTile[] testCases =
                 {
-                    new TimeOffsetSingleLayerSuperTile()
-                        {
-                            Scale = TimeSpan.FromSeconds(0.16),
-                            TimeOffset = TimeSpan.FromMinutes(0),
-                            Image = new Bitmap(PathHelper.ResolveAssetPath("60s@0.16pxps_0.png")),
-                        },
-                    new TimeOffsetSingleLayerSuperTile()
-                        {
-                            Scale = TimeSpan.FromSeconds(0.16),
-                            TimeOffset = TimeSpan.FromMinutes(1),
-                            Image = new Bitmap(PathHelper.ResolveAssetPath("60s@0.16pxps_1.png")),
-                        },
+                    new TimeOffsetSingleLayerSuperTile(TimeSpan.Zero, SpectrogramType.Index, 0.16.Seconds(), new Bitmap(PathHelper.ResolveAssetPath("60s@0.16pxps_0.png")), TimeSpan.FromMinutes(0)),
+                    new TimeOffsetSingleLayerSuperTile(TimeSpan.Zero, SpectrogramType.Index, 0.16.Seconds(), new Bitmap(PathHelper.ResolveAssetPath("60s@0.16pxps_1.png")), TimeSpan.FromMinutes(1)),
                 };
 
             // scale size results in two images drawn
@@ -493,18 +378,8 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
         {
             ISuperTile[] testCases =
                 {
-                    new TimeOffsetSingleLayerSuperTile()
-                        {
-                            Scale = TimeSpan.FromSeconds(0.16),
-                            TimeOffset = TimeSpan.FromMinutes(0),
-                            Image = new Bitmap(PathHelper.ResolveAssetPath("60s@0.16pxps_0.png")),
-                        },
-                    new TimeOffsetSingleLayerSuperTile()
-                        {
-                            Scale = TimeSpan.FromSeconds(0.16),
-                            TimeOffset = TimeSpan.FromMinutes(1),
-                            Image = new Bitmap(PathHelper.ResolveAssetPath("60s@0.16pxps_1.png")),
-                        },
+                    new TimeOffsetSingleLayerSuperTile(TimeSpan.Zero, SpectrogramType.Index, 0.16.Seconds(), new Bitmap(PathHelper.ResolveAssetPath("60s@0.16pxps_0.png")), TimeSpan.FromMinutes(0)),
+                    new TimeOffsetSingleLayerSuperTile(TimeSpan.Zero, SpectrogramType.Index, 0.16.Seconds(), new Bitmap(PathHelper.ResolveAssetPath("60s@0.16pxps_1.png")), TimeSpan.FromMinutes(1)),
                 };
 
             var singleScaleTiler = new Tiler(
@@ -557,13 +432,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
                 graphics.FillRectangle(Brushes.Red, testBitmap.GetBounds(ref graphicsUnit));
             }
 
-            var superTile = new TimeOffsetSingleLayerSuperTile()
-                {
-                    Image = testBitmap,
-                    Scale = TimeSpan.FromSeconds(60.0),
-                    TimeOffset = TimeSpan.Zero,
-                    SpectrogramType = SpectrogramType.Index,
-                };
+            var superTile = new TimeOffsetSingleLayerSuperTile(TimeSpan.Zero, SpectrogramType.Index, 60.Seconds(), testBitmap, TimeSpan.Zero);
             this.tiler.Tile(superTile);
 
             var producedFiles = this.outputDirectory.GetFiles();
@@ -765,6 +634,16 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
                                };
 
             // ReSharper restore InconsistentNaming
+        }
+
+        private static TimeOffsetSingleLayerSuperTile MakeTile(double scale, double offsetMinutes)
+        {
+            return new TimeOffsetSingleLayerSuperTile(
+                TimeSpan.Zero,
+                SpectrogramType.Index,
+                scale.Seconds(),
+                null,
+                TimeSpan.FromMinutes(offsetMinutes));
         }
     }
 }

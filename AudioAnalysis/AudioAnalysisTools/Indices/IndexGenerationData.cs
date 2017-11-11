@@ -57,7 +57,10 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         public DateTimeOffset? RecordingStartDate { get; set; }
 
-        public TimeSpan MinuteOffset { get; set; }
+        /// <summary>
+        /// Gets or sets how far into the recording the analysis was started
+        /// </summary>
+        public TimeSpan AnalysisStartOffset { get; set; }
 
         public TimeSpan? MaximumSegmentDuration { get; set; }
 
