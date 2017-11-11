@@ -119,13 +119,17 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
             var filesProduced = zoomOutput.EnumerateFiles().ToArray();
 
             // there are 11 zoom levels in the default config, but the test recording is only 2min long
+            // we're also split right at a natural boundary, so many tiles won't be full, but will be split
             // at scale 240, we're rendering <1px of content and that tile is not generated
-            // for scales 120-1.0 only one tile is produced (subtotal: 10)
-            // for 0.5: 2 tiles (subtotal: 12)
-            // for 0.25: 3 tiles (subtotal: 15)
-            // for 0.125: 6 tiles (subtotal: 21)
-            Assert.AreEqual(21, filesProduced.Length);
-            Assert.AreEqual(6, filesProduced.Count(x => x.Name.Contains("0.125")));
+            // for scales 120-30 only one tile is produced (subtotal: 3)
+            // for 15, 7.5, 3.2, 1.6, 0.8: 2 tiles (subtotal: 13)
+            // for 0.4: 3 tiles (subtotal: 16)
+            // for 0.2: 4 tiles (subtotal: 20)
+            // for 0.1: 8 tiles (subtotal: 28)
+            Assert.AreEqual(28, filesProduced.Length);
+
+            // 6.66 tiles (1200px / 180px tiles) - with padding either side -> 8
+            Assert.AreEqual(8, filesProduced.Count(x => x.Name.Contains("0.1")));
 
             // not sure what else to test - generally exceptions should be thrown if anything goes wrong
         }
@@ -157,13 +161,17 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
                 var filesProduced = fs.EnumerateFiles(UPath.Root).ToArray();
 
                 // there are 11 zoom levels in the default config, but the test recording is only 2min long
+                // we're also split right at a natural boundary, so many tiles won't be full, but will be split
                 // at scale 240, we're rendering <1px of content and that tile is not generated
-                // for scales 120-1.0 only one tile is produced (subtotal: 10)
-                // for 0.5: 2 tiles (subtotal: 12)
-                // for 0.25: 3 tiles (subtotal: 15)
-                // for 0.125: 6 tiles (subtotal: 21)
-                Assert.AreEqual(21, filesProduced.Length);
-                Assert.AreEqual(6, filesProduced.Count(x => x.GetName().Contains("0.125")));
+                // for scales 120-30 only one tile is produced (subtotal: 3)
+                // for 15, 7.5, 3.2, 1.6, 0.8: 2 tiles (subtotal: 13)
+                // for 0.4: 3 tiles (subtotal: 16)
+                // for 0.2: 4 tiles (subtotal: 20)
+                // for 0.1: 8 tiles (subtotal: 28)
+                Assert.AreEqual(28, filesProduced.Length);
+
+                // 6.66 tiles (1200px / 180px tiles) - with padding either side -> 8
+                Assert.AreEqual(8, filesProduced.Count(x => x.GetName().Contains("0.1")));
             }
 
             // not sure what else to test - generally exceptions should be thrown if anything goes wrong

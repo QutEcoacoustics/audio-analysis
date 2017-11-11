@@ -163,7 +163,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             this.SampleRate = indexGenerationData.SampleRateResampled;
             this.FrameWidth = indexGenerationData.FrameLength;
-            this.StartOffset = indexGenerationData.MinuteOffset;
+            this.StartOffset = indexGenerationData.AnalysisStartOffset;
 
             // default BackgroundFilter value
             this.BackgroundFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
@@ -1412,7 +1412,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             cs1.ErroneousSegments = segmentErrors;
 
             // calculate start time by combining DatetimeOffset with minute offset.
-            cs1.StartOffset = indexGenerationData.MinuteOffset;
+            cs1.StartOffset = indexGenerationData.AnalysisStartOffset;
             if (indexGenerationData.RecordingStartDate.HasValue)
             {
                 DateTimeOffset dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
