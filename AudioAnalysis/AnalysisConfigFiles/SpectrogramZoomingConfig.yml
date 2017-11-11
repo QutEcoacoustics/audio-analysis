@@ -12,12 +12,12 @@ SpectralIndexScale:
     - 30
     - 15
     - 7.5
-    - 3.750
-    - 1.875
-    - 1.0
-    - 0.5
-    - 0.250
-    - 0.125
+    - 3.2
+    - 1.6
+    - 0.8
+    - 0.4
+    - 0.2
+    - 0.1
 SpectralFrameScale: []
 MaxTilesPerSuperTile: 12
 UseDistributionsForNormalization: false

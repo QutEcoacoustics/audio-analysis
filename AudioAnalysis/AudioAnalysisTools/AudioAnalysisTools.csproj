@@ -273,7 +273,7 @@
     <Compile Include="Indices\RainIndices.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogramClusters.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogramConfigOfJie.cs" />
-    <Compile Include="LongDurationSpectrograms\SuperTile.cs" />
+    <Compile Include="LongDurationSpectrograms\TimeOffsetSingleLayerSuperTile.cs" />
     <Compile Include="LongDurationSpectrograms\Zooming\InvalidScaleException.cs" />
     <Compile Include="LongDurationSpectrograms\Zooming\SpectrogramZoomingConfig.cs" />
     <Compile Include="LongDurationSpectrograms\Zooming\ZoomCommon.cs" />
@@ -303,7 +303,7 @@
     <Compile Include="TileImage\ISuperTile.cs" />
     <Compile Include="TileImage\Layer.cs" />
     <Compile Include="TileImage\PanoJsTilingProfile.cs" />
-    <Compile Include="TileImage\SuperTile.cs" />
+    <Compile Include="TileImage\DefaultSuperTile.cs" />
     <Compile Include="TileImage\TileBias.cs" />
     <Compile Include="TileImage\TilingProfile.cs" />
     <Compile Include="TileImage\Tiler.cs" />
