@@ -602,15 +602,15 @@ namespace AnalysisPrograms
         private static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<SpectralTrack> tracks)
         {
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage());
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
 
             if (scores != null)
             {
                 foreach (Plot plot in scores)
                 {
                     // assumes data normalized in 0,1
-                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
+                    image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
                 }
             }
 

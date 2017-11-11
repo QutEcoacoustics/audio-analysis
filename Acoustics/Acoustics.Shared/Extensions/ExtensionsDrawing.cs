@@ -77,7 +77,10 @@ namespace System.Drawing
         /// </remarks>
         public static Bitmap Crop(this Image source, Rectangle crop)
         {
-            if (source == null) return null;
+            if (source == null)
+            {
+                return null;
+            }
 
             var bmp = new Bitmap(crop.Width, crop.Height);
             using (var gr = Graphics.FromImage(bmp))

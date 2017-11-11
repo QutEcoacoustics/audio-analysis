@@ -212,9 +212,9 @@ namespace AnalysisPrograms
 
             //prepare sonogram images
             var protoImage6 = new Image_MultiTrack(standardSonogram.GetImage(doHighlightSubband: false, add1KHzLines: true));
-            protoImage6.AddTrack(Image_Track.GetTimeTrack(standardSonogram.Duration, standardSonogram.FramesPerSecond));
-            protoImage6.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, protoImage6.SonogramImage.Width));
-            protoImage6.AddTrack(Image_Track.GetSegmentationTrack(standardSonogram));
+            protoImage6.AddTrack(ImageTrack.GetTimeTrack(standardSonogram.Duration, standardSonogram.FramesPerSecond));
+            protoImage6.AddTrack(ImageTrack.GetWavEnvelopeTrack(recording, protoImage6.SonogramImage.Width));
+            protoImage6.AddTrack(ImageTrack.GetSegmentationTrack(standardSonogram));
             var image6 = protoImage6.GetImage();
 
             var list = new List<Image>();
@@ -249,9 +249,9 @@ namespace AnalysisPrograms
             ////sonogram.Data = SNR.SpectralRidges2Intensity(binary, originalSg);
 
             //image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, false));
-            //image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.sonogramImage.Width));
-            //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            //image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            //image.AddTrack(ImageTrack.GetWavEnvelopeTrack(recording, image.sonogramImage.Width));
+            //image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
             //fn = outputFolder + wavFileName + "_tracks.png";
             //image.Save(fn);
             //LoggedConsole.WriteLine("Spectral tracks sonogram to file: " + fn);
@@ -259,9 +259,9 @@ namespace AnalysisPrograms
             //3: prepare image of spectral peaks sonogram
             //sonogram.Data = SNR.NoiseReduce_Peaks(originalSg, dynamicRange);
             //image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            //image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
-            //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            //image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration));
+            //image.AddTrack(ImageTrack.GetWavEnvelopeTrack(recording, image.Image.Width));
+            //image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
             //fn = outputFolder + wavFileName + "_peaks.png";
             //image.Save(fn);
 
@@ -270,9 +270,9 @@ namespace AnalysisPrograms
             //4: Sobel approach
             //sonogram.Data = SNR.NoiseReduce_Sobel(originalSg, dynamicRange);
             //image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            //image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
-            //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            //image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration));
+            //image.AddTrack(ImageTrack.GetWavEnvelopeTrack(recording, image.Image.Width));
+            //image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
             //fn = outputFolder + wavFileName + "_sobel.png";
             //image.Save(fn);
             //LoggedConsole.WriteLine("Sobel sonogram to file: " + fn);
@@ -327,9 +327,9 @@ namespace AnalysisPrograms
 
             bool doHighlightSubband = false; bool add1kHzLines = true;
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            //image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
-            //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            //image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration));
+            //image.AddTrack(ImageTrack.GetWavEnvelopeTrack(recording, image.Image.Width));
+            //image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
             image.AddEvents(eprEvents);
             image.Save(outputFolder + wavFileName + ".png");
              */

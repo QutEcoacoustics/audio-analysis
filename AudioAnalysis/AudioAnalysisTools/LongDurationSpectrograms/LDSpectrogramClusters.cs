@@ -1,4 +1,8 @@
-﻿namespace AudioAnalysisTools.LongDurationSpectrograms
+﻿// <copyright file="LDSpectrogramClusters.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
@@ -320,7 +324,7 @@
             ////Draw the x-axis time scale bar
             //int trackHeight = 20;
             //TimeSpan fullDuration = TimeSpan.FromTicks(indexCalculationDuration.Ticks * imageWidth);
-            //Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, TimeSpan.Zero, imageWidth, trackHeight);
+            //Bitmap timeBmp = ImageTrack.DrawTimeTrack(fullDuration, TimeSpan.Zero, imageWidth, trackHeight);
 
             //spgmImage = LDSpectrogramRGB.FrameLDSpectrogram(spgmImage, titleBar, minuteOffset, indexCalculationDuration, xTicInterval, nyquist, herzInterval);
             //Graphics gr = Graphics.FromImage(spgmImage);
