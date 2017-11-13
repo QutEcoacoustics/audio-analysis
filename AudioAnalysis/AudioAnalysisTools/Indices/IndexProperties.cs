@@ -330,7 +330,7 @@ namespace AudioAnalysisTools.Indices
                 return null;
             }
 
-            return Find((string)configuration[AnalysisKeys.KeyIndexPropertiesConfig], originalConfigFile.ToFileEntry()).ToFileInfo();
+            return Find((string)configuration[AnalysisKeys.KeyIndexPropertiesConfig], originalConfigFile.ToFileEntry())?.ToFileInfo();
         }
 
         /// <summary>
