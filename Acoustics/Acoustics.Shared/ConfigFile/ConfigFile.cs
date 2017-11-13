@@ -167,19 +167,12 @@ namespace Acoustics.Shared.ConfigFile
 
             // this is a holdover from concrete file systems. The concept of a working directory has no real
             // equivalent in a virtual file system but this is implemented for compatibility
-            var workingDirectory = Directory.GetCurrentDirectory().ToDirectoryEntry();
-            var localConfig = workingDirectory.CombineFile(file);
-            if (localConfig.Exists)
+            // GetFullPath should take care of relative paths relative to current working directory
+            var fullPath = Path.GetFullPath(file);
+            if (File.Exists(fullPath))
             {
-                configFile = localConfig;
+                configFile = fullPath.ToFileEntry();
                 return true;
-            }
-
-            // if it does not exist
-            // and is rooted, it can't exist
-            if (Path.IsPathRooted(file))
-            {
-                return false;
             }
 
             if (searchPaths != null)

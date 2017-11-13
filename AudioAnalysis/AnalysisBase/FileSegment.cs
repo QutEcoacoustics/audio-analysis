@@ -65,11 +65,21 @@ namespace AnalysisBase
         /// Implies `FileDateBehavior.Required`.
         /// NOTE: Start offset will be set to start of file, and end offset set to the end of the file.
         /// </summary>
-        public FileSegment(FileInfo source, TimeAlignment alignment, IAudioUtility utility = null)
+        public FileSegment(
+            FileInfo source,
+            TimeAlignment alignment,
+            IAudioUtility utility = null,
+            FileDateBehavior dateBehavior = FileDateBehavior.Try)
         {
             Contract.Requires(source != null);
+            if (alignment != TimeAlignment.None)
+            {
+                Contract.Requires(
+                    dateBehavior == FileDateBehavior.Required,
+                    "If TimeAlignment is required, a date must be required in the filename");
+            }
 
-            this.dateBehavior = alignment == TimeAlignment.None ? FileDateBehavior.Try : FileDateBehavior.Required;
+            this.dateBehavior = dateBehavior;
             this.Source = source;
             this.Alignment = alignment;
 

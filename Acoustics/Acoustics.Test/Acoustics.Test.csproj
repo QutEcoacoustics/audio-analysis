@@ -441,8 +441,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>rem copy configs
+xcopy "$(SolutionDir)AnalysisConfigFiles" "$(TargetDir)ConfigFiles\" /S /Y</PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\..\AudioAnalysis\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\..\AudioAnalysis\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
