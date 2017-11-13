@@ -288,5 +288,63 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             Assert.AreEqual(28, twoMapsImage.Width);
             Assert.AreEqual(652, twoMapsImage.Height);
         }
+
+        [TestMethod]
+        public void TestEnsuresFailureForNoDate()
+        {
+            var recordingPath = PathHelper.ResolveAsset("geckos.wav");
+
+            var configPath = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
+            //var indexPropertiesFile = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
+            //indexPropertiesFile.CopyTo(Path.Combine(this.outputDirectory.FullName, "IndexPropertiesConfig.yml"));
+
+            // modify config file
+            // because of difficulties in dealing with dynamic config files, just edit the text file!!!!!
+            var configLines = File.ReadAllLines(configPath.FullName);
+            configLines[configLines.IndexOf(x => x.StartsWith("RequireDateInFilename:"))] = "RequireDateInFilename: true";
+
+            // write the edited Config file to temporary output directory
+            var newConfigPath = this.outputDirectory.CombineFile("Towsey.Acoustic.yml");
+            File.WriteAllLines(newConfigPath.FullName, configLines);
+
+            var arguments = new AnalyseLongRecording.Arguments
+            {
+                Source = recordingPath,
+                Config = newConfigPath,
+                Output = this.outputDirectory,
+                MixDownToMono = true,
+            };
+
+            Assert.ThrowsException<InvalidFileDateException>(() => AnalyseLongRecording.Execute(arguments));
+        }
+
+        [TestMethod]
+        public void TestEnsuresFailureWithAmbiguousDate()
+        {
+            var recordingPath = this.outputDirectory.CombineFile("20160801_110000_continuous1.wav");
+
+            var configPath = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
+            //var indexPropertiesFile = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
+            //indexPropertiesFile.CopyTo(Path.Combine(this.outputDirectory.FullName, "IndexPropertiesConfig.yml"));
+
+            // modify config file
+            // because of difficulties in dealing with dynamic config files, just edit the text file!!!!!
+            var configLines = File.ReadAllLines(configPath.FullName);
+            configLines[configLines.IndexOf(x => x.StartsWith("RequireDateInFilename:"))] = "RequireDateInFilename: true";
+
+            // write the edited Config file to temporary output directory
+            var newConfigPath = this.outputDirectory.CombineFile("Towsey.Acoustic.yml");
+            File.WriteAllLines(newConfigPath.FullName, configLines);
+
+            var arguments = new AnalyseLongRecording.Arguments
+            {
+                Source = recordingPath,
+                Config = newConfigPath,
+                Output = this.outputDirectory,
+                MixDownToMono = true,
+            };
+
+            Assert.ThrowsException<InvalidFileDateException>(() => AnalyseLongRecording.Execute(arguments));
+        }
     }
 }
