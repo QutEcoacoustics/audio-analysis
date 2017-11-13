@@ -31,5 +31,13 @@ ggplot() + geom_logo(january,method = 'probability',seq_type="other",col_scheme 
 #Calculate the frequency of each letter per sequence gympie
 freq = letterFrequency(fasta, letters = uniqueLetters(fasta))
 freqtotal = sort(colSums(freq),decreasing=TRUE)
-freqtotalperc = (freqtotal*100)/sum(freqtotal)
-barplot(freqtotalperc,names.arg = names(freqtotal),las='2', col = colorpalette[[50]])
+freqtotalperc = (freqtotal)/sum(freqtotal)
+barplot(freqtotalperc,names.arg = names(freqtotal),las='2')
+
+
+#Frequency of each letter total
+##import combcd from HMM.r
+freq = letterFrequency(combcd, letters = uniqueLetters(combcd))
+freqtotal = sort(colSums(freq),decreasing=TRUE)
+freqtotalperc = (freqtotal)/sum(freqtotal)
+barplot(freqtotalperc,names.arg = names(freqtotal),las='2')

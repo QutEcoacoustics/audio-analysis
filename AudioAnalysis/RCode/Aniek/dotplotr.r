@@ -8,4 +8,5 @@ woondum_seasonal = read.fasta('/Volumes/Nifty/QUT/HMM/hiddenstates/fastafiles/wo
 
 dotPlot(woondum_seasonal$`Woondum|Spring|civildawn`,gympie_seasonal$`Gympie|Spring|civildawn`)
 dotPlot(woondum_seasonal$`Woondum|Summer|civildawn`,gympie_seasonal$`Gympie|Summer|civildawn`)
+dotPlot(woondum_seasonal$`Woondum|Winter|civildawn`,gympie_seasonal$`Gympie|Winter|civildawn`)
 dotPlot(woondum_seasonal$`Woondum|Autumn|civildawn`,gympie_seasonal$`Gympie|Autumn|civildawn`)

@@ -8,7 +8,7 @@ import re
 #creates one long sequence with all the clusters per minute for one location starting at 0:00 22-06
 def createclusterlist(location):
 	#open csv file with cluster per min and create one long sequence of the clusters
-	with open('/Volumes/Nifty/QUT/Yvonne_AcousticData_WoondumAndGympie/ClusterMinute/Cluster50Sequence_'+location+'2015June22.csv', 'rb') as csvfile:
+	with open('/Volumes/Nifty/QUT/Yvonne_AcousticData_WoondumAndGympie/ClusterMinute/Cluster60Sequence_'+location+'2015June22.csv', 'rb') as csvfile:
 		clusterminute = csv.reader(csvfile, dialect=csv.excel_tab, delimiter = ',')
 		clusterlist = []
 		for row in clusterminute:
@@ -27,13 +27,16 @@ def createclusterlist(location):
 def createclusterseq(clusterlist):
 	clusterseq = ''
 	for x in clusterlist:
-		clusterseq += x
+		clusterseq += x + ':'
 	return clusterseq
 
 #change the symbols in the list
-def altersymbols(clusterlist):
+def altersymbols(clusterlist,noclusters):
 	# add +range(32,41) to newsymbols for 60 clusters
-	newsymbols = list(map(chr, range(65,91)+range(97,123)))
+	if noclusters == '50':
+		newsymbols = list(map(chr, range(65,91)+range(97,123)))
+	elif noclusters == '60':
+		newsymbols = list(map(chr, range(64,92)+range(93,126)))
 	oldsymbols = list(range(0,61))
 	newlist = []
 	for x in clusterlist:
@@ -51,7 +54,7 @@ def altersymbols(clusterlist):
 
 # creates a dictionary with date 'yyyy-mm-dd' as key and civil dawn time as value
 def civildawndict(year,location):
-	civiltwilight_f = open('/Volumes/Nifty/QUT/Yvonne_AcousticData_WoondumAndGympie/Other data/Misc/civiltwilight'+location+str(year)+'.txt','r')
+	civiltwilight_f = open('/Volumes/Nifty/QUT/civiltwilighttimes/civiltwilight'+location+str(year)+'.txt','r')
 	civiltwilight = civiltwilight_f.readlines()
 	civildawn = {}
 	x = 2
@@ -116,13 +119,13 @@ def clusterseqpcivildawn(clusterseq,dict):
 			begin = poscivildawn[i]
 			end = poscivildawn[i+1]
 			if symbols == 'numbers':
-				seqcivildawn = clusterseq[(begin*2):(end*2)]
+				seqcivildawn = clusterseq[(begin*3):(end*3)]
 			else:
 				seqcivildawn = clusterseq[begin:end]
 			date = dictposdate[begin]
 		else:
 			if symbols == 'numbers':
-				seqcivildawn = clusterseq[(end*2):]
+				seqcivildawn = clusterseq[(end*3):]
 			else:
 				seqcivildawn = clusterseq[end:]
 			date = dictposdate[poscivildawn[i]]
@@ -170,7 +173,7 @@ def clusterseqpday(clusterseq):
 
 #Writes the dictionary with sequences as value in a fasta file format
 def writefasta(seqdict, location,startpoint):
-	with open('/Volumes/Nifty/QUT/Scripts/'+location+'_'+symbols+'_'+startpoint+'.txt', 'w') as file:
+	with open('/Volumes/Nifty/QUT/60clusters/Fastafiles/'+location+'_'+symbols+'_'+startpoint+'.txt', 'w') as file:
 		for day in sorted(seqdict):
 			seq = seqdict[day]
 			seq = "\n".join(re.findall("(?s).{,70}", seq))[:-1]
@@ -179,13 +182,14 @@ def writefasta(seqdict, location,startpoint):
 			file.write(seq + '\n')
 	file.close()
 
-if len(sys.argv)!=4:
-	print 'Function need three arguments: location, symbols and startpoint'
+if len(sys.argv)!=5:
+	print 'Function needs four arguments: location, symbols, startpoint and no of clusters'
 	exit()
 else:
 	location = sys.argv[1]
 	symbols = sys.argv[2]
 	startpoint = sys.argv[3]
+	noclusters = sys.argv[4]
 
 #1 Location is Gympie or Woondum with capital!!
 if location in ['Gympie','Woondum']:
@@ -199,7 +203,7 @@ else:
 if symbols == 'numbers':
 	clusterseq = createclusterseq(clusterlist)
 elif symbols =='letters':
-	clusterseq = altersymbols(clusterlist)
+	clusterseq = altersymbols(clusterlist,noclusters)
 else:
 	print 'Symbols should be either \'numbers\' or \'letters\''
 	exit()
