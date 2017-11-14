@@ -565,7 +565,7 @@ namespace AnalysisPrograms
 
             var statsString = "Programs stats:\n" + Json.SerialiseToString(stats, prettyPrint: true);
 
-            NoConsole.Log.Debug(statsString);
+            NoConsole.Log.Info(statsString);
         }
     }
 }

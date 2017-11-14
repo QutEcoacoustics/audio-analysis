@@ -77,6 +77,9 @@ namespace AnalysisPrograms.Production
             }
             else
             {
+                // resolve path
+                path = Path.GetFullPath(path);
+
                 // ensure parent directory exists on disk
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 
