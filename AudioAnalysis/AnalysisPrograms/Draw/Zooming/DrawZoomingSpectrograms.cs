@@ -46,9 +46,10 @@ namespace AnalysisPrograms.Draw.Zooming
             LoggedConsole.WriteLine("# Input Directory             : " + arguments.SourceDirectory);
             LoggedConsole.WriteLine("# Output Directory            : " + arguments.Output);
 
-            var common = new ZoomArguments();
-
-            common.SpectrogramZoomingConfig = Yaml.Deserialise<SpectrogramZoomingConfig>(arguments.SpectrogramTilingConfig);
+            var common = new ZoomArguments()
+            {
+                SpectrogramZoomingConfig = Yaml.Deserialise<SpectrogramZoomingConfig>(arguments.SpectrogramTilingConfig),
+            };
 
             // search for index properties config
             var indexPropertiesPath = IndexProperties.Find(common.SpectrogramZoomingConfig, arguments.SpectrogramTilingConfig);

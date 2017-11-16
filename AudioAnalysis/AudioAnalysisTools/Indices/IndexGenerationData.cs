@@ -88,8 +88,8 @@ namespace AudioAnalysisTools.Indices
 
         public static FileInfo FindFile(DirectoryInfo directory)
         {
-            const string Pattern = "*" + FileNameFragment + "*";
-            return directory.GetFiles(Pattern).Single();
+            const string pattern = "*" + FileNameFragment + "*";
+            return directory.GetFiles(pattern).Single();
         }
     }
 }

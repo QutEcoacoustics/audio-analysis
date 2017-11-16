@@ -31,5 +31,5 @@ LdSpectrogramConfig:
     XAxisTicIntervalSeconds: 3600
     # Hertz
     YAxisTicInterval: 1000
-IndexPropertiesConfig: './IndexPropertiesConfig.yml'
+IndexPropertiesConfig: './IndexPropertiesConfigForZooming.yml'
 ...

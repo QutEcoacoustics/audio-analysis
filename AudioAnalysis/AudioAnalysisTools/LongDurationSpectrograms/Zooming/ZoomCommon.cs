@@ -93,11 +93,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             cs1.LoadSpectrogramDictionary(spectralSelection);
 
             var imageScaleInMsPerPixel = (int)imageScale.TotalMilliseconds;
-            double blendWt1 = 0.1;
-            double blendWt2 = 0.9;
+            double blendWt1 = 0.0;
+            double blendWt2 = 1.0;
 
             if (imageScaleInMsPerPixel > 15000)
             {
+                // > 15 seconds
                 blendWt1 = 1.0;
                 blendWt2 = 0.0;
             }
@@ -108,33 +109,28 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             }
             else if (imageScaleInMsPerPixel > 5000)
             {
-                blendWt1 = 0.8;
-                blendWt2 = 0.2;
+                blendWt1 = 0.7;
+                blendWt2 = 0.3;
             }
             else if (imageScaleInMsPerPixel > 1000)
             {
-                blendWt1 = 0.6;
-                blendWt2 = 0.4;
+                blendWt1 = 0.2;
+                blendWt2 = 0.8;
             }
             else if (imageScaleInMsPerPixel > 500)
             {
-                blendWt1 = 0.3;
-                blendWt2 = 0.7;
+                // > 0.5 seconds
+                blendWt1 = 0.1;
+                blendWt2 = 0.9;
             }
 
-            Image LdSpectrogram = cs1.DrawBlendedFalseColourSpectrogram(
-                "NEGATIVE",
-                colorMap1,
-                colorMap2,
-                blendWt1,
-                blendWt2);
-
-            if (LdSpectrogram == null)
+            var ldfcSpectrogram = cs1.DrawBlendedFalseColourSpectrogram(colorMap1, colorMap2, blendWt1, blendWt2);
+            if (ldfcSpectrogram == null)
             {
-                throw new NullReferenceException("Null Image of DrawBlendedFalseColourSpectrogram");
+                throw new NullReferenceException("Null Image returned from DrawBlendedFalseColourSpectrogram()");
             }
 
-            return LdSpectrogram;
+            return ldfcSpectrogram;
         }
     }
 }

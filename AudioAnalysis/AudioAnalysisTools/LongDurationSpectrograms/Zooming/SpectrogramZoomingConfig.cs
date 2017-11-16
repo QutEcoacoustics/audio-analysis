@@ -43,6 +43,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public double SpectralFrameDuration { get; set; }
 
+        public string ScaleUnits { get; set; }
+
         /// <summary>
         /// Get or sets the number of zoom levels to render for standard FFT spectrogram images.
         /// Should contain about 1-3 steps following an inverse base-2 power distribution
