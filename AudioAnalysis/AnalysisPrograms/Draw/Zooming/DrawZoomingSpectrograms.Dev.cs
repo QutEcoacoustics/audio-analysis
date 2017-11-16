@@ -1,7 +1,10 @@
+// <copyright file="DrawZoomingSpectrograms.Dev.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace AnalysisPrograms.Draw.Zooming
 {
     using System;
-    using System.IO;
 
     public static partial class DrawZoomingSpectrograms
     {
@@ -62,12 +65,12 @@ namespace AnalysisPrograms.Draw.Zooming
             //string opdir = @"C:\SensorNetworks\Output\BAC\HiResRidge";
 
             // BIRD50
-            string ipdir = @"C:\SensorNetworks\Output\BIRD50\Towsey.Acoustic";
-            string opdir = @"C:\SensorNetworks\Output\BIRD50";
+            //string ipdir = @"C:\SensorNetworks\Output\BIRD50\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\BIRD50";
 
             // ECLIPSE FARMSTAY
-            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Eclipse\EclipseFarmstay.200ms\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImage";
+            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Eclipse\EclipseFarmstay.200ms\Towsey.Acoustic";
+            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImage";
 
             //BRISTLE BIRD
             //string ipdir = @"C:\SensorNetworks\Output\BristleBird\Towsey.Acoustic";
@@ -85,12 +88,9 @@ namespace AnalysisPrograms.Draw.Zooming
             //csp.TestImage(Path.Combine(opdir, "testImageCyanScale1.png"));
             // ################ TEST a colour scheme for the high resolution frame spectrograms.
 
-            var opDir = new DirectoryInfo(opdir);
-
             //string config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramScalingConfig.json";
-            //string config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramZoomingConfig.yml";
-            string config =
-                @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramHiResConfig.yml";
+            string config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramZoomingConfig.yml";
+            //string config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramHiResConfig.yml";
 
             return new Arguments
             {
@@ -102,8 +102,9 @@ namespace AnalysisPrograms.Draw.Zooming
                 // draw a focused multi-resolution pyramid of images
                 //ZoomAction = Arguments.ZoomActionType.Tile,
                 ZoomAction = Arguments.ZoomActionType.Focused,
-                FocusMinute = 1,
-                //FocusMinute = 61,
+
+                //FocusMinute = 1,
+                FocusMinute = 60,
             };
         }
     }

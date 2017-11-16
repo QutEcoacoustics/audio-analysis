@@ -635,7 +635,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return bmp;
         }
 
-        public Image DrawBlendedFalseColourSpectrogram(string colorMode, string colorMap1, string colorMap2, double blendWt1, double blendWt2)
+        public Image DrawBlendedFalseColourSpectrogram(string colorMap1, string colorMap2, double blendWt1, double blendWt2)
         {
             if (!this.ContainsMatrixForKeys(colorMap1) || !this.ContainsMatrixForKeys(colorMap2))
             {
@@ -660,11 +660,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             matrix2 = this.GetNormalisedSpectrogramMatrix(rgbMap2[2]);
             var bluMatrix = MatrixTools.AddMatricesWeightedSum(matrix1, blendWt1, matrix2, blendWt2);
 
-            bool doReverseColour = colorMode.StartsWith("POS");
-
-            Image bmp = DrawRgbColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
-
-            //bmp.Save(@"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\TiledImages\TESTIMAGE.png");
+            var bmp = DrawRgbColourMatrix(redMatrix, grnMatrix, bluMatrix, false);
             return bmp;
         }
 
@@ -1001,14 +997,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             double[] indices1 = MatrixTools.GetColumn(normalisedIndex1, minuteInDay);
             indices1 = DataTools.reverseArray(indices1);
             indices1 = CalculateDecayedSpectralIndices(indices1, distanceInMeters, decayConstant);
-            double[] indices2 = MatrixTools.GetColumn(normalisedIndex2, minuteInDay);
-            indices2 = DataTools.reverseArray(indices2);
-            indices2 = CalculateDecayedSpectralIndices(indices2, distanceInMeters, decayConstant);
-            double[] indices3 = MatrixTools.GetColumn(normalisedIndex3, minuteInDay);
-            indices3 = DataTools.reverseArray(indices3);
-            indices3 = CalculateDecayedSpectralIndices(indices3, distanceInMeters, decayConstant);
 
-            return indices1;
+            //double[] indices2 = MatrixTools.GetColumn(normalisedIndex2, minuteInDay);
+            //indices2 = DataTools.reverseArray(indices2);
+            //indices2 = CalculateDecayedSpectralIndices(indices2, distanceInMeters, decayConstant);
+
+            //double[] indices3 = MatrixTools.GetColumn(normalisedIndex3, minuteInDay);
+            //indices3 = DataTools.reverseArray(indices3);
+            //indices3 = CalculateDecayedSpectralIndices(indices3, distanceInMeters, decayConstant);
+
+            return indices1; // or indices2 or indices 3
         }
 
         public static double[] CalculateDecayedSpectralIndices(double[] spectralIndices, int distanceInMeters, double halfLife)
