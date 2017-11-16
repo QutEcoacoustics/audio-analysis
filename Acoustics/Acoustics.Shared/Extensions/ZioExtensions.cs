@@ -43,12 +43,15 @@ namespace Zio
 
         public static DirectoryEntry ToDirectoryEntry(this string directory)
         {
-            return new DirectoryEntry(FileSystem, FileSystem.ConvertPathFromInternal(directory));
+            var path = Path.GetFullPath(directory);
+            return new DirectoryEntry(FileSystem, FileSystem.ConvertPathFromInternal(path));
         }
 
         public static FileEntry ToFileEntry(this string file)
         {
-            return new FileEntry(FileSystem, FileSystem.ConvertPathFromInternal(file));
+            var path = Path.GetFullPath(file);
+
+            return new FileEntry(FileSystem, FileSystem.ConvertPathFromInternal(path));
         }
 
         public static FileInfo ToFileInfo(this FileEntry file)
