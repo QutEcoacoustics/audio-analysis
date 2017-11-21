@@ -39,6 +39,21 @@ namespace AnalysisPrograms
     using TowseyLibrary;
 
     /// <summary>
+    /// Choices in how recording gaps are visualised.
+    /// NoGaps: Recording gaps will be ignored. Segments joined without space. Time scale will be broken. This may sometimes be required.
+    /// TimedGaps: Recording gaps will be filled with grey "error" segment of same duration as gap. Time scale remains linear and complete.
+    ///             This is the normal mode for visualisation
+    /// BlendedGaps: Recording gaps are filled with some blend of pre- and post-gap spectra.
+    ///             Use this when recordings are one minute in 10, for example.
+    /// </summary>
+    public enum ConcatMode
+    {
+        NoGaps,
+        TimedGaps,
+        BlendedGaps,
+    }
+
+    /// <summary>
     /// First argument on command line to call this action is "concatenateIndexFiles"
     ///
     /// NOTE: This code was last tested on 2016 October 10. Both tests passed.
@@ -97,6 +112,9 @@ namespace AnalysisPrograms
 
             [ArgDescription("Set true only when concatenating more than 24-hours of data into one image - e.g. PNG/Indonesian data.")]
             public bool ConcatenateEverythingYouCanLayYourHandsOn { get; set; }
+
+            [ArgDescription("How to render gaps in a recording.")]
+            public string GapRendering { get; set; }
 
             [ArgDescription("One or more directories where the RECOGNIZER event scores are located in csv files. This is optional")]
             public DirectoryInfo[] EventDataDirectories { get; set; }
@@ -179,6 +197,7 @@ namespace AnalysisPrograms
             // ########################## CONCATENATION of Yvonne's BAT recordings
             // The drive: work = G; home = E
             drive = "G";
+
             // top level directory AVAILAE JOB #181
             DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\OutputDataSets\\YvonneBats_Gympie20170906"),
             };
@@ -190,6 +209,8 @@ namespace AnalysisPrograms
             bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
             dtoStart = new DateTimeOffset(2017, 08, 08, 0, 0, 0, TimeSpan.Zero);
             dtoEnd = new DateTimeOffset(2017, 08, 08, 0, 0, 0, TimeSpan.Zero);
+            string gapRendering = "TimedGaps";
+
             // ########################## END of Yvonne's BAT recordings
 
             /*
@@ -451,6 +472,7 @@ namespace AnalysisPrograms
                 ColorMap1 = colorMap1,
                 ColorMap2 = colorMap2,
                 ConcatenateEverythingYouCanLayYourHandsOn = concatenateEverythingYouCanLayYourHandsOn,
+                GapRendering = gapRendering,
                 TimeSpanOffsetHint = timeSpanOffsetHint,
                 SunRiseDataFile = sunriseDatafile,
                 DrawImages = drawImages,
@@ -556,6 +578,9 @@ namespace AnalysisPrograms
                     throw new ArgumentException("FATAL ERROR: End Date must be same as, or after, the Start Date.");
                 }
             }
+
+            // GapRendering
+            string GapRendering = "gapRendering";
 
             var startDateTimeOffset = (DateTimeOffset)startDate;
 
@@ -668,8 +693,7 @@ namespace AnalysisPrograms
                     TimeSpan start = ((DateTimeOffset)indexGenerationData.RecordingStartDate).TimeOfDay;
                     string startTime = $"{start.Hours:d2}{start.Minutes:d2}h";
                     string imageTitle = $"SOURCE: \"{opFileStem}\".     Starts at {startTime}                       {Meta.OrganizationTag}";
-                    Bitmap tracksImage =
-                            IndexDisplay.DrawImageOfSummaryIndices(
+                    Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndices(
                             IndexProperties.GetIndexProperties(indexPropertiesConfig),
                             dictionaryOfSummaryIndices,
                             imageTitle,
