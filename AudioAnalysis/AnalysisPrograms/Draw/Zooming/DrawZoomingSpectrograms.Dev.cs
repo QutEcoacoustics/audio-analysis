@@ -68,9 +68,14 @@ namespace AnalysisPrograms.Draw.Zooming
             //string ipdir = @"C:\SensorNetworks\Output\BIRD50\Towsey.Acoustic";
             //string opdir = @"C:\SensorNetworks\Output\BIRD50";
 
+            // ANTHONY'S TEST DATA
+            //string ipdir = @"G:\SensorNetworks\ZoomingTestDataFromAnthony\testAnalysis\indices\Towsey.Acoustic";
+            string ipdir = @"G:\SensorNetworks\ZoomingTestDataFromAnthony\testAnalysis\indices2\Towsey.Acoustic";
+            string opdir = @"G:\SensorNetworks\ZoomingTestDataFromAnthony\testAnalysis\zoomingTowsey3";
+
             // ECLIPSE FARMSTAY
-            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Eclipse\EclipseFarmstay.200ms\Towsey.Acoustic";
-            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImage";
+            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Eclipse\EclipseFarmstay.200ms\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImage";
 
             //BRISTLE BIRD
             //string ipdir = @"C:\SensorNetworks\Output\BristleBird\Towsey.Acoustic";
@@ -104,7 +109,7 @@ namespace AnalysisPrograms.Draw.Zooming
                 ZoomAction = Arguments.ZoomActionType.Focused,
 
                 //FocusMinute = 1,
-                FocusMinute = 60,
+                FocusMinute = 15,
             };
         }
     }
