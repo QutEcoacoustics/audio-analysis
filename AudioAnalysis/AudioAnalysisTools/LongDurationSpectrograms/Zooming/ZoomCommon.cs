@@ -93,9 +93,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
             cs1.LoadSpectrogramDictionary(spectralSelection);
 
-            var imageScaleInMsPerPixel = (int)imageScale.TotalMilliseconds;
-            double blendWt1 = 0.0;
-            double blendWt2 = 1.0;
+            var imageScaleInMsPerPixel = imageScale.TotalMilliseconds;
+            double blendWeight1 = 0.0;
+            double blendWeight2 = 1.0;
 
             if (imageScaleInMsPerPixel > 15000)
             {
