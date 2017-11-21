@@ -94,8 +94,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             cs1.LoadSpectrogramDictionary(spectralSelection);
 
             var imageScaleInMsPerPixel = imageScale.TotalMilliseconds;
-            double blendWeight1 = 0.1;
-            double blendWeight2 = 0.9;
+            double blendWeight1 = 0.0;
+            double blendWeight2 = 1.0;
 
             if (imageScaleInMsPerPixel > 15_000)
             {
@@ -109,18 +109,18 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             }
             else if (imageScaleInMsPerPixel > 5000)
             {
-                blendWeight1 = 0.8;
-                blendWeight2 = 0.2;
+                blendWeight1 = 0.7;
+                blendWeight2 = 0.3;
             }
             else if (imageScaleInMsPerPixel > 1000)
             {
-                blendWeight1 = 0.6;
-                blendWeight2 = 0.4;
+                blendWeight1 = 0.2;
+                blendWeight2 = 0.8;
             }
             else if (imageScaleInMsPerPixel > 500)
             {
-                blendWeight1 = 0.3;
-                blendWeight2 = 0.7;
+                blendWeight1 = 0.1;
+                blendWeight2 = 0.9;
             }
 
             Image ldSpectrogram = cs1.DrawBlendedFalseColourSpectrogram(
