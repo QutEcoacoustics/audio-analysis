@@ -18,6 +18,7 @@ SpectralIndexScale:
     - 0.6
     - 0.4
     - 0.2
+    - 0.1
 SpectralFrameScale:
     - 0.07
     - 0.04
