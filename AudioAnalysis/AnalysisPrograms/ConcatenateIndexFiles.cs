@@ -43,21 +43,6 @@ namespace AnalysisPrograms
     using Zio;
 
     /// <summary>
-    /// Choices in how recording gaps are visualised.
-    /// NoGaps: Recording gaps will be ignored. Segments joined without space. Time scale will be broken. This may sometimes be required.
-    /// TimedGaps: Recording gaps will be filled with grey "error" segment of same duration as gap. Time scale remains linear and complete.
-    ///             This is the normal mode for visualisation
-    /// BlendedGaps: Recording gaps are filled with some blend of pre- and post-gap spectra.
-    ///             Use this when recordings are one minute in 10, for example.
-    /// </summary>
-    public enum ConcatMode
-    {
-        NoGaps,
-        TimedGaps,
-        BlendedGaps,
-    }
-
-    /// <summary>
     /// First argument on command line to call this action is "concatenateIndexFiles"
     ///
     /// NOTE: This code was last tested on 2016 October 10. Both tests passed.
@@ -118,7 +103,7 @@ namespace AnalysisPrograms
             public bool ConcatenateEverythingYouCanLayYourHandsOn { get; set; }
 
             [ArgDescription("How to render gaps in a recording.")]
-            public string GapRendering { get; set; }
+            public ConcatMode GapRendering { get; set; }
 
             [ArgDescription("One or more directories where the RECOGNIZER event scores are located in csv files. This is optional")]
             public DirectoryInfo[] EventDataDirectories { get; set; }
@@ -208,13 +193,15 @@ namespace AnalysisPrograms
             };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
             string opFileStem = "GympieBATS_2017August";
-            string opPath = $"{drive}:\\SensorNetworks\\Output\\Bats\\Bats3";
+            string opPath = $"{drive}:\\SensorNetworks\\Output\\Bats\\BatsTestGaps2";
             var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\Output\\Bats\\config\\SpectrogramFalseColourConfig.yml");
             FileInfo sunriseDatafile = null;
             bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
             dtoStart = new DateTimeOffset(2017, 08, 08, 0, 0, 0, TimeSpan.Zero);
             dtoEnd = new DateTimeOffset(2017, 08, 08, 0, 0, 0, TimeSpan.Zero);
-            string gapRendering = "TimedGaps";
+
+            // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and BlendedGaps.
+            string gapRendering = "BlendedGaps";
 
             // ########################## END of Yvonne's BAT recordings
 
@@ -477,7 +464,7 @@ namespace AnalysisPrograms
                 ColorMap1 = colorMap1,
                 ColorMap2 = colorMap2,
                 ConcatenateEverythingYouCanLayYourHandsOn = concatenateEverythingYouCanLayYourHandsOn,
-                GapRendering = gapRendering,
+                GapRendering = (ConcatMode)Enum.Parse(typeof(ConcatMode), gapRendering),
                 TimeSpanOffsetHint = timeSpanOffsetHint,
                 SunRiseDataFile = sunriseDatafile,
                 DrawImages = drawImages,
@@ -584,9 +571,6 @@ namespace AnalysisPrograms
                 }
             }
 
-            // GapRendering
-            string GapRendering = "gapRendering";
-
             var startDateTimeOffset = (DateTimeOffset)startDate;
 
             if (verbose)
@@ -690,7 +674,7 @@ namespace AnalysisPrograms
 
                 // REALITY CHECK - check for continuous zero indices or anything else that might indicate defective signal
                 // or incomplete analysis of recordings
-                var indexErrors = ErroneousIndexSegments.DataIntegrityCheck(dictionaryOfSummaryIndices);
+                var indexErrors = ErroneousIndexSegments.DataIntegrityCheck(dictionaryOfSummaryIndices, arguments.GapRendering);
                 ErroneousIndexSegments.WriteErrorsToFile(indexErrors, resultsDir, opFileStem);
 
                 if (arguments.DrawImages)
@@ -716,7 +700,7 @@ namespace AnalysisPrograms
 
                 // ###### NOW CONCATENATE THE SPECTRAL INDICES, DRAW IMAGES AND SAVE IN RESULTS DIRECTORY
                 var dictionaryOfSpectralIndices1 = LdSpectrogramStitching.ConcatenateAllSpectralIndexFiles(subDirectories, keys, indexGenerationData);
-                indexErrors.AddRange(ErroneousIndexSegments.DataIntegrityCheck(dictionaryOfSpectralIndices1));
+                indexErrors.AddRange(ErroneousIndexSegments.DataIntegrityCheck(dictionaryOfSpectralIndices1, arguments.GapRendering));
 
                 // Calculate the index distribution statistics and write to a json file. Also save as png image
                 var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectralIndices1, resultsDir, opFileStem);
@@ -797,7 +781,7 @@ namespace AnalysisPrograms
                 }
 
                 // REALITY CHECK - check for zero signal and anything else that might indicate defective signal
-                List<ErroneousIndexSegments> indexErrors = ErroneousIndexSegments.DataIntegrityCheck(summaryDict);
+                List<ErroneousIndexSegments> indexErrors = ErroneousIndexSegments.DataIntegrityCheck(summaryDict, arguments.GapRendering);
                 ErroneousIndexSegments.WriteErrorsToFile(indexErrors, resultsDir, opFileStem1);
 
                 // DRAW SUMMARY INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
