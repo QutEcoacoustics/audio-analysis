@@ -27,7 +27,11 @@ def createclusterlist(location):
 def createclusterseq(clusterlist):
 	clusterseq = ''
 	for x in clusterlist:
-		clusterseq += x + ':'
+		if x == 'NA':
+			clusterseq += '  ' + ','
+		else:
+			clusterseq += x + ','
+
 	return clusterseq
 
 #change the symbols in the list
@@ -158,7 +162,7 @@ def clusterseqpday(clusterseq):
 	if symbols == 'letters':
 		stepsize = 1440
 	elif symbols == 'numbers':
-		stepsize = 2880
+		stepsize = 4320
 	j = stepsize
 	k = 0
 	seqpdaydict = {}
@@ -173,9 +177,17 @@ def clusterseqpday(clusterseq):
 
 #Writes the dictionary with sequences as value in a fasta file format
 def writefasta(seqdict, location,startpoint):
+	with open('/Volumes/Nifty/QUT/60clusters/Fastafiles/matlab_'+location+'_'+symbols+'_'+startpoint+'.txt', 'w') as file:
+		for day in sorted(seqdict):
+			seq = seqdict[day]
+			print seq
+			description = startpoint
+			file.write(seq + '\n')
+	file.close()
 	with open('/Volumes/Nifty/QUT/60clusters/Fastafiles/'+location+'_'+symbols+'_'+startpoint+'.txt', 'w') as file:
 		for day in sorted(seqdict):
 			seq = seqdict[day]
+			#make sequence 70 characters long
 			seq = "\n".join(re.findall("(?s).{,70}", seq))[:-1]
 			description = startpoint
 			file.write('>' +location + '|' + day + '|'+ description +'\n')
