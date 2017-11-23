@@ -53,6 +53,81 @@ namespace AnalysisPrograms
             Log.Verbosity = 1;
             Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
+            // to cycle through a bunch of files
+            if (true)
+            {
+                string drive = "G";
+                string recordingDir = $"{ drive}:\\SensorNetworks\\WavFiles\\IvanCampos";
+                string outputDir = $"{ drive}:\\SensorNetworks\\Output\\IvanCampos\\Indexdata";
+                /*
+                string configPath =
+                    @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
+                string searchPattern = "*.wav";
+
+                //FileInfo[] csvFiles = IndexMatrices.GetFilesInDirectories(subDirectories, pattern);
+                string[] files = Directory.GetFiles(recordingDir, searchPattern);
+                LoggedConsole.WriteLine("File Count = " + files.Length);
+
+                for (int i = 0; i < files.Length; i++)
+                {
+                    string outputDirectory = outputDir + "\\" + i;
+                    var devArguments = new AnalyseLongRecording.Arguments
+                    {
+                        Source = files[i].ToFileInfo(),
+                        Config = configPath.ToFileInfo(),
+                        Output = outputDirectory.ToDirectoryInfo(),
+                        MixDownToMono = true,
+                    };
+                    AnalyseLongRecording.Execute(devArguments);
+                }
+                */
+
+                // now do the concat
+                DirectoryInfo[] dataDirs =
+                {
+                    new DirectoryInfo(outputDir),
+                };
+                string directoryFilter = "Towsey.Acoustic";  // this is a directory filter to locate only the required files
+                string opFileStem = "IvanCampos_INCIPO01_20161031";
+                string opPath = $"{drive}:\\SensorNetworks\\Output\\IvanCampos";
+                var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatSpectrogramFalseColourConfig.yml");
+
+                // start and end dates INCLUSIVE
+                var dtoStart = new DateTimeOffset(2016, 10, 31, 0, 0, 0, TimeSpan.Zero);
+                var dtoEnd = new DateTimeOffset(2016, 10, 31, 0, 0, 0, TimeSpan.Zero);
+
+                // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and BlendedGaps.
+                string gapRendering = "BlendedGaps";
+                var indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
+
+                var concatArgs = new ConcatenateIndexFiles.Arguments
+                {
+                    InputDataDirectories = dataDirs,
+                    OutputDirectory = new DirectoryInfo(opPath),
+                    DirectoryFilter = directoryFilter,
+                    FileStemName = opFileStem,
+                    StartDate = dtoStart,
+                    EndDate = dtoEnd,
+                    IndexPropertiesConfig = indexPropertiesConfig,
+                    FalseColourSpectrogramConfig = falseColourSpgConfig,
+                    ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
+                    ColorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_SPT,
+                    ConcatenateEverythingYouCanLayYourHandsOn = false,
+                    GapRendering = (ConcatMode)Enum.Parse(typeof(ConcatMode), gapRendering),
+                    TimeSpanOffsetHint = TimeSpan.FromHours(10), // default = Brisbane time,
+                    SunRiseDataFile = null,
+                    DrawImages = true,
+                    Verbose = true,
+
+                    // following used to add in a recognizer score track
+                    // Used only to get Event Recognizer files - set eventDirs=null if not used
+                    EventDataDirectories = null,
+                    EventFilePattern = string.Empty,
+                };
+
+                ConcatenateIndexFiles.Execute(concatArgs);
+            }
+
             // this is a test to read a file of summary indices.
             // THis could be made a unit test???
             if (false)
