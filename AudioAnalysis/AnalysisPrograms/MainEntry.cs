@@ -9,14 +9,10 @@
 
 namespace AnalysisPrograms
 {
-    #if DEBUG
-#endif
     using System;
     using System.Reflection;
-
-    using Production;
-
     using log4net;
+    using Production;
 
     /// <summary>
     /// Main Entry for Analysis Programs.
@@ -36,6 +32,8 @@ namespace AnalysisPrograms
             Copyright();
 
             AttachExceptionHandler();
+
+            LoadNativeCode();
 
             NoConsole.Log.Info("Executable called with these arguments: {1}{0}{1}".Format2(Environment.CommandLine, Environment.NewLine));
 

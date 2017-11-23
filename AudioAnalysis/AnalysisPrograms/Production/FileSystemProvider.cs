@@ -48,9 +48,6 @@ namespace AnalysisPrograms.Production
         /// Determine what kind of filesystem to use.
         /// After this point we *should theoretically* not need to use System.IO.Path.
         /// </summary>
-        /// <param name="path"></param>
-        /// <param name="readOnly"></param>
-        /// <returns></returns>
         public static (IFileSystem, DirectoryEntry) DetermineFileSystem(string path, bool readOnly = false)
         {
             var emptyPath = string.IsNullOrWhiteSpace(path);
@@ -67,35 +64,38 @@ namespace AnalysisPrograms.Production
                 baseEntry = fileSystem.GetDirectoryEntry(
                     fileSystem.ConvertPathFromInternal(Directory.GetCurrentDirectory()));
             }
-            else if (Directory.Exists(path) || extension == string.Empty)
-            {
-                var physicalFileSystem = new PhysicalFileSystem();
-                var internalPath = physicalFileSystem.ConvertPathFromInternal(path);
-                physicalFileSystem.CreateDirectory(internalPath);
-                fileSystem = new SubFileSystem(physicalFileSystem, internalPath);
-                baseEntry = fileSystem.GetDirectoryEntry(UPath.Root);
-            }
             else
             {
-                // resolve path
+                // resolve path (relative to absolute)
                 path = Path.GetFullPath(path);
 
-                // ensure parent directory exists on disk
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-                switch (extension)
+                if (Directory.Exists(path) || extension == string.Empty)
                 {
-                    case "." + SqlitePattern:
-                        fileSystem = new SqliteFileSystem(
-                            path,
-                            readOnly ? OpenMode.ReadOnly : OpenMode.ReadWriteCreate);
-                        break;
-                    default:
-                        throw new NotSupportedException(
-                            $"Cannot determine file system for given extension {extension}");
+                    var physicalFileSystem = new PhysicalFileSystem();
+                    var internalPath = physicalFileSystem.ConvertPathFromInternal(path);
+                    physicalFileSystem.CreateDirectory(internalPath);
+                    fileSystem = new SubFileSystem(physicalFileSystem, internalPath);
+                    baseEntry = fileSystem.GetDirectoryEntry(UPath.Root);
                 }
+                else
+                {
+                    // ensure parent directory exists on disk
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-                baseEntry = new DirectoryEntry(fileSystem, UPath.Root);
+                    switch (extension)
+                    {
+                        case "." + SqlitePattern:
+                            fileSystem = new SqliteFileSystem(
+                                path,
+                                readOnly ? OpenMode.ReadOnly : OpenMode.ReadWriteCreate);
+                            break;
+                        default:
+                            throw new NotSupportedException(
+                                $"Cannot determine file system for given extension {extension}");
+                    }
+
+                    baseEntry = new DirectoryEntry(fileSystem, UPath.Root);
+                }
             }
 
             Log.Debug($"Filesystem for {path} is {fileSystem.GetType().Name}");

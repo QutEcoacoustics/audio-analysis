@@ -36,15 +36,16 @@ Vagrant.configure(2) do |config|
     # the path on the guest to mount the folder. And the optional third
     # argument is a set of non-required options.
     debian.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    debian.vm.synced_folder "C:/Temp/zooming", "/home/vagrant/zooming", type: "virtualbox"
     debian.vm.synced_folder "./AudioAnalysis/AnalysisPrograms/bin/Debug", "/home/vagrant/Debug", type: "virtualbox"
-    debian.vm.synced_folder "./AudioAnalysis/AnalysisPrograms/bin/Release", "/home/vagrant/Release", type: "virtualbox"
+    #debian.vm.synced_folder "./AudioAnalysis/AnalysisPrograms/bin/Release", "/home/vagrant/Release", type: "virtualbox"
     
 
     debian.vm.provider "virtualbox" do |vb|
       vb.gui = false
       vb.name = 'audio-analysis-debian'
-      vb.memory = "1024"
-      vb.cpus = 2
+      vb.memory = "8096"
+      vb.cpus = 4
     end
 
     # Enable provisioning with a shell script. Additional provisioners such as
