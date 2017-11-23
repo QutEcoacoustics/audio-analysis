@@ -119,6 +119,8 @@ namespace AnalysisPrograms
             var indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
             var timeSpanOffsetHint = TimeSpan.FromHours(10); // default = Brisbane time
             var drawImages = true;
+
+            // start and end dates INCLUSIVE
             DateTimeOffset? dtoStart = null;
             DateTimeOffset? dtoEnd = null;
 
@@ -133,6 +135,10 @@ namespace AnalysisPrograms
             // SET DEFAULT COLOUR MAPS
             string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
             string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_SPT;
+
+            // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and BlendedGaps.
+            string gapRendering = "TimedGaps"; // the default
+            bool concatenateEverythingYouCanLayYourHandsOn = false; // default is 24-hour blocks
 
             // ########################## CONCATENATION of Sarah Lowe's recordings
             // The drive: work = G; home = E
@@ -179,6 +185,30 @@ namespace AnalysisPrograms
             // ########################## END of Yvonne's recordings of SM2 and SM4
             */
 
+            // ########################## CONCATENATION of Pillaga Forest recordings from Brad Law
+            // The drive: work = G; home = E
+            drive = "G";
+
+            // top level directory AVAILAE JOB #181
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\BradLaw\\PillagaData"),
+            };
+            string directoryFilter = "Pillaga*";  // this is a directory filter to locate only the required files
+            string opFileStem = "PillagaForest20121125";
+            string opPath = $"{drive}:\\SensorNetworks\\Output\\BradLaw";
+            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\Output\\Bats\\config\\SpectrogramFalseColourConfig.yml");
+            FileInfo sunriseDatafile = null;
+
+            concatenateEverythingYouCanLayYourHandsOn = true;
+            // start and end dates INCLUSIVE
+            dtoStart = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);
+
+            // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and BlendedGaps.
+            gapRendering = "BlendedGaps";
+
+            // ########################## END of Pillaga Forest recordings
+
+            /*
             // ########################## CONCATENATION of Yvonne's BAT recordings
             // The drive: work = G; home = E
             drive = "G";
@@ -188,17 +218,19 @@ namespace AnalysisPrograms
             };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
             string opFileStem = "GympieBATS_2017August";
-            string opPath = $"{drive}:\\SensorNetworks\\Output\\Bats\\BatsTestGaps2";
+            string opPath = $"{drive}:\\SensorNetworks\\Output\\Bats\\BatsTestTimeGaps";
             var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\Output\\Bats\\config\\SpectrogramFalseColourConfig.yml");
             FileInfo sunriseDatafile = null;
-            bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
+
+            // start and end dates INCLUSIVE
             dtoStart = new DateTimeOffset(2017, 08, 08, 0, 0, 0, TimeSpan.Zero);
             dtoEnd = new DateTimeOffset(2017, 08, 08, 0, 0, 0, TimeSpan.Zero);
 
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and BlendedGaps.
-            string gapRendering = "BlendedGaps";
+            gapRendering = "TimedGaps";
 
             // ########################## END of Yvonne's BAT recordings
+            */
 
             /*
             // ########################## CONCATENATION of Tshering's Bhutan recordings
@@ -349,7 +381,6 @@ namespace AnalysisPrograms
             // top level directory
             DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Oct19-173501 - Lenn, Indices, ICD=60.0, #61\Berndt\Lenn\Week 1\Card1302_Box1302"),
                                        };
-
 
             // The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
             string directoryFilter = "Towsey.Acoustic"; // this is a directory filter to locate only the required files
@@ -803,8 +834,9 @@ namespace AnalysisPrograms
 
                 // NOW CONCATENATE SPECTRAL INDEX FILES
                 //Filter the array of Directories to get the correct dates
-                var spectralSubdirectories = FileDateHelpers.FilterDirectoriesForDates(subDirectories, arguments.TimeSpanOffsetHint);
-                var dirArray = LdSpectrogramStitching.GetDirectoryArrayForOneDay(spectralSubdirectories, thisday);
+                //var spectralSubdirectories = FileDateHelpers.FilterDirectoriesForDates(subDirectories, arguments.TimeSpanOffsetHint);
+                //var dirArray = LdSpectrogramStitching.GetDirectoryArrayForOneDay(spectralSubdirectories, thisday);
+                var dirArray = subDirectories;
 
                 if (dirArray.Length == 0)
                 {

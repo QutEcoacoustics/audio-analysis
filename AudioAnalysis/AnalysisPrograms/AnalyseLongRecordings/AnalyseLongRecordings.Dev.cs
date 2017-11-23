@@ -98,6 +98,14 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string recordingPath = @"D:\SensorNetworks\WavFiles\BradLaw\WilliWilliNP_K48\Data\K48_20161104_211749.wav";
             //string outputPath = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiRes.yml";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\BradLaw\PillagaForestSite18a\PILLIGA_20121125_233900.wav";
+            //string outputPath = @"G:\SensorNetworks\Output\BradLaw\Pillaga24";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
+
+            // Ivan Campos recordings
+            string recordingPath = @"G:\SensorNetworks\WavFiles\Ivancampos\INCIPO01_20161031_024006_898.wav";
+            string outputPath = @"G:\SensorNetworks\Output\IvanCampos\17";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // Test recordings from Wildlife Acoustics demonstrating their compression algorithm
             //string recordingPath = @"D:\SensorNetworks\WildLifeAcoustics\sm4_compression_demo\S4A00068_20160506_063000.wav";
@@ -111,9 +119,9 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiRes.yml";
 
             // Recording from YVONNE - GYMPIE NP - nighttime @ 96kHz listening for bats.
-            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\GYMPIE_BATS_20170808_180000+1000.wav";
-            string outputPath = @"C:\SensorNetworks\Output\Bats";
-            string configPath = @"C:\SensorNetworks\Output\Bats\config\Towsey.Acoustic.yml";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\GYMPIE_BATS_20170808_180000+1000.wav";
+            //string outputPath = @"C:\SensorNetworks\Output\Bats";
+            //string configPath = @"C:\SensorNetworks\Output\Bats\config\Towsey.Acoustic.yml";
 
             // ARTIFICIAL TEST RECORDING
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";

@@ -178,6 +178,10 @@ namespace AnalysisPrograms
             //string opdir = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP";
             //spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramConfigHiRes.yml";
             //indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
+            string ipdir = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP\Towsey.Acoustic";
+            string opdir = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP";
+            spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramConfigHiRes.yml";
+            indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
 
             // USA WILD-LIFE ACOUSTICS TEST RECORDINGS OF LOSSY COMPRESSION - High Resolution analysis
             //string ipdir = @"D:\SensorNetworks\Output\WildLifeAcoustics\Towsey.Acoustic";
@@ -192,10 +196,10 @@ namespace AnalysisPrograms
             //indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
 
             // Recording from YVONNE - GYMPIE NP - night time @ 96kHz listening for bats.
-            string ipdir = @"C:\SensorNetworks\Output\Bats\Towsey.Acoustic_icd15s";
-            string opdir = @"C:\SensorNetworks\Output\Bats";
-            spectrogramConfigFile = @"C:\SensorNetworks\Output\Bats\config\SpectrogramFalseColourConfig.yml";
-            indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml";
+            //string ipdir = @"C:\SensorNetworks\Output\Bats\Towsey.Acoustic_icd15s";
+            //string opdir = @"C:\SensorNetworks\Output\Bats";
+            //spectrogramConfigFile = @"C:\SensorNetworks\Output\Bats\config\SpectrogramFalseColourConfig.yml";
+            //indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml";
 
             return new Arguments
             {
