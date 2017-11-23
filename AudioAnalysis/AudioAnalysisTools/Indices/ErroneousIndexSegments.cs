@@ -470,7 +470,7 @@ namespace AudioAnalysisTools.Indices
             Graphics g = Graphics.FromImage(newBmp);
             Rectangle srcRect = new Rectangle(0, 0, gapStart, ht);
             g.DrawImage(source, 0, 0, srcRect, GraphicsUnit.Pixel);
-            srcRect = new Rectangle(gapEnd - 1, 0, width, ht);
+            srcRect = new Rectangle(gapEnd, 0, width, ht);
             g.DrawImage(source, gapStart, 0, srcRect, GraphicsUnit.Pixel);
             g.DrawLine(new Pen(Color.LightGray), gapStart, 0, gapStart, ht);
             return newBmp;
@@ -496,7 +496,7 @@ namespace AudioAnalysisTools.Indices
                g.DrawImage(source, i, 0, srcRect, GraphicsUnit.Pixel);
             }
 
-            g.DrawLine(new Pen(Color.LightGray), gapStart, 0, gapStart, ht);
+            //g.DrawLine(new Pen(Color.LightGray), gapStart, 0, gapStart, ht);
             g.DrawLine(new Pen(Color.LightGray), gapEnd, 0, gapEnd, ht);
             return source;
         }
