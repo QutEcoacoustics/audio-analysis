@@ -578,7 +578,7 @@ namespace AudioAnalysisTools.Indices
                 }
                 else
                 {
-                    Log.Warn("IndexMatrices.ReadSpectralIndices(): {indexKey} File does not exist: {file.FullName}");
+                    Log.Warn($"IndexMatrices.ReadSpectralIndices(): {indexKey} File does not exist: {file.FullName}");
                     return null;
                 }
 

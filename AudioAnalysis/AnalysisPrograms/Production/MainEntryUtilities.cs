@@ -567,5 +567,26 @@ namespace AnalysisPrograms
 
             NoConsole.Log.Info(statsString);
         }
+
+        /// <summary>
+        /// This method is used to do application wide loading of native code.
+        /// </summary>
+        /// <remarks>
+        /// Until we convert this application to a .NET Core, there is no support for "runtimes" backed into the build
+        /// system. Thus instead we:
+        /// - copy runtimes manually as a build step
+        ///   (due to a mono bug, the folder to copy in is named `libruntimes`. See https://github.com/libgit2/libgit2sharp/issues/1170)
+        /// - map Dlls to their appropriate native DLLs in the dllmap entried in the App.config (which is used by the
+        ///   mono runtime
+        /// - and finally, call any intialization code that is needed here in this method.
+        /// </remarks>
+        private static void LoadNativeCode()
+        {
+            Log.Debug("Loading native code");
+
+            // for sqlite
+            // note: a custom dll map for sqlite can be found in SQLitePCLRaw.provider.e_sqlite3.dll.config
+            SQLitePCL.Batteries_V2.Init();
+        }
     }
 }
