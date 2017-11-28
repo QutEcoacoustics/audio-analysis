@@ -36,7 +36,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
         {
             // calculate indices
             var recordingPath = PathHelper.ResolveAsset("Recordings", "OxleyCreek_site_1_1060_244333_20140529T081358+1000_120_0.wav");
-            var configPath = PathHelper.ResolveConfigFile("Towsey.Acoustic.HiRes.yml");
+            var configPath = PathHelper.ResolveConfigFile("Towsey.Acoustic.Zooming.yml");
             var arguments = new AnalyseLongRecording.Arguments
             {
                 Source = recordingPath,
@@ -70,13 +70,13 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
         [TestMethod]
         public void TestGenerateTilesFailsWithInvalidScales()
         {
-            PathHelper.ResolveConfigFile("IndexPropertiesConfig.HiRes.yml").CopyTo(this.outputDirectory.CombineFile("IndexPropertiesConfig.HiRes.yml").FullName);
+            PathHelper.ResolveConfigFile("IndexPropertiesConfig.Zooming.yml").CopyTo(this.outputDirectory.CombineFile("IndexPropertiesConfig.Zooming.yml").FullName);
 
             void SetupAndRun(params double[] scales)
             {
                 SpectrogramZoomingConfig config = new SpectrogramZoomingConfig();
                 config.SpectralIndexScale = scales;
-                config.IndexPropertiesConfig = ".\\IndexPropertiesConfig.HiRes.yml";
+                config.IndexPropertiesConfig = ".\\IndexPropertiesConfig.Zooming.yml";
 
                 var newConfigFile = this.outputDirectory.CombineFile("SpectrogramZoomingConfig.yml");
                 Yaml.Serialise(newConfigFile, config);

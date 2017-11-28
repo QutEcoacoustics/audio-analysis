@@ -65,6 +65,17 @@ namespace AnalysisBase
         /// Implies `FileDateBehavior.Required`.
         /// NOTE: Start offset will be set to start of file, and end offset set to the end of the file.
         /// </summary>
+        public FileSegment(FileInfo source, TimeAlignment alignment)
+            : this(source, alignment, null, FileDateBehavior.Required)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileSegment"/> class.
+        /// Allow specifying an absolutely aligned (to the nearest minute) file segment.
+        /// Implies `FileDateBehavior.Required`.
+        /// NOTE: Start offset will be set to start of file, and end offset set to the end of the file.
+        /// </summary>
         public FileSegment(
             FileInfo source,
             TimeAlignment alignment,
