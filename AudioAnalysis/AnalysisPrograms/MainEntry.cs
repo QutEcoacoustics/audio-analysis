@@ -33,8 +33,6 @@ namespace AnalysisPrograms
 
             AttachExceptionHandler();
 
-            LoadNativeCode();
-
             NoConsole.Log.Info("Executable called with these arguments: {1}{0}{1}".Format2(Environment.CommandLine, Environment.NewLine));
 
             Arguments = ParseArguments(args);
@@ -43,6 +41,8 @@ namespace AnalysisPrograms
             AttachDebugger(ref debugOptions);
 
             ModifyVerbosity(Arguments.Args);
+
+            LoadNativeCode();
 
             // note: Exception handling can be found in CurrentDomainOnUnhandledException
             Execute(Arguments);
