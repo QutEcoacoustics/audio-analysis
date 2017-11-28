@@ -11,6 +11,7 @@ namespace Acoustics.Shared.ConfigFile
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -173,6 +174,12 @@ namespace Acoustics.Shared.ConfigFile
             {
                 configFile = fullPath.ToFileEntry();
                 return true;
+            }
+
+            if (Path.IsPathRooted(file))
+            {
+                // if absolute on concrete file system and can't be found then we can't resolve automatically
+                return false;
             }
 
             if (searchPaths != null)
