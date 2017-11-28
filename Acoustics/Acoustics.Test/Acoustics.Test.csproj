@@ -286,8 +286,11 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Extra Assemblies\YamlDotNet\YamlDotNet.Dynamic.dll</HintPath>
     </Reference>
-    <Reference Include="Zio, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\AudioAnalysis\packages\Zio.0.3.1\lib\net45\Zio.dll</HintPath>
+    <Reference Include="Zio, Version=0.3.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\AudioAnalysis\packages\Zio.0.3.6\lib\net45\Zio.dll</HintPath>
+    </Reference>
+    <Reference Include="Zio.FileSystems.Community.SqliteFileSystem, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\AudioAnalysis\packages\Zio.FileSystems.Community.SqliteFileSystem.1.0.0-build-017\lib\netstandard2.0\Zio.FileSystems.Community.SqliteFileSystem.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -390,10 +393,6 @@
     <ProjectReference Include="..\..\AudioAnalysis\AudioAnalysisTools\AudioAnalysisTools.csproj">
       <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>
       <Name>AudioAnalysisTools</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\AudioAnalysis\SqLiteFileSystem\SqliteFileSystem.csproj">
-      <Project>{364B812E-4E3D-415E-BE10-2928028EE7B6}</Project>
-      <Name>SqliteFileSystem</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\AudioAnalysis\TowseyLibrary\TowseyLibrary.csproj">
       <Project>{7C6831FD-F60C-4F7B-8E6A-35E850174411}</Project>
