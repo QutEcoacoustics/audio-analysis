@@ -36,10 +36,24 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using PowerArgs;
+    using Production;
     using TowseyLibrary;
 
     /// <summary>
     /// First argument on command line to call this action is "ColourSpectrogram"
+    /// Activity Codes for other tasks to do with spectrograms and audio files:
+    ///
+    /// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
+    /// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
+    /// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
+    /// colourspectrogram - Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.
+    /// zoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
+    /// differencespectrogram - Calls DifferenceSpectrogram.Execute():  Produces Long duration difference spectrograms
+    ///
+    /// audiofilecheck - Writes information about audio files to a csv file.
+    /// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
+    /// audiocutter - Cuts audio into segments of desired length and format
+    /// createfoursonograms
     /// </summary>
     public static class DrawLongDurationSpectrograms
     {
@@ -70,160 +84,20 @@ namespace AnalysisPrograms
             public TimeSpan TemporalScale { get; set; }
         }
 
-        /// <summary>
-        /// To get to this DEV method, the FIRST AND ONLY command line argument must be "colourspectrogram"
-        /// Activity Codes for other tasks to do with spectrograms and audio files:
-        ///
-        /// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
-        /// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
-        /// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
-        /// colourspectrogram - Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.
-        /// zoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
-        /// differencespectrogram - Calls DifferenceSpectrogram.Execute():  Produces Long duration difference spectrograms
-        ///
-        /// audiofilecheck - Writes information about audio files to a csv file.
-        /// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
-        /// audiocutter - Cuts audio into segments of desired length and format
-        /// createfoursonograms
-        /// </summary>
-        public static Arguments Dev()
-        {
-            // the default ld fc spectrogram config file
-            var spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramFalseColourConfig.yml";
-
-            // the default index properties file
-            string indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml";
-
-            // INPUT and OUTPUT DIRECTORIES
-            //MARINE JASCO TEST
-            //var ipdir = @"C:\SensorNetworks\Output\MarineJasco\Towsey.Acoustic";
-            //var opdir = @"C:\SensorNetworks\Output\MarineJasco\Towsey.Acoustic\Images";
-            //indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml";
-
-            // INPUT and OUTPUT DIRECTORIES
-            //2010 Oct 13th
-            //var ipdir = @"C:\SensorNetworks\Output\SERF\2014May06_100720 Indices OCT2010 SERF\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
-            //var opdir = @"C:\SensorNetworks\Output\SERF\SERF_falseColourSpectrogram\SE";
-
-            //2010 Oct 13th
-            //string ipFileName = "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
-            //string ipdir = @"C:\SensorNetworks\Output\SERF\2014May06-100720 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\Test\RibbonTest";
-
-            //string ipdir = @"G:\SensorNetworks\OutputDataSets\2014May06-100720 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Test_2016Sept";
-
-            //string ipFileName = "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
-            //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct13_SpectralIndices";
-
-            //2010 Oct 14th
-            //string ipFileName = "b562c8cd-86ba-479e-b499-423f5d68a847_101014-0000";
-            //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\b562c8cd-86ba-479e-b499-423f5d68a847_101014-0000.mp3\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct14_SpectralIndices";
-
-            //2010 Oct 15th
-            //string ipFileName = "d9eb5507-3a52-4069-a6b3-d8ce0a084f17_101015-0000";
-            //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\d9eb5507-3a52-4069-a6b3-d8ce0a084f17_101015-0000.mp3\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct15_SpectralIndices";
-
-            //2010 Oct 16th
-            //string ipFileName = "418b1c47-d001-4e6e-9dbe-5fe8c728a35d_101016-0000";
-            //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\418b1c47-d001-4e6e-9dbe-5fe8c728a35d_101016-0000.mp3\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct16_SpectralIndices";
-
-            //2010 Oct 17th
-            //string ipFileName = "0f2720f2-0caa-460a-8410-df24b9318814_101017-0000";
-            //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\0f2720f2-0caa-460a-8410-df24b9318814_101017-0000.mp3\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct17_SpectralIndices";
-
-            // exclude the analysis type from file name i.e. "Indices"
-            //string ipFileName = "BYR4_20131029_Towsey.Acoustic";
-            //string ipdir = @"Y:\Results\2014Nov28-083415 - False Color, Mt Byron PRA, For Jason\to upload\Mt Byron\PRA\report\joined\BYR4_20131029.mp3\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\Test\RibbonTest";
-
-            // false-colour spectrograms
-            //string ipFileName = "TEST_Farmstay_ECLIPSE3_20121114-060001+1000"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
-
-            //string ipdir = @"C:\SensorNetworks\Output\Test\Test2\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\Test\Test2";
-            //string ipdir = @"C:\SensorNetworks\Output\QueenMaryUL\concatenated\frogmary-concatenated\20160117";
-            //string opdir = @"C:\SensorNetworks\Output\QueenMaryUL\concatenated";
-
-            // false-colour spectrograms
-            //string ipFileName = "Farmstay_ECLIPSE3_20121114_060001TEST"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
-            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.60sppx.EclipseFarmstay";
-            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
-            //string ipFileName = "Farmstay_ECLIPSE3_20121114-060001+1000_TEST"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
-            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.60sppx.EclipseFarmstay";
-            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
-
-            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Farmstay_ECLIPSE3_20121114_060001TEST\Indices\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Farmstay_ECLIPSE3_20121114_060001TEST\Spectrograms";
-
-            // zoomable spectrograms
-            //string ipFileName = "TEST_TUITCE_20091215_220004"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
-            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
-
-            //2010 Oct 13th
-            //var ipdir = @"C:\SensorNetworks\Output\TsheringDema\Towsey.Acoustic_OLD4";
-            //var opdir = @"C:\SensorNetworks\Output\TsheringDema\Towsey.Acoustic";
-
-            //var ipdir = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017\Towsey.Acoustic";
-            //var opdir = @"C:\SensorNetworks\Output\LSKiwi3\Test18May2017";
-
-            // PILLAGA FOREST RECORDINGS OF BRAD LAW - High Resolution analysis
-            //string ipdir = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP\Towsey.Acoustic";
-            //string opdir = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP";
-            //spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramConfigHiRes.yml";
-            //indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
-            string ipdir = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP\Towsey.Acoustic";
-            string opdir = @"D:\SensorNetworks\Output\BradLawData\WilliWilliNP";
-            spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramConfigHiRes.yml";
-            indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
-
-            // USA WILD-LIFE ACOUSTICS TEST RECORDINGS OF LOSSY COMPRESSION - High Resolution analysis
-            //string ipdir = @"D:\SensorNetworks\Output\WildLifeAcoustics\Towsey.Acoustic";
-            //string opdir = @"D:\SensorNetworks\Output\WildLifeAcoustics";
-            //spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramConfigHiRes.yml";
-            //indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
-
-            // Australian WILD-LIFE ACOUSTICS RECORDING Group - from Andrew Skeoch - High Resolution analysis
-            //string ipdir = @"D:\SensorNetworks\Output\BradLawData\AWARG\Towsey.Acoustic";
-            //string opdir = @"D:\SensorNetworks\Output\BradLawData\AWARG";
-            //spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramConfigHiRes.yml";
-            //indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
-
-            // Recording from YVONNE - GYMPIE NP - night time @ 96kHz listening for bats.
-            //string ipdir = @"C:\SensorNetworks\Output\Bats\Towsey.Acoustic_icd15s";
-            //string opdir = @"C:\SensorNetworks\Output\Bats";
-            //spectrogramConfigFile = @"C:\SensorNetworks\Output\Bats\config\SpectrogramFalseColourConfig.yml";
-            //indexPropertiesFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml";
-
-            return new Arguments
-            {
-                InputDataDirectory = new DirectoryInfo(ipdir),
-                OutputDirectory = new DirectoryInfo(opdir),
-                IndexPropertiesConfig = new FileInfo(indexPropertiesFile),
-                SpectrogramConfigPath = new FileInfo(spectrogramConfigFile),
-            };
-    }
-
         public static void Execute(Arguments arguments)
         {
             if (arguments == null)
             {
-                arguments = Dev();
-
-                // assume verbose because in Dev mode
-                string date = "# DATE AND TIME: " + DateTime.Now;
-                LoggedConsole.WriteLine("# DRAW LONG DURATION SPECTROGRAMS DERIVED FROM CSV FILES OF SPECTRAL INDICES OBTAINED FROM AN AUDIO RECORDING");
-                LoggedConsole.WriteLine(date);
-                LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
-                LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
-                LoggedConsole.WriteLine();
+                throw new NoDeveloperMethodException();
             }
+
+            // assume verbose because in Dev mode
+            string date = "# DATE AND TIME: " + DateTime.Now;
+            LoggedConsole.WriteLine("# DRAW LONG DURATION SPECTROGRAMS DERIVED FROM CSV FILES OF SPECTRAL INDICES OBTAINED FROM AN AUDIO RECORDING");
+            LoggedConsole.WriteLine(date);
+            LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
+            LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
+            LoggedConsole.WriteLine();
 
             (FileInfo indexGenerationDataFile, FileInfo indexDistributionsFile) =
                 ZoomArguments.CheckNeededFilesExist(arguments.InputDataDirectory);
