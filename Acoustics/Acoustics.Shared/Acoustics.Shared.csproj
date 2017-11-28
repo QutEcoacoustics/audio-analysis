@@ -203,6 +203,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Linq" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -220,8 +221,8 @@
     <Reference Include="YamlDotNet.Dynamic">
       <HintPath>..\..\Extra Assemblies\YamlDotNet\YamlDotNet.Dynamic.dll</HintPath>
     </Reference>
-    <Reference Include="Zio, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\AudioAnalysis\packages\Zio.0.3.1\lib\net45\Zio.dll</HintPath>
+    <Reference Include="Zio, Version=0.3.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\AudioAnalysis\packages\Zio.0.3.6\lib\net45\Zio.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

@@ -200,6 +200,7 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -228,8 +229,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Extra Assemblies\YamlDotNet\YamlDotNet.Dynamic.dll</HintPath>
     </Reference>
-    <Reference Include="Zio, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Zio.0.3.1\lib\net45\Zio.dll</HintPath>
+    <Reference Include="Zio, Version=0.3.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Zio.0.3.6\lib\net45\Zio.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

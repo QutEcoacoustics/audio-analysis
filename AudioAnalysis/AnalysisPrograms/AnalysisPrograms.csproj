@@ -169,6 +169,10 @@
     <Reference Include="System.IO, Version=2.6.10.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.1.1.10\lib\net40\System.IO.dll</HintPath>
     </Reference>
+    <Reference Include="System.IO.Compression">
+      <HintPath>..\packages\System.IO.Compression.4.3.0\lib\net46\System.IO.Compression.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net40\System.Net.Http.dll</HintPath>
@@ -212,11 +216,11 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Extra Assemblies\YamlDotNet\YamlDotNet.Dynamic.dll</HintPath>
     </Reference>
-    <Reference Include="Zio, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Zio.0.3.1\lib\net45\Zio.dll</HintPath>
+    <Reference Include="Zio, Version=0.3.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Zio.0.3.6\lib\net45\Zio.dll</HintPath>
     </Reference>
     <Reference Include="Zio.FileSystems.Community.SqliteFileSystem, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Zio.FileSystems.Community.SqliteFileSystem.1.0.0\lib\netstandard2.0\Zio.FileSystems.Community.SqliteFileSystem.dll</HintPath>
+      <HintPath>..\packages\Zio.FileSystems.Community.SqliteFileSystem.1.0.0-build-017\lib\netstandard2.0\Zio.FileSystems.Community.SqliteFileSystem.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -434,7 +438,6 @@
       xcopy "$(ProjectDir)..\AnalysisConfigFiles" "$(TargetDir)ConfigFiles\" /S /Y
 </PostBuildEvent>
   </PropertyGroup>
-
   <PropertyGroup>
     <MSBuildCommunityTasksPath>$(ProjectDir)..\.build</MSBuildCommunityTasksPath>
   </PropertyGroup>
