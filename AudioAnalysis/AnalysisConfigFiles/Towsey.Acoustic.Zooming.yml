@@ -70,7 +70,7 @@ TileImageOutput: false
 #     prefix_20140101-235959+Z.mp3
 RequireDateInFilename: true
 
-IndexPropertiesConfig: './IndexPropertiesConfig.HiRes.yml'
+IndexPropertiesConfig: './IndexPropertiesConfig.Zooming.yml'
 EventThreshold: 0.2
 ...
 
