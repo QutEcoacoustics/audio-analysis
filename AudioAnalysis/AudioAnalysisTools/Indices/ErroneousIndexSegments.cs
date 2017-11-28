@@ -16,14 +16,14 @@ namespace AudioAnalysisTools.Indices
     /// NoGaps: Recording gaps will be ignored. Segments joined without space. Time scale will be broken. This may sometimes be required.
     /// TimedGaps: Recording gaps will be filled with grey "error" segment of same duration as gap. Time scale remains linear and complete.
     ///             This is the normal mode for visualisation
-    /// BlendedGaps: Recording gaps are filled with some blend of pre- and post-gap spectra.
+    /// EchoGaps: Recording gaps are filled with some blend of pre- and post-gap spectra.
     ///             Use this when recordings are one minute in 10, for example.
     /// </summary>
     public enum ConcatMode
     {
         NoGaps,
         TimedGaps,
-        BlendedGaps,
+        EchoGaps,
     }
 
     public class ErroneousIndexSegments
@@ -398,7 +398,7 @@ namespace AudioAnalysisTools.Indices
                         bmp = RemoveErrorPatch(bmp, error);
                     }
                     else
-                    if (error.GapRendering.Equals(ConcatMode.BlendedGaps))
+                    if (error.GapRendering.Equals(ConcatMode.EchoGaps))
                     {
                         bmp = DrawBlendedPatch(bmp, error);
                     }
@@ -463,16 +463,22 @@ namespace AudioAnalysisTools.Indices
             int width = source.Width;
             int gapStart = error.StartPosition;
             int gapEnd = error.EndPosition;
-            int gapWidth = error.EndPosition - error.StartPosition;
+            int gapWidth = error.EndPosition - error.StartPosition + 1;
 
             // create new image
             Bitmap newBmp = new Bitmap(width - gapWidth, ht);
             Graphics g = Graphics.FromImage(newBmp);
+
+            // copy image before the gap
             Rectangle srcRect = new Rectangle(0, 0, gapStart, ht);
             g.DrawImage(source, 0, 0, srcRect, GraphicsUnit.Pixel);
-            srcRect = new Rectangle(gapEnd, 0, width, ht);
+
+            // copy image after the gap
+            srcRect = new Rectangle(gapEnd + 1, 0, width, ht);
             g.DrawImage(source, gapStart, 0, srcRect, GraphicsUnit.Pixel);
-            g.DrawLine(new Pen(Color.LightGray), gapStart, 0, gapStart, ht);
+
+            // draw separator at the join
+            //g.DrawLine(new Pen(Color.LightGray), gapStart, 0, gapStart, ht);
             return newBmp;
         }
 
