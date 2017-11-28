@@ -112,6 +112,18 @@ namespace Acoustics.Test.Shared
             string config = "doesNotExist.yml";
 
             Assert.Throws<ConfigFileException>(() => { ConfigFile.ResolveConfigFile(config); });
+            Assert.Throws<ConfigFileException>(
+                () => { ConfigFile.ResolveConfigFile(config, Environment.CurrentDirectory.ToDirectoryInfo()); });
+        }
+
+        [TestMethod]
+        public void TheResolveMethodThrowsAbsolute()
+        {
+            string config = "C:\\doesNotExist.yml";
+
+            Assert.Throws<ConfigFileException>(() => { ConfigFile.ResolveConfigFile(config); });
+            Assert.Throws<ConfigFileException>(
+                () => { ConfigFile.ResolveConfigFile(config, Environment.CurrentDirectory.ToDirectoryInfo()); });
         }
 
         [TestMethod]
