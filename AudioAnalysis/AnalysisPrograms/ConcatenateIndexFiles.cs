@@ -36,6 +36,7 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.LongDurationSpectrograms;
     using log4net;
     using PowerArgs;
+    using Production;
     using TowseyLibrary;
 
     /// <summary>
@@ -110,400 +111,10 @@ namespace AnalysisPrograms
             public bool Verbose { get; set; }
         }
 
-        /// <summary>
-        /// To get to this DEV method, the FIRST AND ONLY command line argument must be "concatenateIndexFiles"
-        /// </summary>
-        public static Arguments Dev()
-        {
-            // set the default values here
-            var indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
-            var timeSpanOffsetHint = TimeSpan.FromHours(10); // default = Brisbane time
-            var drawImages = true;
-
-            // start and end dates INCLUSIVE
-            DateTimeOffset? dtoStart = null;
-            DateTimeOffset? dtoEnd = null;
-
-            // files containing output from event recognizers.
-            // Used only to get Event Recognizer files - set eventDirs=null if not used
-            DirectoryInfo[] eventDirs = null;
-            string eventFilePattern = string.Empty;
-
-            // The drive: local = C; work = G; home = E
-            string drive = "C"; // the default
-
-            // SET DEFAULT COLOUR MAPS
-            string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_SPT;
-
-            // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and BlendedGaps.
-            string gapRendering = "TimedGaps"; // the default
-            bool concatenateEverythingYouCanLayYourHandsOn = false; // default is 24-hour blocks
-
-            // ########################## CONCATENATION of Sarah Lowe's recordings
-            // The drive: work = G; home = E
-            drive = "G";
-
-            /*
-            // top level directory
-            DirectoryInfo[] dataDirs =
-            {
-                new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\ConcatTesting\\TheData"),
-            };
-            string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
-            string opFileStem = "SarahLowe";
-            string opPath = $"{drive}:\\SensorNetworks\\Output\\ConcatTesting\\ConcatOutput";
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatSpectrogramFalseColourConfig.yml");
-            FileInfo sunriseDatafile = null;
-            bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
-            dtoStart = new DateTimeOffset(2017, 06, 24, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2017, 07, 02, 0, 0, 0, TimeSpan.Zero);
-
-            // change PMN to POW because PMN not available in these recordings
-            colorMap2 = "BGN-PMN-R3D";
-            */
-            // ########################## END of Sarah Lowe's recordings
-
-            /*
-            // ########################## CONCATENATION of Yvonne's recordings of SM2 and SM4
-            // The drive: work = G; home = E
-            drive = "G";
-            // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\WavFiles\\TestRecordings\\CompareSM2versusSM4\\MicrophoneTest_AvailaeResult111\\Old_microphone_SM2test"),
-            };
-            string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
-            string opFileStem = "SM2WithOldMics";
-            //string opFileStem = "SM4WithNewMics";
-            string opPath = $"{drive}:\\SensorNetworks\\Output\\WildLifeAcoustics\\MicrophoneTests";
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatSpectrogramFalseColourConfig.yml");
-            FileInfo sunriseDatafile = null;
-            bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
-            dtoStart = new DateTimeOffset(2016, 08, 09, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2016, 08, 09, 0, 0, 0, TimeSpan.Zero);
-            // change PMN to POW because PMN not available in these recordings
-            colorMap2 = "BGN-POW-CLS";
-            // ########################## END of Yvonne's recordings of SM2 and SM4
-            */
-
-            // ########################## CONCATENATION of Pillaga Forest recordings from Brad Law
-            // The drive: work = G; home = E
-            drive = "G";
-
-            // top level directory AVAILAE JOB #181
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\BradLaw\\PillagaData"),
-            };
-            string directoryFilter = "Pillaga*";  // this is a directory filter to locate only the required files
-            string opFileStem = "PillagaForest20121125";
-            string opPath = $"{drive}:\\SensorNetworks\\Output\\BradLaw";
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\Output\\Bats\\config\\SpectrogramFalseColourConfig.yml");
-            FileInfo sunriseDatafile = null;
-
-            concatenateEverythingYouCanLayYourHandsOn = true;
-            // start and end dates INCLUSIVE
-            dtoStart = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);
-
-            // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and BlendedGaps.
-            gapRendering = "BlendedGaps";
-
-            // ########################## END of Pillaga Forest recordings
-
-            /*
-            // ########################## CONCATENATION of Yvonne's BAT recordings
-            // The drive: work = G; home = E
-            drive = "G";
-
-            // top level directory AVAILAE JOB #181
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\OutputDataSets\\YvonneBats_Gympie20170906"),
-            };
-            string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
-            string opFileStem = "GympieBATS_2017August";
-            string opPath = $"{drive}:\\SensorNetworks\\Output\\Bats\\BatsTestTimeGaps";
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\Output\\Bats\\config\\SpectrogramFalseColourConfig.yml");
-            FileInfo sunriseDatafile = null;
-
-            // start and end dates INCLUSIVE
-            dtoStart = new DateTimeOffset(2017, 08, 08, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2017, 08, 08, 0, 0, 0, TimeSpan.Zero);
-
-            // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and BlendedGaps.
-            gapRendering = "TimedGaps";
-
-            // ########################## END of Yvonne's BAT recordings
-            */
-
-            /*
-            // ########################## CONCATENATION of Tshering's Bhutan recordings
-            // The drive: work = G; home = E
-            drive = "G";
-
-            // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\Bhutan\\DebugConcatenateSourceData"),
-            };
-            string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
-            string opFileStem = "BhutanTest";
-            string opPath = $"{drive}:\\SensorNetworks\\Output\\Bhutan\\DebugConcatenateOutput";
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatSpectrogramFalseColourConfig.yml");
-            FileInfo sunriseDatafile = null;
-            bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
-            dtoStart = new DateTimeOffset(2017, 02, 03, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2017, 02, 03, 0, 0, 0, TimeSpan.Zero);
-            // ########################## END of Tshering's recordings
-            */
-
-            /*
-            // ########################## CONCATENATION of Kerry Mengersens Data, Puma, South America
-            // The drive: work = G; home = E
-            drive = "G";
-
-            // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\Mengersen\\NightsA\\Data"),
-                                       };
-            string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
-            string opFileStem = "MengersenNightA";
-            //string opFileStem = "MengersenNightB";
-            string opPath = $"{drive}:\\SensorNetworks\\Output\\Mengersen\\NightAConcatenated";
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\SpectrogramFalseColourConfig.yml");
-            timeSpanOffsetHint = TimeSpan.FromHours(-5);
-            FileInfo sunriseDatafile = null;
-            bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
-            dtoStart = new DateTimeOffset(2016, 08, 20, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2016, 08, 20, 0, 0, 0, TimeSpan.Zero);
-
-            //dtoStart = new DateTimeOffset(2017, 01, 17, 0, 0, 0, TimeSpan.Zero);
-            //dtoEnd   = new DateTimeOffset(2017, 01, 24, 02, 23, 29, TimeSpan.Zero);
-            //dtoStart = new DateTimeOffset(2016, 08, 21, 0, 0, 0, TimeSpan.Zero);
-            //dtoEnd = new DateTimeOffset(2016, 08, 22, 02, 23, 29, TimeSpan.Zero);
-            // colour maps for this job
-            // colorMap1 = "ACI-ENT-RHZ";
-            // colorMap2 = "BGN-POW-SPT";
-            // ########################## END of Kerry Mengersens Data, Puma, South America
-            */
-
-            /*
-            // ########################## CONCATENATION of LIZ Znidersic Recordings, Lewin's rail, Tasmania.
-            // The drive: work = G; home = E
-            drive = "G";
-            // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\AvailaeFolders\\LizZnidersic\\Data Tasman Island Unit 2 Mez"),
-                                        };
-            string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
-            string opFileStem = "LizZnidersic_TasmanIsU2Mez";
-            string opPath = $"{drive}:\\SensorNetworks\\AvailaeFolders\\LizZnidersic\\Test_IndexDistributions";
-            //string opPath = $"{drive}:\\AvailaeFolders\\LizZnidersic\\TEST_missingData"; //was used to put results for testing missing data
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\SpectrogramFalseColourConfig.yml");
-            timeSpanOffsetHint = TimeSpan.FromHours(8);
-            FileInfo sunriseDatafile = null;
-            bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
-            dtoStart = new DateTimeOffset(2015, 11, 09, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd   = new DateTimeOffset(2015, 11, 19, 0, 0, 0, TimeSpan.Zero);
-            //dtoStart = new DateTimeOffset(2017, 01, 17, 0, 0, 0, TimeSpan.Zero);
-            //dtoEnd   = new DateTimeOffset(2017, 01, 24, 02, 23, 29, TimeSpan.Zero);
-            //dtoStart = new DateTimeOffset(2016, 08, 21, 0, 0, 0, TimeSpan.Zero);
-            //dtoEnd = new DateTimeOffset(2016, 08, 22, 02, 23, 29, TimeSpan.Zero);
-            // colour maps for this job
-            colorMap1 = "ACI-ENT-RHZ";
-            colorMap2 = "BGN-POW-SPT";
-            // ########################## END of LIZ Znidersic ARGUMENTS
-            */
-
-            /*
-            // ################################ CONCATENATE GROOTE DATA
-            // This data derived from Groote recordings I brought back from JCU, July 2016.
-            // top level directory
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\Frogs\\Canetoad\\2016Oct28-174219 - Michael, Towsey.Indices, #120\\SD Card A"),
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"G:\\SensorNetworks\\OutputDataSets\\GrooteAcousticIndices_Job120\\SD Card A"),
-                                                   };
-            string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
-            string testPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\ExpectedOutput";
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\TEST_SpectrogramFalseColourConfig.yml");
-            timeSpanOffsetHint = TimeSpan.FromHours(9.5);
-            FileInfo sunriseDatafile = null;
-            string opFileStem = "ConcatGrooteJCU";
-            string opPath = $"{drive}:\\SensorNetworks\\Output\\Frogs\\Canetoad\\ConcatGroote_Job120";
-            bool concatenateEverythingYouCanLayYourHandsOn = false; // 24 hour blocks only
-            // start and end dates INCLUSIVE
-            dtoStart = new DateTimeOffset(2016, 08, 03, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd   = new DateTimeOffset(2016, 08, 03, 0, 0, 0, TimeSpan.Zero);
-
-            eventDirs = new DirectoryInfo[1];
-            eventDirs[0] = new DirectoryInfo(@"G:\SensorNetworks\OutputDataSets\GrooteCaneToad_Job120\\SD Card A");
-            string eventFilePattern = "*_Towsey.RhinellaMarina.Events.csv";
-            */
-
-            //// ########################## MARINE RECORDINGS
-            //// top level directory
-            ////DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Dec14-094058 - Michael, Towsey.Indices, ICD=30.0, #70\towsey\MarineRecordings\Cornell\2013March-April"),
-            ////                           };
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MarineRecordings\Cornell\2013March-April"),
-            //                           };
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MarineRecordings\Cornell\2013March-April"),
-            //                           };
-            //string directoryFilter = "201303";
-            //string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March";
-            ////string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April";
-            //dtoStart = new DateTimeOffset(2013, 03, 01, 0, 0, 0, TimeSpan.Zero);
-            //dtoEnd   = new DateTimeOffset(2013, 03, 31, 0, 0, 0, TimeSpan.Zero);
-            //string opFileStem = "CornellMarine";
-            //indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml");
-
-            // ########################## YVONNE'S RECORDINGS
-            // top level directory
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48"),
-            //                             new DirectoryInfo(@"Y:\Results\2015Aug20-154235 - Yvonne, Indices, ICD=60.0, #50")
-            //                           };
-
-            //            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"G:\SensorNetworks\Output\YvonneResults\DataFiles_62_93\2015Nov1"),
-            //                                       };
-
-            //below directory was to check a bug - missing 6 hours of recording
-            //DirectoryInfo[] dataDirs = {
-            //    new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\Yvonne\Cooloola"),
-            //                           };
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\Yvonne\Cooloola\2015July26\Woondum3"),
-            //                           };
-            //string directoryFilter = "20150725-000000+1000.wav";
-
-            //The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
-            //            string directoryFilter = "Woondum3";
-            //string directoryFilter = "GympieNP";   // this is a directory filter to locate only the required files
-
-            //            string opPath = @"G:\SensorNetworks\Output\YvonneResults\ConcatenatedFiles_62_93";
-            //
-            //            dtoStart = new DateTimeOffset(2015, 10, 26, 0, 0, 0, TimeSpan.Zero);
-            //            dtoEnd   = new DateTimeOffset(2015, 10, 28, 0, 0, 0, TimeSpan.Zero);
-            //            string opFileStem = directoryFilter;
-
-            // string sunriseDatafile = @"C:\SensorNetworks\OutputDataSets\SunRiseSet\SunriseSet2013Brisbane.csv";
-
-            /*
-            // ########################## LENN'S RECORDINGS
-            // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Oct19-173501 - Lenn, Indices, ICD=60.0, #61\Berndt\Lenn\Week 1\Card1302_Box1302"),
-                                       };
-
-            // The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
-            string directoryFilter = "Towsey.Acoustic"; // this is a directory filter to locate only the required files
-            string opFileStem = "Card1302_Box1302";
-            string opPath = @"C:\SensorNetworks\Output\LennsResults";
-
-            dtoStart = new DateTimeOffset(2015, 09, 27, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2015, 09, 30, 0, 0, 0, TimeSpan.Zero);
-            //dtoEnd   = new DateTimeOffset(2015, 10, 11, 0, 0, 0, TimeSpan.Zero);
-    */
-
-            // ########################## STURT RECORDINGS
-            // The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
-
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"F:\SensorNetworks\WavFiles\SturtRecordings\Thompson"), };
-            //string directoryFilter = "Thompson";   // this is a directory filter to locate only the required files
-            //string opFileStem = "Sturt-Thompson";
-            //string opPath = @"F:\SensorNetworks\WavFiles\SturtRecordings\";
-
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"F:\SensorNetworks\WavFiles\SturtRecordings\Stud"), };
-            //string directoryFilter = "Stud";   // this is a directory filter to locate only the required files
-            //string opFileStem = "Sturt-Stud";
-            //string opPath = @"F:\SensorNetworks\WavFiles\SturtRecordings\";
-
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"F:\SensorNetworks\WavFiles\SturtRecordings\Sturt1"), };
-            //string directoryFilter = "Sturt1";   // this is a directory filter to locate only the required files
-            //string opFileStem      = "Sturt-Sturt1";
-            //string opPath = @"F:\SensorNetworks\WavFiles\SturtRecordings\";
-
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Jul29-110950 - Jason, Towsey.Indices, ICD=60.0, #43\Sturt\2015July\Mistletoe"), };
-            //string directoryFilter = "STURT2";          // this is a directory filter to locate only the required files
-            //string opFileStem = "Sturt-Mistletoe";
-            //string opPath = @"F:\SensorNetworks\Output\Sturt\";
-
-            //dtoStart = new DateTimeOffset(2015, 07, 01, 0, 0, 0, TimeSpan.Zero);
-            //dtoEnd = new DateTimeOffset(2015, 07, 06, 0, 0, 0, TimeSpan.Zero);
-
-            // ########################## EDDIE GAME'S PNG RECORDINGS
-            // top level directory
-            //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\";
-            //string opFileStem = "TNC_Iwarame_20150704_BAR32";
-
-            //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_33\";
-            //string opFileStem = "TNC_Iwarame_20150704_BAR33";
-
-            //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_35\";
-            //string opFileStem = "TNC_Iwarame_20150704_BAR35";
-
-            //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_7-7-15\BAR\BAR_59\";
-            //string opFileStem = "TNC_Iwarame_20150707_BAR59";
-
-            //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_9-7-15\BAR\BAR_79\";
-            //string opFileStem = "TNC_Iwarame_20150709_BAR79";
-
-            //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Yavera_8-7-15\BAR\BAR_64\";
-            //string opFileStem = "TNC_Yavera_20150708_BAR64";
-
-            //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Musiamunat_3-7-15\BAR\BAR_18\";
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(dataPath) };
-            //string opPath   = dataPath;
-            //string directoryFilter = "Musimunat";  // this is a directory filter to locate only the required files
-            //string opFileStem = "Musimunat_BAR18"; // this should be a unique site identifier
-            //string opFileStem = "TNC_Musimunat_20150703_BAR18";
-
-            // the default set of index properties is located in the AnalysisConfig directory.
-            //IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo();
-            // However the PNG data uses an older set of index properties prior to fixing a bug!
-            //FileInfo indexPropertiesConfig = new FileInfo(@"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\IndexPropertiesOLDConfig.yml");
-
-            // ########################## GRIFFITH - SIMON/TOBY FRESH-WATER RECORDINGS
-            // top level directory
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"F:\AvailaeFolders\Griffith\Toby\20160201_FWrecordings\Site1"),
-            //                           };
-            //string directoryFilter = "Site2";
-            //string opPath = @"F:\AvailaeFolders\Griffith\Toby\20160201_FWrecordings";
-            ////string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April";
-            //dtoStart = new DateTimeOffset(2015, 07, 09, 0, 0, 0, TimeSpan.Zero);
-            //dtoEnd = new DateTimeOffset(2015, 07, 10, 0, 0, 0, TimeSpan.Zero);
-            //string opFileStem = "Site1_20150709";
-            // ########################## END of GRIFFITH - SIMON/TOBY FRESH-WATER RECORDINGS
-
-            if (!indexPropertiesConfig.Exists)
-            {
-                LoggedConsole.WriteErrorLine("# indexPropertiesConfig FILE DOES NOT EXIST.");
-            }
-
-            // DISCUSS THE FOLLOWING WITH ANTHONY
-            // Anthony says we would need to serialise the class. Skip this for the moment.
-            // The following location data is used only to draw the sunrise/sunset tracks on images.
-            //double? latitude = null;
-            //double? longitude = null;
-            //var siteDescription = new SiteDescription();
-            //siteDescription.SiteName = siteName;
-            //siteDescription.Latitude = latitude;
-            //siteDescription.Longitude = longitude;
-
-            return new Arguments
-            {
-                InputDataDirectories = dataDirs,
-                OutputDirectory = new DirectoryInfo(opPath),
-                DirectoryFilter = directoryFilter,
-                FileStemName = opFileStem,
-                StartDate = dtoStart,
-                EndDate = dtoEnd,
-                IndexPropertiesConfig = indexPropertiesConfig,
-                FalseColourSpectrogramConfig = falseColourSpgConfig,
-                ColorMap1 = colorMap1,
-                ColorMap2 = colorMap2,
-                ConcatenateEverythingYouCanLayYourHandsOn = concatenateEverythingYouCanLayYourHandsOn,
-                GapRendering = (ConcatMode)Enum.Parse(typeof(ConcatMode), gapRendering),
-                TimeSpanOffsetHint = timeSpanOffsetHint,
-                SunRiseDataFile = sunriseDatafile,
-                DrawImages = drawImages,
-                Verbose = true,
-
-                // following used to add in a recognizer score track
-                EventDataDirectories = eventDirs,
-                EventFilePattern = eventFilePattern,
-            };
-    }
-
         public static void Execute(Arguments arguments)
         {
+            bool verbose = !arguments.Verbose; // the default value
+
             // Concatenation is designed only for the output from a "Towsey.Acoustic" analysis.
             const string analysisType = "Towsey.Acoustic";
 
@@ -511,15 +122,10 @@ namespace AnalysisPrograms
             // RHZ, SPT and CVR are correlated with POW and do not add much. CLS not particularly useful. Now using R3D
             string[] keys = LDSpectrogramRGB.GetArrayOfAvailableKeys();
 
-            // deal with verbosity
-            bool verbose = false; // default
             if (arguments == null)
             {
-                arguments = Dev();
-                verbose = true; // default is verbose if in dev mode
+                throw new NoDeveloperMethodException();
             }
-
-            verbose = arguments.Verbose;
 
             if (arguments.InputDataDirectory != null)
             {
@@ -527,24 +133,21 @@ namespace AnalysisPrograms
                     (arguments.InputDataDirectories ?? new DirectoryInfo[0]).Concat(new[] { arguments.InputDataDirectory }).ToArray();
             }
 
-            if (verbose)
+            string date = "# DATE AND TIME: " + DateTime.Now;
+            LoggedConsole.WriteLine("# CONCATENATES CSV FILES CONTAINING SPECTRAL and SUMMARY INDICES.");
+            LoggedConsole.WriteLine("#    IT IS ASSUMED THESE WERE OBTAINED FROM MULTIPLE SHORT AUDIO RECORDINGs");
+            LoggedConsole.WriteLine(date);
+            LoggedConsole.WriteLine("# Index.csv files are in directories:");
+            foreach (DirectoryInfo dir in arguments.InputDataDirectories)
             {
-                string date = "# DATE AND TIME: " + DateTime.Now;
-                LoggedConsole.WriteLine("# CONCATENATES CSV FILES CONTAINING SPECTRAL and SUMMARY INDICES.");
-                LoggedConsole.WriteLine("#    IT IS ASSUMED THESE WERE OBTAINED FROM MULTIPLE SHORT AUDIO RECORDINGs");
-                LoggedConsole.WriteLine(date);
-                LoggedConsole.WriteLine("# Index.csv files are in directories:");
-                foreach (DirectoryInfo dir in arguments.InputDataDirectories)
-                {
-                    LoggedConsole.WriteLine("    {0}", dir.FullName);
-                }
-
-                LoggedConsole.WriteLine("# Output directory: " + arguments.OutputDirectory.FullName);
-                LoggedConsole.WriteLine("# DIRECTORY FILTER = " + arguments.DirectoryFilter);
-                LoggedConsole.WriteLine();
-
-                //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
+                LoggedConsole.WriteLine("    {0}", dir.FullName);
             }
+
+            LoggedConsole.WriteLine("# Output directory: " + arguments.OutputDirectory.FullName);
+            LoggedConsole.WriteLine("# DIRECTORY FILTER = " + arguments.DirectoryFilter);
+            LoggedConsole.WriteLine();
+
+            //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
 
             // 1. PATTERN SEARCH FOR CORRECT SUBDIRECTORIES
             // Assumes that the required subdirectories have the given FILTER/SiteName somewhere in their path.
