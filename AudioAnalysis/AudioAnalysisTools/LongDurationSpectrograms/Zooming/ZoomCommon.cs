@@ -97,16 +97,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             double blendWeight1 = 0.0;
             double blendWeight2 = 1.0;
 
-            if (imageScaleInMsPerPixel > 15000)
+            if (imageScaleInMsPerPixel > 15_000)
             {
-                // > 15 seconds
-                blendWt1 = 1.0;
-                blendWt2 = 0.0;
+                blendWeight1 = 1.0;
+                blendWeight2 = 0.0;
             }
-            else if (imageScaleInMsPerPixel > 10000)
+            else if (imageScaleInMsPerPixel > 10_000)
             {
-                blendWt1 = 0.9;
-                blendWt2 = 0.1;
+                blendWeight1 = 0.9;
+                blendWeight2 = 0.1;
             }
             else if (imageScaleInMsPerPixel > 5000)
             {
@@ -128,7 +127,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             var ldfcSpectrogram = cs1.DrawBlendedFalseColourSpectrogram(colorMap1, colorMap2, blendWt1, blendWt2);
             if (ldfcSpectrogram == null)
             {
-                throw new NullReferenceException("Null Image returned from DrawBlendedFalseColourSpectrogram()");
+                throw new InvalidOperationException("Null Image returned from DrawBlendedFalseColourSpectrogram");
             }
 
             return ldfcSpectrogram;

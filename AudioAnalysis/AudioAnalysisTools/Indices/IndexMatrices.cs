@@ -230,6 +230,7 @@ namespace AudioAnalysisTools.Indices
                 double[,] m = MatrixTools.ConcatenateMatrixRows(matrices);
 
                 //Dictionary<string, double[,]> dict = spectralIndexValues.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.Rotate90ClockWise);
+
                 m = MatrixTools.MatrixRotate90Anticlockwise(m);
                 spectrogramMatrices.Add(key, m);
 
