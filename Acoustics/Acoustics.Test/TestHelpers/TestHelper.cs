@@ -373,6 +373,11 @@
             return null;
         }
 
+        public static void ExceptionMatches<T>(this Assert assert, Action testCode, string expectedExceptionPartialString)
+            where T : Exception
+        {
+            ExceptionMatches<T>(testCode, expectedExceptionPartialString);
+        }
         /// <summary>
         /// Datetimes may not be exactly equal.
         /// </summary>

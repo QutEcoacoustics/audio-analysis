@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Acoustics.Shared</RootNamespace>
     <AssemblyName>Acoustics.Shared</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\EcoSounds\</SolutionDir>
     <TargetFrameworkProfile />
@@ -203,10 +203,11 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Linq" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\AudioAnalysis\packages\System.ValueTuple.4.4.0-preview2-25405-01\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+      <HintPath>..\..\AudioAnalysis\packages\System.ValueTuple.4.4.0-preview2-25405-01\lib\net461\System.ValueTuple.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
@@ -220,8 +221,12 @@
     <Reference Include="YamlDotNet.Dynamic">
       <HintPath>..\..\Extra Assemblies\YamlDotNet\YamlDotNet.Dynamic.dll</HintPath>
     </Reference>
+    <Reference Include="Zio, Version=0.3.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\AudioAnalysis\packages\Zio.0.3.6\lib\net45\Zio.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnalysisIo.cs" />
     <Compile Include="AppConfigHelper.cs" />
     <Compile Include="Base58.cs" />
     <Compile Include="Binary.cs" />
@@ -257,6 +262,7 @@
     <Compile Include="Extensions\StringCaseExtensions.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Extensions\TupleExtensions.cs" />
+    <Compile Include="Extensions\ZioExtensions.cs" />
     <Compile Include="FileDateHelpers.cs" />
     <Compile Include="FileNameHelpers.cs" />
     <Compile Include="Formatters.cs" />
@@ -275,7 +281,6 @@
     <Compile Include="PropertyComparer.cs" />
     <Compile Include="Range.cs" />
     <Compile Include="ResultProperty.cs" />
-    <Compile Include="SqlServerTypes\Loader.cs" />
     <Compile Include="StatDescriptive.cs" />
     <Compile Include="StringKeyValueStore.cs" />
     <Compile Include="TempFileHelper.cs" />

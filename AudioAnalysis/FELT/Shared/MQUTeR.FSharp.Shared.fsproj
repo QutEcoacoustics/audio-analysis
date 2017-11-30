@@ -10,7 +10,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Shared</RootNamespace>
     <AssemblyName>MQUTeR.FSharp.Shared</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <Name>MQUTeR.FSharp.Shared</Name>
     <!--<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\FELT\</SolutionDir>-->
     <RestorePackages>true</RestorePackages>

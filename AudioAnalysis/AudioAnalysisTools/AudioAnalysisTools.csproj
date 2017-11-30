@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AudioAnalysisTools</RootNamespace>
     <AssemblyName>AudioAnalysisTools</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <CodeContractsAssemblyMode>0</CodeContractsAssemblyMode>
     <FileUpgradeFlags>
@@ -200,6 +200,7 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -211,7 +212,7 @@
     <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.4.0-preview2-25405-01\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+      <HintPath>..\packages\System.ValueTuple.4.4.0-preview2-25405-01\lib\net461\System.ValueTuple.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -227,6 +228,9 @@
     <Reference Include="YamlDotNet.Dynamic, Version=3.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Extra Assemblies\YamlDotNet\YamlDotNet.Dynamic.dll</HintPath>
+    </Reference>
+    <Reference Include="Zio, Version=0.3.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Zio.0.3.6\lib\net45\Zio.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -270,10 +274,11 @@
     <Compile Include="Indices\RainIndices.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogramClusters.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogramConfigOfJie.cs" />
-    <Compile Include="LongDurationSpectrograms\SuperTile.cs" />
+    <Compile Include="LongDurationSpectrograms\TimeOffsetSingleLayerSuperTile.cs" />
+    <Compile Include="LongDurationSpectrograms\Zooming\InvalidScaleException.cs" />
     <Compile Include="LongDurationSpectrograms\Zooming\SpectrogramZoomingConfig.cs" />
     <Compile Include="LongDurationSpectrograms\Zooming\ZoomCommon.cs" />
-    <Compile Include="LongDurationSpectrograms\Zooming\ZoomArguments.cs" />
+    <Compile Include="LongDurationSpectrograms\Zooming\ZoomParameters.cs" />
     <Compile Include="LongDurationSpectrograms\Zooming\ZoomTiledSpectrograms.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogram3D.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogramConfig.cs" />
@@ -299,7 +304,7 @@
     <Compile Include="TileImage\ISuperTile.cs" />
     <Compile Include="TileImage\Layer.cs" />
     <Compile Include="TileImage\PanoJsTilingProfile.cs" />
-    <Compile Include="TileImage\SuperTile.cs" />
+    <Compile Include="TileImage\DefaultSuperTile.cs" />
     <Compile Include="TileImage\TileBias.cs" />
     <Compile Include="TileImage\TilingProfile.cs" />
     <Compile Include="TileImage\Tiler.cs" />
@@ -333,7 +338,7 @@
     <Compile Include="StandardSpectrograms\BaseSonogramConfig.cs" />
     <Compile Include="StandardSpectrograms\BaseSonogramDrawImage.cs" />
     <Compile Include="StandardSpectrograms\Image_MultiTrack.cs" />
-    <Compile Include="StandardSpectrograms\Image_Track.cs" />
+    <Compile Include="StandardSpectrograms\ImageTrack.cs" />
     <Compile Include="SpectralClustering.cs" />
     <Compile Include="SpectralTrack.cs" />
     <Compile Include="SpectralPeakTracks.cs" />

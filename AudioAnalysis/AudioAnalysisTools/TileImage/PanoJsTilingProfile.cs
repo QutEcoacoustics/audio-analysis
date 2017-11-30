@@ -21,21 +21,9 @@ namespace AudioAnalysisTools.TileImage
             }
         }
 
-        public override int TileWidth
-        {
-            get
-            {
-                return 300; // pixels
-            }
-        }
+        public override int TileWidth => 300;
 
-        public override int TileHeight
-        {
-            get
-            {
-                return 300; // pixels
-            }
-        }
+        public override int TileHeight => 300;
 
         public override object GetZoomIndex(SortedSet<Layer> calculatedLayers, Layer selectedLayer)
         {
@@ -50,7 +38,8 @@ namespace AudioAnalysisTools.TileImage
         public override string GetFileBaseName(SortedSet<Layer> calculatedLayers, Layer selectedLayer, Point tileOffsets)
         {
             var coordinates = (Point)this.GetTileIndexes(calculatedLayers, selectedLayer, tileOffsets);
-            return string.Format("{0}_{1:D5}_{2:D5}_{3:D5}", "panojstile", (int)this.GetZoomIndex(calculatedLayers, selectedLayer), coordinates.X, coordinates.Y);
+            return
+                $"panojstile_{(int)this.GetZoomIndex(calculatedLayers, selectedLayer):D5}_{coordinates.X:D5}_{coordinates.Y:D5}";
         }
     }
 }

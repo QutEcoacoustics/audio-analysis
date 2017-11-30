@@ -16,6 +16,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using AnalysisBase.ResultBases;
 
     using AudioAnalysisTools;
+    using AudioAnalysisTools.StandardSpectrograms;
 
     using TowseyLibrary;
 

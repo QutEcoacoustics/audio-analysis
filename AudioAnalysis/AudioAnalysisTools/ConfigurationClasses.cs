@@ -109,13 +109,12 @@ namespace AudioAnalysisTools
     [Serializable]
     public class MfccConfiguration
     {
-       #region Properties
         public int FilterbankCount { get; set; }
         public bool DoMelScale { get; set; }
         public int CcCount { get; set; }     //number of cepstral coefficients
         public bool IncludeDelta { get; set; }
         public bool IncludeDoubleDelta { get; set; }
-        #endregion
+
         public MfccConfiguration(ConfigDictionary config)
         {
             this.FilterbankCount = config.GetInt(ConfigKeys.Mfcc.Key_FilterbankCount);

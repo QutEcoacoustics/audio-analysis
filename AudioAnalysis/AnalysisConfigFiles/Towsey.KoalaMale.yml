@@ -27,7 +27,6 @@ SaveIntermediateCsvFiles: false
 SaveSonogramImages: Never
 # DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
-ParallelProcessing: false
 #DoNoiseReduction: true
 #BgNoiseThreshold: 3.0
 

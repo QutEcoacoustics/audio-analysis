@@ -19,28 +19,44 @@ namespace Acoustics.Shared
     public enum TwoDimensionalArray
     {
         /// <summary>
-        /// This is effectively a transpose
-        /// 1 | 3
-        /// 2 | 4
+        /// This transform should be equivalent to RotateMatrix90DegreesClockwise
+        /// <example>
+        /// 1 | 2 --> 2 | 4 | 6
+        /// 3 | 4     1 | 3 | 5
+        /// 5 | 6
+        /// </example>
         /// </summary>
-        ColumnMajor = 2,
+        Rotate90AntiClockWise = 3,
+
+        /// <summary>
+        /// This is effectively a transpose
+        /// <code>
+        /// 1 | 2 --> 1 | 3 | 5
+        /// 3 | 4     2 | 4 | 6
+        /// 5 | 6
+        /// </code>
+        /// </summary>
         Transpose = 2,
 
         /// <summary>
-        /// This transform should be equivalent to RotateMatrix90DegreesAntiClockwise
-        /// 2 | 4
-        /// 1 | 3
+        /// This transform should be equivalent to RotateMatrix90DegreesClockwise
+        /// <example>
+        /// 1 | 2 --> 5 | 3 | 1
+        /// 3 | 4     6 | 4 | 2
+        /// 5 | 6
+        /// </example>
         /// </summary>
-        ColumnMajorFlipped = 1,
         Rotate90ClockWise = 1,
 
         /// <summary>
         /// Store/Read values in the same orientation as they are in memory
-        /// 1 | 2
-        /// 3 | 4
+        /// <code>
+        /// 1 | 2 --> 1 | 2
+        /// 3 | 4     3 | 4
+        /// 5 | 6     5 | 6
+        /// </code>
         /// </summary>
-        RowMajor = 0,
-        Normal = 0
+        None = 0,
     }
 
     internal abstract class MatrixMapper<TMatrix> : IEnumerable<int>
@@ -49,7 +65,7 @@ namespace Acoustics.Shared
 
         public abstract TMatrix[] Current { get; set; }
 
-        public abstract TMatrix this[int i, int j] { get; }
+        public abstract TMatrix this[int r, int c] { get; }
 
         public abstract IEnumerator<int> GetEnumerator();
 
@@ -63,7 +79,6 @@ namespace Acoustics.Shared
     {
         private readonly IEnumerable<TBase> objectMatrix;
         private readonly Func<TBase, TMatrix[]> selector;
-
 
         public ObjectArrayMapper(IEnumerable<TBase> matrix, Func<TBase, TMatrix[]> selector)
         {
@@ -90,11 +105,11 @@ namespace Acoustics.Shared
 
         public override TMatrix[] Current { get; set; }
 
-        public override TMatrix this[int i, int j]
+        public override TMatrix this[int r, int c]
         {
             get
             {
-                return this.Current[j];
+                return this.Current[c];
 
                 throw new Exception();
             }
@@ -104,10 +119,25 @@ namespace Acoustics.Shared
     internal class EnumerableMapper<TMatrix> : MatrixMapper<TMatrix>
     {
         private readonly IEnumerable<TMatrix[]> enumerableMatrix;
+
         public EnumerableMapper(IEnumerable<TMatrix[]> matrix)
         {
             this.enumerableMatrix = matrix;
             this.Columns = this.enumerableMatrix.First().Length;
+        }
+
+        public sealed override int Columns { get; protected set; }
+
+        public override TMatrix[] Current { get; set; }
+
+        public override TMatrix this[int r, int c]
+        {
+            get
+            {
+                return this.Current[c];
+
+                throw new Exception();
+            }
         }
 
         public override IEnumerator<int> GetEnumerator()
@@ -121,37 +151,56 @@ namespace Acoustics.Shared
             }
 
         }
-
-        public override int Columns { get; protected set; }
-
-        public override TMatrix[] Current { get; set; }
-
-        public override TMatrix this[int i, int j]
-        {
-            get
-            {
-                return this.Current[j];
-
-                throw new Exception();
-            }
-        }
     }
 
     internal class TwoDimArrayMapper<TMatrix> : MatrixMapper<TMatrix>
     {
         private readonly TwoDimensionalArray dimensionality;
         private readonly TMatrix[,] matrix;
-        public int? Rows { get; private set; }
 
         public TwoDimArrayMapper(TMatrix[,] matrix, TwoDimensionalArray dimensionality)
         {
             this.matrix = matrix;
             this.dimensionality = dimensionality;
 
-            this.Rows = TwoDimensionalArray.RowMajor == dimensionality ? matrix.RowLength() : matrix.ColumnLength();
-            this.Columns = TwoDimensionalArray.RowMajor == dimensionality
+            this.Rows = dimensionality == TwoDimensionalArray.None ? matrix.RowLength() : matrix.ColumnLength();
+            this.Columns = dimensionality == TwoDimensionalArray.None
                                ? matrix.ColumnLength()
                                : matrix.RowLength();
+        }
+
+        public int? Rows { get; private set; }
+
+        public override int Columns { get; protected set; }
+
+        public override TMatrix[] Current { get; set; }
+
+        public override TMatrix this[int r, int c]
+        {
+            get
+            {
+                if (this.dimensionality == TwoDimensionalArray.None)
+                {
+                    return this.matrix[r, c];
+                }
+
+                if (this.dimensionality == TwoDimensionalArray.Transpose)
+                {
+                    return this.matrix[c, r];
+                }
+
+                if (this.dimensionality == TwoDimensionalArray.Rotate90ClockWise)
+                {
+                    return this.matrix[this.Columns - 1 - c,  r];
+                }
+
+                if (this.dimensionality == TwoDimensionalArray.Rotate90AntiClockWise)
+                {
+                    return this.matrix[c, this.Rows.Value - 1 - r];
+                }
+
+                throw new Exception();
+            }
         }
 
         public override IEnumerator<int> GetEnumerator()
@@ -159,33 +208,6 @@ namespace Acoustics.Shared
             for (int i = 0; i < this.Rows; i++)
             {
                 yield return i;
-            }
-        }
-
-        public override int Columns { get; protected set; }
-
-        public override TMatrix[] Current { get; set; }
-
-        public override TMatrix this[int i, int j]
-        {
-            get
-            {
-                if (this.dimensionality == TwoDimensionalArray.RowMajor)
-                {
-                    return this.matrix[i, j];
-                }
-
-                if (this.dimensionality == TwoDimensionalArray.ColumnMajor)
-                {
-                    return this.matrix[j, i];
-                }
-
-                if (this.dimensionality == TwoDimensionalArray.ColumnMajorFlipped)
-                {
-                    return this.matrix[this.Columns - 1 - j,  i];
-                }
-
-                throw new Exception();
             }
         }
     }

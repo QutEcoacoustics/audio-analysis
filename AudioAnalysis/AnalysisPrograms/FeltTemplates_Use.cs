@@ -64,6 +64,7 @@
 
         // felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-050000.wav"  C:\SensorNetworks\Output\FELT_MultiOutput_5templates\templateList.txt  C:\SensorNetworks\Output\FELT_MultiOutput_5templates
 
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static Arguments Dev()
         {
             throw new NotImplementedException();
@@ -454,7 +455,7 @@
             using (Image_MultiTrack image = new Image_MultiTrack(img))
             {
                 //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
-                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+                image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
 
                 // Add in score tracks
                 for (int s = 0; s < scoresList.Count; s++)
@@ -470,7 +471,7 @@
                         if (scores[i] < 0.0) scores[i] = 0.0;
                     }
 
-                    image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, 0.25));
+                    image.AddTrack(ImageTrack.GetScoreTrack(scores, 0.0, 1.0, 0.25));
                 } //end adding in score tracks
 
                 image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);

@@ -547,11 +547,11 @@ namespace AudioAnalysisTools
         public static Image DrawSonogram(BaseSonogram sonogram, Plot scores, List<AcousticEvent> poi, double eventThreshold, double[,] overlay)
         {
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband: false, add1KHzLines: false));
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
             if (scores != null)
             {
-                image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
+                image.AddTrack(ImageTrack.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
             }
 
             if ((poi != null) && (poi.Count > 0))
@@ -576,15 +576,15 @@ namespace AudioAnalysisTools
             using (var img = sonogram.GetImage(doHighlightSubband: false, add1KHzLines: true))
             using (var image = new Image_MultiTrack(img))
             {
-                //image.AddTrack(Image_Track.GetScoreTrack(DataTools.Bool2Binary(clusterInfo.selectedFrames),0.0, 1.0, 0.0));
+                //image.AddTrack(ImageTrack.GetScoreTrack(DataTools.Bool2Binary(clusterInfo.selectedFrames),0.0, 1.0, 0.0));
                 //add time scale
-                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-                image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+                image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+                image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
 
                 // add cluster track, show ID of cluster of each frame
                 string label = string.Format(clusterInfo.ClusterCount + " Clusters");
                 var scores = new Plot(label, DataTools.normalise(clusterInfo.ClusterHits2), 0.0); // location of cluster hits
-                image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
+                image.AddTrack(ImageTrack.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
 
                 // overlay cluster hits on spectrogram
                 int[,] hits = AssembleClusterSpectrogram(sonogram.Data, lowerBinBound, clusterInfo, data);

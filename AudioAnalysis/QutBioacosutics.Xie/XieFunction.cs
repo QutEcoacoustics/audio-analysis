@@ -12,6 +12,8 @@
     using AForge.Math;
     using AudioAnalysisTools;
     using AudioAnalysisTools.LongDurationSpectrograms;
+    using AudioAnalysisTools.StandardSpectrograms;
+
     using TowseyLibrary;
 
     public static class XieFunction
@@ -260,7 +262,7 @@
         {
             bool doHighlightSubband = true; bool add1kHzLines = true;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             return image.GetImage();
         } //DrawSonogram()
 

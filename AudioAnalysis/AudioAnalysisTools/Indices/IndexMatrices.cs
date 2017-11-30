@@ -11,13 +11,17 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
     using log4net;
     using TowseyLibrary;
+
+    using Zio;
 
     public static class IndexMatrices
     {
@@ -225,7 +229,8 @@ namespace AudioAnalysisTools.Indices
                 List<double[,]> matrices = ConcatenateSpectralIndexFilesWithTimeCheck(files, indexCalcTimeSpan, key);
                 double[,] m = MatrixTools.ConcatenateMatrixRows(matrices);
 
-                //Dictionary<string, double[,]> dict = spectralIndexValues.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
+                //Dictionary<string, double[,]> dict = spectralIndexValues.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.Rotate90ClockWise);
+
                 m = MatrixTools.MatrixRotate90Anticlockwise(m);
                 spectrogramMatrices.Add(key, m);
 
@@ -287,7 +292,7 @@ namespace AudioAnalysisTools.Indices
                     continue;
                 }
 
-                var matrix = Csv.ReadMatrixFromCsv<double>(file, TwoDimensionalArray.Normal);
+                var matrix = Csv.ReadMatrixFromCsv<double>(file, TwoDimensionalArray.None);
                 matrices.Add(matrix);
 
                 // track the row counts
@@ -472,18 +477,17 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// This method reads spectrogram csv files where the first row contains column names
         /// and the first column contains row/time names.
+        /// Note: no rotation of data is done!
         /// </summary>
-        public static double[,] ReadSpectrogram(FileInfo csvPath, out int binCount)
+        public static double[,] ReadSpectrogram(FileInfo csvFile, out int binCount)
         {
-            //TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor;
-            //double[,] matrix = Csv.ReadMatrixFromCsv<double>(csvPath, dimensionality);
-            // MICHAEL: the new Csv class can read this in, and optionally transpose as it reads
-            double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath.FullName);
-            binCount = matrix.GetLength(1) - 1; // -1 because first bin is the index numbers
-            // calculate the window/frame that was used to generate the spectra. This value is only used to place grid lines on the final images
+            return ReadSpectrogram(csvFile.ToFileEntry(), out binCount);
+        }
 
-            // remove left most column - consists of index numbers
-            matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, binCount);
+        public static double[,] ReadSpectrogram(FileEntry csvFile, out int binCount, TwoDimensionalArray transform = TwoDimensionalArray.None)
+        {
+            double[,] matrix = Csv.ReadMatrixFromCsv<double>(csvFile, transform);
+            binCount = matrix.GetLength(1);
             return matrix;
         }
 
@@ -506,61 +510,81 @@ namespace AudioAnalysisTools.Indices
             return dict;
         }
 
-        public static Dictionary<string, double[,]> ReadCsvFiles(DirectoryInfo ipdir, string fileName, string[] keys)
+        public static Dictionary<string, double[,]> ReadSpectralIndices(DirectoryInfo ipdir, string fileName, string analysisTag, string[] keys)
+        {
+            return ReadSpectralIndices(ipdir.ToDirectoryEntry(), fileName, analysisTag, keys);
+        }
+
+        public static Dictionary<string, double[,]> ReadSpectralIndices(DirectoryEntry ipdir, string fileName, string analysisTag, string[] keys)
         {
             // parallel reading of CSV files
-            var readData = keys
-                .AsParallel()
-                .Select(key => ReadInSingleCsvFile(ipdir, fileName, key))
+            var readData = keys.AsParallel()
+                .Select(ReadInSingleCsvFile)
                 .Where(x => x != null);
 
             // actual work done here
-            // ReSharper disable PossibleInvalidOperationException
-            var spectrogramMatrices = readData.ToDictionary(kvp => kvp.Value.Key, kvp => kvp.Value.Value);
+            Stopwatch timer = Stopwatch.StartNew();
+
+            // ReSharper disable once PossibleInvalidOperationException
+            var spectrogramMatrices = readData.ToDictionary(kvp => kvp.Value.Item1, kvp => kvp.Value.Item2);
+
+            // ReSharper restore PossibleInvalidOperationException
+            timer.Stop();
+            Log.Info($"Time to read spectral index files = {timer.Elapsed.TotalSeconds} seconds");
 
             if (spectrogramMatrices.Count == 0)
             {
-                LoggedConsole.WriteLine("WARNING: from method IndexMatrices.ReadCsvFiles()");
-                LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
+                LoggedConsole.WriteWarnLine(
+                    "WARNING: from method IndexMatrices.ReadSpectralIndices()\n\t\tNO FILES were read from this directory: "
+                    + ipdir);
             }
 
             return spectrogramMatrices;
-        }
 
-        private static KeyValuePair<string, double[,]>? ReadInSingleCsvFile(DirectoryInfo ipdir, string fileName, string indexKey)
-        {
-            //Log.Info($"Starting to read CSV file for index {indexKey}");
-            //Stopwatch timer = Stopwatch.StartNew();
-
-            FileInfo file = new FileInfo(Path.Combine(ipdir.FullName, fileName + "." + indexKey + ".csv"));
-            double[,] matrix;
-            if (file.Exists)
+            (string, double[,])? ReadInSingleCsvFile(string indexKey)
             {
-                int freqBinCount;
-                matrix = ReadSpectrogram(file, out freqBinCount);
-                matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-            }
-            else
-            {
-                Log.Warn(
-                    "\nWARNING: from method IndexMatrices.ReadCsvFiles()"
-                    + $"\n      {indexKey} File does not exist: {file.FullName}");
-                return null;
-            }
+                Log.Info($"Starting to read CSV file for index {indexKey}");
+                Stopwatch singleTimer = Stopwatch.StartNew();
 
-            //timer.Stop();
-            //Log.Info($"Time to read spectral index file <{indexKey}> = {timer.Elapsed.TotalSeconds} seconds");
-            return new KeyValuePair<string, double[,]>(indexKey, matrix);
+                var file = ipdir.CombineFile(FilenameHelpers.AnalysisResultName(fileName, analysisTag + "." + indexKey, "csv"));
+                double[,] matrix;
+                if (file.Exists)
+                {
+                    int freqBinCount;
+                    matrix = ReadSpectrogram(file, out freqBinCount, TwoDimensionalArray.Rotate90AntiClockWise);
+                    //matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+                }
+                else
+                {
+                    Log.Warn($"IndexMatrices.ReadSpectralIndices(): {indexKey} File does not exist: {file.FullName}");
+                    return null;
+                }
+
+                singleTimer.Stop();
+                Log.Debug($"Time to read spectral index file <{indexKey}> = {singleTimer.Elapsed.TotalSeconds} seconds");
+                return (indexKey, matrix);
+            }
         }
 
         /// <summary>
-        /// compresses the spectral index data in the temporal direction by a factor dervied from the data scale and required image scale.
+        /// compresses the spectral index data in the temporal direction by a factor dervied from the data scale and
+        /// required image scale.
         /// In all cases, the compression is done by taking the average.
-        /// The method got more complicated in June 2016 when refactored it to cope with recording blocks less than one minute long.
+        /// The method got more complicated in June 2016 when refactored it to cope with recording blocks less than
+        /// one minute long.
         /// </summary>
-        public static Dictionary<string, double[,]> CompressIndexSpectrograms(Dictionary<string, double[,]> spectra, TimeSpan imageScale, TimeSpan dataScale)
+        public static Dictionary<string, double[,]> CompressIndexSpectrograms(
+            Dictionary<string, double[,]> spectra,
+            TimeSpan imageScale,
+            TimeSpan dataScale)
         {
-            int scalingFactor = (int)Math.Round(imageScale.TotalMilliseconds / dataScale.TotalMilliseconds);
+            var rawScalingFactor = imageScale.Ticks / (double)dataScale.Ticks;
+            int scalingFactor = (int)Math.Round(rawScalingFactor);
+
+            Contract.Requires(
+                Math.Abs(scalingFactor - rawScalingFactor) < 0.0000001,
+                "CompressIndexSpectrograms only supports rescaling between factors that produce integer ratios");
+
             var compressedSpectra = new Dictionary<string, double[,]>();
             int step = scalingFactor - 1;
 
@@ -607,7 +631,7 @@ namespace AudioAnalysisTools.Indices
                                 tempArray[i] = matrix[r, c + i] * matrix[r, c + i];
                             }
 
-                            double entropy = DataTools.Entropy_normalised(tempArray);
+                            double entropy = DataTools.EntropyNormalised(tempArray);
                             if (double.IsNaN(entropy))
                             {
                                 entropy = 1.0;
@@ -617,45 +641,46 @@ namespace AudioAnalysisTools.Indices
                         }
                     }
                 }
-                else
+                else if ((key == "ACI") && (scalingFactor > 1))
+                {
                     // THE ACI matrix requires separate calculation
-                    if ((key == "ACI") && (scalingFactor > 1))
-                    {
-                        double[] DIFArray = new double[scalingFactor];
-                        double[] SUMArray = new double[scalingFactor];
-                        for (int r = 0; r < rowCount; r++)
-                        {
-                            for (int c = 0; c <= maxColCount; c += step)
-                            {
-                                var colIndex = c / scalingFactor;
-                                for (int i = 0; i < compressionWindow; i++)
-                                {
-                                    DIFArray[i] = spectra["DIF"][r, c + i];
-                                    SUMArray[i] = spectra["SUM"][r, c + i];
-                                }
 
-                                newMatrix[r, colIndex] = DIFArray.Sum() / SUMArray.Sum();
+                    double[] DIFArray = new double[scalingFactor];
+                    double[] SUMArray = new double[scalingFactor];
+                    for (int r = 0; r < rowCount; r++)
+                    {
+                        for (int c = 0; c <= maxColCount; c += step)
+                        {
+                            var colIndex = c / scalingFactor;
+                            for (int i = 0; i < compressionWindow; i++)
+                            {
+                                DIFArray[i] = spectra["DIF"][r, c + i];
+                                SUMArray[i] = spectra["SUM"][r, c + i];
                             }
+
+                            newMatrix[r, colIndex] = DIFArray.Sum() / SUMArray.Sum();
                         }
                     }
-                    else
-                    {
-                        // average all other spectral indices
-                        matrix = spectra[key];
-                        for (int r = 0; r < rowCount; r++)
-                        {
-                            for (int c = 0; c <= maxColCount; c += step)
-                            {
-                                var colIndex = c / scalingFactor;
-                                for (int i = 0; i < compressionWindow; i++)
-                                {
-                                    tempArray[i] = matrix[r, c + i];
-                                }
+                }
+                else
+                {
+                    // average all other spectral indices
 
-                                newMatrix[r, colIndex] = tempArray.Average();
+                    matrix = spectra[key];
+                    for (int r = 0; r < rowCount; r++)
+                    {
+                        for (int c = 0; c <= maxColCount; c += step)
+                        {
+                            var colIndex = c / scalingFactor;
+                            for (int i = 0; i < compressionWindow; i++)
+                            {
+                                tempArray[i] = matrix[r, c + i];
                             }
+
+                            newMatrix[r, colIndex] = tempArray.Average();
                         }
                     }
+                }
 
                 compressedSpectra[key] = newMatrix;
             }

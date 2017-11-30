@@ -65,7 +65,6 @@ namespace System
             int dimX = array.GetLength(0);
             int dimY = array.GetLength(1);
 
-
             return x >= array.GetLowerBound(0) && x < dimX && y >= array.GetLowerBound(1) && y < dimY;
         }
 
@@ -78,7 +77,6 @@ namespace System
         {
             return matrix.GetLength(1);
         }
-
 
         /// <summary>
         /// Fills a given array with a supplied value.

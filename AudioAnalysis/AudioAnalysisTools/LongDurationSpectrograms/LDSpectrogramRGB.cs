@@ -163,7 +163,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             this.SampleRate = indexGenerationData.SampleRateResampled;
             this.FrameWidth = indexGenerationData.FrameLength;
-            this.StartOffset = indexGenerationData.MinuteOffset;
+            this.StartOffset = indexGenerationData.AnalysisStartOffset;
 
             // default BackgroundFilter value
             this.BackgroundFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
@@ -349,7 +349,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 {
                     if (warning == null)
                     {
-                        warning = "\nWARNING: from method LDSpectrogramRGB.ReadCsvFiles()";
+                        warning = "\nWARNING: from method LDSpectrogramRGB.ReadSpectralIndices()";
                     }
 
                     warning += "\n      {0} File does not exist: {1}".Format2(keys[i], path);
@@ -364,7 +364,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             if (this.SpectrogramMatrices.Count == 0)
             {
-                LoggedConsole.WriteLine("WARNING: from method LDSpectrogramRGB.ReadCsvFiles()");
+                LoggedConsole.WriteLine("WARNING: from method LDSpectrogramRGB.ReadSpectralIndices()");
                 LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
                 allOk = false;
             }
@@ -563,7 +563,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.StartOffset, fullDuration, xAxisPixelDuration, this.FreqScale);
             const int trackHeight = 20;
-            var timeBmp = Image_Track.DrawTimeTrack(fullDuration, this.RecordingStartDate, bmp.Width, trackHeight);
+            var timeBmp = ImageTrack.DrawTimeTrack(fullDuration, this.RecordingStartDate, bmp.Width, trackHeight);
             var array = new Image[2];
             array[0] = bmp;
             array[1] = timeBmp;
@@ -583,7 +583,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             bmpNeg.Save(Path.Combine(outputDirectory.FullName, outputFileName + ".COLNEG.png"));
 
-            string key = InitialiseIndexProperties.KEYspectralBGN;
+            string key = InitialiseIndexProperties.KeYspectralBgn;
             if (!this.SpectrogramMatrices.ContainsKey(key))
             {
                 LoggedConsole.WriteLine("\nWARNING: SG {0} does not contain key: {1}", outputFileName, key);
@@ -641,8 +641,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 LoggedConsole.WriteLine("WARNING: From method ColourSpectrogram.DrawBlendedFalseColourSpectrogram() line 662");
                 LoggedConsole.WriteLine("         There is no Matrix for one or more spectral indices.");
-                LoggedConsole.WriteLine("         Null image returned");
-                return null;
+                throw new ArgumentException("Required spectral matrices are not available");
             }
 
             string[] rgbMap1 = colorMap1.Split('-');
@@ -703,10 +702,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int imageHt = bmp2.Height + bmp1.Height + trackHeight + trackHeight + trackHeight;
             var title =
                 $"FALSE COLOUR and BACKGROUND NOISE SPECTROGRAMS      (scale: hours x kHz)      (colour: R-G-B = {this.ColorMap})         {Meta.OrganizationTag}  ";
-            var titleBmp = Image_Track.DrawTitleTrack(bmp2.Width, trackHeight, title);
+            var titleBmp = ImageTrack.DrawTitleTrack(bmp2.Width, trackHeight, title);
             var timeScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
             var offsetMinute = TimeSpan.Zero;
-            var timeBmp = Image_Track.DrawTimeTrack(fullDuration, offsetMinute, timeScale, bmp2.Width, trackHeight, "hours");
+            var timeBmp = ImageTrack.DrawTimeTrack(fullDuration, offsetMinute, timeScale, bmp2.Width, trackHeight, "hours");
 
             var compositeBmp = new Bitmap(bmp2.Width, imageHt); //get canvas for entire image
             var gr = Graphics.FromImage(compositeBmp);
@@ -1072,7 +1071,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp1.Width);
 
             int trackHeight = 18;
-            Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(fullDuration, bmp1.Width, trackHeight);
+            Bitmap timeBmp1 = ImageTrack.DrawTimeRelativeTrack(fullDuration, bmp1.Width, trackHeight);
             Bitmap timeBmp2 = (Bitmap)timeBmp1.Clone();
             Bitmap suntrack = null;
 
@@ -1080,7 +1079,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             if (dateTimeOffset.HasValue)
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
-                timeBmp2 = Image_Track.DrawTimeTrack(fullDuration, cs.RecordingStartDate, bmp1.Width, trackHeight);
+                timeBmp2 = ImageTrack.DrawTimeTrack(fullDuration, cs.RecordingStartDate, bmp1.Width, trackHeight);
                 suntrack = SunAndMoon.AddSunTrackToImage(bmp1.Width, dateTimeOffset, cs.SunriseDataFile);
             }
 
@@ -1413,7 +1412,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             cs1.ErroneousSegments = segmentErrors;
 
             // calculate start time by combining DatetimeOffset with minute offset.
-            cs1.StartOffset = indexGenerationData.MinuteOffset;
+            cs1.StartOffset = indexGenerationData.AnalysisStartOffset;
             if (indexGenerationData.RecordingStartDate.HasValue)
             {
                 DateTimeOffset dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;

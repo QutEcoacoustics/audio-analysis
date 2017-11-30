@@ -21,7 +21,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public const int DEFAULT_WINDOW_SIZE = 512;
         public const double DEFAULT_WINDOW_OVERLAP = 0.5;
 
-        #region Properties
         public string SourceFName { get; set; } // name of source file for recordingt
 
         public string SourceDirectory { get; set; } // location of source file - used only for debugging.
@@ -102,8 +101,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
         private Acoustics.Tools.Wav.WavReader wavReader;
 
         public string ImageDir { get { return this.imageDir; } set { this.imageDir = value; } }
-
-        #endregion
 
         public static SonogramConfig Load(string configFile)
         {

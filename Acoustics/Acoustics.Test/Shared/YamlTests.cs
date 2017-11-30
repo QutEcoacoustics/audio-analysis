@@ -14,6 +14,8 @@ namespace Acoustics.Test.Shared
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+    using Zio;
+
     [TestClass]
     public class YamlTests
     {
@@ -60,12 +62,12 @@ SegmentOverlap: 0
 # The Timespan (in seconds) over which summary and spectral indices are calculated
 IndexCalculationDuration: 60.0
 
-# BGNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
+# BgNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
 # BG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
 #    Ten seconds is considered a minimum interval to obtain a reliable estimate of BG noise.
 #    The  BG noise interval is not extended beyond start or end of recording segment.
 #    Consequently for a 60sec Index calculation duration, the  BG noise is calculated form the 60sec segment only.
-BGNoiseNeighbourhood: 5
+BgNoiseNeighbourhood: 5
 
 # FRAME LENGTH. units=samples
 # FrameWidth is used without overlap to calculate the spectral indices. Typical value=512
@@ -155,10 +157,22 @@ EventThreshold: 0.2
         }
 
         [TestMethod]
+        public void OurDefaultDeserializerSupportsMergingDocumentsAndZio()
+        {
+            var wrapper = Yaml.Deserialise<YamlTestWrapperClass>(this.testDocument.ToFileEntry());
+
+            Assert.AreEqual(this.wrapperTestCase.InfoA.SomeProperty, wrapper.InfoA.SomeProperty);
+            Assert.AreEqual(this.wrapperTestCase.InfoB.SomeProperty, wrapper.InfoB.SomeProperty);
+            Assert.AreEqual(this.wrapperTestCase.InfoC.SomeProperty, wrapper.InfoC.SomeProperty);
+            Assert.AreEqual(this.wrapperTestCase.InfoA.TestFile, wrapper.InfoA.TestFile);
+            Assert.AreEqual(this.wrapperTestCase.InfoB.TestFile, wrapper.InfoB.TestFile);
+            Assert.AreEqual(this.wrapperTestCase.InfoC.TestFile, wrapper.InfoC.TestFile);
+        }
+
+        [TestMethod]
         public void OurDefaultDeserializerSupportsMergingDocumentsDynamic()
         {
             dynamic wrapper = Yaml.Deserialise(this.testDocument);
-
 
             Assert.AreEqual(this.wrapperTestCase.InfoA.SomeProperty, (string)wrapper.InfoA.SomeProperty);
             Assert.AreEqual(this.wrapperTestCase.InfoB.SomeProperty, (string)wrapper.InfoB.SomeProperty);
