@@ -295,7 +295,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public Dictionary<string, IndexDistributions.SpectralStats> IndexStats { get; private set; }
 
-        public List<ErroneousIndexSegments> ErroneousSegments { get; private set; }
+        public List<GapsAndJoins> ErroneousSegments { get; private set; }
 
         /// <summary>
         /// Gets or sets a file from which can be obtained information about sunrise and sunset times for the recording site.
@@ -629,7 +629,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             bool errorsExist = (this.ErroneousSegments != null) && (this.ErroneousSegments.Count > 0);
             if (errorsExist)
             {
-                bmp = ErroneousIndexSegments.DrawErrorSegments(bmp, this.ErroneousSegments);
+                bmp = GapsAndJoins.DrawErrorSegments(bmp, this.ErroneousSegments);
             }
 
             return bmp;
@@ -1382,7 +1382,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Dictionary<string, IndexDistributions.SpectralStats> indexStatistics = null,
             SiteDescription siteDescription = null,
             FileInfo sunriseDataFile = null,
-            List<ErroneousIndexSegments> segmentErrors = null,
+            List<GapsAndJoins> segmentErrors = null,
             ImageChrome imageChrome = ImageChrome.With,
             bool verbose = false)
         {

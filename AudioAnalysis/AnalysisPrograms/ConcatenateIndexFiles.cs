@@ -305,10 +305,10 @@ namespace AnalysisPrograms
 
                 var dictionaryOfSummaryIndices = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, resultsDir, indexGenerationData, opFileStem);
 
-                // REALITY CHECK - check for continuous zero indices or anything else that might indicate defective signal
-                // or incomplete analysis of recordings
-                var indexErrors = ErroneousIndexSegments.DataIntegrityCheck(dictionaryOfSummaryIndices, arguments.GapRendering);
-                ErroneousIndexSegments.WriteErrorsToFile(indexErrors, resultsDir, opFileStem);
+                // REALITY CHECK - check for continuous zero indices or anything else that might indicate defective signal,
+                //                 incomplete analysis of recordings, recording gaps or file joins.
+                var gapsAndJoins = GapsAndJoins.DataIntegrityCheck(dictionaryOfSummaryIndices, arguments.GapRendering);
+                GapsAndJoins.WriteErrorsToFile(gapsAndJoins, resultsDir, opFileStem);
 
                 if (arguments.DrawImages)
                 {
@@ -333,7 +333,7 @@ namespace AnalysisPrograms
 
                 // ###### NOW CONCATENATE THE SPECTRAL INDICES, DRAW IMAGES AND SAVE IN RESULTS DIRECTORY
                 var dictionaryOfSpectralIndices1 = LdSpectrogramStitching.ConcatenateAllSpectralIndexFiles(subDirectories, keys, indexGenerationData);
-                indexErrors.AddRange(ErroneousIndexSegments.DataIntegrityCheck(dictionaryOfSpectralIndices1, arguments.GapRendering));
+                gapsAndJoins.AddRange(GapsAndJoins.DataIntegrityCheck(dictionaryOfSpectralIndices1, arguments.GapRendering));
 
                 // Calculate the index distribution statistics and write to a json file. Also save as png image
                 var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectralIndices1, resultsDir, opFileStem);
@@ -353,7 +353,7 @@ namespace AnalysisPrograms
                             indexDistributions,
                             siteDescription,
                             arguments.SunRiseDataFile,
-                            indexErrors,
+                            gapsAndJoins,
                             ImageChrome.With);
                 }
 
@@ -414,8 +414,8 @@ namespace AnalysisPrograms
                 }
 
                 // REALITY CHECK - check for zero signal and anything else that might indicate defective signal
-                List<ErroneousIndexSegments> indexErrors = ErroneousIndexSegments.DataIntegrityCheck(summaryDict, arguments.GapRendering);
-                ErroneousIndexSegments.WriteErrorsToFile(indexErrors, resultsDir, opFileStem1);
+                List<GapsAndJoins> indexErrors = GapsAndJoins.DataIntegrityCheck(summaryDict, arguments.GapRendering);
+                GapsAndJoins.WriteErrorsToFile(indexErrors, resultsDir, opFileStem1);
 
                 // DRAW SUMMARY INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
                 if (arguments.DrawImages)

@@ -140,7 +140,7 @@ namespace AnalysisPrograms
 
             double[] zeroSignalArray = summaryIndices.Select(si => si.ZeroSignal).ToArray();
 
-            var indexErrors = ErroneousIndexSegments.DataIntegrityCheckForZeroSignal(zeroSignalArray);
+            var indexErrors = GapsAndJoins.DataIntegrityCheckForZeroSignal(zeroSignalArray);
 
             //config.IndexCalculationDuration = TimeSpan.FromSeconds(1.0);
             //config.XAxisTicInterval = TimeSpan.FromSeconds(60.0);
