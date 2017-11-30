@@ -297,15 +297,28 @@ namespace AudioAnalysisTools.DSP
 
         public static void DrawFrequencyLinesOnImage(Bitmap bmp, int[,] gridLineLocations)
         {
-            if (bmp.Width < 4)
+            int minimumSpectrogramWidth = 10;
+            if (bmp.Width < minimumSpectrogramWidth)
             {
                 // there is no point drawing grid lines on a very narrow image.
                 return;
             }
 
             // attempt to determine background colour of spectrogram i.e. dark false-colour or light.
-            var bgnColour = bmp.GetPixel(2, 2);
-            float brightness = bgnColour.GetBrightness();
+            // get the average brightness in a neighbourhood of m x n pixels.
+            int pixelCount = 0;
+            float brightness = 0.0F;
+            for (int m = 5; m < minimumSpectrogramWidth; m++)
+            {
+                for (int n = 5; n < minimumSpectrogramWidth; n++)
+                {
+                    var bgnColour = bmp.GetPixel(m, n);
+                    brightness += bgnColour.GetBrightness();
+                    pixelCount++;
+                }
+            }
+
+            brightness /= pixelCount;
             var txtColour = Brushes.White;
             if (brightness > 0.5)
             {

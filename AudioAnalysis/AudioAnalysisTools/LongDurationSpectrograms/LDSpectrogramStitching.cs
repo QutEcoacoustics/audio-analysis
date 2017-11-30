@@ -241,8 +241,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var summaryIndices = IndexMatrices.ConcatenateSummaryIndexFilesWithTimeCheck(summaryIndexFiles, indexResolution);
             if (summaryIndices.Count == 0)
             {
-                LoggedConsole.WriteErrorLine("WARNING: LDSpectrogramStitching.ConcatenateAllSummaryIndexFiles() !");
-                LoggedConsole.WriteErrorLine("        An empty List of SUMMARY indices was returned !!! ");
+                LoggedConsole.WriteErrorLine("WARNING: LDSpectrogramStitching.ConcatenateAllSummaryIndexFiles(): Empty List of SUMMARY indices returned!");
                 return null;
             }
 
