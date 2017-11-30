@@ -119,23 +119,18 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             }
             else if (imageScaleInMsPerPixel > 500)
             {
+                // > 0.5 seconds
                 blendWeight1 = 0.1;
                 blendWeight2 = 0.9;
             }
 
-            Image ldSpectrogram = cs1.DrawBlendedFalseColourSpectrogram(
-                "NEGATIVE",
-                colorMap1,
-                colorMap2,
-                blendWeight1,
-                blendWeight2);
-
-            if (ldSpectrogram == null)
+            var ldfcSpectrogram = cs1.DrawBlendedFalseColourSpectrogram(colorMap1, colorMap2, blendWeight1, blendWeight2);
+            if (ldfcSpectrogram == null)
             {
-                throw new InvalidOperationException("Null Image of DrawBlendedFalseColourSpectrogram");
+                throw new InvalidOperationException("Null Image returned from DrawBlendedFalseColourSpectrogram");
             }
 
-            return ldSpectrogram;
+            return ldfcSpectrogram;
         }
     }
 }

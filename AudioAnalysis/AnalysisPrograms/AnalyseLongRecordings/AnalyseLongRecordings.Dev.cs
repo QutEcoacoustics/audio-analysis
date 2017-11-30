@@ -17,6 +17,10 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             // This calls AnalysisPrograms.DrawLongDurationSpectrograms.Execute() to produce LD FC spectrograms from matrices of indices.
             // See line 176 for example using the Pillaga Forest data.
 
+            // If your index calculation duration (ICD) < 60s then this call will NOT additionally produce false-colour spectrograms.
+            // As next step, you need to use Action code = ColourSpectrogram
+            //     and enter program through AnalysisPrograms.DrawLongDurationSpectrograms
+
             // DEV CONFIG OPTIONS
             //C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\App.config
 
@@ -98,14 +102,19 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 
             // Test recordings from Wildlife Acoustics demonstrating their compression algorithm
             //string recordingPath = @"D:\SensorNetworks\WildLifeAcoustics\sm4_compression_demo\S4A00068_20160506_063000.wav";
-            string recordingPath = @"D:\SensorNetworks\WildLifeAcoustics\sm4_compression_demo\S4A00068_20160506_063000_new50.wav";
-            string outputPath = @"D:\SensorNetworks\Output\WildLifeAcoustics";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiRes.yml";
+            //string recordingPath = @"D:\SensorNetworks\WildLifeAcoustics\sm4_compression_demo\S4A00068_20160506_063000_new50.wav";
+            //string outputPath = @"D:\SensorNetworks\Output\WildLifeAcoustics";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiRes.yml";
 
             // Recording from Andrew Skeoch at Australian Wildlife Audio Recording Group
             //string recordingPath = @"D:\SensorNetworks\WavFiles\BradLaw\TopTrapDam Pilliga 22050 16bit.wav";
             //string outputPath = @"D:\SensorNetworks\Output\BradLawData\AWARG";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiRes.yml";
+
+            // Recording from YVONNE - GYMPIE NP - nighttime @ 96kHz listening for bats.
+            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\GYMPIE_BATS_20170808_180000+1000.wav";
+            string outputPath = @"C:\SensorNetworks\Output\Bats";
+            string configPath = @"C:\SensorNetworks\Output\Bats\config\Towsey.Acoustic.yml";
 
             // ARTIFICIAL TEST RECORDING
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
