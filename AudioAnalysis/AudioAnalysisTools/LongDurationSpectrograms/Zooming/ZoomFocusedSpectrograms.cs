@@ -126,7 +126,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             for (int i = 0; i < compressionCount; i++)
             {
                 int factor = compressionFactor[i];
-                image = DrawFrameSpectrogramAtScale(ldsConfig, indexGeneration, startTimeOfData, factor, frameData, indexData, focalTime, frameScale, imageWidth);
+                var image = DrawFrameSpectrogramAtScale(ldsConfig, indexGeneration, startTimeOfData, factor, frameData, indexData, focalTime, frameScale, imageWidth);
                 if (image != null)
                 {
                     imageList.Add(image);
@@ -207,7 +207,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 startTime = TimeSpan.Zero;
             }
 
-            TimeSpan endTime = ImageDuration;
+            TimeSpan endTime = imageDuration;
             if (focalTime != TimeSpan.Zero)
             {
                 endTime = focalTime + halfImageDuration;

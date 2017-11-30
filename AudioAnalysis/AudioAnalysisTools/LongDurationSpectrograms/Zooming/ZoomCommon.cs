@@ -109,22 +109,22 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             }
             else if (imageScaleInMsPerPixel > 5000)
             {
-                blendWt1 = 0.7;
-                blendWt2 = 0.3;
+                blendWeight1 = 0.7;
+                blendWeight2 = 0.3;
             }
             else if (imageScaleInMsPerPixel > 1000)
             {
-                blendWt1 = 0.2;
-                blendWt2 = 0.8;
+                blendWeight1 = 0.2;
+                blendWeight2 = 0.8;
             }
             else if (imageScaleInMsPerPixel > 500)
             {
                 // > 0.5 seconds
-                blendWt1 = 0.1;
-                blendWt2 = 0.9;
+                blendWeight1 = 0.1;
+                blendWeight2 = 0.9;
             }
 
-            var ldfcSpectrogram = cs1.DrawBlendedFalseColourSpectrogram(colorMap1, colorMap2, blendWt1, blendWt2);
+            var ldfcSpectrogram = cs1.DrawBlendedFalseColourSpectrogram(colorMap1, colorMap2, blendWeight1, blendWeight2);
             if (ldfcSpectrogram == null)
             {
                 throw new InvalidOperationException("Null Image returned from DrawBlendedFalseColourSpectrogram");
