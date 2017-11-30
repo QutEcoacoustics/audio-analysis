@@ -38,6 +38,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
         private static readonly ILog Log = LogManager.GetLogger(nameof(RecognizerEntry));
 
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static Arguments Dev()
         {
             Log.Info("Runnung Event Recognizer through the RecognizerEntry.Dev() method.");

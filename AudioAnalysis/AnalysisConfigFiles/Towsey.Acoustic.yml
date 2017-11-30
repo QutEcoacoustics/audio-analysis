@@ -14,16 +14,16 @@ SegmentDuration: 1
 #SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 
-# IndexCalculationDuration: units=seconds (default=60 seconds; use 0.2 for zooming spectrogram tiles)
+# IndexCalculationDuration: units=seconds (default=60 seconds; use 0.1 for zooming spectrogram tiles)
 # The Timespan (in seconds) over which summary and spectral indices are calculated
 IndexCalculationDuration: 60.0
 
-# BGNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
+# BgNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
 # BG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
 #    Ten seconds is considered a minimum interval to obtain a reliable estimate of BG noise.
 #    The  BG noise interval is not extended beyond start or end of recording segment.
 #    Consequently for a 60sec Index calculation duration, the  BG noise is calculated form the 60sec segment only.
-BGNoiseNeighbourhood: 5
+BgNoiseNeighbourhood: 5
 
 # Resample rate must be 2 X the desired Nyquist
 ResampleRate: 22050
@@ -56,7 +56,6 @@ SaveSonogramImages: Never
 # TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
 SaveSonogramData: false
 
-ParallelProcessing: false
 
 # if true an additional set of images will be produced that are tiles
 # if true, RequireDateInFilename must be set

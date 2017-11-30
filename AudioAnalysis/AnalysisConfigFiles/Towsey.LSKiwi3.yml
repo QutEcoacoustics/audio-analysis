@@ -43,5 +43,4 @@ SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never
-ParallelProcessing: false
 ...

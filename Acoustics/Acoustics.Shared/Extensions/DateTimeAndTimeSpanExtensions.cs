@@ -339,6 +339,11 @@ namespace System
             return date.AddTicks(halfIntervalTicks - ((date.Ticks + halfIntervalTicks) % roundingInterval.Ticks));
         }
 
+        public static TimeSpan Absolute(this TimeSpan span)
+        {
+            return span < TimeSpan.Zero ? new TimeSpan(span.Ticks * -1) : span;
+        }
+
         public static TimeSpan Min(this TimeSpan t1, TimeSpan t2)
         {
             return t1 <= t2 ? t1 : t2;

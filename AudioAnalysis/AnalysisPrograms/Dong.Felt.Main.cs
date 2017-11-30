@@ -144,7 +144,7 @@ namespace AnalysisPrograms
 
             //    var imageResult = new Image_MultiTrack(spectrogram.GetImage(true, true));
             //    //imageResult.AddPoints(pointsOfInterest);
-            //    imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            //    imageResult.AddTrack(ImageTrack.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
             //    imageResult.Save(path + "1.png");
             //    Log.Info("Show the result of Final PointsOfInterest");
             ////}
@@ -267,6 +267,7 @@ namespace AnalysisPrograms
         /// <param name="arguments">
         /// The arguments.
         /// </param>
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static void Dev(Arguments arguments)
         {
             if (arguments == null)

@@ -47,6 +47,5 @@ SaveIntermediateCsvFiles: true
 # Output sonogram (composite) images
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never
-ParallelProcessing: false
 ...
 

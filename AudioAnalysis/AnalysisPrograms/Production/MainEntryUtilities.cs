@@ -476,8 +476,13 @@ namespace AnalysisPrograms
 
         private static void ModifyVerbosity(MainEntryArguments arguments)
         {
+            SetLogVerbosity(arguments.LogLevel, arguments.QuietConsole);
+        }
+
+        public static void SetLogVerbosity(LogVerbosity logVerbosity, bool quietConsole = false)
+        {
             Level modifiedLevel;
-            switch (arguments.LogLevel)
+            switch (logVerbosity)
             {
                 case LogVerbosity.None:
                     modifiedLevel = Level.Off;
@@ -511,14 +516,14 @@ namespace AnalysisPrograms
             repository.Root.Level = modifiedLevel;
             repository.Threshold = modifiedLevel;
 
-            if (arguments.QuietConsole)
+            if (quietConsole)
             {
                 var appenders = repository.GetAppenders();
 
                 foreach (var appender in appenders)
                 {
-                    if (appender is ConsoleAppender || appender is ManagedColoredConsoleAppender ||
-                        appender is ColoredConsoleAppender)
+                    if (appender is ConsoleAppender || appender is ManagedColoredConsoleAppender
+                        || appender is ColoredConsoleAppender)
                     {
                         ((AppenderSkeleton)appender).Threshold = Level.Notice;
                     }
@@ -527,26 +532,63 @@ namespace AnalysisPrograms
 
             repository.RaiseConfigurationChanged(EventArgs.Empty);
 
-            Log.Debug("Log level changed to: " + arguments.LogLevel);
+            Log.Debug("Log level changed to: " + logVerbosity);
 
             // log test
-//            Log.Debug("Log test DEBUG");
-//            Log.Info("Log test INFO");
-//            Log.Success("Log test SUCCESS");
-//            Log.Warn("Log test WARN");
-//            Log.Error("Log test ERROR");
-//            Log.Fatal("Log test FATAL");
-//            Log.Trace("Log test TRACE");
-//            Log.Verbose("Log test VERBOSE");
-//            LoggedConsole.Log.Info("Clean log INFO");
-//            LoggedConsole.Log.Success("Clean log SUCCESS");
-//            LoggedConsole.Log.Warn("Clean log WARN");
-//            LoggedConsole.Log.Error("Clean log ERROR");
-//            LoggedConsole.WriteLine("Clean wrapper INFO");
-//            LoggedConsole.WriteSuccessLine("Clean wrapper SUCCESS");
-//            LoggedConsole.WriteWarnLine("Clean wrapper WARN");
-//            LoggedConsole.WriteErrorLine("Clean wrapper ERROR");
-//            LoggedConsole.WriteFatalLine("Clean wrapper FATAL", new Exception("I'm a fake"));
+            //            Log.Debug("Log test DEBUG");
+            //            Log.Info("Log test INFO");
+            //            Log.Success("Log test SUCCESS");
+            //            Log.Warn("Log test WARN");
+            //            Log.Error("Log test ERROR");
+            //            Log.Fatal("Log test FATAL");
+            //            Log.Trace("Log test TRACE");
+            //            Log.Verbose("Log test VERBOSE");
+            //            LoggedConsole.Log.Info("Clean log INFO");
+            //            LoggedConsole.Log.Success("Clean log SUCCESS");
+            //            LoggedConsole.Log.Warn("Clean log WARN");
+            //            LoggedConsole.Log.Error("Clean log ERROR");
+            //            LoggedConsole.WriteLine("Clean wrapper INFO");
+            //            LoggedConsole.WriteSuccessLine("Clean wrapper SUCCESS");
+            //            LoggedConsole.WriteWarnLine("Clean wrapper WARN");
+            //            LoggedConsole.WriteErrorLine("Clean wrapper ERROR");
+            //            LoggedConsole.WriteFatalLine("Clean wrapper FATAL", new Exception("I'm a fake"));
+        }
+
+        private static void LogProgramStats()
+        {
+            var thisProcess = Process.GetCurrentProcess();
+            var stats = new
+            {
+                Platform = Environment.OSVersion.ToString(),
+                ProcessorCount = Environment.ProcessorCount,
+                ExecutionTime = (DateTime.Now - thisProcess.StartTime).TotalSeconds,
+                PeakWorkingSet = thisProcess.PeakWorkingSet64,
+            };
+
+            var statsString = "Programs stats:\n" + Json.SerialiseToString(stats, prettyPrint: true);
+
+            NoConsole.Log.Info(statsString);
+        }
+
+        /// <summary>
+        /// This method is used to do application wide loading of native code.
+        /// </summary>
+        /// <remarks>
+        /// Until we convert this application to a .NET Core, there is no support for "runtimes" backed into the build
+        /// system. Thus instead we:
+        /// - copy runtimes manually as a build step
+        ///   (due to a mono bug, the folder to copy in is named `libruntimes`. See https://github.com/libgit2/libgit2sharp/issues/1170)
+        /// - map Dlls to their appropriate native DLLs in the dllmap entried in the App.config (which is used by the
+        ///   mono runtime
+        /// - and finally, call any intialization code that is needed here in this method.
+        /// </remarks>
+        private static void LoadNativeCode()
+        {
+            Log.Debug("Loading native code");
+
+            // for sqlite
+            // note: a custom dll map for sqlite can be found in SQLitePCLRaw.provider.e_sqlite3.dll.config
+            SQLitePCL.Batteries_V2.Init();
         }
     }
 }

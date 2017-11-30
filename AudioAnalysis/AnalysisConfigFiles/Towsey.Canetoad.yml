@@ -32,7 +32,6 @@ SaveIntermediateCsvFiles: false
 SaveSonogramImages: Never
 # DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
-ParallelProcessing: false
 
 IndexPropertiesConfig: ".\\IndexPropertiesConfigHiRes.yml"
 ...

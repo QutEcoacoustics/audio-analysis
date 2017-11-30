@@ -17,6 +17,8 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
     using TestHelpers;
     using TowseyLibrary;
 
+    using Zio;
+
     /// <summary>
     /// Test methods for the various standard Sonograms or Spectrograms
     /// Notes on TESTS: (from Anthony in email @ 05/04/2017)
@@ -138,6 +140,9 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             // draw array just to check peaks are in correct places - just for debugging purposes
             var ldsBgnSpectrumFile = this.outputDirectory.CombineFile("Spectrum1.png");
             GraphsAndCharts.DrawGraph(array, "LD BGN SPECTRUM Linear", ldsBgnSpectrumFile);
+
+            var generationData = Json.Deserialise<IndexGenerationData>(IndexGenerationData.FindFile(resultsDirectory.ToDirectoryEntry()));
+            Assert.AreEqual("TemporaryRecording1", generationData.RecordingBasename);
         }
 
         /// <summary>
@@ -259,7 +264,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             // finally read in the dictionary of spectra
             string analysisType = "Towsey.Acoustic";
             var keys = LDSpectrogramRGB.GetArrayOfAvailableKeys();
-            var dictionaryOfSpectra = IndexMatrices.ReadCsvFiles(resultsDirectory, recordingName + "__" + analysisType, keys);
+            var dictionaryOfSpectra = IndexMatrices.ReadSpectralIndices(resultsDirectory, recordingName, analysisType, keys);
 
             LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
                     inputDirectory: resultsDirectory,
@@ -282,6 +287,64 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             // image is (7*4) * 652
             Assert.AreEqual(28, twoMapsImage.Width);
             Assert.AreEqual(652, twoMapsImage.Height);
+        }
+
+        [TestMethod]
+        public void TestEnsuresFailureForNoDate()
+        {
+            var recordingPath = PathHelper.ResolveAsset("geckos.wav");
+
+            var configPath = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
+            //var indexPropertiesFile = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
+            //indexPropertiesFile.CopyTo(Path.Combine(this.outputDirectory.FullName, "IndexPropertiesConfig.yml"));
+
+            // modify config file
+            // because of difficulties in dealing with dynamic config files, just edit the text file!!!!!
+            var configLines = File.ReadAllLines(configPath.FullName);
+            configLines[configLines.IndexOf(x => x.StartsWith("RequireDateInFilename:"))] = "RequireDateInFilename: true";
+
+            // write the edited Config file to temporary output directory
+            var newConfigPath = this.outputDirectory.CombineFile("Towsey.Acoustic.yml");
+            File.WriteAllLines(newConfigPath.FullName, configLines);
+
+            var arguments = new AnalyseLongRecording.Arguments
+            {
+                Source = recordingPath,
+                Config = newConfigPath,
+                Output = this.outputDirectory,
+                MixDownToMono = true,
+            };
+
+            Assert.ThrowsException<InvalidFileDateException>(() => AnalyseLongRecording.Execute(arguments));
+        }
+
+        [TestMethod]
+        public void TestEnsuresFailureWithAmbiguousDate()
+        {
+            var recordingPath = this.outputDirectory.CombineFile("20160801_110000_continuous1.wav");
+
+            var configPath = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
+            //var indexPropertiesFile = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
+            //indexPropertiesFile.CopyTo(Path.Combine(this.outputDirectory.FullName, "IndexPropertiesConfig.yml"));
+
+            // modify config file
+            // because of difficulties in dealing with dynamic config files, just edit the text file!!!!!
+            var configLines = File.ReadAllLines(configPath.FullName);
+            configLines[configLines.IndexOf(x => x.StartsWith("RequireDateInFilename:"))] = "RequireDateInFilename: true";
+
+            // write the edited Config file to temporary output directory
+            var newConfigPath = this.outputDirectory.CombineFile("Towsey.Acoustic.yml");
+            File.WriteAllLines(newConfigPath.FullName, configLines);
+
+            var arguments = new AnalyseLongRecording.Arguments
+            {
+                Source = recordingPath,
+                Config = newConfigPath,
+                Output = this.outputDirectory,
+                MixDownToMono = true,
+            };
+
+            Assert.ThrowsException<InvalidFileDateException>(() => AnalyseLongRecording.Execute(arguments));
         }
     }
 }

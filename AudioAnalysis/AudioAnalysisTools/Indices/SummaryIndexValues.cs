@@ -10,6 +10,9 @@ namespace AudioAnalysisTools.Indices
     using System.Drawing;
     using Acoustics.Shared;
     using AnalysisBase.ResultBases;
+
+    using AudioAnalysisTools.StandardSpectrograms;
+
     using Fasterflect;
     using TowseyLibrary;
 
@@ -252,7 +255,7 @@ namespace AudioAnalysisTools.Indices
         /// </param>
         public static SpectralIndexValues[] ImportFromDictionary(Dictionary<string, double[,]> dictionaryOfSpectra)
         {
-            return dictionaryOfSpectra.FromTwoDimensionalArray<SpectralIndexValues, double>(CachedSetters, TwoDimensionalArray.ColumnMajor);
+            return dictionaryOfSpectra.FromTwoDimensionalArray<SpectralIndexValues, double>(CachedSetters, TwoDimensionalArray.Transpose);
         }
 
         /// <summary>

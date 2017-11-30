@@ -71,7 +71,7 @@ namespace Acoustics.Test
         [TestMethod]
         public void EnumerableToDictionaryOfMatriciesTest_ColumnMajor()
         {
-            var result = this.dummyDatas.ToTwoDimensionalArray(this.selectors, TwoDimensionalArray.ColumnMajor);
+            var result = this.dummyDatas.ToTwoDimensionalArray(this.selectors, TwoDimensionalArray.Transpose);
 
             Assert.AreEqual(2, result.Count);
 
@@ -89,7 +89,7 @@ namespace Acoustics.Test
         [TestMethod]
         public void EnumerableToDictionaryOfMatriciesTest_ColumnMajorFlipped()
         {
-            var result = this.dummyDatas.ToTwoDimensionalArray(this.selectors, TwoDimensionalArray.ColumnMajorFlipped);
+            var result = this.dummyDatas.ToTwoDimensionalArray(this.selectors, TwoDimensionalArray.Rotate90ClockWise);
 
             Assert.AreEqual(2, result.Count);
 

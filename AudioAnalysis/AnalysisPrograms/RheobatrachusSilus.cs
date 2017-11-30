@@ -81,6 +81,7 @@
         {
         }
 
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static void Dev(Arguments arguments)
         {
             Log.Verbosity = 1;
@@ -422,10 +423,10 @@
             //img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
 
             //Image_MultiTrack image = new Image_MultiTrack(img);
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
             if (plots != null)
-                foreach (Plot plot in plots) image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
+                foreach (Plot plot in plots) image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
             if (hits != null) image.OverlayRainbowTransparency(hits);
             if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             return image.GetImage();

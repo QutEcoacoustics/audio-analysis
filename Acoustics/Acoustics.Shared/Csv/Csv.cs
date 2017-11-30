@@ -25,6 +25,8 @@ namespace Acoustics.Shared.Csv
     using Fasterflect;
     using log4net;
 
+    using Zio;
+
     /// <summary>
     /// Generic methods for reading and writing Csv file.
     /// .
@@ -242,6 +244,7 @@ namespace Acoustics.Shared.Csv
             {
                 throw new CsvHelperException("Expected an index header and there was none");
             }
+
             if (!includeRowIndex && headers[0] == "Index")
             {
                 throw new CsvHelperException("Did not expect an index header and there was one");
@@ -276,36 +279,44 @@ namespace Acoustics.Shared.Csv
             int columnCount;
             var csvRows = DecodeMatrix<T>(reader, includeRowIndex, out rowCount, out columnCount);
 
-            var result = dimensionality == TwoDimensionalArray.RowMajor
+            var result = dimensionality == TwoDimensionalArray.None
                 ? new T[rowCount, columnCount]
                 : new T[columnCount, rowCount];
 
-            for (int i = 0; i < csvRows.Count; i++)
+            for (int r = 0; r < csvRows.Count; r++)
             {
-                var row = csvRows[i];
-                for (int j = 0; j < row.Length; j++)
+                var row = csvRows[r];
+                for (int c = 0; c < row.Length; c++)
                 {
                     switch (dimensionality)
                     {
-                        case TwoDimensionalArray.RowMajor:
-                            result[i, j] = row[j];
+                        case TwoDimensionalArray.None:
+                            result[r, c] = row[c];
                             break;
-                        case TwoDimensionalArray.ColumnMajor:
-                            result[j, i] = row[j];
+                        case TwoDimensionalArray.Transpose:
+                            result[c, r] = row[c];
                             break;
-                        case TwoDimensionalArray.ColumnMajorFlipped:
-                            result[columnCount - 1 - j, i] = row[j];
+                        case TwoDimensionalArray.Rotate90ClockWise:
+                            // note these operations are reversed and look wrong, but because they
+                            // are being done on the LHS of assignment, the operations need to be inversed
+                            result[c, rowCount - 1 - r] = row[c];
+                            break;
+                        case TwoDimensionalArray.Rotate90AntiClockWise:
+                            // note these operations are reversed and look wrong, but because they
+                            // are being done on the LHS of assignment, the operations need to be inversed
+                            result[columnCount - 1 - c, r] = row[c];
+
                             break;
                         default:
                             throw new NotImplementedException("Other dimensionalities not implemented");
                     }
                 }
             }
+
             return result;
         }
 
-
-        public static void WriteMatrixToCsv<T>(FileInfo destination, T[,] matrix, TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor)
+        public static void WriteMatrixToCsv<T>(FileInfo destination, T[,] matrix, TwoDimensionalArray dimensionality = TwoDimensionalArray.None)
         {
             Contract.Requires(destination != null);
 
@@ -320,16 +331,20 @@ namespace Acoustics.Shared.Csv
             }
         }
 
-        public static T[,] ReadMatrixFromCsv<T>(FileInfo source, TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor)
+        public static T[,] ReadMatrixFromCsv<T>(FileInfo source, TwoDimensionalArray transform = TwoDimensionalArray.None)
+        {
+            return ReadMatrixFromCsv<T>(source.ToFileEntry(), transform);
+        }
+
+        public static T[,] ReadMatrixFromCsv<T>(FileEntry source, TwoDimensionalArray transform = TwoDimensionalArray.None)
         {
             Contract.Requires(source != null);
 
-            // not tested!
             using (var stream = source.OpenText())
             {
                 var reader = new CsvReader(stream, DefaultConfiguration);
 
-                return reader.DecodeMatrix<T>(dimensionality, true);
+                return reader.DecodeMatrix<T>(transform, true);
             }
         }
 

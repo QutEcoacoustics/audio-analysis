@@ -54,6 +54,9 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             [DefaultValue(true)]
             public bool MixDownToMono { get; set; } = true;
 
+            [ArgDescription("Whether or not run this analysis in parallel - multiple segments can be analyzed at the same time")]
+            public bool Parallel { get; set; } = false;
+
             public void Validate()
             {
                 if (this.StartOffset.HasValue ^ this.EndOffset.HasValue)

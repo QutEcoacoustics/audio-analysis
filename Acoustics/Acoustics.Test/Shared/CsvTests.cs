@@ -90,44 +90,15 @@ namespace Acoustics.Test.Shared
         }
 
         [TestMethod]
-        public void TestWriteSimpleMatrixColumnMajor()
+        public void TestWriteSimpleMatrixRotateAntiClockwise()
         {
-            Csv.WriteMatrixToCsv(this.testFile, TestMatrix, TwoDimensionalArray.ColumnMajor);
+            Csv.WriteMatrixToCsv(this.testFile, TestMatrix, TwoDimensionalArray.Rotate90AntiClockWise);
 
             var expected = CsvExpectedHelper(
-                new[] { 0, 4, 8, 12, 16 },
-                new[] { 1, 5, 9, 13, 17 },
+                new[] { 3, 7, 11, 15, 19 },
                 new[] { 2, 6, 10, 14, 18 },
-                new[] { 3, 7, 11, 15, 19 });
-
-            this.AssertCsvEqual(expected, this.testFile);
-        }
-
-        [TestMethod]
-        public void TestWriteSimpleMatrixColumnMajorFlipped()
-        {
-            Csv.WriteMatrixToCsv(this.testFile, TestMatrix, TwoDimensionalArray.ColumnMajorFlipped);
-
-            var expected = CsvExpectedHelper(
-                new[] { 16, 12, 8, 4, 0 },
-                new[] { 17, 13, 9, 5, 1 },
-                new[] { 18, 14, 10, 6, 2 },
-                new[] { 19, 15, 11, 7, 3 });
-
-            this.AssertCsvEqual(expected, this.testFile);
-        }
-
-        [TestMethod]
-        public void TestWriteSimpleMatrixAlternateName()
-        {
-            Csv.WriteMatrixToCsv(this.testFile, TestMatrix, TwoDimensionalArray.Normal);
-
-            var expected = CsvExpectedHelper(
-                new[] { 0, 1, 2, 3 },
-                new[] { 4, 5, 6, 7 },
-                new[] { 8, 9, 10, 11 },
-                new[] { 12, 13, 14, 15 },
-                new[] { 16, 17, 18, 19 });
+                new[] { 1, 5, 9, 13, 17 },
+                new[] { 0, 4, 8, 12, 16 });
 
             this.AssertCsvEqual(expected, this.testFile);
         }
@@ -165,7 +136,7 @@ namespace Acoustics.Test.Shared
         {
             Csv.WriteMatrixToCsv(this.testFile, TestMatrix);
 
-            double[,] matrix = Csv.ReadMatrixFromCsv<double>(this.testFile, TwoDimensionalArray.RowMajor);
+            double[,] matrix = Csv.ReadMatrixFromCsv<double>(this.testFile, TwoDimensionalArray.None);
 
             Debug.WriteLine(Json.SerialiseToString(TestMatrix, prettyPrint: true));
             Debug.WriteLine("Actual:");
@@ -177,19 +148,37 @@ namespace Acoustics.Test.Shared
         [TestMethod]
         public void TestWriteAndReadSimpleMatrixColumnMajor()
         {
-            Csv.WriteMatrixToCsv(this.testFile, TestMatrix, TwoDimensionalArray.ColumnMajor);
+            Csv.WriteMatrixToCsv(this.testFile, TestMatrix, TwoDimensionalArray.Transpose);
 
-            double[,] matrix = Csv.ReadMatrixFromCsv<double>(this.testFile, TwoDimensionalArray.ColumnMajor);
+            double[,] matrix = Csv.ReadMatrixFromCsv<double>(this.testFile, TwoDimensionalArray.Transpose);
 
             CollectionAssert.AreEqual(TestMatrix, matrix);
         }
 
         [TestMethod]
-        public void TestWriteAndReadSimpleMatrixColumnMajorFlipped()
+        public void TestWriteAndReadSimpleMatrix90Clockwise()
         {
-            Csv.WriteMatrixToCsv(this.testFile, TestMatrix, TwoDimensionalArray.ColumnMajorFlipped);
+            Csv.WriteMatrixToCsv(this.testFile, TestMatrix, TwoDimensionalArray.Rotate90ClockWise);
 
-            double[,] matrix = Csv.ReadMatrixFromCsv<double>(this.testFile, TwoDimensionalArray.ColumnMajorFlipped);
+            double[,] matrix = Csv.ReadMatrixFromCsv<double>(this.testFile, TwoDimensionalArray.Rotate90AntiClockWise);
+
+            Debug.WriteLine(Json.SerialiseToString(TestMatrix, prettyPrint: true));
+            Debug.WriteLine("Actual:");
+            Debug.WriteLine(Json.SerialiseToString(matrix, true));
+
+            CollectionAssert.AreEqual(TestMatrix, matrix);
+        }
+
+        [TestMethod]
+        public void TestWriteAndReadSimpleMatrix90AntiClockwise()
+        {
+            Csv.WriteMatrixToCsv(this.testFile, TestMatrix, TwoDimensionalArray.Rotate90AntiClockWise);
+
+            double[,] matrix = Csv.ReadMatrixFromCsv<double>(this.testFile, TwoDimensionalArray.Rotate90ClockWise);
+
+            Debug.WriteLine(Json.SerialiseToString(TestMatrix, prettyPrint: true));
+            Debug.WriteLine("Actual:");
+            Debug.WriteLine(Json.SerialiseToString(matrix, true));
 
             CollectionAssert.AreEqual(TestMatrix, matrix);
         }
@@ -199,7 +188,11 @@ namespace Acoustics.Test.Shared
         {
             Csv.WriteMatrixToCsv(this.testFile, TestMatrix, TwoDimensionalArray.Rotate90ClockWise);
 
-            double[,] matrix = Csv.ReadMatrixFromCsv<double>(this.testFile, TwoDimensionalArray.RowMajor);
+            double[,] matrix = Csv.ReadMatrixFromCsv<double>(this.testFile, TwoDimensionalArray.None);
+
+            Debug.WriteLine(Json.SerialiseToString(TestMatrix, prettyPrint: true));
+            Debug.WriteLine("Actual:");
+            Debug.WriteLine(Json.SerialiseToString(matrix, true));
 
             matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
 
@@ -299,7 +292,7 @@ namespace Acoustics.Test.Shared
             var partialExpected = new[]
             {
                 typeof(AcousticEvent.AcousticEventClassMap),
-                typeof(EventStatisticsClassMap),
+                typeof(EventStatistics.EventStatisticsClassMap),
                 typeof(ImportedEvent.ImportedEventNameClassMap),
             };
 

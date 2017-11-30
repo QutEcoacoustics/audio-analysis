@@ -17,6 +17,8 @@ namespace Acoustics.Shared
     using YamlDotNet.RepresentationModel;
     using YamlDotNet.Serialization;
 
+    using Zio;
+
     public class Yaml
     {
         public static DynamicYaml Deserialise(FileInfo file)
@@ -56,6 +58,11 @@ namespace Acoustics.Shared
         }
 
         public static T Deserialise<T>(FileInfo file)
+        {
+            return Deserialise<T>(file.ToFileEntry());
+        }
+
+        public static T Deserialise<T>(FileEntry file)
         {
             using (var stream = file.OpenText())
             {

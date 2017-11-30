@@ -17,7 +17,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     public static class LDSpectrogramDistance
     {
         // set DEFAULT values for parameters
-        #region Static Fields
 
         // must be value <=1.0
         private static double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
@@ -36,9 +35,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         // assume one minute spectra and hourly time lines
         private static TimeSpan xScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
-        #endregion
-
-        #region Public Methods and Operators
 
         public static void DrawDistanceSpectrogram(dynamic configuration)
         {
@@ -48,7 +44,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var outputDirectory = ((string)configuration.OutputDirectory).ToDirectoryInfo();
 
             // First, need to make an optional cast:
-            // int? minuteOffset = confirguration.MinuteOffset;
+            // int? minuteOffset = confirguration.AnalysisStartOffset;
 
             // Second,  have a few options:
             // if (!minuteOffset.HasValue) {
@@ -57,7 +53,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // OR       minuteOffset = minuteOffset == null ? 0 : minuteoffset.Value;
 
             // ORRR - all in one line!
-            // int minuteOffset = (int?)configuration.MinuteOffset ?? 0;
+            // int minuteOffset = (int?)configuration.AnalysisStartOffset ?? 0;
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string map = configuration.ColorMap;
@@ -488,7 +484,5 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             colourChart.Add("-NotSig", Color.FromArgb(10, 50, 20)); // + not significant
             return colourChart;
         }
-
-        #endregion
     } // class LDSpectrogramDistance
 }

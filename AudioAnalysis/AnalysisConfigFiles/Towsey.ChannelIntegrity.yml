@@ -26,7 +26,6 @@ SaveIntermediateCsvFiles: false
 
 # DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
-ParallelProcessing: false
 
 # if true, an unambiguous date time must be provided in the source file's name.
 # if true, an exception will be thrown if no such date is found

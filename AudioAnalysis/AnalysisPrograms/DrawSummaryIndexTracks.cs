@@ -17,6 +17,8 @@
     using PowerArgs;
     using TowseyLibrary;
 
+    using Zio;
+
     public class DrawSummaryIndexTracks
     {
         public class Arguments
@@ -45,6 +47,7 @@
         /// To get to this DEV method, the FIRST AND ONLY command line argument must be "indicescsv2image"
         /// </summary>
         /// <returns></returns>
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         private static Arguments Dev()
         {
             //use the following for the command line for the <indicesCsv2Image> task.
@@ -115,7 +118,7 @@
             arguments.Output.CreateParentDirectories();
 
             // Find required index generation data
-            var igd = IndexGenerationData.GetIndexGenerationData(arguments.InputCsv.Directory);
+            var igd = IndexGenerationData.GetIndexGenerationData(arguments.InputCsv.Directory.ToDirectoryEntry());
 
             // Convert summary indices to image
             string fileName = Path.GetFileNameWithoutExtension(arguments.InputCsv.Name);

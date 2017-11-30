@@ -15,8 +15,6 @@ namespace AudioAnalysisTools
     /// </summary>
     public class PointOfInterest
     {
-        #region Static Fields
-
         /// <summary>
         /// The anchor color.
         /// </summary>
@@ -32,15 +30,7 @@ namespace AudioAnalysisTools
         /// </summary>
         public static readonly Color HitsColor = Color.Blue;
 
-        #endregion
-
-        #region Fields
-
         private Color? drawColor;
-
-        #endregion
-
-        #region Constructors and Destructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PointOfInterest"/> class.
@@ -57,10 +47,6 @@ namespace AudioAnalysisTools
             this.TimeLocation = time;
             this.Herz = herz;
         }
-
-        #endregion
-
-        #region Public Properties
 
         /// <summary>
         /// Gets or sets the point.
@@ -137,12 +123,6 @@ namespace AudioAnalysisTools
         /// Gets or sets boolean - is POI a local maximum?
         /// </summary>
         public bool IsLocalMaximum { get; set; }
-
-
-
-        #endregion
-
-        #region Public Methods and Operators
 
         /// <summary>
         /// The draw point method draws a collection of points onto a graphics surface.
@@ -417,10 +397,6 @@ namespace AudioAnalysisTools
             bmp.SetPixel(x, y, color);
         } // DrawOrientationPoint
 
-        #endregion
-
-        #region Public STATIC Methods
-
         public static void PruneSingletons(List<PointOfInterest> poiList, int rows, int cols)
         {
             double[,] m = TransferPOIsToDoublesMatrix(poiList, rows, cols);
@@ -619,11 +595,5 @@ namespace AudioAnalysisTools
             }
             fraction = poiCount / (double)cellCount;
         } // CountPOIsInMatrix()
-
-
-        #endregion
-
-
-
     }
 }

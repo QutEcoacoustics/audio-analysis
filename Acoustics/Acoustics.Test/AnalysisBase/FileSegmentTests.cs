@@ -1,4 +1,4 @@
-﻿// <copyright file="UnitTest1.cs" company="QutEcoacoustics">
+﻿// <copyright file="FileSegmentTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -64,7 +64,7 @@ namespace Acoustics.Test.AnalysisBase
             var asset = PathHelper.ResolveAsset(testFile);
             var info = TestHelper.AudioDetails[testFile];
 
-            FileSegment s = new FileSegment(asset, TimeAlignment.None);
+            FileSegment s = new FileSegment(asset, TimeAlignment.None, null, FileSegment.FileDateBehavior.Try);
 
             Assert.AreEqual(null, s.SegmentStartOffset);
             Assert.AreEqual(null, s.SegmentEndOffset);
