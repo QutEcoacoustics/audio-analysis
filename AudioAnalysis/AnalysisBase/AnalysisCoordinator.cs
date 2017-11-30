@@ -16,6 +16,7 @@ namespace AnalysisBase
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Threading;
     using System.Threading.Tasks;
     using Acoustics.Shared.Contracts;
     using log4net;
@@ -559,11 +560,22 @@ namespace AnalysisBase
             var analysisSegmentsCount = analysisSegments.Count;
             var results = new AnalysisResult2[analysisSegmentsCount];
 
+            // log some helper infomration
+            // We're limiting this because AP.exe just uses too much RAM on smaller machines in parallel mode.
+            // Ideally I'd like to be able to intelligently increase this limit based on amount of available RAM
+            // but I can't find a suitable cross platform API to determine system RAM.
+            var maxDegreeOfParallelism = Environment.ProcessorCount;
+            Log.Debug($"Parallel analysis limited to {maxDegreeOfParallelism} concurrent processes");
+            long currentConcurrency = 0;
+
             // much dodgy, such parallelism, so dining philosopher...
             int finished = 0;
-
+            
             void DelegateBody(ISegment<TSource> item, ParallelLoopState state, long index)
             {
+                Interlocked.Increment(ref currentConcurrency);
+                Log.Debug("Analysis Coordinator concurrency:" + Interlocked.Read(ref currentConcurrency));
+
                 var itemClosed = item;
                 var indexClosed = index;
 
@@ -583,9 +595,10 @@ namespace AnalysisBase
                 // such dodgy - let's see if it works!
                 finished++;
                 Log.Info($"Completed segment {index + 1}/{analysisSegments.Count} - roughly {finished} completed");
+                Interlocked.Decrement(ref currentConcurrency);
             }
 
-            Parallel.ForEach(analysisSegments, new ParallelOptions { MaxDegreeOfParallelism = 64 }, DelegateBody);
+            Parallel.ForEach(analysisSegments, new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism }, DelegateBody);
 
             return results;
         }
