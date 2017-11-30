@@ -63,6 +63,12 @@ namespace AudioAnalysisTools.Indices
                 // Log.Debug("Reading of file started: " + files[i].FullName);
                 var rowsOfCsvFile = Csv.ReadFromCsv<SummaryIndexValues>(files[i], throwOnMissingField: false);
 
+                if (i > 0)
+                {
+                    // mark a file join
+                    rowsOfCsvFile.First().FileJoin = 1.0; // should be a boolean = true
+                }
+
                 summaryIndices.AddRange(rowsOfCsvFile);
 
                 // track the row counts
@@ -97,7 +103,9 @@ namespace AudioAnalysisTools.Indices
                     // add in the missing summary index rows
                     for (int j = 0; j < rows2Add; j++)
                     {
-                        summaryIndices.Add(new SummaryIndexValues());
+                        var vector = new SummaryIndexValues();
+                        vector.RecordingExists = 0.0; // should be a boolean = false;
+                        summaryIndices.Add(vector);
                     }
                 }
             }
@@ -119,13 +127,16 @@ namespace AudioAnalysisTools.Indices
 
         /// <summary>
         /// WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
+        ///             Also it requires every index to be of type DOUBLE even when htis is not appropriate.
         /// TODO: This needs to be generalized
         /// </summary>
         public static Dictionary<string, double[]> GetDictionaryOfSummaryIndices(List<SummaryIndexValues> summaryIndices)
         {
             var dictionary = new Dictionary<string, double[]>
             {
-                { "ZeroSignal", summaryIndices.Select(x => x.ZeroSignal).ToArray() },
+                { GapsAndJoins.KeyRecordingExists, summaryIndices.Select(x => x.RecordingExists).ToArray() },
+                { GapsAndJoins.KeyFileJoin, summaryIndices.Select(x => x.FileJoin).ToArray() },
+                { GapsAndJoins.KeyZeroSignal, summaryIndices.Select(x => x.ZeroSignal).ToArray() },
                 { "ClippingIndex", summaryIndices.Select(x => x.ClippingIndex).ToArray() },
                 { "BackgroundNoise", summaryIndices.Select(x => x.BackgroundNoise).ToArray() },
                 { "Snr", summaryIndices.Select(x => x.Snr).ToArray() },
@@ -142,16 +153,6 @@ namespace AudioAnalysisTools.Indices
                 { "ThreeGramCount", summaryIndices.Select(x => x.ThreeGramCount).ToArray() },
             };
 
-            // Generate the following index to keep track of missing recording files
-            // This index is only constructed when concatenating summary index files.
-            // It will be used to draw erroneous segments on Long Duration spectrograms
-            var list = new List<double>();
-            foreach (var siv in summaryIndices)
-            {
-                list.Add(siv.FileName == null ? 1.0 : 0.0);
-            }
-
-            dictionary.Add("NoFile", list.ToArray());
             return dictionary;
         }
 
