@@ -559,7 +559,9 @@ namespace AnalysisPrograms
             var thisProcess = Process.GetCurrentProcess();
             var stats = new
             {
-                Runtime = (DateTime.Now - thisProcess.StartTime).TotalSeconds,
+                Platform = Environment.OSVersion.ToString(),
+                ProcessorCount = Environment.ProcessorCount,
+                ExecutionTime = (DateTime.Now - thisProcess.StartTime).TotalSeconds,
                 PeakWorkingSet = thisProcess.PeakWorkingSet64,
             };
 
