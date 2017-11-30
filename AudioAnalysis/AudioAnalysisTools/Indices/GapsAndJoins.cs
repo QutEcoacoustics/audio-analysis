@@ -1,4 +1,4 @@
-﻿// <copyright file="ErroneousIndexSegments.cs" company="QutEcoacoustics">
+﻿// <copyright file="GapsAndJoins.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -13,11 +13,12 @@ namespace AudioAnalysisTools.Indices
 
     /// <summary>
     /// Choices in how recording gaps are visualised.
-    /// NoGaps: Recording gaps will be ignored. Segments joined without space. Time scale will be broken. This may sometimes be required.
-    /// TimedGaps: Recording gaps will be filled with grey "error" segment of same duration as gap. Time scale remains linear and complete.
-    ///             This is the normal mode for visualisation
-    /// EchoGaps: Recording gaps are filled with some blend of pre- and post-gap spectra.
-    ///             Use this when recordings are one minute in 10, for example.
+    /// NoGaps: Recording gaps will be ignored. Segments joined without space. Continuity of the time scale will be broken.
+    ///             This will be best option when viewing 12-hour night-time recordings.
+    /// TimedGaps: Recording gaps will be filled with a grey "gap" segment of same duration as gap. Time scale remains linear and complete.
+    ///             this is, continuity of the time scale is preserved. This is the default mode for visualisation
+    /// EchoGaps: Recording gaps are filled with a repeat of the last three-index spectrum prior to the gap.
+    ///             Continuity of the time scale is preserved. Use this when recordings are one minute in 10, for example.
     /// </summary>
     public enum ConcatMode
     {
@@ -26,15 +27,21 @@ namespace AudioAnalysisTools.Indices
         EchoGaps,
     }
 
-    public class ErroneousIndexSegments
+    public class GapsAndJoins
     {
-        public const string ErroneousIndexSegmentsFilenameFragment = "WARNING-IndexErrors";
+        public const string ErroneousIndexSegmentsFilenameFragment = "WARNING-IndexGapsAndJoins";
 
-        private static string errorMissingData = "No Recording";
-        private static string errorZeroSignal = "ERROR: Zero Signal";
-        private static string invalidIndexValue = "Invalid Index Value";
+        // keys used to extract indices to do with gaps and joins.
+        public const string KeyRecordingExists = "RecordingExists";
+        public const string KeyFileJoin = "FileJoin";
+        public const string KeyZeroSignal = "ZeroSignal";
 
-        public string ErrorDescription { get; set; }
+        private static string gapDescriptionMissingData = "No Recording";
+        private static string gapDescriptionZeroSignal = "ERROR: Zero Signal";
+        private static string gapDescriptionInvalidValue = "Invalid Index Value";
+        private static string gapDescriptionFileJoin = "File Join";
+
+        public string GapDescription { get; set; }
 
         public int StartPosition { get; set; }
 
@@ -50,20 +57,27 @@ namespace AudioAnalysisTools.Indices
         // #####################################################################################################################
 
         /// <summary>
-        /// Does two or three data integrity checks.
+        /// Does several data integrity checks.
         /// </summary>
         /// <param name="summaryIndices">a dictionary of summary indices</param>
+        /// <param name="gapRendering">describes how recording gaps are to be rendered</param>
         /// <returns>a list of erroneous segments</returns>
-        public static List<ErroneousIndexSegments> DataIntegrityCheck(Dictionary<string, double[]> summaryIndices, ConcatMode gapRendering)
+        public static List<GapsAndJoins> DataIntegrityCheck(Dictionary<string, double[]> summaryIndices, ConcatMode gapRendering)
         {
-            // Integrity check 1
-            var errors = DataIntegrityCheckForNoRecording(summaryIndices, gapRendering);
+            // Integrity check 1: look for whether a recording minute exists
+            double[] gapArray = summaryIndices[KeyRecordingExists];
+            var errors = DataIntegrityCheckForNoRecording(gapArray, gapRendering);
 
-            // Integrity check 2
-            errors.AddRange(DataIntegrityCheckForZeroSignal(summaryIndices));
+            // Integrity check 2: look for whether there is join between two recording files
+            gapArray = summaryIndices[KeyFileJoin];
+            errors.AddRange(DataIntegrityCheckForFileJoins(gapArray, gapRendering));
 
-            // Integrity check 3. This error check not done for time being - a bit unrealistic
-            // errors.AddRange(DataIntegrityCheckIndices(summaryIndices));
+            // Integrity check 3: reads the ZeroSignal array to make sure there was actually a signal to analyse.
+            gapArray = summaryIndices[KeyZeroSignal];
+            errors.AddRange(DataIntegrityCheckForZeroSignal(gapArray));
+
+            // Integrity check 4. This error check not done for time being - a bit unrealistic
+            // errors.AddRange(DataIntegrityCheckIndexValues(summaryIndices));
             return errors;
         }
 
@@ -73,7 +87,7 @@ namespace AudioAnalysisTools.Indices
         /// <param name="spectralIndices">a dictionary of spectral indices</param>
         /// <param name="gapRendering">how to render the gap in image terms</param>
         /// <returns>a list of erroneous segments</returns>
-        public static List<ErroneousIndexSegments> DataIntegrityCheck(Dictionary<string, double[,]> spectralIndices, ConcatMode gapRendering)
+        public static List<GapsAndJoins> DataIntegrityCheck(Dictionary<string, double[,]> spectralIndices, ConcatMode gapRendering)
         {
             var errors = DataIntegrityCheckSpectralIndices(spectralIndices, gapRendering);
             return errors;
@@ -85,7 +99,7 @@ namespace AudioAnalysisTools.Indices
         /// <param name="errors">list of erroneous segments</param>
         /// <param name="outputDirectory">directory in which json file to be written</param>
         /// <param name="fileStem">name of json file</param>
-        public static void WriteErrorsToFile(List<ErroneousIndexSegments> errors, DirectoryInfo outputDirectory, string fileStem)
+        public static void WriteErrorsToFile(List<GapsAndJoins> errors, DirectoryInfo outputDirectory, string fileStem)
         {
             // write info to file
             if (errors.Count == 0)
@@ -96,80 +110,126 @@ namespace AudioAnalysisTools.Indices
             string path = FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, ErroneousIndexSegmentsFilenameFragment, "json");
 
             // ReSharper disable once RedundantTypeArgumentsOfMethod
-            Json.Serialise<List<ErroneousIndexSegments>>(new FileInfo(path), errors);
+            Json.Serialise<List<GapsAndJoins>>(new FileInfo(path), errors);
         }
 
         /// <summary>
-        /// This method reads through a ZeroIndex SUMMARY array.
-        /// It reads the ZeroSignal array to make sure there was actually a signal to analyse.
-        /// If this occurs an error is flagged.
+        /// This method reads through a SUMMARY index array to make sure there was actually a signal to analyse.
+        /// If this occurs an gap/join event is flagged.
         /// </summary>
-        /// <param name="summaryIndices">Dictionary of the currently calculated summary indices</param>
+        /// <param name="gapArray">array of gap data</param>
         /// <param name="gapRendering">how to render the gap in image terms</param>
         /// <returns>a list of erroneous segments</returns>
-        public static List<ErroneousIndexSegments> DataIntegrityCheckForNoRecording(
-            Dictionary<string, double[]> summaryIndices,
-            ConcatMode gapRendering)
+        public static List<GapsAndJoins> DataIntegrityCheckForNoRecording(double[] gapArray, ConcatMode gapRendering)
         {
-            double tolerance = 0.00001;
+            double tolerance = 0.0001;
 
-            // init list of errors
-            var errors = new List<ErroneousIndexSegments>();
+            // init list of gaps and joins
+            var gaps = new List<GapsAndJoins>();
 
-            double[] zeroSignalArray = summaryIndices["NoFile"];
-            int arrayLength = zeroSignalArray.Length;
+            int arrayLength = gapArray.Length;
 
             bool allOk = true;
-            var error = new ErroneousIndexSegments
+            GapsAndJoins gap = null;
+            //var gap = new GapsAndJoins
+            //{
+            //    GapDescription = gapDescriptionMissingData,
+            //    GapRendering = gapRendering,
+            //};
+
+            // now loop through the rows/vectors of indices
+            for (int i = 0; i < gapArray.Length; i++)
             {
-                GapRendering = gapRendering,
-            };
-            for (int i = 0; i < zeroSignalArray.Length; i++)
-            {
-                // if (zeroSignal index > 0), i.e. if signal == zero
-                if (Math.Abs(zeroSignalArray[i]) > tolerance)
+                // if (RecordingExists index == 0), i.e. if signal exists
+                if (Math.Abs(gapArray[i]) < tolerance)
                 {
                     if (allOk)
                     {
                         allOk = false;
-                        error = new ErroneousIndexSegments
+                        gap = new GapsAndJoins
                         {
                             StartPosition = i,
-                            ErrorDescription = errorMissingData,
+                            GapDescription = gapDescriptionMissingData,
                             GapRendering = gapRendering,
                         };
                     }
                 }
                 else
-                if (!allOk && Math.Abs(zeroSignalArray[i]) < tolerance)
+                if (!allOk && Math.Abs(gapArray[i]) > tolerance)
                 {
                     // come to end of a bad patch
                     allOk = true;
-                    error.EndPosition = i - 1;
-                    errors.Add(error);
+                    gap.EndPosition = i - 1;
+                    gaps.Add(gap);
                 }
             } // end of loop
 
-            // if not OK at end of the array, need to close the error.
+            // if not OK at end of the array, need to terminate the gap.
             if (!allOk)
             {
-                errors[errors.Count - 1].EndPosition = arrayLength - 1;
+                gaps[gaps.Count - 1].EndPosition = arrayLength - 1;
             }
 
-            return errors;
+            return gaps;
         }
 
         /// <summary>
-        /// This method reads through a ZeroIndex SUMMARY array.
-        /// It reads the ZeroSignal array to make sure there was actually a signal to analyse.
-        /// If this occurs an error is flagged.
+        /// This method reads through a SUMMARY index array to check for file joins.
         /// </summary>
-        /// <param name="summaryIndices">Dictionary of the currently calculated summary indices</param>
+        /// <param name="gapArray">array of gap data</param>
+        /// <param name="gapRendering">how to render the gap in image terms</param>
         /// <returns>a list of erroneous segments</returns>
-        public static List<ErroneousIndexSegments> DataIntegrityCheckForZeroSignal(Dictionary<string, double[]> summaryIndices)
+        public static List<GapsAndJoins> DataIntegrityCheckForFileJoins(double[] gapArray, ConcatMode gapRendering)
         {
-            double[] zeroSignalArray = summaryIndices["ZeroSignal"];
-            return DataIntegrityCheckForZeroSignal(zeroSignalArray);
+            double tolerance = 0.00001;
+
+            // init list of gaps and joins
+            var gaps = new List<GapsAndJoins>();
+
+            int arrayLength = gapArray.Length;
+
+            bool allOk = true;
+            GapsAndJoins gap = null;
+            //var gap = new GapsAndJoins
+            //{
+            //    GapDescription = gapDescriptionFileJoin,
+            //    GapRendering = gapRendering,
+            //};
+
+            // now loop through the rows/vectors of indices
+            for (int i = 0; i < gapArray.Length; i++)
+            {
+                // if (zeroSignal index > 0), i.e. if signal == zero
+                if (Math.Abs(gapArray[i]) > tolerance)
+                {
+                    if (allOk)
+                    {
+                        allOk = false;
+                        gap = new GapsAndJoins
+                        {
+                            StartPosition = i,
+                            GapDescription = gapDescriptionFileJoin,
+                            GapRendering = gapRendering,
+                        };
+                    }
+                }
+                else
+                if (!allOk && Math.Abs(gapArray[i]) < tolerance)
+                {
+                    // come to end of a bad patch
+                    allOk = true;
+                    gap.EndPosition = i - 1;
+                    gaps.Add(gap);
+                }
+            } // end of loop
+
+            // if not OK at end of the array, need to terminate the gap.
+            if (!allOk)
+            {
+                gaps[gaps.Count - 1].EndPosition = gaps[gaps.Count - 1].EndPosition;
+            }
+
+            return gaps;
         }
 
         /// <summary>
@@ -181,17 +241,17 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         /// <param name="zeroSignalArray"> array indicating zero signal</param>
         /// <returns>a list of erroneous segments</returns>
-        public static List<ErroneousIndexSegments> DataIntegrityCheckForZeroSignal(double[] zeroSignalArray)
+        public static List<GapsAndJoins> DataIntegrityCheckForZeroSignal(double[] zeroSignalArray)
         {
             double tolerance = 0.00001;
 
             // init list of errors
-            var errors = new List<ErroneousIndexSegments>();
+            var errors = new List<GapsAndJoins>();
 
             int arrayLength = zeroSignalArray.Length;
 
             bool allOk = true;
-            var error = new ErroneousIndexSegments();
+            var error = new GapsAndJoins();
             for (int i = 0; i < zeroSignalArray.Length; i++)
             {
                 // if (zeroSignal index > 0), i.e. if signal == zero
@@ -200,10 +260,10 @@ namespace AudioAnalysisTools.Indices
                     if (allOk)
                     {
                         allOk = false;
-                        error = new ErroneousIndexSegments
+                        error = new GapsAndJoins
                         {
                             StartPosition = i,
-                            ErrorDescription = errorZeroSignal,
+                            GapDescription = gapDescriptionZeroSignal,
                             GapRendering = ConcatMode.TimedGaps, // all zero signal errors must be drawn as timed gaps
                         };
                     }
@@ -237,13 +297,13 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         /// <param name="summaryIndices">Dictionary of the currently calculated summary indices</param>
         /// <returns>a list of erroneous segments</returns>
-        public static List<ErroneousIndexSegments> DataIntegrityCheckIndices(Dictionary<string, double[]> summaryIndices)
+        public static List<GapsAndJoins> DataIntegrityCheckIndexValues(Dictionary<string, double[]> summaryIndices)
         {
             int errorStart;
             double tolerance = 0.00001;
 
             // init list of errors
-            var errors = new List<ErroneousIndexSegments>();
+            var errors = new List<GapsAndJoins>();
 
             bool allOk = true;
             bool zeroIndex = summaryIndices["AcousticComplexity"][0] < tolerance ||
@@ -254,8 +314,8 @@ namespace AudioAnalysisTools.Indices
             {
                 allOk = false;
                 errorStart = 0;
-                errors.Add(new ErroneousIndexSegments());
-                errors[errors.Count - 1].ErrorDescription = invalidIndexValue;
+                errors.Add(new GapsAndJoins());
+                errors[errors.Count - 1].GapDescription = gapDescriptionInvalidValue;
                 errors[errors.Count - 1].StartPosition = errorStart;
                 errors[errors.Count - 1].GapRendering = ConcatMode.TimedGaps; // all zero signal errors must be drawn as timed gaps
             }
@@ -272,8 +332,8 @@ namespace AudioAnalysisTools.Indices
                     if (allOk)
                     {
                         errorStart = i;
-                        errors.Add(new ErroneousIndexSegments());
-                        errors[errors.Count - 1].ErrorDescription = invalidIndexValue;
+                        errors.Add(new GapsAndJoins());
+                        errors[errors.Count - 1].GapDescription = gapDescriptionInvalidValue;
                         errors[errors.Count - 1].StartPosition = errorStart;
                         errors[errors.Count - 1].GapRendering = ConcatMode.TimedGaps; // all zero signal errors must be drawn as timed gaps
                     }
@@ -306,7 +366,7 @@ namespace AudioAnalysisTools.Indices
         /// <param name="spectralIndices">Dictionary of the currently calculated spectral indices</param>
         /// <param name="gapRendering">how to render the gap in image terms</param>
         /// <returns>a list of erroneous segments</returns>
-        public static List<ErroneousIndexSegments> DataIntegrityCheckSpectralIndices(
+        public static List<GapsAndJoins> DataIntegrityCheckSpectralIndices(
             Dictionary<string, double[,]> spectralIndices,
             ConcatMode gapRendering)
         {
@@ -317,7 +377,7 @@ namespace AudioAnalysisTools.Indices
             var rowSums = MatrixTools.SumRows(spectralIndices["ACI"]);
 
             // init list of errors
-            var errors = new List<ErroneousIndexSegments>();
+            var gaps = new List<GapsAndJoins>();
 
             bool allOk = true;
 
@@ -325,10 +385,10 @@ namespace AudioAnalysisTools.Indices
             {
                 allOk = false;
                 errorStart = 0;
-                errors.Add(new ErroneousIndexSegments());
-                errors[errors.Count - 1].ErrorDescription = invalidIndexValue;
-                errors[errors.Count - 1].StartPosition = errorStart;
-                errors[errors.Count - 1].GapRendering = gapRendering;
+                gaps.Add(new GapsAndJoins());
+                gaps[gaps.Count - 1].GapDescription = gapDescriptionInvalidValue;
+                gaps[gaps.Count - 1].StartPosition = errorStart;
+                gaps[gaps.Count - 1].GapRendering = gapRendering;
             }
 
             int arrayLength = rowSums.Length;
@@ -339,10 +399,10 @@ namespace AudioAnalysisTools.Indices
                     if (allOk)
                     {
                         errorStart = i;
-                        errors.Add(new ErroneousIndexSegments());
-                        errors[errors.Count - 1].ErrorDescription = invalidIndexValue;
-                        errors[errors.Count - 1].StartPosition = errorStart;
-                        errors[errors.Count - 1].GapRendering = gapRendering;
+                        gaps.Add(new GapsAndJoins());
+                        gaps[gaps.Count - 1].GapDescription = gapDescriptionInvalidValue;
+                        gaps[gaps.Count - 1].StartPosition = errorStart;
+                        gaps[gaps.Count - 1].GapRendering = gapRendering;
                     }
 
                     allOk = false;
@@ -351,17 +411,17 @@ namespace AudioAnalysisTools.Indices
                 if (!allOk)
                 {
                     allOk = true;
-                    errors[errors.Count - 1].EndPosition = i - 1;
+                    gaps[gaps.Count - 1].EndPosition = i - 1;
                 }
             } // end of loop
 
             // do final clean up
             if (!allOk)
             {
-                errors[errors.Count - 1].EndPosition = arrayLength - 1;
+                gaps[gaps.Count - 1].EndPosition = arrayLength - 1;
             }
 
-            return errors;
+            return gaps;
         }
 
         /// <summary>
@@ -371,18 +431,18 @@ namespace AudioAnalysisTools.Indices
         /// <param name="bmp">The chromeless spectrogram to have segments drawn on it.</param>
         /// <param name="list">list of erroneous segments</param>
         /// <returns>spectrogram with erroneous segments marked.</returns>
-        public static Image DrawErrorSegments(Image bmp, List<ErroneousIndexSegments> list)
+        public static Image DrawErrorSegments(Image bmp, List<GapsAndJoins> list)
         {
-            var newBmp = DrawErrorPatches(bmp, list, invalidIndexValue, bmp.Height, true);
-            newBmp = DrawErrorPatches(newBmp, list, errorZeroSignal, bmp.Height, true);
+            var newBmp = DrawGapPatches(bmp, list, gapDescriptionInvalidValue, bmp.Height, true);
+            newBmp = DrawGapPatches(newBmp, list, gapDescriptionZeroSignal, bmp.Height, true);
 
             // This one must be done last, in case user requests no gap rendering.
             // In this case, we have to cut out parts of image, starting at the end and working forward.
-            newBmp = DrawErrorPatches(newBmp, list, errorMissingData, bmp.Height, true);
+            newBmp = DrawGapPatches(newBmp, list, gapDescriptionMissingData, bmp.Height, true);
             return newBmp;
         }
 
-        public static Image DrawErrorPatches(Image bmp, List<ErroneousIndexSegments> errorList, string errorDescription, int height, bool textInVerticalOrientation)
+        public static Image DrawGapPatches(Image bmp, List<GapsAndJoins> errorList, string errorDescription, int height, bool textInVerticalOrientation)
         {
             var g = Graphics.FromImage(bmp);
 
@@ -390,17 +450,17 @@ namespace AudioAnalysisTools.Indices
             for (int i = errorList.Count - 1; i >= 0; i--)
             {
                 var error = errorList[i];
-                if (error.ErrorDescription.Equals(errorDescription))
+                if (error.GapDescription.Equals(errorDescription))
                 {
                     // where user requests no gap rendering, have to remove gap portion of image.
                     if (error.GapRendering.Equals(ConcatMode.NoGaps))
                     {
-                        bmp = RemoveErrorPatch(bmp, error);
+                        bmp = RemoveGapPatch(bmp, error);
                     }
                     else
                     if (error.GapRendering.Equals(ConcatMode.EchoGaps))
                     {
-                        bmp = DrawBlendedPatch(bmp, error);
+                        bmp = DrawEchoPatch(bmp, error);
                     }
                     else
                     {
@@ -429,7 +489,7 @@ namespace AudioAnalysisTools.Indices
             int fontVerticalPosition = (height / 2) - 10;
             var g = Graphics.FromImage(bmp);
 
-            g.Clear(this.ErrorDescription.Equals(errorMissingData) ? Color.LightGray : Color.HotPink);
+            g.Clear(this.GapDescription.Equals(gapDescriptionMissingData) ? Color.LightGray : Color.HotPink);
 
             // Draw error message and black cross over error patch only if is wider than arbitrary 10 pixels.
             if (width > 10)
@@ -443,11 +503,11 @@ namespace AudioAnalysisTools.Indices
                 if (textInVerticalOrientation)
                 {
                     var drawFormat = new StringFormat(StringFormatFlags.DirectionVertical);
-                    g.DrawString("     " + this.ErrorDescription, font, Brushes.Black, 2, 10, drawFormat);
+                    g.DrawString("     " + this.GapDescription, font, Brushes.Black, 2, 10, drawFormat);
                 }
                 else
                 {
-                    g.DrawString("     " + this.ErrorDescription, font, Brushes.Black, 2, fontVerticalPosition);
+                    g.DrawString("     " + this.GapDescription, font, Brushes.Black, 2, fontVerticalPosition);
                 }
             }
 
@@ -457,7 +517,7 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// Cuts out gap portion of a spectrogram image
         /// </summary>
-        public static Image RemoveErrorPatch(Image source, ErroneousIndexSegments error)
+        public static Image RemoveGapPatch(Image source, GapsAndJoins error)
         {
             int ht = source.Height;
             int width = source.Width;
@@ -478,17 +538,17 @@ namespace AudioAnalysisTools.Indices
             g.DrawImage(source, gapStart, 0, srcRect, GraphicsUnit.Pixel);
 
             // draw separator at the join
-            //g.DrawLine(new Pen(Color.LightGray), gapStart, 0, gapStart, ht);
+            g.DrawLine(new Pen(Color.LightGray), gapStart - 1, 0, gapStart, 15);
+            g.DrawLine(new Pen(Color.LightGray), gapStart, 0, gapStart, 15);
             return newBmp;
         }
 
         /// <summary>
-        /// Draws a blended patch into a spectrogram image
+        /// Draws an echo patch into a spectrogram image
         /// </summary>
-        public static Image DrawBlendedPatch(Image source, ErroneousIndexSegments error)
+        public static Image DrawEchoPatch(Image source, GapsAndJoins error)
         {
             int ht = source.Height;
-            int width = source.Width;
             int gapStart = error.StartPosition;
             int gapEnd = error.EndPosition;
 
@@ -503,7 +563,7 @@ namespace AudioAnalysisTools.Indices
             }
 
             //g.DrawLine(new Pen(Color.LightGray), gapStart, 0, gapStart, ht);
-            g.DrawLine(new Pen(Color.LightGray), gapEnd, 0, gapEnd, ht);
+            g.DrawLine(new Pen(Color.LightGray), gapEnd, 0, gapEnd, 15);
             return source;
         }
     }

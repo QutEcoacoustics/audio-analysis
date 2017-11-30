@@ -56,9 +56,9 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
             //Audio2CsvOverOneFile();
-            Audio2CsvOverMultipleFiles();
+            //Audio2CsvOverMultipleFiles();
             //DrawLongDurationSpectrogram();
-            //ConcatenateIndexFilesAndSpectrograms();
+            ConcatenateIndexFilesAndSpectrograms();
             //TestReadingFileOfSummaryIndices();
             //TestsOfFrequencyScales();
             //TestAnalyseLongRecordingUsingArtificialSignal();
@@ -92,31 +92,34 @@ namespace AnalysisPrograms
         {
             string drive = "G";
             string outputDir = $"{ drive}:\\SensorNetworks\\Output\\IvanCampos\\Indexdata";
-            /*
-            string recordingDir = $"{ drive}:\\SensorNetworks\\WavFiles\\IvanCampos";
-            string configPath =
-                @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
-            string searchPattern = "*.wav";
 
-            //FileInfo[] csvFiles = IndexMatrices.GetFilesInDirectories(subDirectories, pattern);
-            string[] files = Directory.GetFiles(recordingDir, searchPattern);
-            LoggedConsole.WriteLine("File Count = " + files.Length);
-
-            for (int i = 0; i < files.Length; i++)
+            // (1) calculate the indices looping over mulitple files.
+            if (false)
             {
-                string outputDirectory = outputDir + "\\" + i;
-                var devArguments = new AnalyseLongRecording.Arguments
-                {
-                    Source = files[i].ToFileInfo(),
-                    Config = configPath.ToFileInfo(),
-                    Output = outputDirectory.ToDirectoryInfo(),
-                    MixDownToMono = true,
-                };
-                AnalyseLongRecording.Execute(devArguments);
-            }
-            */
+                string recordingDir = $"{drive}:\\SensorNetworks\\WavFiles\\IvanCampos";
+                string configPath =
+                    @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
+                string searchPattern = "*.wav";
 
-            // now do the CONCATENATION
+                //FileInfo[] csvFiles = IndexMatrices.GetFilesInDirectories(subDirectories, pattern);
+                string[] files = Directory.GetFiles(recordingDir, searchPattern);
+                LoggedConsole.WriteLine("File Count = " + files.Length);
+
+                for (int i = 0; i < files.Length; i++)
+                {
+                    string outputDirectory = $"{outputDir}\\{i:d3}";
+                    var devArguments = new AnalyseLongRecording.Arguments
+                    {
+                        Source = files[i].ToFileInfo(),
+                        Config = configPath.ToFileInfo(),
+                        Output = outputDirectory.ToDirectoryInfo(),
+                        MixDownToMono = true,
+                    };
+                    AnalyseLongRecording.Execute(devArguments);
+                }
+            }
+
+            // (2) now do the CONCATENATION
             DirectoryInfo[] dataDirs =
             {
                 new DirectoryInfo(outputDir),
@@ -595,11 +598,10 @@ namespace AnalysisPrograms
             string gapRendering = "TimedGaps"; // the default
             bool concatenateEverythingYouCanLayYourHandsOn = false; // default is 24-hour blocks
 
+            /*
             // ########################## CONCATENATION of Sarah Lowe's recordings
             // The drive: work = G; home = E
             drive = "G";
-
-            /*
             // top level directory
             DirectoryInfo[] dataDirs =
             {
@@ -616,8 +618,8 @@ namespace AnalysisPrograms
 
             // change PMN to POW because PMN not available in these recordings
             colorMap2 = "BGN-PMN-R3D";
-            */
             // ########################## END of Sarah Lowe's recordings
+            */
 
             /*
             // ########################## CONCATENATION of Yvonne's recordings of SM2 and SM4
@@ -654,6 +656,7 @@ namespace AnalysisPrograms
             FileInfo sunriseDatafile = null;
 
             concatenateEverythingYouCanLayYourHandsOn = true;
+
             // start and end dates INCLUSIVE
             dtoStart = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);
             dtoEnd = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);

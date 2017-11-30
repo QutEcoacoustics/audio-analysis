@@ -100,7 +100,7 @@ namespace AudioAnalysisTools.Indices
             TimeSpan indexCalculationDuration,
             DateTimeOffset? recordingStartDate,
             FileInfo sunriseDataFile = null,
-            List<ErroneousIndexSegments> errors = null,
+            List<GapsAndJoins> errors = null,
             bool verbose = false)
         {
             // to translate past keys into current keys

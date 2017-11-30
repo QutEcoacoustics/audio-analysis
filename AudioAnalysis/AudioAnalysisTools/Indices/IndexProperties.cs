@@ -184,7 +184,7 @@ namespace AudioAnalysisTools.Indices
         ///    See CLASS: DrawSummaryIndices
         ///       METHOD: Bitmap ConstructVisualIndexImage(DataTable dt, string title, int timeScale, double[] order, bool doNormalise)
         /// </summary>
-        public Image GetPlotImage(double[] array, List<ErroneousIndexSegments> errors = null)
+        public Image GetPlotImage(double[] array, List<GapsAndJoins> errors = null)
         {
             int dataLength = array.Length;
             string annotation = this.GetPlotAnnotation();
@@ -241,7 +241,7 @@ namespace AudioAnalysisTools.Indices
             if ((errors != null) && (errors.Count > 0))
             {
                 bool verticalText = false;
-                foreach (ErroneousIndexSegments errorSegment in errors)
+                foreach (GapsAndJoins errorSegment in errors)
                 {
                     var errorBmp = errorSegment.DrawErrorPatch(trackHeight - 2, verticalText);
                     if (errorBmp != null)

@@ -11,7 +11,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
-    using AnalysisBase.ResultBases;
     using Indices;
     using TowseyLibrary;
 
@@ -81,7 +80,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             DirectoryInfo opDir,
             SiteDescription siteDescription,
             FileInfo sunriseDataFile = null,
-            List<ErroneousIndexSegments> segmentErrors = null,
+            List<GapsAndJoins> segmentErrors = null,
             bool verbose = false)
         {
             // derive new indices such as sqrt(POW), NCDI etc -- main reason for this is to view what their distributions look like.
@@ -96,7 +95,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionary, opDir, opFileStem);
 
-                SummaryIndexBase[] summaryIndices = null;
+                //SummaryIndexBase[] summaryIndices = null;
                 string analysisType = "Towsey.Acoustic";
 
                 Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
@@ -108,7 +107,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     opFileStem,
                     analysisType,
                     dictionary,
-                    summaryIndices,
+                    null, //summaryIndices,
                     indexDistributions,
                     siteDescription,
                     sunriseDataFile,
@@ -161,7 +160,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             DirectoryInfo opDir,
             SiteDescription siteDescription,
             FileInfo sunriseDatafile = null,
-            List<ErroneousIndexSegments> erroneousSegments = null, // info if have fatal errors i.e. no signal
+            List<GapsAndJoins> erroneousSegments = null, // info if have fatal errors i.e. no signal
             bool verbose = false)
         {
             var dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
@@ -244,7 +243,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // check length of data and make adjustments if required.
             // NOTHING done with this info at the moment. Could be used to truncate data to 24 hours.
-            int totalRowMinutes = (int)Math.Round(summaryIndices.Count() * indexResolution.TotalMinutes);
+            //int totalRowMinutes = (int)Math.Round(summaryIndices.Count() * indexResolution.TotalMinutes);
 
             // write out the list of data file names to JSON file.
             var arrayOfFileNames = summaryIndices.Select(x => x.FileName).ToArray();
@@ -261,7 +260,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var indicesCsvfile = new FileInfo(indicesFile);
             Csv.WriteToCsv(indicesCsvfile, summaryIndices);
 
-            // Put SUMMARY indices into dictionary. ################# WARNING: THIS METHOD ONLY GETS A "HARD CODED" LIST OF SUMMARY INDICES. See the method.
+            // Put SUMMARY indices into dictionary. TODO need to generalise the following method
+            // ################# WARNING: THIS METHOD ONLY GETS A "HARD CODED" LIST OF SUMMARY INDICES. See the method.
             var dictionaryOfSummaryIndices = IndexMatrices.GetDictionaryOfSummaryIndices(summaryIndices);
 
             // return the dictionary - it will be used later to produce an index tracks image.
@@ -345,7 +345,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //######################################################
 
             string[] fileEntries = Directory.GetFiles(inputDirectory.FullName);
-            List<Image> images = new List<Image>();
+            var images = new List<Image>();
             bool interpolateSpacer = true;
             var imagePair = new Image[2];
 
