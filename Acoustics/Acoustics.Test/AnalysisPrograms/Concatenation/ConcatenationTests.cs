@@ -80,7 +80,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         */
 
         /// <summary>
-        /// METHOD TO CHECK Concatenation of spectral and summary index files when ConcatenateEverythingYouCanLayYourHandsOn = true
+        /// METHOD TO CHECK Concatenation of spectral and summary index files when
+        /// ConcatenateEverythingYouCanLayYourHandsOn = true
         /// </summary>
         [TestMethod]
         public void ConcatenateEverythingYouCanLayYourHandsOn()
@@ -107,9 +108,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 ColorMap2 = "BGN-POW-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = true, // join everything found
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
-                SunRiseDataFile = null,
                 DrawImages = true,
-                Verbose = true,
 
                 // following two lines can be used to add in a recognizer score track
                 EventDataDirectories = null,
@@ -154,16 +153,14 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 DirectoryFilter = "*.wav",
                 FileStemName = "Test2_Indonesia",
                 StartDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
-                EndDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
+                EndDate = new DateTimeOffset(2016, 07, 27, 0, 0, 0, TimeSpan.Zero),
                 IndexPropertiesConfig = indexPropertiesConfig,
                 FalseColourSpectrogramConfig = testConfig,
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
                 ColorMap2 = "BGN-POW-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
-                SunRiseDataFile = null,
                 DrawImages = true,
-                Verbose = true,
 
                 // following two lines can be used to add in a recognizer score track
                 EventDataDirectories = null,
@@ -180,6 +177,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             Assert.IsTrue(imageFileInfo.Exists);
 
             var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
+            // we expect only the second half (past midnight) of the image to be rendered
             ImageAssert.IsSize(512, 632, actualImage);
             ImageAssert.PixelIsColor(new Point(100, 100), Color.FromArgb(32, 25, 36), actualImage);
             ImageAssert.PixelIsColor(new Point(100, 160), Color.FromArgb(0, 80, 132), actualImage);
@@ -193,7 +191,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         /// In the case of this dataset, the two partial days of data will be concatenated separately.
         /// </summary>
         [TestMethod]
-        public void ConcatenateIndexFilesTest24HourWithDateRange()
+        public void ConcatenateIndexFilesTest24HourWithoutDateRange()
         {
             // top level directory
             DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia_2Reduced") };
@@ -216,9 +214,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 ColorMap2 = "BGN-POW-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
-                SunRiseDataFile = null,
                 DrawImages = true,
-                Verbose = true,
 
                 // following two lines can be used to add in a recognizer score track
                 EventDataDirectories = null,
@@ -283,14 +279,12 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 DirectoryFilter = "*.wav",
                 FileStemName = "Test2_Indonesia",
                 StartDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
-                EndDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
+                EndDate = new DateTimeOffset(2016, 07, 27, 0, 0, 0, TimeSpan.Zero),
                 IndexPropertiesConfig = indexPropertiesConfig,
                 FalseColourSpectrogramConfig = testConfig,
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
-                SunRiseDataFile = null,
                 DrawImages = true,
-                Verbose = true,
 
                 // following two lines can be used to add in a recognizer score track
                 EventDataDirectories = null,
