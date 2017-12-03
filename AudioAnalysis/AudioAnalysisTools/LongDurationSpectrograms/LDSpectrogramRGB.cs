@@ -302,6 +302,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// The csv file needs to be in the correct format and typically should contain 365 lines.
         /// Have not attempted to deal with leap years!
         /// </summary>
+        [Obsolete]
         public FileInfo SunriseDataFile { get; set; }
 
         public Dictionary<string, IndexProperties> GetSpectralIndexProperties()

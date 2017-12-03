@@ -13,18 +13,28 @@ namespace AudioAnalysisTools.Indices
 
     /// <summary>
     /// Choices in how recording gaps are visualised.
-    /// NoGaps: Recording gaps will be ignored. Segments joined without space. Continuity of the time scale will be broken.
-    ///             This will be best option when viewing 12-hour night-time recordings.
-    /// TimedGaps: Recording gaps will be filled with a grey "gap" segment of same duration as gap. Time scale remains linear and complete.
-    ///             this is, continuity of the time scale is preserved. This is the default mode for visualisation
-    /// EchoGaps: Recording gaps are filled with a repeat of the last three-index spectrum prior to the gap.
-    ///             Continuity of the time scale is preserved. Use this when recordings are one minute in 10, for example.
     /// </summary>
     public enum ConcatMode
     {
-        NoGaps,
-        TimedGaps,
-        EchoGaps,
+        /// <summary>
+        /// TimedGaps (default): Recording gaps will be filled with a grey "gap" segment of same duration as gap. Time
+        /// scale remains linear and complete. This is, continuity of the time scale is preserved.
+        /// This is the default mode for visualisation.
+        /// </summary>
+        TimedGaps = 0,
+
+        /// <summary>
+        /// NoGaps: Recording gaps will be ignored. Segments joined without space. Continuity of the time scale will
+        /// be broken. This will be best option when you want to show source data as an uninterrupted visual stream.
+        /// </summary>
+        NoGaps = 1,
+
+        /// <summary>
+        /// EchoGaps: Recording gaps are filled with a repeat of the last three-index spectrum prior to the gap.
+        /// Continuity of the time scale is preserved. Use there are many small, short, non-contigious blocks of
+        /// source data (e.g. Sampling one minute every 10).
+        /// </summary>
+        EchoGaps = 2,
     }
 
     public class GapsAndJoins
@@ -51,10 +61,6 @@ namespace AudioAnalysisTools.Indices
         /// Gets or sets the gap rendering mode.
         /// </summary>
         public ConcatMode GapRendering { get; set; }
-
-        // #####################################################################################################################
-        //  STATIC METHODS BELOW
-        // #####################################################################################################################
 
         /// <summary>
         /// Does several data integrity checks.
