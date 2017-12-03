@@ -92,10 +92,6 @@ namespace AnalysisPrograms
             [Production.ArgExistingFile(Extension = ".yml")]
             public FileInfo FalseColourSpectrogramConfig { get; set; }
 
-            [ArgDescription("User specified file containing times of sunrise & sunset for recording location. Must be correct format!")]
-            [Production.ArgExistingFile(Extension = ".csv")]
-            public FileInfo SunRiseDataFile { get; set; }
-
             [ArgDescription("Set true only when concatenating more than 24-hours of data into one image - e.g. PNG/Indonesian data.")]
             public bool ConcatenateEverythingYouCanLayYourHandsOn { get; set; }
 
@@ -107,16 +103,12 @@ namespace AnalysisPrograms
 
             [ArgDescription("Used only to get Event Recognizer files.")]
             public string EventFilePattern { get; set; }
-
-            public bool Verbose { get; set; }
         }
 
         public static void Execute(Arguments arguments)
         {
-            bool verbose = !arguments.Verbose; // the default value
-
             // Concatenation is designed only for the output from a "Towsey.Acoustic" analysis.
-            const string analysisType = "Towsey.Acoustic";
+            const string AnalysisType = Acoustic.TowseyAcoustic;
 
             // Get the currently available sepctral indices
             // RHZ, SPT and CVR are correlated with POW and do not add much. CLS not particularly useful. Now using R3D
@@ -193,30 +185,20 @@ namespace AnalysisPrograms
                     endDate = arguments.EndDate;
                 }
 
-                if (startDate > endDate)
+                if (startDate >= endDate)
                 {
-                    LoggedConsole.WriteErrorLine("# The End Date must be same as, or after, the Start Date when ConcatenateEverythingYouCanLayYourHandsOn = false.");
-                    throw new ArgumentException("FATAL ERROR: End Date must be same as, or after, the Start Date.");
+                    LoggedConsole.WriteErrorLine("# The End Date must be greater than the Start Date when ConcatenateEverythingYouCanLayYourHandsOn = false.");
+                    throw new ArgumentException("FATAL ERROR: End Date must be greater than the Start Date.");
                 }
             }
 
             var startDateTimeOffset = (DateTimeOffset)startDate;
 
-            if (verbose)
-            {
-                LoggedConsole.WriteLine("\n# Start date = " + startDate.ToString());
-                LoggedConsole.WriteLine("# End   date = " + endDate.ToString());
-                LoggedConsole.WriteLine("# Time Zone  = " + arguments.TimeSpanOffsetHint.ToString());
+            LoggedConsole.WriteLine("\n# Start date = " + startDate.ToString());
+            LoggedConsole.WriteLine("# End   date = " + endDate.ToString());
+            LoggedConsole.WriteLine("# Time Zone  = " + arguments.TimeSpanOffsetHint.ToString());
 
-                if (arguments.SunRiseDataFile != null && arguments.SunRiseDataFile.Exists)
-                {
-                    LoggedConsole.WriteLine("# Sunrise/sunset data file = " + arguments.TimeSpanOffsetHint.ToString());
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("# WARNING: A sunrise/sunset data file does not exist for time zone >> " + arguments.TimeSpanOffsetHint.ToString());
-                }
-            }
+            LoggedConsole.WriteLine("# WARNING: A sunrise/sunset data file does not exist for time zone >> " + arguments.TimeSpanOffsetHint.ToString());
 
             // create top level output directory if it does not exist.
             DirectoryInfo opDir = arguments.OutputDirectory;
@@ -278,10 +260,7 @@ namespace AnalysisPrograms
             if (arguments.ConcatenateEverythingYouCanLayYourHandsOn)
             {
                 var totalTimespan = (DateTimeOffset)endDate - (DateTimeOffset)startDate;
-                if (verbose)
-                {
-                    LoggedConsole.WriteLine("# Total duration of available recording = " + totalTimespan.ToString());
-                }
+                LoggedConsole.WriteLine("# Total duration of available recording = " + totalTimespan.ToString());
 
                 if (totalTimespan > TimeSpan.FromDays(3))
                 {
@@ -322,10 +301,7 @@ namespace AnalysisPrograms
                     tracksImage.Save(imagePath);
                 }
 
-                if (verbose)
-                {
-                    LoggedConsole.WriteLine("# Finished summary indices. Now start spectral indices.");
-                }
+                LoggedConsole.WriteLine("# Finished summary indices. Now start spectral indices.");
 
                 // ###### NOW CONCATENATE THE SPECTRAL INDICES, DRAW IMAGES AND SAVE IN RESULTS DIRECTORY
                 var dictionaryOfSpectralIndices1 = LdSpectrogramStitching.ConcatenateAllSpectralIndexFiles(subDirectories, keys, indexGenerationData);
@@ -343,26 +319,26 @@ namespace AnalysisPrograms
                             indexPropertiesConfig,
                             indexGenerationData,
                             opFileStem,
-                            analysisType,
+                            AnalysisType,
                             dictionaryOfSpectralIndices1,
                             /*summaryIndices = */null,
                             indexDistributions,
                             siteDescription,
-                            arguments.SunRiseDataFile,
-                            gapsAndJoins,
-                            ImageChrome.With);
+                            sunriseDataFile: null,
+                            segmentErrors: gapsAndJoins,
+                            imageChrome: ImageChrome.With);
                 }
 
-                WriteSpectralIndexFiles(resultsDir, opFileStem, analysisType, dictionaryOfSpectralIndices1);
+                WriteSpectralIndexFiles(resultsDir, opFileStem, AnalysisType, dictionaryOfSpectralIndices1);
                 return;
-            } // ConcatenateEverythingYouCanLayYourHandsOn
+            }
 
             // ################################ ConcatenateEverythingYouCanLayYourHandsOn = false
             // ################################ That is, CONCATENATE DATA in BLOCKS of 24 hours
 
             var startDateOffset = (DateTimeOffset)startDateTimeOffset.Date;
             var endOffset = ((DateTimeOffset)endDate).Date;
-            int dayCount = (endOffset - startDateOffset).Days + 1;
+            int dayCount = (int)Math.Ceiling((endOffset - startDateOffset).TotalDays);
             LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
             /* Previously used the following line BUT the assumption proved to be a bug, not a feature.
             // int dayCount = timespan.Days + 1; // This assumes that the last day has full 24 hours of recording available.
@@ -423,15 +399,11 @@ namespace AnalysisPrograms
                         indexPropertiesConfig,
                         resultsDir,
                         siteDescription,
-                        arguments.SunRiseDataFile,
-                        indexErrors,
-                        verbose);
+                        sunriseDatafile: null,
+                        erroneousSegments: indexErrors);
                 }
 
-                if (verbose)
-                {
-                    LoggedConsole.WriteLine("# Finished summary indices. Now start spectral indices.");
-                }
+                LoggedConsole.WriteLine("# Finished summary indices. Now start spectral indices.");
 
                 // ##############################################################################################################
 
@@ -469,14 +441,14 @@ namespace AnalysisPrograms
                         indexPropertiesConfig,
                         indexGenerationData,
                         opFileStem1,
-                        analysisType,
+                        AnalysisType,
                         dictionaryOfSpectralIndices2,
                         /*summaryIndices = */null,
                         indexDistributions,
                         siteDescription,
-                        arguments.SunRiseDataFile,
-                        indexErrors,
-                        ImageChrome.With);
+                        sunriseDataFile: null,
+                        segmentErrors: indexErrors,
+                        imageChrome: ImageChrome.With);
 
                     if (arguments.EventDataDirectories != null)
                     {
@@ -513,7 +485,7 @@ namespace AnalysisPrograms
                     }
                 }
 
-                WriteSpectralIndexFiles(resultsDir, opFileStem1, analysisType, dictionaryOfSpectralIndices2);
+                WriteSpectralIndexFiles(resultsDir, opFileStem1, AnalysisType, dictionaryOfSpectralIndices2);
                 LoggedConsole.WriteLine("     Completed Spectral Indices");
             } // over days
         } // Execute()
@@ -782,6 +754,7 @@ namespace AnalysisPrograms
             return eventsPerUnitTime;
         }
 
+        // TODO: [OPENSOURCE] remove all of the following
         // ########################################  CONCATENATE INDEX FILES TEST METHODS BELOW HERE ######################################################
 
         /*
@@ -866,9 +839,7 @@ namespace AnalysisPrograms
                 ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
                 ConcatenateEverythingYouCanLayYourHandsOn = true,
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
-                SunRiseDataFile = null,
                 DrawImages = true,
-                Verbose = true,
 
                 // following used to add in a recognizer score track
                 EventDataDirectories = null,
@@ -918,9 +889,7 @@ namespace AnalysisPrograms
                 ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
-                SunRiseDataFile = null,
                 DrawImages = true,
-                Verbose = true,
 
                 // following used to add in a recognizer score track
                 EventDataDirectories = null,
@@ -965,9 +934,7 @@ namespace AnalysisPrograms
                 ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
-                SunRiseDataFile = null,
                 DrawImages = true,
-                Verbose = true,
 
                 // following used to add in a recognizer score track
                 EventDataDirectories = null,
@@ -1024,9 +991,7 @@ namespace AnalysisPrograms
                 ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
                 ConcatenateEverythingYouCanLayYourHandsOn = true,
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
-                SunRiseDataFile = null,
                 DrawImages = true,
-                Verbose = true,
 
                 // following used to add in a recognizer score track
                 EventDataDirectories = null,

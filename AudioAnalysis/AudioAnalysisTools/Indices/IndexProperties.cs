@@ -76,6 +76,7 @@ namespace AudioAnalysisTools.Indices
         }
 
         [YamlIgnore]
+        // TODO: this information should really be encoded rather than inferred
         public bool IsSpectralIndex => this.DataType == "double[]";
 
         public double DefaultValue

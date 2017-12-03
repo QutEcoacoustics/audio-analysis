@@ -38,6 +38,7 @@ namespace AnalysisPrograms
     /// audiocutter - Cuts audio into segments of desired length and format
     /// createfoursonograms
     /// </summary>
+    // TODO: [OPENSOURCE] empty out this file
     public class Sandpit
     {
         //public const string imageViewer = @"C:\Windows\system32\mspaint.exe";
@@ -152,9 +153,7 @@ namespace AnalysisPrograms
                 ConcatenateEverythingYouCanLayYourHandsOn = false,
                 GapRendering = (ConcatMode)Enum.Parse(typeof(ConcatMode), gapRendering),
                 TimeSpanOffsetHint = TimeSpan.FromHours(-5), // default = Brisbane time,
-                SunRiseDataFile = null,
                 DrawImages = true,
-                Verbose = true,
 
                 // following used to add in a recognizer score track
                 // Used only to get Event Recognizer files - set eventDirs=null if not used
@@ -950,9 +949,7 @@ namespace AnalysisPrograms
                 ConcatenateEverythingYouCanLayYourHandsOn = concatenateEverythingYouCanLayYourHandsOn,
                 GapRendering = (ConcatMode)Enum.Parse(typeof(ConcatMode), gapRendering),
                 TimeSpanOffsetHint = timeSpanOffsetHint,
-                SunRiseDataFile = sunriseDatafile,
                 DrawImages = drawImages,
-                Verbose = true,
 
                 // following used to add in a recognizer score track
                 EventDataDirectories = eventDirs,
