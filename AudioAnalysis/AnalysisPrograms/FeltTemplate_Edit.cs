@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
+    using System.IO.Compression;
     using System.Linq;
     using System.Text;
     using Acoustics.Shared.Extensions;
@@ -132,19 +133,23 @@
                 var filenames = new[]
                                 { iniPath, targetImagePath, binaryOpPath, targetPath, targetNoNoisePath, noisePath };
                 string biOutZipFile = outputDir + targetName + "_binaryTemplate.zip";
-                FileTools.ZipFiles(filenames, biOutZipFile);
+                //FileTools.ZipFiles(filenames, biOutZipFile);
 
                 filenames = new[]
                                 { iniPath, targetImagePath, trinaryOpPath, targetPath, targetNoNoisePath, noisePath };
 
                 string triOutZipFile = outputDir + targetName + "_trinaryTemplate.zip";
-                FileTools.ZipFiles(filenames, triOutZipFile);
+                //FileTools.ZipFiles(filenames, triOutZipFile);
 
                 filenames = new[]
                                 { iniPath, targetImagePath, sprOpPath, targetPath, targetNoNoisePath, noisePath };
 
                 string sprOutZipFile = outputDir + targetName + "_syntacticTemplate.zip";
-                FileTools.ZipFiles(filenames, sprOutZipFile);
+                //FileTools.ZipFiles(filenames, sprOutZipFile);
+
+                // Zipping files can be done by using standard .NET 4.6 System.IO.Compression
+                // however, this code hasn't been used in years and I've opted to just comment out the lines above
+                throw new NotImplementedException("Zipping template files intentionally broken");
             }
 
             Log.WriteLine("\n\n#################################### TEST THE EXTRACTED EVENT ON SOURCE FILE ##################################");
