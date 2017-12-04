@@ -65,10 +65,10 @@ namespace AnalysisPrograms
             [ArgDescription("File stem name for output files.")]
             public string FileStemName { get; set; }
 
-            [ArgDescription("DateTimeOffset at which concatenation begins. If null, then start with earliest available file. Can parse an ISO8601 date.")]
+            [ArgDescription("DateTimeOffset (inclusive) at which concatenation begins. If null, then start with earliest available file. Can parse an ISO8601 date.")]
             public DateTimeOffset? StartDate { get; set; }
 
-            [ArgDescription("DateTimeOffset at which concatenation ends. If null, then will be set = today's date or last available file. Can parse an ISO8601 date.")]
+            [ArgDescription("DateTimeOffset (exclusive) at which concatenation ends. If null, then will be set = today's date or last available file. Can parse an ISO8601 date.")]
             public DateTimeOffset? EndDate { get; set; }
 
             [ArgDescription("TimeSpan offset hint required if file names do not contain time zone info. NO DEFAULT IS SET")]
@@ -339,7 +339,7 @@ namespace AnalysisPrograms
             var startDateOffset = (DateTimeOffset)startDateTimeOffset.Date;
             var endOffset = ((DateTimeOffset)endDate).Date;
             int dayCount = (int)Math.Ceiling((endOffset - startDateOffset).TotalDays);
-            LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
+            LoggedConsole.WriteLine("# Day  count = " + dayCount);
             /* Previously used the following line BUT the assumption proved to be a bug, not a feature.
             // int dayCount = timespan.Days + 1; // This assumes that the last day has full 24 hours of recording available.
             // LoggedConsole.WriteLine($"# Elapsed time = {totalTimespan.TotalHours:f1} hours or {dayCount} days");
