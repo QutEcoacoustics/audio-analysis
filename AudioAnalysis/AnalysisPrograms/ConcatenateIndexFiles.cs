@@ -38,6 +38,7 @@ namespace AnalysisPrograms
     using PowerArgs;
     using Production;
     using TowseyLibrary;
+    using System.IO.Compression;
 
     /// <summary>
     /// First argument on command line to call this action is "concatenateIndexFiles"
@@ -207,7 +208,7 @@ namespace AnalysisPrograms
                 arguments.OutputDirectory.Create();
             }
 
-            string opFileStem = arguments.FileStemName;
+            string outputFileStem = arguments.FileStemName;
 
             // SET UP DEFAULT SITE LOCATION INFO    --  DISCUSS IWTH ANTHONY
             // The following location data is used only to draw the sunrise/sunset tracks on images.
@@ -278,18 +279,18 @@ namespace AnalysisPrograms
                 // ###### FIRST CONCATENATE THE SUMMARY INDICES, DRAW IMAGES AND SAVE IN RESULTS DIRECTORY
                 var summaryIndexFiles = sortedDictionaryOfDatesAndFiles.Values.ToArray<FileInfo>();
 
-                var dictionaryOfSummaryIndices = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, resultsDir, indexGenerationData, opFileStem);
+                var dictionaryOfSummaryIndices = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, resultsDir, indexGenerationData, outputFileStem);
 
                 // REALITY CHECK - check for continuous zero indices or anything else that might indicate defective signal,
                 //                 incomplete analysis of recordings, recording gaps or file joins.
                 var gapsAndJoins = GapsAndJoins.DataIntegrityCheck(dictionaryOfSummaryIndices, arguments.GapRendering);
-                GapsAndJoins.WriteErrorsToFile(gapsAndJoins, resultsDir, opFileStem);
+                GapsAndJoins.WriteErrorsToFile(gapsAndJoins, resultsDir, outputFileStem);
 
                 if (arguments.DrawImages)
                 {
                     TimeSpan start = ((DateTimeOffset)indexGenerationData.RecordingStartDate).TimeOfDay;
                     string startTime = $"{start.Hours:d2}{start.Minutes:d2}h";
-                    string imageTitle = $"SOURCE: \"{opFileStem}\".     Starts at {startTime}                       {Meta.OrganizationTag}";
+                    string imageTitle = $"SOURCE: \"{outputFileStem}\".     Starts at {startTime}                       {Meta.OrganizationTag}";
                     Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndices(
                             IndexProperties.GetIndexProperties(indexPropertiesConfig),
                             dictionaryOfSummaryIndices,
@@ -297,7 +298,7 @@ namespace AnalysisPrograms
                             indexGenerationData.IndexCalculationDuration,
                             indexGenerationData.RecordingStartDate);
 
-                    var imagePath = FilenameHelpers.AnalysisResultPath(resultsDir, opFileStem, "SummaryIndices", "png");
+                    var imagePath = FilenameHelpers.AnalysisResultPath(resultsDir, outputFileStem, "SummaryIndices", "png");
                     tracksImage.Save(imagePath);
                 }
 
@@ -308,7 +309,7 @@ namespace AnalysisPrograms
                 gapsAndJoins.AddRange(GapsAndJoins.DataIntegrityCheck(dictionaryOfSpectralIndices1, arguments.GapRendering));
 
                 // Calculate the index distribution statistics and write to a json file. Also save as png image
-                var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectralIndices1, resultsDir, opFileStem);
+                var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectralIndices1, resultsDir, outputFileStem);
 
                 if (arguments.DrawImages)
                 {
@@ -318,7 +319,7 @@ namespace AnalysisPrograms
                             ldSpectrogramConfig,
                             indexPropertiesConfig,
                             indexGenerationData,
-                            opFileStem,
+                            outputFileStem,
                             AnalysisType,
                             dictionaryOfSpectralIndices1,
                             /*summaryIndices = */null,
@@ -329,7 +330,7 @@ namespace AnalysisPrograms
                             imageChrome: ImageChrome.With);
                 }
 
-                WriteSpectralIndexFiles(resultsDir, opFileStem, AnalysisType, dictionaryOfSpectralIndices1);
+                WriteSpectralIndexFiles(resultsDir, outputFileStem, AnalysisType, dictionaryOfSpectralIndices1);
                 return;
             }
 
@@ -475,11 +476,11 @@ namespace AnalysisPrograms
 
                         //var plot = new Plot("Cane Toad", normalisedScores, normalisedThreshold);
                         var recognizerTrack = GraphsAndCharts.DrawGraph("Canetoad events", normalisedScores, 32);
-                        var imageFilePath = Path.Combine(resultsDir.FullName, opFileStem + "_" + dateString + "__2Maps" + ".png");
+                        var imageFilePath = Path.Combine(resultsDir.FullName, outputFileStem + "_" + dateString + "__2Maps" + ".png");
                         var twoMaps = ImageTools.ReadImage2Bitmap(imageFilePath);
                         var imageList = new List<Image> { twoMaps, recognizerTrack };
                         var compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
-                        var imagePath2 = Path.Combine(resultsDir.FullName, opFileStem + "_" + dateString + ".png");
+                        var imagePath2 = Path.Combine(resultsDir.FullName, outputFileStem + "_" + dateString + ".png");
                         compositeBmp.Save(imagePath2);
                     }
                 }
@@ -958,7 +959,7 @@ namespace AnalysisPrograms
 
             var zipFile = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2Reduced.zip");
             var dataDir = new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Delete");
-            ZipUnzip.UnZip(dataDir.FullName, zipFile.FullName, true);
+            ZipFile.ExtractToDirectory(zipFile.FullName, dataDir.FullName);
 
             // top level directory
             DirectoryInfo[] dataDirs =
