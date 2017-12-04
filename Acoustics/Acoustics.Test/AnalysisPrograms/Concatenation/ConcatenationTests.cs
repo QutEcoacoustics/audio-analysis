@@ -7,6 +7,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
     using System;
     using System.Drawing;
     using System.IO;
+    using System.IO.Compression;
+
     using Acoustics.Shared;
     using global::AnalysisPrograms;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
@@ -25,48 +27,29 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
     /// </summary>
     [TestClass]
     // [Ignore]
-    public class ConcatenationTests
+    public class ConcatenationTests : OutputDirectoryTest
     {
-        private DirectoryInfo outputDirectory;
+        private static DirectoryInfo indonesiaIndicesDirectory;
 
-        #region Additional test attributes
+        private static DirectoryInfo newZealandArk01IndicesDirectory;
 
-        /*
-        // You can use the following additional attributes as you write your tests:
-        //
-        // Use ClassInitialize to run code before running the first test in the class
-        // [ClassInitialize()]
-        // public static void MyClassInitialize(TestContext testContext) { }
-        //
-        // Use ClassCleanup to run code after all tests in a class have run
-        // [ClassCleanup()]
-        // public static void MyClassCleanup() { }
-        //
-        // Use TestInitialize to run code before running each test
-        // [TestInitialize()]
-        // public void MyTestInitialize() { }
-        //
-        // Use TestCleanup to run code after each test has run
-        // [TestCleanup()]
-        // public void MyTestCleanup() { }
-        */
+        private const string IndonesiaReduced = "Indonesia_2Reduced";
 
-        [TestInitialize]
-        public void Setup()
+        private const string NewZealandArk01 = "NewZealandArk01";
+
+        /// Use ClassInitialize to run code before running the first test in the class
+        [ClassInitialize()]
+        public static void MyClassInitialize(TestContext testContext)
         {
-            this.outputDirectory = PathHelper.GetTempDir();
+            var indonesiaIndices = PathHelper.ResolveAsset("Concatenation", IndonesiaReduced + ".zip");
+            var newZealandIndices = PathHelper.ResolveAsset("Concatenation", NewZealandArk01 + ".zip");
 
-            var zippedDataFile = PathHelper.ResolveAsset("Concatenation", "Indonesia_2Reduced.zip");
-            ZipUnzip.UnZip(this.outputDirectory.FullName, zippedDataFile.FullName, true);
+            indonesiaIndicesDirectory = SharedDirectory.Combine(IndonesiaReduced);
+            newZealandArk01IndicesDirectory = SharedDirectory.Combine(NewZealandArk01);
+
+            ZipFile.ExtractToDirectory(indonesiaIndices.FullName, indonesiaIndicesDirectory.FullName);
+            ZipFile.ExtractToDirectory(newZealandIndices.FullName, newZealandArk01IndicesDirectory.FullName);
         }
-
-        [TestCleanup]
-        public void Cleanup()
-        {
-            PathHelper.DeleteTempDir(this.outputDirectory);
-        }
-
-        #endregion
 
         /*
          * An example of modifying a default config file
@@ -87,7 +70,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         public void ConcatenateEverythingYouCanLayYourHandsOn()
         {
             // top level directory
-            DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia_2Reduced") };
+            DirectoryInfo[] dataDirs = { indonesiaIndicesDirectory };
             var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
             var dateString = "20160725";
 
@@ -139,7 +122,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         public void ConcatenateIndexFilesTest24Hour()
         {
             // top level directory
-            DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia_2Reduced") };
+            DirectoryInfo[] dataDirs = { indonesiaIndicesDirectory };
             var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
             var dateString = "20160726";
 
@@ -194,7 +177,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         public void ConcatenateIndexFilesTest24HourWithoutDateRange()
         {
             // top level directory
-            DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia_2Reduced") };
+            DirectoryInfo[] dataDirs = { indonesiaIndicesDirectory };
             var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
 
             // get the default config file
@@ -256,7 +239,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         public void ConcatenateIndexFilesTestConfigFileChanges()
         {
             // top level directory
-            DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia_2Reduced") };
+            DirectoryInfo[] dataDirs = { indonesiaIndicesDirectory };
             var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
             var dateString = "20160726";
 
@@ -303,6 +286,57 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             string map2 = arguments.FileStemName + "_" + dateString + "__ACI-RNG-EVN.png";
             var imageFileInfo2 = outputDataDir.CombineFile(map2);
             Assert.IsTrue(imageFileInfo2.Exists);
+        }
+
+        [TestMethod]
+        public void ConcatenateIndexFilesSampledDataGapsTest()
+        {
+            var arguments = new ConcatenateIndexFiles.Arguments
+                {
+                    InputDataDirectories = new DirectoryInfo[] { newZealandArk01IndicesDirectory },
+                    OutputDirectory = this.outputDirectory,
+                    DirectoryFilter = "*.wav",
+                    FileStemName = "Test3_Indonesia",
+                    StartDate = null,
+                    EndDate = null,
+                    IndexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml"),
+                    FalseColourSpectrogramConfig = PathHelper.ResolveConfigFile("SpectrogramFalseColourConfig.yml"),
+                    ColorMap1 = null,
+                    ColorMap2 = null,
+                    ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
+                    TimeSpanOffsetHint = TimeSpan.FromHours(12),
+                    DrawImages = true,
+                };
+
+            ConcatenateIndexFiles.Execute(arguments);
+
+            // There should be three sets of output images one for each partial day.
+            // TODO: finish new zealand tests for all 3 modes - TimeGaps, No Gaps, EchoGaps
+            Assert.Fail("Not yet completed");
+
+            // IMAGE 1: Compare image files - check that image exists and dimensions are correct
+            var dateString1 = "20160725";
+            var outputDataDir1 = this.outputDirectory.Combine(arguments.FileStemName, dateString1);
+            string image1FileName = arguments.FileStemName + "_" + dateString1 + "__2Maps.png";
+            var image1FileInfo = outputDataDir1.CombineFile(outputDataDir1.FullName, image1FileName);
+            Assert.IsTrue(image1FileInfo.Exists);
+
+            var actualImage1 = ImageTools.ReadImage2Bitmap(image1FileInfo.FullName);
+            ImageAssert.IsSize(210, 632, actualImage1);
+            ImageAssert.PixelIsColor(new Point(100, 100), Color.FromArgb(211, 211, 211), actualImage1);
+            ImageAssert.PixelIsColor(new Point(50, 50), Color.FromArgb(86, 29, 17), actualImage1);
+
+            // IMAGE 2: Compare image files - check that image exists and dimensions are correct
+            var dateString2 = "20160726";
+            var outputDataDir2 = this.outputDirectory.Combine(arguments.FileStemName, dateString2);
+            string image2FileName = arguments.FileStemName + "_" + dateString2 + "__2Maps.png";
+            var image2FileInfo = outputDataDir2.CombineFile(image2FileName);
+            Assert.IsTrue(image2FileInfo.Exists);
+
+            var actualImage2 = ImageTools.ReadImage2Bitmap(image2FileInfo.FullName);
+            ImageAssert.IsSize(512, 632, actualImage2);
+            ImageAssert.PixelIsColor(new Point(50, 124), Color.FromArgb(70, 38, 255), actualImage2);
+            ImageAssert.PixelIsColor(new Point(460, 600), Color.FromArgb(255, 105, 180), actualImage2);
         }
     }
 }
