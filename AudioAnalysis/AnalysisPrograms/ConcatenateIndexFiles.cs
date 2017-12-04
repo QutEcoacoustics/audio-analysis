@@ -95,7 +95,7 @@ namespace AnalysisPrograms
             [ArgDescription("Set true only when concatenating more than 24-hours of data into one image - e.g. PNG/Indonesian data.")]
             public bool ConcatenateEverythingYouCanLayYourHandsOn { get; set; }
 
-            [ArgDescription("How to render gaps in a recording.")]
+            [ArgDescription("How to render gaps in a recording. Valid options: `" + nameof(ConcatMode.TimedGaps) + "` (default), `" + nameof(ConcatMode.NoGaps) + "`, `"+ nameof(ConcatMode.EchoGaps) + "`")]
             public ConcatMode GapRendering { get; set; }
 
             [ArgDescription("One or more directories where the RECOGNIZER event scores are located in csv files. This is optional")]
