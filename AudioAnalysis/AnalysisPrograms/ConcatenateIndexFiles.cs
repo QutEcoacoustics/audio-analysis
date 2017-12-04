@@ -174,19 +174,19 @@ namespace AnalysisPrograms
             var sortedDictionaryOfDatesAndFiles = FileDateHelpers.FilterFilesForDates(csvFiles, arguments.TimeSpanOffsetHint);
 
             // Set default start and end dates to first and last available dates.
-            DateTimeOffset? startDate = sortedDictionaryOfDatesAndFiles.Keys.First();
-            DateTimeOffset? endDate = sortedDictionaryOfDatesAndFiles.Keys.Last();
+            DateTimeOffset startDate = sortedDictionaryOfDatesAndFiles.Keys.First();
+            DateTimeOffset endDate = sortedDictionaryOfDatesAndFiles.Keys.Last();
             if (!arguments.ConcatenateEverythingYouCanLayYourHandsOn)
             {
                 // concatenate in 24 hour blocks
                 if (arguments.StartDate != null)
                 {
-                    startDate = arguments.StartDate;
+                    startDate = arguments.StartDate.Value;
                 }
 
                 if (arguments.EndDate != null)
                 {
-                    endDate = arguments.EndDate;
+                    endDate = arguments.EndDate.Value;
                 }
 
                 if (startDate >= endDate)
@@ -340,9 +340,9 @@ namespace AnalysisPrograms
             // ################################ ConcatenateEverythingYouCanLayYourHandsOn = false
             // ################################ That is, CONCATENATE DATA in BLOCKS of 24 hours
 
-            var startDateOffset = (DateTimeOffset)startDateTimeOffset.Date;
-            var endOffset = ((DateTimeOffset)endDate).Date;
-            int dayCount = (int)Math.Ceiling((endOffset - startDateOffset).TotalDays);
+            var startDateOffset = startDateTimeOffset.Floor(TimeSpan.FromDays(1));
+            var endDateOffset = endDate.Ceiling(TimeSpan.FromDays(1));
+            int dayCount = (int)Math.Ceiling((endDateOffset - startDateOffset).TotalDays);
             LoggedConsole.WriteLine("# Day  count = " + dayCount);
             /* Previously used the following line BUT the assumption proved to be a bug, not a feature.
             // int dayCount = timespan.Days + 1; // This assumes that the last day has full 24 hours of recording available.
@@ -413,9 +413,8 @@ namespace AnalysisPrograms
 
                 // NOW CONCATENATE SPECTRAL INDEX FILES
                 //Filter the array of Directories to get the correct dates
-                //var spectralSubdirectories = FileDateHelpers.FilterDirectoriesForDates(subDirectories, arguments.TimeSpanOffsetHint);
-                //var dirArray = LdSpectrogramStitching.GetDirectoryArrayForOneDay(spectralSubdirectories, thisday);
-                var dirArray = subDirectories;
+                var spectralSubdirectories = FileDateHelpers.FilterDirectoriesForDates(subDirectories, arguments.TimeSpanOffsetHint);
+                var dirArray = LdSpectrogramStitching.GetDirectoryArrayForOneDay(spectralSubdirectories, thisday);
 
                 if (dirArray.Length == 0)
                 {
