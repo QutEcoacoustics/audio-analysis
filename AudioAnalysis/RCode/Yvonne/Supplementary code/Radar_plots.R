@@ -1,4 +1,4 @@
-# clustering of medoids from 13 months of data ------------------------------------------------------
+# clustering of medoids from 13 months of data ------------------
 # remove all objects in the global environment
 rm(list = ls())
 

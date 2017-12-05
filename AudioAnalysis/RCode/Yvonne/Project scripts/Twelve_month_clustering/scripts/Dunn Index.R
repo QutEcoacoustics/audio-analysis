@@ -42,7 +42,7 @@ colnames(overall_sil_width) <- c("k1",paste("k2_",list,sep=""))
 View(overall_sil_width)
 write.csv(overall_sil_width, "silhouette_width_from_distcritmulti.csv", row.names = F)
 
-tiff("silhouette_distcritmulti.tiff", width=1000, height=900, res = 300)
+tiff("silhouette_distcritmulti.tiff", width=1125, height=1012, res = 300)
 # plot silhouette width
 par(mar=c(2,2,1,1), mgp = c(1, 0.4, 0))
 silhouette <- read.csv("silhouette_width_from_distcritmulti.csv", header = T)
@@ -231,7 +231,7 @@ write.csv(dunn, paste("Gamma1_",package,".csv",sep=""), row.names = F)
 package <- "clusterCrit"
 package <- "clv"
 # Plot the dunn index 
-tiff(paste("dunn", package, ".tiff",sep=""), width=1000, height=900, res = 300)
+tiff(paste("dunn", package, ".tiff",sep=""), width=1125, height=1012, res = 300)
 par(mar=c(2,2,1,1), mgp = c(1, 0.4, 0))
 if(package=="clusterCrit") {
   dunn <- read.csv(paste("dunn_index_using_",package,".csv",sep=""), header=T)
@@ -278,6 +278,78 @@ legend(x = 9, y = 1.05*ylim[2], #col = c("maroon", "hotpink","blue"),
        legend = c(legend[2],legend[4], legend[6]), 
        lwd = 1.5, cex = 1.1, bty = "n", lty=c(13,15,17))
 dev.off()
+
+# Dunn and Silhouette width combined
+package <- "clv"
+tiff(paste("dunn_and_silhouette_clv_distcritmuli.tiff",sep=""), 
+     width=2025, height=910, res = 300)
+par(mfrow = c(1,2), mar=c(2,2,1,1), mgp = c(1, 0.4, 0))
+# Dunn Index plot
+if(package=="clusterCrit") {
+  dunn <- read.csv(paste("dunn_index_using_",package,".csv",sep=""), header=T)
+  ylim <- c(0.02, 0.042)
+}
+if(package=="clv") {
+  dunn <- read.csv(paste("dunn_index_using_clv_Dunn_single_complete.csv",sep=""), header=T)
+  ylim <- c(0.02, 0.042)
+}
+legend <- c("k1=12500", "k1=15000","k1=17500", "k1=20000", "k1=22500", "k1=25000", "k1=27500")
+plot(dunn$k2_15000[1:20], type="l", ylim=ylim, #col="maroon", 
+     xaxt='n', xlab="", ylab="", lty=13, lwd=1.5)
+abline(v=c(4,8,12,16,20), lty=2, lwd=0.2)
+#par(new=T)
+#plot(dunn$k2_17500[1:20], type="l", col="green", ylim=ylim, 
+#     xaxt='n', xlab="", ylab="", lty=14, lwd=1.5)
+par(new=T)
+plot(dunn$k2_20000[1:20], type="l", #col="hotpink", 
+     ylim=ylim, xaxt='n', xlab="", ylab="", lty=15, 
+     lwd=1.5, main="Dunn index")
+mtext(side=2, line=1.1, "Dunn index")
+mtext(side=1, line=1.1, "k2")
+#par(new=T)
+#plot(dunn$k2_22500[1:20], type="l", col="red", 
+#     ylim=ylim, xaxt='n', xlab="", 
+#     ylab="Silhouette width", lty=16, lwd=1.5)
+par(new=T)
+plot(dunn$k2_25000[1:20], type="l", ylim=ylim, #col="blue",  
+     xaxt='n', yaxt='n', xlab="", ylab="", lty=17, lwd=1.5)
+#par(new=T)
+#plot(dunn$k2_27500[1:20], type="l", col="darkgreen", ylim=ylim, 
+#     xaxt='n', xlab="", ylab="", lty=18, lwd=1.5)
+list1 <- c("5","10","15","20","25","30","35","40","45","50","55","60","65","70","75","80","85","90","95","100")
+axis(side=1, at=1:20, label=list1)
+axis(side=2)
+#legend(x = 8, y = 0.98*ylim[2], col = c("orange", "maroon", "green","hotpink","red","blue","darkgreen"), 
+#       legend = c(legend[1], legend[2], legend[3],legend[4], legend[5], legend[6], legend[7]), 
+#       lwd = 1.5, cex = 1.1, bty = "n", lty=c(12,13,14,15,16,17,18))
+legend(x = 11, y = 1.035*ylim[2], #col = c("maroon", "hotpink","blue"), 
+       legend = c(legend[2],legend[4], legend[6]), 
+       lwd = 1.5, cex = 0.9, bty = "n", lty=c(13,15,17))
+mtext(at = 0.0436, line = 1.3, side = 2, "a.", cex=1.2, las=1)
+# Silhouette Index
+silhouette <- read.csv("silhouette_width_from_distcritmulti.csv", header = T)
+legend <- c("k1=12500", "k1=15000","k1=17500", "k1=20000", "k1=22500", "k1=25000", "k1=27500")
+ylim <- c(0.04, 0.145)
+plot(silhouette$k2_15000[1:20], type="l",  ylim=ylim, #col="maroon",
+     xaxt='n', xlab="", ylab="", lty=13, lwd=1.5)
+abline(v=c(4,8,12,16,20), lty=2, lwd=0.2)
+par(new=T)
+plot(silhouette$k2_20000[1:20], type="l", #col="hotpink", 
+     ylim=ylim, xaxt='n', xlab="", ylab="", lty=15, 
+     lwd=1.5, main="Silhouette index")
+mtext(side=2, line=1.1, "Silhouette width")
+mtext(side=1, line=1.1, "k2")
+par(new=T)
+plot(silhouette$k2_25000[1:20], type="l", ylim=ylim, #col="blue", 
+     xaxt='n', xlab="", ylab="", lty=17, lwd=1.5)
+list1 <- c("5","10","15","20","25","30","35","40","45","50","55","60","65","70","75","80","85","90","95","100")
+axis(side=1, at=1:20, label=list1)
+legend(x = 11, y = 1.05*ylim[2], #col = c("maroon", "hotpink","blue"), 
+       legend = c(legend[2],legend[4], legend[6]), 
+       lwd = 1.5, cex = 0.9, bty = "n", lty=c(13,15,17))
+mtext(at = 0.153, line =  1.3, side = 2, "b.", cex=1.2, las=1)
+dev.off()
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 legend <- c("k1=12500", "k1=15000","k1=17500", "k1=20000", "k1=22500", "k1=25000", "k1=27500")

@@ -3,9 +3,9 @@
 #  This file calculates the Principal Component Analysis and plots the
 #  result
 ########## You may wish to change these ###########################
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\")
+#setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\")
 
-cluster.list <- read.csv(file ="hybrid_clust_17500_30.csv", header=T)
+cluster.list <- read.csv(file ="C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\hybrid_clust_17500_30.csv", header=T)
 indices <- read.csv("C:\\Work\\CSV files\\FourMonths\\final_dataset_22June2015_10 Oct2015.csv", header=T)
 
 ds3 <- indices[,c(3,4,7,10,11,15,16,25)] # without Mid-frequency cover
@@ -119,7 +119,7 @@ biplot(normIndices.pca)
 
 pca.coef <- cbind(cluster.list,normIndices$PC1,normIndices$PC2,normIndices$PC3,normIndices$PC4,normIndices$PC5,
                   normIndices$PC6,normIndices$PC7)
-write.csv(pca.coef, "pca_coefficients_*", row.names = F)
+#write.csv(pca.coef, "pca_coefficients_*", row.names = F)
 
 # assign colours to time-periods
 normIndices <- within(normIndices, levels(fourhour.class) <- c("red","orange","yellow","green","blue","violet"))

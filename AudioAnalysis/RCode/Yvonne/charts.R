@@ -420,7 +420,7 @@ times3c <- circular(times3, type= "angles", units = "hours",
                     template = "clock24",modulo = "2pi")
 plot(times3c, bin=144, stack=TRUE, sep= 0.035, shrink=1,
      ylim = c(-1.5,1.5),xlim = c(-2,2),xaxt="n",cex.axis=0.5,
-     xaxt="n",xlab = "", pch=20)
+     xaxt="n",xlab = "", pch=20, col="white")
 rose.diag(times3c, bin=12, col="darkgrey",
           cex=0, prop = 1.5, add = T,ylim=c(-1.5,1.5),
           xaxt="n")
@@ -440,7 +440,7 @@ times4c <- circular(times4, type= "angles", units = "hours",
 plot(times4c, bin=144, stack=TRUE, sep= 0.035, shrink=1,
      ylim = c(-1.5,1.5),xlim = c(-2,2),xaxt="n",cex.axis=0.5,
      xaxt="n",xlab = "", pch=20)
-rose.diag(times4c, bins = 12, col="darkgrey",
+rose.diag(times4c, bins = 24, col="darkgrey",
           cex=0, prop = 1.5, add = T,ylim=c(-1.5,1.5),
           xaxt="n")
 lines(density.circular(times4c, bw=100),lwd=2,lty=2, col="red")
@@ -1355,7 +1355,7 @@ lines(density.circular(times28c, bw=100),lwd=2,lty=2, col="red")
 rm(times28,times28c,clus28.Gy.jun)
 
 
-# cluster 29 june Gympie very light rain (drizzle)
+# cluster 29 june Gympie 
 # size june 177, july 441, aug 1095, sept 1713 (prop=1.9)
 
 clus29.Gy.jun <- which(cluster.list$hybrid_k17500k30k3==29 &
@@ -1375,9 +1375,9 @@ rose.diag(times29c, bins = 120, col="white", upper = T,
 #lines(density.circular(times29c, bw=100),lwd=2,lty=2, col="red")
 #rm(times29,times29c,clus29.Gy.jun)
 
-# cluster 29 july Gympie very light rain (drizzle)
-png("Rose plot Cluster29 July GympieNP.png", height=600, 
-    width = 600)
+# cluster 29 july Gympie 
+tiff("Rose plot Cluster29 July GympieNP.tiff", height=800, 
+    width = 800, res=300)
 clus29.Gy.jul <- which(cluster.list$hybrid_k17500k30k3==29 &
                          cluster.list$site=="GympieNP" &
                          cluster.list$month=="july")
@@ -1387,21 +1387,21 @@ times29c <- circular(times29, type= "angles", units = "hours",
                      template = "clock24",modulo = "2pi")
 par(oma=c(0,0,0,0),mar=c(0.1,0,0.1,0))
 plot(times29c, bin=24, stack=TRUE, sep= 0.035, shrink=1,
-     xaxt="n", cex.axis=0.5,
+     xaxt="n", cex.axis=0.3, lwd=0.4,
      xaxt="n",xlab = "", pch=20, cex = 0)
-prop <- sqrt(441/1713)
+prop <- 0.55#sqrt(441/1713)
 rose.diag(times29c, bins = 48, col="white", upper = T, 
-          cex=2, prop = 2*prop, add = F, ylim=c(-0.9,0.9),
-          xaxt="n", ticks = F, units = "hours")
-mtext("July 2015 Cluster 29",side = 1, line = -28, cex = 1.8)
-mtext("Gympie National Park",side = 1, line = -30, cex = 1.8)
+          cex=0.7, prop = 2*prop, add = F, ylim=c(-0.9,0.9),
+          xaxt="n", ticks = F, units = "hours", lwd=0.8)
+mtext("July 2015 Cluster 29",side = 1, line = -10, cex = 0.6)
+mtext("Gympie National Park",side = 1, line = -10.5, cex = 0.6)
 #lines(density.circular(times29c, bw=100),lwd=2,lty=2, col="red")
 #rm(times29,times29c,clus29.Gy.jul)
 dev.off()
 
-# cluster 29 aug Gympie very light rain (drizzle)
-png("Rose plot Cluster29 Aug GympieNP.png", height=600, 
-    width = 600)
+# cluster 29 aug Gympie
+tiff("Rose plot Cluster29 August GympieNP.tiff", 
+     height=800, width = 800, res=300)
 clus29.Gy.aug <- which(cluster.list$hybrid_k17500k30k3==29 &
                          cluster.list$site=="GympieNP" &
                          cluster.list$month=="aug")
@@ -1411,21 +1411,21 @@ times29c <- circular(times29, type= "angles", units = "hours",
                      template = "clock24",modulo = "2pi")
 par(oma=c(0,0,0,0),mar=c(0.1,0,0.1,0))
 plot(times29c, bin=24, stack=TRUE, sep= 0.035, shrink=1,
-     xaxt="n", cex.axis=0.5,
+     xaxt="n", cex.axis=0.3, lwd=0.4,
      xaxt="n",xlab = "", pch=20, cex = 0)
-prop <- sqrt(1095/1713)
+prop <- 0.55#sqrt(441/1713)
 rose.diag(times29c, bins = 48, col="white", upper = T, 
-          cex=2, prop = 2*prop, add = F, ylim=c(-0.9,0.9),
-          xaxt="n", ticks = F, units = "hours")
-mtext("August 2015 Cluster 29",side = 1, line = -28, cex = 1.8)
-mtext("Gympie National Park",side = 1, line = -30, cex = 1.8)
+          cex=0.7, prop = 2*prop, add = F, ylim=c(-0.9,0.9),
+          xaxt="n", ticks = F, units = "hours", lwd=0.8)
+mtext("August 2015 Cluster 29",side = 1, line = -10, cex = 0.6)
+mtext("Gympie National Park",side = 1, line = -10.5, cex = 0.6)
 #lines(density.circular(times29c, bw=100),lwd=2,lty=2, col="red")
-#rm(times29,times29c,clus29.Gy.aug)
+#rm(times29,times29c,clus29.Gy.jul)
 dev.off()
 
-# cluster 29 Sept Gympie very light rain (drizzle)
-png("Rose plot Cluster29 Sept GympieNP.png", height=600, 
-    width = 600)
+# cluster 29 Sept Gympie
+tiff("Rose plot Cluster29 Sept GympieNP.tiff", 
+     height=800, width = 800, res=300)
 clus29.Gy.sept <- which(cluster.list$hybrid_k17500k30k3==29 &
                          cluster.list$site=="GympieNP" &
                          cluster.list$month=="sept")
@@ -1435,107 +1435,89 @@ times29c <- circular(times29, type= "angles", units = "hours",
                      template = "clock24",modulo = "2pi")
 par(oma=c(0,0,0,0),mar=c(0.1,0,0.1,0))
 plot(times29c, bin=24, stack=TRUE, sep= 0.035, shrink=1,
-     xaxt="n", cex.axis=0.5,
+     xaxt="n", cex.axis=0.3, lwd=0.4,
      xaxt="n",xlab = "", pch=20, cex = 0)
+prop <- 0.55#sqrt(441/1713)
 rose.diag(times29c, bins = 48, col="white", upper = T, 
-          cex=2, prop = 2, add = F, ylim=c(-0.9,0.9),
-          xaxt="n", ticks = F, units = "hours")
-mtext("Sept 2015 Cluster 29",side = 1, line = -28, cex = 1.8)
-mtext("Gympie National Park",side = 1, line = -30, cex = 1.8)
-#lines(density.circular(times29c, bw=100),lwd=2,lty=2, col="red")
-#rm(times29,times29c,clus29.Gy.jun)
-dev.off()
-
-# cluster 29 june Woondum very light rain (drizzle)
-# size june 37, july 151, aug 486, sept 812 (prop=2)
-clus29.Wn.jun <- which(cluster.list$hybrid_k17500k30k3==29 &
-                         cluster.list$site=="WoondumNP" &
-                         cluster.list$month=="jun")
-times29 <- cluster.list$hour.sequence[c(clus29.Wn.jun)]
-#times29 <- sample(times29, floor(length(times29)/days.per.month[1]))
-times29c <- circular(times29, type= "angles", units = "hours",
-                     template = "clock24",modulo = "2pi")
-plot(times29c, bin=48, stack=TRUE, sep= 0.035, shrink=1,
-     ylim = c(-0.9,0.9), xlim = c(-0.9,0.9), xaxt="n", cex.axis=0.5,
-     xaxt="n",xlab = "", pch=20, cex = 0)
-prop <- sqrt(177/1713)
-rose.diag(times29c, bins = 120, col="white", upper = T, 
-          cex=0, prop = 2*prop, add = T, ylim=c(-1.5,1.5),
-          xaxt="n", ticks = F, units = "hours")
-#lines(density.circular(times29c, bw=100),lwd=2,lty=2, col="red")
-#rm(times29,times29c,clus29.Gy.jun)
-
-
-# cluster 29 july Gympie very light rain (drizzle)
-png("Rose plot Cluster29 July WoondumNP.png", height=600, 
-    width = 600)
-clus29.Wn.jul <- which(cluster.list$hybrid_k17500k30k3==29 &
-                         cluster.list$site=="WoondumNP" &
-                         cluster.list$month=="july")
-times29 <- cluster.list$hour.sequence[c(clus29.Wn.jul)]
-#times29 <- sample(times29, floor(length(times29)/days.per.month[2]))
-times29c <- circular(times29, type= "angles", units = "hours",
-                     template = "clock24",modulo = "2pi")
-par(oma=c(0,0,0,0),mar=c(0.1,0,0.1,0))
-plot(times29c, bin=24, stack=TRUE, sep= 0.035, shrink=1,
-     xaxt="n", cex.axis=0.5,
-     xaxt="n",xlab = "", pch=20, cex = 0)
-prop <- sqrt(151/1713)
-rose.diag(times29c, bins = 48, col="white", upper = T, 
-          cex=2, prop = 2*prop, add = F, ylim=c(-0.9,0.9),
-          xaxt="n", ticks = F, units = "hours")
-mtext("July 2015 Cluster 29",side = 1, line = -28, cex = 1.8)
-mtext("Woondum National Park",side = 1, line = -30, cex = 1.8)
+          cex=0.7, prop = 2*prop, add = F, ylim=c(-0.9,0.9),
+          xaxt="n", ticks = F, units = "hours", lwd=0.8)
+mtext("Sept 2015 Cluster 29",side = 1, line = -10, cex = 0.6)
+mtext("Gympie National Park",side = 1, line = -10.5, cex = 0.6)
 #lines(density.circular(times29c, bw=100),lwd=2,lty=2, col="red")
 #rm(times29,times29c,clus29.Gy.jul)
 dev.off()
 
-# cluster 29 aug Gympie very light rain (drizzle)
-png("Rose plot Cluster29 August WoondumNP.png", height=600, 
-    width = 600)
-clus29.Wn.aug <- which(cluster.list$hybrid_k17500k30k3==29 &
+
+# cluster 29 july Woondum 
+tiff("Rose plot Cluster29 July Woondum.tiff", 
+     height=800, width = 800, res=300)
+clus29.Gy.jul <- which(cluster.list$hybrid_k17500k30k3==29 &
                          cluster.list$site=="WoondumNP" &
-                         cluster.list$month=="aug")
-times29 <- cluster.list$hour.sequence[c(clus29.Wn.aug)]
+                         cluster.list$month=="july")
+times29 <- cluster.list$hour.sequence[c(clus29.Gy.jul)]
 #times29 <- sample(times29, floor(length(times29)/days.per.month[2]))
 times29c <- circular(times29, type= "angles", units = "hours",
                      template = "clock24",modulo = "2pi")
 par(oma=c(0,0,0,0),mar=c(0.1,0,0.1,0))
 plot(times29c, bin=24, stack=TRUE, sep= 0.035, shrink=1,
-     xaxt="n", cex.axis=0.5,
+     xaxt="n", cex.axis=0.3, lwd=0.4,
      xaxt="n",xlab = "", pch=20, cex = 0)
-prop <- sqrt(486/1713)
+prop <- 0.55#sqrt(441/1713)
 rose.diag(times29c, bins = 48, col="white", upper = T, 
-          cex=2, prop = 2*prop, add = F, ylim=c(-0.9,0.9),
-          xaxt="n", ticks = F, units = "hours")
-mtext("August 2015 Cluster 29",side = 1, line = -28, cex = 1.8)
-mtext("Woondum National Park",side = 1, line = -30, cex = 1.8)
+          cex=0.7, prop = 2*prop, add = F, ylim=c(-0.9,0.9),
+          xaxt="n", ticks = F, units = "hours", lwd=0.8)
+mtext("July 2015 Cluster 29",side = 1, line = -10, cex = 0.6)
+mtext("Woondum National Park",side = 1, line = -10.5, cex = 0.6)
 #lines(density.circular(times29c, bw=100),lwd=2,lty=2, col="red")
-#rm(times29,times29c,clus29.Gy.aug)
+#rm(times29,times29c,clus29.Gy.jul)
 dev.off()
 
-# cluster 29 Sept Gympie very light rain (drizzle)
-png("Rose plot Cluster29 Sept WoondumNP.png", height=600, 
-    width = 600)
-clus29.Wn.sept <- which(cluster.list$hybrid_k17500k30k3==29 &
-                          cluster.list$site=="WoondumNP" &
-                          cluster.list$month=="sept")
-times29 <- cluster.list$hour.sequence[c(clus29.Wn.sept)]
+# cluster 29 aug Woondum 
+tiff("Rose plot Cluster29 August Woondum.tiff", 
+     height=800, width = 800, res=300)
+clus29.Gy.aug <- which(cluster.list$hybrid_k17500k30k3==29 &
+                         cluster.list$site=="WoondumNP" &
+                         cluster.list$month=="aug")
+times29 <- cluster.list$hour.sequence[c(clus29.Gy.aug)]
 #times29 <- sample(times29, floor(length(times29)/days.per.month[2]))
 times29c <- circular(times29, type= "angles", units = "hours",
                      template = "clock24",modulo = "2pi")
 par(oma=c(0,0,0,0),mar=c(0.1,0,0.1,0))
 plot(times29c, bin=24, stack=TRUE, sep= 0.035, shrink=1,
-     xaxt="n", cex.axis=0.5,
+     xaxt="n", cex.axis=0.3, lwd=0.4,
      xaxt="n",xlab = "", pch=20, cex = 0)
-prop <- sqrt(812/1713)
+prop <- 0.55#sqrt(441/1713)
 rose.diag(times29c, bins = 48, col="white", upper = T, 
-          cex=2, prop = 2*prop, add = F, ylim=c(-0.9,0.9),
-          xaxt="n", ticks = F, units = "hours")
-mtext("Sept 2015 Cluster 29",side = 1, line = -28, cex = 1.8)
-mtext("Woondum National Park",side = 1, line = -30, cex = 1.8)
+          cex=0.7, prop = 2*prop, add = F, ylim=c(-0.9,0.9),
+          xaxt="n", ticks = F, units = "hours", lwd=0.8)
+mtext("August 2015 Cluster 29",side = 1, line = -10, cex = 0.6)
+mtext("Woondum National Park",side = 1, line = -10.5, cex = 0.6)
 #lines(density.circular(times29c, bw=100),lwd=2,lty=2, col="red")
-#rm(times29,times29c,clus29.Gy.jun)
+#rm(times29,times29c,clus29.Gy.jul)
+dev.off()
+
+# cluster 29 sept Woondum 
+tiff("Rose plot Cluster29 Sept Woondum.tiff", 
+     height=800, width = 800, res=300)
+clus29.Gy.sept <- which(cluster.list$hybrid_k17500k30k3==29 &
+                         cluster.list$site=="WoondumNP" &
+                         cluster.list$month=="sept")
+times29 <- cluster.list$hour.sequence[c(clus29.Gy.sept)]
+#times29 <- sample(times29, floor(length(times29)/days.per.month[2]))
+times29c <- circular(times29, type= "angles", units = "hours",
+                     template = "clock24",modulo = "2pi")
+par(oma=c(0,0,0,0),mar=c(0.1,0,0.1,0))
+plot(times29c, bin=24, stack=TRUE, sep= 0.035, shrink=1,
+     xaxt="n", cex.axis=0.3, lwd=0.4,
+     xaxt="n",xlab = "", pch=20, cex = 0)
+prop <- 0.55#sqrt(441/1713)
+rose.diag(times29c, bins = 48, col="white", upper = T, 
+          cex=0.7, prop = 2*prop, add = F, ylim=c(-0.9,0.9),
+          xaxt="n", ticks = F, units = "hours", lwd=0.8)
+mtext("Sept 2015 Cluster 29",side = 1, line = -10, cex = 0.6)
+mtext("Woondum National Park",side = 1, line = -10.5, cex = 0.6)
+#lines(density.circular(times29c, bw=100),lwd=2,lty=2, col="red")
+#rm(times29,times29c,clus29.Gy.jul)
 dev.off()
 #####################
 Angle <-  c(0.65454759, 0.01355458, 0.5052027, 0.2264302, -0.350552,
