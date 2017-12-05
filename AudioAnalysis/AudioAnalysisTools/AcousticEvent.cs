@@ -100,7 +100,7 @@ namespace AudioAnalysisTools
             this.TimeStart = eventStartSegment;
             this.TimeEnd = eventEndSegment;
 
-            this.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+            this.SetEventStartRelative(segmentStartOffset, eventStartSegment);
         }
 
         /// <summary>
