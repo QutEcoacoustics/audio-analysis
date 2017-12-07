@@ -20,7 +20,10 @@ install.my.packages = function () {
     install.packages('rattle')
     install.packages('RMySQL')
     install.packages('htmlwidgets')
-    install.packages('testthat')  
+    install.packages('testthat') 
+    
+    # doesn't work because seewave doesn't install - don't know why
+    install.packages('soundecology')
     
 }
 

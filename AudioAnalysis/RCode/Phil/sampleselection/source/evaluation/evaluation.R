@@ -3,7 +3,8 @@
 
 
 
-source('evaluation.plots.R')
+source('evaluation/evaluation.plots.R')
+source('evaluation/optimal.sampling.R')
 
 Batch1 <- function (batch.versions = c(13,14,15,16,17,18,19), subset.rankings = c(4,8)) {
     # does the evaluation of all of the given versions using all of the given rankings
@@ -124,16 +125,11 @@ EvaluateSamplesEventCountOnly <- function (use.last.accessed = FALSE, versions =
         
         return(results)
         
-        
-        
     } else {
         ranks <- ReadDataobject('ranked.samples.ec', use.last.accessed = use.last.accessed)
         heading <- GetHeading(ranks)
         EvaluateSamples2d(ranks, heading = heading) 
-        
     }
-
-
 }
 
 GetHeading <- function (ranks) {
@@ -179,7 +175,7 @@ EvaluateSamples2d <- function (ranks, add.dawn = 0, heading = '') {
     mins.for.comparison <- ranks$data[,1]
     mins.for.comparison <- ExpandMinId(mins.for.comparison)
 
-    species.in.each.sample <- GetSpeciesInEachSample(mins.for.comparison$min.id)
+    species.in.each.sample <- GetSpeciesInEachMinute(mins.for.comparison$min.id)
     
     # holds a lot of info about the species found
     ranked.progressions <- list(mins.for.comparison$min.id)
@@ -262,35 +258,120 @@ EvaluateSamples2d <- function (ranks, add.dawn = 0, heading = '') {
     
 }
 
-GetSpeciesInEachSample <- function (min.ids = NULL) {
-    # checks if we have a saved species.in.each.sample for the target mins already
-    # and if so, uses it, if not looks in the database etc
+GetSpeciesInEachMinute <- function (min.ids = NULL) {
+    # Returns a list of species in each one-minute sample for the entire study
     # 
     # Args:
     #   min.ids: data.frame; the minutes that we want to look in
+    # 
+    # Returns:
+    #   list: minute ids are the names of the list items, and integer vectors of species ids are the values
+    # 
+    # Details:
+    #   checks if we have a saved species.in.each.min for the specified min.ids already
+    #   and if so, uses it, if not looks in the database for the tags in each minute, then 
+    #   uses the ListSpeciesInEachMinute function to format into the correct list format
     
+    
+    # reads saved version for all minutes in the study. If there is no saved version, will read from db and save
     params = list(study = GetStudyDescription())
     # TODO: remove "use last accessed" after building a check for matching params and dependencies into ReadDataobject
-    species.in.each.sample <- datatrack::ReadDataobject('species.in.each.min', params = params, false.if.missing = TRUE, use.last.accessed = FALSE)
-    if (!is.list(species.in.each.sample)) {
-        speciesmins <- GetTags(target.only = FALSE, study.only = TRUE);  # get tags from whole study
+    species.in.each.minute <- datatrack::ReadDataobject('species.in.each.min', params = params, false.if.missing = TRUE, use.last.accessed = FALSE)
+    if (!is.list(species.in.each.minute)) {
+        # get tags from whole study
+        speciesmins <- GetTags(target.only = FALSE, study.only = TRUE);  
         speciesmins <- AddMinuteIdCol(speciesmins)
-        species.in.each.sample <- ListSpeciesInEachMinute(speciesmins)
-        datatrack::WriteDataobject(species.in.each.sample, 'species.in.each.min', params = params)
+        species.in.each.minute <- ListSpeciesInEachMinute(speciesmins)
+        datatrack::WriteDataobject(species.in.each.minute, 'species.in.each.min', params = params)
     } else {
-        species.in.each.sample <- species.in.each.sample$data
+        species.in.each.minute <- species.in.each.minute$data
     }
     
+    # if some min.ids have been specified, filter the result and return them. 
     # todo: ability to add dawn mins
     if (is.null(min.ids)) {
-        return(species.in.each.sample)
+        return(species.in.each.minute)
     } else {
         # we only want the ones with the specified min ids
-        list.indexes <- match(min.ids, names(species.in.each.sample))
-        return(species.in.each.sample[list.indexes])    
+        list.indexes <- match(min.ids, names(species.in.each.minute))
+        return(species.in.each.minute[list.indexes])    
     }
 
 }
+
+
+ListSpeciesInEachMinute <- function (speciesmins, mins = NA) {
+    # given a list of minute ids, and a list of all tags
+    # creates a list of species for each minute in mins
+    #
+    # Args:
+    #   speciesmins: list of all the tags, with their site, date and min-of-the-day
+    #   mins: vector of minute ids or data frame of minutes, if ommited will use all minutes in speciesmins
+    #  
+    # Value: list. names of the list are the min.id. values of each element is a vector of species ids
+    #
+    # Details:
+    #  if min.ids is supplied, this will be used for the list of mins
+    #  if min.ids is not supplied, mins must be supplied. 
+    
+    Report(5, 'counting species in each minute')
+    
+    if (!("min.id" %in% colnames(speciesmins))) {
+        AddMinIdCol(speciesmins)
+    }
+    
+    if (is.null(mins)) {
+        mins <- unique(as.integer(species.mins$min.id))
+    }
+    mins <- ValidateMins(mins)
+    species.in.each.min <- vector("list")
+    
+    for (i in 1:nrow(mins)) {
+        sp.list <- speciesmins$species.id[speciesmins$min.id == mins$min.id[i]]
+        species.in.each.min[[as.character(mins$min.id[i])]] <- sp.list
+    }
+    
+    return(species.in.each.min)
+}
+
+
+Species.minute.matrix <- function () {
+    
+    # gets a list of minutes with date, site, minute along with the minute id
+    # for the whole study
+    minutes <- GetMinuteList()
+    
+    #species
+    tags <- GetTags(target.only = FALSE, study.only = TRUE);
+    tag.list <- unique(tags$species.id)
+    tag.list <- tag.list[order(tag.list)]
+    
+    tags$min.as.text <- paste0(tags$site, tags$date, tags$min)
+    minutes$as.text <- paste0(minutes$site, minutes$date, minutes$min)
+    
+    #initialise matrix
+    species.minutes <- matrix(0, nrow=nrow(minutes), ncol=length(tag.list))
+    rownames(species.minutes) <- paste('m',minutes$min.id)
+    colnames(species.minutes) <- paste('s',tag.list)
+    
+    
+    for (sp in tag.list) {
+        
+        mins.with.sp <- tags[tags$species.id == sp,]
+        min.ids.with.sp <- minutes[minutes$as.text %in% mins.with.sp$min.as.text,'min.id']
+        
+        row.ids <- paste('m',min.ids.with.sp)
+        column.id <- paste('s',sp)
+        
+        species.minutes[row.ids, column.id] <- 1
+        
+    }
+    
+    return(species.minutes)
+    
+    
+}
+
 
 ConsistentRankNames <- function (names) {
     # some types of ranking create a table with names like X4, X5 etc, and some with names like 4, 5 etc
@@ -339,9 +420,6 @@ EvaluateSamples3d <- function (ranks) {
         }
     }
     
-   # optimal <- OptimalSamples(speciesmins, species.in.each.min = species.in.each.sample)
-   # random.at.dawn <- RandomSamples(speciesmins = speciesmins, species.in.each.sample, samples$min.id)
-    
    for (i in 1:length(ranked.progressions[,1,1])) {
        PlotProgressions3d(ranked.progressions[i,,])   
    }
@@ -367,130 +445,10 @@ ValidateMins <- function (mins = NA) {
     return(mins)
 }
 
-GetOptimalSamples <- function (mins = NA, species.in.each.min = NA, use.saved = TRUE, target.min.ids.version = NULL) {
-    # save/retrieve the optimal samples by giving the target.min.ids as dependencies
-    # which come from the target.min.ids of the ranks
-    
-    dependencies <- list(target.min.ids = target.min.ids.version)
-    if (use.saved) {
-        optimal <- datatrack::ReadDataobject('optimal.samples', dependencies = dependencies, false.if.missing = TRUE)
-    } else {
-        optimal <- NULL
-    }
-    if (!is.list(optimal)) {
-        optimal <- CalculateOptimalSamples(species.in.each.min = species.in.each.min)
-        if (use.saved) {
-            datatrack::WriteDataobject(optimal, 'optimal.samples', dependencies = dependencies)
-        }
-    } else {
-        optimal <- optimal$data
-    }
-    
-    return(optimal)
-    
-}
 
 
-CalculateOptimalSamples <- function (mins = NA, species.in.each.min = NA) {
-    # determines the best possible selection of [numsamples] minute samples
-    # to find the most species
-    # 
-    # Args:
-    #   speciesmins: dataframe; the list of species in each minute. If not included
-    #                            will retreive from database
-    #   mins: dataframe; the list of minutes we can select from. If not
-    #                    included then all mins in the 'species in each min' arg
-    #   species.in.each.min: list
-    #
-    # Value:
-    #   list: containing
-    #       data.frame; A list of minutes. Cols: site, date, min
-    #       the progression of species found in each of those minutes
-    #       the progression of total species found count after each minute
-    #
-    # Details:
-    #   either mins or species.in.each.min must be supplied. If species.in.each.min is not supplied
-    #   then the species.in.each.min will be calculated using mins
-    
-    Report(3, "Calculating optimum sampling")
-    
-    if (class(species.in.each.min) != 'list') {
-        species.in.each.min <- ListSpeciesInEachMinute(speciesmins, mins = mins) 
-    }
-    
-    # maximum number of samples is the number of species, or number of minutes (whichever is smaller)
-    # but finding the total number of species is slow, so just go for number of minutes
-    # all.species <- unique(unlist(species.in.each.min)) # this is really slow
-    # total.num.species <- length(all.species)
-    # initial.length <- min(c(total.num.species, length(species.in.each.min)))
-    initial.length <-  length(species.in.each.min)
-    selected.samples <- rep(NA, initial.length)
-    found.species.count.progression <- rep(NA, initial.length)
-    found.species.progression <- vector("list", initial.length)
-    all.found.species <- numeric()
 
 
-    if (class(mins) == 'logical') {
-        min.ids <- names(species.in.each.min)
-    } else if (class(mins) == 'data.frame') {
-        min.ids <- as.character(mins$min.id)
-    } else {
-        min.ids <- as.character(mins)
-    }
-    
-    
-    # this could probably be done faster with a sparsematrix, whatever
-    for(i in 1:initial.length) {
-        
-        # find minute with most species
-        max.sp.count <- 0
-        max.sp.m.id.index <- (-1)
-        for (m in 1:length(min.ids)) {
-            m.id <- min.ids[m]
-            if (length(species.in.each.min[[m.id]]) > max.sp.count) {
-                max.sp.count <- length(species.in.each.min[[m.id]])
-                max.sp.m.id.index <- m
-            } 
-        }
-        
-        if (max.sp.count == 0) {
-            # all species have been included in the selected mins 
-            # (or there were no species)
-            break()
-        }
-        
-        max.sp.m.id <- min.ids[max.sp.m.id.index]
-        
-        
-        #record that minute
-        selected.samples[i] <- max.sp.m.id
-        last.found.species <- species.in.each.min[[max.sp.m.id]]
-        all.found.species <- union(all.found.species, last.found.species)
-        found.species.progression[[i]] <- all.found.species
-        found.species.count.progression[i] <- length(all.found.species)
-        Report(5, length(all.found.species), " ")
-        #remove the already found species from the list
-       
-        for (m in 1:length(min.ids)) {
-               m.id <- min.ids[m]
-               sp <- species.in.each.min[[m.id]]
-               species.in.each.min[[m.id]] <- sp[! sp %in% last.found.species]
-        }
-
-    }
-    
-    # initial length was the number of minutes, and optimal should be much less than this
-    # so, it will have extra NAs after
-    selected.samples <- selected.samples[! is.na(selected.samples)]
-    found.species.count.progression <- found.species.count.progression[! is.na(found.species.count.progression)]
-    
-    return(list(
-        found.species.progression = found.species.progression,
-        found.species.count.progression = found.species.count.progression,
-        selected.mins = selected.samples
-        ))
-    
-}
 
 IndicesProgression <- function (species.in.each.sample, which.mins) {
     # Gets the species progression based on ranking by minute-indices.
@@ -503,39 +461,7 @@ IndicesProgression <- function (species.in.each.sample, which.mins) {
     return(progression)
 }
 
-ListSpeciesInEachMinute <- function (speciesmins, mins = NA) {
-    # given a list of minute ids, and a list of all tags
-    # creates a list of species for each minute in mins
-    #
-    # Args:
-    #   speciesmins: list of all the tags, with their site, date and min-of-the-day
-    #   mins: vector of minute ids or data frame of minutes, if ommited will use all minutes in speciesmins
-    #  
-    # Value: list. names of the list are the min.id. values of each element is a vector of species ids
-    #
-    # Details:
-    #  if min.ids is supplied, this will be used for the list of mins
-    #  if min.ids is not supplied, mins must be supplied. 
-    
-    Report(5, 'counting species in each minute')
-    
-    if (!("min.id" %in% colnames(speciesmins))) {
-        AddMinIdCol(speciesmins)
-    }
-    
-    if (is.null(mins)) {
-        mins <- unique(as.integer(species.mins$min.id))
-    }
-    mins <- ValidateMins(mins)
-    species.in.each.min <- vector("list")
-    
-    for (i in 1:nrow(mins)) {
-        sp.list <- speciesmins$species.id[speciesmins$min.id == mins$min.id[i]]
-        species.in.each.min[[as.character(mins$min.id[i])]] <- sp.list
-    }
-    
-    return(species.in.each.min)
-}
+
 
 GetProgression <- function (species.in.each.sample, ordered.min.list) {
     # returns the count of new species given a list of species vectors
@@ -629,29 +555,5 @@ WriteRichnessResults <- function (min.ids, found.species.progression, output.fn,
 
 
 
-ClustersInOptimal <- function () {
-    # given a clustering result, gets the optimal progression based on labelled data
-    # and finds what clusters are in each of these optimal minutes
-    clustered.events <- datatrack::ReadDataobject('clustered.events')
-    
-    # should automatically get the relevant target.min.ids based on the ancestor of clustered events
-    mins <- datatrack::ReadDataobject('target.min.ids')
-    
-    optimal <- GetOptimalSamples(mins = mins$data, use.saved = TRUE, target.min.ids.version = mins$version)
-    
-    # sanity check: make sure all the optimal minute ids are in the set of minutes we are checking
-    if (!all(optimal$selected.mins %in% clustered.events$data$min.id)) {
-        stop('optimal minutes contain an id that is not supposed to be there')
-    }
-    
-    # create template with templator:
-    # 1 row per minute (in order of greedy search) 
-    # 1 column per second. 
-    # for each second: generate spectrogram with cluster label
-    
-    
-    
-    
-    
-}
+
 
