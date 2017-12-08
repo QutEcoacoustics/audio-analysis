@@ -20,10 +20,22 @@ namespace AudioAnalysisTools
     /// </summary>
     public static class Oscillations2012
     {
-        public static void Execute(SpectrogramStandard sonogram, int minHz, int maxHz,
-                                   double dctDuration, int minOscilFreq, int maxOscilFreq, double dctThreshold, double scoreThreshold,
-                                   double minDuration, double maxDuration, int smoothingWindow,
-                                   out double[] scores, out List<AcousticEvent> events, out double[,] hits)
+        public static void Execute(
+            SpectrogramStandard sonogram,
+            int minHz,
+            int maxHz,
+            double dctDuration,
+            int minOscilFreq,
+            int maxOscilFreq,
+            double dctThreshold,
+            double scoreThreshold,
+            double minDuration,
+            double maxDuration,
+            int smoothingWindow,
+            out double[] scores,
+            out List<AcousticEvent> events,
+            out double[,] hits,
+            TimeSpan segmentStartOffset)
         {
             // smooth the frames to make oscillations more regular.
             sonogram.Data = MatrixTools.SmoothRows(sonogram.Data, 5);
@@ -59,19 +71,31 @@ namespace AudioAnalysisTools
                 minDuration,
                 maxDuration,
                 sonogram.Configuration.SourceFName,
-                TimeSpan.Zero);
+                segmentStartOffset);
         }
 
-        public static void Execute(SpectrogramStandard sonogram, int minHz, int maxHz,
-                           double dctDuration, int minOscilFreq, int maxOscilFreq, double dctThreshold, double scoreThreshold,
-                           double minDuration, double maxDuration,
-                           out double[] scores, out List<AcousticEvent> events, out double[,] hits)
+        public static void Execute(
+            SpectrogramStandard sonogram,
+            int minHz,
+            int maxHz,
+            double dctDuration,
+            int minOscilFreq,
+            int maxOscilFreq,
+            double dctThreshold,
+            double scoreThreshold,
+            double minDuration,
+            double maxDuration,
+            out double[] scores,
+            out List<AcousticEvent> events,
+            out double[,] hits,
+            TimeSpan segmentStartOffset)
         {
             int scoreSmoothingWindow = 11; // sets a default that is good for Canetoad but not necessarily for other recognisers
 
             Execute(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, dctThreshold, scoreThreshold,
                                                minDuration, maxDuration, scoreSmoothingWindow,
-                                               out scores, out events, out hits);
+                                               out scores, out events, out hits,
+                segmentStartOffset);
         }
 
         /// <summary>
