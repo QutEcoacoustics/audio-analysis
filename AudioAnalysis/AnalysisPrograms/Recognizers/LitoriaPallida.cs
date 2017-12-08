@@ -172,7 +172,8 @@ namespace AnalysisPrograms.Recognizers
                 scoreSmoothingWindow,
                 out scores,
                 out acousticEvents,
-                out hits);
+                out hits,
+                segmentStartOffset);
 
             acousticEvents.ForEach(ae =>
             {
