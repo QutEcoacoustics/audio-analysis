@@ -386,6 +386,28 @@ namespace Acoustics.Test.Shared
             Assert.AreEqual(childText, baseText);
         }
 
+        /// <summary>
+        /// For some inane reason CsvHelper does not downcast to derived types!
+        /// </summary>
+        [TestMethod]
+        public void TestBaseTypesAreSerializedAsEnumerableAcousticEvent()
+        {
+            var exampleEvent = new AcousticEvent(100.Seconds(), 15, 4, 100, 3000);
+            var exampleEvent2 = new AcousticEvent(100.Seconds(), 15, 4, 100, 3000);
+            AcousticEvent[] childArray = { exampleEvent, exampleEvent2 };
+            EventBase[] baseArray = { exampleEvent, exampleEvent2 };
+
+            Csv.WriteToCsv(this.testFile, childArray);
+
+            var childText = File.ReadAllText(this.testFile.FullName);
+
+            Csv.WriteToCsv(this.testFile, baseArray);
+
+            var baseText = File.ReadAllText(this.testFile.FullName);
+
+            Assert.AreNotEqual(childText, baseText);
+        }
+
         [TestMethod]
         public void TestInvariantCultureIsUsed()
         {

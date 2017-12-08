@@ -12,6 +12,7 @@ namespace AnalysisPrograms
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
+    using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
@@ -288,7 +289,8 @@ namespace AnalysisPrograms
                 maxDuration,
                 out scores,
                 out events,
-                out hits);
+                out hits,
+                segmentStartOffset);
 
             // remove isolated koala events - this is to remove false positive identifications
             events = FilterMaleKoalaEvents(events);
@@ -506,7 +508,7 @@ namespace AnalysisPrograms
 
         public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
         {
-            Csv.WriteToCsv(destination, results);
+            Csv.WriteToCsv(destination, results.Cast<AcousticEvent>());
         }
 
         public override List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
