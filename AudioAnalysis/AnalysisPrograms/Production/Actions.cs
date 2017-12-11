@@ -23,6 +23,7 @@ namespace AnalysisPrograms.Production
     using EventStatistics;
     using PowerArgs;
     using Recognizers.Base;
+    using StandardizedFeatureExtraction;
 
     /// <summary>
     /// Defines the various actions (sub programs) that we can run.
@@ -220,6 +221,13 @@ namespace AnalysisPrograms.Production
             // IAnalyser - detects the oscillating portion of a male koala bellow
             // Execute() signed off: Michael Towsey 27th July 2012
             return AnalysisPrograms.KoalaMale.Dev;
+        }
+
+        [ArgDescription("Prints 'Hello World', not much else.")]
+        public StandardizedFeatureExtraction.Arguments StandardizedFeatureExtractionArgs { get; set; }
+        public static Action<StandardizedFeatureExtraction.Arguments> StandardizedFeatureExtraction()
+        {
+            return AnalysisPrograms.StandardizedFeatureExtraction.StandardizedFeatureExtraction.Execute;
         }
 
         [ArgDescription("Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.")]

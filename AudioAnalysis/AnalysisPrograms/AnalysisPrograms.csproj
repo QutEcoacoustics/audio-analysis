@@ -285,6 +285,7 @@
     <Compile Include="SourcePreparers\RemoteSourcePreparer.cs" />
     <Compile Include="SourcePreparers\LocalSourcePreparer.cs" />
     <Compile Include="SourcePreparers\RemoteSourcePreparerException.cs" />
+    <Compile Include="StandardizedFeatureExtraction.cs" />
     <Compile Include="SURFAnalysis.cs" />
     <Compile Include="OscillationsGeneric.cs" />
     <Compile Include="DifferenceSpectrogram.cs" />
