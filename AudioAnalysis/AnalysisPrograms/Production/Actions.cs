@@ -23,7 +23,7 @@ namespace AnalysisPrograms.Production
     using EventStatistics;
     using PowerArgs;
     using Recognizers.Base;
-    using StandardizedFeatureExtraction;
+    using StandardizedFeatures;
 
     /// <summary>
     /// Defines the various actions (sub programs) that we can run.
@@ -227,7 +227,7 @@ namespace AnalysisPrograms.Production
         public StandardizedFeatureExtraction.Arguments StandardizedFeatureExtractionArgs { get; set; }
         public static Action<StandardizedFeatureExtraction.Arguments> StandardizedFeatureExtraction()
         {
-            return AnalysisPrograms.StandardizedFeatureExtraction.StandardizedFeatureExtraction.Execute;
+            return StandardizedFeatures.StandardizedFeatureExtraction.Execute;
         }
 
         [ArgDescription("Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.")]
