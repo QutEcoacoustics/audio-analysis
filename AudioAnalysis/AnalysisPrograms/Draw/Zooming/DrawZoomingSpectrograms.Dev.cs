@@ -14,6 +14,7 @@ namespace AnalysisPrograms.Draw.Zooming
         /// <returns>
         /// The <see cref="Arguments"/>.
         /// </returns>
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static Arguments Dev()
         {
             // INPUT and OUTPUT DIRECTORIES
@@ -97,7 +98,7 @@ namespace AnalysisPrograms.Draw.Zooming
             string config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramZoomingConfig.yml";
             //string config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramHiResConfig.yml";
 
-            return new Arguments
+            return null; /*new Arguments
             {
                 // use the default set of index properties in the AnalysisConfig directory.
                 SourceDirectory = ipdir.ToDirectoryInfo(),

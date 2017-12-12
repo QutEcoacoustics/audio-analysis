@@ -1,6 +1,10 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+unless Vagrant.has_plugin?("vagrant-vbguest")
+  raise 'vagrant-vbguest is not installed!'
+end
+
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
@@ -10,7 +14,7 @@ Vagrant.configure(2) do |config|
   config.vm.define "debian" do |debian|
     # Every Vagrant development environment requires a box. You can search for
     # boxes at https://atlas.hashicorp.com/search.
-    debian.vm.box = "evidenceprime/jessie64"
+    debian.vm.box = "debian/stretch64"
     debian.vm.hostname = 'audio-analysis-debian'
 
     # Create a forwarded port mapping which allows access to a specific port
@@ -32,15 +36,16 @@ Vagrant.configure(2) do |config|
     # the path on the guest to mount the folder. And the optional third
     # argument is a set of non-required options.
     debian.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    debian.vm.synced_folder "C:/Temp/zooming", "/home/vagrant/zooming", type: "virtualbox"
     debian.vm.synced_folder "./AudioAnalysis/AnalysisPrograms/bin/Debug", "/home/vagrant/Debug", type: "virtualbox"
-    debian.vm.synced_folder "./AudioAnalysis/AnalysisPrograms/bin/Release", "/home/vagrant/Release", type: "virtualbox"
+    #debian.vm.synced_folder "./AudioAnalysis/AnalysisPrograms/bin/Release", "/home/vagrant/Release", type: "virtualbox"
     
 
     debian.vm.provider "virtualbox" do |vb|
       vb.gui = false
       vb.name = 'audio-analysis-debian'
-      vb.memory = "1024"
-      vb.cpus = 2
+      vb.memory = "8096"
+      vb.cpus = 4
     end
 
     # Enable provisioning with a shell script. Additional provisioners such as

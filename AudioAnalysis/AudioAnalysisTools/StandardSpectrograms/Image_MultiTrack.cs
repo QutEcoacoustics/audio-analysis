@@ -2,23 +2,24 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-namespace AudioAnalysisTools
+namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
     using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
+
     using Acoustics.Shared;
+
     using TowseyLibrary;
 
     public class Image_MultiTrack : IDisposable
     {
-        #region Properties
         public Image SonogramImage { get; private set; }
 
-        List<Image_Track> tracks = new List<Image_Track>();
+        List<ImageTrack> tracks = new List<ImageTrack>();
 
-        public IEnumerable<Image_Track> Tracks { get { return this.tracks; } }
+        public IEnumerable<ImageTrack> Tracks { get { return this.tracks; } }
 
         public IEnumerable<AcousticEvent> eventList { get; set; }
 
@@ -41,7 +42,6 @@ namespace AudioAnalysisTools
 
         //private Point[] points;
         public List<PointOfInterest> Points { get; set; }
-        #endregion
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Image_MultiTrack"/> class.
@@ -53,7 +53,7 @@ namespace AudioAnalysisTools
             this.Points = new List<PointOfInterest>();
         }
 
-        public void AddTrack(Image_Track track)
+        public void AddTrack(ImageTrack track)
         {
             this.tracks.Add(track);
         }
@@ -230,7 +230,7 @@ namespace AudioAnalysisTools
 
             // now add tracks to the image
             int offset = this.SonogramImage.Height;
-            foreach (Image_Track track in this.tracks)
+            foreach (ImageTrack track in this.tracks)
             {
                 track.topOffset = offset;
                 track.bottomOffset = offset + track.Height - 1;
@@ -244,7 +244,7 @@ namespace AudioAnalysisTools
         private int CalculateImageHeight()
         {
             int totalHeight = this.SonogramImage.Height;
-            foreach (Image_Track track in this.tracks)
+            foreach (ImageTrack track in this.tracks)
             {
                 totalHeight += track.Height;
             }
@@ -454,13 +454,10 @@ namespace AudioAnalysisTools
             }
         } //OverlayDiscreteColorMatrix()
 
-        #region IDisposable Members
         public void Dispose()
         {
             this.eventList = null;
             this.SonogramImage.Dispose();
         }
-
-        #endregion
     } //end class
 }

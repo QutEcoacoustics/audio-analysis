@@ -1,11 +1,15 @@
-﻿namespace AudioAnalysisTools
+﻿// <copyright file="ImageTrack.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AudioAnalysisTools.StandardSpectrograms
 {
-    using Acoustics.Shared;
     using System;
     using System.Drawing;
 
-    using Indices;
-    using WavTools;
+    using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.WavTools;
+
     using TowseyLibrary;
 
     public enum TrackType
@@ -24,19 +28,14 @@
         timeTics
     }
 
-
-    public sealed class Image_Track
+    public sealed class ImageTrack
     {
-        #region Constants
         public const int DefaultHeight = 30;       //pixel height of a track
         public const int HeightOfTimeScale = 15;   //pixel height of the top and bottom time scales
         public const int syllablesTrackHeight = 10;   //pixel height of a track
         public const int envelopeTrackHeight  = 40;   //pixel height of a track
         public const int scoreTrackHeight = 40;   //pixel height of a track
-        #endregion
 
-
-        #region static var - colors for tracks
         public static Color[] TrackColors = {Color.White, Color.Red, Color.Orange, Color.Cyan, Color.OrangeRed, Color.Pink, Color.Salmon, Color.Tomato, Color.DarkRed, Color.Purple,
                                           /*Color.AliceBlue,*/ /*Color.Aqua, Color.Aquamarine, Color.Azure, Color.Bisque,*/
                              Color.Blue, Color.BlueViolet, /*Color.Brown, Color.BurlyWood,*/ Color.CadetBlue, /*Color.Chartreuse,*/
@@ -58,29 +57,37 @@
                              /*Color.Silver,*/ Color.SkyBlue, Color.SlateBlue, /*Color.SlateGray,*/ Color.SpringGreen, Color.SteelBlue,
                              /*Color.Tan,*/ Color.Teal, Color.Thistle, Color.Turquoise, Color.Violet, /*Color.Wheat,*/
                              /*Color.Yellow,*/ Color.YellowGreen,  Color.Black,};
-        #endregion
 
-
-        #region Properties
         public TrackType TrackType { get; set; }
 
         public double scoreMin = 0.0; //default min score displayed in score track of image
+
         public double ScoreMin { get { return this.scoreMin; } set { this.scoreMin = value; } }
+
         public double scoreMax = 10.0; //default max score displayed in score track of image
+
         public double ScoreMax { get { return this.scoreMax; } set { this.scoreMax = value; } }
+
         public double ScoreThreshold { set; get; }
+
         public int sampleUnit { get; set; }
+
         public string Name { set; get; }
 
         public int topOffset { get; set; }    //set to track's TOP    pixel row in final image
+
         public int bottomOffset { get; set; } //set to track's BOTTOM pixel row in final image
+
         private int height = DefaultHeight;
+
         public int Height { get { return this.height; } set { this.height = value; } }
+
         private int[] intData = null; // used to store segmentation state for example
         private double[] doubleData = null;
         private double[,] doubleMatrix = null;
 
         TimeSpan timeSpan { set; get; }
+
         double timeScale { set; get; } //pixels per second - not actually used from 30-08-2012
 
         private double[] doubleData1 = null;
@@ -88,67 +95,67 @@
 
         //these params used for segmentation track
         public double SegmentationThreshold_k1 { set; get; }
+
         public double SegmentationThreshold_k2 { set; get; }
 
         private int garbageID = 0;
+
         public int GarbageID { get { return this.garbageID; } set { this.garbageID = value; } }
-        #endregion
 
-
-
-        #region Constructors
         /// <summary>
         /// CONSTRUCTOR
         /// </summary>
         /// <param name="type"></param>
         /// <param name="data"></param>
-        public Image_Track(TrackType type, int[] data)
+        public ImageTrack(TrackType type, int[] data)
         {
             this.TrackType = type;
             this.intData = data;
             this.height = this.SetTrackHeight();
             //if(SonoImage.Verbose)LoggedConsole.WriteLine("\tTrack CONSTRUCTOR: trackType = " + type + "  Data = " + data.ToString());
         }
-        public Image_Track(TrackType type, double[] data)
+
+        public ImageTrack(TrackType type, double[] data)
         {
             this.TrackType = type;
             this.doubleData = data;
             this.height = this.SetTrackHeight();
             //if (SonoImage.Verbose) LoggedConsole.WriteLine("\tTrack CONSTRUCTOR: trackType = " + type + "  Data = " + data.ToString());
         }
+
         /// <summary>
         /// used for showing the singal envelope track
         /// </summary>
         /// <param name="type"></param>
         /// <param name="data1"></param>
         /// <param name="data2"></param>
-        public Image_Track(TrackType type, double[] data1, double[] data2)
+        public ImageTrack(TrackType type, double[] data1, double[] data2)
         {
             this.TrackType = type;
             this.doubleData1 = data1;
             this.doubleData2 = data2;
             this.height = this.SetTrackHeight();
         }
-        public Image_Track(TrackType type, double[,] data)
+
+        public ImageTrack(TrackType type, double[,] data)
         {
             this.TrackType = type;
             this.doubleMatrix = data;
             this.height = this.SetTrackHeight();
         }
-        public Image_Track(TrackType type, TimeSpan t, double pixelsPerSecond)
+
+        public ImageTrack(TrackType type, TimeSpan t, double pixelsPerSecond)
         {
             this.TrackType = type;
             this.timeSpan = t;
             this.timeScale = pixelsPerSecond;
             this.height = this.SetTrackHeight();
         }
-        public Image_Track(TrackType type)
+
+        public ImageTrack(TrackType type)
         {
             this.TrackType = type;
         }
-
-        #endregion
-
 
         public void SetIntArray(int[] data)
         {
@@ -215,10 +222,11 @@
                     this.DrawScoreMatrixTrack(bmp);  //add a score track
                     break;
                 default:
-                    Log.WriteLine("WARNING******** !!!! Image_Track.DrawTrack():- TRACKTYPE NOT DEFINED");
+                    Log.WriteLine("WARNING******** !!!! ImageTrack.DrawTrack():- TRACKTYPE NOT DEFINED");
                     break;
 
             }
+
             // none, energy, syllables, scoreArray, scoreMatrix, zeroCrossings, hits
             //if ((title != null) && (title.Length != 0)) DrawTrackTitle(bmp, title);  //add a score track
 
@@ -242,7 +250,7 @@
             Color gray = Color.LightGray;
             Color white = Color.White;
             //Color red = Color.Red;
-            if ((this.intData == null) || (this.intData.Length == 0))
+            if (this.intData == null || this.intData.Length == 0)
             {
                 LoggedConsole.WriteLine("#####WARNING!! AddScoreArrayTrack(Bitmap bmp):- Integer data does not exists!");
                 return bmp;
@@ -252,11 +260,24 @@
             for (int x = 0; x < Math.Min(bmp.Width, this.intData.Length); x++)
             {
                 Color col = TrackColors[this.intData[x]];
-                if (this.intData[x] == 0) col = white;
-                if (this.intData[x] == this.garbageID) col = gray;
-                for (int z = 0; z < this.height; z++) bmp.SetPixel(x, this.topOffset + z, col);  //add in hits
+                if (this.intData[x] == 0)
+                {
+                    col = white;
+                }
+
+                if (this.intData[x] == this.garbageID)
+                {
+                    col = gray;
+                }
+
+                for (int z = 0; z < this.height; z++)
+                {
+                    bmp.SetPixel(x, this.topOffset + z, col);  //add in hits
+                }
+
                 bmp.SetPixel(x, bottom, Color.Black);
             }
+
             return bmp;
         }
 
@@ -278,13 +299,20 @@
         public Bitmap DrawScoreArrayTrack(Bitmap bmp)
         {
             //LoggedConsole.WriteLine("DRAW SCORE TRACK: image ht=" + bmp.Height + "  topOffset = " + topOffset + "   botOffset =" + bottomOffset);
-            if (this.doubleData == null) return bmp;
+            if (this.doubleData == null)
+            {
+                return bmp;
+            }
+
             int dataLength = this.doubleData.Length;
             double range = this.scoreMax - this.scoreMin;
 
             //next two lines are for subsampling if the score array is compressed to fit smaller image width.
             double subSample = dataLength / (double)bmp.Width;
-            if (subSample < 1.0) subSample = 1;
+            if (subSample < 1.0)
+            {
+                subSample = 1;
+            }
 
             Color gray = Color.FromArgb(235, 235, 235); // use as background
             int baseLine = this.topOffset + this.height - 2;
@@ -294,31 +322,67 @@
             for (int w = 0; w < bmp.Width; w++)
             {
                 int start = (int)Math.Round(w     * subSample);
-                int end   = (int)Math.Round((w+1) * subSample);
-                if (end >= this.doubleData.Length) continue;
+                int end   = (int)Math.Round((w + 1) * subSample);
+                if (end >= this.doubleData.Length)
+                {
+                    continue;
+                }
+
                 double max = -double.MaxValue;
                 int location = 0;
                 for (int x = start; x < end; x++) //find max value in subsample
                 {
-                    if (max < this.doubleData[x]) max = this.doubleData[x];
+                    if (max < this.doubleData[x])
+                    {
+                        max = this.doubleData[x];
+                    }
+
                     location = x;
                 }
+
                 double fraction = (max - this.scoreMin) / range;
                 int id = this.Height - 1 - (int)(this.Height * fraction);
-                if (id < 0) id = 0; else if (id > this.Height) id = this.Height; // impose bounds
+                if (id < 0)
+                {
+                    id = 0;
+                }
+                else if (id > this.Height)
+                {
+                    id = this.Height; // impose bounds
+                }
 
                 //paint white and leave a black vertical histogram bar
-                for (int z = 0; z < id; z++) bmp.SetPixel(w, this.topOffset + z, gray); // background
-                for (int z = id; z < this.height; z++) bmp.SetPixel(w, this.topOffset + z, Color.Black); // draw the score bar
+                for (int z = 0; z < id; z++)
+                {
+                    bmp.SetPixel(w, this.topOffset + z, gray); // background
+                }
+
+                for (int z = id; z < this.height; z++)
+                {
+                    bmp.SetPixel(w, this.topOffset + z, Color.Black); // draw the score bar
+                }
+
                 bmp.SetPixel(w, baseLine, Color.Black); // draw base line
             }
 
             //add in horizontal threshold significance line
             double f = (this.ScoreThreshold - this.scoreMin) / range;
             int lineID = this.Height - 1 - (int)(this.Height * f);
-            if (lineID < 0) return bmp;
-            if (lineID > this.Height) return bmp;
-            for (int x = 0; x < bmp.Width; x++) bmp.SetPixel(x, this.topOffset + lineID, Color.Lime);
+            if (lineID < 0)
+            {
+                return bmp;
+            }
+
+            if (lineID > this.Height)
+            {
+                return bmp;
+            }
+
+            for (int x = 0; x < bmp.Width; x++)
+            {
+                bmp.SetPixel(x, this.topOffset + lineID, Color.Lime);
+            }
+
             return bmp;
         }
 
@@ -328,14 +392,21 @@
         public Bitmap DrawSimilarityScoreTrack(Bitmap bmp)
         {
             //LoggedConsole.WriteLine("DRAW SCORE TRACK: image ht=" + bmp.Height + "  topOffset = " + topOffset + "   botOffset =" + bottomOffset);
-            if (this.doubleData == null) return bmp;
+            if (this.doubleData == null)
+            {
+                return bmp;
+            }
+
             int dataLength = this.doubleData.Length;
             double range = this.scoreMax - this.scoreMin;
 
             //next two lines are for subsampling if the score array is compressed to fit smaller image width.
             double subSample = dataLength / (double)bmp.Width;
             // 13 = neighbourhoodLenght
-            if (subSample < 1.0) subSample = 13;
+            if (subSample < 1.0)
+            {
+                subSample = 13;
+            }
 
             Color gray = Color.FromArgb(235, 235, 235); // use as background
             int baseLine = this.topOffset + this.height - 2;
@@ -343,7 +414,7 @@
             //int length = (bmpWidth <= doubleData.Length) ? bmpWidth : doubleData.Length;
             //for (int w = 0; w < length; w++)
 
-            for (int w = 0; w < bmp.Width; w+=13)
+            for (int w = 0; w < bmp.Width; w += 13)
             {
                 var location = w;
                 double fraction = 0.0;
@@ -355,23 +426,52 @@
                 {
                     fraction = 0.0;
                 }
+
                 int id = this.Height - 1 - (int)(this.Height * fraction);
-                if (id < 0) id = 0; else if (id > this.Height) id = this.Height; // impose bounds
+                if (id < 0)
+                {
+                    id = 0;
+                }
+                else if (id > this.Height)
+                {
+                    id = this.Height; // impose bounds
+                }
 
                 //paint white and leave a black vertical histogram bar
-                for (int z = 0; z < id; z++) bmp.SetPixel(w, this.topOffset + z, gray); // background
-                for (int z = id; z < this.height; z++) bmp.SetPixel(w, this.topOffset + z, Color.Black); // draw the score bar
+                for (int z = 0; z < id; z++)
+                {
+                    bmp.SetPixel(w, this.topOffset + z, gray); // background
+                }
+
+                for (int z = id; z < this.height; z++)
+                {
+                    bmp.SetPixel(w, this.topOffset + z, Color.Black); // draw the score bar
+                }
+
                 bmp.SetPixel(w, baseLine, Color.Black); // draw base line
             }
 
             //add in horizontal threshold significance line
             double f = (this.ScoreThreshold - this.scoreMin) / range;
             int lineID = this.Height - 1 - (int)(this.Height * f);
-            if (lineID < 0) return bmp;
-            if (lineID > this.Height) return bmp;
-            for (int x = 0; x < bmp.Width; x++) bmp.SetPixel(x, this.topOffset + lineID, Color.Lime);
+            if (lineID < 0)
+            {
+                return bmp;
+            }
+
+            if (lineID > this.Height)
+            {
+                return bmp;
+            }
+
+            for (int x = 0; x < bmp.Width; x++)
+            {
+                bmp.SetPixel(x, this.topOffset + lineID, Color.Lime);
+            }
+
             return bmp;
         }
+
         /// <summary>
         /// This method assumes that the passed data array is of values, min=0.0, max = approx 8-16.
         /// </summary>
@@ -380,7 +480,10 @@
             int bmpWidth = bmp.Width;
             int dataLength = this.intData.Length;
             int subSample = (int)Math.Round((double)(dataLength / bmp.Width));
-            if (subSample < 1) subSample = 1;
+            if (subSample < 1)
+            {
+                subSample = 1;
+            }
 
             Color gray = Color.LightGray;
             Color white = Color.White;
@@ -391,22 +494,46 @@
             for (int x = 0; x < bmpWidth; x++)
             {
                 //transfer scores
-                for (int y = 0; y < numberOfScoreTracks; y++) scores[y] = this.doubleMatrix[y, x];
+                for (int y = 0; y < numberOfScoreTracks; y++)
+                {
+                    scores[y] = this.doubleMatrix[y, x];
+                }
+
                 int maxIndex = DataTools.GetMaxIndex(scores);
 
                 int id = this.Height - 1 - (int)(this.Height * scores[maxIndex] / this.ScoreMax);
-                if (id < 0) id = 0;
-                else if (id > this.Height) id = this.Height;
+                if (id < 0)
+                {
+                    id = 0;
+                }
+                else if (id > this.Height)
+                {
+                    id = this.Height;
+                }
                 //paint white and leave a black vertical histogram bar
-                for (int z = 0; z < id; z++) bmp.SetPixel(x, this.topOffset + z, white);
-                for (int z = id; z < this.Height; z++) bmp.SetPixel(x, this.topOffset + z, TrackColors[maxIndex + 15]);
+                for (int z = 0; z < id; z++)
+                {
+                    bmp.SetPixel(x, this.topOffset + z, white);
+                }
+
+                for (int z = id; z < this.Height; z++)
+                {
+                    bmp.SetPixel(x, this.topOffset + z, TrackColors[maxIndex + 15]);
+                }
             }
 
             //add in horizontal threshold significance line
             double max = 2 * this.ScoreThreshold;
-            if (max < this.ScoreMax) max = this.ScoreMax;
-            int lineID = (int)(this.Height * (1 - (this.ScoreThreshold / max)));
-            for (int x = 0; x < bmpWidth; x++) bmp.SetPixel(x, this.topOffset + lineID, gray);
+            if (max < this.ScoreMax)
+            {
+                max = this.ScoreMax;
+            }
+
+            int lineID = (int)(this.Height * (1 - this.ScoreThreshold / max));
+            for (int x = 0; x < bmpWidth; x++)
+            {
+                bmp.SetPixel(x, this.topOffset + lineID, gray);
+            }
 
             return bmp;
         }
@@ -426,7 +553,11 @@
                 int minID = halfHeight + (int)Math.Round(this.doubleMatrix[0, w] * halfHeight);
                 //minID = halfHeight + (int)Math.Round(-1.0 * halfHeight);
                 int maxID = halfHeight + (int)Math.Round(this.doubleMatrix[1, w] * halfHeight) - 1;
-                for (int z = minID; z <= maxID; z++) bmp.SetPixel(w, this.bottomOffset - z, c);
+                for (int z = minID; z <= maxID; z++)
+                {
+                    bmp.SetPixel(w, this.bottomOffset - z, c);
+                }
+
                 bmp.SetPixel(w, this.topOffset + halfHeight, c); //set zero line in case it was missed
                 if (this.doubleMatrix[0, w] < -0.99)
                 {
@@ -441,6 +572,7 @@
                         bmp.SetPixel(w, this.topOffset + 1, Color.OrangeRed);
                         bmp.SetPixel(w, this.topOffset + 2, Color.OrangeRed);
                     }
+
                 //bmp.SetPixel(w, this.topOffset, Color.OrangeRed);
                 //bmp.SetPixel(w, this.bottomOffset - 1, Color.OrangeRed);
             }
@@ -463,7 +595,6 @@
             g.DrawImage(timeTrack, 0, this.topOffset);
             return bmp;
         }
-
 
         /// <summary>
         /// This method assumes that the passed decibel array has been normalised
@@ -491,21 +622,18 @@
             return bmp;
         }
 
-
         //###########################################################################################################################################
         //#### STATIC METHODS BELOW HERE TO DRAW TRACK ##############################################################################################
         //###########################################################################################################################################
 
-
         public static Image DrawWaveEnvelopeTrack(AudioRecording recording, int imageWidth)
         {
-            //int height = Image_Track.DefaultHeight;
+            //int height = ImageTrack.DefaultHeight;
             double[,] envelope = recording.GetWaveForm(imageWidth);
 
             Image envelopeImage = DrawWaveEnvelopeTrack(envelope);
             return envelopeImage;
         }
-
 
         /// <summary>
         /// assumes that max signal value = 1.0 and min sig value = -1.0 i.e. wav file values
@@ -525,7 +653,10 @@
                 int minID = halfHeight + (int)Math.Round(envelope[0, w] * halfHeight);
                 //minID = halfHeight + (int)Math.Round(-1.0 * halfHeight);
                 int maxID = halfHeight + (int)Math.Round(envelope[1, w] * halfHeight) - 1;
-                for (int z = minID; z <= maxID; z++) bmp.SetPixel(w, height - z - 1, colour);
+                for (int z = minID; z <= maxID; z++)
+                {
+                    bmp.SetPixel(w, height - z - 1, colour);
+                }
 
                 // set zero line in case it was missed
                 bmp.SetPixel(w, halfHeight, colour);
@@ -544,14 +675,13 @@
                         bmp.SetPixel(w, 1, Color.OrangeRed);
                         bmp.SetPixel(w, 2, Color.OrangeRed);
                     }
+
                 //bmp.SetPixel(w, this.topOffset, Color.OrangeRed);
                 //bmp.SetPixel(w, this.bottomOffset - 1, Color.OrangeRed);
             }
 
             return bmp;
         }
-
-
 
         /// <summary>
         /// This method assumes that the passed decibel array has been normalised
@@ -560,7 +690,10 @@
         {
             int dataLength = data.Length;
             int subSample = (int)Math.Round((double)(dataLength / imageWidth));
-            if (subSample < 1) subSample = 1;
+            if (subSample < 1)
+            {
+                subSample = 1;
+            }
 
             var bmp = new Bitmap(imageWidth, DefaultHeight);
             Graphics g = Graphics.FromImage(bmp);
@@ -569,22 +702,35 @@
             for (int w = 0; w < imageWidth; w++)
             {
                 int start = w * subSample;
-                int end = (w+1) * subSample;
+                int end = (w + 1) * subSample;
                 double max = -double.MaxValue;
                 int location = 0;
                 for (int x = start; x < end; x++)
                 {
-                    if (max < data[x]) max = data[x];
+                    if (max < data[x])
+                    {
+                        max = data[x];
+                    }
+
                     location = x;
                 }
 
                 double norm = data[location];
                 int id = DefaultHeight - 1 - (int)(DefaultHeight * norm);
-                if (id < 0) id = 0;
-                else if (id > DefaultHeight) id = DefaultHeight;
+                if (id < 0)
+                {
+                    id = 0;
+                }
+                else if (id > DefaultHeight)
+                {
+                    id = DefaultHeight;
+                }
                 //paint white and leave a black vertical bar
                 //for (int z = 0; z < id; z++) bmp.SetPixel(w, z, Color.White); // draw bar by drawing in white backgorund
-                for (int z = id; z < DefaultHeight; z++) bmp.SetPixel(w, z, Color.Black);
+                for (int z = id; z < DefaultHeight; z++)
+                {
+                    bmp.SetPixel(w, z, Color.Black);
+                }
             }
 
             //display vocalisation thresholds used to determine endpoints
@@ -593,14 +739,29 @@
             int k1 = DefaultHeight - (int)(DefaultHeight * v1);
             double v2 = segmentationThreshold_k2;
             int k2 = DefaultHeight - (int)(DefaultHeight * v2);
-            if ((v1 < 0.0) || (v1 > 1.0)) return bmp; //thresholds are illegal so stop now.
-            if ((v2 < 0.0) || (v2 > 1.0)) return bmp;
+            if (v1 < 0.0 || v1 > 1.0)
+            {
+                return bmp; //thresholds are illegal so stop now.
+            }
+
+            if (v2 < 0.0 || v2 > 1.0)
+            {
+                return bmp;
+            }
 
             //calculate location of the segmentation threshold lines
             int y1 = k1;
-            if (y1 >= bmp.Height) y1 = bmp.Height - 1;
+            if (y1 >= bmp.Height)
+            {
+                y1 = bmp.Height - 1;
+            }
+
             int y2 = k2;
-            if (y2 >= bmp.Height) y2 = bmp.Height - 1;
+            if (y2 >= bmp.Height)
+            {
+                y2 = bmp.Height - 1;
+            }
+
             Pen orangePen = new Pen(Color.Orange);
             Pen limePen   = new Pen(Color.Lime);
 
@@ -615,7 +776,6 @@
             Bitmap track = DrawSegmentationTrack(sg.DecibelsNormalised, sg.SigState, segmentationThreshold_k1, segmentationThreshold_k2, sg.FrameCount);
             return track;
         }
-
 
         public static Bitmap DrawSegmentationTrack(double[] data, int[] stateData, double segmentationThreshold_k1, double segmentationThreshold_k2, int imageWidth)
         {
@@ -640,7 +800,11 @@
             for (int x = 0; x < stateBmp.Width; x++)
             {
                 int location = x * subSample;
-                if (location > dataLength - 1) continue;
+                if (location > dataLength - 1)
+                {
+                    continue;
+                }
+
                 Color col = stateColors[stateData[location]];
                 stateBmp.SetPixel(x, 0, col);
                 stateBmp.SetPixel(x, 1, col);
@@ -660,9 +824,9 @@
         /// </summary>
         /// <param name="sg"></param>
         /// <returns></returns>
-        public static Image_Track GetDecibelTrack(BaseSonogram sg)
+        public static ImageTrack GetDecibelTrack(BaseSonogram sg)
         {
-            var track = new Image_Track(TrackType.deciBels, sg.DecibelsNormalised);
+            var track = new ImageTrack(TrackType.deciBels, sg.DecibelsNormalised);
             return track;
         }
 
@@ -671,71 +835,80 @@
         /// </summary>
         /// <param name="sg"></param>
         /// <returns></returns>
-        public static Image_Track GetSegmentationTrack(BaseSonogram sg)
+        public static ImageTrack GetSegmentationTrack(BaseSonogram sg)
         {
-            var track = new Image_Track(TrackType.segmentation, sg.DecibelsNormalised);
+            var track = new ImageTrack(TrackType.segmentation, sg.DecibelsNormalised);
             track.intData = sg.SigState;
             track.SegmentationThreshold_k1 = EndpointDetectionConfiguration.K1Threshold / sg.DecibelReference;
             track.SegmentationThreshold_k2 = EndpointDetectionConfiguration.K2Threshold / sg.DecibelReference;
             return track;
         }
 
-        public static Image_Track GetWavEnvelopeTrack(AudioRecording ar, int imageWidth)
+        public static ImageTrack GetWavEnvelopeTrack(AudioRecording ar, int imageWidth)
         {
             double[,] envelope = ar.GetWaveForm(imageWidth);
 
             return GetWavEnvelopeTrack(envelope, imageWidth);
         }
 
-        public static Image_Track GetWavEnvelopeTrack(double[,] envelope, int imageWidth)
+        public static ImageTrack GetWavEnvelopeTrack(double[,] envelope, int imageWidth)
         {
-            var track = new Image_Track(TrackType.waveEnvelope, envelope);
+            var track = new ImageTrack(TrackType.waveEnvelope, envelope);
             return track;
         }
 
-        public static Image_Track GetTimeTrack(TimeSpan t, double pixelsPerSecond)
+        public static ImageTrack GetTimeTrack(TimeSpan t, double pixelsPerSecond)
         {
-            var track = new Image_Track(TrackType.timeTics, t, pixelsPerSecond);
+            var track = new ImageTrack(TrackType.timeTics, t, pixelsPerSecond);
             //int height = track.Height;
             return track;
         }
-        public static Image_Track GetSyllablesTrack(int[] SyllableIDs, int garbageID)
+
+        public static ImageTrack GetSyllablesTrack(int[] SyllableIDs, int garbageID)
         {
-            var track = new Image_Track(TrackType.syllables, SyllableIDs);
+            var track = new ImageTrack(TrackType.syllables, SyllableIDs);
             track.GarbageID = garbageID;
             return track;
         }
-        public static Image_Track GetScoreTrack(double[] scores, double? scoreMin, double? scoreMax, double? scoreThreshold)
+
+        public static ImageTrack GetScoreTrack(double[] scores, double? scoreMin, double? scoreMax, double? scoreThreshold)
         {
-            var track = new Image_Track(TrackType.scoreArray, scores);
+            var track = new ImageTrack(TrackType.scoreArray, scores);
             track.ScoreThreshold = scoreThreshold ?? 0;
             track.ScoreMin = scoreMin ?? 0;
             track.ScoreMax = scoreMax ?? 0;
             return track;
         }
-        public static Image_Track GetSimilarityScoreTrack(double[] scores, double? scoreMin, double? scoreMax, double? scoreThreshold, int neighbourhoodLength)
+
+        public static ImageTrack GetSimilarityScoreTrack(double[] scores, double? scoreMin, double? scoreMax, double? scoreThreshold, int neighbourhoodLength)
         {
-            var track = new Image_Track(TrackType.similarityScoreList, scores);
+            var track = new ImageTrack(TrackType.similarityScoreList, scores);
             track.ScoreThreshold = scoreThreshold ?? 0;
             track.ScoreMin = scoreMin ?? 0;
             track.ScoreMax = scoreMax ?? 0;
             track.sampleUnit = neighbourhoodLength;
             return track;
         }
-        public static Image_Track GetNamedScoreTrack(double[] scores, double? scoreMin, double? scoreMax, double? scoreThreshold, string name)
+
+        public static ImageTrack GetNamedScoreTrack(double[] scores, double? scoreMin, double? scoreMax, double? scoreThreshold, string name)
         {
-            var track = new Image_Track(TrackType.scoreArrayNamed, scores);
+            var track = new ImageTrack(TrackType.scoreArrayNamed, scores);
             track.ScoreThreshold = scoreThreshold ?? 0;
             track.ScoreMin = scoreMin ?? 0;
             track.ScoreMax = scoreMax ?? 0;
             track.Name = name;
             return track;
         }
-        public static Image_Track GetScoreTrack(int[] scores, int? scoreMin, int? scoreMax, int? scoreThreshold)
+
+        public static ImageTrack GetScoreTrack(int[] scores, int? scoreMin, int? scoreMax, int? scoreThreshold)
         {
             //convert integers to doubles
             var dscores = new double[scores.Length];
-            for (int x = 0; x < scores.Length; x++) dscores[x] = scores[x];
+            for (int x = 0; x < scores.Length; x++)
+            {
+                dscores[x] = scores[x];
+            }
+
             return GetScoreTrack(dscores, (double)scoreMin, (double)scoreMax, (double)scoreThreshold);
         }
 
@@ -757,16 +930,27 @@
                 // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                 double value = (array[x] - minVal) / range;
                 int c = 255 - (int)Math.Floor(255.0 * value); //original version
-                if (c < threshold) c = 0;
+                if (c < threshold)
+                {
+                    c = 0;
+                }
                 else
-                if (c >= 256) c = 255;
+                if (c >= 256)
+                {
+                    c = 255;
+                }
 
                 Color col = grayScale[c];
-                for (int y = 0; y < trackHeight; y++) bmp.SetPixel(x, yOffset + y, col);
+                for (int y = 0; y < trackHeight; y++)
+                {
+                    bmp.SetPixel(x, yOffset + y, col);
+                }
+
                 bmp.SetPixel(x, yOffset, grayScale[0]); //draw upper boundary
             }//end over all pixels
+
             Graphics g = Graphics.FromImage(bmp);
-            g.DrawString(title, new Font("Tahoma", 8), Brushes.White, new PointF(imageWidth+5, yOffset));
+            g.DrawString(title, new Font("Tahoma", 8), Brushes.White, new PointF(imageWidth + 5, yOffset));
         }
 
         /// <summary>
@@ -784,21 +968,31 @@
             int imageWidth = array.Length;
             Bitmap bmp = new Bitmap(imageWidth, trackHeight);
 
-
             double range = maxVal - minVal;
             for (int x = 0; x < imageWidth; x++) //for pixels in the line
             {
                 // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                 double value = (array[x] - minVal) / range;
                 int c = 255 - (int)Math.Floor(255.0 * value); //original version
-                if (c < threshold) c = 0;
+                if (c < threshold)
+                {
+                    c = 0;
+                }
                 else
-                    if (c >= 256) c = 255;
+                    if (c >= 256)
+                {
+                    c = 255;
+                }
 
                 Color col = grayScale[c];
-                for (int y = 0; y < trackHeight; y++) bmp.SetPixel(x, y, col);
+                for (int y = 0; y < trackHeight; y++)
+                {
+                    bmp.SetPixel(x, y, col);
+                }
+
                 bmp.SetPixel(x, 0, grayScale[0]); //draw upper boundary
             }//end over all pixels
+
             Graphics g = Graphics.FromImage(bmp);
             g.DrawString(title, new Font("Tahoma", 8), Brushes.White, new PointF(imageWidth + 5, 0));
             return bmp;
@@ -826,9 +1020,17 @@
             {
                 int x = (int)order[i]; //
                 double value = array[i];
-                if (value > 1.0) value = 1.0; //expect normalised data
+                if (value > 1.0)
+                {
+                    value = 1.0; //expect normalised data
+                }
+
                 int barHeight = (int)Math.Round(value * trackHeight);
-                for (int y = 0; y < barHeight; y++) bmp.SetPixel(x, trackHeight - y - 1, Color.Black);
+                for (int y = 0; y < barHeight; y++)
+                {
+                    bmp.SetPixel(x, trackHeight - y - 1, Color.Black);
+                }
+
                 bmp.SetPixel(x, 0, Color.Gray); //draw upper boundary
             }//end over all pixels
 
@@ -863,17 +1065,20 @@
                 double value = array[i];
                 int barHeight = (int)Math.Round(value * trackHeight);
                 int colourIndex = (int)Math.Floor(value * colorScale.Length * 0.99);
-                for (int y = 0; y < barHeight; y++) bmp.SetPixel(x, trackHeight - y - 1, colorScale[colourIndex]);
+                for (int y = 0; y < barHeight; y++)
+                {
+                    bmp.SetPixel(x, trackHeight - y - 1, colorScale[colourIndex]);
+                }
+
                 bmp.SetPixel(x, 0, Color.Gray); //draw upper boundary
             }//end over all pixels
+
             int endWidth = trackWidth - array.Length;
             var font = new Font("Arial", 9.0f, FontStyle.Regular);
             g.FillRectangle(Brushes.Black, array.Length + 1, 0, endWidth, trackHeight);
             g.DrawString(title, font, Brushes.White, new PointF(array.Length + 5, 2));
             return bmp;
         }
-
-
 
         public static void DrawScoreTrack(Bitmap bmp, double[] array, int yOffset, int trackHeight, double threshold, string title)
         {
@@ -882,7 +1087,6 @@
             DataTools.MinMax(array, out minVal, out maxVal);
             DrawScoreTrack(bmp, array, yOffset, trackHeight, minVal, maxVal, threshold, title);
         }
-
 
         public static Bitmap DrawGrayScaleScoreTrack(double[] array, int trackHeight, double threshold, string title)
         {
@@ -907,7 +1111,6 @@
             g.DrawString(title, new Font("Tahoma", 9), Brushes.Wheat, new PointF(4, 3));
             return bmp;
         }
-
 
         /// <summary>
         /// IMPORTANT: THIS TIME SCALE METHOD WAS REWORKED ON 23 June 2015 and on 3 August 2015.
@@ -952,6 +1155,7 @@
                 int roundedStartMinutes = (int)Math.Round(startTimeAbs.TotalMinutes);
                 roundedStartTime = TimeSpan.FromMinutes(roundedStartMinutes);
             }
+
             int roundedStartHours = roundedStartTime.Hours;
 
             TimeSpan ticStartTime = TimeSpan.FromHours(roundedStartHours);
@@ -968,10 +1172,10 @@
             int cols = bmp.Width;
 
             // for columns, draw in X-axis lines
-            int xPixelInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds));
+            int xPixelInterval = (int)Math.Round(xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds);
             int halfInterval = xPixelInterval / 2;
             int halfheight = trackHeight / 3;
-            for (int x = 0; x < (cols - pixelStartOffset); x++)
+            for (int x = 0; x < cols - pixelStartOffset; x++)
             {
                 if (x % xPixelInterval == 0)
                 {
@@ -989,10 +1193,14 @@
                         timeStr = string.Format("{0}", roundedTimeSpan);
                     }
                     else
-                    if ((roundedTimeSpan.Hours == 0.0)&&(roundedTimeSpan.Minutes == 0.0))
+                    if (roundedTimeSpan.Hours == 0.0 && roundedTimeSpan.Minutes == 0.0)
                     {
-                        g.DrawLine(whitePen, tickPosition+1, 0, tickPosition+1, trackHeight);
-                        if (tickPosition > 0) g.DrawLine(whitePen, tickPosition - 1, 0, tickPosition - 1, trackHeight);
+                        g.DrawLine(whitePen, tickPosition + 1, 0, tickPosition + 1, trackHeight);
+                        if (tickPosition > 0)
+                        {
+                            g.DrawLine(whitePen, tickPosition - 1, 0, tickPosition - 1, trackHeight);
+                        }
+
                         if (startDate.Year > 2000)
                         {
                             DateTime today = startDate + roundedTimeSpan;
@@ -1003,9 +1211,11 @@
                     {
                         timeStr = string.Format("{0:d2}{1:d2}h", roundedTimeSpan.Hours, roundedTimeSpan.Minutes);
                     }
+
                     g.DrawString(timeStr, stringFont, Brushes.White, new PointF(tickPosition, 3)); //draw time
                 }
             }
+
             g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary
             //g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
             g.DrawLine(grayPen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
@@ -1015,13 +1225,6 @@
         /// <summary>
         /// Like the above method but adds a label at end displaying units of time.
         /// </summary>
-        /// <param name="fullDuration"></param>
-        /// <param name="startOffset"></param>
-        /// <param name="ticInterval"></param>
-        /// <param name="trackWidth"></param>
-        /// <param name="trackHeight"></param>
-        /// <param name="title"></param>
-        /// <returns></returns>
         public static Bitmap DrawTimeTrack(TimeSpan fullDuration, TimeSpan startOffset, TimeSpan ticInterval, int trackWidth, int trackHeight, string title)
         {
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
@@ -1039,7 +1242,11 @@
             for (int x = 0; x < trackWidth; x++) //for pixels in the line
             {
                 min++;
-                if (min % XaxisScale != 0) continue;
+                if (min % XaxisScale != 0)
+                {
+                    continue;
+                }
+
                 g.DrawLine(whitePen, x, 0, x, trackHeight);
                 hour = (int)Math.Round(min / XaxisScale);
                 if (hour >= 24)
@@ -1047,8 +1254,10 @@
                     min = 0;
                     hour = 0;
                 }
+
                 g.DrawString(hour.ToString(), stringFont, Brushes.White, new PointF(x + 2, 1)); //draw time
             }//end over all pixels
+
             g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary
             g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
             g.DrawLine(whitePen, trackWidth, 0, trackWidth, trackHeight - 1);//draw right end boundary
@@ -1088,13 +1297,15 @@
             }
 
             // for columns, draw in X-axis lines
-            int xPixelInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds));
+            int xPixelInterval = (int)Math.Round(xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds);
             int halfInterval = xPixelInterval / 2;
             int halfheight = trackHeight / 3;
             for (int x = 1; x < cols; x++)
             {
                 if (x % halfInterval == 0)
+                {
                     g.DrawLine(whitePen, x, 0, x, halfheight);
+                }
 
                 if (x % xPixelInterval == 0)
                 {
@@ -1113,14 +1324,15 @@
                     {
                         time = string.Format("{0:f0}", elapsedTimeSpan.TotalHours);
                     }
+
                     g.DrawString(time, stringFont, Brushes.White, new PointF(tickPosition, 2)); //draw time
                 }
             }
+
             g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary
             g.DrawLine(grayPen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
             return bmp;
         }
-
 
         public static TimeSpan CalculateGridInterval(TimeSpan totalDuration, int width)
         {
@@ -1130,16 +1342,20 @@
             double pixelInterval = 0;
             foreach (double gridInterval in gridIntervals)
             {
-                if (pixelInterval > 51) break;
+                if (pixelInterval > 51)
+                {
+                    break;
+                }
+
                 pixelInterval = gridInterval / (double)pixelDuration;
             }
+
             TimeSpan ts = TimeSpan.FromMinutes(pixelInterval * pixelDuration);
             return ts;
         }
 
-
         // mark off Y-axis 12 month time scale.
-        public static Bitmap DrawYearScale_vertical(int offset, int trackHeight)
+        public static Bitmap DrawYearScaleVertical(int offset, int trackHeight)
         {
             int trackWidth = 30;
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
@@ -1157,7 +1373,7 @@
 
             for (int i = 0; i < 12; i++) //for pixels in the line
             {
-                int Y = (int)Math.Round(offset + (i * interval));
+                int Y = (int)Math.Round(offset + i * interval);
                 //if (offset % XaxisScale != 0) continue;
                 g.DrawLine(whitePen, Y, 0, Y, trackHeight);
                 //hour = offset / XaxisScale;
@@ -1167,8 +1383,9 @@
                 //    hour = 0;
                 //}
                 g.DrawLine(whitePen, 0, Y, trackWidth, Y);
-                g.DrawString(months[i], stringFont, Brushes.White, new PointF(1, Y+6)); //draw time
+                g.DrawString(months[i], stringFont, Brushes.White, new PointF(1, Y + 6)); //draw time
             } // end over all pixels
+
             g.DrawLine(whitePen, 0, daysInYear + offset, trackWidth, daysInYear + offset);
             //g.DrawLine(whitePen, 0, offset, trackWidth, offset);          //draw lower boundary
             // g.DrawLine(whitePen, duration, 0, duration, trackHeight - 1);//draw right end boundary
@@ -1198,8 +1415,9 @@
                 int X = (int)Math.Round(i * interval);
                 g.DrawLine(whitePen, X, 0, X, trackHeight);
                 //g.DrawLine(whitePen, X, 0, X, trackWidth, Y);
-                g.DrawString(months[i], stringFont, Brushes.White, new PointF(X+2, 2)); //draw time
+                g.DrawString(months[i], stringFont, Brushes.White, new PointF(X + 2, 2)); //draw time
             } // end over all pixels
+
             g.DrawLine(whitePen, 0, daysInYear, trackWidth, daysInYear);
             //g.DrawLine(whitePen, 0, offset, trackWidth, offset);          //draw lower boundary
             // g.DrawLine(whitePen, duration, 0, duration, trackHeight - 1);//draw right end boundary
@@ -1208,16 +1426,9 @@
             return bmp;
         }
 
-
-
-
-
         /// <summary>
         /// returns array of bytes that is the gray scale colour to use.
         /// </summary>
-        /// <param name="width"></param>
-        /// <param name="timeSpan"></param>
-        /// <returns></returns>
         public static byte[] GetXaxisTicLocations(int width, TimeSpan timeSpan)
         {
             byte[] ba = new byte[width]; //byte array
@@ -1253,6 +1464,7 @@
                         ba[x] = (byte)1;
                     }
             }
+
             return ba; //byte array
         }
 
@@ -1275,32 +1487,44 @@
             {
                 g.FillRectangle(bgBrush, 0, 0, width, height);
 
-
                 // mark the tics
                 for (int x = 0; x < width; x++)
                 {
-                    if (hScale[x] == 0) continue;
+                    if (hScale[x] == 0)
+                    {
+                        continue;
+                    }
+
                     if (hScale[x] == 1) // minor tic
                     {
-                        g.DrawLine(grayPen, x, 0, x, height-1);
+                        g.DrawLine(grayPen, x, 0, x, height - 1);
                     }
                     else
                     {
                         if (hScale[x] == 2) // major tic
-                            g.DrawLine(blackPen, x, 0, x, height-1);
+                        {
+                            g.DrawLine(blackPen, x, 0, x, height - 1);
+                        }
                     }
                 } //end of adding time grid
 
                 // add time tic labels - where to place label depends on scale of the time axis.
                 int oneSecondInterval = (int)Math.Round(1 / secondsPerPixel);
                 int interval = oneSecondInterval;
-                if (interval < 50) interval *= 10;
+                if (interval < 50)
+                {
+                    interval *= 10;
+                }
+
                 int prevLocation = -interval - 1;
                 for (int x = 1; x < width; x++)
                 {
-                    if (hScale[x] == 0) continue;
+                    if (hScale[x] == 0)
+                    {
+                        continue;
+                    }
                     //if ((hScale[x] == 2) && (x > (prevLocation + interval)))
-                    if ((hScale[x] == 2) && (hScale[x-1] == 2))
+                    if (hScale[x] == 2 && hScale[x - 1] == 2)
                     {
                         int secs = (int)Math.Round(x * secondsPerPixel);
                         TimeSpan span = new TimeSpan(0, 0, secs);
@@ -1308,11 +1532,12 @@
                         prevLocation = x;
                     }
                 }
+
                 g.DrawLine(blackPen, 0, 0, width, 0);
-                g.DrawLine(blackPen, 0, height-1, width, height-1);
+                g.DrawLine(blackPen, 0, height - 1, width, height - 1);
             }
 
             return bmp;
         }
-    }// end  class Image_Track
+    }// end  class ImageTrack
 }

@@ -34,9 +34,13 @@ namespace AnalysisPrograms
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
+    using AudioAnalysisTools.StandardSpectrograms;
+
     using log4net;
     using PowerArgs;
     using TowseyLibrary;
+
+    using Zio;
 
     /// <summary>
     /// First argument on command line to call this action is "concatenateIndexFiles"
@@ -110,6 +114,7 @@ namespace AnalysisPrograms
         /// <summary>
         /// To get to this DEV method, the FIRST AND ONLY command line argument must be "concatenateIndexFiles"
         /// </summary>
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static Arguments Dev()
         {
             // set the default values here
@@ -603,7 +608,7 @@ namespace AnalysisPrograms
             if (arguments.DrawImages)
             {
                 // get the IndexGenerationData file from the first directory
-                indexGenerationData = IndexGenerationData.GetIndexGenerationData(csvFiles[0].Directory);
+                indexGenerationData = IndexGenerationData.GetIndexGenerationData(csvFiles[0].Directory.ToDirectoryEntry());
                 if (indexGenerationData.RecordingStartDate == null)
                 {
                     indexGenerationData.RecordingStartDate = startDate;
@@ -886,7 +891,7 @@ namespace AnalysisPrograms
                 // write spectrogram to disk as CSV file
                 var filename = FilenameHelpers.AnalysisResultPath(destination, fileNameBase, identifier + "." + kvp.Key, "csv").ToFileInfo();
                 spectralIndexFiles.Add(filename);
-                Csv.WriteMatrixToCsv(filename, kvp.Value, TwoDimensionalArray.ColumnMajorFlipped);
+                Csv.WriteMatrixToCsv(filename, kvp.Value, TwoDimensionalArray.Rotate90ClockWise);
             }
 
             Log.Debug("Finished writing spectral indices");
@@ -1040,8 +1045,8 @@ namespace AnalysisPrograms
             var duration = new TimeSpan(0, indexArray.Length, 0);
 
             int trackHeight = 20;
-            Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(duration, indexArray.Length, trackHeight);
-            Bitmap timeBmp2 = Image_Track.DrawTimeTrack(duration, startTime, indexArray.Length, trackHeight);
+            Bitmap timeBmp1 = ImageTrack.DrawTimeRelativeTrack(duration, indexArray.Length, trackHeight);
+            Bitmap timeBmp2 = ImageTrack.DrawTimeTrack(duration, startTime, indexArray.Length, trackHeight);
 
             var imageList = new List<Image> { titleBar, timeBmp1, image, timeBmp2 };
             var compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);

@@ -34,48 +34,56 @@ namespace AudioAnalysisTools.Indices
     {
         // KEYS FOR SUMMARY INDICES
         // WARNING!!! DO NOT change the below keys without ALSO changing in the IndexPropertiesConfig.yml file.
-        public const string KEYRankOrder = "RankOrder";
-        public const string KEYStartMinute = "StartMinute";
-        public const string KEYSegmentDuration = "AnalysisIdealSegmentDuration";
-        public const string KEYHighAmplitudeIndex = "HighAmplitudeIndex";
-        public const string KEYClippingIndex = "ClippingIndex";
-        public const string KEYAvSignalAmplitude = "AvSignalAmplitude";
-        public const string KEYBackgroundNoise = "BackgroundNoise";
-        public const string KEYSNR = "SNR";
-        public const string KEYAvSNROfActiveFrames = "AvSNROfActiveFrames";
-        public const string KEYActivity = "Activity";
-        public const string KEYEventsPerSec = "EventsPerSec";
-        public const string KEYAvEventDuration = "AvEventDuration";
-        public const string KEYHF_CVR = "HF_CVR";
-        public const string KEYMF_CVR = "MF_CVR";
-        public const string KEYLF_CVR = "LF_CVR";
-        public const string KEYHtemporal = "Htemporal";
-        public const string KEYHpeak = "Hpeaks";
-        public const string KEYHAvSpectrum = "HAvSpectrum";
-        public const string KEYHVarSpectrum = "HVarSpectrum";
-        public const string KEYAcousticComplexity = "AcousticComplexity";
-        public const string keyCLUSTER_COUNT = "ClusterCount";
-        public const string keyCLUSTER_DUR = "AvClusterDuration";
-        public const string key3GRAM_COUNT = "3GramCount";
-        public const string keySPT_PER_SEC = "SPTPerSec";
-        public const string keySPT_DUR = "AvSPTDuration";
-        public const string keyRAIN = "RainIndex";
-        public const string keyCICADA = "CicadaIndex";
+        public const string KeyRankOrder = "RankOrder";
+        public const string KeyStartMinute = "StartMinute";
+        public const string KeySegmentDuration = "AnalysisIdealSegmentDuration";
+        public const string KeyHighAmplitudeIndex = "HighAmplitudeIndex";
+        public const string KeyClippingIndex = "ClippingIndex";
+        public const string KeyAvSignalAmplitude = "AvSignalAmplitude";
+        public const string KeyBackgroundNoise = "BackgroundNoise";
+        public const string KeySnr = "SNR";
+        public const string KeyAvgSnrOfActiveFrames = "AvSNROfActiveFrames";
+        public const string KeyActivity = "Activity";
+        public const string KeyEventsPerSec = "EventsPerSec";
+        public const string KeyAvEventDuration = "AvEventDuration";
+        public const string KeyHfCvr = "HF_CVR";
+        public const string KeyMfCvr = "MF_CVR";
+        public const string KeyLfCvr = "LF_CVR";
+        public const string KeyHtemporal = "Htemporal";
+        public const string KeyHpeak = "Hpeaks";
+        public const string KeyHAvSpectrum = "HAvSpectrum";
+        public const string KeyhVarSpectrum = "HVarSpectrum";
+        public const string KeyAcousticComplexity = "AcousticComplexity";
+        public const string KeyClusterCount = "ClusterCount";
+        public const string KeyClusterDur = "AvClusterDuration";
+        public const string Key3GramCount = "3GramCount";
+        public const string KeySptPerSec = "SPTPerSec";
+        public const string KeySptDur = "AvSPTDuration";
+        public const string KeyRain = "RainIndex";
+        public const string KeyCicada = "CicadaIndex";
 
         //KEYS FOR SPECTRAL INDICES
-        public const string KEYspectralACI = "ACI";
-        public const string KEYspectralAVG = "AVG";  // average dB value in each frequency bin after noise removal
-        public const string KEYspectralBGN = "BGN"; // modal dB value in each frequency bin calculated during noise removal
-        public const string KEYspectralCLS = "CLS";
-        public const string KEYspectralCVR = "CVR";
-        public const string KEYspectralENT = "ENT";
-        public const string KEYspectralEVN = "EVN";
-        public const string KEYspectralSPT = "SPT";
-        public const double DEFAULT_SIGNAL_MIN = SNR.MinimumDbBoundForZeroSignal - 20; //in decibels
-        public static int bitsPerSample = 16;
-        public static double epsilon = Math.Pow(0.5, bitsPerSample - 1);
-        public static double CLIPPING_THRESHOLD = epsilon * 4; // estimate of fraction of clipped values in wave form
-        public const double ZERO_SIGNAL_THRESHOLD = 0.001; // all values in zero signal are less than this value
+        public const string KeYspectralAci = "ACI";
+        public const string KeYspectralAvg = "AVG";  // average dB value in each frequency bin after noise removal
+        public const string KeYspectralBgn = "BGN"; // modal dB value in each frequency bin calculated during noise removal
+        public const string KeYspectralCls = "CLS";
+        public const string KeYspectralCvr = "CVR";
+        public const string KeYspectralEnt = "ENT";
+        public const string KeYspectralEvn = "EVN";
+        public const string KeYspectralSpt = "SPT";
+        public const double DefaultSignalMin = SNR.MinimumDbBoundForZeroSignal - 20; //in decibels
+
+        public static double ClippingThreshold
+        {
+            get
+            {
+                int bitsPerSample = 16;
+                double epsilon = Math.Pow(0.5, bitsPerSample - 1);
+                return epsilon * 4;
+            }
+        }
+
+        public const double ZeroSignalThreshold = 0.001; // all values in zero signal are less than this value
 
         public static Dictionary<string, IndexProperties> FilterIndexPropertiesForSpectralOnly(
             Dictionary<string, IndexProperties> indexProperties)
@@ -99,63 +107,6 @@ namespace AudioAnalysisTools.Indices
 
             return dict;
         }
-
-        /*
-        public static string[] GetArrayOfIndexTypes(Dictionary<string, IndexProperties> properties)
-        {
-            string[] typeArray = new string[properties.Count];
-            int count = 0;
-            foreach (string key in properties.Keys)
-            {
-                IndexProperties ic = properties[key];
-                typeArray[count] = ic.DataType;
-                count++;
-            }
-            return typeArray;
-        }
-
-        public static string[] GetArrayOfIndexNames(Dictionary<string, IndexProperties> properties)
-        {
-            string[] nameArray = new string[properties.Count];
-            int count = 0;
-            foreach (string key in properties.Keys)
-            {
-                IndexProperties ic = properties[key];
-                nameArray[count] = ic.Name;
-                count++;
-            }
-
-            return nameArray;
-        }
-
-        public static bool[] GetArrayOfDisplayBooleans(Dictionary<string, IndexProperties> properties)
-        {
-            bool[] doDisplayArray = new bool[properties.Count];
-            int count = 0;
-            foreach (string key in properties.Keys)
-            {
-                IndexProperties ic = properties[key];
-                doDisplayArray[count] = ic.DoDisplay;
-                count++;
-            }
-
-            return doDisplayArray;
-        }
-
-        public static double[] GetArrayOfComboWeights(Dictionary<string, IndexProperties> properties)
-        {
-            double[] weightArray = new double[properties.Count];
-            int count = 0;
-            foreach (string key in properties.Keys)
-            {
-                IndexProperties ic = properties[key];
-                weightArray[count] = ic.ComboWeight;
-                count++;
-            }
-
-            return weightArray;
-        }
-*/
 
         public static Dictionary<string, string> GetKeyTranslationDictionary()
         {

@@ -396,19 +396,19 @@ namespace System
                     throw new FormatException("The color format was not recognized");
             }
 
-
             return color;
         }
 
         public static string ToCommaSeparatedList<T>(this IEnumerable<T> items)
         {
-            return items == null ? string.Empty : items.Aggregate(string.Empty, (seed, b) => seed  + b + ",");
+            return items == null ? string.Empty : items.Aggregate(string.Empty, (seed, b) => seed + b.ToString() + ",");
         }
 
         public static string Format(this string format, params object[] args)
         {
             return string.Format(format, args);
         }
+
         public static string Format2(this string format, params object[] args)
         {
             return string.Format(format, args);
@@ -431,4 +431,3 @@ namespace System
         }
     }
 }
-

@@ -18,15 +18,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     /// </summary>
     public class LdSpectrogramConfigOfJie
     {
-        #region Fields
         /// <summary>
         ///  mark 1 kHz intervals
         /// </summary>
         private int yAxisTicInterval = 1000;
-
-        #endregion
-
-        #region Constructors and Destructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LdSpectrogramConfig"/> class.
@@ -63,10 +58,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.ColourMap2 = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
             this.BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
         }
-
-        #endregion
-
-        #region Public Properties
 
         private string comment1 = "LIST OF PARAMETER SETTINGS USED TO OBTAIN THE SUMMARY AND SPECTRAL INDICES IN THIS DIRECTORY.";
         public  string COMMENT1 { get { return this.comment1; } set { this.comment1 = value; } }
@@ -204,10 +195,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
         }
 
-        #endregion
-
-        #region Public Methods and Operators
-
         /// <summary>
         /// READS A YAML CONFIG FILE into a dynamic variable and then transfers all values into the appropriate config class
         /// </summary>
@@ -225,6 +212,5 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             Yaml.Serialise(path, this);
         }
-        #endregion
     }
 }

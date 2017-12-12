@@ -9,14 +9,10 @@
 
 namespace AnalysisPrograms
 {
-    #if DEBUG
-#endif
     using System;
     using System.Reflection;
-
-    using Production;
-
     using log4net;
+    using Production;
 
     /// <summary>
     /// Main Entry for Analysis Programs.
@@ -46,8 +42,12 @@ namespace AnalysisPrograms
 
             ModifyVerbosity(Arguments.Args);
 
+            LoadNativeCode();
+
             // note: Exception handling can be found in CurrentDomainOnUnhandledException
             Execute(Arguments);
+
+            LogProgramStats();
 
             HangBeforeExit();
 

@@ -169,7 +169,8 @@ namespace AnalysisPrograms.Recognizers
                 maxDuration,
                 out scores,
                 out acousticEvents,
-                out hits);
+                out hits,
+                segmentStartOffset);
 
             acousticEvents.ForEach(ae =>
             {

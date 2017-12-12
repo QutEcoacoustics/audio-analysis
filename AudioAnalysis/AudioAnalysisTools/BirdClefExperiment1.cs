@@ -1,4 +1,8 @@
-﻿namespace AudioAnalysisTools
+﻿// <copyright file="BirdClefExperiment1.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
@@ -49,6 +53,7 @@
         /// audiocutter - Cuts audio into segments of desired length and format
         /// createfoursonograms
         /// </summary>
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static Arguments Dev()
         {
             // INPUT and OUTPUT DIRECTORIES

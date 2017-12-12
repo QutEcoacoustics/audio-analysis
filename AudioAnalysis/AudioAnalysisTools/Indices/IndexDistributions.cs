@@ -16,6 +16,8 @@ namespace AudioAnalysisTools.Indices
     using Acoustics.Shared;
     using TowseyLibrary;
 
+    using Zio;
+
     public static class IndexDistributions
     {
         public const string SummaryIndexStatisticsFilenameFragment = "SummaryIndexStatistics";
@@ -278,6 +280,11 @@ namespace AudioAnalysisTools.Indices
         }
 
         public static Dictionary<string, SpectralStats> Deserialize(FileInfo file)
+        {
+            return Deserialize(file.ToFileEntry());
+        }
+
+        public static Dictionary<string, SpectralStats> Deserialize(FileEntry file)
         {
             return Json.Deserialise<Dictionary<string, SpectralStats>>(file);
         }

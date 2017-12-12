@@ -149,8 +149,8 @@ namespace AudioAnalysisTools.EventStatistics
             stats.TemporalMaxRelative = maxRowId / (double)rowAverages.Length;
 
             // calculate the entropy dispersion/concentration indices
-            stats.TemporalEnergyDistribution = 1 - DataTools.Entropy_normalised(rowAverages);
-            stats.SpectralEnergyDistribution = 1 - DataTools.Entropy_normalised(columnAverages);
+            stats.TemporalEnergyDistribution = 1 - DataTools.EntropyNormalised(rowAverages);
+            stats.SpectralEnergyDistribution = 1 - DataTools.EntropyNormalised(columnAverages);
 
             // calculate the spectral centroid and the dominant frequency
             double binCentroid = CalculateSpectralCentroid(columnAverages);
