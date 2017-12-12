@@ -143,6 +143,11 @@ namespace Acoustics.Shared.ConfigFile
 
         public static FileInfo ResolveConfigFile(string file, params DirectoryInfo[] searchPaths)
         {
+            if (file.IsNullOrEmpty())
+            {
+                throw new ArgumentException("Try to resolve config failed, because supplied file argument was null or empty.", nameof(file));
+            }
+
             var success = TryResolveConfigFile(file, searchPaths.Select(x => x.ToDirectoryEntry()), out FileEntry configFile);
 
             if (success)
