@@ -19,6 +19,7 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
+    using MathNet.Numerics.LinearAlgebra.Complex.Solvers.Iterative;
     using TowseyLibrary;
 
     /// <summary>
@@ -56,32 +57,33 @@ namespace AnalysisPrograms
             Log.Verbosity = 1;
             Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
+            //AnalyseFrogDataSet();
             //Audio2CsvOverOneFile();
             //Audio2CsvOverMultipleFiles();
+            //ConcatenateIndexFilesAndSpectrograms();
+            //ConcatenateMarineImages();
+            //ConcatenateImages();
+            //ConcatenateTwelveImages();
+            //CubeHelixDrawTestImage();
             //DrawLongDurationSpectrogram();
-            ConcatenateIndexFilesAndSpectrograms();
-            //TestReadingFileOfSummaryIndices();
-            //TestsOfFrequencyScales();
+            ExtractSpectralFeatures();
+            //HerveGlotinMethods();
+            //KarlHeinzFrommolt();
+            //OTSU_TRHESHOLDING();
             //TestAnalyseLongRecordingUsingArtificialSignal();
             //TestArbimonSegmentationAlgorithm();
-            //TestMatrix3dClass();
-            //CubeHelixDrawTestImage();
+            //TestEigenValues();
             //TestChannelIntegrity();
             //TEST_FilterMovingAverage();
             //TestImageProcessing();
+            //TestMatrix3dClass();
+            //TestsOfFrequencyScales();
+            //TestReadingFileOfSummaryIndices();
             //TestStructureTensor();
-            //TestEigenValues();
             //TestWavelets();
             //TestFft2D();
             //TestTernaryPlots();
             //TestDirectorySearchAndFileSearch();
-            //ConcatenateMarineImages();
-            //ConcatenateImages();
-            //ConcatenateTwelveImages();
-            //KarlHeinzFrommolt();
-            //HerveGlotinMethods();
-            //AnalyseFrogDataSet();
-            //OTSU_TRHESHOLDING();
 
             Console.WriteLine("# Finished Sandpit Task!");
         }
@@ -957,6 +959,100 @@ namespace AnalysisPrograms
             };
 
             ConcatenateIndexFiles.Execute(args);
+        }
+
+        /// <summary>
+        /// read a set of Spectral index files and extract values from frequency band
+        /// This work done for Liz Znidersic paper.
+        /// End of the method requires access to Liz tagging info. 
+        /// </summary>
+        public static void ExtractSpectralFeatures()
+        {
+            // parameters
+            string dir = @"H:\Documents\SensorNetworks\MyPapers\2017_DavidWatson\CaseStudy1 Liz\MachineLearningExercise";
+            string fileName = "LizZnidersic_TasmanIsTractor_20151111__Towsey.Acoustic";
+            string[] indexNames = { "ACI", "ENT", "POW", "SPT", "RHZ" };
+            int bottomBin = 3;
+            int topBin = 22;
+            int binCount = topBin - bottomBin + 1;
+
+            var dict = new Dictionary<string, double[,]>();
+            var framecount = 0;
+
+            // read spectral index matrices, extract required freq band, and store sub-band in dictionary of matrices.
+            foreach (string id in indexNames)
+            {
+                var fileinfo = new FileInfo(Path.Combine(dir, $"{fileName}.{id}.csv"));
+                var matrix = Csv.ReadMatrixFromCsv<double>(fileinfo, TwoDimensionalArray.ColumnMajor);
+                framecount = matrix.GetLength(1);
+
+                //Console.WriteLine("\n" + id);
+                //Console.WriteLine(matrix[3, 0]);
+                //Console.WriteLine(matrix[3, 1]);
+                //Console.WriteLine(matrix[3, 2]);
+
+                // use following line for skipping normalisation
+                //var normedM = MatrixTools.Submatrix(matrix, bottomBin, 0, topBin, framecount - 1);
+
+                // use following line to normalise
+                var normedM = MatrixTools.NormaliseMatrixValues(matrix);
+                normedM = MatrixTools.Submatrix(normedM, bottomBin, 0, topBin, framecount - 1);
+                dict.Add(id, normedM);
+            }
+
+            // concatenate feature vectors, one frame at a time. Then add to matrix data set.
+            int featureVectorLength = indexNames.Length * binCount;
+            var dataSet = new double[framecount, featureVectorLength];
+            for (int frame = 0; frame < framecount; frame++)
+            {
+                var list = new List<double>();
+
+                // get the time-frame and conatenate
+                foreach (string id in indexNames)
+                {
+                    var featureVector = MatrixTools.GetColumn(dict[id], frame);
+                    list.AddRange(featureVector);
+                }
+
+                var array = list.ToArray();
+                MatrixTools.SetRow(dataSet, frame, array);
+            }
+
+            // write dataset to file
+            var opFileinfo = new FileInfo(Path.Combine(dir, $"{fileName}.FeatureVectors.csv"));
+            Csv.WriteMatrixToCsv(opFileinfo, dataSet);
+
+            // save dataset as image
+            dataSet = MatrixTools.SubtractValuesFromOne(dataSet);
+            var image = ImageTools.DrawMatrixWithoutNormalisation(MatrixTools.MatrixRotate90Anticlockwise(dataSet));
+            var imageName = Path.Combine(dir, $"{fileName}.DataImage.png");
+            image.Save(imageName);
+
+            // Read in labelling info from Liz Znidersic
+            var data = FileTools.ReadTextFile(Path.Combine(dir, "lerafcis20151111.csv"));
+            for (int i = 1; i < data.Count; i++)
+            {
+                var words = data[i].Split(',');
+                var word = words[3];
+                word = word.PadLeft(4);
+                string[] parts = new string[2];
+                parts[0] = word.Remove(2);
+                parts[1] = word.Substring(2);
+                //int minuteCount = 
+            }
+
+            Console.WriteLine("Finished");
+            Console.ReadLine();
+        }
+
+        public class LizTags
+        {
+            public static string TcisImage;
+            public static string TileStartTime;
+            public static string TimeFromFileStart; //(min sec) 
+            public static string ActualTime;
+            public static string PosNeg; // p/n
+            public static string Comments; // from reviewing grey scale
         }
 
         /// <summary>
