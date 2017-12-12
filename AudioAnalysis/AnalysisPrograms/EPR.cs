@@ -190,6 +190,7 @@
 
         }
 
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static Arguments Dev()
         {
 
@@ -398,11 +399,11 @@
             using (Image_MultiTrack image = new Image_MultiTrack(img))
             {
                 //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
-                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-                image.AddTrack(Image_Track.GetScoreTrack(normalizedDBArray, 0, 1.0, dBThreshold));
-                image.AddTrack(Image_Track.GetScoreTrack(odScores, 0, 1.0, odThreshold));
-                image.AddTrack(Image_Track.GetScoreTrack(gpScores, 0, 1.0, 0.3));
-                //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+                image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+                image.AddTrack(ImageTrack.GetScoreTrack(normalizedDBArray, 0, 1.0, dBThreshold));
+                image.AddTrack(ImageTrack.GetScoreTrack(odScores, 0, 1.0, odThreshold));
+                image.AddTrack(ImageTrack.GetScoreTrack(gpScores, 0, 1.0, 0.3));
+                //image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
                 //var aes = new List<AcousticEvent>();
                 //aes.Add(ae);
                 image.AddEvents(list, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);

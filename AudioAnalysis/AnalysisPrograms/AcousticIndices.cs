@@ -21,12 +21,14 @@ namespace AnalysisPrograms
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
+    using AudioAnalysisTools.LongDurationSpectrograms.Zooming;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.TileImage;
     using AudioAnalysisTools.WavTools;
@@ -34,6 +36,9 @@ namespace AnalysisPrograms
     using PowerArgs;
     using Production;
     using TowseyLibrary;
+    using Zio;
+
+    using SpectrogramType = AudioAnalysisTools.LongDurationSpectrograms.SpectrogramType;
 
     public class Acoustic : IAnalyser2
     {
@@ -145,6 +150,7 @@ namespace AnalysisPrograms
         public string Description
             => "Generates all our default acoustic indices, including summary indices and spectral indices. Also generates false color spectrograms IFF IndexCalculationDuration==60.0";
 
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static void Dev(Arguments arguments)
         {
             if (arguments == null)
@@ -295,7 +301,7 @@ namespace AnalysisPrograms
                 TimeSpan bgNoiseNeighborhood;
                 try
                 {
-                    int bgnNh = configuration[AnalysisKeys.BGNoiseNeighbourhood];
+                    int bgnNh = configuration[AnalysisKeys.BgNoiseNeighbourhood];
                     bgNoiseNeighborhood = TimeSpan.FromSeconds(bgnNh);
                 }
                 catch (Exception ex)
@@ -496,14 +502,16 @@ namespace AnalysisPrograms
             var indexConfigData = new IndexGenerationData()
                 {
                     RecordingType = inputFileSegment.Source.Extension,
+                    RecordingBasename = basename,
                     RecordingStartDate = inputFileSegment.TargetFileStartDate,
+                    RecordingDuration = inputFileSegment.TargetFileDuration.Value,
                     SampleRateOriginal = inputFileSegment.TargetFileSampleRate.Value,
                     SampleRateResampled = sampleRate,
                     FrameLength = frameWidth,
                     FrameStep = (int?)settings.Configuration[AnalysisKeys.FrameStep] ?? (int?)settings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculateConfig.DefaultWindowSize,
                     IndexCalculationDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration,
-                    BGNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
-                    MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
+                    BgNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
+                    AnalysisStartOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
                     MaximumSegmentDuration = settings.AnalysisMaxSegmentDuration,
                     BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
                     LongDurationSpectrogramConfig = ldSpectrogramConfig,
@@ -519,7 +527,7 @@ namespace AnalysisPrograms
             // this is the most efficient way to do this
             // gather up numbers and strings store in memory, write to disk one time
             // this method also AUTOMATICALLY SORTS because it uses array indexing
-            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
+            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.Rotate90ClockWise);
 
             // Calculate the index distribution statistics and write to a json file. Also save as png image
             var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectra, resultsDirectory, basename);
@@ -555,13 +563,13 @@ namespace AnalysisPrograms
 
                     foreach (var image in images)
                     {
-                        TileOutput(resultsDirectory, Path.GetFileNameWithoutExtension(sourceAudio.Name), image.Item2 + ".Tile", inputFileSegment.TargetFileStartDate.Value, image.Item1);
+                        TileOutput(resultsDirectory, Path.GetFileNameWithoutExtension(sourceAudio.Name), image.Item2 + ".Tile", inputFileSegment, image.Item1);
                     }
                 }
             }
         }
 
-        private static void TileOutput(DirectoryInfo outputDirectory, string fileStem, string analysisTag, DateTimeOffset recordingStartDate, Image image)
+        private static void TileOutput(DirectoryInfo outputDirectory, string fileStem, string analysisTag, FileSegment fileSegment, Image image)
         {
             const int TileHeight = 256;
             const int TileWidth = 60;
@@ -577,20 +585,31 @@ namespace AnalysisPrograms
 
             // if recording does not start on an absolutely aligned hour of the day
             // align it, then adjust where the tiling starts from, and calculate the offset for the super tile (the gap)
+            var recordingStartDate = fileSegment.TargetFileStartDate.Value;
+            // TODO: begin remove duplicate code
             var timeOfDay = recordingStartDate.TimeOfDay;
             var previousAbsoluteHour = TimeSpan.FromSeconds(Math.Floor(timeOfDay.TotalSeconds / (Scale * TileWidth)) * (Scale * TileWidth));
             var gap = timeOfDay - previousAbsoluteHour;
             var tilingStartDate = recordingStartDate - gap;
+            var tilingStartDate2 = ZoomTiledSpectrograms.GetPreviousTileBoundary(TileWidth, Scale, recordingStartDate);
+            var padding = recordingStartDate - tilingStartDate2;
+            Debug.Assert(tilingStartDate == tilingStartDate2, "tilingStartDate != tilingStartDate2: these methods should be equivalent");
+            // TODO: end remove duplicate code
 
             var tilingProfile = new AbsoluteDateTilingProfile(fileStem, analysisTag, tilingStartDate, TileHeight, TileWidth);
 
             // pad out image so it produces a whole number of tiles
             // this solves the asymmetric right padding of short audio files
             var width = (int)(Math.Ceiling(image.Width / Scale) * Scale);
-            var tiler = new Tiler(outputDirectory, tilingProfile, Scale, width, 1.0, image.Height);
+            var tiler = new Tiler(outputDirectory.ToDirectoryEntry(), tilingProfile, Scale, width, 1.0, image.Height);
 
             // prepare super tile
-            var tile = new TimeOffsetSingleLayerSuperTile() { Image = image, TimeOffset = gap, Scale = scale};
+            var tile = new TimeOffsetSingleLayerSuperTile(
+                padding,
+                SpectrogramType.Index,
+                scale,
+                image,
+                fileSegment.SegmentStartOffset ?? TimeSpan.Zero);
 
             tiler.Tile(tile);
         }
@@ -598,15 +617,15 @@ namespace AnalysisPrograms
         private static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<SpectralTrack> tracks)
         {
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage());
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
 
             if (scores != null)
             {
                 foreach (Plot plot in scores)
                 {
                     // assumes data normalized in 0,1
-                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
+                    image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
                 }
             }
 

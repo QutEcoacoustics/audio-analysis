@@ -1,10 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// <copyright file="RandomExtensions.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
 
 namespace Acoustics.Shared.Extensions
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     public static class RandomExtensions
     {
         public static Guid NextGuid(this Random random)
@@ -43,7 +47,25 @@ namespace Acoustics.Shared.Extensions
             random.NextBytes(buf);
             long longRand = BitConverter.ToInt64(buf, 0);
 
-            return (Math.Abs(longRand % (max - min)) + min);
+            return Math.Abs(longRand % (max - min)) + min;
+        }
+
+        public static double[,] NextMatrix(
+            this Random random,
+            int length,
+            int height)
+        {
+            var array = new double[length, height];
+
+            for (int i = 0; i < array.GetLength(0); i++)
+            {
+                for (int j = 0; j < array.GetLength(1); j++)
+                {
+                    array[i, j] = random.NextDouble();
+                }
+            }
+
+            return array;
         }
 
         public static DateTimeOffset NextDate(this Random random, DateTimeOffset? minimum = null, DateTimeOffset? maximum = null)

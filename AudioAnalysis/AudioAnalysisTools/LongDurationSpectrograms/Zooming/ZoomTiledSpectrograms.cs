@@ -3,28 +3,24 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
-namespace AudioAnalysisTools.LongDurationSpectrograms
+namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 {
     using System;
     using System.Collections.Generic;
-    using System.Configuration;
     using System.Diagnostics;
     using System.Drawing;
     using System.Globalization;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
-
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Contracts;
     using Indices;
-    using TileImage;
-
     using log4net;
-
+    using TileImage;
     using TowseyLibrary;
-    using Zooming;
+    using Zio;
+    using SpectrogramType = LongDurationSpectrograms.SpectrogramType;
 
     public static class ZoomTiledSpectrograms
     {
@@ -35,9 +31,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// THIS IS ENTRY METHOD FOR TILING SPECTROGRAMS.
         /// </summary>
         public static void DrawTiles(
-            DirectoryInfo inputDirectory,
-            DirectoryInfo outputDirectory,
-            ZoomArguments common,
+            AnalysisIoInputDirectory io,
+            ZoomParameters common,
             string analysisTag)
         {
             Log.Info("Begin Draw Super Tiles");
@@ -46,47 +41,246 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             var zoomConfig = common.SpectrogramZoomingConfig;
             LdSpectrogramConfig ldsConfig = common.SpectrogramZoomingConfig.LdSpectrogramConfig;
-            var distributions = IndexDistributions.Deserialize(common.IndexDistributionsFile);
-            var indexGeneration = Json.Deserialise<IndexGenerationData>(common.IndexGenerationDataFile);
+            var distributions = common.IndexDistributions;
+            var indexGenerationData = common.IndexGenerationData;
             var indexProperties = common.IndexProperties;
 
             string fileStem = common.OriginalBasename;
 
-            // scales for false color images in seconds per pixel.
-            double[] indexScale = zoomConfig.SpectralIndexScale;
+            // scales for false color index spectrograms images in seconds per pixel.
+            double[] indexScales = zoomConfig.SpectralIndexScale;
 
-            // default scales for standard spectrograms in seconds per pixel.
-            double[] standardScale = zoomConfig.SpectralFrameScale;
+            // default scales for standard (FFT) spectrograms in seconds per pixel.
+            double[] standardScales = zoomConfig.SpectralFrameScale;
 
-            if (indexScale.IsNullOrEmpty())
-            {
-                throw new InvalidOperationException("SpectralIndexScale is null or empty " +
-                                                    " we need at least some scales to render zooming spectrograms");
-            }
+            ValidateScales(indexScales, indexGenerationData.IndexCalculationDuration.TotalSeconds);
 
-            var shouldRenderStandardScale = standardScale.IsNullOrEmpty();
+            var shouldRenderStandardScale = !standardScales.IsNullOrEmpty();
             if (shouldRenderStandardScale)
             {
                 Log.Warn("Standard spectrograms will not be rendered");
             }
 
-            var allImageScales = indexScale.Concat(standardScale).ToArray();
-            Log.Info("Tiling at scales: " +
-                     allImageScales.Aggregate(
-                         string.Empty,
-                         (s, d) => s + d.ToString(CultureInfo.InvariantCulture) + ", "));
+            var allImageScales = indexScales.Concat(standardScales).ToArray();
 
+            Log.Info("Tiling at scales: " + allImageScales.ToCommaSeparatedList());
 
+            // determine what naming format to use for tiles
+            var (namingPattern, alignmentPadding) = GetTilingProfile(common, zoomConfig, indexGenerationData);
+
+            // pad out image so it produces a whole number of tiles
+            // this solves the asymmetric right padding of short audio files
+            // var paddedWidth = (int)(Math.Ceiling(zoomConfig.TileWidth / xNominalUnitScale) * xNominalUnitScale);
+
+            // create a new tiler
+            // pass it scales for x and y-axis
+            // also pass it unit scale relations (between unit scale and unit height/width) to use as a reference point
+            var tiler = new Tiler(
+                io.OutputBase,
+                namingPattern,
+                xScales: new SortedSet<double>(allImageScales),
+                xUnitScale: XNominalUnitScale,
+                unitWidth: 1440,
+                yScales: new SortedSet<double>(allImageScales.Select(x => 1.0)),
+                yUnitScale: 1.0,
+                unitHeight: namingPattern.TileHeight);
+
+            // TODO: does this load all spectra? even ones we don't need...
+            var (spectra, filteredIndexProperties) = LoadSpectra(io, analysisTag, fileStem, indexProperties);
+
+            // false color index tiles
+            GenerateIndexSpectrogramTiles(
+                indexScales,
+                ldsConfig,
+                filteredIndexProperties,
+                zoomConfig,
+                spectra,
+                indexGenerationData,
+                fileStem,
+                namingPattern,
+                tiler,
+                alignmentPadding);
+
+            // standard fft frame spectrograms
+            if (shouldRenderStandardScale)
+            {
+                GenerateStandardSpectrogramTiles(
+                    spectra,
+                    indexGenerationData,
+                    ldsConfig,
+                    filteredIndexProperties,
+                    zoomConfig,
+                    standardScales,
+                    fileStem,
+                    namingPattern,
+                    tiler,
+                    alignmentPadding);
+            }
+
+            Log.Success("Tiling complete");
+        }
+
+        private static void ValidateScales(double[] indexScales, double dataScale)
+        {
+            if (indexScales.IsNullOrEmpty())
+            {
+                throw new InvalidScaleException(
+                    $"{nameof(SpectrogramZoomingConfig.SpectralIndexScale)} is null or empty "
+                    + " we need at least some scales to render zooming spectrograms");
+            }
+
+            foreach (var scale in indexScales)
+            {
+                var rawScalingFactor = scale / dataScale;
+                int scalingFactor = (int)Math.Round(rawScalingFactor);
+
+                Contract.Requires<InvalidScaleException>(
+                    Math.Abs(scalingFactor - rawScalingFactor) < 0.0000001,
+                    $"Index scales must be integer factors of the data scale `{dataScale}` - provided scale `{scale}` was not valid");
+
+                if (scalingFactor < 1)
+                {
+                    throw new InvalidScaleException(
+                        "Index scale ratio to index calculation duration must be >=1 but was instead "
+                        + scalingFactor.ToString());
+                }
+            }
+        }
+
+        private static void GenerateStandardSpectrogramTiles(
+            Dictionary<string, double[,]> spectra,
+            IndexGenerationData indexGeneration,
+            LdSpectrogramConfig ldsConfig,
+            Dictionary<string, IndexProperties> filteredIndexProperties,
+            SpectrogramZoomingConfig zoomConfig,
+            double[] standardScales,
+            string fileStem,
+            TilingProfile namingPattern,
+            Tiler tiler,
+            TimeSpan alignmentPadding)
+        {
+            Log.Info("START DRAWING ZOOMED-IN FRAME SPECTROGRAMS");
+
+            TimeSpan dataDuration =
+                TimeSpan.FromTicks(spectra["POW"].GetLength(1) * indexGeneration.IndexCalculationDuration.Ticks);
+            TimeSpan duration = indexGeneration.RecordingDuration;
+
+            Contract.Requires(
+                (dataDuration - duration).Absolute() < indexGeneration.IndexCalculationDuration,
+                "The expected amount of data was not supplied");
+
+            var minuteCount = (int)Math.Ceiling(dataDuration.TotalMinutes);
+
+            // window the standard spectrogram generation so that we can provide adjacent supertiles to the
+            // tiler, so that bordering / overlapping tiles (for cases where tile size != multiple of supertile size)
+            // don't render partial tiles (i.e. bad/partial rendering of image)
+
+            // this is the function generator
+            // use of Lazy means results will only be evaluated once
+            // and only when needed. This is useful for sliding window.
+            Lazy<TimeOffsetSingleLayerSuperTile[]> GenerateStandardSpectrogramGenerator(int minuteToLoad)
+            {
+                return new Lazy<TimeOffsetSingleLayerSuperTile[]>(
+                    () =>
+                        {
+                            Log.Info("Starting generation for minute: " + minuteToLoad);
+
+                            var superTilingResults = DrawSuperTilesFromSingleFrameSpectrogram(
+                                null /*inputDirectory*/, //TODO:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                ldsConfig,
+                                filteredIndexProperties,
+                                zoomConfig,
+                                minuteToLoad,
+                                standardScales,
+                                fileStem,
+                                indexGeneration,
+                                namingPattern.ChromeOption,
+                                alignmentPadding);
+
+                            return superTilingResults;
+                        });
+            }
+
+            Lazy<TimeOffsetSingleLayerSuperTile[]> previous = null;
+            Lazy<TimeOffsetSingleLayerSuperTile[]> current = null;
+            Lazy<TimeOffsetSingleLayerSuperTile[]> next = null;
+            for (int minute = 0; minute < minuteCount; minute++)
+            {
+                Log.Trace("Starting loop for minute" + minute);
+
+                // shift each value back
+                previous = current;
+                current = next ?? GenerateStandardSpectrogramGenerator(minute);
+
+                next = minute + 1 < minuteCount ? GenerateStandardSpectrogramGenerator(minute + 1) : null;
+
+                // for each scale level of the results
+                for (int i = 0; i < current.Value.Length; i++)
+                {
+                    // finally tile the output
+                    Log.Debug("Begin tile production for minute: " + minute);
+                    tiler.Tile(previous?.Value[i], current.Value[i], next?.Value[i]);
+                    Log.Debug("Begin tile production for minute: " + minute);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Derives false colour varying-resolution multi-index spectrograms from provided spectral indices.
+        /// </summary>
+        private static void GenerateIndexSpectrogramTiles(double[] indexScales, LdSpectrogramConfig ldsConfig, Dictionary<string, IndexProperties> filteredIndexProperties, SpectrogramZoomingConfig zoomConfig, Dictionary<string, double[,]> spectra, IndexGenerationData indexGenerationData, string fileStem, TilingProfile tilingProfile, Tiler tiler, TimeSpan alignmentPadding)
+        {
+            // TOP MOST ZOOMED-OUT IMAGES
+            Log.Info("Begin drawwing zooming indec spectrograms");
+
+            foreach (double scale in indexScales)
+            {
+                Log.Info("Starting scale: " + scale);
+
+                if (indexGenerationData.RecordingDuration.TotalSeconds < scale)
+                {
+                    Log.Warn($"Skipping scale step {scale} because recording duration ({indexGenerationData.RecordingDuration}) is less than 1px of scale");
+                    continue;
+                }
+
+                // TODO: eventual optimisation, remove concept of super tiles
+                // TODO: optimisation, cache aggregation layers (currently every layer is raggregated from base level)
+                TimeSpan imageScale = TimeSpan.FromSeconds(scale);
+                var superTiles = DrawSuperTilesAtScaleFromIndexSpectrograms(
+                    ldsConfig,
+                    filteredIndexProperties,
+                    zoomConfig,
+                    imageScale,
+                    spectra,
+                    indexGenerationData,
+                    fileStem,
+                    tilingProfile.ChromeOption,
+                    alignmentPadding);
+
+                // tile images as we go
+                Log.Debug("Writing index tiles for " + scale);
+                tiler.TileMany(superTiles);
+                Log.Debug("Completed writing index tiles for " + scale);
+            }
+        }
+
+        private static (TilingProfile Profile, TimeSpan padding) GetTilingProfile(
+            ZoomParameters common,
+            SpectrogramZoomingConfig zoomConfig,
+            IndexGenerationData indexGeneration)
+        {
             TilingProfile namingPattern;
+            TimeSpan padding;
             switch (zoomConfig.TilingProfile)
             {
                 case nameof(PanoJsTilingProfile):
                     namingPattern = new PanoJsTilingProfile();
+                    padding = TimeSpan.Zero;
 
                     if (zoomConfig.TileWidth != namingPattern.TileWidth)
                     {
-                        throw new ConfigFileException("TileWidth must match the default PanoJS TileWidth of " +
-                                                      namingPattern.TileWidth);
+                        throw new ConfigFileException(
+                            "TileWidth must match the default PanoJS TileWidth of " + namingPattern.TileWidth);
                     }
 
                     break;
@@ -95,13 +289,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     // therefore unable to set a useful tag (like ACI-ENT-EVN).
                     if (indexGeneration.RecordingStartDate != null)
                     {
-                        var tilingStartDate = GetNearestTileBoundary(
+                        var recordingStartDate = (DateTimeOffset)indexGeneration.RecordingStartDate;
+                        var tilingStartDate = GetPreviousTileBoundary(
                             zoomConfig.TileWidth,
                             XNominalUnitScale,
-                            (DateTimeOffset)indexGeneration.RecordingStartDate);
+                            recordingStartDate);
+                        padding = recordingStartDate - tilingStartDate;
 
+                        // if we're not writing tiles to disk, omit the basename because whatever the container format is
+                        // it will have the base name attached
                         namingPattern = new AbsoluteDateTilingProfile(
-                            fileStem,
+                            common.OmitBasename ? string.Empty : common.OriginalBasename,
                             "BLENDED.Tile",
                             tilingStartDate,
                             indexGeneration.FrameLength / 2,
@@ -120,128 +318,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         $"The {nameof(zoomConfig.TilingProfile)} configuration property was set to an unsupported value - no profile known by that name");
             }
 
-            Log.Info($"Tiling using {namingPattern.GetType().Name}, Tile Width: {namingPattern.TileWidth}, Height: {namingPattern.TileHeight}");
-
-            // pad out image so it produces a whole number of tiles
-            // this solves the asymmetric right padding of short audio files
-            // var paddedWidth = (int)(Math.Ceiling(zoomConfig.TileWidth / xNominalUnitScale) * xNominalUnitScale);
-
-            // create a new tiler
-            // pass it scales for x and y-axis
-            // also pass it unit scale relations (between unit scale and unit height/width) to use as a reference point
-            var tiler = new Tiler(
-                outputDirectory,
-                namingPattern,
-                xScales: new SortedSet<double>(allImageScales),
-                xUnitScale: XNominalUnitScale,
-                unitWidth: 1440,
-                yScales: new SortedSet<double>(allImageScales.Select(x => 1.0)),
-                yUnitScale: 1.0,
-                unitHeight: namingPattern.TileHeight);
-
-            // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
-            var (spectra, filteredIndexProperties) = LoadSpectra(inputDirectory, analysisTag, fileStem, indexProperties);
-
-
-            // TOP MOST ZOOMED-OUT IMAGES
-            Log.Info("START DRAWING ZOOMED-OUT INDEX SPECTROGRAMS");
-            foreach (double scale in indexScale)
-            {
-                Log.Info("Starting scale: " + scale);
-                TimeSpan imageScale = TimeSpan.FromSeconds(scale);
-                TimeOffsetSingleLayerSuperTile[] superTiles = DrawSuperTilesAtScaleFromIndexSpectrograms(
-                    ldsConfig,
-                    filteredIndexProperties,
-                    zoomConfig,
-                    imageScale,
-                    spectra,
-                    indexGeneration,
-                    fileStem,
-                    namingPattern.ChromeOption);
-
-
-                // tile images as we go
-                Log.Debug("Writing index tiles for " + scale);
-                tiler.TileMany(superTiles);
-                Log.Debug("Completed writing index tiles for " + scale);
-
-            }
-
-            // ####################### DRAW ZOOMED-IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
-            if (shouldRenderStandardScale)
-            {
-                Log.Info("START DRAWING ZOOMED-IN FRAME SPECTROGRAMS");
-
-                TimeSpan dataDuration = TimeSpan.FromTicks(spectra["POW"].GetLength(1) *
-                                                           indexGeneration.IndexCalculationDuration.Ticks);
-                var segmentDurationInSeconds = (int)indexGeneration.MaximumSegmentDuration.Value.TotalSeconds;
-
-                var minuteCount = (int)Math.Ceiling(dataDuration.TotalMinutes);
-
-                // window the standard spectrogram generation so that we can provide adjacent supertiles to the
-                // tiler, so that bordering / overlapping tiles (for cases where tile size != multiple of supertile size)
-                // don't render partial tiles (i.e. bad/partial rendering of image)
-
-                // this is the function generator
-                // use of Lazy means results will only be evaluated once
-                // and only when needed. This is useful for sliding window.
-                Func<int, Lazy<TimeOffsetSingleLayerSuperTile[]>> generateStandardSpectrogramGenerator =
-                    (minuteToLoad) =>
-                    {
-                        return new Lazy<TimeOffsetSingleLayerSuperTile[]>(() =>
-                        {
-                            Log.Info("Starting generation for minute: " + minuteToLoad);
-
-
-                            var superTilingResults = DrawSuperTilesFromSingleFrameSpectrogram(
-                                inputDirectory,
-                                ldsConfig,
-                                filteredIndexProperties,
-                                zoomConfig,
-                                minuteToLoad,
-                                standardScale,
-                                fileStem,
-                                indexGeneration,
-                                namingPattern.ChromeOption);
-
-                            return superTilingResults;
-                        });
-                    };
-
-                Lazy<TimeOffsetSingleLayerSuperTile[]> previous = null;
-                Lazy<TimeOffsetSingleLayerSuperTile[]> current = null;
-                Lazy<TimeOffsetSingleLayerSuperTile[]> next = null;
-                for (int minute = 0; minute < minuteCount; minute++)
-                {
-                    Log.Trace("Starting loop for minute" + minute);
-
-                    // shift each value back
-                    previous = current;
-                    current = next ?? generateStandardSpectrogramGenerator(minute);
-
-                    next = minute + 1 < minuteCount ? generateStandardSpectrogramGenerator(minute + 1) : null;
-
-                        // for each scale level of the results
-                        for (int i = 0; i < current.Value.Length; i++)
-                        {
-                            // finally tile the output
-                            Log.Debug("Begin tile production for minute: " + minute);
-                            tiler.Tile(
-                                previous?.Value[i],
-                                current.Value[i],
-                                next?.Value[i]);
-                            Log.Debug("Begin tile production for minute: " + minute);
-                        }
-
-                    
-                }
-            }
-
-            Log.Info("Tiling complete");
+            Log.Info($"Tiling had a left padding duration of {padding} to align tiles");
+            Log.Info(
+                $"Tiling using {namingPattern.GetType().Name}, Tile Width: {namingPattern.TileWidth}, Height: {namingPattern.TileHeight}");
+            return (namingPattern, padding);
         }
 
         private static (Dictionary<string, double[,]>, Dictionary<string, IndexProperties>) LoadSpectra(
-            DirectoryInfo inputDirectory,
+            AnalysisIoInputDirectory io,
             string analysisTag,
             string fileStem,
             Dictionary<string, IndexProperties> indexProperties)
@@ -249,17 +333,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             indexProperties = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(indexProperties);
             string[] keys = indexProperties.Keys.ToArray();
 
-            Stopwatch timer = Stopwatch.StartNew();
-            Dictionary<string, double[,]> spectra = IndexMatrices.ReadCsvFiles(
-                inputDirectory,
-                fileStem + FilenameHelpers.BasenameSeparator + analysisTag,
+            Dictionary<string, double[,]> spectra = IndexMatrices.ReadSpectralIndices(
+                io.InputBase,
+                fileStem,
+                analysisTag,
                 keys);
-            timer.Stop();
-            Log.Info($"Time to read spectral index files = {timer.Elapsed.TotalSeconds} seconds");
+
             return (spectra, indexProperties);
         }
 
-        public static DateTimeOffset GetNearestTileBoundary(int tileWidth, double scale, DateTimeOffset recordingStartDate)
+        public static DateTimeOffset GetPreviousTileBoundary(int tileWidth, double scale, DateTimeOffset recordingStartDate)
         {
             // if recording does not start on an absolutely aligned hour of the day
             // align it, then adjust where the tiling starts from, and calculate the offset for the super tile (the gap)
@@ -281,16 +364,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         ///     minute duration.
         ///     Therefore assume that indexData matrix will be shorter and take its column count.
         /// </summary>
-        /// <param name="frameData">
-        /// </param>
-        /// <param name="indexData">
-        /// </param>
-        /// <param name="frameWt">
-        /// The frame Wt.
-        /// </param>
-        /// <param name="indexWt">
-        /// The index Wt.
-        /// </param>
         public static void CombineFrameDataWithIndexData(
             double[,] frameData,
             double[,] indexData,
@@ -352,15 +425,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// Draws FC index spectrograms for an entire row
         /// </summary>
-        /// <param name="analysisConfig"></param>
-        /// <param name="indexProperties"></param>
-        /// <param name="zoomingConfig"></param>
-        /// <param name="imageScale"></param>
-        /// <param name="spectra"></param>
-        /// <param name="indexGeneration"></param>
-        /// <param name="basename"></param>
-        /// <param name="chromeOption"></param>
-        /// <returns></returns>
         public static TimeOffsetSingleLayerSuperTile[] DrawSuperTilesAtScaleFromIndexSpectrograms(
             LdSpectrogramConfig analysisConfig,
             Dictionary<string, IndexProperties> indexProperties,
@@ -369,17 +433,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Dictionary<string, double[,]> spectra,
             IndexGenerationData indexGeneration,
             string basename,
-            ImageChrome chromeOption)
+            ImageChrome chromeOption,
+            TimeSpan alignmentPadding)
         {
             Contract.Requires(!spectra.IsNullOrEmpty(), "ERROR: NO SPECTRAL DATA SUPPLIED");
 
-            // check that scalingFactor >= 1.0
-            double scalingFactor = zoomingConfig.ScalingFactorSpectralIndex(imageScale.TotalSeconds, indexGeneration.IndexCalculationDuration.TotalSeconds);
-            Contract.Requires(scalingFactor >= 1.0, "ERROR: Scaling Factor < 1.0");
-
             // calculate source data duration from column count of arbitrary matrix
             TimeSpan dataScale = indexGeneration.IndexCalculationDuration;
-            double[,] matrix = spectra["ACI"]; // assume this key will always be present!!
+            double[,] matrix = spectra.First().Value;
             TimeSpan sourceDataDuration = TimeSpan.FromSeconds(matrix.GetLength(1) * dataScale.TotalSeconds);
 
             int tileWidth = zoomingConfig.TileWidth;
@@ -390,8 +451,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan superTileDuration = TimeSpan.FromTicks(superTileWidth * imageScale.Ticks);
 
             // initialize the image array to return
-            var imageArray = new TimeOffsetSingleLayerSuperTile[superTileCount];
-            TimeSpan startTime = indexGeneration.MinuteOffset; // default = zero minute of day i.e. midnight
+            var superTiles = new TimeOffsetSingleLayerSuperTile[superTileCount];
+
+            // sometimes the whole recording is not analyzed. In this case, jump the time index forward.
+            TimeSpan startTime = indexGeneration.AnalysisStartOffset;
 
             // start the loop
             for (int t = 0; t < superTileCount; t++)
@@ -408,13 +471,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     basename,
                     chromeOption);
 
-                imageArray[t] = new TimeOffsetSingleLayerSuperTile
-                                    {
-                                        TimeOffset = startTime,
-                                        Scale = imageScale,
-                                        SpectrogramType = SpectrogramType.Index,
-                                        Image = image,
-                                    };
+                superTiles[t] = new TimeOffsetSingleLayerSuperTile(
+                    durationToPreviousTileBoundaryAtUnitScale: alignmentPadding,
+                    spectrogramType: SpectrogramType.Index,
+                    scale: imageScale,
+                    image: image,
+                    timeOffset: startTime);
 
                 startTime += superTileDuration;
                 if (startTime > sourceDataDuration)
@@ -423,7 +485,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 }
             }
 
-            return imageArray;
+            return superTiles;
         }
 
         public static Image DrawOneScaledIndexSpectrogramTile(
@@ -440,27 +502,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             Contract.Requires(!spectra.IsNullOrEmpty());
 
-
-            // check that scalingFactor >= 1.0
-            double scalingFactor = Math.Round(imageScale.TotalMilliseconds / dataScale.TotalMilliseconds);
-            Contract.Requires(scalingFactor >= 1.0);
-
-
-            // calculate start time by combining DatetimeOffset with minute offset.
-            TimeSpan sourceMinuteOffset = indexGenerationData.MinuteOffset;
-            if (indexGenerationData.RecordingStartDate.HasValue)
-            {
-                DateTimeOffset dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
-                sourceMinuteOffset = dto.TimeOfDay + sourceMinuteOffset;
-            }
-
-
             // calculate data duration from column count of abitrary matrix
-            var matrix = spectra["ACI"]; // assume this key will always be present!!
+            var matrix = spectra.First().Value;
             int columnCount = matrix.GetLength(1);
             TimeSpan dataDuration = TimeSpan.FromSeconds(columnCount * dataScale.TotalSeconds);
 
-            var recordingStartTime = TimeTools.DateTimePlusTimeSpan(indexGenerationData.RecordingStartDate, indexGenerationData.MinuteOffset);
+            var analysisStartTime = indexGenerationData.RecordingStartDate.Value.TimeOfDay.Add(indexGenerationData.AnalysisStartOffset);
 
             TimeSpan offsetTime = TimeSpan.Zero;
             TimeSpan imageDuration = TimeSpan.FromTicks(superTileImageWidth * imageScale.Ticks);
@@ -478,7 +525,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             // get the plain unchromed spectrogram
-            Image LDSpectrogram = ZoomCommon.DrawIndexSpectrogramCommon(
+            Image ldSpectrogram = ZoomCommon.DrawIndexSpectrogramCommon(
                 config,
                 indexGenerationData,
                 indexProperties,
@@ -492,10 +539,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             if (chromeOption == ImageChrome.Without)
             {
-                return LDSpectrogram;
+                return ldSpectrogram;
             }
 
-            Graphics g2 = Graphics.FromImage(LDSpectrogram);
+            Graphics g2 = Graphics.FromImage(ldSpectrogram);
 
             int nyquist = 22050 / 2;
             if (indexGenerationData.SampleRateResampled > 0)
@@ -511,10 +558,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             string title = $"ZOOM SCALE={imageScale.TotalSeconds}s/pixel";
 
-            Image titleBar = ZoomFocusedSpectrograms.DrawTitleBarOfZoomSpectrogram(title, LDSpectrogram.Width);
-            startTime += recordingStartTime;
-            LDSpectrogram = ZoomFocusedSpectrograms.FrameZoomSpectrogram(
-                LDSpectrogram,
+            Image titleBar = ZoomFocusedSpectrograms.DrawTitleBarOfZoomSpectrogram(title, ldSpectrogram.Width);
+            startTime += analysisStartTime;
+            ldSpectrogram = ZoomFocusedSpectrograms.FrameZoomSpectrogram(
+                ldSpectrogram,
                 titleBar,
                 startTime,
                 imageScale,
@@ -523,12 +570,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 hertzInterval);
 
             // create the base image
-            Image image = new Bitmap(LDSpectrogram.Width, LDSpectrogram.Height);
+            Image image = new Bitmap(ldSpectrogram.Width, ldSpectrogram.Height);
             Graphics g1 = Graphics.FromImage(image);
             g1.Clear(Color.DarkGray);
 
-            var Xoffset = (int)(offsetTime.Ticks / imageScale.Ticks);
-            g1.DrawImage(LDSpectrogram, Xoffset, 0);
+            var xOffset = (int)(offsetTime.Ticks / imageScale.Ticks);
+            g1.DrawImage(ldSpectrogram, xOffset, 0);
 
             return image;
         }
@@ -541,16 +588,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         ///     Consequently only 2999 frames returned per minute.
         ///     Therefore have to pad end to get 3000 frames.
         /// </summary>
-        public static TimeOffsetSingleLayerSuperTile[] DrawSuperTilesFromSingleFrameSpectrogram(
-            DirectoryInfo dataDir,
-            LdSpectrogramConfig analysisConfig,
-            Dictionary<string, IndexProperties> indexProperties,
-            SpectrogramZoomingConfig zoomingConfig,
-            int minute,
-            double[] imageScales,
-            string basename,
-            IndexGenerationData indexGeneration,
-            ImageChrome chromeOption)
+        public static TimeOffsetSingleLayerSuperTile[] DrawSuperTilesFromSingleFrameSpectrogram(DirectoryInfo dataDir, LdSpectrogramConfig analysisConfig, Dictionary<string, IndexProperties> indexProperties, SpectrogramZoomingConfig zoomingConfig, int minute, double[] imageScales, string basename, IndexGenerationData indexGeneration, ImageChrome chromeOption, TimeSpan alignmentPadding)
         {
             string fileStem = basename;
 
@@ -592,7 +630,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var frameData = new TemporalMatrix("rows", MatrixTools.ConvertList2Matrix(frameList), frameScale);
             frameData.SwapTemporalDimension(); // so the two data matrices have the same temporal dimension
 
-            TimeSpan startTime = indexGeneration.MinuteOffset; // default = zero minute of day i.e. midnight
+            TimeSpan startTime = indexGeneration.AnalysisStartOffset; // default = zero minute of day i.e. midnight
             TimeSpan startTimeOfData = startTime + TimeSpan.FromMinutes(minute);
 
             var str = new TimeOffsetSingleLayerSuperTile[imageScales.Length];
@@ -621,14 +659,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     indexGeneration,
                     chromeOption);
 
-
-                str[scale] = new TimeOffsetSingleLayerSuperTile
-                                 {
-                                     TimeOffset = startTimeOfData,
-                                     Scale = imageScale,
-                                     SpectrogramType = SpectrogramType.Frame,
-                                     Image = spectrogramImage,
-                                 };
+                str[scale] = new TimeOffsetSingleLayerSuperTile(
+                    alignmentPadding,
+                    SpectrogramType.Frame,
+                    imageScale,
+                    spectrogramImage,
+                    startTimeOfData);
             }
 
             return str;

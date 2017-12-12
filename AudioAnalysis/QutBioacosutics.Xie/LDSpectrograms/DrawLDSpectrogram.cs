@@ -24,6 +24,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             public FileInfo SpectrogramConfigPath { get; set; }
         }
 
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static Arguments Dev()
         {
             // INPUT and OUTPUT DIRECTORIES
@@ -128,7 +129,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             ////double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
-            TimeSpan minuteOffset = (TimeSpan?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
+            TimeSpan minuteOffset = (TimeSpan?)configuration.AnalysisStartOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
             TimeSpan xScale = (TimeSpan?)configuration.XAxisTicInterval ?? SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default is one minute spectra i.e. 60 per hour
             int sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE;
             int frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_LENGTH;
@@ -139,7 +140,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = backgroundFilterCoeff;
             cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
-            cs1.ReadCsvFiles(configuration.InputDirectoryInfo, fileStem); // reads all known files spectral indices
+            cs1.ReadSpectralIndices(configuration.InputDirectoryInfo, fileStem); // reads all known files spectral indices
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
                 LoggedConsole.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
@@ -198,7 +199,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             //spgConfig.ColourMap = "TRK-OSC-HAR";
             spgConfig.ColourMap1 = "OSC-HAR-TRK";
             //spgConfig.ColourMap2 = "OSC-HAR-TRK";
-            spgConfig.MinuteOffset = TimeSpan.FromMinutes(19 * 60); // Recordings start at 7pm. Frogs only call at night!!;
+            spgConfig.AnalysisStartOffset = TimeSpan.FromMinutes(19 * 60); // Recordings start at 7pm. Frogs only call at night!!;
             spgConfig.FrameWidth = 256;
             //spgConfig.SampleRate = 17640;
             spgConfig.SampleRate = 22050;

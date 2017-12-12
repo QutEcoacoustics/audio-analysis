@@ -8,6 +8,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 
     public partial class AnalyseLongRecording
     {
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static Arguments Dev()
         {
             // TO GET TO HERE audio2csv MUST BE ONLY COMMAND LINE ARGUMENT

@@ -295,7 +295,7 @@ namespace AnalysisPrograms
             TimeSpan bgNoiseNeighborhood;
             try
             {
-                int bgnNh = configuration[AnalysisKeys.BGNoiseNeighbourhood];
+                int bgnNh = configuration[AnalysisKeys.BgNoiseNeighbourhood];
                 bgNoiseNeighborhood = TimeSpan.FromSeconds(bgnNh);
             }
             catch (Exception ex)
@@ -419,7 +419,7 @@ namespace AnalysisPrograms
 
             // #################################################################
             // store spectral matrices for later production of spectrogram images.
-            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
+            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.Rotate90ClockWise);
 
 
             // #################################################################
@@ -723,8 +723,8 @@ namespace AnalysisPrograms
                                           FrameLength = frameWidth,
                                           FrameStep = settings.Configuration[AnalysisKeys.FrameStep],
                                           IndexCalculationDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration,
-                                          BGNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
-                                          MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
+                                          BgNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
+                                          AnalysisStartOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
                                           BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
                                           LongDurationSpectrogramConfig = ldSpectrogramConfig,
                                       };
@@ -739,7 +739,7 @@ namespace AnalysisPrograms
             // this is the most efficient way to do this
             // gather up numbers and strings store in memory, write to disk one time
             // this method also AUTOMATICALLY SORTS because it uses array indexing
-            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
+            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.Rotate90ClockWise);
 
             // Calculate the index distribution statistics and write to a json file. Also save as png image
             var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectra, resultsDirectory, basename);
@@ -818,15 +818,15 @@ namespace AnalysisPrograms
         private static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<SpectralTrack> tracks)
         {
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage());
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
 
             if (scores != null)
             {
                 foreach (Plot plot in scores)
                 {
                     // assumes data normalized in 0,1
-                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
+                    image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
                 }
             }
 

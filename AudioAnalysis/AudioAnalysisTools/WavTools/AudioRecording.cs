@@ -80,8 +80,6 @@ namespace AudioAnalysisTools.WavTools
             }
         }
 
-        #region Properties
-
         /// <summary>
         /// Gets the file name without the extension
         /// </summary>
@@ -142,8 +140,6 @@ namespace AudioAnalysisTools.WavTools
                 return -double.MaxValue;
             }
         }
-
-        #endregion
 
         /// <summary>
         /// Gets a wrapper for the wav reader.
@@ -332,14 +328,10 @@ namespace AudioAnalysisTools.WavTools
             return bmp;
         }
 
-        #region IDisposable Members
-
         public void Dispose()
         {
             this.wavReader.Dispose();
         }
-
-        #endregion
 
         //########################################################################################################################################################################
         //########################################################################################################################################################################

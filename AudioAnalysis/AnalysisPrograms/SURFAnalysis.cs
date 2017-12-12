@@ -66,6 +66,7 @@ namespace AnalysisPrograms
             }
         }
 
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         private static Arguments Dev()
         {
             DateTime time = DateTime.Now;
@@ -408,7 +409,7 @@ namespace AnalysisPrograms
             image = sonogram.GetImageAnnotatedWithLinearHerzScale(image, "AMPLITUDE SPECTROGRAM + LCN + ridge detection");
             list.Add(image);
 
-            Image envelopeImage = Image_Track.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
+            Image envelopeImage = ImageTrack.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
             list.Add(envelopeImage);
 
             // 3) now draw the standard decibel spectrogram
@@ -420,7 +421,7 @@ namespace AnalysisPrograms
             image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM");
             list.Add(image);
 
-            Image segmentationImage = Image_Track.DrawSegmentationTrack(
+            Image segmentationImage = ImageTrack.DrawSegmentationTrack(
                 sonogram,
                 EndpointDetectionConfiguration.K1Threshold,
                 EndpointDetectionConfiguration.K2Threshold,
@@ -544,7 +545,7 @@ namespace AnalysisPrograms
             {
                 var basename = Path.GetFileNameWithoutExtension(segmentSettings.SegmentAudioFile.Name);
                 var spectrogramCsvFile = outputDirectory.CombineFile(basename + ".Spectrogram.csv");
-                Csv.WriteMatrixToCsv(spectrogramCsvFile, spectrogramResult.DecibelSpectrogram.Data, TwoDimensionalArray.RowMajor);
+                Csv.WriteMatrixToCsv(spectrogramCsvFile, spectrogramResult.DecibelSpectrogram.Data, TwoDimensionalArray.None);
             }
 
             return analysisResult;

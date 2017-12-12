@@ -9,6 +9,8 @@ namespace Acoustics.Shared
     using System.Linq;
     using System.Text.RegularExpressions;
 
+    using Zio;
+
     /// <summary>
     /// A set of helper methods used to create/read consistently encoded filenames
     /// </summary>
@@ -55,7 +57,7 @@ namespace Acoustics.Shared
         /// </summary>
         public static string AnalysisResultName(string baseName, string analysisTag, string newExtension, params string[] otherSegments)
         {
-            if (string.IsNullOrWhiteSpace(baseName))
+            if (baseName == null)
             {
                 throw new ArgumentException("Invalid file stem / base name supplied");
             }
@@ -70,7 +72,7 @@ namespace Acoustics.Shared
                 baseName = baseName.Replace(BasenameSeparator, SegmentSeparator);
             }
 
-            var filename = baseName + BasenameSeparator + analysisTag;
+            var filename = baseName + (string.IsNullOrEmpty(baseName) ? string.Empty : BasenameSeparator) + analysisTag;
 
             if (otherSegments.Length > 0)
             {
@@ -87,6 +89,15 @@ namespace Acoustics.Shared
 
         public static void ParseAnalysisFileName(
             FileInfo file,
+            out string originalBaseName,
+            out string analysisTag,
+            out string[] otherSegments)
+        {
+            ParseAnalysisFileName(file.Name, out originalBaseName, out analysisTag, out otherSegments);
+        }
+
+        public static void ParseAnalysisFileName(
+            FileEntry file,
             out string originalBaseName,
             out string analysisTag,
             out string[] otherSegments)

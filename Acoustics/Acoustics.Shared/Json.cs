@@ -15,6 +15,8 @@ namespace Acoustics.Shared
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
+    using Zio;
+
     public static class Json
     {
         public static void Serialise<T>(FileInfo file, T obj)
@@ -46,6 +48,11 @@ namespace Acoustics.Shared
         }
 
         public static T Deserialise<T>(FileInfo file)
+        {
+            return Deserialise<T>(file.ToFileEntry());
+        }
+
+        public static T Deserialise<T>(FileEntry file)
         {
             var serializer = new JsonSerializer();
 

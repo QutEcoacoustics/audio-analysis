@@ -11,6 +11,7 @@ namespace Acoustics.Shared.ConfigFile
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -18,6 +19,8 @@ namespace Acoustics.Shared.ConfigFile
     using Fasterflect;
     using YamlDotNet.Dynamic;
     using YamlDotNet.RepresentationModel;
+
+    using Zio;
 
     public static class ConfigFile
     {
@@ -46,10 +49,7 @@ namespace Acoustics.Shared.ConfigFile
                     $"Cannot find currently set ConfigFiles directory. {defaultConfigFolder} does not exist!");
             }
 
-            set
-            {
-                defaultConfigFolder = value;
-            }
+            set => defaultConfigFolder = value;
         }
 
         public static dynamic GetProfile(dynamic configuration, string profileName)
@@ -143,12 +143,11 @@ namespace Acoustics.Shared.ConfigFile
 
         public static FileInfo ResolveConfigFile(string file, params DirectoryInfo[] searchPaths)
         {
-            FileInfo configFile;
-            var success = TryResolveConfigFile(file, searchPaths, out configFile);
+            var success = TryResolveConfigFile(file, searchPaths.Select(x => x.ToDirectoryEntry()), out FileEntry configFile);
 
             if (success)
             {
-                return configFile;
+                return configFile.ToFileInfo();
             }
 
             var searchedIn =
@@ -159,7 +158,7 @@ namespace Acoustics.Shared.ConfigFile
             throw new ConfigFileException(message, file);
         }
 
-        public static bool TryResolveConfigFile(string file, DirectoryInfo[] searchPaths, out FileInfo configFile)
+        public static bool TryResolveConfigFile(string file, IEnumerable<DirectoryEntry> searchPaths, out FileEntry configFile)
         {
             configFile = null;
             if (string.IsNullOrWhiteSpace(file))
@@ -167,36 +166,40 @@ namespace Acoustics.Shared.ConfigFile
                 return false;
             }
 
-            if (File.Exists(file))
+            // this is a holdover from concrete file systems. The concept of a working directory has no real
+            // equivalent in a virtual file system but this is implemented for compatibility
+            // GetFullPath should take care of relative paths relative to current working directory
+            var fullPath = Path.GetFullPath(file);
+            if (File.Exists(fullPath))
             {
-                configFile = new FileInfo(file);
+                configFile = fullPath.ToFileEntry();
                 return true;
             }
 
-            // if it does not exist
-            // and is rooted, it can't exist
             if (Path.IsPathRooted(file))
             {
+                // if absolute on concrete file system and can't be found then we can't resolve automatically
                 return false;
             }
 
-            if (searchPaths != null && searchPaths.Length > 0)
+            if (searchPaths != null)
             {
-                foreach (var directoryInfo in searchPaths)
+                foreach (var directory in searchPaths)
                 {
-                    var searchPath = Path.GetFullPath(Path.Combine(directoryInfo.FullName, file));
-                    if (File.Exists(searchPath))
+                    var searchPath = directory.CombineFile(file);
+                    if (searchPath.Exists)
                     {
-                        configFile = new FileInfo(searchPath);
+                        configFile = searchPath;
                         return true;
                     }
                 }
             }
 
+            // config files are always packaged with the app so use a physical file system
             var defaultConfigFile = Path.GetFullPath(Path.Combine(ConfigFolder, file));
             if (File.Exists(defaultConfigFile))
             {
-                configFile = new FileInfo(defaultConfigFile);
+                configFile = defaultConfigFile.ToFileEntry();
                 return true;
             }
 
@@ -206,7 +209,7 @@ namespace Acoustics.Shared.ConfigFile
                 var nestedDefaultConfigFile = Path.Combine(directory, file);
                 if (File.Exists(nestedDefaultConfigFile))
                 {
-                    configFile = new FileInfo(nestedDefaultConfigFile);
+                    configFile = nestedDefaultConfigFile.ToFileEntry();
                     return true;
                 }
             }

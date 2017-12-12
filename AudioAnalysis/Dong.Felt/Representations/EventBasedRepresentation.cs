@@ -377,8 +377,8 @@
                     }
                 }
             }
-            var FrequencyEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(columnEnergy));
-            var FrameEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(rowEnergy));
+            var FrequencyEnergyEntropy = DataTools.EntropyNormalised(DataTools.SquareValues(columnEnergy));
+            var FrameEnergyEntropy = DataTools.EntropyNormalised(DataTools.SquareValues(rowEnergy));
 
             var formatedFrequencyEntropy = (double)decimal.Round((decimal)FrequencyEnergyEntropy, 3);
             var formatedFrameEntropy = (double)decimal.Round((decimal)FrameEnergyEntropy, 3);

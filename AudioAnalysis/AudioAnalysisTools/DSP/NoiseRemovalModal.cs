@@ -6,6 +6,9 @@ namespace AudioAnalysisTools.DSP
 {
     using System;
     using System.Drawing;
+
+    using AudioAnalysisTools.StandardSpectrograms;
+
     using TowseyLibrary;
 
     public static class NoiseRemovalModal

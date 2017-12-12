@@ -41,7 +41,6 @@ SaveIntermediateCsvFiles: false
 SaveSonogramImages: WhenEventsDetected
 # DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
-ParallelProcessing: false
 ## End section for AnalyzeLongRecording
 
 # Other config files to reference

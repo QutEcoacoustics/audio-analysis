@@ -92,6 +92,7 @@ namespace AnalysisPrograms
             }
         }
 
+        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         private static Arguments Dev()
         {
 
@@ -245,7 +246,7 @@ namespace AnalysisPrograms
             //string testPath = @"C:\SensorNetworks\Output\Sonograms\amplitudeSonogram.png";
             //image.Save(testPath, ImageFormat.Png);
 
-            Image envelopeImage = Image_Track.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
+            Image envelopeImage = ImageTrack.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
             sonogramList.Add(envelopeImage);
 
             // 2) now draw the standard decibel spectrogram
@@ -273,7 +274,7 @@ namespace AnalysisPrograms
             string imagePath3 = Path.Combine(opDir.FullName, sourceName + "_freqOscilMatrix.png");
             compositeOscImage3.Save(imagePath3, ImageFormat.Png);
 
-            Image segmentationImage = Image_Track.DrawSegmentationTrack(
+            Image segmentationImage = ImageTrack.DrawSegmentationTrack(
                 sonogram,
                 EndpointDetectionConfiguration.K1Threshold,
                 EndpointDetectionConfiguration.K2Threshold,

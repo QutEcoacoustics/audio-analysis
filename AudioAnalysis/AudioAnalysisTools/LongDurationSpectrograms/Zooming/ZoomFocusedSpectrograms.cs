@@ -36,30 +36,26 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
     public static class ZoomFocusedSpectrograms
     {
-        public static void DrawStackOfZoomedSpectrograms(
-            DirectoryInfo inputDirectory,
-            DirectoryInfo outputDirectory,
-            ZoomArguments common,
-            TimeSpan focalTime,
-            int imageWidth)
+        public static void DrawStackOfZoomedSpectrograms(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory, ZoomParameters common, TimeSpan focalTime, int imageWidth, string analysisType)
         {
             var zoomConfig = common.SpectrogramZoomingConfig;
             LdSpectrogramConfig ldsConfig = common.SpectrogramZoomingConfig.LdSpectrogramConfig;
 
-            // var distributions = IndexDistributions.Deserialize(common.IndexDistributionsFile);
-            var indexGeneration = Json.Deserialise<IndexGenerationData>(common.IndexGenerationDataFile);
+            var distributions = common.IndexDistributions;
+            var indexGeneration = common.IndexGenerationData;
             var indexProperties = common.IndexProperties;
 
             string fileStem = common.OriginalBasename;
-            string analysisType = "Towsey.Acoustic";
-            var dataScale = indexGeneration.IndexCalculationDuration;
+
+            TimeSpan dataScale = indexGeneration.IndexCalculationDuration;
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
-            var sw = Stopwatch.StartNew();
+
             string[] keys = { "ACI", "BGN", "CVR", "DIF", "ENT", "EVN", "PMN", "POW", "RHZ", "RVT", "RPS", "RNG", "SUM", "SPT" };
-            Dictionary<string, double[,]> spectra = IndexMatrices.ReadCsvFiles(inputDirectory, fileStem + "__" + analysisType, keys);
-            sw.Stop();
-            LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
+            indexProperties = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(indexProperties);
+            Dictionary<string, double[,]> spectra = IndexMatrices.ReadSpectralIndices(inputDirectory, fileStem, analysisType, keys);
+
+            Stopwatch sw = Stopwatch.StartNew();
 
             // standard scales in seconds per pixel.
             double[] imageScales = { 60, 24, 12, 6, 2, 1, 0.6, 0.2 };
@@ -86,9 +82,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             sw.Stop();
             LoggedConsole.WriteLine("Finished spectrograms derived from spectral indices. Elapsed time = " + sw.Elapsed.TotalSeconds + " seconds");
 
-            /*
-             * // NOTE: COMMENTED OUT THIS SECTION OF CODE ON 16th NOVEMBER 2017 when trying to revive the ZOOMING code.
-             *          No longer needed.
             // ####################### DERIVE ZOOMED IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
             int[] compressionFactor = { 8, 4, 2, 1 };
             int compressionCount = compressionFactor.Length;
@@ -104,7 +97,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 compressionFactor = new int[compressionCount];
                 compressionFactor[compressionCount - 1] = 1;
                 double denom = imageScales[compressionCount - 1];
-                for (int i = 0; i < compressionCount - 1; i++)
+
+                for (int i = 0; i < compressionCount-1; i++)
                 {
                     compressionFactor[i] = (int)Math.Round(imageScales[i] / denom);
                 }
@@ -132,7 +126,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             for (int i = 0; i < compressionCount; i++)
             {
                 int factor = compressionFactor[i];
-                image = DrawFrameSpectrogramAtScale(ldsConfig, indexGeneration, startTimeOfData, factor, frameData, indexData, focalTime, frameScale, imageWidth);
+                var image = DrawFrameSpectrogramAtScale(ldsConfig, indexGeneration, startTimeOfData, factor, frameData, indexData, focalTime, frameScale, imageWidth);
                 if (image != null)
                 {
                     imageList.Add(image);
@@ -141,8 +135,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             sw.Stop();
             LoggedConsole.WriteLine("Finished spectrograms derived from standard frames. Elapsed time = " + sw.Elapsed.TotalSeconds + " seconds");
-            // ####################### FINSIHED ZOOMED-IN SPECTROGRAMS DERIVED FROM STANDARD SPECTRAL FRAMES
-            */
 
             // combine the images into a stack
             Image combinedImage = ImageTools.CombineImagesVertically(imageList);
@@ -183,7 +175,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             dictIp = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(dictIp);
 
             // calculate start time by combining DatetimeOffset with minute offset.
-            TimeSpan sourceMinuteOffset = indexGenerationData.MinuteOffset;
+            TimeSpan sourceMinuteOffset = indexGenerationData.AnalysisStartOffset;
             if (indexGenerationData.RecordingStartDate.HasValue)
             {
                 DateTimeOffset dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
@@ -197,8 +189,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //var matrix = spectra["ACI"]; // assume this key will always be present!!
             TimeSpan dataDuration = TimeSpan.FromSeconds(matrix.GetLength(1) * dataScale.TotalSeconds);
 
-            var recordingStartTime = TimeSpan.Zero; // default = zero minute of day i.e. midnight
-            recordingStartTime = TimeTools.DateTimePlusTimeSpan(indexGenerationData.RecordingStartDate, indexGenerationData.MinuteOffset);
+            TimeSpan recordingStartTime = TimeSpan.Zero; // default = zero minute of day i.e. midnight
+            recordingStartTime = indexGenerationData.RecordingStartDate.Value.TimeOfDay.Add(indexGenerationData.AnalysisStartOffset);
 
             TimeSpan offsetTime = TimeSpan.Zero;
             TimeSpan imageDuration = TimeSpan.FromTicks(imageWidth * imageScale.Ticks);
@@ -215,7 +207,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 startTime = TimeSpan.Zero;
             }
 
-            var endTime = imageDuration;
+            TimeSpan endTime = imageDuration;
             if (focalTime != TimeSpan.Zero)
             {
                 endTime = focalTime + halfImageDuration;
@@ -328,7 +320,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             // var recordingStartTime = TimeSpan.Zero; // default = zero minute of day i.e. midnight
-            // var recordingStartTime = TimeTools.DateTimePlusTimeSpan(indexGenerationData.RecordingStartDate, indexGenerationData.MinuteOffset);
+            // var recordingStartTime = TimeTools.DateTimePlusTimeSpan(indexGenerationData.RecordingStartDate, indexGenerationData.AnalysisStartOffset);
 
             TimeSpan imageScale = TimeSpan.FromTicks(frameScale.Ticks * compressionFactor);
             TimeSpan imageDuration = TimeSpan.FromTicks(imageWidth * imageScale.Ticks);
@@ -492,6 +484,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             double ridgeThreshold = 2.5;
             double[,] matrix = dbSpectrogramData;
+
             byte[,] hits = RidgeDetection.Sobel5X5RidgeDetectionExperiment(matrix, ridgeThreshold);
 
             // ################### RESEARCH QUESTION:
@@ -516,12 +509,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // nr = noise reduced
             double[,] nrSpectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(nrSpectrogramData, truncateMin, truncateMax, filterCoefficient);
+
             nrSpectrogramNorm = MatrixTools.BoundMatrix(nrSpectrogramNorm, 0.0, 0.9);
             nrSpectrogramNorm = MatrixTools.SquareRootOfValues(nrSpectrogramNorm);
             nrSpectrogramNorm = DataTools.normalise(nrSpectrogramNorm);
 
             // create image from normalised data
             var image = SpectrogramTools.CreateFalseColourDecibelSpectrogramForZooming(dbSpectrogramNorm, nrSpectrogramNorm, hits);
+
             return image;
         }
 
@@ -533,6 +528,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
             Font stringFont = new Font("Arial", 9);
+
             int x1 = 4;
             g.DrawString(title, stringFont, Brushes.Wheat, new PointF(x1, 3));
 
@@ -573,8 +569,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // put start offset into a datetime object.
             var dto = default(DateTimeOffset);
             dto = dto + startOffset;
-            var timeBmp = Image_Track.DrawTimeTrack(fullDuration, dto, bmp1.Width, trackHeight);
-            int imageHt = bmp1.Height + titleBar.Height + trackHeight + 1;
+
+            Bitmap timeBmp = ImageTrack.DrawTimeTrack(fullDuration, dto, bmp1.Width, trackHeight);
+            int imageHt = bmp1.Height + titleBar.Height + trackHeight +1;
 
             Bitmap compositeBmp = new Bitmap(bmp1.Width, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);
