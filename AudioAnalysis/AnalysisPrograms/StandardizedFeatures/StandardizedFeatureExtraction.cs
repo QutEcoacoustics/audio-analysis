@@ -28,9 +28,10 @@ namespace AnalysisPrograms.StandardizedFeatures
         // Input is a class object of Arguments, class is made below
         public static void Execute(Arguments arguments)
         {
+            LoggedConsole.WriteLine("The sentence was printed {0} times", arguments.Multiplication);
             for (int i = 0; i < arguments.Multiplication; i++)
             {
-                Console.WriteLine(Sentence);
+                LoggedConsole.WriteLine(Sentence);
             }
         }
 
@@ -111,8 +112,8 @@ namespace AnalysisPrograms.StandardizedFeatures
                 var image = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(amplitudeSpectrogramData));
                 image.Save(imagePath, ImageFormat.Png);
                 analysisResults.ImageFile = new FileInfo(imagePath);
+                LoggedConsole.WriteLine("See {0} for spectrogram pictures", imagePath);
             }
-            //image.Save(@"C:\Work\Output\testimage.png", ImageFormat.Png);
 
             return analysisResults;
         }
