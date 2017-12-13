@@ -970,9 +970,11 @@ namespace AnalysisPrograms
         public static void ExtractSpectralFeatures()
         {
             // parameters
-            string dir = @"H:\Documents\SensorNetworks\MyPapers\2017_DavidWatson\CaseStudy1 Liz\MachineLearningExercise";
+            string dir =
+                @"H:\Documents\SensorNetworks\MyPapers\2017_DavidWatson\CaseStudy1 Liz\MachineLearningExercise";
             string fileName = "LizZnidersic_TasmanIsTractor_20151111__Towsey.Acoustic";
             string[] indexNames = { "ACI", "ENT", "POW", "SPT", "RHZ" };
+            int startOffsetMinute = 47; // 24 hours of recording starts at 12:47am. Need this as an offset.
             int bottomBin = 3;
             int topBin = 22;
             int binCount = topBin - bottomBin + 1;
@@ -996,7 +998,14 @@ namespace AnalysisPrograms
                 //var normedM = MatrixTools.Submatrix(matrix, bottomBin, 0, topBin, framecount - 1);
 
                 // use following line to normalise
-                var normedM = MatrixTools.NormaliseMatrixValues(matrix);
+                double minPercentile = 0.01;
+                double maxPercentile = 0.99;
+                double minCut;
+                double maxCut;
+                MatrixTools.PercentileCutoffs(matrix, minPercentile, maxPercentile, out minCut, out maxCut);
+                var normedM = MatrixTools.BoundMatrix(matrix, minCut, maxCut);
+                normedM = MatrixTools.NormaliseMatrixValues(normedM);
+
                 normedM = MatrixTools.Submatrix(normedM, bottomBin, 0, topBin, framecount - 1);
                 dict.Add(id, normedM);
             }
@@ -1023,37 +1032,83 @@ namespace AnalysisPrograms
             var opFileinfo = new FileInfo(Path.Combine(dir, $"{fileName}.FeatureVectors.csv"));
             Csv.WriteMatrixToCsv(opFileinfo, dataSet);
 
+            // Read in labelling info from Liz Znidersic
+            string path = Path.Combine(dir, "lerafcis20151111.csv");
+            var tags = ReadFileOfTagsFromLizZnidersic(path, framecount, startOffsetMinute);
+
             // save dataset as image
             dataSet = MatrixTools.SubtractValuesFromOne(dataSet);
             var image = ImageTools.DrawMatrixWithoutNormalisation(MatrixTools.MatrixRotate90Anticlockwise(dataSet));
-            var imageName = Path.Combine(dir, $"{fileName}.DataImage.png");
-            image.Save(imageName);
 
-            // Read in labelling info from Liz Znidersic
-            var data = FileTools.ReadTextFile(Path.Combine(dir, "lerafcis20151111.csv"));
-            for (int i = 1; i < data.Count; i++)
+            // add tags to image of feature vectors
+            var g = Graphics.FromImage(image);
+            var pen = new Pen(Color.Red);
+            for (int i = 1; i < tags.Length; i++)
             {
-                var words = data[i].Split(',');
-                var word = words[3];
-                word = word.PadLeft(4);
-                string[] parts = new string[2];
-                parts[0] = word.Remove(2);
-                parts[1] = word.Substring(2);
-                //int minuteCount = 
+                if (tags[i] == 0) continue;
+                if (tags[i] == 1) pen = new Pen(Color.Red);
+                if (tags[i] == 2) pen = new Pen(Color.Green);
+                if (tags[i] == 3) pen = new Pen(Color.Blue);
+
+                g.DrawLine(pen, i, 0, i, 5);
+                g.DrawLine(pen, i, 20, i, 25);
+                g.DrawLine(pen, i, 40, i, 45);
+                g.DrawLine(pen, i, 60, i, 65);
             }
+
+            // add tags to false-colour spectrogram
+            string path1 = Path.Combine(dir, "LizZnidersic_TasmanIsTractor_20151111__Tagged.png");
+            var image1 = ImageTools.ReadImage2Bitmap(path1);
+            var g1 = Graphics.FromImage(image1);
+            for (int i = 1; i < tags.Length; i++)
+            {
+                if (tags[i] == 0) continue;
+                if (tags[i] == 1) pen = new Pen(Color.Red);
+                if (tags[i] == 2) pen = new Pen(Color.Green);
+                if (tags[i] == 3) pen = new Pen(Color.Blue);
+
+                g1.DrawLine(pen, i, image1.Height - 18, i, image1.Height - 4);
+            }
+
+            var path2 = Path.Combine(dir, $"{fileName}.Tagged.png");
+            image1.Save(path2);
 
             Console.WriteLine("Finished");
             Console.ReadLine();
         }
 
-        public class LizTags
+        /// <summary>
+        /// Read in labelling info from Liz Znidersic
+        /// Returns an array of tags, one for each minute of the original recording.
+        /// </summary>
+        /// <param name="path">file to be erad</param>
+        /// <param name="arraySize">size of array to return</param>
+        /// <param name="startMinute">start offset in minutes for the entire 24 hour recording</param>
+        public static int[] ReadFileOfTagsFromLizZnidersic(string path, int arraySize, int startMinute)
         {
-            public static string TcisImage;
-            public static string TileStartTime;
-            public static string TimeFromFileStart; //(min sec) 
-            public static string ActualTime;
-            public static string PosNeg; // p/n
-            public static string Comments; // from reviewing grey scale
+            var array = new int[arraySize];
+            var data = FileTools.ReadTextFile(path);
+            for (int i = 1; i < data.Count; i++)
+            {
+                var words = data[i].Split(',');
+
+                // get the time location of the hit
+                var word = words[3];
+                word = word.PadLeft(4);
+                string hour = word.Remove(2);
+                string min = word.Substring(2);
+                int minuteCount = (int.Parse(hour) * 60) + int.Parse(min) - startMinute + 1;
+
+                // get the difficulty of the hit
+                int hitDifficulty = 1; //easy one
+                if (words[5].StartsWith("difficult")) hitDifficulty = 2;
+                if (words[5].StartsWith("very")) hitDifficulty = 3;
+
+                // add to the array
+                array[minuteCount] = hitDifficulty;
+            }
+
+            return array;
         }
 
         /// <summary>
