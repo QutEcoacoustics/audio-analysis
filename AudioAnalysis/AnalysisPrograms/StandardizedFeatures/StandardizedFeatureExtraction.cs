@@ -43,6 +43,14 @@ namespace AnalysisPrograms.StandardizedFeatures
             public int Multiplication { get; set; }
         }
 
+        public override void BeforeAnalyze(AnalysisSettings analysisSettings)
+        {
+            // Construct variable 'configuration' that stores the properties of config file in non-dynamic way
+            base.BeforeAnalyze(analysisSettings);
+            StandardizedFeatureExtractionConfig configuration = Yaml.Deserialise<StandardizedFeatureExtractionConfig>(analysisSettings.ConfigFile);
+            analysisSettings.AnalysisAnalyzerSpecificConfiguration = configuration;
+        }
+
         // Implemented from AbstractStrongAnalyser
         public override string DisplayName
         {
@@ -61,6 +69,7 @@ namespace AnalysisPrograms.StandardizedFeatures
 
         public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
+            StandardizedFeatureExtractionConfig configuration = (StandardizedFeatureExtractionConfig)analysisSettings.AnalysisAnalyzerSpecificConfiguration;
             var audioFile = segmentSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
             var outputDirectory = segmentSettings.SegmentOutputDirectory;
@@ -68,11 +77,38 @@ namespace AnalysisPrograms.StandardizedFeatures
 
             var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
 
+            // Create a spectrogram of recording with different band settings, for now they are saved under same name. Have to fix this.
+            foreach (var band in configuration.Bands)
+            {
+                int frameSize = band.FftWindow;
+                int frameStep = frameSize;
+
+                // Default behaviour: set SUBSEGMENT = total recording
+                AudioRecording subsegmentRecording = recording;
+
+                // EXTRACT ENVELOPE and SPECTROGRAM FROM SUBSEGMENT
+                var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(subsegmentRecording, frameSize, frameStep);
+
+                analysisSettings.AnalysisImageSaveBehavior = SaveBehavior.Always;
+
+                if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave())
+                {
+                    string imagePath = Path.Combine(outputDirectory.FullName, segmentSettings.SegmentImageFile.Name);
+
+                    //prepare amplitude spectrogram
+                    double[,] amplitudeSpectrogramData = dspOutput1.AmplitudeSpectrogram; // get amplitude spectrogram.
+                    var image = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(amplitudeSpectrogramData));
+                    image.Save(imagePath, ImageFormat.Png);
+                    analysisResults.ImageFile = new FileInfo(imagePath);
+                    LoggedConsole.WriteLine("See {0} for spectrogram pictures", imagePath);
+                }
+            }
+
             // Convert the dynamic config to IndexCalculateConfig class and merge in the unnecesary parameters.
             IndexCalculateConfig config = IndexCalculateConfig.GetConfig(analysisSettings.Configuration, false);
 
-            int frameSize = config.FrameLength;
-            int frameStep = frameSize;
+            //int frameSize = config.FrameLength;
+            //int frameStep = frameSize;
             //var indexCalculationDuration = config.IndexCalculationDuration;
 
             //// get duration in seconds and sample count and frame count
@@ -92,28 +128,28 @@ namespace AnalysisPrograms.StandardizedFeatures
             //int endSample = startSample + subsegmentSampleCount - 1;
 
             // Default behaviour: set SUBSEGMENT = total recording
-            AudioRecording subsegmentRecording = recording;
+            //AudioRecording subsegmentRecording = recording;
 
             //double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, startSample, subsegmentSampleCount);
             //var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
             //subsegmentRecording = new AudioRecording(wr);
 
             // EXTRACT ENVELOPE and SPECTROGRAM FROM SUBSEGMENT
-            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(subsegmentRecording, frameSize, frameStep);
+            //var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(subsegmentRecording, frameSize, frameStep);
 
-            analysisSettings.AnalysisImageSaveBehavior = SaveBehavior.Always;
+            //analysisSettings.AnalysisImageSaveBehavior = SaveBehavior.Always;
 
-            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave())
-            {
-                string imagePath = Path.Combine(outputDirectory.FullName, segmentSettings.SegmentImageFile.Name);
+            //if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave())
+            //{
+            //    string imagePath = Path.Combine(outputDirectory.FullName, segmentSettings.SegmentImageFile.Name);
 
-                //prepare amplitude spectrogram
-                double[,] amplitudeSpectrogramData = dspOutput1.AmplitudeSpectrogram; // get amplitude spectrogram.
-                var image = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(amplitudeSpectrogramData));
-                image.Save(imagePath, ImageFormat.Png);
-                analysisResults.ImageFile = new FileInfo(imagePath);
-                LoggedConsole.WriteLine("See {0} for spectrogram pictures", imagePath);
-            }
+            //    //prepare amplitude spectrogram
+            //    double[,] amplitudeSpectrogramData = dspOutput1.AmplitudeSpectrogram; // get amplitude spectrogram.
+            //    var image = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(amplitudeSpectrogramData));
+            //    image.Save(imagePath, ImageFormat.Png);
+            //    analysisResults.ImageFile = new FileInfo(imagePath);
+            //    LoggedConsole.WriteLine("See {0} for spectrogram pictures", imagePath);
+            //}
 
             return analysisResults;
         }
