@@ -973,21 +973,20 @@ namespace AnalysisPrograms
                 @"H:\Documents\SensorNetworks\MyPapers\2017_DavidWatson\CaseStudy1 Liz\MachineLearningExercise";
             string fileName = "LizZnidersic_TasmanIsTractor_20151111__Towsey.Acoustic";
             string[] indexNames = { "ACI", "ENT", "POW", "SPT", "RHZ" };
+            var framecount = 1440; // could read this from first matrix but easier to declare it. Need it for reading in tagged data.
             int startOffsetMinute = 47; // 24 hours of recording starts at 12:47am. Need this as an offset.
             int bottomBin = 3;
             int topBin = 22;
             int binCount = topBin - bottomBin + 1;
 
-            var dict = new Dictionary<string, double[,]>();
-            var framecount = 0;
-
             // read spectral index matrices, extract required freq band, and store sub-band in dictionary of matrices.
+            var dict = new Dictionary<string, double[,]>();
             foreach (string id in indexNames)
             {
                 var fileinfo = new FileInfo(Path.Combine(dir, $"{fileName}.{id}.csv"));
                 var matrix = Csv.ReadMatrixFromCsv<double>(fileinfo, TwoDimensionalArray.ColumnMajor);
-                framecount = matrix.GetLength(1);
 
+                //framecount = matrix.GetLength(1);
                 //Console.WriteLine("\n" + id);
                 //Console.WriteLine(matrix[3, 0]);
                 //Console.WriteLine(matrix[3, 1]);
@@ -1009,9 +1008,15 @@ namespace AnalysisPrograms
                 dict.Add(id, normedM);
             }
 
-            // concatenate feature vectors, one frame at a time. Then add to matrix data set.
+            // Read in labelling info from Liz Znidersic
+            string path = Path.Combine(dir, "lerafcis20151111.csv");
+            var tags = ReadFileOfTagsFromLizZnidersic(path, framecount, startOffsetMinute);
+
+            // Concatenate feature vectors, one frame at a time.
+            // Then add tag at the end.
+            // Then add to matrix data set.
             int featureVectorLength = indexNames.Length * binCount;
-            var dataSet = new double[framecount, featureVectorLength];
+            var dataSet = new double[framecount, featureVectorLength + 1];
             for (int frame = 0; frame < framecount; frame++)
             {
                 var list = new List<double>();
@@ -1023,6 +1028,9 @@ namespace AnalysisPrograms
                     list.AddRange(featureVector);
                 }
 
+                // add in the tag and then set row in data matrix
+                list.Add(tags[frame] > 0 ? 1 : 0);
+
                 var array = list.ToArray();
                 MatrixTools.SetRow(dataSet, frame, array);
             }
@@ -1031,10 +1039,6 @@ namespace AnalysisPrograms
             var opFileinfo = new FileInfo(Path.Combine(dir, $"{fileName}.FeatureVectors.csv"));
             Csv.WriteMatrixToCsv(opFileinfo, dataSet);
 
-            // Read in labelling info from Liz Znidersic
-            string path = Path.Combine(dir, "lerafcis20151111.csv");
-            var tags = ReadFileOfTagsFromLizZnidersic(path, framecount, startOffsetMinute);
-
             // save dataset as image
             dataSet = MatrixTools.SubtractValuesFromOne(dataSet);
             var image = ImageTools.DrawMatrixWithoutNormalisation(MatrixTools.MatrixRotate90Anticlockwise(dataSet));
@@ -1042,35 +1046,38 @@ namespace AnalysisPrograms
             // add tags to image of feature vectors
             var g = Graphics.FromImage(image);
             var pen = new Pen(Color.Red);
-            for (int i = 1; i < tags.Length; i++)
+            for (int i = 0; i < framecount; i++)
             {
                 if (tags[i] == 0) continue;
                 if (tags[i] == 1) pen = new Pen(Color.Red);
                 if (tags[i] == 2) pen = new Pen(Color.Green);
                 if (tags[i] == 3) pen = new Pen(Color.Blue);
 
-                g.DrawLine(pen, i, 0, i, 5);
+                g.DrawLine(pen, i, 2, i, 5);
                 g.DrawLine(pen, i, 20, i, 25);
                 g.DrawLine(pen, i, 40, i, 45);
                 g.DrawLine(pen, i, 60, i, 65);
             }
 
+            var path3 = Path.Combine(dir, $"{fileName}.FeatureVectors.png");
+            image.Save(path3);
+
             // add tags to false-colour spectrogram
-            string path1 = Path.Combine(dir, "LizZnidersic_TasmanIsTractor_20151111__Tagged.png");
-            var image1 = ImageTools.ReadImage2Bitmap(path1);
-            var g1 = Graphics.FromImage(image1);
-            for (int i = 1; i < tags.Length; i++)
-            {
-                if (tags[i] == 0) continue;
-                if (tags[i] == 1) pen = new Pen(Color.Red);
-                if (tags[i] == 2) pen = new Pen(Color.Green);
-                if (tags[i] == 3) pen = new Pen(Color.Blue);
+            //string path1 = Path.Combine(dir, "LizZnidersic_TasmanIsTractor_20151111__Tagged.png");
+            //var image1 = ImageTools.ReadImage2Bitmap(path1);
+            //var g1 = Graphics.FromImage(image1);
+            //for (int i = 0; i < framecount; i++)
+            //{
+            //    if (tags[i] == 0) continue;
+            //    if (tags[i] == 1) pen = new Pen(Color.Red);
+            //    if (tags[i] == 2) pen = new Pen(Color.Green);
+            //    if (tags[i] == 3) pen = new Pen(Color.Blue);
 
-                g1.DrawLine(pen, i, image1.Height - 18, i, image1.Height - 4);
-            }
+            //    g1.DrawLine(pen, i, image1.Height - 18, i, image1.Height - 4);
+            //}
 
-            var path2 = Path.Combine(dir, $"{fileName}.Tagged.png");
-            image1.Save(path2);
+            //var path2 = Path.Combine(dir, $"{fileName}.Tagged.png");
+            //image1.Save(path2);
 
             Console.WriteLine("Finished");
             Console.ReadLine();
@@ -1101,7 +1108,7 @@ namespace AnalysisPrograms
                 // get the difficulty of the hit
                 int hitDifficulty = 1; //easy one
                 if (words[5].StartsWith("difficult")) hitDifficulty = 2;
-                if (words[5].StartsWith("very")) hitDifficulty = 3;
+                if (words[5].StartsWith("very d")) hitDifficulty = 3;
 
                 // add to the array
                 array[minuteCount] = hitDifficulty;
