@@ -7,6 +7,20 @@ SegmentDuration: 1
 #SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 
+Bands:
+  - FftWindow: 1024
+    MelScale: ~
+    Filter: None
+    Bandwidth: 
+      Min: 0.0
+      Max: 1.0
+  - FftWindow: 512
+    MelScale: 200
+    Filter: None
+    Bandwidth: 
+      Min: 0.33
+      Max: 0.66
+
 # BgNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
 # BG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
 #    Ten seconds is considered a minimum interval to obtain a reliable estimate of BG noise.
