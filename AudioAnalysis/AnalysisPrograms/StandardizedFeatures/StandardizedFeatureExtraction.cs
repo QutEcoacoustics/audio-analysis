@@ -6,6 +6,7 @@ namespace AnalysisPrograms.StandardizedFeatures
 {
     using System;
     using System.Collections.Generic;
+    using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Security.Policy;
@@ -73,83 +74,49 @@ namespace AnalysisPrograms.StandardizedFeatures
             var audioFile = segmentSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
             var outputDirectory = segmentSettings.SegmentOutputDirectory;
-            //int sampleRate = recording.WavReader.SampleRate;
 
             var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
 
-            // Create a spectrogram of recording with different band settings, for now they are saved under same name. Have to fix this.
+            // Default behaviour: set SUBSEGMENT = total recording
+            AudioRecording subsegmentRecording = recording;
+
+            // Create list to store images so they can be combined later
+            var list = new List<Image>();
+            string imagePath = Path.Combine(outputDirectory.FullName, segmentSettings.SegmentImageFile.Name);
+            int maxImageWidth = 0;
+
             foreach (var band in configuration.Bands)
             {
                 int frameSize = band.FftWindow;
                 int frameStep = frameSize;
 
-                // Default behaviour: set SUBSEGMENT = total recording
-                AudioRecording subsegmentRecording = recording;
-
                 // EXTRACT ENVELOPE and SPECTROGRAM FROM SUBSEGMENT
                 var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(subsegmentRecording, frameSize, frameStep);
 
-                analysisSettings.AnalysisImageSaveBehavior = SaveBehavior.Always;
+                // Prepare amplitude spectrogram
+                double[,] amplitudeSpectrogramData = dspOutput1.AmplitudeSpectrogram; // get amplitude spectrogram.
+                var image = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(amplitudeSpectrogramData));
 
-                if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave())
+                // Add image to list
+                list.Add(image);
+
+                // Update maximal width of image
+                if (image.Width > maxImageWidth)
                 {
-                    string imagePath = Path.Combine(outputDirectory.FullName, segmentSettings.SegmentImageFile.Name);
-
-                    //prepare amplitude spectrogram
-                    double[,] amplitudeSpectrogramData = dspOutput1.AmplitudeSpectrogram; // get amplitude spectrogram.
-                    var image = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(amplitudeSpectrogramData));
-                    image.Save(imagePath, ImageFormat.Png);
-                    analysisResults.ImageFile = new FileInfo(imagePath);
-                    LoggedConsole.WriteLine("See {0} for spectrogram pictures", imagePath);
+                    maxImageWidth = image.Width;
                 }
             }
 
-            // Convert the dynamic config to IndexCalculateConfig class and merge in the unnecesary parameters.
-            IndexCalculateConfig config = IndexCalculateConfig.GetConfig(analysisSettings.Configuration, false);
+            // Set savebehavior to always so it saves image
+            analysisSettings.AnalysisImageSaveBehavior = SaveBehavior.Always;
 
-            //int frameSize = config.FrameLength;
-            //int frameStep = frameSize;
-            //var indexCalculationDuration = config.IndexCalculationDuration;
-
-            //// get duration in seconds and sample count and frame count
-            //double subsegmentDurationInSeconds = indexCalculationDuration.TotalSeconds;
-            //int subsegmentSampleCount = (int)(subsegmentDurationInSeconds * sampleRate);
-            //double subsegmentFrameCount = subsegmentSampleCount / (double)frameStep;
-            //subsegmentFrameCount = (int)Math.Ceiling(subsegmentFrameCount);
-
-            //// In order not to lose the last fractional frame, round up the frame number
-            //// and get the exact number of samples in the integer number of frames.
-            //// Do this because when IndexCalculationDuration = 100ms, the number of frames is only 8.
-            //subsegmentSampleCount = (int)(subsegmentFrameCount * frameStep);
-
-            //// get start and end samples of the subsegment and noise segment
-            //double localOffsetInSeconds = segmentSettings.SegmentStartOffset.TotalSeconds;
-            //int startSample = (int)(localOffsetInSeconds * sampleRate);
-            //int endSample = startSample + subsegmentSampleCount - 1;
-
-            // Default behaviour: set SUBSEGMENT = total recording
-            //AudioRecording subsegmentRecording = recording;
-
-            //double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, startSample, subsegmentSampleCount);
-            //var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
-            //subsegmentRecording = new AudioRecording(wr);
-
-            // EXTRACT ENVELOPE and SPECTROGRAM FROM SUBSEGMENT
-            //var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(subsegmentRecording, frameSize, frameStep);
-
-            //analysisSettings.AnalysisImageSaveBehavior = SaveBehavior.Always;
-
-            //if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave())
-            //{
-            //    string imagePath = Path.Combine(outputDirectory.FullName, segmentSettings.SegmentImageFile.Name);
-
-            //    //prepare amplitude spectrogram
-            //    double[,] amplitudeSpectrogramData = dspOutput1.AmplitudeSpectrogram; // get amplitude spectrogram.
-            //    var image = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(amplitudeSpectrogramData));
-            //    image.Save(imagePath, ImageFormat.Png);
-            //    analysisResults.ImageFile = new FileInfo(imagePath);
-            //    LoggedConsole.WriteLine("See {0} for spectrogram pictures", imagePath);
-            //}
+            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave())
+            {
+                Image finalImage = ImageTools.CombineImagesVertically(list, maxImageWidth);
+                finalImage.Save(imagePath, ImageFormat.Png);
+                analysisResults.ImageFile = new FileInfo(imagePath);
+                LoggedConsole.WriteLine("See {0} for spectrogram pictures", imagePath);
+            }
 
             return analysisResults;
         }
