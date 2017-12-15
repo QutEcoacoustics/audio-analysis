@@ -111,7 +111,7 @@ namespace AnalysisPrograms.Draw.Zooming
 
                 //FocusMinute = 1,
                 FocusMinute = 15,
-            };
+            };*/
         }
     }
 }
