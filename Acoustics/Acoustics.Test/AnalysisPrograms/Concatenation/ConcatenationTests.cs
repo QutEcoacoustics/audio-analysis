@@ -103,9 +103,13 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             // Do TESTS on the 2Maps image
             // Compare image files - check that image dimensions are correct
             var outputDataDir = this.outputDirectory.Combine(arguments.FileStemName, dateString);
-            string imageFileName = arguments.FileStemName + "__2Maps.png";
-            var imageFileInfo = outputDataDir.CombineFile(imageFileName);
+            var prefix = arguments.FileStemName + "__";
+
+            var imageFileInfo = outputDataDir.CombineFile(prefix + "2Maps.png");
             Assert.IsTrue(imageFileInfo.Exists);
+
+            Assert.That.FileExists(outputDataDir.CombineFile(prefix + "Towsey.Acoustic.Indices.csv"));
+            Assert.That.FileNotExists(outputDataDir.CombineFile(prefix + "SummaryIndex.csv"));
 
             var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
             ImageAssert.IsSize(722, 632, actualImage);
@@ -155,9 +159,14 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             // Do TESTS on the 2Maps image
             // Compare image files - check that image dimensions are correct
             var outputDataDir = this.outputDirectory.Combine(arguments.FileStemName, dateString);
-            string imageFileName = arguments.FileStemName + "_" + dateString + "__2Maps.png";
-            var imageFileInfo = outputDataDir.CombineFile(outputDataDir.FullName, imageFileName);
+            var prefix = arguments.FileStemName + "_" + dateString + "__";
+
+            var imageFileInfo = outputDataDir.CombineFile(prefix + "2Maps.png");
             Assert.IsTrue(imageFileInfo.Exists);
+
+            Assert.That.FileExists(outputDataDir.CombineFile(prefix + "Towsey.Acoustic.Indices.csv"));
+            Assert.That.FileNotExists(outputDataDir.CombineFile(prefix + "SummaryIndex.csv"));
+
 
             var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
             // we expect only the second half (past midnight) of the image to be rendered
@@ -210,9 +219,13 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             // IMAGE 1: Compare image files - check that image exists and dimensions are correct
             var dateString1 = "20160725";
             var outputDataDir1 = this.outputDirectory.Combine(arguments.FileStemName, dateString1);
-            string image1FileName = arguments.FileStemName + "_" + dateString1 + "__2Maps.png";
-            var image1FileInfo = outputDataDir1.CombineFile(outputDataDir1.FullName, image1FileName);
+            var prefix1 = arguments.FileStemName + "_" + dateString1 + "__";
+
+            var image1FileInfo = outputDataDir1.CombineFile(prefix1 + "2Maps.png");
             Assert.IsTrue(image1FileInfo.Exists);
+
+            Assert.That.FileExists(outputDataDir1.CombineFile(prefix1 + "Towsey.Acoustic.Indices.csv"));
+            Assert.That.FileNotExists(outputDataDir1.CombineFile(prefix1 + "SummaryIndex.csv"));
 
             var actualImage1 = ImageTools.ReadImage2Bitmap(image1FileInfo.FullName);
             ImageAssert.IsSize(210, 632, actualImage1);
@@ -221,10 +234,14 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             // IMAGE 2: Compare image files - check that image exists and dimensions are correct
             var dateString2 = "20160726";
-            var outputDataDir2 = this.outputDirectory.Combine(arguments.FileStemName, dateString2);
-            string image2FileName = arguments.FileStemName + "_" + dateString2 + "__2Maps.png";
-            var image2FileInfo = outputDataDir2.CombineFile(image2FileName);
+            var outputDataDir2= this.outputDirectory.Combine(arguments.FileStemName, dateString2);
+            var prefix2 = arguments.FileStemName + "_" + dateString2 + "__";
+
+            var image2FileInfo = outputDataDir2.CombineFile(prefix2 + "2Maps.png");
             Assert.IsTrue(image2FileInfo.Exists);
+
+            Assert.That.FileExists(outputDataDir2.CombineFile(prefix2 + "Towsey.Acoustic.Indices.csv"));
+            Assert.That.FileNotExists(outputDataDir2.CombineFile(prefix2 + "SummaryIndex.csv"));
 
             var actualImage2 = ImageTools.ReadImage2Bitmap(image2FileInfo.FullName);
             ImageAssert.IsSize(512, 632, actualImage2);
@@ -278,13 +295,15 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             // Make sure files that match our config file are actully created!
             var outputDataDir = this.outputDirectory.Combine(arguments.FileStemName, dateString);
+            var prefix = arguments.FileStemName + "_" + dateString + "__";
 
-            string map1 = arguments.FileStemName + "_" + dateString + "__BGN-ENT-POW.png";
-            var imageFileInfo1 = outputDataDir.CombineFile(map1);
+            Assert.That.FileExists(outputDataDir.CombineFile(prefix + "Towsey.Acoustic.Indices.csv"));
+            Assert.That.FileNotExists(outputDataDir.CombineFile(prefix + "SummaryIndex.csv"));
+
+            var imageFileInfo1 = outputDataDir.CombineFile(prefix + "BGN-ENT-POW.png");
             Assert.IsTrue(imageFileInfo1.Exists);
 
-            string map2 = arguments.FileStemName + "_" + dateString + "__ACI-RNG-EVN.png";
-            var imageFileInfo2 = outputDataDir.CombineFile(map2);
+            var imageFileInfo2 = outputDataDir.CombineFile(prefix + "ACI-RNG-EVN.png");
             Assert.IsTrue(imageFileInfo2.Exists);
         }
 

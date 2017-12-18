@@ -11,6 +11,9 @@ namespace AnalysisBase
     using Segment;
     using static Acoustics.Shared.FilenameHelpers;
 
+    /// <summary>
+    /// Contains settings specific to the current block of audio that will be analyzed
+    /// </summary>
     public class SegmentSettingsBase
     {
         protected readonly AnalysisSettings AnalysisSettings;
@@ -33,13 +36,17 @@ namespace AnalysisBase
             // if user requests, save the intermediate csv files
 
             // always save csv to output dir
-            this.SegmentEventsFile = AnalysisResultPath(segmentOutputDirectory, basename, "Events", "csv").ToFileInfo();
-            this.SegmentSummaryIndicesFile = AnalysisResultPath(segmentOutputDirectory, basename, "Indices", "csv").ToFileInfo();
+            this.SegmentEventsFile = AnalysisResultPath(segmentOutputDirectory, basename, StandardEventsSuffix, "csv").ToFileInfo();
+            this.SegmentSummaryIndicesFile = AnalysisResultPath(segmentOutputDirectory, basename, StandardIndicesSuffix, "csv").ToFileInfo();
             this.SegmentSpectrumIndicesDirectory = this.SegmentOutputDirectory;
 
             this.SegmentImageFile = AnalysisResultPath(segmentOutputDirectory, basename, "Image", "png").ToFileInfo();
         }
 
+        /// <summary>
+        /// Gets a unique identifier for this object. Tradionally used for debugging paralleism issues.
+        /// Has no useful semantics other than for debugging.
+        /// </summary>
         public int InstanceId => this.AnalysisSettings.InstanceId;
 
         /// <summary>
@@ -67,12 +74,12 @@ namespace AnalysisBase
         public FileInfo SegmentEventsFile { get; }
 
         /// <summary>
-        /// Gets or sets the summary indices file for the analysis.
+        /// Gets the summary indices file for the analysis.
         /// </summary>
         public FileInfo SegmentSummaryIndicesFile { get; }
 
         /// <summary>
-        /// Gets or sets the spectrum indices directory where spectra should be written for the analysis.
+        /// Gets the spectrum indices directory where spectra should be written for the analysis.
         /// </summary>
         public DirectoryInfo SegmentSpectrumIndicesDirectory { get; }
 
