@@ -295,13 +295,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public Dictionary<string, IndexDistributions.SpectralStats> IndexStats { get; private set; }
 
-        public List<ErroneousIndexSegments> ErroneousSegments { get; private set; }
+        public List<GapsAndJoins> ErroneousSegments { get; private set; }
 
         /// <summary>
         /// Gets or sets a file from which can be obtained information about sunrise and sunset times for the recording site.
         /// The csv file needs to be in the correct format and typically should contain 365 lines.
         /// Have not attempted to deal with leap years!
         /// </summary>
+        [Obsolete]
         public FileInfo SunriseDataFile { get; set; }
 
         public Dictionary<string, IndexProperties> GetSpectralIndexProperties()
@@ -629,7 +630,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             bool errorsExist = (this.ErroneousSegments != null) && (this.ErroneousSegments.Count > 0);
             if (errorsExist)
             {
-                bmp = ErroneousIndexSegments.DrawErrorSegments(bmp, this.ErroneousSegments);
+                bmp = GapsAndJoins.DrawErrorSegments(bmp, this.ErroneousSegments);
             }
 
             return bmp;
@@ -1368,7 +1369,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="sunriseDataFile">This is only available for locations near Brisbane, Austalia.</param>
         /// <param name="segmentErrors">Note that these segment errors were derived from previous analysis of the summary indices.</param>
         /// <param name="imageChrome">If true, this method generates and returns separate chromeless images used for tiling website images.</param>
-        /// <param name="verbose">default is false</param>
         public static Tuple<Image, string>[] DrawSpectrogramsFromSpectralIndices(
             DirectoryInfo inputDirectory,
             DirectoryInfo outputDirectory,
@@ -1382,9 +1382,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Dictionary<string, IndexDistributions.SpectralStats> indexStatistics = null,
             SiteDescription siteDescription = null,
             FileInfo sunriseDataFile = null,
-            List<ErroneousIndexSegments> segmentErrors = null,
-            ImageChrome imageChrome = ImageChrome.With,
-            bool verbose = false)
+            List<GapsAndJoins> segmentErrors = null,
+            ImageChrome imageChrome = ImageChrome.With)
         {
             var config = ldSpectrogramConfig;
 
@@ -1435,27 +1434,18 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             if (indexSpectrograms == null)
             {
                 var sw = Stopwatch.StartNew();
-                if (verbose)
-                {
-                    Logger.Info("Reading spectra files from disk");
-                }
+                Logger.Info("Reading spectra files from disk");
 
                 // reads all known files spectral indices
                 cs1.ReadCsvFiles(inputDirectory, fileStem, cs1.SpectrogramKeys);
 
                 //var now2 = DateTime.Now;
                 sw.Stop();
-                if (verbose)
-                {
-                    LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds.ToString(CultureInfo.InvariantCulture) + " seconds");
-                }
+                LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds.ToString(CultureInfo.InvariantCulture) + " seconds");
             }
             else
             {
-                if (verbose)
-                {
-                    Logger.Info("Spectra loaded from memory");
-                }
+                Logger.Info("Spectra loaded from memory");
 
                 cs1.LoadSpectrogramDictionary(indexSpectrograms);
             }

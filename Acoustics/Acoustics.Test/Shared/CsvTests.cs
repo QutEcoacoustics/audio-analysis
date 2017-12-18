@@ -351,8 +351,8 @@ namespace Acoustics.Test.Shared
             var baseExpected = $@"{nameof(SummaryIndexBase.RankOrder)},{nameof(SummaryIndexBase.FileName)},{nameof(SummaryIndexBase.ResultStartSeconds)},{nameof(SummaryIndexBase.SegmentDurationSeconds)},{nameof(SummaryIndexBase.ResultMinute)}
 0,,0,0,0
 ".NormalizeToCrLf();
-            var childExpected = $@"NoFile,ZeroSignal,HighAmplitudeIndex,ClippingIndex,AvgSignalAmplitude,BackgroundNoise,Snr,AvgSnrOfActiveFrames,Activity,EventsPerSecond,HighFreqCover,MidFreqCover,LowFreqCover,AcousticComplexity,TemporalEntropy,EntropyOfAverageSpectrum,AvgEntropySpectrum,EntropyOfVarianceSpectrum,VarianceEntropySpectrum,EntropyOfPeaksSpectrum,EntropyPeaks,EntropyOfCoVSpectrum,ClusterCount,ThreeGramCount,Ndsi,SptDensity,{nameof(SummaryIndexBase.RankOrder)},{nameof(SummaryIndexBase.FileName)},{nameof(SummaryIndexBase.ResultStartSeconds)},{nameof(SummaryIndexBase.SegmentDurationSeconds)},{nameof(SummaryIndexBase.ResultMinute)}
-0,0,0,0,-100,-100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,0,0,0
+            var childExpected = $@"ZeroSignal,HighAmplitudeIndex,ClippingIndex,AvgSignalAmplitude,BackgroundNoise,Snr,AvgSnrOfActiveFrames,Activity,EventsPerSecond,HighFreqCover,MidFreqCover,LowFreqCover,AcousticComplexity,TemporalEntropy,EntropyOfAverageSpectrum,AvgEntropySpectrum,EntropyOfVarianceSpectrum,VarianceEntropySpectrum,EntropyOfPeaksSpectrum,EntropyPeaks,EntropyOfCoVSpectrum,ClusterCount,ThreeGramCount,Ndsi,SptDensity,{nameof(SummaryIndexBase.RankOrder)},{nameof(SummaryIndexBase.FileName)},{nameof(SummaryIndexBase.ResultStartSeconds)},{nameof(SummaryIndexBase.SegmentDurationSeconds)},{nameof(SummaryIndexBase.ResultMinute)}
+0,0,0,-100,-100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,0,0,0
 ".NormalizeToCrLf();
 
             Csv.WriteToCsv(this.testFile, childArray);

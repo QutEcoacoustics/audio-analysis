@@ -2,6 +2,7 @@
 // <copyright file="IndexProperties.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
+
 // <summary>
 //   This class stores the properties of a particular index.
 //   THIS CLASS DOES NOT STORE THE VALUE OF THE INDEX - the value is stored in class IndexValues.
@@ -13,9 +14,7 @@
 namespace AudioAnalysisTools.Indices
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Drawing;
     using System.IO;
 
@@ -24,8 +23,6 @@ namespace AudioAnalysisTools.Indices
     using Acoustics.Shared.Contracts;
 
     using TowseyLibrary;
-
-    using YamlDotNet.Dynamic;
     using YamlDotNet.Serialization;
 
     using Zio;
@@ -43,17 +40,42 @@ namespace AudioAnalysisTools.Indices
     /// </summary>
     public class IndexProperties
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IndexProperties"/> class.
+        /// constructor sets default values
+        /// </summary>
+        public IndexProperties()
+        {
+            // TODO: why not initialise these to null, the proper empty value?
+            this.Key = "NOT SET";
+            this.Name = string.Empty;
+            this.DataType = "double";
+            this.DefaultValue = default(double);
+            this.ProjectID = "NOT SET";
+            this.Comment = "Relax - everything is OK";
+            this.DoDisplay = true;
+            this.NormMin = 0.0;
+            this.NormMax = 1.0;
+            this.CalculateNormMin = false;
+            this.CalculateNormMax = false;
+            this.Units = string.Empty;
+            this.IncludeInComboIndex = false;
+            this.ComboWeight = 0.0;
+        }
+
+        private static readonly Dictionary<string, Dictionary<string, IndexProperties>> CachedProperties = new Dictionary<string, Dictionary<string, IndexProperties>>();
+
+        private string dataType;
+
+        private double defaultValue;
+
         public string Key { get; set; }
 
         public string Name { get; set; }
 
         public string DataType
         {
-            get
-            {
-                return this.dataType;
-            }
-
+            get => this.dataType;
             set
             {
                 this.dataType = value;
@@ -62,22 +84,12 @@ namespace AudioAnalysisTools.Indices
         }
 
         [YamlIgnore]
-        public bool IsSpectralIndex
-        {
-            get
-            {
-                // TODO: this information should really be encoded rather than inferred
-                return this.DataType == "double[]";
-            }
-        }
+        // TODO: this information should really be encoded rather than inferred
+        public bool IsSpectralIndex => this.DataType == "double[]";
 
         public double DefaultValue
         {
-            get
-            {
-                return this.defaultValue;
-            }
-
+            get => this.defaultValue;
             set
             {
                 this.defaultValue = value;
@@ -99,9 +111,11 @@ namespace AudioAnalysisTools.Indices
         public bool DoDisplay { get; set; }
 
         public double NormMin { get; set; }
+
         public bool CalculateNormMin { get; set; }
 
         public double NormMax { get; set; }
+
         public bool CalculateNormMax { get; set; }
 
         public string Units { get; set; }
@@ -110,30 +124,6 @@ namespace AudioAnalysisTools.Indices
         public bool IncludeInComboIndex { get; set; }
 
         public double ComboWeight { get; set; }
-
-        /// <summary>
-        /// constructor sets default values
-        /// </summary>
-        public IndexProperties()
-        {
-            // TODO: why not initialise these to null, the proper empty value?
-            this.Key = "NOT SET";
-            this.Name = string.Empty;
-            this.DataType = "double";
-            this.DefaultValue = default(double);
-            this.ProjectID = "NOT SET";
-            this.Comment = "Relax - everything is OK";
-
-            this.DoDisplay = true;
-            this.NormMin = 0.0;
-            this.NormMax = 1.0;
-            this.CalculateNormMin = false;
-            this.CalculateNormMax = false;
-            this.Units = string.Empty;
-
-            this.IncludeInComboIndex = false;
-            this.ComboWeight = 0.0;
-        }
 
         private void UpdateTypedDefault()
         {
@@ -160,17 +150,14 @@ namespace AudioAnalysisTools.Indices
             return DataTools.NormaliseInZeroOne(value, this.NormMin, this.NormMax);
         }
 
-
-        //public double[,] NormaliseIndexValues(double[,] M)
+       //public double[,] NormaliseIndexValues(double[,] M)
         //{
         //    return MatrixTools.NormaliseInZeroOne(M, this.NormMin, this.NormMax);
         //}
 
-
         /// <summary>
         /// Units for indices include: dB, ms, % and dimensionless
         /// </summary>
-        /// <returns></returns>
         public string GetPlotAnnotation()
         {
             if (this.Units == string.Empty)
@@ -206,13 +193,10 @@ namespace AudioAnalysisTools.Indices
         ///    See CLASS: DrawSummaryIndices
         ///       METHOD: Bitmap ConstructVisualIndexImage(DataTable dt, string title, int timeScale, double[] order, bool doNormalise)
         /// </summary>
-        /// <param name="val"></param>
-        /// <returns></returns>
-        public Image GetPlotImage(double[] array, List<ErroneousIndexSegments> errors = null)
+        public Image GetPlotImage(double[] array, List<GapsAndJoins> errors = null)
         {
             int dataLength = array.Length;
             string annotation = this.GetPlotAnnotation();
-            //double[] values = this.NormaliseIndexValues(array);
             double[] values = DataTools.NormaliseInZeroOne(array, this.NormMin, this.NormMax);
 
             int trackWidth = dataLength + IndexDisplay.TrackEndPanelWidth;
@@ -223,14 +207,13 @@ namespace AudioAnalysisTools.Indices
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(grayScale[240]);
 
-            Color barColor;
-            int barHeight = 0;
-
             // for pixels in the line
             for (int i = 0; i < dataLength; i++)
             {
                 double value = values[i];
 
+                Color barColor;
+                int barHeight;
                 if (double.IsNaN(value))
                 {
                     // expect normalised data
@@ -239,7 +222,11 @@ namespace AudioAnalysisTools.Indices
                 }
                 else
                 {
-                    if (value > 1.0) value = 1.0; // expect normalised data
+                    if (value > 1.0)
+                    {
+                        value = 1.0; // expect normalised data
+                    }
+
                     barHeight = (int)Math.Round(value * trackHeight);
                     barColor = Color.Black;
                 }
@@ -263,21 +250,18 @@ namespace AudioAnalysisTools.Indices
             if ((errors != null) && (errors.Count > 0))
             {
                 bool verticalText = false;
-                foreach (ErroneousIndexSegments errorSegment in errors)
+                foreach (GapsAndJoins errorSegment in errors)
                 {
                     var errorBmp = errorSegment.DrawErrorPatch(trackHeight - 2, verticalText);
-                    g.DrawImage(errorBmp, errorSegment.StartPosition, 1);
+                    if (errorBmp != null)
+                    {
+                        g.DrawImage(errorBmp, errorSegment.StartPosition, 1);
+                    }
                 }
             }
 
             return bmp;
         }
-
-        private static readonly Dictionary<string, Dictionary<string, IndexProperties>> CachedProperties = new Dictionary<string, Dictionary<string, IndexProperties>>();
-
-        private string dataType;
-
-        private double defaultValue;
 
         /// <summary>
         /// Returns a cached set of configuration properties.

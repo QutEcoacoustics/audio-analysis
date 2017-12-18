@@ -130,7 +130,6 @@ namespace Acoustics.Shared.Csv
         /// Read an object from a CSV file.
         /// </summary>
         /// <remarks>
-        /// This has not been tested yet! Contact anthony if you have problems.
         /// IMPORTANT NOTE:
         /// If I get an exception, how do I tell what line the exception is on?
         /// There is a lot of information held in Exception.Data["CsvHelper"]
