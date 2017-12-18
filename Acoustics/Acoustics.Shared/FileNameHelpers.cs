@@ -17,6 +17,9 @@ namespace Acoustics.Shared
         public const string SegmentSeparator = "_";
         public const string BasenameSeparator = "__";
         public const string ExtensionSeparator = ".";
+        public const string StandardEventsSuffix = "Events";
+        public const string StandardIndicesSuffix = "Indices";
+
         public const string ExampleFilename = "orginalBasename" + BasenameSeparator + "AnalysisType.SubType" + SegmentSeparator + "someOtherValue" + ExtensionSeparator + "extension";
         public static readonly Regex AnalysisResultRegex = new Regex(@"^(.*)" + BasenameSeparator + @"(.*)\" + ExtensionSeparator + "(.+)$");
 
