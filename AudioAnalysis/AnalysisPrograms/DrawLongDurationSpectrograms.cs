@@ -103,8 +103,8 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
             LoggedConsole.WriteLine();
 
-            (FileInfo indexGenerationDataFile, FileInfo indexDistributionsFile) =
-                ZoomArguments.CheckNeededFilesExist(arguments.InputDataDirectory);
+            (FileEntry indexGenerationDataFile, FileEntry indexDistributionsFile) =
+                ZoomParameters.CheckNeededFilesExist(arguments.InputDataDirectory.ToDirectoryEntry());
 
             var indexGenerationData = Json.Deserialise<IndexGenerationData>(indexGenerationDataFile);
 

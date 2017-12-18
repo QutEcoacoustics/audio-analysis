@@ -85,7 +85,7 @@ namespace AudioAnalysisTools.Indices
         /// </param>
         public static SpectralIndexValues[] ImportFromDictionary(Dictionary<string, double[,]> dictionaryOfSpectra)
         {
-            return dictionaryOfSpectra.FromTwoDimensionalArray<SpectralIndexValues, double>(CachedSetters, TwoDimensionalArray.ColumnMajor);
+            return dictionaryOfSpectra.FromTwoDimensionalArray<SpectralIndexValues, double>(CachedSetters, TwoDimensionalArray.Rotate90AntiClockWise);
         }
 
         /// <summary>
