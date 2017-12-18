@@ -5,6 +5,8 @@ using System.Text;
 
 namespace Acoustics.Shared.Extensions
 {
+    using System.Drawing;
+
     public static class RandomExtensions
     {
         public static Guid NextGuid(this Random random)
@@ -70,6 +72,12 @@ namespace Acoustics.Shared.Extensions
             {
                 return new Range<double>(b, a);
             }
+        }
+
+        public static Color NextColor(this Random random, byte alpha = 255)
+        {
+            var value = random.Next();
+            return Color.FromArgb(alpha, Color.FromArgb(value));
         }
     }
 }

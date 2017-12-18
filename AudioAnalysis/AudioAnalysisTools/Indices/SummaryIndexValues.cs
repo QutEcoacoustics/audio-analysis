@@ -68,10 +68,10 @@ namespace AudioAnalysisTools.Indices
     /// </summary>
     public class SummaryIndexValues : SummaryIndexBase
     {
-        //static SummaryIndexValues()
-        //{
-        //    CachedSelectors = ReflectionExtensions.GetGetters<SummaryIndexValues, object>();
-        //}
+        static SummaryIndexValues()
+        {
+            CachedSelectors = ReflectionExtensions.GetGetters<SummaryIndexValues, object>();
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SummaryIndexValues"/> class.
@@ -82,11 +82,6 @@ namespace AudioAnalysisTools.Indices
             // serialization entry
             this.BackgroundNoise = -100;
             this.AvgSignalAmplitude = -100;
-
-            // Ideally the following two values should be booleans but
-            //  the method IndexMatrices.GetDictionaryOfSummaryIndices() does not permit. This is a TODO sometime!
-            this.FileJoin = 0; // false
-            this.RecordingExists = 1; // true
         }
 
         public SummaryIndexValues(TimeSpan wavDuration, Dictionary<string, IndexProperties> indexProperties)
@@ -107,18 +102,6 @@ namespace AudioAnalysisTools.Indices
                 this.SetPropertyValue(kvp.Key, kvp.Value.DefaultValueCasted);
             }
         }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether a Recording exists for this minute.
-        /// This is used only when concatenating index files. It helps to keep track of missing data.
-        /// </summary>
-        public double RecordingExists { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether there is a File Join at this minute.
-        /// This is used only when concatenating index files. It helps to keep track of the source recordings.
-        /// </summary>
-        public double FileJoin { get; set; }
 
         public double ZeroSignal { get; set; }
 
