@@ -138,9 +138,7 @@ namespace AnalysisPrograms
             //var summaryIndices = Csv.ReadFromCsv<Dictionary<string, double[]>>(csvFile);
             var summaryIndices = Csv.ReadFromCsv<SummaryIndexValues>(csvFile);
 
-            double[] zeroSignalArray = summaryIndices.Select(si => si.ZeroSignal).ToArray();
-
-            var indexErrors = GapsAndJoins.DataIntegrityCheckForZeroSignal(zeroSignalArray);
+            var indexErrors = GapsAndJoins.DataIntegrityCheckForZeroSignal(summaryIndices);
 
             //config.IndexCalculationDuration = TimeSpan.FromSeconds(1.0);
             //config.XAxisTicInterval = TimeSpan.FromSeconds(60.0);

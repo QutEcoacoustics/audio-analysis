@@ -5,6 +5,7 @@
 namespace Acoustics.Shared.Extensions
 {
     using System;
+    using System.Drawing;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
@@ -92,6 +93,12 @@ namespace Acoustics.Shared.Extensions
             {
                 return new Range<double>(b, a);
             }
+        }
+
+        public static Color NextColor(this Random random, byte alpha = 255)
+        {
+            var value = random.Next();
+            return Color.FromArgb(alpha, Color.FromArgb(value));
         }
     }
 }
