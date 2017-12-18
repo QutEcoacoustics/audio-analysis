@@ -21,6 +21,7 @@ namespace AudioAnalysisTools
     public static class ResultsTools
     {
         public const string ReportFileExt = "csv";
+        private static readonly TimeSpan IndexUnitTime = new TimeSpan(0, 1, 0);
         private static readonly ILog Log = LogManager.GetLogger(typeof(ResultsTools));
 
         public static T[] MergeResults<T>(
@@ -68,9 +69,7 @@ namespace AudioAnalysisTools
 
         public static void CorrectEvent(AnalysisResult2 result, EventBase eventToBeFixed, int totalEventsSoFar, int totalEventsInResultSoFar)
         {
-            // just in case the event was in a segment longer than 60 seconds, rebase values
-            ////eventToBeFixed.StartOffsetMinute = (int)(absoluteOffset / 60);
-            //eventToBeFixed.EventStartSeconds = resultStartSeconds % 60;
+            // no corrections need to be made
         }
 
         public static void CorrectSummaryIndex(AnalysisResult2 result, SummaryIndexBase indexToBeFixed, int totalSummaryIndicesSoFar, int totalSumaryIndicesInJustThisResultSoFar)
@@ -80,9 +79,8 @@ namespace AudioAnalysisTools
 
         public static void CorrectSpectrumIndex(AnalysisResult2 result, SpectralIndexBase spectralIndexToBeFixed, int totalSpectrumIndicesSoFar, int totalSpectrumIndicesInResultSoFar)
         {
+            // no corrections need to be made
         }
-
-        private static readonly TimeSpan IndexUnitTime = new TimeSpan(0, 1, 0);
 
         public static void ConvertEventsToIndices(
             IAnalyser2 analyser,
@@ -119,12 +117,12 @@ namespace AudioAnalysisTools
 
         public static FileInfo SaveEvents(IAnalyser2 analyser2, string fileName, DirectoryInfo outputDirectory, IEnumerable<EventBase> events)
         {
-            return SaveResults(outputDirectory, fileName, analyser2.Identifier + ".Events", analyser2.WriteEventsFile, events);
+            return SaveResults(outputDirectory, fileName, analyser2.Identifier + "." + FilenameHelpers.StandardEventsSuffix, analyser2.WriteEventsFile, events);
         }
 
         public static FileInfo SaveSummaryIndices(IAnalyser2 analyser2, string fileName, DirectoryInfo outputDirectory, IEnumerable<SummaryIndexBase> indices)
         {
-            return SaveResults(outputDirectory, fileName, analyser2.Identifier + ".Indices", analyser2.WriteSummaryIndicesFile, indices);
+            return SaveResults(outputDirectory, fileName, analyser2.Identifier + "." + FilenameHelpers.StandardIndicesSuffix, analyser2.WriteSummaryIndicesFile, indices);
         }
 
         public static DirectoryInfo SaveSpectralIndices(IAnalyser2 analyser2, string fileName, DirectoryInfo outputDirectory, IEnumerable<SpectralIndexBase> spectra)

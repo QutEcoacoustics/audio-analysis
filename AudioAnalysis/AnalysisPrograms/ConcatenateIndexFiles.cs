@@ -109,7 +109,6 @@ namespace AnalysisPrograms
         public static void Execute(Arguments arguments)
         {
             // Concatenation is designed only for the output from a "Towsey.Acoustic" analysis.
-            const string AnalysisType = Acoustic.TowseyAcoustic;
 
             // Get the currently available sepctral indices
             // RHZ, SPT and CVR are correlated with POW and do not add much. CLS not particularly useful. Now using R3D
@@ -279,11 +278,14 @@ namespace AnalysisPrograms
                 // ###### FIRST CONCATENATE THE SUMMARY INDICES, DRAW IMAGES AND SAVE IN RESULTS DIRECTORY
                 var summaryIndexFiles = sortedDictionaryOfDatesAndFiles.Values.ToArray<FileInfo>();
 
-                var dictionaryOfSummaryIndices = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, resultsDir, indexGenerationData, outputFileStem);
+                var concatenatedSummaryIndices = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, resultsDir, indexGenerationData, outputFileStem);
+                WriteSummaryIndexFile(resultsDir, outputFileStem, Acoustic.TowseyAcoustic, concatenatedSummaryIndices);
+
+                var dictionaryOfSummaryIndices = LdSpectrogramStitching.ConvertToDictionaryOfSummaryIndices(concatenatedSummaryIndices);
 
                 // REALITY CHECK - check for continuous zero indices or anything else that might indicate defective signal,
                 //                 incomplete analysis of recordings, recording gaps or file joins.
-                var gapsAndJoins = GapsAndJoins.DataIntegrityCheck(dictionaryOfSummaryIndices, arguments.GapRendering);
+                var gapsAndJoins = GapsAndJoins.DataIntegrityCheck(concatenatedSummaryIndices, arguments.GapRendering);
                 GapsAndJoins.WriteErrorsToFile(gapsAndJoins, resultsDir, outputFileStem);
 
                 if (arguments.DrawImages)
@@ -320,7 +322,7 @@ namespace AnalysisPrograms
                             indexPropertiesConfig,
                             indexGenerationData,
                             outputFileStem,
-                            AnalysisType,
+                            Acoustic.TowseyAcoustic,
                             dictionaryOfSpectralIndices1,
                             /*summaryIndices = */null,
                             indexDistributions,
@@ -330,7 +332,7 @@ namespace AnalysisPrograms
                             imageChrome: ImageChrome.With);
                 }
 
-                WriteSpectralIndexFiles(resultsDir, outputFileStem, AnalysisType, dictionaryOfSpectralIndices1);
+                WriteSpectralIndexFiles(resultsDir, outputFileStem, Acoustic.TowseyAcoustic, dictionaryOfSpectralIndices1);
                 return;
             }
 
@@ -369,17 +371,19 @@ namespace AnalysisPrograms
                     resultsDir.Create();
                 }
 
-                var opFileStem1 = $"{arguments.FileStemName}_{dateString}";
+                var outputBaseName = $"{arguments.FileStemName}_{dateString}";
 
                 // Recalculate <thisDay> to include the start time - not just the date. This is for time scale on false-colour spectrograms.
-                DateTimeOffset dt;
-                if (FileDateHelpers.FileNameContainsDateTime(indexFiles[0].Name, out dt, arguments.TimeSpanOffsetHint))
+                if (FileDateHelpers.FileNameContainsDateTime(indexFiles[0].Name, out var dt, arguments.TimeSpanOffsetHint))
                 {
                     thisday = dt;
                 } // else <thisday> will not contain the start time of the day.
 
                 // CONCATENATE the SUMMARY INDEX FILES
-                var summaryDict = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(indexFiles, resultsDir, indexGenerationData, opFileStem1);
+                var concatenatedSummaryIndices = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(indexFiles, resultsDir, indexGenerationData, outputBaseName);
+                WriteSummaryIndexFile(resultsDir, outputBaseName, Acoustic.TowseyAcoustic, concatenatedSummaryIndices);
+
+                var summaryDict = LdSpectrogramStitching.ConvertToDictionaryOfSummaryIndices(concatenatedSummaryIndices);
 
                 if (summaryDict == null)
                 {
@@ -387,8 +391,8 @@ namespace AnalysisPrograms
                 }
 
                 // REALITY CHECK - check for zero signal and anything else that might indicate defective signal
-                List<GapsAndJoins> indexErrors = GapsAndJoins.DataIntegrityCheck(summaryDict, arguments.GapRendering);
-                GapsAndJoins.WriteErrorsToFile(indexErrors, resultsDir, opFileStem1);
+                List<GapsAndJoins> indexErrors = GapsAndJoins.DataIntegrityCheck(concatenatedSummaryIndices, arguments.GapRendering);
+                GapsAndJoins.WriteErrorsToFile(indexErrors, resultsDir, outputBaseName);
 
                 // DRAW SUMMARY INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
                 if (arguments.DrawImages)
@@ -429,7 +433,7 @@ namespace AnalysisPrograms
                 }
 
                 // Calculate the index distribution statistics and write to a json file. Also save as png image
-                var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectralIndices2, resultsDir, opFileStem1);
+                var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectralIndices2, resultsDir, outputBaseName);
 
                 // DRAW SPECTRAL INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
                 if (arguments.DrawImages)
@@ -440,8 +444,8 @@ namespace AnalysisPrograms
                         ldSpectrogramConfig,
                         indexPropertiesConfig,
                         indexGenerationData,
-                        opFileStem1,
-                        AnalysisType,
+                        outputBaseName,
+                        Acoustic.TowseyAcoustic,
                         dictionaryOfSpectralIndices2,
                         /*summaryIndices = */null,
                         indexDistributions,
@@ -485,7 +489,7 @@ namespace AnalysisPrograms
                     }
                 }
 
-                WriteSpectralIndexFiles(resultsDir, opFileStem1, AnalysisType, dictionaryOfSpectralIndices2);
+                WriteSpectralIndexFiles(resultsDir, outputBaseName, Acoustic.TowseyAcoustic, dictionaryOfSpectralIndices2);
                 LoggedConsole.WriteLine("     Completed Spectral Indices");
             } // over days
         } // Execute()
@@ -506,6 +510,13 @@ namespace AnalysisPrograms
 
             Log.Debug("Finished writing spectral indices");
             return spectralIndexFiles;
+        }
+
+        public static void WriteSummaryIndexFile(DirectoryInfo destination, string baseName, string identifier, IEnumerable<SummaryIndexValues> summaryIndices)
+        {
+            var indicesFile = FilenameHelpers.AnalysisResultPath(destination, baseName, identifier + "." + FilenameHelpers.StandardIndicesSuffix, "csv");
+            var indicesCsvfile = new FileInfo(indicesFile);
+            Csv.WriteToCsv(indicesCsvfile, summaryIndices);
         }
 
         /// <summary>
@@ -663,7 +674,7 @@ namespace AnalysisPrograms
 
             string imagePath = Path.Combine(outputDirectory.FullName, opFileStem + ".png");
             compositeBmp.Save(imagePath);
-        } //ConcatenateAcousticEventFiles
+        }
 
         public static double[] ConvertEventsToSummaryIndices(List<string> events)
         {

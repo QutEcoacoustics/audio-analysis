@@ -27,6 +27,30 @@ namespace Acoustics.Test.TestHelpers
                 $"Expected path {path} to exist but it could not be found");
         }
 
+        public static void FileExists(this Assert assert, FileInfo file)
+        {
+            FileExists(assert, file.FullName);
+        }
+
+        public static void FileExists(this Assert assert, string path)
+        {
+            Assert.IsTrue(
+                File.Exists(Path.GetFullPath(path)),
+                $"Expected path {path} to exist but it could not be found");
+        }
+
+        public static void FileNotExists(this Assert assert, FileInfo file)
+        {
+            FileNotExists(assert, file.FullName);
+        }
+
+        public static void FileNotExists(this Assert assert, string path)
+        {
+            Assert.IsFalse(
+                File.Exists(Path.GetFullPath(path)),
+                $"Expected path {path} to not exist but it does exist");
+        }
+
         public static void PathExists(this Assert assert, string path, string message = "")
         {
             path = Path.GetFullPath(path);
