@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.IO.Compression;
     using System.Linq;
     using System.Text;
     using Acoustics.Shared.Extensions;
@@ -122,7 +123,7 @@
                 if (zipPath.Length < 2)      continue;  // empty line
 
                 //i: get params file
-                FileTools.UnZip(arguments.Output.FullName, zipPath, true);
+                ZipFile.ExtractToDirectory(arguments.Output.FullName, zipPath);
                 string zipName    = Path.GetFileNameWithoutExtension(zipPath);
                 string[] parts    = zipName.Split('_');
                 string paramsPath = Path.Combine(arguments.Output.FullName, parts[0] + "_" + parts[1] + "_Params.txt");

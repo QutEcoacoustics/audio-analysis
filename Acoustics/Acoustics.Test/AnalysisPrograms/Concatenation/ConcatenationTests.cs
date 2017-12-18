@@ -7,8 +7,13 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
     using System;
     using System.Drawing;
     using System.IO;
+    using System.IO.Compression;
+    using System.Linq;
+
     using Acoustics.Shared;
     using global::AnalysisPrograms;
+
+    using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -25,68 +30,38 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
     /// </summary>
     [TestClass]
     // [Ignore]
-    public class ConcatenationTests
+    public class ConcatenationTests : OutputDirectoryTest
     {
-        private DirectoryInfo outputDirectory;
+        private static DirectoryInfo indonesiaIndicesDirectory;
 
-        #region Additional test attributes
+        private static DirectoryInfo newZealandArk01IndicesDirectory;
 
-        /*
-        // You can use the following additional attributes as you write your tests:
-        //
-        // Use ClassInitialize to run code before running the first test in the class
-        // [ClassInitialize()]
-        // public static void MyClassInitialize(TestContext testContext) { }
-        //
-        // Use ClassCleanup to run code after all tests in a class have run
-        // [ClassCleanup()]
-        // public static void MyClassCleanup() { }
-        //
-        // Use TestInitialize to run code before running each test
-        // [TestInitialize()]
-        // public void MyTestInitialize() { }
-        //
-        // Use TestCleanup to run code after each test has run
-        // [TestCleanup()]
-        // public void MyTestCleanup() { }
-        */
+        private const string IndonesiaReduced = "Indonesia_2Reduced";
 
-        [TestInitialize]
-        public void Setup()
+        private const string NewZealandArk01 = "NewZealandArk01";
+
+        /// Use ClassInitialize to run code before running the first test in the class
+        [ClassInitialize()]
+        public static void MyClassInitialize(TestContext testContext)
         {
-            this.outputDirectory = PathHelper.GetTempDir();
+            var indonesiaIndices = PathHelper.ResolveAsset("Concatenation", IndonesiaReduced + ".zip");
+            var newZealandIndices = PathHelper.ResolveAsset("Concatenation", NewZealandArk01 + ".zip");
 
-            var zippedDataFile = PathHelper.ResolveAsset("Concatenation", "Indonesia_2Reduced.zip");
-            ZipUnzip.UnZip(this.outputDirectory.FullName, zippedDataFile.FullName, true);
+            indonesiaIndicesDirectory = SharedDirectory.Combine(IndonesiaReduced);
+            newZealandArk01IndicesDirectory = SharedDirectory.Combine(NewZealandArk01);
+
+            ZipFile.ExtractToDirectory(indonesiaIndices.FullName, indonesiaIndicesDirectory.FullName);
+            ZipFile.ExtractToDirectory(newZealandIndices.FullName, newZealandArk01IndicesDirectory.FullName);
         }
-
-        [TestCleanup]
-        public void Cleanup()
-        {
-            PathHelper.DeleteTempDir(this.outputDirectory);
-        }
-
-        #endregion
-
-        /*
-         * An example of modifying a default config file
-            // get the default config file
-            var defaultConfigFile = PathHelper.ResolveConfigFile("SpectrogramFalseColourConfig.yml");
-            var config = Yaml.Deserialise<LdSpectrogramConfig>(defaultConfigFile);
-
-            // make changes to config file as required for test
-            var testConfig = new FileInfo(this.outputDirectory + "\\SpectrogramFalseColourConfig.yml");
-            Yaml.Serialise(testConfig, config);
-        */
 
         /// <summary>
-        /// METHOD TO CHECK Concatenation of spectral and summary index files when ConcatenateEverythingYouCanLayYourHandsOn = true
+        /// METHOD TO CHECK Concatenation of spectral and summary index files when
+        /// ConcatenateEverythingYouCanLayYourHandsOn = true
         /// </summary>
         [TestMethod]
         public void ConcatenateEverythingYouCanLayYourHandsOn()
         {
             // top level directory
-            DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia_2Reduced") };
             var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
             var dateString = "20160725";
 
@@ -95,7 +70,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             var arguments = new ConcatenateIndexFiles.Arguments
             {
-                InputDataDirectories = dataDirs,
+                InputDataDirectories = new[] { indonesiaIndicesDirectory },
                 OutputDirectory = this.outputDirectory,
                 DirectoryFilter = "*.wav",
                 FileStemName = "Test1_Indonesia",
@@ -107,9 +82,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 ColorMap2 = "BGN-POW-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = true, // join everything found
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
-                SunRiseDataFile = null,
                 DrawImages = true,
-                Verbose = true,
 
                 // following two lines can be used to add in a recognizer score track
                 EventDataDirectories = null,
@@ -121,15 +94,19 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             // Do TESTS on the 2Maps image
             // Compare image files - check that image dimensions are correct
             var outputDataDir = this.outputDirectory.Combine(arguments.FileStemName, dateString);
-            string imageFileName = arguments.FileStemName + "__2Maps.png";
-            var imageFileInfo = outputDataDir.CombineFile(imageFileName);
+            var prefix = arguments.FileStemName + "__";
+
+            var imageFileInfo = outputDataDir.CombineFile(prefix + "2Maps.png");
             Assert.IsTrue(imageFileInfo.Exists);
 
+            Assert.That.FileExists(outputDataDir.CombineFile(prefix + "Towsey.Acoustic.Indices.csv"));
+            Assert.That.FileNotExists(outputDataDir.CombineFile(prefix + "SummaryIndex.csv"));
+
             var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
-            ImageAssert.IsSize(722, 632, actualImage);
-            ImageAssert.PixelIsColor(new Point(100, 100), Color.FromArgb(211, 211, 211), actualImage);
-            ImageAssert.PixelIsColor(new Point(200, 100), Color.FromArgb(54, 29, 18), actualImage);
-            ImageAssert.PixelIsColor(new Point(675, 600), Color.FromArgb(255, 105, 180), actualImage);
+            Assert.That.ImageIsSize(722, 632, actualImage);
+            Assert.That.PixelIsColor(new Point(100, 100), Color.FromArgb(211, 211, 211), actualImage);
+            Assert.That.PixelIsColor(new Point(200, 100), Color.FromArgb(54, 29, 18), actualImage);
+            Assert.That.PixelIsColor(new Point(675, 600), Color.FromArgb(255, 105, 180), actualImage);
         }
 
         /// <summary>
@@ -140,7 +117,6 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         public void ConcatenateIndexFilesTest24Hour()
         {
             // top level directory
-            DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia_2Reduced") };
             var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
             var dateString = "20160726";
 
@@ -149,21 +125,19 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             var arguments = new ConcatenateIndexFiles.Arguments
             {
-                InputDataDirectories = dataDirs,
+                InputDataDirectories = new[] { indonesiaIndicesDirectory },
                 OutputDirectory = this.outputDirectory,
                 DirectoryFilter = "*.wav",
                 FileStemName = "Test2_Indonesia",
                 StartDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
-                EndDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
+                EndDate = new DateTimeOffset(2016, 07, 27, 0, 0, 0, TimeSpan.Zero),
                 IndexPropertiesConfig = indexPropertiesConfig,
                 FalseColourSpectrogramConfig = testConfig,
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
                 ColorMap2 = "BGN-POW-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
-                SunRiseDataFile = null,
                 DrawImages = true,
-                Verbose = true,
 
                 // following two lines can be used to add in a recognizer score track
                 EventDataDirectories = null,
@@ -175,14 +149,20 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             // Do TESTS on the 2Maps image
             // Compare image files - check that image dimensions are correct
             var outputDataDir = this.outputDirectory.Combine(arguments.FileStemName, dateString);
-            string imageFileName = arguments.FileStemName + "_" + dateString + "__2Maps.png";
-            var imageFileInfo = outputDataDir.CombineFile(outputDataDir.FullName, imageFileName);
+            var prefix = arguments.FileStemName + "_" + dateString + "__";
+
+            var imageFileInfo = outputDataDir.CombineFile(prefix + "2Maps.png");
             Assert.IsTrue(imageFileInfo.Exists);
 
+            Assert.That.FileExists(outputDataDir.CombineFile(prefix + "Towsey.Acoustic.Indices.csv"));
+            Assert.That.FileNotExists(outputDataDir.CombineFile(prefix + "SummaryIndex.csv"));
+
+
             var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
-            ImageAssert.IsSize(512, 632, actualImage);
-            ImageAssert.PixelIsColor(new Point(100, 100), Color.FromArgb(32, 25, 36), actualImage);
-            ImageAssert.PixelIsColor(new Point(100, 160), Color.FromArgb(0, 80, 132), actualImage);
+            // we expect only the second half (past midnight) of the image to be rendered
+            Assert.That.ImageIsSize(512, 632, actualImage);
+            Assert.That.PixelIsColor(new Point(100, 100), Color.FromArgb(32, 25, 36), actualImage);
+            Assert.That.PixelIsColor(new Point(100, 160), Color.FromArgb(0, 80, 132), actualImage);
         }
 
         /// <summary>
@@ -193,10 +173,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         /// In the case of this dataset, the two partial days of data will be concatenated separately.
         /// </summary>
         [TestMethod]
-        public void ConcatenateIndexFilesTest24HourWithDateRange()
+        public void ConcatenateIndexFilesTest24HourWithoutDateRange()
         {
-            // top level directory
-            DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia_2Reduced") };
             var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
 
             // get the default config file
@@ -204,7 +182,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             var arguments = new ConcatenateIndexFiles.Arguments
             {
-                InputDataDirectories = dataDirs,
+                InputDataDirectories = new[] { indonesiaIndicesDirectory },
                 OutputDirectory = this.outputDirectory,
                 DirectoryFilter = "*.wav",
                 FileStemName = "Test3_Indonesia",
@@ -216,9 +194,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 ColorMap2 = "BGN-POW-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
-                SunRiseDataFile = null,
                 DrawImages = true,
-                Verbose = true,
 
                 // following two lines can be used to add in a recognizer score track
                 EventDataDirectories = null,
@@ -231,26 +207,34 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             // IMAGE 1: Compare image files - check that image exists and dimensions are correct
             var dateString1 = "20160725";
             var outputDataDir1 = this.outputDirectory.Combine(arguments.FileStemName, dateString1);
-            string image1FileName = arguments.FileStemName + "_" + dateString1 + "__2Maps.png";
-            var image1FileInfo = outputDataDir1.CombineFile(outputDataDir1.FullName, image1FileName);
+            var prefix1 = arguments.FileStemName + "_" + dateString1 + "__";
+
+            var image1FileInfo = outputDataDir1.CombineFile(prefix1 + "2Maps.png");
             Assert.IsTrue(image1FileInfo.Exists);
 
+            Assert.That.FileExists(outputDataDir1.CombineFile(prefix1 + "Towsey.Acoustic.Indices.csv"));
+            Assert.That.FileNotExists(outputDataDir1.CombineFile(prefix1 + "SummaryIndex.csv"));
+
             var actualImage1 = ImageTools.ReadImage2Bitmap(image1FileInfo.FullName);
-            ImageAssert.IsSize(210, 632, actualImage1);
-            ImageAssert.PixelIsColor(new Point(100, 100), Color.FromArgb(211, 211, 211), actualImage1);
-            ImageAssert.PixelIsColor(new Point(50, 50), Color.FromArgb(86, 29, 17), actualImage1);
+            Assert.That.ImageIsSize(210, 632, actualImage1);
+            Assert.That.PixelIsColor(new Point(100, 100), Color.FromArgb(211, 211, 211), actualImage1);
+            Assert.That.PixelIsColor(new Point(50, 50), Color.FromArgb(86, 29, 17), actualImage1);
 
             // IMAGE 2: Compare image files - check that image exists and dimensions are correct
             var dateString2 = "20160726";
-            var outputDataDir2 = this.outputDirectory.Combine(arguments.FileStemName, dateString2);
-            string image2FileName = arguments.FileStemName + "_" + dateString2 + "__2Maps.png";
-            var image2FileInfo = outputDataDir2.CombineFile(image2FileName);
+            var outputDataDir2= this.outputDirectory.Combine(arguments.FileStemName, dateString2);
+            var prefix2 = arguments.FileStemName + "_" + dateString2 + "__";
+
+            var image2FileInfo = outputDataDir2.CombineFile(prefix2 + "2Maps.png");
             Assert.IsTrue(image2FileInfo.Exists);
 
+            Assert.That.FileExists(outputDataDir2.CombineFile(prefix2 + "Towsey.Acoustic.Indices.csv"));
+            Assert.That.FileNotExists(outputDataDir2.CombineFile(prefix2 + "SummaryIndex.csv"));
+
             var actualImage2 = ImageTools.ReadImage2Bitmap(image2FileInfo.FullName);
-            ImageAssert.IsSize(512, 632, actualImage2);
-            ImageAssert.PixelIsColor(new Point(50, 124), Color.FromArgb(70, 38, 255), actualImage2);
-            ImageAssert.PixelIsColor(new Point(460, 600), Color.FromArgb(255, 105, 180), actualImage2);
+            Assert.That.ImageIsSize(512, 632, actualImage2);
+            Assert.That.PixelIsColor(new Point(50, 124), Color.FromArgb(70, 38, 255), actualImage2);
+            Assert.That.PixelIsColor(new Point(460, 600), Color.FromArgb(255, 105, 180), actualImage2);
         }
 
         /// <summary>
@@ -259,8 +243,6 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         [TestMethod]
         public void ConcatenateIndexFilesTestConfigFileChanges()
         {
-            // top level directory
-            DirectoryInfo[] dataDirs = { this.outputDirectory.Combine("Indonesia_2Reduced") };
             var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
             var dateString = "20160726";
 
@@ -278,19 +260,17 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             var arguments = new ConcatenateIndexFiles.Arguments
             {
-                InputDataDirectories = dataDirs,
+                InputDataDirectories = new[] { indonesiaIndicesDirectory },
                 OutputDirectory = this.outputDirectory,
                 DirectoryFilter = "*.wav",
                 FileStemName = "Test2_Indonesia",
                 StartDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
-                EndDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
+                EndDate = new DateTimeOffset(2016, 07, 27, 0, 0, 0, TimeSpan.Zero),
                 IndexPropertiesConfig = indexPropertiesConfig,
                 FalseColourSpectrogramConfig = testConfig,
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
-                SunRiseDataFile = null,
                 DrawImages = true,
-                Verbose = true,
 
                 // following two lines can be used to add in a recognizer score track
                 EventDataDirectories = null,
@@ -301,14 +281,108 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             // Make sure files that match our config file are actully created!
             var outputDataDir = this.outputDirectory.Combine(arguments.FileStemName, dateString);
+            var prefix = arguments.FileStemName + "_" + dateString + "__";
 
-            string map1 = arguments.FileStemName + "_" + dateString + "__BGN-ENT-POW.png";
-            var imageFileInfo1 = outputDataDir.CombineFile(map1);
+            Assert.That.FileExists(outputDataDir.CombineFile(prefix + "Towsey.Acoustic.Indices.csv"));
+            Assert.That.FileNotExists(outputDataDir.CombineFile(prefix + "SummaryIndex.csv"));
+
+            var imageFileInfo1 = outputDataDir.CombineFile(prefix + "BGN-ENT-POW.png");
             Assert.IsTrue(imageFileInfo1.Exists);
 
-            string map2 = arguments.FileStemName + "_" + dateString + "__ACI-RNG-EVN.png";
-            var imageFileInfo2 = outputDataDir.CombineFile(map2);
+            var imageFileInfo2 = outputDataDir.CombineFile(prefix + "ACI-RNG-EVN.png");
             Assert.IsTrue(imageFileInfo2.Exists);
         }
+
+        /// <summary>
+        /// These tests use a dataset constructed from one-minute long samples, recorded every 20-min.
+        /// Thus there's a column of data for every 20 pixels.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow(ConcatMode.TimedGaps, new [] {1440, 1420, 1440})]
+        [DataRow(ConcatMode.NoGaps, new[] { 73, 72, 73 })]
+        [DataRow(ConcatMode.EchoGaps, new[] { 1440, 1420, 1440 })]
+        public void SampledDataConcatModeTests(ConcatMode gapRendering, int[] expectedWidths)
+        {
+            const string Ark01 = "Ark01";
+
+            var arguments = new ConcatenateIndexFiles.Arguments
+                {
+                    InputDataDirectories = new[] { newZealandArk01IndicesDirectory },
+                    OutputDirectory = this.outputDirectory,
+                    DirectoryFilter = "*.wav",
+                    FileStemName = Ark01,
+                    StartDate = null,
+                    EndDate = null,
+                    IndexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml"),
+                    FalseColourSpectrogramConfig = PathHelper.ResolveConfigFile("SpectrogramFalseColourConfig.yml"),
+                    ColorMap1 = null,
+                    ColorMap2 = null,
+                    ConcatenateEverythingYouCanLayYourHandsOn = false,
+                    GapRendering = gapRendering,
+                    TimeSpanOffsetHint = TimeSpan.FromHours(12),
+                    DrawImages = true,
+                };
+
+            ConcatenateIndexFiles.Execute(arguments);
+
+            var dateStrings = new[] {"20161209", "20161210", "20161211"}.Zip(expectedWidths, ValueTuple.Create);
+            foreach (var (dateString, expectedWidth) in dateStrings)
+            {
+                var prefix = Path.Combine(this.outputDirectory.FullName, Ark01, dateString, Ark01 + "_" + dateString + "__");
+
+                Assert.That.PathExists(prefix + "Towsey.Acoustic.Indices.csv");
+                Assert.That.PathNotExists(prefix + "SummaryIndex.csv");
+
+                var imagePath = prefix + "2Maps.png";
+                Assert.That.FileExists(imagePath);
+
+                var actualImage = ImageTools.ReadImage2Bitmap(imagePath);
+                Assert.That.ImageIsSize(expectedWidth, 632, actualImage);
+
+                // target region for each image: 40,254, 20,20
+                switch (gapRendering)
+                {
+                    case ConcatMode.TimedGaps:
+                        // for timed gap, first column has content, other 19 don't and should be gray (missing data)
+                        Assert.That.ImageRegionIsColor(
+                            new Rectangle(40 + 1, 254, 20 - 1, 20),
+                            Color.LightGray,
+                            actualImage,
+                            0.001);
+                        break;
+                    case ConcatMode.NoGaps:
+                        // There should basically be no pattern here
+                        var histogram = ImageTools.GetColorHistogramNormalized(
+                            actualImage, 
+                            new Rectangle(40, 254, 20, 20));
+
+                        // should not have empty space
+                        var hasGray = histogram.TryGetValue(Color.LightGray, out var grayPercentage);
+                        Assert.IsTrue(!hasGray || grayPercentage < 0.01);
+
+                        // the rest of the values should be well distributed (not a perfect test)
+                        Assert.That.ImageColorsWellDistributed(
+                            actualImage,
+                            allowedError: 0.1,
+                            colorHistogram: histogram);
+
+                        break;
+                    case ConcatMode.EchoGaps:
+                        // The first column should be repeated 19 times
+                        Assert.That.ImageRegionIsRepeatedHorizontally(
+                            new Rectangle(40, 254, 1, 20),
+                            19,
+                            1,
+                            actualImage,
+                            0.0);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(gapRendering), gapRendering, null);
+                }
+
+            }
+        }
+
+
     }
 }
