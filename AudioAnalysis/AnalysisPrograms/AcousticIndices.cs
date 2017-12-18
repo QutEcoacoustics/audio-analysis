@@ -134,18 +134,9 @@ namespace AnalysisPrograms
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public string DisplayName
-        {
-            get { return "Acoustic Indices"; }
-        }
+        public string DisplayName => "Acoustic Indices";
 
-        public string Identifier
-        {
-            get
-            {
-                return TowseyAcoustic;
-            }
-        }
+        public string Identifier => TowseyAcoustic;
 
         public string Description
             => "Generates all our default acoustic indices, including summary indices and spectral indices. Also generates false color spectrograms IFF IndexCalculationDuration==60.0";
@@ -386,7 +377,7 @@ namespace AnalysisPrograms
             if (analysisSettings.AnalysisDataSaveBehavior)
             {
                 analysisResults.SpectraIndicesFiles =
-                    this.WriteSpectrumIndicesFilesCustom(
+                    WriteSpectrumIndicesFilesCustom(
                         segmentSettings.SegmentSpectrumIndicesDirectory,
                         Path.GetFileNameWithoutExtension(segmentSettings.SegmentAudioFile.Name),
                         analysisResults.SpectralIndices);
@@ -448,7 +439,7 @@ namespace AnalysisPrograms
             Csv.WriteToCsv(destination, results.Cast<SummaryIndexValues>());
         }
 
-        public List<FileInfo> WriteSpectrumIndicesFilesCustom(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
+        public static List<FileInfo> WriteSpectrumIndicesFilesCustom(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
             var selectors = results.First().GetSelectors();
 
@@ -457,7 +448,7 @@ namespace AnalysisPrograms
             foreach (var kvp in selectors)
             {
                 // write spectrogram to disk as CSV file
-                var filename = FilenameHelpers.AnalysisResultPath(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv").ToFileInfo();
+                var filename = FilenameHelpers.AnalysisResultPath(destination, fileNameBase, TowseyAcoustic + "." + kvp.Key, "csv").ToFileInfo();
                 spectralIndexFiles.Add(filename);
                 Csv.WriteMatrixToCsv(filename, results, kvp.Value);
             }
@@ -467,7 +458,7 @@ namespace AnalysisPrograms
 
         public List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
-            return this.WriteSpectrumIndicesFilesCustom(destination, fileNameBase, results);
+            return WriteSpectrumIndicesFilesCustom(destination, fileNameBase, results);
         }
 
         public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold)
