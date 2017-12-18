@@ -1,4 +1,9 @@
-﻿namespace Acoustics.Shared.Extensions
+﻿// <copyright file="RectangleExtensions.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+// ReSharper disable once CheckNamespace
+namespace System.Drawing
 {
     using System;
     using System.Collections.Generic;
@@ -8,6 +13,11 @@
 
     public static class RectangleExtensions
     {
+        public static int Area(this Rectangle rectangle)
+        {
+            return rectangle.Width * rectangle.Height;
+        }
+
         public static bool PointIntersect(this Rectangle rectangle, Point point)
         {
             return point.X >= rectangle.Left && point.X < rectangle.Right && point.Y >= rectangle.Bottom
