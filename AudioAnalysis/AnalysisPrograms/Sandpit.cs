@@ -1374,9 +1374,16 @@ namespace AnalysisPrograms
                 double entropy = DataTools.EntropyNormalised(v);
             } // end if (true)
 
-            if (false)
-            {
-                // code to merge all files of acoustic indeces derived from 24 hours of recording,
+            // add tags to false-colour spectrogram
+            //string path1 = Path.Combine(dir, "LizZnidersic_TasmanIsTractor_20151111__Tagged.png");
+            //var image1 = ImageTools.ReadImage2Bitmap(path1);
+            //var g1 = Graphics.FromImage(image1);
+            //for (int i = 0; i < framecount; i++)
+            //{
+            //    if (tags[i] == 0) continue;
+            //    if (tags[i] == 1) pen = new Pen(Color.Red);
+            //    if (tags[i] == 2) pen = new Pen(Color.Green);
+            //    if (tags[i] == 3) pen = new Pen(Color.Blue);
 
             //HoughTransform.Test1HoughTransform();
             HoughTransform.Test2HoughTransform();
@@ -1601,26 +1608,27 @@ namespace AnalysisPrograms
             //   Joins images of the same species
             HerveGlotinCollaboration.HiRes4();
 
-            //FROG DATA SET
-            // To produce observe feature spectra
-            // This is used to analyse frog recordings of Lin Schwarzkopf.
-            if (false)
+            Console.WriteLine("The number of directories is {0}.", dirList.Count);
+            foreach (string dir in dirList)
             {
-                HighResolutionAcousticIndices.Execute(null);
+                Console.WriteLine(dir);
             }
 
-            //OTSU TRHESHOLDING FROM JIE XIE
-            // Used to threshold spectrograms to binary.
-            //  Jie uses the algorithm in his last 2016 papers.
-            if (false)
+            Console.WriteLine("The number of files is {0}.", fileList.Count);
+            foreach (var file in fileList)
             {
-                OtsuThresholder.Execute(null);
+                Console.WriteLine(file.FullName);
             }
+        }
 
-            if (false)
-            {
-                HerveGlotinCollaboration.AnalyseBOMBYXRecordingsForSpermWhaleClicks();
-            }
+        /// <summary>
+        /// Concatenate marine spectrogram ribbons and add tidal info if available.
+        /// </summary>
+        public static void ConcatenateMarineImages()
+        {
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March\CornellMarine"),
+                new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April\CornellMarine"),
+            };
 
             // To CALCULATE MUTUAL INFORMATION BETWEEN SPECIES DISTRIBUTION AND FREQUENCY INFO
             // This method calculates a seperate value of MI for each frequency bin
@@ -1682,40 +1690,30 @@ namespace AnalysisPrograms
                         int binCount;
                         matrix = IndexMatrices.ReadSpectrogram(filePaths[i], out binCount);
 
-                        // column reduce the matrix
-                        // try max pooling
-                        //matrix = Sandpit.MaxPoolMatrixColumns(matrix, reducedBinCount);
-                        //matrix = Sandpit.MaxPoolMatrixColumnsByFactor(matrix, reductionFactor);
-                        matrix = BirdClefExperiment1.ExoticMaxPoolingMatrixColumns(matrix, reducedBinCount);
-                    }
+            //string match = @"CornellMarine_*__ACI-ENT-EVN.SpectralRibbon.png";
+            //string opFileStem = "CornellMarine.ACI-ENT-EVN.SpectralRibbon.2013MarchApril";
 
-                    Console.WriteLine("Species ID = " + speciesId);
+            string match = @"CornellMarine_*__BGN-POW-EVN.SpectralRibbon.png";
+            string opFileStem = "CornellMarine.BGN-POW-EVN.SpectralRibbon.2013MarchApril";
 
-                    int rowCount = matrix.GetLength(0);
-                    reducedBinCount = matrix.GetLength(1);
+            FileInfo tidalDataFile = new FileInfo(@"C:\SensorNetworks\OutputDataSets\GeorgiaTides2013.txt");
+            //SunAndMoon.SunMoonTides[] tidalInfo = null;
+            SunAndMoon.SunMoonTides[] tidalInfo = SunAndMoon.ReadGeorgiaTidalInformation(tidalDataFile);
 
-                    // calculate the conditional probabilities
-                    // set up data structure to contain probability info
-                    for (int r = 0; r < rowCount; r++)
-                    {
-                        var rowVector = MatrixTools.GetRow(matrix, r);
-                        for (int c = 0; c < reducedBinCount; c++)
-                        {
-                            int valueCategory = 0;
-                            for (int bound = 1; bound < bounds.Length; bound++)
-                            {
-                                if (rowVector[c] > bounds[bound]) valueCategory = bound;
-                            }
-                            probSgivenF[c, speciesId-1, valueCategory] ++;
-                        }
-                    }
-                }
+            ConcatenateIndexFiles.ConcatenateRibbonImages(dataDirs, match, outputDirectory, opFileStem, title, tidalInfo);
+        }
 
-                // now process info in probabilities in data structure
-                double[] mi = new double[reducedBinCount];
-                for (int i = 0; i < reducedBinCount; i++)
-                {
-                    var m = new double[speciesNumber, valueResolution];
+        /// <summary>
+        /// Concatenate images horizontally or vertically.
+        /// </summary>
+        public static void ConcatenateImages()
+        {
+            // Concatenate three images for Dan Stowell.
+            //var imageDirectory = new DirectoryInfo(@"H:\Documents\SensorNetworks\MyPapers\2016_QMUL_SchoolMagazine");
+            //string fileName1 = @"TNC_Musiamunat_20150702_BAR10__ACI-ENT-EVNCropped.png";
+            //string fileName2 = @"GympieNP_20150701__ACI-ENT-EVN.png";
+            //string fileName3 = @"Sturt-Mistletoe_20150702__ACI-ENT-EVN - Corrected.png";
+            //string opFileName = string.Format("ThreeLongDurationSpectrograms.png");
 
                     for (int r = 0; r < speciesNumber; r++)
                     {
@@ -1729,10 +1727,9 @@ namespace AnalysisPrograms
                     mi[i] = entropy;
                 }
 
-                for (int i = 0; i < reducedBinCount; i++)
-                {
-                    Console.WriteLine(string.Format("Bin{0}  {1}", i, mi[i]));
-                }
+            var image1Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName1));
+            var image2Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName2));
+            //var image3Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName3));
 
             //HERVE GLOTIN: This is used to analyse the BIRD50 data set.
             // In order to analyse the short recordings in BIRD50 dataset, need following change to code:
@@ -1917,14 +1914,22 @@ namespace AnalysisPrograms
                     }
                 }
 
-                Console.WriteLine(string.Format("Median occurs at {0} ", medianIndex));
+        /// <summary>
+        /// Concatenate images for Karl-Heinz Frommolt
+        /// </summary>
+        public static void KarlHeinzFrommolt()
+        {
+            FrommoltProject.ConcatenateDays();
+        }
 
-                //for (int i = 0; i < reducedBinCount; i++)
-                //{
-                //Console.WriteLine(String.Format("Bin{0}  {1}", i, mi[i]));
-                //}
-                //FileTools.WriteArray2File(mi, miFileName);
-            } // CALCULATE MUTUAL INFORMATION
+        /// <summary>
+        /// HERVE GLOTIN
+        /// To produce observe feature spectra or SPECTRAL FEATURE TEMPLATES for each species
+        /// This is used to analyse Herve Glotin's BIRD50 data set.
+        /// </summary>
+        public static void HerveGlotinMethods()
+        {
+            BirdClefExperiment1.Execute(null);
 
         /// <summary>
         /// FROG DATA SET
