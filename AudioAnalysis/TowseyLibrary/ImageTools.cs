@@ -11,6 +11,9 @@ namespace TowseyLibrary
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
+
+    using Acoustics.Shared.Extensions;
+
     using AForge.Imaging.Filters;
     using ColorMine.ColorSpaces;
     using MathNet.Numerics.LinearAlgebra.Generic;
@@ -3428,5 +3431,31 @@ namespace TowseyLibrary
 
             return (Image)bmp;
         }
-    } //end class
+
+        public static Dictionary<Color, double> GetColorHistogramNormalized(Bitmap image, Rectangle? region = null)
+        {
+            Rectangle definiteRegion = region ?? new Rectangle(0, 0, image.Width, image.Height);
+            var histogram = new Dictionary<Color, int>(100);
+
+            int sum = definiteRegion.Area();
+
+            for (var i = definiteRegion.Left; i < definiteRegion.Right; i++)
+            {
+                for (var j = definiteRegion.Top; j < definiteRegion.Bottom; j++)
+                {
+                    var color = image.GetPixel(i, j);
+                    if (histogram.ContainsKey(color))
+                    {
+                        histogram[color] = histogram[color] + 1;
+                    }
+                    else
+                    {
+                        histogram.Add(color, 1);
+                    }
+                }
+            }
+
+            return histogram.ToDictionary(kvp => kvp.Key, kvp => kvp.Value / (double)sum); ;
+        }
+    }
 }

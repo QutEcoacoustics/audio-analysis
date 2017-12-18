@@ -25,6 +25,7 @@ namespace AudioAnalysisTools.Indices
 
     public static class IndexMatrices
     {
+        public const string MissingRowString = "<missing row>";
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
@@ -47,16 +48,20 @@ namespace AudioAnalysisTools.Indices
                     continue;
                 }
 
-                DateTimeOffset startDto;
-                if (!FileDateHelpers.FileNameContainsDateTime(files[f].Name, out startDto, offsetHint))
+                if (!FileDateHelpers.FileNameContainsDateTime(files[f].Name, out var date, offsetHint))
                 {
                     LoggedConsole.WriteWarnLine($"WARNING: Concatenation Time Check: INVALID DateTime in File Name {files[f].Name}");
                 }
 
-                dtoArray[f] = startDto;
+                dtoArray[f] = date;
             }
 
+            // we use the fileName field to distinguish unique input source files
+            // this Set allows us to check they are unique and render joins
+            var sourceFileNames = new HashSet<string>();
+
             // now loop through the files again to extract the indices
+            var missingRowCounter = 0;
             for (int i = 0; i < files.Length; i++)
             {
                 if (!files[i].Exists)
@@ -67,10 +72,28 @@ namespace AudioAnalysisTools.Indices
                 // Log.Debug("Reading of file started: " + files[i].FullName);
                 var rowsOfCsvFile = Csv.ReadFromCsv<SummaryIndexValues>(files[i], throwOnMissingField: false);
 
-                if (i > 0)
+                // check all rows have fileName set
+                var thisSourceFileNames = new HashSet<string>();
+                foreach (var summaryIndexValues in rowsOfCsvFile)
                 {
-                    // mark a file join
-                    rowsOfCsvFile.First().FileJoin = 1.0; // should be a boolean = true
+                    if (summaryIndexValues.FileName.IsNullOrEmpty())
+                    {
+                        throw new InvalidOperationException($"A supplied summary index file did not have the `{nameof(SummaryIndexValues.FileName)}` field populated. File: {files[i].FullName}");
+                    }
+
+                    thisSourceFileNames.Add(summaryIndexValues.FileName);
+                }
+
+                // check all found filenames are unique
+                foreach (var sourceFileName in thisSourceFileNames)
+                {
+                    if (sourceFileNames.Contains(sourceFileName))
+                    {
+                        throw new InvalidOperationException(
+                            $"The summary index files already read previously contained the filename {sourceFileName} - duplicates are not allowed. File: {files[i].FullName}");
+                    }
+
+                    sourceFileNames.Add(sourceFileName);
                 }
 
                 summaryIndices.AddRange(rowsOfCsvFile);
@@ -102,13 +125,12 @@ namespace AudioAnalysisTools.Indices
                     //dictionary = RepairDictionaryOfArrays(dictionary, rowCounts[i], partialMinutes);
                     int scalingfactor = (int)Math.Round(60.0 / indexCalcDuration.TotalSeconds);
                     int minutesToAdd = elapsedMinutesInFileNames - accumulatedRowMinutes;
-                    int rows2Add = minutesToAdd * scalingfactor;
+                    int rowsToAdd = minutesToAdd * scalingfactor;
 
                     // add in the missing summary index rows
-                    for (int j = 0; j < rows2Add; j++)
+                    for (int j = 0; j < rowsToAdd; j++)
                     {
-                        var vector = new SummaryIndexValues();
-                        vector.RecordingExists = 0.0; // should be a boolean = false;
+                        var vector = new SummaryIndexValues { FileName = MissingRowString };
                         summaryIndices.Add(vector);
                     }
                 }
@@ -138,8 +160,6 @@ namespace AudioAnalysisTools.Indices
         {
             var dictionary = new Dictionary<string, double[]>
             {
-                { GapsAndJoins.KeyRecordingExists, summaryIndices.Select(x => x.RecordingExists).ToArray() },
-                { GapsAndJoins.KeyFileJoin, summaryIndices.Select(x => x.FileJoin).ToArray() },
                 { GapsAndJoins.KeyZeroSignal, summaryIndices.Select(x => x.ZeroSignal).ToArray() },
                 { "ClippingIndex", summaryIndices.Select(x => x.ClippingIndex).ToArray() },
                 { "BackgroundNoise", summaryIndices.Select(x => x.BackgroundNoise).ToArray() },
