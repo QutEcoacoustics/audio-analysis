@@ -10,6 +10,7 @@ namespace Acoustics.Shared.Extensions
     using System.Linq;
     using System.Text;
 
+
     public static class RandomExtensions
     {
         public static Guid NextGuid(this Random random)
