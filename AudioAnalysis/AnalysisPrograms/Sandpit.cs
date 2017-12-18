@@ -985,7 +985,7 @@ namespace AnalysisPrograms
             foreach (string id in indexNames)
             {
                 var fileinfo = new FileInfo(Path.Combine(dir, $"{fileName}.{id}.csv"));
-                var matrix = Csv.ReadMatrixFromCsv<double>(fileinfo, TwoDimensionalArray.ColumnMajor);
+                var matrix = Csv.ReadMatrixFromCsv<double>(fileinfo, TwoDimensionalArray.Rotate90ClockWise);
 
                 //framecount = matrix.GetLength(1);
                 //Console.WriteLine("\n" + id);
@@ -1387,7 +1387,7 @@ namespace AnalysisPrograms
 
             //HoughTransform.Test1HoughTransform();
             HoughTransform.Test2HoughTransform();
-            }
+            
 
             // call SURF image Feature extraction
             // SURFFeatures.SURF_TEST();
@@ -1449,7 +1449,7 @@ namespace AnalysisPrograms
 
             string indexPropertiesConfigPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults" + @"\IndexPropertiesConfig.yml";
             FileInfo indexPropertiesConfigFileInfo = new FileInfo(indexPropertiesConfigPath);
-            Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfigFileInfo);
+            Dictionary<string, IndexProperties> dictIP = null;//IndexProperties.GetIndexProperties(indexPropertiesConfigFileInfo);
             dictIP = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(dictIP);
 
             foreach (string key in keys)
@@ -1509,32 +1509,6 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// Concatenate marine spectrogram ribbons and add tidal info if available.
-        /// </summary>
-        public static void ConcatenateMarineImages()
-        {
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March\CornellMarine"),
-                new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April\CornellMarine"),
-            };
-
-            DirectoryInfo outputDirectory = new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms");
-            string title = "Marine Spectrograms - 15km off Georgia Coast, USA.    Day 1= 01/March/2013      (Low tide=white; High tide=lime)";
-            //indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml");
-
-            //string match = @"CornellMarine_*__ACI-ENT-EVN.SpectralRibbon.png";
-            //string opFileStem = "CornellMarine.ACI-ENT-EVN.SpectralRibbon.2013MarchApril";
-
-            string match = @"CornellMarine_*__BGN-POW-EVN.SpectralRibbon.png";
-            string opFileStem = "CornellMarine.BGN-POW-EVN.SpectralRibbon.2013MarchApril";
-
-            FileInfo tidalDataFile = new FileInfo(@"C:\SensorNetworks\OutputDataSets\GeorgiaTides2013.txt");
-            //SunAndMoon.SunMoonTides[] tidalInfo = null;
-            SunAndMoon.SunMoonTides[] tidalInfo = SunAndMoon.ReadGeorgiaTidalInformation(tidalDataFile);
-
-            ConcatenateIndexFiles.ConcatenateRibbonImages(dataDirs, match, outputDirectory, opFileStem, title, tidalInfo);
-        }
-
-        /// <summary>
         /// Concatenate images horizontally or vertically.
         /// </summary>
         public static void ConcatenateImages()
@@ -1587,48 +1561,17 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// Concatenate images for Karl-Heinz Frommolt
-        /// </summary>
-        public static void KarlHeinzFrommolt()
-        {
-            FrommoltProject.ConcatenateDays();
-        }
-
-        /// <summary>
-        /// HERVE GLOTIN
-        /// To produce observe feature spectra or SPECTRAL FEATURE TEMPLATES for each species
-        /// This is used to analyse Herve Glotin's BIRD50 data set.
-        /// </summary>
-        public static void HerveGlotinMethods()
-        {
-            BirdClefExperiment1.Execute(null);
-
-            //HERVE GLOTIN: To produce HIres spectrogram images
-            // This is used to analyse Herve Glotin's BIRD50 data set.
-            //   Joins images of the same species
-            HerveGlotinCollaboration.HiRes4();
-
-            Console.WriteLine("The number of directories is {0}.", dirList.Count);
-            foreach (string dir in dirList)
-            {
-                Console.WriteLine(dir);
-            }
-
-            Console.WriteLine("The number of files is {0}.", fileList.Count);
-            foreach (var file in fileList)
-            {
-                Console.WriteLine(file.FullName);
-            }
-        }
-
-        /// <summary>
         /// Concatenate marine spectrogram ribbons and add tidal info if available.
         /// </summary>
         public static void ConcatenateMarineImages()
         {
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March\CornellMarine"),
-                new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April\CornellMarine"),
-            };
+            DirectoryInfo[] dataDirs =
+                {
+                    new DirectoryInfo(
+                        @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March\CornellMarine"),
+                    new DirectoryInfo(
+                        @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April\CornellMarine"),
+                };
 
             // To CALCULATE MUTUAL INFORMATION BETWEEN SPECIES DISTRIBUTION AND FREQUENCY INFO
             // This method calculates a seperate value of MI for each frequency bin
@@ -1637,9 +1580,9 @@ namespace AnalysisPrograms
             {
                 // set up IP and OP directories
                 string parentDir = @"C:\SensorNetworks\Output\BIRD50";
-                string key = "RHZ";  //"RHZ";
+                string key = "RHZ"; //"RHZ";
                 int valueResolution = 6;
-                string miFileName = parentDir + @"\MutualInformation."+ valueResolution + "catNoSkew." + key + ".txt";
+                string miFileName = parentDir + @"\MutualInformation." + valueResolution + "catNoSkew." + key + ".txt";
                 //double[] bounds = { 0.0, 3.0, 6.0 };
                 //double[] bounds = { 0.0, 2.0, 4.0, 8.0 };
                 double[] bounds = { 0.0, 2.0, 4.0, 6.0, 8.0, 10.0 }; // noSkew
@@ -1690,23 +1633,32 @@ namespace AnalysisPrograms
                         int binCount;
                         matrix = IndexMatrices.ReadSpectrogram(filePaths[i], out binCount);
 
-            //string match = @"CornellMarine_*__ACI-ENT-EVN.SpectralRibbon.png";
-            //string opFileStem = "CornellMarine.ACI-ENT-EVN.SpectralRibbon.2013MarchApril";
+                        //string match = @"CornellMarine_*__ACI-ENT-EVN.SpectralRibbon.png";
+                        //string opFileStem = "CornellMarine.ACI-ENT-EVN.SpectralRibbon.2013MarchApril";
 
-            string match = @"CornellMarine_*__BGN-POW-EVN.SpectralRibbon.png";
-            string opFileStem = "CornellMarine.BGN-POW-EVN.SpectralRibbon.2013MarchApril";
+                        string match = @"CornellMarine_*__BGN-POW-EVN.SpectralRibbon.png";
+                        string opFileStem = "CornellMarine.BGN-POW-EVN.SpectralRibbon.2013MarchApril";
 
-            FileInfo tidalDataFile = new FileInfo(@"C:\SensorNetworks\OutputDataSets\GeorgiaTides2013.txt");
-            //SunAndMoon.SunMoonTides[] tidalInfo = null;
-            SunAndMoon.SunMoonTides[] tidalInfo = SunAndMoon.ReadGeorgiaTidalInformation(tidalDataFile);
+                        FileInfo tidalDataFile = new FileInfo(@"C:\SensorNetworks\OutputDataSets\GeorgiaTides2013.txt");
+                        //SunAndMoon.SunMoonTides[] tidalInfo = null;
+                        SunAndMoon.SunMoonTides[] tidalInfo = SunAndMoon.ReadGeorgiaTidalInformation(tidalDataFile);
 
-            ConcatenateIndexFiles.ConcatenateRibbonImages(dataDirs, match, outputDirectory, opFileStem, title, tidalInfo);
+//                        ConcatenateIndexFiles.ConcatenateRibbonImages(
+//                            dataDirs,
+//                            match,
+//                            outputDirectory,
+//                            opFileStem,
+//                            title,
+//                            tidalInfo);
+                    }
+                }
+            }
         }
 
         /// <summary>
         /// Concatenate images horizontally or vertically.
         /// </summary>
-        public static void ConcatenateImages()
+        public static void ConcatenateImages2()
         {
             // Concatenate three images for Dan Stowell.
             //var imageDirectory = new DirectoryInfo(@"H:\Documents\SensorNetworks\MyPapers\2016_QMUL_SchoolMagazine");
@@ -1715,20 +1667,20 @@ namespace AnalysisPrograms
             //string fileName3 = @"Sturt-Mistletoe_20150702__ACI-ENT-EVN - Corrected.png";
             //string opFileName = string.Format("ThreeLongDurationSpectrograms.png");
 
-                    for (int r = 0; r < speciesNumber; r++)
-                    {
-                        for (int c = 0; c < valueResolution; c++)
-                        {
-                            m[r, c] = probSgivenF[i, r, c];
-                        }
-                    }
-                    double[]  array = DataTools.Matrix2Array(m);
-                    double entropy = DataTools.EntropyNormalised(array);
-                    mi[i] = entropy;
-                }
-
-            var image1Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName1));
-            var image2Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName2));
+//                    for (int r = 0; r < speciesNumber; r++)
+//                    {
+//                        for (int c = 0; c < valueResolution; c++)
+//                        {
+//                            m[r, c] = probSgivenF[i, r, c];
+//                        }
+//                    }
+//                    double[]  array = DataTools.Matrix2Array(m);
+//                    double entropy = DataTools.EntropyNormalised(array);
+//                    mi[i] = entropy;
+//                
+//
+//            var image1Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName1));
+//            var image2Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName2));
             //var image3Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName3));
 
             //HERVE GLOTIN: This is used to analyse the BIRD50 data set.
@@ -1749,170 +1701,6 @@ namespace AnalysisPrograms
             HerveGlotinCollaboration.AnalyseBOMBYXRecordingsForSpermWhaleClicks();
         }
 
-            // EXPERIMENTS WITH HERVE
-            // To CALCULATE MUTUAL INFORMATION BETWEEN SPECIES DISTRIBUTION AND FREQUENCY INFO
-            // this method calculates a single MI value for the entire frequency band
-            if (false)
-            {
-                // set up IP and OP directories
-                string parentDir = @"C:\SensorNetworks\Output\BIRD50";
-                string key = "POW";  //"RHZ";
-                int valueCategoryCount = 10;
-                string miFileName = parentDir + @"\MutualInformation." + valueCategoryCount + "cats." + key + ".txt";
-
-                //double[] bounds = { 5.0 };
-                //double[] bounds = { 0.0, 4.0, 6.0 };
-                //double[] bounds = { 0.0, 2.0, 4.0, 8.0 };
-                //double[] bounds = { 0.0, 2.0, 4.0, 6.0, 8.0, 10.0 }; // noSkew
-                //double[] bounds = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 };
-                //double[] bounds = { 0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0 };
-                double[] bounds = { 0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 28.0, 32.0, 36.0 };
-                //double[] bounds = { 0.0, 1.0, 2.0, 4.0, 6.0, 10.0 }; // skew left
-                //double[] bounds = { 0.0, 2.0, 4.0, 5.0, 6.0, 8.0 }; // skew centre
-                //double[] bounds = { 0.0, 2.0, 4.0, 6.0, 8.0, 10.0 }; // noSkew
-
-                string inputDir = parentDir + @"\TrainingCSV";
-
-                // read Herve's file of metadata
-                int speciesNumber = 50;
-                string speciesCountFile = parentDir + @"\AmazonBird50_training_Counts.txt"; //
-                var lines = FileTools.ReadTextFile(speciesCountFile);
-                int[] speciesCounts = new int[speciesNumber];
-                for (int i = 0; i < speciesNumber; i++)
-                {
-                    string[] words = lines[i].Split(',');
-                    speciesCounts[i] = int.Parse(words[1]);
-                }
-                double Hspecies = DataTools.EntropyNormalised(speciesCounts);
-                Console.WriteLine("Species Entropy = " + Hspecies);
-
-                // set up the input data
-                int freqBinCount = 256;
-                int reducedBinCount = freqBinCount;
-
-                // standard matrix reduction
-                int minBin = 9;
-                //int maxBin = 233;
-                int maxBin = 218;
-                reducedBinCount = maxBin - minBin + 1;
-
-                // frequency bins used to reduce dimensionality of the 256 spectral values.
-                //int startBin = 8;
-                //int maxOf2Bin = 117;
-                //int maxOf3Bin = 182;
-                //int endBin = 234;
-                //double[] testArray = new double[256];
-                ////for (int i = 0; i < testArray.Length; i++) testArray[i] = i;
-                //double[] reducedArray = Sandpit.MaxPoolingLimited(testArray, startBin, maxOf2Bin, maxOf3Bin, endBin);
-                //int reducedBinCount = reducedArray.Length;
-
-                // other ways to reduce the spectrum length
-                //int reductionFactor = 1;
-                //reducedBinCount = freqBinCount / reductionFactor;
-                //reducedBinCount = 100 + (156 / 2); // exotic style
-
-                // Length of the Input feature vector
-                int featureVectorLength = reducedBinCount * valueCategoryCount;
-
-                // data structure to contain probability info
-                //int[,,] probSgivenF = new int[reducedBinCount, speciesNumber, valueResolution];
-                int[,] probSgivenF = new int[featureVectorLength, speciesNumber];
-                int[] decibelDistribution = new int[100];
-
-                DirectoryInfo inputDirInfo = new DirectoryInfo(inputDir);
-                string pattern = "*." + key + ".csv";
-                FileInfo[] filePaths = inputDirInfo.GetFiles(pattern);
-
-                // read through all the files
-                int fileCount = filePaths.Length;
-                for (int i = 0; i < fileCount; i++)
-                {
-                    //ID0001_Species01.EVN.csv
-                    char[] delimiters = { '.', 's' };
-                    string fileName = filePaths[i].Name;
-                    string[] parts = fileName.Split(delimiters);
-                    int speciesID = int.Parse(parts[1]);
-                    //Console.WriteLine("Species ID = " + speciesID);
-                    // show user something is happening
-                    Console.Write(".");
-
-                    double[,] matrix = null;
-                    if (filePaths[i].Exists)
-                    {
-                        int binCount;
-                        matrix = IndexMatrices.ReadSpectrogram(filePaths[i], out binCount);
-
-                        // column reduce the matrix
-                        matrix = BirdClefExperiment1.ReduceMatrixColumns(matrix, minBin, maxBin);
-
-                        // try max pooling
-                        //matrix = Sandpit.MaxPoolingLimited(matrix, startBin, maxOf2Bin, maxOf3Bin, endBin, reducedBinCount);
-                        //matrix = Sandpit.MaxPoolMatrixColumns(matrix, reducedBinCount);
-                        //matrix = Sandpit.MaxPoolMatrixColumnsByFactor(matrix, reductionFactor);
-                        //matrix = Sandpit.ExoticMaxPoolingMatrixColumns(matrix, reducedBinCount);
-                    }
-
-                    int rowCount = matrix.GetLength(0);
-                    reducedBinCount = matrix.GetLength(1);
-
-                    // calculate the conditional probabilities
-                    // set up data structure to contain probability info
-                    //int threshold = 0;
-                    for (int r = 0; r < rowCount; r++) // for all time
-                    {
-                        var rowVector = MatrixTools.GetRow(matrix, r);
-                        for (int c = 0; c < reducedBinCount; c++) // for all freq bins
-                        {
-                            double dBvalue = rowVector[c];
-                            decibelDistribution[(int)Math.Floor(dBvalue)]++;
-
-                            // use this line when have only a single binary variable
-                            //if (dBvalue > threshold)
-                            //{
-                            //    probSgivenF[c, speciesID - 1] ++;
-                            //    decibelDistribution[dBvalue]++;
-                            //}
-
-                            // use next six lines when variable can have >=3 discrete values
-                            int valueCategory = 0;
-                            for (int bound = 1; bound < bounds.Length; bound++)
-                            {
-                                if (dBvalue > bounds[bound]) valueCategory = bound;
-                            }
-                            int newIndex = (valueCategory * reducedBinCount) + c;
-                            probSgivenF[newIndex, speciesID - 1]++;
-                        }
-                    }
-                } // over all files
-
-                // Now have the entire data in one structure.
-                // Next process inf// in probabilities in data structure
-                //int[] array = DataTools.Matrix2Array(probSgivenF);
-                //double entropy = DataTools.EntropyNormalised(array);
-                double MI = DataTools.MutualInformation(probSgivenF);
-
-                Console.WriteLine(string.Format("\n\nFeature {0};  Category Count {1}", key, valueCategoryCount));
-                Console.WriteLine(string.Format("Mutual Info = {0}", MI));
-
-                //for (int i = 0; i < decibelDistribution.Length; i++)
-                //{
-                //    Console.WriteLine(String.Format("dB{0}  {1}", i, decibelDistribution[i]));
-                //}
-                double sum = decibelDistribution.Sum();
-                Console.WriteLine(string.Format("Dist sum = {0}", sum));
-
-                double threshold = sum / 2;
-                double median = 0;
-                int medianIndex = 0;
-                for (int i = 0; i < decibelDistribution.Length; i++)
-                {
-                    median += decibelDistribution[i];
-                    if (median >= threshold)
-                    {
-                        medianIndex = i;
-                        break;
-                    }
-                }
 
         /// <summary>
         /// Concatenate images for Karl-Heinz Frommolt
@@ -1930,6 +1718,7 @@ namespace AnalysisPrograms
         public static void HerveGlotinMethods()
         {
             BirdClefExperiment1.Execute(null);
+        }
 
         /// <summary>
         /// FROG DATA SET
