@@ -131,9 +131,9 @@ namespace Acoustics.Test.Shared
         {
             Assert.Throws<ConfigFileException>(() => { ConfigFile.ResolveConfigFile("   "); });
 
-            Assert.Throws<ConfigFileException>(() => { ConfigFile.ResolveConfigFile(string.Empty); });
+            Assert.Throws<ArgumentException>(() => { ConfigFile.ResolveConfigFile(string.Empty); });
 
-            Assert.Throws<ConfigFileException>(() => { ConfigFile.ResolveConfigFile((string)null); });
+            Assert.Throws<ArgumentException>(() => { ConfigFile.ResolveConfigFile((string)null); });
 
             Assert.Throws<ArgumentNullException>(() => { ConfigFile.ResolveConfigFile((FileInfo)null); });
         }
