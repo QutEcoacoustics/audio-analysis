@@ -6,7 +6,9 @@ namespace AnalysisPrograms.StandardizedFeatures
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using AnalysisBase;
+    using AudioAnalysisTools.Indices;
 
     [Serializable]
     public class StandardizedFeatureExtractionConfig

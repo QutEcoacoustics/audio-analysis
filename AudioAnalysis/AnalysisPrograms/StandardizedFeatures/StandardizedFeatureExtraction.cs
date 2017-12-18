@@ -80,9 +80,10 @@ namespace AnalysisPrograms.StandardizedFeatures
             // Default behaviour: set SUBSEGMENT = total recording
             AudioRecording subsegmentRecording = recording;
 
+            // Only for debug create image
             // Create list to store images so they can be combined later
             var list = new List<Image>();
-            string imagePath = Path.Combine(outputDirectory.FullName, segmentSettings.SegmentImageFile.Name);
+            string imagePath = segmentSettings.SegmentImageFile.FullName;
             int maxImageWidth = 0;
 
             foreach (var band in configuration.Bands)
@@ -95,7 +96,26 @@ namespace AnalysisPrograms.StandardizedFeatures
 
                 // Prepare amplitude spectrogram
                 double[,] amplitudeSpectrogramData = dspOutput1.AmplitudeSpectrogram; // get amplitude spectrogram.
-                var image = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(amplitudeSpectrogramData));
+                double[,] m;
+
+                // Transform from Frequency to Mel Scale
+                // band.Melscale defines the number of bins that will be reduced to
+                if (band.MelScale != 0)
+                {
+                    m = MFCCStuff.MelFilterBank(amplitudeSpectrogramData, band.MelScale, recording.Nyquist, 0, recording.Nyquist);
+                }
+                else
+                {
+                    m = amplitudeSpectrogramData;
+                }
+
+                // Select band determined by min and max bandwidth
+                int minBand = (int)(m.GetLength(1) * band.Bandwidth.Min);
+                int maxBand = (int)(m.GetLength(1) * band.Bandwidth.Max);
+
+                double[,] mband = MatrixTools.Submatrix(m, 0, minBand, m.GetLength(0) - 1, maxBand);
+
+                var image = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(mband));
 
                 // Add image to list
                 list.Add(image);
@@ -117,6 +137,29 @@ namespace AnalysisPrograms.StandardizedFeatures
                 analysisResults.ImageFile = new FileInfo(imagePath);
                 LoggedConsole.WriteLine("See {0} for spectrogram pictures", imagePath);
             }
+
+            // Work in progress to calculate spectral indices..
+
+            //FileInfo IndexPropertiesConfigFile = new FileInfo(configuration.IndexPropertiesConfig);
+
+            //// Convert the dynamic config to IndexCalculateConfig class and merge in the unnecesary parameters.
+            //IndexCalculateConfig config = IndexCalculateConfig.GetConfig(analysisSettings.Configuration, false);
+
+            //var indexCalculateResults = new IndexCalculateResult[1];
+
+            //var indexCalculateResult = IndexCalculate.Analysis(
+            //    recording,
+            //    segmentSettings.SegmentStartOffset,
+            //    IndexPropertiesConfigFile,
+            //    configuration.ResampleRate,
+            //    segmentSettings.SegmentStartOffset,
+            //    config);
+
+            //indexCalculateResults[0] = indexCalculateResult;
+
+            //IndexCalculateResult[] subsegmentResults = indexCalculateResults;
+
+            //analysisResults.SpectralIndices = new SpectralIndexBase[subsegmentResults.Length];
 
             return analysisResults;
         }
