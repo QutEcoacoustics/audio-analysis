@@ -12,7 +12,7 @@ All the analyses are performed by a single executable file, _AnalysisPrograms.ex
 
 ## Table of contents
 
-- [FAQ](./faq)
+- [FAQ](./faq.md)
 - [Supported Platforms](./supported_platforms.md)
 - [Downloading and Installing](./installing.md) AnalysisPrograms.exe
 - [Introduction to running commands](./cli.md)
@@ -20,11 +20,11 @@ All the analyses are performed by a single executable file, _AnalysisPrograms.ex
 - [Config Files](./config_files.md)
 - [Supported Audio Formats](./formats.md)
 - [List of Analyses](./analyses/)
-- [Workflows](./workflows)
+- [Workflows](./workflows.md)
 - [TODO: Citing the software]
 
 Supplementary:
 
 - [Version Numbers](./versioning.md)
 - [TODO: Log Files]
-- [Code paths](./code_paths) that explain how code is executed
+- [Code paths](./code_paths.md) that explain how code is executed
