@@ -6,7 +6,6 @@ open QutSensors.AudioAnalysis.AED.Default
 open Common
 open FsCheckArbs
 open Xunit
-open FsUnit.Xunit
 open QutSensors.AudioAnalysis.AED.Util
 
 let sleDefaults = QutSensors.AudioAnalysis.AED.Default.largeAreaHorizontal
