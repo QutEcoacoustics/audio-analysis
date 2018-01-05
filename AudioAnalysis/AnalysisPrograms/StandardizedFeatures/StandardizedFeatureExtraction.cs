@@ -111,7 +111,7 @@ namespace AnalysisPrograms.StandardizedFeatures
 
                 // Select band determined by min and max bandwidth
                 int minBand = (int)(m.GetLength(1) * band.Bandwidth.Min);
-                int maxBand = (int)(m.GetLength(1) * band.Bandwidth.Max);
+                int maxBand = (int)(m.GetLength(1) * band.Bandwidth.Max) - 1;
 
                 double[,] mband = MatrixTools.Submatrix(m, 0, minBand, m.GetLength(0) - 1, maxBand);
 
