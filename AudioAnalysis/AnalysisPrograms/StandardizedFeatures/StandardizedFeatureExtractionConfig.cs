@@ -21,7 +21,9 @@ namespace AnalysisPrograms.StandardizedFeatures
 
         public List<BandsProperties> Bands { get; set; }
 
-        public int BgNoiseNeighbourhood { get; set; }
+        public double IndexCalculationDuration { get; set; }
+
+        public TimeSpan BgNoiseNeighbourhood { get; set; }
 
         public int ResampleRate { get; set; }
 
