@@ -21,6 +21,10 @@ Bands:
       Min: 0.33
       Max: 0.66
 
+# IndexCalculationDuration: units=seconds (default=60 seconds; use 0.1 for zooming spectrogram tiles)
+# The Timespan (in seconds) over which summary and spectral indices are calculated
+IndexCalculationDuration: 60.0
+
 # BgNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
 # BG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
 #    Ten seconds is considered a minimum interval to obtain a reliable estimate of BG noise.
@@ -63,6 +67,6 @@ SaveSonogramImages: Never
 #     prefix_20140101-235959+Z.mp3
 RequireDateInFilename: false
 
-IndexPropertiesConfig: './IndexPropertiesConfig.yml'
+IndexPropertiesConfig: 'C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml'
 ...
 
