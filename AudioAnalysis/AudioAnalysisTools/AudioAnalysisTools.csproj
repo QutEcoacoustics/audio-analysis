@@ -262,6 +262,8 @@
     <Compile Include="EventStatistics\EventStatisticsCalculate.cs" />
     <Compile Include="FrommoltProject.cs" />
     <Compile Include="Indices\GapsAndJoins.cs" />
+    <Compile Include="Indices\ErroneousIndexSegments.cs" />
+    <Compile Include="Indices\IndexCalculate - Copy.cs" />
     <Compile Include="Indices\IndexCalculate.cs" />
     <Compile Include="Indices\IndexCalculateConfig.cs" />
     <Compile Include="Indices\IndexDistributions.cs" />
@@ -270,6 +272,7 @@
     <Compile Include="Indices\IndexProperties.cs" />
     <Compile Include="Indices\SpectralIndexValues.cs" />
     <Compile Include="Indices\SpectralIndicesToAndFromTable.cs" />
+    <Compile Include="Indices\StandardizedFeatureExtractionConfig.cs" />
     <Compile Include="Indices\SummaryIndexValues.cs" />
     <Compile Include="Indices\InitialiseIndexProperties.cs" />
     <Compile Include="Indices\RainIndices.cs" />

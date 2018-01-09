@@ -33,6 +33,10 @@ namespace AudioAnalysisTools.Indices
 
         public const string DefaultFrequencyScaleType = "Linear";
 
+        public const double DefaultMinBandWidth = 0.0;
+        public const double DefaultMaxBandWidth = 1.0;
+
+        public const int DefaultMelScale = 0;
         /// <summary>
         /// Initializes a new instance of the <see cref="IndexCalculateConfig"/> class.
         /// CONSTRUCTOR
@@ -49,6 +53,11 @@ namespace AudioAnalysisTools.Indices
             this.LowFreqBound = DefaultLowFreqBound;
             this.MidFreqBound = DefaultMidFreqBound;
             this.SetTypeOfFreqScale(DefaultFrequencyScaleType);
+
+            this.MinBandWidth = DefaultMinBandWidth;
+            this.MaxBandWidth = DefaultMaxBandWidth;
+
+            this.MelScale = DefaultMelScale;
         }
 
         /// <summary>
@@ -133,6 +142,13 @@ namespace AudioAnalysisTools.Indices
         {
             return this.frequencyScaleType;
         }
+
+        // Added details for bands
+        public double MinBandWidth;
+
+        public double MaxBandWidth;
+
+        public int MelScale;
 
         public static IndexCalculateConfig GetDefaultConfig()
         {

@@ -18,6 +18,7 @@ namespace AudioAnalysisTools.Indices
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using AnalysisPrograms.StandardizedFeatures;
     using DSP;
     using log4net;
     using StandardSpectrograms;
@@ -27,7 +28,7 @@ namespace AudioAnalysisTools.Indices
     /// <summary>
     /// Core class that calculates indices.
     /// </summary>
-    public class IndexCalculate
+    public class IndexCalculateCopy
     {
         private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -48,10 +49,10 @@ namespace AudioAnalysisTools.Indices
         public static IndexCalculateResult Analysis(
             AudioRecording recording,
             TimeSpan subsegmentOffsetTimeSpan,
-            FileInfo indicesPropertiesConfig,
             int sampleRateOfOriginalAudioFile,
             TimeSpan segmentStartOffset,
-            IndexCalculateConfig config,
+            StandardizedFeatureExtractionConfig configuration,
+            StandardizedFeatureExtractionConfig.BandsProperties band,
             bool returnSonogramInfo = false)
         {
             // returnSonogramInfo = true; // if debugging
@@ -59,8 +60,9 @@ namespace AudioAnalysisTools.Indices
             int signalLength = recording.WavReader.GetChannel(0).Length;
             int sampleRate = recording.WavReader.SampleRate;
             var segmentDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
-            var indexCalculationDuration = config.IndexCalculationDuration;
-            var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
+            var indexCalculationDuration = new TimeSpan(0, 0, (int)configuration.IndexCalculationDuration);
+            FileInfo IndexPropertiesConfig = new FileInfo(configuration.IndexPropertiesConfig);
+            var indexProperties = IndexProperties.GetIndexProperties(IndexPropertiesConfig);
             int nyquist = sampleRate / 2;
 
             // Get FRAME parameters for the calculation of Acoustic Indices
@@ -68,14 +70,15 @@ namespace AudioAnalysisTools.Indices
             //         It yields ACI, BGN, POW and EVN results that are significantly different from the default.
             //         I have not had time to check if the difference is meaningful. Best to avoid.
             //int frameSize = (int?)config[AnalysisKeys.FrameLength] ?? IndexCalculateConfig.DefaultWindowSize;
-            int frameSize = config.FrameLength;
+
+            int frameSize = band.FftWindow;
             int frameStep = frameSize; // that is, windowOverlap = zero
 
             double frameStepDuration = frameStep / (double)sampleRate; // fraction of a second
             var frameStepTimeSpan = TimeSpan.FromTicks((long)(frameStepDuration * TimeSpan.TicksPerSecond));
 
-            int midFreqBound = config.MidFreqBound;
-            int lowFreqBound = config.LowFreqBound;
+            int midFreqBound = configuration.MidFreqBound;
+            int lowFreqBound = configuration.LowFreqBound;
 
             int freqBinCount = frameSize / 2;
 
@@ -139,25 +142,16 @@ namespace AudioAnalysisTools.Indices
             // ################################## FINSIHED SET-UP
             // ################################## NOW GET THE AMPLITUDE SPECTORGRAMS
 
-            // EXTRACT ENVELOPE and SPECTROGRAM FROM SUBSEGMENT
-            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(subsegmentRecording, frameSize, frameStep);
+            var dspOutput1 = EnvelopeAndFft(recording, band, subsegmentRecording, frameSize, frameStep);
 
-            // Select band according to min and max bandwidth
-            int minBand = (int)(dspOutput1.AmplitudeSpectrogram.GetLength(1) * config.MinBandWidth);
-            int maxBand = (int)(dspOutput1.AmplitudeSpectrogram.GetLength(1) * config.MaxBandWidth) - 1;
+            // Correct NyquistBin and FreqBinWidth, because they change with band selection
+            dspOutput1.NyquistBin = dspOutput1.AmplitudeSpectrogram.GetLength(1) - 1;
+            dspOutput1.FreqBinWidth = sampleRate / (double)dspOutput1.AmplitudeSpectrogram.GetLength(1) / 2;
 
-            dspOutput1.AmplitudeSpectrogram = MatrixTools.Submatrix(
-                dspOutput1.AmplitudeSpectrogram,
-                0,
-                minBand,
-                dspOutput1.AmplitudeSpectrogram.GetLength(0) - 1,
-                maxBand);
-
-            // Linear or Octave or Mel frequency scale? Set Linear as default.
+            // Linear or Octave frequency scale? Set Linear as default.
             var freqScale = new FrequencyScale(nyquist: nyquist, frameSize: frameSize, hertzLinearGridInterval: 1000);
-            var freqScaleType = config.GetTypeOfFreqScale();
-            bool octaveScale = freqScaleType == FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
-            bool melScale = freqScaleType == FreqScaleType.Mel;
+            var freqScaleType = configuration.FrequencyScale;
+            bool octaveScale = freqScaleType == "Octave";
             if (octaveScale)
             {
                 // only allow one octave scale at the moment - for Jasco marine recordings.
@@ -174,21 +168,10 @@ namespace AudioAnalysisTools.Indices
                     freqScale);
                 dspOutput1.NyquistBin = dspOutput1.AmplitudeSpectrogram.GetLength(1) - 1; // ASSUMPTION!!! Nyquist is in top Octave bin - not necessarily true!!
             }
-            else if (melScale)
-            {
-                dspOutput1.AmplitudeSpectrogram = MFCCStuff.MelFilterBank(
-                    dspOutput1.AmplitudeSpectrogram,
-                    config.MelScale,
-                    recording.Nyquist,
-                    0,
-                    recording.Nyquist);
-            }
-
-            LoggedConsole.WriteLine("Melscale is {0}", melScale);
 
             // NOW EXTRACT SIGNAL FOR BACKGROUND NOISE CALCULATION
             // If the index calculation duration >= 30 seconds, then calculate BGN from the existing segment of recording.
-            bool doSeparateBgnNoiseCalculation = (indexCalculationDuration.TotalSeconds + (2 * config.BgNoiseBuffer.TotalSeconds)) < (segmentDuration.TotalSeconds / 2);
+            bool doSeparateBgnNoiseCalculation = (indexCalculationDuration.TotalSeconds + (2 * configuration.BgNoiseNeighbourhood.TotalSeconds)) < (segmentDuration.TotalSeconds / 2);
             var dspOutput2 = dspOutput1;
 
             if (doSeparateBgnNoiseCalculation)
@@ -196,7 +179,7 @@ namespace AudioAnalysisTools.Indices
                 // GET a longer SUBSEGMENT FOR NOISE calculation with 5 sec buffer on either side.
                 // If the index calculation duration is shorter than 30 seconds, then need to calculate BGN noise from a longer length of recording
                 //      i.e. need to add noiseBuffer either side. Typical noiseBuffer value = 5 seconds
-                int sampleBuffer = (int)(config.BgNoiseBuffer.TotalSeconds * sampleRate);
+                int sampleBuffer = (int)(configuration.BgNoiseNeighbourhood.TotalSeconds * sampleRate);
                 var bgnRecording = AudioRecording.GetRecordingSubsegment(recording, startSample, endSample, sampleBuffer);
 
                 // EXTRACT ENVELOPE and SPECTROGRAM FROM BACKGROUND NOISE SUBSEGMENT
@@ -474,7 +457,51 @@ namespace AudioAnalysisTools.Indices
             result.TrackScores = scores;
 
             return result;
-        } // end Calculation of Summary and Spectral Indices
+        }
+
+        public static DSP_Frames.EnvelopeAndFft EnvelopeAndFft(
+            AudioRecording recording,
+            StandardizedFeatureExtractionConfig.BandsProperties band,
+            AudioRecording subsegmentRecording,
+            int frameSize,
+            int frameStep)
+        {
+// EXTRACT ENVELOPE and SPECTROGRAM FROM SUBSEGMENT
+            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(subsegmentRecording, frameSize, frameStep);
+
+            // Prepare amplitude spectrogram
+            double[,] amplitudeSpectrogramData = dspOutput1.AmplitudeSpectrogram; // get amplitude spectrogram.
+            double[,] amplitudeSpectrogramData2;
+
+            // Transform from Frequency to Mel Scale
+            // band.Melscale defines the number of bins that will be reduced to
+            if (band.MelScale != 0)
+            {
+                amplitudeSpectrogramData2 = MFCCStuff.MelFilterBank(
+                    amplitudeSpectrogramData,
+                    band.MelScale,
+                    recording.Nyquist,
+                    0,
+                    recording.Nyquist);
+            }
+            else
+            {
+                amplitudeSpectrogramData2 = amplitudeSpectrogramData;
+            }
+
+            // Select band determined by min and max bandwidth
+            int minBand = (int)(amplitudeSpectrogramData2.GetLength(1) * band.Bandwidth.Min);
+            int maxBand = (int)(amplitudeSpectrogramData2.GetLength(1) * band.Bandwidth.Max) - 1;
+
+            dspOutput1.AmplitudeSpectrogram = MatrixTools.Submatrix(
+                amplitudeSpectrogramData2,
+                0,
+                minBand,
+                amplitudeSpectrogramData2.GetLength(0) - 1,
+                maxBand);
+            return dspOutput1;
+        }
+// end Calculation of Summary and Spectral Indices
 
         private static SpectrogramStandard GetSonogram(AudioRecording recording, int windowSize)
         {
