@@ -11,7 +11,7 @@ namespace AnalysisPrograms.StandardizedFeatures
     using AudioAnalysisTools.Indices;
 
     [Serializable]
-    public class StandardizedFeatureExtractionConfigDelete
+    public class StandardizedFeatureExtractionConfig
     {
         public string AnalysisName { get; set; }
 
