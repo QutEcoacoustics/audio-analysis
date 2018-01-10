@@ -20,12 +20,15 @@ namespace AnalysisPrograms.StandardizedFeatures
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
+    using log4net;
     using log4net.Repository.Hierarchy;
     using PowerArgs;
     using TowseyLibrary;
 
     public class StandardizedFeatureExtraction : AbstractStrongAnalyser
     {
+        private static readonly ILog Log = LogManager.GetLogger(nameof(StandardizedFeatureExtraction));
+
         private const string Sentence = "Hello World";
 
         // Input is a class object of Arguments, class is made below
@@ -78,12 +81,27 @@ namespace AnalysisPrograms.StandardizedFeatures
             var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
             //// Fileinfo class for the index properties configuration file
-            FileInfo IndexPropertiesConfig = new FileInfo(configuration.IndexPropertiesConfig);
-            var indexProperties = IndexProperties.GetIndexProperties(IndexPropertiesConfig);
-            TimeSpan IndexCalculationDuration = new TimeSpan(0, 0, (int)configuration.IndexCalculationDuration);
+            FileInfo indexPropertiesConfig = new FileInfo(configuration.IndexPropertiesConfig);
+            var indexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
+            TimeSpan indexCalculationDuration = new TimeSpan(0, 0, (int)configuration.IndexCalculationDuration);
 
             var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
             analysisResults.AnalysisIdentifier = this.Identifier;
+
+            // Create new list to store the summary and spectral index values, because length is unknown. Transform after calculations.
+            //var analysisResultsSummaryIndices = new List<SummaryIndexValues>();
+            //var analysisResultsSpectralIndices = new List<SpectralIndexValues>();
+
+            double segmentDurationSeconds = segmentSettings.AnalysisIdealSegmentDuration.TotalSeconds;
+            double subsegmentDuration = indexCalculationDuration.TotalSeconds;
+            int subsegmentCount = (int)Math.Round(segmentDurationSeconds / subsegmentDuration);
+            subsegmentCount *= configuration.Bands.Count;
+
+            var trackScores = new List<Plot>(subsegmentCount);
+            var tracks = new List<SpectralTrack>(subsegmentCount);
+
+            analysisResults.SummaryIndices = new SummaryIndexBase[subsegmentCount];
+            analysisResults.SpectralIndices = new SpectralIndexBase[subsegmentCount];
 
             // Default behaviour: set SUBSEGMENT = total recording
             AudioRecording subsegmentRecording = recording;
@@ -94,8 +112,11 @@ namespace AnalysisPrograms.StandardizedFeatures
             string imagePath = segmentSettings.SegmentImageFile.FullName;
             int maxImageWidth = 0;
 
+            int bandCount = 0;
             foreach (var band in configuration.Bands)
             {
+                Log.DebugFormat("Starting band {0}/{1}", bandCount+1, configuration.Bands.Count);
+
                 int frameSize = band.FftWindow;
                 int frameStep = frameSize;
 
@@ -137,31 +158,63 @@ namespace AnalysisPrograms.StandardizedFeatures
 
                 // Calculate spectral indices
 
+                // Convert the dynamic config to IndexCalculateConfig class and merge in the unnecesary parameters.
+                IndexCalculateConfig config = IndexCalculateConfig.GetConfig(analysisSettings.Configuration, false);
+                config.IndexCalculationDuration = indexCalculationDuration;
+                config.BgNoiseBuffer = configuration.BgNoiseNeighbourhood;
+
+                // add values for bands
+                config.MinBandWidth = band.Bandwidth.Min;
+                config.MaxBandWidth = band.Bandwidth.Max;
+                config.FrameLength = band.FftWindow;
+                if (band.MelScale != 0)
+                {
+                    config.frequencyScaleType = FreqScaleType.Mel;
+                    config.MelScale = band.MelScale;
+                }
+                else
+                {
+                    config.frequencyScaleType = FreqScaleType.Linear;
+                }
+
                 // calculate indices for each subsegment for each band
                 IndexCalculateResult[] subsegmentResults = Acoustic.CalculateIndicesInSubsegments(
                     recording,
                     segmentSettings.SegmentStartOffset,
                     segmentSettings.AnalysisIdealSegmentDuration,
-                    IndexCalculationDuration,
+                    indexCalculationDuration,
                     configuration.BgNoiseNeighbourhood,
-                    IndexPropertiesConfig,
+                    indexPropertiesConfig,
                     segmentSettings.Segment.SourceMetadata.SampleRate,
-                    analysisSettings.Configuration);
+                    config);
 
-                var trackScores = new List<Plot>(subsegmentResults.Length);
-                var tracks = new List<SpectralTrack>(subsegmentResults.Length);
+                //var trackScores = new List<Plot>(subsegmentResults.Length);
+                //var tracks = new List<SpectralTrack>(subsegmentResults.Length);
 
-                analysisResults.SummaryIndices = new SummaryIndexBase[subsegmentResults.Length];
-                analysisResults.SpectralIndices = new SpectralIndexBase[subsegmentResults.Length];
+                //analysisResults.SummaryIndices = new SummaryIndexBase[subsegmentResults.Length];
+                //analysisResults.SpectralIndices = new SpectralIndexBase[subsegmentResults.Length];
 
                 for (int i = 0; i < subsegmentResults.Length; i++)
                 {
                     var indexCalculateResult = subsegmentResults[i];
+
                     indexCalculateResult.SummaryIndexValues.FileName = segmentSettings.Segment.SourceMetadata.Identifier;
                     indexCalculateResult.SpectralIndexValues.FileName = segmentSettings.Segment.SourceMetadata.Identifier;
 
-                    analysisResults.SummaryIndices[i] = indexCalculateResult.SummaryIndexValues;
-                    analysisResults.SpectralIndices[i] = indexCalculateResult.SpectralIndexValues;
+                    //analysisResultsSummaryIndices.Add(indexCalculateResult.SummaryIndexValues);
+                    //analysisResultsSpectralIndices.Add(indexCalculateResult.SpectralIndexValues);
+
+                    if (i == 0)
+                    {
+                        analysisResults.SummaryIndices[i + bandCount] = indexCalculateResult.SummaryIndexValues;
+                        analysisResults.SpectralIndices[i + bandCount] = indexCalculateResult.SpectralIndexValues;
+                    }
+                    else
+                    {
+                        analysisResults.SummaryIndices[bandCount + configuration.Bands.Count] = indexCalculateResult.SummaryIndexValues;
+                        analysisResults.SpectralIndices[bandCount + configuration.Bands.Count] = indexCalculateResult.SpectralIndexValues;
+                    }
+
                     trackScores.AddRange(indexCalculateResult.TrackScores);
                     if (indexCalculateResult.Tracks != null)
                     {
@@ -169,7 +222,7 @@ namespace AnalysisPrograms.StandardizedFeatures
                     }
                 }
 
-                analysisSettings.AnalysisDataSaveBehavior = true;
+                analysisSettings.AnalysisDataSaveBehavior = false;
                 if (analysisSettings.AnalysisDataSaveBehavior)
                 {
                     this.WriteSummaryIndicesFile(segmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
@@ -178,19 +231,16 @@ namespace AnalysisPrograms.StandardizedFeatures
 
                 if (analysisSettings.AnalysisDataSaveBehavior)
                 {
-                    string FftWindowDescription = "FftWindow" + band.FftWindow.ToString();
-                    string MelDescription = "Mel" + band.MelScale.ToString();
-                    string BandWidthDescription = "BandWidth" + minBand.ToString() + "-" + maxBand.ToString();
-
-                    string fileNameBase = Path.GetFileNameWithoutExtension(segmentSettings.SegmentAudioFile.Name) +
-                                          "_" + FftWindowDescription + "_" + MelDescription + "_" +
-                                          BandWidthDescription;
                     analysisResults.SpectraIndicesFiles =
                         this.WriteSpectrumIndicesFiles(
                             segmentSettings.SegmentSpectrumIndicesDirectory,
-                            fileNameBase,
+                            Path.GetFileNameWithoutExtension(segmentSettings.SegmentAudioFile.Name),
                             analysisResults.SpectralIndices);
                 }
+
+                bandCount += 1;
+
+                Log.InfoFormat("Completed band {0}/{1}", bandCount, configuration.Bands.Count);
             }
 
             // Set savebehavior to always so it saves image
@@ -203,7 +253,10 @@ namespace AnalysisPrograms.StandardizedFeatures
                 analysisResults.ImageFile = new FileInfo(imagePath);
                 LoggedConsole.WriteLine("See {0} for spectrogram pictures", imagePath);
             }
-     
+
+            // Transform lists that store summary and spectral indices for BOTH bands to array
+            //analysisResults.SummaryIndices = analysisResultsSummaryIndices.ToArray();
+            //analysisResults.SpectralIndices = analysisResultsSpectralIndices.ToArray();
 
             return analysisResults;
         }
@@ -220,19 +273,73 @@ namespace AnalysisPrograms.StandardizedFeatures
 
         public List<FileInfo> WriteSpectrumIndicesFilesCustom(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
-            var selectors = results.First().GetSelectors();
+            // Group results based on configuration
+            Dictionary<string, List<SpectralIndexBase>> dict = GroupResultsOnConfiguration(results);
 
-            var spectralIndexFiles = new List<FileInfo>(selectors.Count);
+            var spectralIndexFiles = new List<FileInfo>();
 
-            foreach (var kvp in selectors)
+            // For each group and for each selector?? create a csv file
+            foreach (var configGroup in dict)
             {
-                // write spectrogram to disk as CSV file
-                var filename = FilenameHelpers.AnalysisResultPath(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv", "banana", "Kiwi").ToFileInfo();
-                spectralIndexFiles.Add(filename);
-                Csv.WriteMatrixToCsv(filename, results, kvp.Value);
+                var groupResults = configGroup.Value;
+
+                var selectors = groupResults.First().GetSelectors();
+
+                // Get the values of the band configuration, since they all have same configuration, just get the first item
+                var config = (SpectralIndexValues)groupResults.First();
+                string minBandWidth = config.Configuration.MinBandWidth.ToString();
+                string maxBandWidth = config.Configuration.MaxBandWidth.ToString();
+                string mel;
+                string melScale;
+                if (config.Configuration.MelScale!= 0)
+                {
+                    mel = "Mel";
+                    melScale = config.Configuration.MelScale.ToString();
+                }
+                else
+                {
+                    mel = "Standard";
+                    melScale = 0.ToString();
+                }
+
+                string fftWindow = config.Configuration.FrameLength.ToString();
+
+                foreach (var kvp in selectors)
+                {
+                    // write spectrogram to disk as CSV file
+                    var filename = FilenameHelpers.AnalysisResultPath(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv", minBandWidth, maxBandWidth, mel, melScale, "FftWindow", fftWindow).ToFileInfo();
+                    spectralIndexFiles.Add(filename);
+                    Csv.WriteMatrixToCsv(filename, groupResults, kvp.Value);
+                }
             }
 
             return spectralIndexFiles;
+        }
+
+        public static Dictionary<string, List<SpectralIndexBase>> GroupResultsOnConfiguration(IEnumerable<SpectralIndexBase> results)
+        {
+            Dictionary<string, List<SpectralIndexBase>> dict = new Dictionary<string, List<SpectralIndexBase>>();
+
+            // Group the results based on the band configuration they have
+            foreach (var spectralIndexBase in results)
+            {
+                var spectralIndexValues = (SpectralIndexValues)spectralIndexBase;
+
+                // HACK: This is a really cheap and dodgy way to do structural equality, but Anthony told me to do it
+                var spectralIndexValuesConfiguration = Json.SerialiseToString(spectralIndexValues.Configuration, false);
+
+                if (dict.ContainsKey(spectralIndexValuesConfiguration))
+                {
+                    dict[spectralIndexValuesConfiguration].Add(spectralIndexBase);
+                }
+                else
+                {
+                    dict.Add(spectralIndexValuesConfiguration, new List<SpectralIndexBase>());
+                    dict[spectralIndexValuesConfiguration].Add(spectralIndexBase);
+                }
+            }
+
+            return dict;
         }
 
         public override List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)

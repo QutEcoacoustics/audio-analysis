@@ -337,6 +337,11 @@ namespace AnalysisPrograms
             var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
             analysisResults.AnalysisIdentifier = this.Identifier;
 
+            // Convert the dynamic config to IndexCalculateConfig class and merge in the unnecesary parameters.
+            IndexCalculateConfig config = IndexCalculateConfig.GetConfig(analysisSettings.Configuration, false);
+            config.IndexCalculationDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration;
+            config.BgNoiseBuffer = acousticIndicesParsedConfiguration.BgNoiseNeighborhood;
+
             // calculate indices for each subsegment
             IndexCalculateResult[] subsegmentResults = CalculateIndicesInSubsegments(
                 recording,
@@ -346,7 +351,7 @@ namespace AnalysisPrograms
                 acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
                 acousticIndicesParsedConfiguration.IndexPropertiesFile,
                 segmentSettings.Segment.SourceMetadata.SampleRate,
-                analysisSettings.Configuration);
+                config);
 
             var trackScores = new List<Plot>(subsegmentResults.Length);
             var tracks = new List<SpectralTrack>(subsegmentResults.Length);
@@ -641,7 +646,7 @@ namespace AnalysisPrograms
             TimeSpan bgNoiseNeighborhood,
             FileInfo indexPropertiesFile,
             int sampleRateOfOriginalAudioFile,
-            dynamic configuration)
+            IndexCalculateConfig config)
         {
             if (recording.WavReader.Channels > 1)
             {
@@ -676,11 +681,6 @@ namespace AnalysisPrograms
             Log.Trace(subsegmentCount + " sub segments will be calculated");
 
             var indexCalculateResults = new IndexCalculateResult[subsegmentCount];
-
-            // Convert the dynamic config to IndexCalculateConfig class and merge in the unnecesary parameters.
-            IndexCalculateConfig config = IndexCalculateConfig.GetConfig(configuration, false);
-            config.IndexCalculationDuration = indexCalculationDuration;
-            config.BgNoiseBuffer = bgNoiseNeighborhood;
 
             // calculate indices for each subsegment
             for (int i = 0; i < subsegmentCount; i++)
