@@ -51,7 +51,7 @@ namespace AudioAnalysisTools.Indices
             // empty constructor important!
         }
 
-        public SpectralIndexValues(int spectrumLength, Dictionary<string, IndexProperties> indexProperties)
+        public SpectralIndexValues(int spectrumLength, Dictionary<string, IndexProperties> indexProperties, IndexCalculateConfig configuration)
         {
             foreach (var cachedSetter in CachedSetters)
             {
@@ -73,6 +73,8 @@ namespace AudioAnalysisTools.Indices
                 // This prevents multiple warnings through loop.
                 this.SetPropertyValue(cachedSetter.Key, initArray);
             }
+
+            this.Configuration = configuration;
         }
 
         /// <summary>
@@ -189,6 +191,15 @@ namespace AudioAnalysisTools.Indices
             var combinedImage = ImageTools.CombineImagesVertically(images.ToArray());
             return combinedImage;
         }
+
+        /// <summary>
+        /// Gets the configuration used to generate these results.
+        /// </summary>
+        /// <remarks>
+        /// This property was added when we started generating lots of results that used
+        /// different parameters - we needed a way to diambiguate them.
+        /// </remarks>
+        public IndexCalculateConfig Configuration { get; }
 
         public double[] ACI { get; set; }
 

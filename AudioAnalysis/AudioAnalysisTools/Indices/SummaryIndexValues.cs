@@ -20,7 +20,8 @@ namespace AudioAnalysisTools.Indices
             int freqBinCount,
             Dictionary<string, IndexProperties> indexProperties,
             TimeSpan indexCalculationDuration,
-            TimeSpan subsegmentOffset)
+            TimeSpan subsegmentOffset,
+            IndexCalculateConfig configuration)
         {
             TimeSpan durationOfResult = indexCalculationDuration; // subsegment TimeSpan
 
@@ -40,7 +41,7 @@ namespace AudioAnalysisTools.Indices
                                                   durationOfResult.TotalSeconds,
                                           };
 
-            this.SpectralIndexValues = new SpectralIndexValues(freqBinCount, indexProperties)
+            this.SpectralIndexValues = new SpectralIndexValues(freqBinCount, indexProperties, configuration)
                                            {
                                                // give the results object an offset value so it can be sorted.
                                                ResultStartSeconds =

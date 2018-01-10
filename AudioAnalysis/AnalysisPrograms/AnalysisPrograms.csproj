@@ -226,7 +226,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AcousticHiResIndicesPlusRecognizers.cs" />
-    <Compile Include="AcousticIndices - Copy %282%29.cs" />
     <Compile Include="AcousticWorkbench.Orchestration\EventMetadataResolver.cs" />
     <Compile Include="AcousticWorkbench.Orchestration\RemoteSegment.cs" />
     <Compile Include="AED.cs" />

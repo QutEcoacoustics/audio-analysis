@@ -127,7 +127,7 @@ namespace AudioAnalysisTools.Indices
 
             // INITIALISE a RESULTS STRUCTURE TO return
             // initialize a result object in which to store SummaryIndexValues and SpectralIndexValues etc.
-            var result = new IndexCalculateResult(freqBinCount, indexProperties, indexCalculationDuration, subsegmentOffsetTimeSpan);
+            var result = new IndexCalculateResult(freqBinCount, indexProperties, indexCalculationDuration, subsegmentOffsetTimeSpan, config);
             SummaryIndexValues summaryIndices = result.SummaryIndexValues;
             SpectralIndexValues spectralIndices = result.SpectralIndexValues;
 
@@ -152,6 +152,10 @@ namespace AudioAnalysisTools.Indices
                 minBand,
                 dspOutput1.AmplitudeSpectrogram.GetLength(0) - 1,
                 maxBand);
+
+            // Recalculate NyquistBin and FreqBinWidth, because they change with band selection
+            dspOutput1.NyquistBin = dspOutput1.AmplitudeSpectrogram.GetLength(1) - 1;
+            dspOutput1.FreqBinWidth = sampleRate / (double)dspOutput1.AmplitudeSpectrogram.GetLength(1) / 2;
 
             // Linear or Octave or Mel frequency scale? Set Linear as default.
             var freqScale = new FrequencyScale(nyquist: nyquist, frameSize: frameSize, hertzLinearGridInterval: 1000);
@@ -183,8 +187,6 @@ namespace AudioAnalysisTools.Indices
                     0,
                     recording.Nyquist);
             }
-
-            LoggedConsole.WriteLine("Melscale is {0}", melScale);
 
             // NOW EXTRACT SIGNAL FOR BACKGROUND NOISE CALCULATION
             // If the index calculation duration >= 30 seconds, then calculate BGN from the existing segment of recording.
