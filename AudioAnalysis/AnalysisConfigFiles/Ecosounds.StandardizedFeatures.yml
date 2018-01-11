@@ -20,16 +20,11 @@ Bands:
     Bandwidth: 
       Min: 0.33
       Max: 0.66
-  - FftWindow: 512
-    MelScale: 200
-    Filter: None
-    Bandwidth: 
-      Min: 0.33
-      Max: 0.66
+
 
 # IndexCalculationDuration: units=seconds (default=60 seconds; use 0.1 for zooming spectrogram tiles)
 # The Timespan (in seconds) over which summary and spectral indices are calculated
-IndexCalculationDuration: 30.0
+IndexCalculationDuration: 10.0
 
 # BgNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
 # BG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
