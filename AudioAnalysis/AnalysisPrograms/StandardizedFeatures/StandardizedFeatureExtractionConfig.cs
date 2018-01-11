@@ -11,7 +11,7 @@ namespace AnalysisPrograms.StandardizedFeatures
     using AudioAnalysisTools.Indices;
 
     [Serializable]
-    public class StandardizedFeatureExtractionConfigDelete
+    public class StandardizedFeatureExtractionConfig
     {
         public string AnalysisName { get; set; }
 
@@ -48,7 +48,7 @@ namespace AnalysisPrograms.StandardizedFeatures
         public string IndexPropertiesConfig { get; set; }
 
         [Serializable]
-        public class BandsProperties
+        public class BandsProperties : IEquatable<BandsProperties>
         {
             public int FftWindow { get; set; }
 
@@ -57,14 +57,30 @@ namespace AnalysisPrograms.StandardizedFeatures
             public string Filter { get; set; }
 
             public Bandwidth Bandwidth { get; set; }
+
+            public bool Equals(BandsProperties other)
+            {
+                if (other == null) return false;
+                return this.FftWindow == other.FftWindow && 
+                    this.MelScale == other.MelScale && 
+                    this.Filter == other.Filter &&
+                    this.Bandwidth.Equals(other.Bandwidth);
+            }
         }
 
         [Serializable]
-        public class Bandwidth
+        public class Bandwidth : IEquatable<Bandwidth>
         {
             public double Min { get; set; }
 
             public double Max { get; set; }
+
+            public bool Equals(Bandwidth other)
+            {
+                if (other == null) return false;
+                return this.Min == other.Min &&
+                       this.Max == other.Max;
+            }
         }
     }
 }

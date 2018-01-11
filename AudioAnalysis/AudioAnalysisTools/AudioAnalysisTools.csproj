@@ -270,7 +270,6 @@
     <Compile Include="Indices\IndexProperties.cs" />
     <Compile Include="Indices\SpectralIndexValues.cs" />
     <Compile Include="Indices\SpectralIndicesToAndFromTable.cs" />
-    <Compile Include="Indices\StandardizedFeatureExtractionConfig.cs" />
     <Compile Include="Indices\SummaryIndexValues.cs" />
     <Compile Include="Indices\InitialiseIndexProperties.cs" />
     <Compile Include="Indices\RainIndices.cs" />
