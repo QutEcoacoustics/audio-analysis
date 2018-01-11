@@ -144,6 +144,7 @@ assign(paste("hclust_clusters_", k1[k], sep = ""), clusters)
 save(list = paste("hclust_clusters_", k1[k], sep = ""), 
      file = paste("data/datasets/hclust_results/hclust_clusters", 
                   k1[k],".Rdata",sep=""))
+paste(Sys.time(), " Finishing hclust clustering", sep = " ")
 
 # Instead of knn the centers should have been used to assign the 
 # whole dataset

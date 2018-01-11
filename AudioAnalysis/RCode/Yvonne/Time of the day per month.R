@@ -101,13 +101,13 @@ for (i in 1:(length(per.month.per.period)-1)) {
       par(new=F)
       barplot(per.month.per.period[(1+length_Gympie/length(dates1)):
                                      (2*(length_Gympie/length(dates1))),i],beside=T,
-              col="red", ,xlab="hours", ylim=c(0,(max(per.month.per.period[1:length_Gympie,i])+0.2)),
+              col="red", xlab="hours", ylim=c(0,(max(per.month.per.period[1:length_Gympie,i])+0.2)),
               main=substr(per.month.per.period$site.yr.mth[13],10,16))
       axis(side=1, at=seq(0.2,16.4,2.39),labels=c(0,4,8,12,16,20,24), tick=F)
       par(new=F)
       barplot(per.month.per.period[(1+2*length_Gympie/length(dates1)):
                                      (3*(length_Gympie/length(dates1))),i],
-              beside=T, col="red", ,xlab="hours", 
+              beside=T, col="red", xlab="hours", 
               ylim=c(0,(max(per.month.per.period[1:length_Gympie,i])+0.2)),
               main=substr(per.month.per.period$site.yr.mth[25],10,16))
       axis(side=1, at=seq(0.2,16.4,2.39),labels=c(0,4,8,12,16,20,24), tick=F)
@@ -143,14 +143,14 @@ for (i in 1:(length(per.month.per.period)-1)) {
   par(new=F)
   barplot(per.month.per.period[(1+(6*(length_Woondum/length(dates1)))):
                                  (7*(length_Woondum/length(dates1))),i],
-          beside=T, col="red", ,xlab="hours", 
+          beside=T, col="red", xlab="hours", 
           ylim=c(0,(max(per.month.per.period[(1+length_Woondum):(length(per.month.per.period$V1)),i])+0.2)),
           main=substr(per.month.per.period$site.yr.mth[73],11,17))
   axis(side=1, at=seq(0.2,16.4,2.39),labels=c(0,4,8,12,16,20,24), tick=F)
   par(new=F)
   barplot(per.month.per.period[(1+7*length_Woondum/length(dates1)):
                                  (8*(length_Woondum/length(dates1))),i],
-          beside=T, col="red", ,xlab="hours", 
+          beside=T, col="red", xlab="hours", 
           ylim=c(0,(max(per.month.per.period[(1+length_Woondum):(length(per.month.per.period$V1)),i])+0.2)),
           main=substr(per.month.per.period$site.yr.mth[85],11,17))
   axis(side=1, at=seq(0.2,16.4,2.39),labels=c(0,4,8,12,16,20,24), tick=F)
@@ -189,14 +189,14 @@ for (i in 1:(length(per.month.per.period)-1)) {
   barplot(per.month.per.period[(1+length_Gympie/length(dates1)):
                                  (2*(length_Gympie/length(dates1))),i], 
           beside=T,
-          col="red", ,xlab="hours", 
+          col="red", xlab="hours", 
           ylim=c(0,(max(per.month.per.period[1:length(per.month.per.period$V1),i])+0.2)),
           main=substr(per.month.per.period$site.yr.mth[13],10,16))
   axis(side=1, at=seq(0.2,16.4,2.39),labels=c(0,4,8,12,16,20,24), tick=F)
   par(new=F)
   barplot(per.month.per.period[(1+2*length_Gympie/length(dates1)):
                                  (3*(length_Gympie/length(dates1))),i],
-          beside=T, col="red", ,xlab="hours", 
+          beside=T, col="red", xlab="hours", 
           ylim=c(0,(max(per.month.per.period[1:length(per.month.per.period$V1),i])+0.2)),
           main=substr(per.month.per.period$site.yr.mth[25],10,16))
   axis(side=1, at=seq(0.2,16.4,2.39),labels=c(0,4,8,12,16,20,24), tick=F)
@@ -226,14 +226,14 @@ for (i in 1:(length(per.month.per.period)-1)) {
   par(new=F)
   barplot(per.month.per.period[(1+(6*(length_Woondum/length(dates1)))):
                                  (7*(length_Woondum/length(dates1))),i],
-          beside=T, col="red", ,xlab="hours", 
+          beside=T, col="red", xlab="hours", 
           ylim=c(0,(max(per.month.per.period[1:length(per.month.per.period$V1),i])+0.2)),
           main=substr(per.month.per.period$site.yr.mth[73],11,17))
   axis(side=1, at=seq(0.2,16.4,2.39),labels=c(0,4,8,12,16,20,24), tick=F)
   par(new=F)
   barplot(per.month.per.period[(1+7*length_Woondum/length(dates1)):
                                  (8*(length_Woondum/length(dates1))),i],
-          beside=T, col="red", ,xlab="hours", 
+          beside=T, col="red", xlab="hours", 
           ylim=c(0,(max(per.month.per.period[1:length(per.month.per.period$V1),i])+0.2)),
           main=substr(per.month.per.period$site.yr.mth[85],11,17))
   axis(side=1, at=seq(0.2,16.4,2.39),labels=c(0,4,8,12,16,20,24), tick=F)

@@ -25,6 +25,7 @@ rm(date.list)
 
 kalscpe_data <- read.csv("C:\\Work2\\Kaleidoscope\\20150621\\GympieNP\\all_data_added_protected.csv", header=T)
 kalscpe_data <- kalscpe_data[,2:39]
+kalscpe_data <- read.csv("all_data_added_protected.csv", header=T)
 
 species <- c("EYR","WTT","WTH","KOOK","SC1","SC2","EW")
 statistics <- data.frame(date="20150622",
@@ -258,7 +259,7 @@ a2 <- which(temp_kalscpe_data$DURATION > 3.8)
 data_bird <- read.csv("C:\\Work2\\Projects\\Twelve_,month_clustering\\Saving_dataset\\species_each_minute_protected_final_with_species_numbers_sorted_by_num_spec.csv", header=T)
 data_bird <- data.frame(data_bird)
 #View(data_bird)
-a <- which(data_bird$minute_reference < 406)
+a <- which(data_bird$minute_reference < 405)
 temp_data_bird <- data_bird[a,]
 temp_data_bird$Rain <- as.numeric(temp_data_bird$Rain)
 
@@ -465,10 +466,50 @@ source("scripts\\PowerfulOwl.R") # row 13
 source("scripts\\WhiteThroatedNightjar.R") # row 14
 source("scripts\\Rain.R") # row 15
 source("scripts\\AnimalMovement.R") # row 16
-source("scripts\\LaughingKookaburra_Far.R") # row 17
+
+source("scripts\\EasternYellowRobin_FAR.R") # row 17
+source("scripts\\LaughingKookaburra_FAR.R") # row 18
+source("scripts\\ScarletHoneyeater1_FAR.R") # row 19
+source("scripts\\ScarletHoneyeater2_FAR.R") # row 20
+source("scripts\\WhiteThroatedHoneyeater_FAR.R") # row 21
+source("scripts\\WhiteThroatedTreecreeper_FAR.R") # row 22
+source("scripts\\EasternWhipbird_FAR.R") # row 23
+View(table[,c(1,2,5,13,16,17,35,39,41,45,60)])
 View(table)
+for(i in 2:62) {
+  table[ ,i] <- as.numeric(table[ ,i])
+}
+str(table)
+for(i in 1:nrow(table)) {
+  table$total_3_58[i] <- sum(table[i,5],table[i,13],
+                             table[i,16],table[i,17],table[i,35],
+                             table[i,39],table[i,41],table[i,45],
+                             table[i,60])
+}
+View(table[,c(1,2,5,13,16,17,35,39,41,45,60,64)])
 
 write.csv(table, "data\\Cluster_species_percentages.csv", row.names = F)
+N_3 <- which(temp_data_bird$cluster_list==3)
+length(N_3)
+N_11 <- which(temp_data_bird$cluster_list==11)
+length(N_11)
+N_14 <- which(temp_data_bird$cluster_list==14)
+length(N_14)
+N_15 <- which(temp_data_bird$cluster_list==15)
+length(N_15)
+N_33 <- which(temp_data_bird$cluster_list==33)
+length(N_33)
+
+N_37 <- which(temp_data_bird$cluster_list==37)
+length(N_37)
+N_39 <- which(temp_data_bird$cluster_list==39)
+length(N_39)
+N_43 <- which(temp_data_bird$cluster_list==43)
+length(N_43)
+N_58 <- which(temp_data_bird$cluster_list==58)
+length(N_58)
+
+
 
 
 ylim1 <- c(0,7)

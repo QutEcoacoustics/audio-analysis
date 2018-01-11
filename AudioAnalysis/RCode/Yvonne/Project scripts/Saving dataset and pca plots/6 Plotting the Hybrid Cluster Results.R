@@ -90,7 +90,7 @@ column <- k2_value/5
 
 file_name <- paste("C:/Work/Projects/Twelve_month_clustering/Saving_dataset/data/datasets/hclust_results/hclust_clusters",
                    k1_value, ".RData", sep = "")
-file_name_short <- paste("hclust_clusters_",k1_value, sep = "")
+file_name_short <- paste("hclust_clusters_", k1_value, sep = "")
 # remove unneeded values
 load(file_name)
 # load the cluster list 
@@ -631,15 +631,6 @@ col_func(cluster_colours, version = version)
 cluster_list$descpt <- 0
 list <- unique(cluster_colours$Feature)
 list <- as.character(list[1:(length(list)-1)])
-
-# This is the old listing
-#rain <- c(59,18,10,54,2,21,38,60)
-#wind <- c(42,47,51,56,52,45,8,40,24,19,46,28,9,25,30,20)
-#birds <- c(43,37,57,3,58,11,33,15,14,39,4)
-#insects <- c(29,17,1,27,22,26)
-#cicada <- c(48,44,34,7,12,32,16)
-#plane <- c(49,23)
-#quiet <- c(13,5,6,53,36,31,50,35,55,41)
 
 # This is the final listing
 # 38 removed 17 added 
@@ -1814,15 +1805,75 @@ for (k in 1:2) {
 # remove all objects in the global environment
 rm(list = ls())
 
-# choose a colour version to be used in col_func.R 
-version <- "colourblind" # choice: "ordinary" or "colourblind"
-
 # *** Set the cluster set variables
 k1_value <- 25000
 k2_value <- 60
 
 cluster_list <- read.csv(paste("data/datasets/chosen_cluster_list_",
                                k1_value, "_", k2_value, ".csv", sep=""), header = T)
+
+
+# set the start date in "YYYY-MM-DD" format
+start_date <- "2015-06-22"
+
+
+# Generate a date sequence & locate the first of each month
+days <- floor(nrow(cluster_list)/(2*1440))
+start <- as.POSIXct(start_date)
+interval <- 1440
+end <- start + as.difftime(days, units="days")
+dates <- seq(from=start, by=interval*60, to=end)
+first_of_month <- which(substr(dates, 9, 10)=="01")
+
+# Prepare civil dawn, civil dusk and sunrise and sunset times
+#civil_dawn <- read.csv("data/Sunrise_Sunset_Solar Noon_protected.csv", header=T)
+civil_dawn_2015 <- read.csv("data/Geoscience_Australia_Sunrise_times_Gympie_2015.csv")
+civil_dawn_2016 <- read.csv("data/Geoscience_Australia_Sunrise_times_Gympie_2016.csv")
+civil_dawn <- rbind(civil_dawn_2015, civil_dawn_2016)
+
+a <- which(civil_dawn$dates==paste(substr(start, 1,4), substr(start, 6,7),
+                                   substr(start, 9,20),sep = "-"))
+reference <- a:(a+days-1)
+civil_dawn_times <- civil_dawn$CivSunrise[reference]
+civil_dusk_times <- civil_dawn$CivSunset[reference]
+sunrise_times <- civil_dawn$Sunrise[reference]
+sunset_times <- civil_dawn$Sunset[reference]
+
+# find the minute of civil dawn for each day
+civ_dawn <- NULL
+for(i in 1:length(civil_dawn_times)) {
+  hour <- as.numeric(substr(civil_dawn_times[i], 1,1))
+  min <- as.numeric(substr(civil_dawn_times[i], 2,3))
+  minute <- hour*60 + min
+  civ_dawn <- c(civ_dawn, minute)
+}
+
+civ_dusk <- NULL
+for(i in 1:length(civil_dusk_times)) {
+  hour <- as.numeric(substr(civil_dusk_times[i], 1,2)) 
+  min <- as.numeric(substr(civil_dusk_times[i], 3,4))
+  minute <- hour*60 + min
+  civ_dusk <- c(civ_dusk, minute)
+}
+
+sunrise <- NULL
+for(i in 1:length(sunrise_times)) {
+  hour <- as.numeric(substr(sunrise_times[i], 1,1))
+  min <- as.numeric(substr(sunrise_times[i], 2,3))
+  minute <- hour*60 + min
+  sunrise <- c(sunrise, minute)
+}
+
+sunset <- NULL
+for(i in 1:length(sunset_times)) {
+  hour <- as.numeric(substr(sunset_times[i], 1,2)) 
+  min <- as.numeric(substr(sunset_times[i], 3,4))
+  minute <- hour*60 + min
+  sunset <- c(sunset, minute)
+}
+
+# choose a colour version to be used in col_func.R 
+version <- "colourblind" # choice: "ordinary" or "colourblind"
 
 site1 <- rep("GympieNP", nrow(cluster_list)/2)
 site2 <- rep("WoondumNP", nrow(cluster_list)/2)
@@ -1983,6 +2034,10 @@ if(version=="colourblind") {
   a <- which(cluster_list$descpt=="BIRDS")
   cluster_list$class[a] <- as.character("BIRDS")
   cluster_list$col[a] <- bird_col
+  a <- which(cluster_list$cluster_list==4)
+  cluster_list$class[a] <- as.character("INSECTS")
+  cluster_list$col[a] <- insect_col
+  cluster_list$descpt[a] <- as.character("INSECTS")
   a <- which(cluster_list$descpt=="NA")
   cluster_list$class[a] <- as.character("NA")
   cluster_list$col[a] <- na_col
@@ -2058,12 +2113,13 @@ if(site=="GympieNP") {
 if(site=="WoondumNP") {
   file <- "woon_cluster_list"  
 }
-
+#list <- c(2,3,15)
 for(l in 1:length(dates1)) {
-  png(paste("plots/daily_dot_matrix1/daily_dot_matrix_",site,"_", dates1[l], 
-            ".png", sep = ""), width = 1658, height = 1658)
+  tiff(paste("plots/daily_dot_matrix1/daily_dot_matrix_",site,"_", dates1[l], 
+             ".png", sep = ""), width = 1000, height = 1000,
+       res=300)
   df <- get(file)[(1440*l-1440+1):(l*1440),]
-  par(mar=c(3, 3, 1, 1))
+  par(mar=c(1, 1.1, 0.4, 0.05))
   # Plot an empty plot with no axes or frame
   plot(c(0, 1440), c(1440, 1), 
        type = "n",axes=FALSE, frame.plot=FALSE,
@@ -2105,17 +2161,36 @@ for(l in 1:length(dates1)) {
     }
   }
   # plot title
-  title(paste(site, " ", dates1[l]), cex.main=3, line = -2)
+  if(site=="GympieNP") 
+    title(paste("Gympie National Park", dates1[l]), cex.main=0.7, 
+          line = -0.2)
+  if(site=="WoondumNP") 
+    title(paste("Woondum National Park", dates1[l]), cex.main=0.7, 
+          line = -0.2)
   # x axis labels
   at <- seq(120, 1440, by = 120)
-  axis(side = 1, at = at, line = -7, 
+  axis(side = 1, at = at, line = -2.55, 
        labels = c("2","4","6","8","10","12","14","16","18","20",
-                  "22", "24"), cex.axis=2.1, outer = TRUE,
-       las=T, pos = NA)
+                  "22", "24"), tcl=-0.3, 
+       cex.axis=0.6, outer = TRUE,
+       las=T, pos = NA, tick=FALSE)
+  axis(side = 1, at = at, line = -1.53, 
+       labels = c("","","","","","","","","","",
+                  "", ""), tcl=-0.3, 
+       cex.axis=0.6, outer = TRUE,
+       las=T, pos = NA, tick=TRUE, lwd=0.2)
+  at <- seq(60, 1440, by = 60)
+  axis(side = 1, at = at, line = -1.53, 
+       labels = c("", "", "", "", "", "",
+                  "", "", "", "", "", "", 
+                  "", "", "", "", "", "",
+                  "", "", "", "", "", ""), tcl=-0.3, 
+       cex.axis=0.6, outer = TRUE,
+       las=T, pos = NA, tick=TRUE, lwd=0.2)
   # x axis ticks
-  at <- seq(0, 1440, by = 10)
-  axis(1, line = -7, at = at, tick = TRUE,
-       labels = FALSE, outer=TRUE)
+  at <- seq(0, 1440, by = 15)
+  axis(1, line = -1.53, at = at, tick = TRUE,
+       labels = FALSE, outer=TRUE, lwd = 0.1, tcl=-0.2)
   # vertical and horizontal dotted lines
   #abline (v=seq(120, 1440, 120), 
   #        h=seq(120, 1440, 120), 
@@ -2126,15 +2201,49 @@ for(l in 1:length(dates1)) {
            lty = 2, lwd = 0.1)
   segments(x0 = 0, y0 = y, x1 = 1441, y1 = y,
            lty = 2, lwd = 0.1)
+  x <- c(sunrise[l], sunset[l])
+  y <- c(civ_dawn[l], civ_dusk[l])
+  segments(x0 = x, y0 = 0, x1 = x, y1 = 1440,
+           lty = 2, lwd = 0.9, col="black")
+  segments(x0 = 0, y0 = y, x1 = 1441, y1 = y,
+           lty = 2, lwd = 0.9, col="black")
+  segments(x0 = y, y0 = 0, x1 = y, y1 = 1440,
+           lty = 2, lwd = 0.9, col="black")
+  segments(x0 = 0, y0 = x, x1 = 1441, y1 = x,
+           lty = 2, lwd = 0.9, col="black")
+  
   # y axis labels
   at <- seq(1, 1441, by = 120)
-  axis(2, at = at, line = -4, 
+  axis(side=2, at = at, line = -2.23, 
        labels = c("0","2","4","6","8","10",
                   "12","14","16","18","20",
-                  "22", "24"), cex.axis=2.1, las=T, pos=NA)
+                  "22", "24"), tcl=-0.3,
+       cex.axis=0.6, outer = TRUE, 
+       las=T, tick=F)
+  axis(side=2, at = at, line = -1.63, 
+       labels = c("","","","","","",
+                  "","","","","",
+                  "", ""), tcl=-0.3, lwd=0.2,
+       cex.axis=0.6, outer = TRUE, 
+       las=T, tick=T)
+  at <- seq(1, 1441, by = 60)
+  axis(side=2, at = at, line = -1.63, 
+       labels = c("", "", "", "", "", "",
+                  "", "", "", "", "", "", 
+                  "", "", "", "", "", "",
+                  "", "", "", "", "", "", ""), 
+       tcl=-0.3, lwd=0.2,
+       cex.axis=0.6, outer = TRUE, 
+       las=T, tick=T)
   # y axis ticks
-  at <- seq(1, 1441, by = 10)
-  axis(2, line = -4, at = at, tick = TRUE,
-       labels = FALSE, pos=NA)
+  at <- seq(1, 1441, by = 15)
+  axis(2, line = -1.63, at = at, tick = TRUE,
+       labels = FALSE, outer=TRUE, pos=NA, 
+       lwd = 0.1, tcl=-0.2)
+  mtext(side=1,line=0.1, "24 hours", cex=0.6)
+  mtext(side=2,line=0.5, "24 hours", cex=0.6)
   dev.off()
+  print(l)
+  print(x)
+  print(y)
 }

@@ -26,42 +26,7 @@
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # 1. Plot PCA plot ------------------------------------------------------
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# remove all objects in the global environment
-rm(list = ls())
-
-# Set the first day of recording
-start_date <- "2015-06-22"
-
-# load all of the summary indices as "indices_all"
-load(file="data/datasets/summary_indices.RData")
-# remove redundant indices
-remove <- c(1,4,11,13,17:19)
-indices_all <- indices_all[,-remove]
-rm(remove)
-
-# IMPORTANT:  These are used to name the plots
-site <- c("Gympie NP", "Woondum NP")
-index <- "SELECTED_Final" # or "ALL"
-type <- "Summary"
-paste("The dataset contains the following indices:"); colnames(indices_all)
-
-# Generate a list of the missing minutes in summary indices
-#missing_minutes_summary <- which(is.na(indices_all[,1]))
-#save(missing_minutes_summary, file = "data/datasets/missing_minutes_summary_indices.RData")
-load(file="data/datasets/missing_minutes_summary_indices.RData")
-
-# List of summary indices columns:
-#[1] "AvgSignalAmplitude"         [2]  "BackgroundNoise"          
-#[3] "Snr"                        [4]   "AvgSnrOfActiveFrames"     
-#[5] "Activity"                   [6]   "EventsPerSecond"          
-#[7] "HighFreqCover"              [8]   "MidFreqCover"             
-#[9] "LowFreqCover"               [10]  "AcousticComplexity"       
-#[11] "TemporalEntropy"           [12]  "EntropyOfAverageSpectrum" 
-#[13] "EntropyOfVarianceSpectrum" [14]  "EntropyOfPeaksSpectrum"   
-#[15] "EntropyOfCoVSpectrum"      [16]  "ClusterCount"             
-#[17] "ThreeGramCount"            [18]  "NDSI"                     
-#[19] "SptDensity" 
-
+## DO NOT LOAD ######ONLY for SPECTRAL INDICES
 # Load the SPECTRAL indices
 # remove all objects in the global environment
 rm(list = ls())
@@ -87,6 +52,61 @@ rm(remove)
 site <- c("Gympie NP", "Woondum NP")
 index <- "SELECTED_Final"
 type <- "Spectral"
+############### END OF SPECTRAL INDICES ONLY
+
+# remove all objects in the global environment
+rm(list = ls())
+
+# Set the first day of recording
+actual_start_date <- "2015-06-22"
+start_date <- "2015-09-01" # where the plot will start
+actual_end_date <- "2016-07-23"
+end_date <- "2016-02-01"
+interval <- 1440
+start <- as.POSIXct(actual_start_date)
+end <- as.POSIXct(actual_end_date)
+dates <- seq(from=start, 
+             by=interval*60, to=end)
+total_days <- length(dates)
+rm(start, end)
+first_of_month <- which(substr(dates, 9, 10)=="01")
+d <- which(substr(dates,1,10)==start_date)
+e <- which(substr(dates,1,10)==end_date)
+
+start <- as.POSIXct(start_date)
+end <- as.POSIXct(end_date)
+#end <- start + as.difftime(days, units="days")
+dates <- seq(from=start, by=interval*60, to=end)
+
+# load all of the summary indices as "indices_all"
+load(file="C:/Work/Projects/Twelve_month_clustering/Saving_dataset/data/datasets/summary_indices.RData")
+# remove redundant indices
+remove <- c(1,4,11,13,17:19)
+indices_all <- indices_all[,-remove]
+rm(remove)
+
+# IMPORTANT:  These are used to name the plots
+site <- c("Gympie NP", "Woondum NP")
+index <- "SELECTED_Final" # or "ALL"
+type <- "Summary"
+paste("The dataset contains the following indices:"); colnames(indices_all)
+
+# Generate a list of the missing minutes in summary indices
+#missing_minutes_summary <- which(is.na(indices_all[,1]))
+#save(missing_minutes_summary, file = "data/datasets/missing_minutes_summary_indices.RData")
+load(file="C:/Work/Projects/Twelve_month_clustering/Saving_dataset/data/datasets/missing_minutes_summary_indices.RData")
+
+# List of summary indices columns:
+#[1] "AvgSignalAmplitude"         [2]  "BackgroundNoise"          
+#[3] "Snr"                        [4]   "AvgSnrOfActiveFrames"     
+#[5] "Activity"                   [6]   "EventsPerSecond"          
+#[7] "HighFreqCover"              [8]   "MidFreqCover"             
+#[9] "LowFreqCover"               [10]  "AcousticComplexity"       
+#[11] "TemporalEntropy"           [12]  "EntropyOfAverageSpectrum" 
+#[13] "EntropyOfVarianceSpectrum" [14]  "EntropyOfPeaksSpectrum"   
+#[15] "EntropyOfCoVSpectrum"      [16]  "ClusterCount"             
+#[17] "ThreeGramCount"            [18]  "NDSI"                     
+#[19] "SptDensity" 
 
 paste("The dataset contains the following indices:"); colnames(indices_all)
 
@@ -159,8 +179,10 @@ pca_coef <- cbind(indices_pca$PC1, indices_pca$PC2,
                   indices_pca$PC3, indices_pca$PC4,
                   indices_pca$PC5, indices_pca$PC6,
                   indices_pca$PC7)
-
 coef_min_max <- pca_coef[,1:3]
+# select a subset in relation to the start and end date
+coef_min_max <- coef_min_max[c(((d-1)*1440):(e*1440-1),
+                               (((d+total_days)-1)*1440):((e+total_days)*1440-1)),]
 
 # Scale the PCA coefficients between 0 and 1 so they can be 
 # mapped to red, green and blue channels.  These are multiplied 
@@ -178,20 +200,33 @@ for (i in 1:3) {
 
 # generate a date sequence and locate the first of the month
 days <- length(coef_min_max[,1])/(2*1440)
-start <- as.POSIXct(start_date)
-interval <- 1440
-end <- start + as.difftime(days, units="days")
-dates <- seq(from=start, by=interval*60, to=end)
-first_of_month <- which(substr(dates, 9, 10)=="01")
 
-civil_dawn <- read.csv("data/Sunrise_Sunset_Solar Noon_protected.csv", header=T)
-a <- which(civil_dawn$Date==paste(substr(start, 9,20), substr(start, 6,7),
-                                  substr(start, 1,4), sep = "/"))
+# Prepare civil dawn, civil dusk and sunrise and sunset times
+civil_dawn_2015 <- read.csv("data/Geoscience_Australia_Sunrise_times_Gympie_2015.csv")
+civil_dawn_2016 <- read.csv("data/Geoscience_Australia_Sunrise_times_Gympie_2016.csv")
+civil_dawn_2015_2016 <- rbind(civil_dawn_2015, civil_dawn_2016)
+rm(civil_dawn_2015, civil_dawn_2016)
+civil_dawn_2015_2016$civil_dawn_times <- paste(substr(civil_dawn_2015_2016$CivSunrise,1,1),
+                                          ":",
+                                          substr(civil_dawn_2015_2016$CivSunrise,2,3), sep="")
+civil_dawn_2015_2016$civil_dusk_times <- paste(substr(civil_dawn_2015_2016$CivSunset,1,2),
+                                          ":",
+                                          substr(civil_dawn_2015_2016$CivSunset,3,4), sep="")
+civil_dawn_2015_2016$sunrise <- paste(substr(civil_dawn_2015_2016$Sunrise,1,1),
+                                 ":",
+                                 substr(civil_dawn_2015_2016$Sunrise,2,3), sep="")
+civil_dawn_2015_2016$sunset <- paste(substr(civil_dawn_2015_2016$Sunset,1,2),
+                                 ":",
+                                 substr(civil_dawn_2015_2016$Sunset,3,4), sep="")
+
+
+#civil_dawn <- read.csv("data/Sunrise_Sunset_Solar Noon_protected.csv", header=T)
+a <- which(civil_dawn_2015_2016$dates==substr(start,1,10))
 reference <- a:(a+days-1)
-civil_dawn_times <- civil_dawn$Civil_Sunrise[reference]
-civil_dusk_times <- civil_dawn$Civil_Sunset[reference]
-sunrise_times <- civil_dawn$Sunrise[reference]
-sunset_times <- civil_dawn$Sunset[reference]
+civil_dawn_times <- civil_dawn_2015_2016$civil_dawn_times[reference]
+civil_dusk_times <- civil_dawn_2015_2016$civil_dusk_times[reference]
+sunrise_times <- civil_dawn_2015_2016$sunrise[reference]
+sunset_times <- civil_dawn_2015_2016$sunset[reference]
 
 civ_dawn <- NULL
 for(i in 1:length(civil_dawn_times)) {
@@ -203,8 +238,8 @@ for(i in 1:length(civil_dawn_times)) {
 
 civ_dusk <- NULL
 for(i in 1:length(civil_dusk_times)) {
-  hour <- as.numeric(substr(civil_dusk_times[i], 1,1)) + 12
-  min <- as.numeric(substr(civil_dusk_times[i], 3,4))
+  hour <- as.numeric(substr(civil_dusk_times[i], 1,2))
+  min <- as.numeric(substr(civil_dusk_times[i], 4,5))
   minute <- hour*60 + min
   civ_dusk <- c(civ_dusk, minute)
 }
@@ -219,39 +254,87 @@ for(i in 1:length(sunrise_times)) {
 
 sunset <- NULL
 for(i in 1:length(sunset_times)) {
-  hour <- as.numeric(substr(sunset_times[i], 1,1)) + 12
-  min <- as.numeric(substr(sunset_times[i], 3,4))
+  hour <- as.numeric(substr(sunset_times[i], 1,2))
+  min <- as.numeric(substr(sunset_times[i], 4,5))
   minute <- hour*60 + min
   sunset <- c(sunset, minute)
 }
+style <- "false_colour"
+style <- "colour_blind"
+# these came from http://colorbrewer2.org/
+#type=diverging&scheme=BrBG&n=11
+colour_blind_colours <- c("#543005","#8c510a","#bf812d",
+                          "#dfc27d","#f6e8c3",#"#f5f5f5",
+                          "#c7eae5","#80cdc1","#35978f",
+                          "#01665e","#003c30")
+#http://colorbrewer2.org/#type=sequential&scheme=YlOrBr&n=9
+yellow_scheme <- c('#ffffe5','#fff7bc','#fee391','#fec44f','#fe9929','#ec7014','#cc4c02','#993404','#662506')
+#http://colorbrewer2.org/#type=sequential&scheme=Blues&n=9
+blue_scheme <- c('#f7fbff','#deebf7','#c6dbef','#9ecae1','#6baed6','#4292c6','#2171b5','#08519c','#08306b')
+#http://colorbrewer2.org/#type=sequential&scheme=Greens&n=9
+green_scheme <- c('#f7fcf5','#e5f5e0','#c7e9c0','#a1d99b','#74c476','#41ab5d','#238b45','#006d2c','#00441b')
+#http://colorbrewer2.org/#type=sequential&scheme=Greys&n=9  
+grey_scheme <- c('#f0f0f0','#d9d9d9','#bdbdbd','#969696','#737373','#525252','#252525','#000000')
+#http://colorbrewer2.org/#type=sequential&scheme=Oranges&n=9
+orange_scheme <- c('#fff5eb','#fee6ce','#fdd0a2','#fdae6b','#fd8d3c','#f16913','#d94801','#a63603','#7f2704')
+#http://colorbrewer2.org/#type=sequential&scheme=Purples&n=9
+purple_scheme <- c('#fcfbfd','#efedf5','#dadaeb','#bcbddc','#9e9ac8','#807dba','#6a51a3','#54278f','#3f007d')
+#http://colorbrewer2.org/#type=sequential&scheme=Reds&n=9
+red_scheme <- c('#fff5f0','#fee0d2','#fcbba1','#fc9272','#fb6a4a','#ef3b2c','#cb181d','#a50f15','#67000d') 
+#http://colorbrewer2.org/#type=sequential&scheme=PuRd&n=9
+pink_scheme <- c('#f7f4f9','#e7e1ef','#d4b9da','#c994c7','#df65b0','#e7298a','#ce1256','#980043','#67001f')
+#http://colorbrewer2.org/#type=diverging&scheme=BrBG&n=9
+mixed_scheme <- c('#8c510a','#bf812d','#dfc27d','#f6e8c3','#c7eae5','#80cdc1','#35978f','#01665e')
+library(scales)
+show_col(mixed_scheme)
 
+#http://colorbrewer2.org/#type=diverging&scheme=RdYlBu&n=11
+colour_blind_colours2 <- c("#a50026","#ffffbf",
+                           "#f46d43","#fdae61",
+                           "#fee090","#d73027",
+                           "#313695","#abd9e9",
+                           "#74add1","#4575b4",
+                           "#e0f3f8")
+  
+library(scales)
+show_col(colour_blind_colours2)
+#clusters <- kmeans(coef_min_max_norm[,1:3], centers = 11, iter.max=100)  
+clusters <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\clusters_pca.csv")
+#write.csv(clusters$cluster, "clusters_pca.csv", row.names = F)
+coef_min_max_norm <- data.frame(coef_min_max_norm)
+coef_min_max_norm$col <- colour_blind_colours2[clusters$cluster]
 # produce pca diel plots for both sites ##
 dev.off()
 for (k in 1:2) {
   ref <- c(0, days*1440)
   # generate a date sequence and locate the first of the month
   days <- length(coef_min_max[,1])/(2*1440)
-  start <- as.POSIXct("2015-06-22")
+  #start <- as.POSIXct("2015-06-22")
+  #start <- as.POSIXct(start)
   interval <- 1440
   end <- start + as.difftime(days, units="days")
   dates <- seq(from=start, by=interval*60, to=end)
-  
-  png(filename = paste("plots/PCA_plot_",site[k],"_", type,"_", index, ".png", sep = ""),
-      width = 2000, height = 1000, units = "px")
-  par(mar=c(2, 2.5, 2, 2.5))
+  tiff(filename = paste("plots/PCA_plot_test",site[k],"_", 
+                        type,"_", index, start_date,"_", 
+                        end_date, style,".tif", sep = ""),
+       width = 2600, height = 1400, units = "px",
+       res = 300)
+  #png(filename = paste("plots/PCA_plot_test",site[k],"_", type,"_", index, ".png", sep = ""),
+  #    width = 2000, height = 1000, units = "px")
+  par(mar=c(1.1, 3.4, 1, 3.4))
   # Plot an empty plot with no axes or frame
-  plot(c(0,1440), c(398,1), type = "n", axes=FALSE, 
+  plot(c(0,1440), c(days,1), type = "n", axes=FALSE, 
        frame.plot=FALSE,
        xlab="", ylab="") #, asp = 398/1440)
   # Create the heading
-  mtext(side=3, 
+  mtext(side=3, line = 0.3,
         paste(site[k]," ", format(dates[1], "%d %B %Y")," - ", 
               format(dates[length(dates)-1], "%d %B %Y"), sep=""), 
-        cex=1.8)
+        cex=0.7)
   # Create the sub-heading
-  mtext(side=3, line = -1.5, 
-        paste(index," ", type, " indices pca coefficients", sep = ""),
-        cex=1.4)
+  mtext(side=3, line = -0.3, 
+        paste(index," ", type, " indices PCA coefficients", sep = ""),
+        cex=0.6)
   
   # draw coloured polygons row by row
   ref <- ref[k]
@@ -263,11 +346,18 @@ for (k in 1:2) {
       # draw a square for each minute in each day 
       # using the polygon function mapping the red, green
       # and blue channels to the normalised pca-coefficients
-      polygon(c(k,k,k+1,k+1), c(j,(j-1),(j-1),j),
-              col=rgb(coef_min_max_norm[ref,1],
-                      coef_min_max_norm[ref,2],
-                      coef_min_max_norm[ref,3]),
-              border = NA)
+      if(style=="false_colour") {
+        polygon(c(k,k,k+1,k+1), c(j,(j-1),(j-1),j),
+                col=rgb(coef_min_max_norm[ref,1],
+                        coef_min_max_norm[ref,2],
+                        coef_min_max_norm[ref,3]),
+                border = NA)  
+      }
+      if(style=="colour_blind") {
+        polygon(c(k,k,k+1,k+1), c(j,(j-1),(j-1),j),
+                col=coef_min_max_norm[ref,4],
+                border = NA)  
+      }
     }
   }
   
@@ -277,66 +367,70 @@ for (k in 1:2) {
   for(i in 1:length(first_of_month)) {
     lines(c(1,1441), c(first_of_each_month[i], 
                        first_of_each_month[i]), 
-          lwd=0.6, lty = 3)
+          lwd=1, lty = 3)
   }
   # draw vertical lines
   at <- seq(0,1440, 120) + 1
   for(i in 1:length(at)) {
-    lines(c(at[i], at[i]), c(1,days), lwd=0.5, lty=3)
+    lines(c(at[i], at[i]), c(1,days), lwd=1, lty=3)
   }
   # label the x axis
   axis(1, tick = FALSE, at = at, 
-       labels = c("12 am","2 am","4 am",
-                  "6 am","8 am","10 am",
-                  "12","2 pm","4 pm","6 pm",
-                  "8 pm","10 pm","12 pm"), 
-       cex.axis=1.4, line = -2.6)
+       labels = c("12 am","2","4",
+                  "6","8","10", "12",
+                  "2","4","6",
+                  "8","10","12 pm"), 
+       cex.axis=0.85, line = -1.6)
+  mtext(side=1, line=0.16, "Time (24 hours)", cex=0.9)
   # plot the left axes
-  axis(side = 2, at = first_of_each_month, tick = FALSE, 
-       labels=format(dates[first_of_month],"%b %Y"), 
-       cex.axis=1.3, las=1, line = -5)
-  axis(side = 2, at = c(days), tick = FALSE, 
-       labels=format(dates[1],"%d %b %Y"), 
-       cex.axis=1.3, las=1, line = -5)
+  axis(side = 2, at = first_of_each_month+2, tick = FALSE, 
+       labels=format(dates[first_of_month],"%d %b %Y"), 
+       cex.axis=0.9, las=1, line = -2.3, hadj=1.05)
+  #if(!dates[1]==start_date) {
+  #axis(side = 2, at = c(days), tick = FALSE, 
+  #     labels=format(dates[1],"%d %b %Y"), 
+  #     cex.axis=0.8, las=1, line = -1)
+  #}
   # plot the left axes
-  axis(side = 4, at = first_of_each_month, tick = FALSE, 
-       labels=format(dates[first_of_month],"%b %Y"), 
-       cex.axis=1.3, las=1, line = -5)
-  axis(side = 4, at = c(days), tick = FALSE, 
-       labels=format(dates[1],"%d %b %Y"), 
-       cex.axis=1.3, las=1, line = -5)
+  axis(side = 4, at = first_of_each_month+2, tick = FALSE, 
+       labels=format(dates[first_of_month],"%d %b %Y"), 
+       cex.axis=0.9, las=1, line = -2.3, hadj=-0.01)
+  #if(!dates[1]==start_date) {
+  #  axis(side = 4, at = c(days), tick = FALSE, 
+  #       labels=format(dates[1],"%d %b %Y"), 
+  #       cex.axis=0.8, las=1, line = -3)
+  #}
   
   at <- seq(0, 1440, 240)
   # add the indices names to the plot
-  indices <- colnames(indices_all)
-  j <- days - (days - (length(indices)*8))/2
-  for(i in 1:length(indices)) {
-    text(65, j, indices[i], cex = 1)
-    j <- j - 8 
-  }
-  # draw yellow dotted line to show civil-dawn
+  #indices <- colnames(indices_all)
+  #j <- days - (days - (length(indices)*8))/2
+  #for(i in 1:length(indices)) {
+  #  text(x = 140, j, indices[i], cex = 0.6)
+  #  j <- j - 8 
+  #}
+  # draw YELLOW dotted line to show civil-dawn
   for(i in length(civ_dawn):1) {
     lines(c(civ_dawn+1), c(length(civ_dawn):1),  
-          lwd=0.4, lty="16", col="yellow")
+          lwd=1.2, lty=2, col="black")
   }
-  # draw yellow line to show civil-dusk
+  # draw YELLOW line to show civil-dusk
   for(i in length(civ_dawn):1) {
     lines(c(civ_dusk+1), c(length(civ_dusk):1),  
-          lwd=0.4, lty="16", col="yellow")
+          lwd=1.2, lty=2, col="black")
   }
-  # draw yellow line to show sunrise
+  # draw YELLOW line to show sunrise
   for(i in length(sunrise):1) {
     lines(c(sunrise+1), c(length(sunrise):1),  
-          lwd=0.4, lty="16", col="yellow")
+          lwd=1.2, lty=2, col="black")
   }
-  # draw yellow line to show sunset
+  # draw YELLOW line to show sunset
   for(i in length(sunset):1) {
     lines(c(sunset+1), c(length(sunset):1),  
-          lwd=0.4, lty="16", col="yellow")
+          lwd=1.2, lty=2, col="black")
   }
   dev.off()
 }
-
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #An alternative way to plot
 # problems with this method includes significant distortion
@@ -402,7 +496,7 @@ dev.off()
 rm(list = ls())
 
 # Set the first day of recording
-start_date <- "2015-06-22"
+actual_start_date <- "2015-06-22"
 site <- c("Gympie NP", "Woondum NP")
 
 k1_value <- 25000
@@ -445,6 +539,7 @@ indices <- indices_norm_summary
 
 # preform pca analysis
 indices_pca <- prcomp(indices[,1:12], scale. = F)
+summary(indices_pca)
 indices_pca$PC1 <- indices_pca$x[,1]
 indices_pca$PC2 <- indices_pca$x[,2]
 indices_pca$PC3 <- indices_pca$x[,3]

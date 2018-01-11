@@ -1103,11 +1103,11 @@ for(i in 1:length(list2)) {
   assign(list2[i], (193:200 + (i-1)*8))
 }
 #}
-
+#here
 # Eastern Yellow Robin - column 4 -----------------------
 # Compare Period C from Gympie to Period C from Woondum 
 # for twelve months
-column <- 4 # Eastern Whipbird
+column <- 4 # Eastern Yellow Robin
 list  <- c("perA_July", "perA_Aug", "perA_Sept", "perA_Oct",
            "perA_Nov", "perA_Dec", "perA_Jan", "perA_Feb",
            "perA_Mar", "perA_Apr", "perA_May", "perA_Jun")
@@ -1228,6 +1228,7 @@ group <-  Gym_birds$comb[rows]
 Data <- cbind(obs, counts, group)
 
 kruskal.test(counts ~ group, data = Data)
+
 # Eastern Whipbird
 kruskal.test(Gym_birds[rows,column], Gym_birds$comb[rows])
 kruskal.test(Woon_birds[rows,column], Woon_birds$comb[rows])
@@ -2605,7 +2606,8 @@ rm(list = ls())
 source("scripts/Bird_lists_func.R")
 indices_norm_summary <- cluster_list[,4:15]
 data2 <- read.csv("C:\\Work2\\Kaleidoscope\\20150621\\GympieNP\\Scarlet Honeyeater.csv", header = T)
-all_data <- read.csv("all_data_added_protected.csv", header = T)[,c(1:21,37)]
+all_data <- read.csv("C:/Work2/Projects/Twelve_,month_clustering/Saving_dataset/all_data_added_protected.csv", header = T)[,c(1:21,37)]
+
 
 # Eastern Whipbird
 label_name <- "Eastern Whipbird"
@@ -5780,12 +5782,12 @@ dev.off()
 # Species _ Acoustic Indices analysis --------------------------------
 rm(list = ls())
 indices_statistics <- data.frame(desc = NA,
-                                 SC1 = NA,
-                                 SC2 = NA,
+                                 SH1 = NA,
+                                 SH2 = NA,
                                  EYR = NA,
-                                 EW = NA,
+                                 EWB = NA,
                                  WTH = NA,
-                                 KOOK = NA,
+                                 LKB = NA,
                                  TOR = NA,
                                  PDC = NA,
                                  WTT = NA)
@@ -5835,6 +5837,8 @@ indices_statistics[38,1] <- "CI_CLC"
 
 indices_statistics <- t(indices_statistics)
 
+# this file is the same as "Saving_dataset\\species_each_minute_protected_saved.csv" but
+# it is has an additonal column "species"
 species_acoustic_indices <- read.csv("species_each_minute_protected_final.csv", header = T)
 #a <- which(species_acoustic_indices$minute_reference < 406)
 
@@ -5976,82 +5980,630 @@ if(list2 == "WTT") {
 indices_statistics <- t(indices_statistics)
 
 View(indices_statistics)
-#write.csv(indices_statistics, "Species_acoustic_indices_statistics.csv", row.names = F)
+################################################
+#write.csv(indices_statistics, "Species_acoustic_indices_statistics_test.csv", row.names = F)
 rm(list = ls())
 statistics <- read.csv("Species_acoustic_indices_statistics_final.csv", 
                        header = T)[1:38,1:10]
-statistics <- statistics[,c(1:7,10)]
+statistics <- statistics[3:38,c(1:7,10)]
+# reorder the statistics list to match the reordered species below
+statistics <- statistics[,c(1,4,6,7,2,3,8,5)]
 
 names <- colnames(statistics[,2:length(statistics)])
+names <- c("EYR", "WTH", "LKB", "SH1", "SH2", "WTT", "EWB")
 
 # ALL INDICES SEPARATED (see below for individual plots)
 dev.off()
 cbbPalette <- c("#000000", "#E69F00", "#56B4E9", 
                 "#009E73", "#F0E442", "#0072B2", 
                 "#D55E00", "#CC79A7")
+list3 <- c("EYR","WTH","LKB","SH1","SH2","WTT","EWB")
 list3 <- c("SC1","SC2","EYR","EW","WTH","Kookaburra","WTT")
-pch <- c(16,8,21,25,15,0,17,0,1)
-lty <- c(2,1,5,4,3)
+list3 <- c("EYR","WTH","Kookaburra","SC1","SC2","WTT","EWB")
+pch <- c(15,1,17,0,19,2,3,4,5,6,7,8,9,10)
+lty <- c(2,1,5,4,3,6)
 ref <- 0
 
 a1_list <- c("AV_BGN","AV_SNR","AV_ACT","AV_EVN","AV_HFC","AV_MFC",
              "AV_LFC","AV_ACI","AV_EAS","AV_EPS","AV_ECS","AV_CLC")
 a1_list <- c("AV_MFC","AV_BGN","AV_SNR","AV_EPS","AV_ACI")
+a1_list <- c("AV_MFC","AV_ACI","AV_BGN")
+a11_list <- c("AV_SNR","AV_EPS", "AV_EVN")
 a2_list <- c("CI_BGN","CI_SNR","CI_ACT","CI_EVN","CI_HFC","CI_MFC",
              "CI_LFC","CI_ACI","CI_EAS","CI_EPS","CI_ECS","CI_CLC")
 a2_list <- c("CI_MFC","CI_BGN","CI_SNR","CI_EPS","CI_ACI")
+a2_list <- c("CI_MFC","CI_ACI", "CI_BGN")
+a22_list <- c("CI_SNR","CI_EPS", "CI_EVN")
+
+lty <- as.numeric(as.vector(c(1,2,3,4,5,6,7,8,9,10,11,12)))
 label_name <- paste(substr(a1_list[1],4,6),
                     substr(a1_list[2],4,6),
                     substr(a1_list[3],4,6),
-                    substr(a1_list[4],4,6),
-                    substr(a1_list[5],4,6),
+                    substr(a11_list[1],4,6),
+                    substr(a11_list[2],4,6),
                     sep="_")
 dev.off()
 ref <- 0
+figures <- NULL
 
-tiff(paste("Species_acoustic_Indices",label_name,"_final_.tiff",sep=""),
-     height = 750, width = 980)
-par(mar=c(5,5,3,8), cex.axis=2, cex.main=2, cex.lab=2, oma=c(0,0,0,0))
+# Specites_acoustic_IndicesAll_final.tiff
+tiff(paste("Species_acoustic_Indices_test2",label_name,"_final_.tiff",sep=""),
+     height = 1000, width = 980)
+par(mfrow=c(2,1), mar=c(1,6,1,1), cex.axis=2, 
+    cex.main=2, cex.lab=1.8, oma=c(3.2,0,2.4,0))
 #plot(x=42, y=1, xlim=c(0,42), ylim=c(0,1), #type="n", 
 #     axes=T, xlab="", ylab="", col="white")
-abline(v=1:42)
-
-for(i in 1:length(list3)) {
+ref <- 0
+for(i in 1:length(a1_list)) {
   a <- which(statistics[,1]==a1_list[i])
   if(i <= length(a1_list)) {
     BGN <- statistics[a, 2:length(statistics)]
     BGN <- as.numeric(as.vector(BGN))
-  a <- which(statistics[,1]==a2_list[i])
-  BGN_CI <- statistics[a, 2:length(statistics)]
-  BGN_CI <- as.numeric(as.vector(BGN_CI))
-  CI.up <- BGN + BGN_CI
-  CI.dn <- BGN - BGN_CI
-  x <- c(-1, 5, 11, 17, 23, 29, 35)
-  x <- x + ref
-  #par(new=T)
-  plot(x = x, y = BGN, xaxt='n', ylim=c(0,1), xlab='Species', 
-       main='Average of the Normalised Acoustic Index per Species',
-       col="black", pch=pch[i], las=1, ylab = "", cex=2.6, xlim = c(0,38))
-  arrows(x, CI.dn, x, CI.up, code=3, length=0.2, angle=90, col="black") #colour[i])
-  
-  ref <- ref + 1  
-  if(ref==1) {
-    axis(1, at=x+2, labels=names)
+    a <- which(statistics[,1]==a2_list[i])
+    BGN_CI <- statistics[a, 2:length(statistics)]
+    BGN_CI <- as.numeric(as.vector(BGN_CI))
+    CI.up <- BGN + BGN_CI + 0.00001
+    CI.dn <- BGN - BGN_CI + 0.00001
+    x <- c(-1, 5, 11, 17, 23, 29, 35)
+    x <- as.vector(x) + 2.5
+    stat <- cbind(x,BGN)
+    #x <- x + ref
+    #par(new=T)
+    plot(x = x, y = BGN, xaxt='n', ylim=c(0,1),  
+         #main='Average of the Normalised Acoustic Index per Species',
+         col="black", pch=pch[i], las=1, ylab = "", cex=2.8, xlim = c(0,38))
+    lines(stat, lty=lty[[i]])
+    arrows(x, CI.dn, x, CI.up, code=3, length=0.2, angle=90, col="black") #colour[i])
+    ref <- ref + 1  
+    if(ref==1) {
+      axis(1, at=x, labels=names)
+    }
+    figures <- c(figures, BGN)
   }
-  par(new=T)
+  mtext(side = 2, line = 3.9, cex = 2.2,
+        'Normalised Index ± 95% C.I.                                                      ')
+  mtext(side = 3, line = 1.8, "Average of the Normalised Acoustic Index per Species", cex=2.2)
+  legend <- substr(a2_list, 4,6)
+  par(xpd=FALSE) #x = 33.9, y = 1.06, 
+  legend(x=x[6], y=1.04, col = "black", #c(colour[1:5]), 
+         legend = c(legend[1], legend[2], legend[3]), 
+         cex = 2.2, bty = "n", pch=pch[1:3], lty = c(1,2,3),
+         horiz = FALSE, xpd=TRUE,
+         x.intersp = 0.9, y.intersp = 0.9, inset=c(-0.15,0))
+  abline(v=c(4,10,16,22,28,34,40))
+  abline(h=c(0.2,0.4,0.6,0.8,1.0), lty=2, lwd=0.4)
+  abline(h=c(0,0.1,0.3,0.5,0.7,0.9), lty=2, lwd=0.1)
+  if(ref %in% c(1:(length(a1_list)-1))) {
+    par(new=T)  
   }
 }
-mtext(side = 2, line = 3.5, 'Normalised Index ± 95% C.I.', cex = 2)
-legend <- substr(a2_list, 4,6)
-par(xpd=FALSE) #x = 33.9, y = 1.06, 
-legend("topright", col = "black", #c(colour[1:5]), 
-       legend = c(legend[1], legend[2], legend[3], legend[4], legend[5]), 
-       cex = 2.5, bty = "n", pch=pch[1:5], horiz = FALSE, xpd=TRUE,
-       x.intersp = 0.9, y.intersp = 0.7, inset=c(-0.15,0))
-abline(v=c(4,10,16,22,28,34,40))
-abline(h=c(0.2,0.4,0.6,0.8), lty=2, lwd=0.4)
+ref <- 0
+for(i in 1:length(list3)) {
+  a <- which(statistics[,1]==a11_list[i])
+  if(i <= length(a11_list)) {
+    BGN <- statistics[a, 2:length(statistics)]
+    BGN <- as.numeric(as.vector(BGN))
+    a <- which(statistics[,1]==a22_list[i])
+    BGN_CI <- statistics[a, 2:length(statistics)]
+    BGN_CI <- as.numeric(as.vector(BGN_CI))
+    CI.up <- BGN + BGN_CI + 0.00001
+    CI.dn <- BGN - BGN_CI + 0.00001
+    x <- c(-1, 5, 11, 17, 23, 29, 35)
+    x <- as.vector(x) + 2.5
+    stat <- cbind(x,BGN)
+    #x <- x + ref
+    #par(new=T)
+    plot(x = x, y = BGN, xaxt='n', ylim=c(0,1),
+         col="black", pch=pch[i+3], las=1, ylab = "", cex=2.8, xlim = c(0,38))
+    lines(stat, lty=lty[[i]])
+    arrows(x, CI.dn, x, CI.up, code=3, length=0.2, angle=90, col="black") #colour[i])
+    ref <- ref + 1  
+    if(ref==1) {
+      axis(1, at=x, labels=names)
+    }
+    figures <- c(figures, BGN)
+  }
+  #mtext(side = 2, line = 3.9, cex = 2.2,
+  #      'Normalised Index ± 95% C.I.')
+  mtext(side = 1, line = 3, "Species", cex = 2)
+  legend <- substr(a22_list, 4,6)
+  par(xpd=FALSE) #x = 33.9, y = 1.06, 
+  legend(x=x[6], y=1.04, col = "black", #c(colour[1:5]), 
+         legend = c(legend[1], legend[2], legend[3]), 
+         cex = 2.2, bty = "n", pch=pch[4:6], lty = c(1:3),
+         horiz = FALSE, xpd=TRUE,
+         x.intersp = 0.9, y.intersp = 0.9, inset=c(-0.15,0))
+  abline(v=c(4,10,16,22,28,34,40))
+  abline(h=c(0.2,0.4,0.6,0.8,1.0), lty=2, lwd=0.4)
+  abline(h=c(0,0.1,0.3,0.5,0.7,0.9), lty=2, lwd=0.1)
+  if(ref %in% c(1:(length(a11_list)-1))) {
+    par(new=T)  
+  }
+}
 dev.off()
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Specites_acoustic_IndicesAll_final.tiff
+dev.off()
+tiff(paste("Species_acoustic_Indices_test3",label_name,"_final_.tiff",sep=""),
+     height = 950, width = 1536, res = 300)
+par(mfrow=c(2,3), mar=c(0.4, 1, 1.4, 0.4), cex.axis=1, 
+    cex.main=0.5, cex.lab=0.3, oma=c(1.2, 1, 0.3, 0), mgp=c(1, 0.2, 0))
+#plot(x=42, y=1, xlim=c(0,42), ylim=c(0,1), #type="n", 
+#     axes=T, xlab="", ylab="", col="white")
+ref <- 0
+for(i in 1:length(a1_list)) {
+  a <- which(statistics[,1]==a1_list[i])
+  if(i <= length(a1_list)) {
+    BGN <- statistics[a, 2:length(statistics)]
+    BGN <- as.numeric(as.vector(BGN))
+    a <- which(statistics[,1]==a2_list[i])
+    BGN_CI <- statistics[a, 2:length(statistics)]
+    BGN_CI <- as.numeric(as.vector(BGN_CI))
+    CI.up <- BGN + BGN_CI + 0.00001
+    CI.dn <- BGN - BGN_CI + 0.00001
+    x <- c(-1, 5, 11, 17, 23, 29, 35)
+    x <- as.vector(x) + 2.5
+    stat <- cbind(x,BGN)
+    #x <- x + ref
+    #par(new=T)
+    plot(x = x, y = BGN, xaxt='n', ylim=c(0,1),
+         col="black", pch=pch[i+3], las=1, ylab = "", 
+         cex=0.6, xlim = c(0,38), cex.axis=0.6,
+         mgp=c(1, 0.35, 0), yaxt="n", xlab="", yaxt="n")
+    lines(stat, lty=lty[[i]], lwd=0.8)
+    arrows(x, CI.dn, x, CI.up, code=3, length=0.04, angle=90, col="black") #colour[i])
+    ref <- ref + 1  
+    axis(side=2, las=1, cex.axis=0.7, tck=-0.015, mgp=c(1, 0.3, 0))
+    axis(1, at=x, labels=names, cex.axis=0.62, 
+          tck=-0.015, mgp=c(1, -0.2, 0))
+    figures <- c(figures, BGN)
+  }
+  legend <- substr(a2_list, 4,6)
+  par(xpd=FALSE) #x = 33.9, y = 1.06, 
+  if(i==1) {
+    mtext("MFC", cex=0.7)
+    mtext(side = 3, "a.", cex = 0.9, adj = -0.1, outer = F,
+          line = 0)
+    mtext(side = 2, cex = 0.55, line=1.2,
+          'Normalised Index ± 95% C.I.')
+    #legend(x=x[5], y=1.04, col = "black", #c(colour[1:5]), 
+    #       legend = legend[1], 
+    #       cex = 0.9, bty = "n", pch=pch[1], lty = 1,
+    #       horiz = FALSE, xpd=TRUE,
+    #       x.intersp = 0.6, y.intersp = 0.9, inset=c(-0.15,0))
+  }
+  if(i==2) {
+    mtext("ACI", cex=0.7)
+    #legend(x=x[5], y=1.04, col = "black", #c(colour[1:5]), 
+    #       legend = legend[2], 
+    #       cex = 0.8, bty = "n", pch=pch[2], lty = 2,
+    #       horiz = FALSE, xpd=TRUE,
+    #       x.intersp = 0.6, y.intersp = 0.9, inset=c(-0.15,0))
+    mtext(side = 3, "b.", cex = 0.9, adj = -0.1, outer = F,
+          line = 0)
+    mtext(line=0.85, cex=0.65,
+          "Average of the Normalised Acoustic Index per Species")
+  }
+  if(i==3) {
+    mtext("BGN", cex=0.7)
+    #legend(x=x[5], y=1.04, col = "black", #c(colour[1:5]), 
+    #       legend = legend[3], 
+    #       cex = 0.8, bty = "n", pch=pch[3], lty = 3,
+    #       horiz = FALSE, xpd=TRUE,
+    #       x.intersp = 0.6, y.intersp = 0.9, inset=c(-0.15,0))
+    mtext(side = 3, "c.", cex = 0.9, adj = -0.1, outer = F,
+          line = 0)
+  }
+  abline(v=c(4,10,16,22,28,34,40))
+  abline(h=c(0,0.2,0.4,0.6,0.8,1.0), lty=2, lwd=0.1)
+  #if(ref %in% c(1:(length(a1_list)-1))) {
+  #  par(new=T)  
+  #}
+}
+ref <- 0
+for(i in 1:length(list3)) {
+  a <- which(statistics[,1]==a11_list[i])
+  if(i <= length(a11_list)) {
+    BGN <- statistics[a, 2:length(statistics)]
+    BGN <- as.numeric(as.vector(BGN))
+    a <- which(statistics[,1]==a22_list[i])
+    BGN_CI <- statistics[a, 2:length(statistics)]
+    BGN_CI <- as.numeric(as.vector(BGN_CI))
+    CI.up <- BGN + BGN_CI + 0.00001
+    CI.dn <- BGN - BGN_CI + 0.00001
+    x <- c(-1, 5, 11, 17, 23, 29, 35)
+    x <- as.vector(x) + 2.5
+    stat <- cbind(x,BGN)
+    #x <- x + ref
+    #par(new=T)
+    plot(x = x, y = BGN, xaxt='n', ylim=c(0,1),
+         col="black", pch=pch[i+3], las=1, ylab = "", 
+         cex=0.6, xlim = c(0,38), cex.axis=0.6,
+         mgp=c(1, 0.35, 0), yaxt="n", xlab="", yaxt="n")
+    lines(stat, lty=lty[[i]], lwd=0.8)
+    arrows(x, CI.dn, x, CI.up, code=3, length=0.04, angle=90, col="black") #colour[i])
+    ref <- ref + 1  
+    axis(side=2, las=1, cex.axis=0.7, tck=-0.015, mgp=c(1, 0.3, 0))
+    axis(1, at=x, labels=names, cex.axis=0.62, 
+         tck=-0.015, mgp=c(1, -0.2, 0))
+    figures <- c(figures, BGN)
+  }
+  legend <- substr(a22_list, 4,6)
+  par(xpd=FALSE) #x = 33.9, y = 1.06, 
+  if(i==1) {
+    mtext("SNR", cex=0.7)
+    mtext(side = 3, "d.", cex = 0.9, adj = -0.1, outer = F,
+          line = 0)
+    mtext(side = 1, line=0.6, "Species", cex = 0.6)
+    mtext(side = 2, cex = 0.55, line=1.2,
+          'Normalised Index ± 95% C.I.')
+    #legend(x=x[5], y=1.04, col = "black", #c(colour[1:5]), 
+    #       legend = legend[1], 
+    #       cex = 0.8, bty = "n", pch=pch[4], lty = 1,
+    #       horiz = FALSE, xpd=TRUE,
+    #       x.intersp = 0.6, y.intersp = 0.9, inset=c(-0.15,0))
+  }
+  if(i==2) {
+    mtext("EPS", cex=0.7)
+    mtext(side = 3, "e.", cex = 0.9, adj = -0.1, outer = F,
+          line = 0)
+    mtext(side = 1, line=0.6, "Species", cex = 0.6)
+    #legend(x=x[5], y=1.04, col = "black", #c(colour[1:5]), 
+    #       legend = legend[2], 
+    #       cex = 0.8, bty = "n", pch=pch[5], lty = 2,
+    #       horiz = FALSE, xpd=TRUE,
+    #       x.intersp = 0.6, y.intersp = 0.9, inset=c(-0.15,0))
+  }
+  if(i==3) {
+    mtext(side = 3, "f.", cex = 0.9, adj = -0.1, outer = F,
+          line = 0)
+    mtext("EVN", cex=0.7)
+    #legend(x=x[5], y=1.04, col = "black", #c(colour[1:5]), 
+    #       legend = legend[3], 
+    #       cex = 0.8, bty = "n", pch=pch[6], lty = 3,
+    #       horiz = FALSE, xpd=TRUE,
+    #       x.intersp = 0.6, y.intersp = 0.9, inset=c(-0.15,0))
+    mtext(side = 1, line = 0.6, "Species", cex = 0.6)
+  }
+  abline(v=c(4,10,16,22,28,34,40))
+  abline(h=c(0,0.2,0.4,0.6,0.8,1.0), lty=2, lwd=0.1)
+  #if(ref %in% c(1:(length(a11_list)-1))) {
+  #  par(new=T)  
+  #}
+}
+dev.off()
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+figures
+# Kruskal Wallis test on the species acoustic indices values
+species_acoustic_indices <- read.csv("species_each_minute_protected_final.csv", header = T)
+
+list1 <- c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
+           "11", "12", "13", "14", "15", "16", "17", "18", "19", "20")
+list3 <- c("SC1", "SC3", "EYR", "EW", "WTH", "Kookaburra", "Tor", "WTT")
+list3 <- c("SC1", "SC3", "EYR", "EW", "WTH", "Kookaburra", "WTT")
+
+z_list <- NULL
+for(i in 1:length(list3)) {
+  list2 <- list3[i]
+  a_list <- NULL
+  for(i in 1:length(list2)) {
+    for(j in 1:length(list1)) {
+      label <- paste(list2[i],list1[j],sep = " ")
+      a <- grep(label, species_acoustic_indices$Species) 
+      a_list <- c(a_list, a)
+    }
+  }
+  z_list <- c(z_list, label, a_list)  
+}
+# this collects the row refernces for each of the 20 minute sample for each species
+species_indices <-  data.frame(desc=NA,
+                        V1=NA,
+                        V2=NA,
+                        V3=NA,
+                        V4=NA,
+                        V5=NA,
+                        V6=NA,
+                        V7=NA,
+                        V8=NA,
+                        V9=NA,
+                        V10=NA,
+                        V11=NA,
+                        V12=NA,
+                        V13=NA,
+                        V14=NA,
+                        V15=NA,
+                        V16=NA,
+                        V17=NA,
+                        V18=NA,
+                        V19=NA,
+                        V20=NA)
+
+for(i in 1:length(list3)) {
+  seq <- seq(1,length(z_list),21)
+  species_indices[i,1] <- z_list[seq[i]]
+  for(j in 1:20) {
+  species_indices[i,(j+1)] <- z_list[seq[i]+j]
+  }
+}
+for(i in 2:21) {
+  species_indices[,i] <- as.numeric(species_indices[,i])  
+}
+species_indices <- data.frame(species_indices)
+# Kruskal-Wallis test BGN
+SC1_list <- unname(species_indices[1,2:21])
+SC1_list <- as.numeric(as.vector(SC1_list))
+SC1_data <- species_acoustic_indices[SC1_list,c(3,60:71)]
+SC2_list <- unname(species_indices[2,2:21])
+SC2_list <- as.numeric(as.vector(SC2_list))
+SC2_data <- species_acoustic_indices[SC2_list,c(3,60:71)]
+EYR_list <- unname(species_indices[3,2:21])
+EYR_list <- as.numeric(as.vector(EYR_list))
+EYR_data <- species_acoustic_indices[EYR_list,c(3,60:71)]
+EW_list <- unname(species_indices[4,2:21])
+EW_list <- as.numeric(as.vector(EW_list))
+EW_data <- species_acoustic_indices[EW_list,c(3,60:71)]
+WTH_list <- unname(species_indices[5,2:21])
+WTH_list <- as.numeric(as.vector(WTH_list))
+WTH_data <- species_acoustic_indices[WTH_list,c(3,60:71)]
+LKB_list <- unname(species_indices[6,2:21])
+LKB_list <- as.numeric(as.vector(LKB_list))
+LKB_data <- species_acoustic_indices[LKB_list,c(3,60:71)]
+WTT_list <- unname(species_indices[7,2:21])
+WTT_list <- as.numeric(as.vector(WTT_list))
+WTT_data <- species_acoustic_indices[WTT_list,c(3,60:71)]
+
+# Background Noise
+BGN <- rbind(SC1_data, SC2_data, EYR_data, EW_data, WTH_data, LKB_data, WTT_data)
+library(PMCMR)
+library(FSA)
+list3 <- c("d SH1", "e SH2", "a EYR", "g EWB", "b WTH", "c LKB", "f WTT")
+BGN$species <- rep(list3, each=20)
+ylim <- c(0,1)
+library(pgirmess)
+
+boxplot(BackgroundNoise~species, data = BGN, ylim=ylim, 
+        main="Background noise")
+z <- BGN$BackgroundNoise[1:20]
+y <- BGN$BackgroundNoise[21:40]
+x <- BGN$BackgroundNoise[41:60]
+w <- BGN$BackgroundNoise[61:80]
+v <- BGN$BackgroundNoise[81:100]
+u <- BGN$BackgroundNoise[101:120]
+t <- BGN$BackgroundNoise[121:140]
+s <- c(z,y,x,w,v,u,t)
+species <- c("SH1", "SH2", "EYR", "EWB", "WTH", "LKB","WTT")       
+species <- rep(species, each=20)
+species <- as.factor(species)
+kruskal.test(s, species)
+p <- posthoc.kruskal.dunn.test(BGN$BackgroundNoise, 
+                               as.factor(BGN$species), 
+                               data=BGN ,"bon")
+round(p$p.value,4)
+round(p$statistic,4)
+
+kr <- kruskalmc(s, species, probs=.05, cont=NULL)
+
+boxplot(Snr~species, data=BGN, ylim=ylim,
+        main="Signal to Noise ratio")
+z <- BGN$Snr[1:20]
+y <- BGN$Snr[21:40]
+x <- BGN$Snr[41:60]
+w <- BGN$Snr[61:80]
+v <- BGN$Snr[81:100]
+u <- BGN$Snr[101:120]
+t <- BGN$Snr[121:140]
+s <- c(z,y,x,w,v,u,t)
+species <- c("SH1", "SH2", "EYR", "EWB", "WTH", "LKB","WTT")       
+species <- rep(species, each=20)
+species <- as.factor(species)
+kruskal.test(s, species)
+p <- posthoc.kruskal.dunn.test(BGN$Snr, 
+                               as.factor(BGN$species), 
+                               data=BGN ,"bon")
+round(p$p.value,4)
+round(p$statistic,4)
+
+# All LKB and
+# EWB-SH2 and EYR-WTT and SH2-WTH and SH2-WTT
+
+boxplot(Activity~species, data=BGN, ylim=ylim,
+        main="Activity")
+z <- BGN$Activity[1:20]
+y <- BGN$Activity[21:40]
+x <- BGN$Activity[41:60]
+w <- BGN$Activity[61:80]
+v <- BGN$Activity[81:100]
+u <- BGN$Activity[101:120]
+t <- BGN$Activity[121:140]
+s <- c(z,y,x,w,v,u,t)
+species <- c("SH1", "SH2", "EYR", "EWB", "WTH", "LKB","WTT")       
+species <- rep(species, each=20)
+species <- as.factor(species)
+kruskal.test(s, species)
+p <- posthoc.kruskal.dunn.test(BGN$Activity, 
+                               as.factor(BGN$species), 
+                               data=BGN ,"bon")
+round(p$p.value,4)
+round(p$statistic,4)
+
+# All LKB and EWB-WTH and 
+#             EYR-WTH and EYR-WTT
+
+boxplot(BGN$EventsPerSecond~species, data=BGN, ylim=ylim,
+        main="Events per second")
+z <- BGN$EventsPerSecond[1:20] # SC1
+y <- BGN$EventsPerSecond[21:40] # SC2
+x <- BGN$EventsPerSecond[41:60] # EYR
+w <- BGN$EventsPerSecond[61:80] # EWB
+v <- BGN$EventsPerSecond[81:100] # WTH
+u <- BGN$EventsPerSecond[101:120] # LKB
+t <- BGN$EventsPerSecond[121:140] # WTT
+s <- c(z,y,x,w,v,u,t)
+species <- c("SH1", "SH2", "EYR", "EWB", "WTH", "LKB","WTT")       
+species <- rep(species, each=20)
+species <- as.factor(species)
+kruskal.test(s, species)
+p <- posthoc.kruskal.dunn.test(BGN$EventsPerSecond, 
+                               as.factor(BGN$species), 
+                               data=BGN ,"bon")
+round(p$p.value,4)
+round(p$statistic,4)
+
+# ALL WTH except with SH2
+
+boxplot(BGN$HighFreqCover~species, data=BGN, ylim=ylim,
+        main="High Frequency Cover")
+z <- BGN$HighFreqCover[1:20]
+y <- BGN$HighFreqCover[21:40]
+x <- BGN$HighFreqCover[41:60]
+w <- BGN$HighFreqCover[61:80]
+v <- BGN$HighFreqCover[81:100]
+u <- BGN$HighFreqCover[101:120]
+t <- BGN$HighFreqCover[121:140]
+s <- c(z,y,x,w,v,u,t)
+species <- c("SH1", "SH2", "EYR", "EWB", "WTH", "LKB","WTT")       
+species <- rep(species, each=20)
+species <- as.factor(species)
+kruskal.test(s, species)
+p <- posthoc.kruskal.dunn.test(s, species, data=BGN ,"BH")
+round(p$p.value,4)
+kruskalmc(s, species, probs=.05, cont=NULL)
+
+boxplot(BGN$MidFreqCover~species, data=BGN, ylim=ylim,
+        main="Mid Frequency Cover")
+z <- BGN$MidFreqCover[1:20]
+y <- BGN$MidFreqCover[21:40]
+x <- BGN$MidFreqCover[41:60]
+w <- BGN$MidFreqCover[61:80]
+v <- BGN$MidFreqCover[81:100]
+u <- BGN$MidFreqCover[101:120]
+t <- BGN$MidFreqCover[121:140]
+s <- c(z,y,x,w,v,u,t)
+species <- c("SH1", "SH2", "EYR", "EWB", "WTH", "LKB","WTT")       
+species <- rep(species, each=20)
+species <- as.factor(species)
+kruskal.test(s, species)
+p <- posthoc.kruskal.dunn.test(BGN$MidFreqCover, 
+                               as.factor(BGN$species), 
+                               data=BGN ,"bon")
+round(p$p.value,4)
+round(p$statistic,4)
+
+
+# LKB and SH2 are significantly different from the other species
+
+boxplot(BGN$LowFreqCover~species, data=BGN, ylim=ylim,
+        main="Low Frequency Cover")
+z <- BGN$LowFreqCover[1:20]
+y <- BGN$LowFreqCover[21:40]
+x <- BGN$LowFreqCover[41:60]
+w <- BGN$LowFreqCover[61:80]
+v <- BGN$LowFreqCover[81:100]
+u <- BGN$LowFreqCover[101:120]
+t <- BGN$LowFreqCover[121:140]
+s <- c(z,y,x,w,v,u,t)
+species <- c("SH1", "SH2", "EYR", "EWB", "WTH", "LKB","WTT")       
+species <- rep(species, each=20)
+species <- as.factor(species)
+kruskal.test(s, species)
+p <- posthoc.kruskal.dunn.test(s, species, data=BGN ,"BH")
+round(p$p.value,4)
+kruskalmc(s, species, probs=.05, cont=NULL)
+
+boxplot(BGN$AcousticComplexity~species, data=BGN, ylim=ylim,
+        main="Acoustic Complexity Index")
+z <- BGN$AcousticComplexity[1:20]
+y <- BGN$AcousticComplexity[21:40]
+x <- BGN$AcousticComplexity[41:60]
+w <- BGN$AcousticComplexity[61:80]
+v <- BGN$AcousticComplexity[81:100]
+u <- BGN$AcousticComplexity[101:120]
+t <- BGN$AcousticComplexity[121:140]
+s <- c(z,y,x,w,v,u,t)
+species <- c("SH1", "SH2", "EYR", "EWB", "WTH", "LKB","WTT")       
+species <- rep(species, each=20)
+species <- as.factor(species)
+kruskal.test(s, species)
+p <- posthoc.kruskal.dunn.test(BGN$AcousticComplexity, 
+                               as.factor(BGN$species), 
+                               data=BGN ,"bon")
+round(p$p.value,4)
+round(p$statistic,4)
+
+boxplot(BGN$EntropyOfAverageSpectrum~species, data=BGN, ylim=ylim,
+        main="Entropy of Average Spectrum")
+z <- BGN$EntropyOfAverageSpectrum[1:20]
+y <- BGN$EntropyOfAverageSpectrum[21:40]
+x <- BGN$EntropyOfAverageSpectrum[41:60]
+w <- BGN$EntropyOfAverageSpectrum[61:80]
+v <- BGN$EntropyOfAverageSpectrum[81:100]
+u <- BGN$EntropyOfAverageSpectrum[101:120]
+t <- BGN$EntropyOfAverageSpectrum[121:140]
+s <- c(z,y,x,w,v,u,t)
+species <- c("SH1", "SH2", "EYR", "EWB", "WTH", "LKB","WTT")
+species <- rep(species, each=20)
+species <- as.factor(species)
+kruskal.test(s, species)
+p <- posthoc.kruskal.dunn.test(s, species, data=BGN ,"BH")
+round(p$p.value,4)
+kruskalmc(s, species, probs=.05, cont=NULL)
+
+boxplot(BGN$EntropyOfPeaksSpectrum~species, data=BGN, ylim=ylim,
+        main="Entropy of Peaks Spectrum")
+z <- BGN$EntropyOfPeaksSpectrum[1:20]
+y <- BGN$EntropyOfPeaksSpectrum[21:40]
+x <- BGN$EntropyOfPeaksSpectrum[41:60]
+w <- BGN$EntropyOfPeaksSpectrum[61:80]
+v <- BGN$EntropyOfPeaksSpectrum[81:100]
+u <- BGN$EntropyOfPeaksSpectrum[101:120]
+t <- BGN$EntropyOfPeaksSpectrum[121:140]
+s <- c(z,y,x,w,v,u,t)
+#species <- c("SH1", "SH2", "EYR", "EWB", "WTH", "LKB","WTT")
+#species <- rep(species, each=20)
+species <- as.factor(BGN$species)
+kruskal.test(s, species)
+p <- posthoc.kruskal.dunn.test(s, species, data=BGN ,"BH")
+round(p$p.value,4)
+kruskalmc(s, species, probs=.05, cont=NULL)
+
+boxplot(BGN$EntropyOfCoVSpectrum~species, data=BGN, ylim=ylim,
+        main="Entropy of Coefficient of Var Spectrum")
+z <- BGN$EntropyOfCoVSpectrum[1:20]
+y <- BGN$EntropyOfCoVSpectrum[21:40]
+x <- BGN$EntropyOfCoVSpectrum[41:60]
+w <- BGN$EntropyOfCoVSpectrum[61:80]
+v <- BGN$EntropyOfCoVSpectrum[81:100]
+u <- BGN$EntropyOfCoVSpectrum[101:120]
+t <- BGN$EntropyOfCoVSpectrum[121:140]
+s <- c(z,y,x,w,v,u,t)
+species <- c("SH1", "SH2", "EYR", "EWB", "WTH", "LKB","WTT")
+species <- rep(species, each=20)
+species <- as.factor(species)
+kruskal.test(s, species)
+p <- posthoc.kruskal.dunn.test(s, species, data=BGN ,"BH")
+round(p$p.value,4)
+kruskalmc(s, species, probs=.05, cont=NULL)
+
+boxplot(BGN$ClusterCount~species, data=BGN, ylim=ylim,
+        main="Cluster Count")
+z <- BGN$ClusterCount[1:20]
+y <- BGN$ClusterCount[21:40]
+x <- BGN$ClusterCount[41:60]
+w <- BGN$ClusterCount[61:80]
+v <- BGN$ClusterCount[81:100]
+u <- BGN$ClusterCount[101:120]
+t <- BGN$ClusterCount[121:140]
+s <- c(z,y,x,w,v,u,t)
+species <- c("SH1", "SH2", "EYR", "EWB", "WTH", "LKB","WTT")
+species <- rep(species, each=20)
+species <- as.factor(species)
+kruskal.test(s, species)
+p <- posthoc.kruskal.dunn.test(s, species, data=BGN ,"BH")
+round(p$p.value,4)
+kruskalmc(s, species, probs=.05, cont=NULL)
 
 # Background Noise
 dev.off()
@@ -6636,8 +7188,6 @@ if(length(a) > 0) {
 
 # Plot of distribution of clusters------------------------
 rm(list = ls())
-start <-  strptime("20150622", format="%Y%m%d")
-finish <- strptime("20150816", format="%Y%m%d")
 # Prepare civil dawn, civil dusk and sunrise and sunset times
 civil_dawn_2015 <- read.csv("data/Geoscience_Australia_Sunrise_times_Gympie_2015.csv")
 civil_dawn_2015 <- civil_dawn_2015[173:228, ]
@@ -6688,12 +7238,12 @@ cluster_list_temp37 <- cluster_list_temp[a, ]
 
 dev.off()
 tiff("Distribution_of_clusters.tiff", 
-     height=800, width=2200, res=300)
-layout(matrix(c(1,1,1,1,1,1,1,1,1,1,
-                2,2,2,2,2,2,2,2,2,2), 
-              nrow = 20, ncol = 1, byrow = TRUE))
+     height=1100, width=1536, res=300)
+layout(matrix(c(1,1,1,1,1,2,2,2), 
+              nrow = 8, ncol = 1, byrow = TRUE))
 #layout.show(2)
-par(mar=c(0,2,0,1), oma=c(3.8,3.5,0.2,0), cex.axis=1.8, cex=0.45)
+par(mar=c(0,2,0,1), oma=c(3.8,3.5,3.2,0), cex.axis=1.8, cex=0.45)
+pch <- c(15,1,17,0,19,2,3,4,5,6,7,8,9,10)
 
 list2 <- -55:35
 list3 <- c(-25,-15,-5,5,15,25)
@@ -6701,9 +7251,26 @@ list3 <- c(-25,-15,-5,5,15,25)
 cbPalette <- c("#000000","#999999", "#56B4E9", 
                "#D55E00", "#0072B2", 
                "#CC79A7","#009E73","#E69F00")
+ylim <- c(0, 40)
+
+# cluster 3 
+a <- which(cluster_list_temp$cluster_list==3)
+cluster_list_temp3 <- cluster_list_temp[a, ]
+counts_3 <- NULL
+for(i in list2) {
+  a <- which(cluster_list_temp3$ref_civ==i)
+  counts_3 <- c(counts_3, length(a))
+}
+x <- 1:length(list2)
+y <- counts_3
+lo <- loess(y~x , span=0.12)
+plot(list2, counts_3, ylim=ylim, xlab="", ylab="", 
+     xaxt="n", col=cbPalette[6], yaxt="n", pch = pch[1])
+lines(list2, predict(lo), col=cbPalette[6], lwd=1.6)
+abline(v=list3)
 
 # cluster 11
-ylim <- c(0,35)
+par(new=TRUE)
 a <- which(cluster_list_temp$cluster_list==11)
 cluster_list_temp11 <- cluster_list_temp[a, ]
 counts_11 <- NULL
@@ -6715,44 +7282,19 @@ x <- 1:length(list2)
 y <- counts_11
 lo <- loess(y~x, span=0.09)
 plot(list2, counts_11, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", col=cbPalette[1], las=1, yaxt="n")
+     xaxt="n", col=cbPalette[1], las=1, yaxt="n",
+     pch = pch[2])
 lines(list2, predict(lo), col=cbPalette[1], lwd=1.6)
 abline(v=list3)
-mtext(side=2, line=3.6, "Number of mintues                           ")
-axis(at=c(10,20,30), side=2, las=1)
-# cluster 3
-par(new=TRUE)
-a <- which(cluster_list_temp$cluster_list==3)
-cluster_list_temp3 <- cluster_list_temp[a, ]
-counts_3 <- NULL
-for(i in list2) {
-  a <- which(cluster_list_temp3$ref_civ==i)
-  counts_3 <- c(counts_3, length(a))
-}
-x <- 1:length(list2)
-y <- counts_3
-lo <- loess(y~x , span=0.12)
-plot(list2, counts_3, ylim=ylim,xlab="", ylab="", 
-     xaxt="n", col=cbPalette[2], yaxt="n")
-lines(list2, predict(lo), col=cbPalette[2], lwd=1.6)
-abline(v=list3)
-
-# cluster 14
-par(new=TRUE)
-a <- which(cluster_list_temp$cluster_list==14)
-cluster_list_temp14 <- cluster_list_temp[a, ]
-counts_14 <- NULL
-for(i in list2) {
-  a <- which(cluster_list_temp14$ref_civ==i)
-  counts_14 <- c(counts_14, length(a))
-}
-x <- 1:length(list2)
-y <- counts_14
-lo <- loess(y~x, span=0.12)
-plot(list2, counts_14, ylim=ylim,xlab="", ylab="",
-     xaxt="n", col=cbPalette[3], yaxt="n")
-lines(list2, predict(lo), col=cbPalette[3], lwd=1.6)
-abline(v=list3)
+mtext(side=2, line=3.6, cex = 1,
+      "Number of mintues                           ")
+mtext(line=1.1, cex=1,
+      "Number of minutes in each cluster in relation to civil dawn")
+axis(at=c(10,20,30,40), side=2, las=1)
+abline(v=0,lty=2, col="red")
+text(x = -20, y = 0.97*ylim[2], "Pr-C-D", cex = 1.8)
+text(x =   0, y = 0.97*ylim[2], "C-D", cex = 1.8)
+text(x =  20, y = 0.97*ylim[2], "Po-C-D", cex = 1.8)
 
 # cluster 15
 par(new=TRUE)
@@ -6768,7 +7310,8 @@ x <- 1:length(list2)
 y <- counts_15
 lo <- loess(y~x, span=0.12)
 plot(list2, counts_15, ylim=ylim,xlab="", ylab="", 
-     xaxt="n", col=cbPalette[4], yaxt="n")
+     xaxt="n", col=cbPalette[4], yaxt="n",
+     pch = pch[3])
 lines(list2, predict(lo), col=cbPalette[4], lwd=1.6)
 abline(v=list3)
 
@@ -6786,9 +7329,51 @@ y <- counts_37
 lo <- loess(y~x, span=0.12)
 par(new=TRUE)
 plot(list2, counts_37, ylim=ylim,xlab="", ylab="",
-     xaxt="n", col=cbPalette[5], yaxt="n")
+     xaxt="n", col=cbPalette[5], yaxt="n",
+     pch=pch[4])
 lines(list2, predict(lo), col=cbPalette[5], lwd=1.6)
 abline(v=(0.5*length(list2)+0.5),lty=2, col="red")
+
+# legend
+label <- c("cluster 37","cluster 11","cluster 15","cluster  3")
+legend(x=-55, y=(ylim[2]+0.05*ylim[2]), 
+       col = c(cbPalette[5], cbPalette[1], 
+               cbPalette[4], cbPalette[6], 
+               cbPalette[2], cbPalette[3], 
+               cbPalette[7], cbPalette[8]),
+       legend = label, cex = 2.2, bty = "n", 
+       horiz = FALSE, xpd=TRUE, pch = pch[c(4,2,3,1)],
+       x.intersp = 0.9, y.intersp = 0.9, 
+       inset=c(-0.15,0), lwd=1.6,
+       lty=1, pt.cex = 1.4, pt.lwd = 0.8)
+
+
+# plot 2
+ylim <- c(0, 8)
+colour8 <- cbPalette[8] # bright orange
+colour7 <- cbPalette[7] # green
+colour3 <- cbPalette[3] # light blue
+colour2 <- cbPalette[2] # grey
+
+# cluster 14
+a <- which(cluster_list_temp$cluster_list==14)
+cluster_list_temp14 <- cluster_list_temp[a, ]
+counts_14 <- NULL
+for(i in list2) {
+  a <- which(cluster_list_temp14$ref_civ==i)
+  counts_14 <- c(counts_14, length(a))
+}
+x <- 1:length(list2)
+y <- counts_14
+lo <- loess(y~x, span = 0.075)
+plot(list2, counts_14, ylim=ylim,xlab="", ylab="",
+     xaxt="n", col=colour2, yaxt="n",
+     pch = pch[8])
+lines(list2, predict(lo), col=colour2, lwd=1.2)
+abline(v=list3)
+text(x = -20, y = 0.97*ylim[2], "Pr-C-D", cex = 1.8)
+text(x =   0, y = 0.97*ylim[2], "C-D", cex = 1.8)
+text(x =  20, y = 0.97*ylim[2], "Po-C-D", cex = 1.8)
 
 # cluster 39
 par(new=TRUE)
@@ -6801,13 +7386,15 @@ for(i in list2) {
 }
 x <- 1:length(list2)
 y <- counts_39
-lo <- loess(y~x, span=0.12)
+lo <- loess(y~x, span=0.075)
 plot(list2, counts_39, ylim=ylim,xlab="", ylab="",
-     xaxt="n", col=cbPalette[6], yaxt="n")
-lines(list2, predict(lo), col=cbPalette[6], lwd=1.6)
+     xaxt="n", col=colour3, yaxt="n",
+     pch = pch[6])
+lines(list2, predict(lo), col=colour3, lwd=1.2)
 
 # cluster 43
 par(new=TRUE)
+colour <- cbPalette[7] # green
 a <- which(cluster_list_temp$cluster_list==43)
 cluster_list_temp43 <- cluster_list_temp[a, ]
 counts_43 <- NULL
@@ -6817,27 +7404,16 @@ for(i in list2) {
 }
 x <- 1:length(list2)
 y <- counts_43
-lo <- loess(y~x, span=0.12)
+lo <- loess(y~x, span=0.075)
 plot(list2, counts_43, ylim=ylim,xlab="", ylab="",
-     xaxt="n", col=cbPalette[7], yaxt="n")
-lines(list2, predict(lo), col=cbPalette[7], lwd=1.6)
+     xaxt="n", col=colour7, yaxt="n",
+     pch = pch[7])
+lines(list2, predict(lo), col=colour7, lwd=1.2)
 abline(v=0,lty=2, col="red")
 
-label <- c("cluster  3","cluster 11","cluster 14","cluster 15",
-            "cluster 37","cluster 39","cluster 43")
-legend(x=-55, y=(ylim[2]+0.05*ylim[2]), col = c(cbPalette[1], cbPalette[2],
-                                 cbPalette[3], cbPalette[4],
-                                 cbPalette[5], cbPalette[6],
-                                 cbPalette[7]),
-       legend = label, cex = 1.8, bty = "n", 
-       horiz = FALSE, xpd=TRUE, pch = 1,
-       x.intersp = 0.9, y.intersp = 0.8, 
-       inset=c(-0.15,0), lwd=1.2, 
-       lty=1)
-
-# plot 2
 # cluster 58
-ylim <- c(0,6)
+par(new=TRUE)
+colour <- "red"
 a <- which(cluster_list_temp$cluster_list==58)
 cluster_list_temp58 <- cluster_list_temp[a, ]
 counts_58 <- NULL
@@ -6847,23 +7423,30 @@ for(i in list2) {
 }
 x <- 1:length(list2)
 y <- counts_58
-lo <- loess(y~x, span=0.12)
+lo <- loess(y~x, span=0.075)
 plot(list2, counts_58, ylim=ylim,xlab="", ylab="",
-     xaxt="n", yaxt="n", col="red", las=1)
-lines(list2, predict(lo), col="red", lwd=1.6)
+     xaxt="n", yaxt="n", col="black", las=1,
+     pch = pch[5])
+lines(list2, predict(lo), col="black", lwd=2)
 abline(v=list3)
+
 axis(side=1, at=list3, 
      labels=c("-25","-15","-5", "+5", "+15", "+25"))
-abline(v=0,lty=2, col="red")
+abline(v=0, lty=2, col="red")
 mtext(side=1, line = 2.6, "Minutes from Civil Dawn", cex=1)
-axis(at=c(2,4,6), side=2, las=1)
+axis(at=c(2,4,6,8), side=2, las=1)
 
-label <- c("cluster 58")
-legend(x=-55, y=(ylim[2]+0.05*ylim[2]), col = c("red"),
-       legend = label, cex = 1.8, bty = "n", 
-       horiz = FALSE, xpd=TRUE, pch = 1,
-       x.intersp = 0.9, y.intersp = 1.2, 
-       inset=c(-0.15,0), lwd=1.2, lty=1)
+label <- c("cluster 14", "cluster 39", 
+           "cluster 43", "cluster 58")
+legend(x=-55, y=(ylim[2]+0.05*ylim[2]), 
+       col = c(colour2, colour3,
+               colour7, "black"),
+       legend = label, cex = 2.2, bty = "n", 
+       horiz = FALSE, xpd=TRUE, 
+       x.intersp = 0.9, y.intersp = 0.9, 
+       inset=c(-0.15,0), lwd=c(1.6,1.6,1.6,2), lty=1,
+       pt.cex = 1.4, pt.lwd = 0.8,
+       pch = pch[c(8,6,7,5)])
 
 dev.off()
 #cumulative_total <- as.vector(lapply(seq_along(x), function(i) 
@@ -6908,10 +7491,15 @@ rm(date.list)
 start <-  strptime("20150622", format="%Y%m%d")
 finish <- strptime("20150816", format="%Y%m%d")
 # Prepare civil dawn, civil dusk and sunrise and sunset times
-civil_dawn_2015 <- read.csv("data/Geoscience_Australia_Sunrise_times_Gympie_2015.csv")
+civil_dawn_2015 <- read.csv("C:/Work2/Projects/Twelve_,month_clustering/Saving_dataset/data/Geoscience_Australia_Sunrise_times_Gympie_2015.csv")
+
 civil_dawn_2015 <- civil_dawn_2015[173:228, ]
 civil_sunrise <- as.numeric(substr(civil_dawn_2015$CivSunrise,1,1))*60 + as.numeric(substr(civil_dawn_2015$CivSunrise,2,3))
 civsunrise <- as.numeric(substr(civil_dawn_2015$CivSunrise,1,1))*60 + as.numeric(substr(civil_dawn_2015$CivSunrise,2,3))
+nautsunrise <- as.numeric(substr(civil_dawn_2015$NautSunrise,1,1))*60 + as.numeric(substr(civil_dawn_2015$NautSunrise,2,3))
+diff <- civsunrise - nautsunrise
+max(diff)
+min(diff)
 # Prepare dates
 dates <- seq(start, finish, by = "1440 mins")
 any(is.na(dates)) #FALSE
@@ -6981,6 +7569,7 @@ for(i in 1:length(dates)) {
       statistics[i,(j+1)] <- NA
     }
   }
+  print(i)
 }
 colnames(statistics) <- c("dates", species)
 
@@ -7004,39 +7593,536 @@ statistics$EW_min_diff <- statistics$EW_min - statistics$civil_dawn
 
 # start plot-----------------------
 dev.off()
-tiff("Species_temporal_distribution_boxplot.tiff", 
-     height=2400, width=2200, res=300)
+tiff("Commencement_time_boxplots_test100.tiff", 
+     height=1200, width=2400, res=300)
 #par(mfrow=c(7, 1), mar=c(0, 0.5, 0.5, 0.5), 
 #    oma=c(16, 5, 16, 0), cex.axis=2, cex=0.8)
 list2 <- -55:35
-list3 <- c(-25,-15,-5,5,15,25)
+list3 <- c(-25,-15,-5, 5,15,25)
 
-layout(matrix(c(1,1,1,1,2,2,2,2,2,2,
-                3,3,3,3,4,4,4,4,4,4,
-                5,5,5,5,6,6,6,6,6,6,
-                7,7,7,7,8,8,8,8,8,8,
-                9,9,9,9,10,10,10,10,10,10,
-                11,11,11,11,12,12,12,12,12,12,
-                13,13,13,13,14,14,14,14,14,14), nrow = 70, ncol = 1, byrow = TRUE))
-layout.show(14)
-## show the regions that have been allocated to each plot
-par(mar=c(0,2,0,1), oma=c(3.8,3.5,0.2,0), cex.axis=1.8, cex=0.45)
+layout(matrix(c(1,2,3,4,5,6,7), nrow = 7, ncol = 1, byrow = TRUE))
+layout.show(7)
+par(mar=c(0,2,0,1), oma=c(3.8,3.5,3.2,0), 
+    cex.axis=1.8, cex=0.45)
 
 # Eastern Yellow Robin----------------------------------
-#par(new=TRUE)
 boxplot(statistics$EYR_min_diff, horizontal=TRUE, 
         ylim=c(min(list2),max(list2)), xaxt="n",
-        border="black")
+        boxwex=0.6)
 med <- fivenum(statistics$EYR_min_diff)[c(1,3,5)]
-text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.4)
-text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.4)
-text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.4)
-leg <- as.character.default("EYR")
+text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.6)
+text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.6)
+text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.6)
 abline(v=c(-25,-15,-5, 5, 15, 25))
 label <- "EYR"
-legend(x=(26-nchar(label)), y=1.5,
+legend(x=(28-nchar(label)), y=1.5,
        legend=label, bty = "n", cex=2.2)
+mtext(line=1.1,"Commencement time in relation to civil dawn", 
+      cex=1.2)
+abline(v=0,lty=2, col="red")
 
+# White-throated Honeyeater-------------------------
+boxplot(statistics$WTH_min_diff, horizontal=TRUE, 
+        ylim=c(min(list2),max(list2)), xaxt="n",
+        boxwex=0.6)
+med <- fivenum(statistics$WTH_min_diff)[c(1,3,5)]
+text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.6)
+text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.6)
+text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.6)
+abline(v=c(-25,-15,-5, 5, 15, 25))
+label <- "WTH"
+legend(x=(28-nchar(label)), y=1.5,
+       legend=label, bty = "n", cex=2.2)
+abline(v=0,lty=2, col="red")
+
+# Laughining Kookaburra----------------------------
+boxplot(statistics$KOOK_min_diff, horizontal=TRUE, 
+        ylim=c(min(list2),max(list2)), xaxt="n",
+        boxwex=0.6)
+med <- fivenum(statistics$KOOK_min_diff)[c(1,3,5)]
+text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.6)
+text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.6)
+text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.6)
+label <- as.character.default("LKB")
+abline(v=c(-25,-15,-5, 5, 15, 25))
+legend(x=(28-nchar(label)), y=1.5,
+       legend=label, bty = "n", cex=2.2)
+abline(v=0,lty=2, col="red")
+
+# Scarlet Honeyeater 1--------------------------------------
+boxplot(statistics$SC1_min_diff, horizontal=TRUE, 
+        ylim=c(min(list2),max(list2)), xaxt="n",
+        boxwex=0.6)
+med <- fivenum(statistics$SC1_min_diff)[c(1,3,5)]
+text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.6)
+text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.6)
+text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.6)
+mtext(side=2, line = 3.6, "Boxplots of the commencement time")
+abline(v=c(-25,-15,-5, 5, 15, 25))
+label <- "SH1"
+legend(x=(28-nchar(label)), y=1.5,
+       legend=label, bty = "n", cex=2.2)
+abline(v=0,lty=2, col="red")
+
+# Scarlet Honeyeater 2-------------------
+boxplot(statistics$SC2_min_diff, horizontal=TRUE, 
+        ylim=c(min(list2),max(list2)), xaxt="n",
+        boxwex=0.6)
+med <- fivenum(statistics$SC2_min_diff)[c(1,3,5)]
+text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.6)
+text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.6)
+text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.6)
+abline(v=c(-25,-15,-5, 5, 15, 25))
+label <- "SH2"
+legend(x=(28-nchar(label)), y=1.5,
+       legend=label, bty = "n", cex=2.2)
+abline(v=0,lty=2, col="red")
+
+# White-throated Treecreeper-------------------------------
+boxplot(statistics$WTT_min_diff, horizontal=TRUE, 
+        ylim=c(min(list2), max(list2)), xaxt="n",
+        boxwex=0.6)
+med <- fivenum(statistics$WTT_min_diff)[c(1,3,5)]
+text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.6)
+text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.6)
+text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.6)
+abline(v=list3)
+label <- "WTT"
+legend(x=(28-nchar(label)), y=1.5,
+       legend=label, bty = "n", cex=2.2)
+abline(v=0,lty=2, col="red")
+
+# Eastern Whipbird---------------------------------
+boxplot(statistics$EW_min_diff, horizontal=TRUE, 
+        ylim=c(min(list2),max(list2)), xaxt="n",
+        boxwex=0.6)
+med <- fivenum(statistics$EW_min_diff)[c(1,3,5)]
+text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.6)
+text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.6)
+text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.6)
+abline(v=c(-25,-15,-5, 5, 15, 25))
+label <- "EWB"
+legend(x=(28-nchar(label)), y=1.5,
+       legend=label, bty = "n", cex=2.2)
+mtext(side=1, line = 2.6, "Minutes from Civil Dawn", cex=1)
+axis(side=1, at=list3, cex.axis = 1.8, 
+     labels=c("-25","-15","-5", "+5", "+15", "+25"))
+abline(v=list3)
+abline(v=0,lty=2, col="red")
+
+dev.off()
+
+#---------------------------------------------
+dev.off()
+
+# prepare long dataset
+dat1 <- data.frame(desc=NA,
+                   minute=NA)
+dat1[1:nrow(statistics),] <- data.frame(desc=NA,
+                   minute=NA)
+dat1[,1] <- "gEYR"
+dat1[,2] <- statistics$EYR_min_diff
+
+dat2 <- data.frame(desc=NA,
+                   minute=NA)
+dat2[1:nrow(statistics),] <- data.frame(desc=NA,
+                                        minute=NA)
+dat2[,1] <- "fWTH"
+dat2[,2] <- statistics$WTH_min_diff
+
+dat3 <- data.frame(desc=NA,
+                   minute=NA)
+dat3[1:nrow(statistics),] <- data.frame(desc=NA,
+                                        minute=NA)
+dat3[,1] <- "eLKB"
+dat3[,2] <- statistics$KOOK_min_diff
+
+dat4 <- data.frame(desc=NA,
+                   minute=NA)
+dat4[1:nrow(statistics),] <- data.frame(desc=NA,
+                                        minute=NA)
+dat4[,1] <- "dSH1"
+dat4[,2] <- statistics$SC1_min_diff
+
+dat5 <- data.frame(desc=NA,
+                   minute=NA)
+dat5[1:nrow(statistics),] <- data.frame(desc=NA,
+                                        minute=NA)
+dat5[,1] <- "cSH2"
+dat5[,2] <- statistics$SC2_min_diff
+
+dat6 <- data.frame(desc=NA,
+                   minute=NA)
+dat6[1:nrow(statistics),] <- data.frame(desc=NA,
+                                        minute=NA)
+dat6[,1] <- "bWTT"
+dat6[,2] <- statistics$WTT_min_diff
+
+dat7 <- data.frame(desc=NA,
+                   minute=NA)
+dat7[1:nrow(statistics),] <- data.frame(desc=NA,
+                                        minute=NA)
+dat7[,1] <- "aEWB"
+dat7[,2] <- statistics$EW_min_diff
+
+bird_data <- rbind(dat1,
+                    dat2,
+                    dat3,
+                    dat4,
+                    dat5,
+                    dat6,
+                    dat7) 
+
+med_EYR <- fivenum(statistics$EYR_min_diff)[c(1,3,5)]
+med_WTH <- fivenum(statistics$WTH_min_diff)[c(1,3,5)]
+med_LKB <- fivenum(statistics$KOOK_min_diff)[c(1,3,5)]
+med_SC1 <- fivenum(statistics$SC1_min_diff)[c(1,3,5)]
+med_SC2 <- fivenum(statistics$SC2_min_diff)[c(1,3,5)]
+med_WTT <- fivenum(statistics$WTT_min_diff)[c(1,3,5)]
+med_EWB <- fivenum(statistics$EW_min_diff)[c(1,3,5)]
+three_number_summary <- rbind(med_EYR,
+                              med_WTH,
+                              med_LKB,
+                              med_SC1,
+                              med_SC2,
+                              med_WTT,
+                              med_EWB)
+rownames(three_number_summary) <- c("EYR",
+                                    "WTH",
+                                    "LKB",
+                                    "SC1",
+                                    "SC2",
+                                    "WTT",
+                                    "EWB")
+colnames(three_number_summary) <- c("first","second","third")
+three_number_summary <- data.frame(three_number_summary)
+
+dev.off()
+tiff("Commencement_time_boxplots_13.tiff",
+     height=860, width=1536, res=300)
+par(mar=c(1, 1.3, 0, 0.7), oma=c(2.2, 2.2, 2.2, 0), 
+    cex.axis=1.8, cex=0.45, mgp=c(3,0.7,0))
+boxplot(minute~desc,data=bird_data, 
+        ylab="", horizontal=T, ylim=c(-55,35),
+        xlab="", yaxt="n",
+        cex.axis=1.6, cex.lab=1.6, cex=1.4,
+        boxwex = 0.4, xaxt="n")
+axis(side=2,at=1:7, cex.axis=1.3, las=0,
+     labels=c("EWB", "WTT", "SH2", "SH1", "LKB", "WTH", "EYR"))
+mtext(side=2, "Species", line=1.9)
+mtext(cex=mtcex, line=0.6,
+      "Commencement time in relation to civil dawn")
+mtext(cex=1, side=1, line = 1.8, "Minutes from Civil Dawn")
+segments(x0 = -25, y0 =0.2 , x1 =-25 , y1 = 7.8, lwd=0.1)
+segments(x0 = -15, y0 =0.2 , x1 =-15 , y1 = 7.8, lwd=0.1)
+segments(x0 = -5, y0 =0.2 , x1 =-5 , y1 = 7.8, lwd=0.1)
+segments(x0 = 0, y0 =0.2 , x1 =0 , y1 = 7.8, lwd=0.1, lty=2)
+segments(x0 = 5, y0 =0.2 , x1 =5 , y1 = 7.8, lwd=0.1)
+segments(x0 = 15, y0 =0.2 , x1 =15 , y1 = 7.8, lwd=0.1)
+segments(x0 = 25, y0 =0.2 , x1 =25 , y1 = 7.8, lwd=0.1)
+text(x = -20, y = 7.6, "Pr-C-D", cex = 1.8)
+text(x =   0, y = 7.6, "C-D", cex = 1.8)
+text(x =  20, y = 7.6, "Po-C-D", cex = 1.8)
+axis(cex.axis = 1.3, side=1, at=c(-25,-15,-5, 5, 15, 25, 50),
+     mgp = c(3, 0.15, 0), lwd = 0.5,
+     labels=c("-25","-15","-5", "+5", "+15", "+25", "+50"))
+for(i in 1:nrow(three_number_summary)) {
+  text(x = three_number_summary$first[i], y = (8-i-0.4), 
+       cex=1.6, round(three_number_summary$first[i],0))
+  text(x = three_number_summary$second[i], y = (8-i-0.4), 
+       cex=1.6, round(three_number_summary$second[i],0))
+  text(x = three_number_summary$third[i], y = (8-i-0.4), 
+       cex=1.6, round(three_number_summary$third[i],0))
+}
+dev.off()
+
+moon_phase <- c(rep("a_FQ",7), rep("b_FM",7),
+                rep("c_LQ",7), rep("d_NM",8),
+                rep("a_FQ",7), rep("b_FM",7),
+                rep("c_LQ",7), rep("d_NM",6))
+a <- grep("LKB", bird_data$desc)
+lkb <- bird_data[a,]
+lkb$moon <- moon_phase
+a <- grep("FM", lkb$moon)
+lkb_full_moon <- lkb[a,]
+a <- grep("FQ", lkb$moon)
+lkb_first_quart <- lkb[a,]
+a <- grep("FM", lkb$moon)
+lkb_full_moon <- lkb[a,]
+a <- grep("LQ", lkb$moon)
+lkb_last_quart <- lkb[a,]
+a <- grep("NM", lkb$moon)
+lkb_new_moon <- lkb[a,]
+
+a <- grep("WTH", bird_data$desc)
+wth <- bird_data[a,]
+wth$moon <- moon_phase
+a <- grep("FM", wth$moon)
+wth_full_moon <- wth[a,]
+a <- grep("FQ", wth$moon)
+wth_first_quart <- wth[a,]
+a <- grep("FM", wth$moon)
+wth_full_moon <- wth[a,]
+a <- grep("LQ", wth$moon)
+wth_last_quart <- wth[a,]
+a <- grep("NM", wth$moon)
+wth_new_moon <- wth[a,]
+
+t.test(lkb_first_quart$minute, lkb_full_moon$minute)
+t.test(lkb_full_moon$minute, lkb_new_moon$minute)
+t.test(wth_full_moon$minute, wth_new_moon$minute)
+
+
+
+boxplot(minute~moon,data=lkb, 
+        ylab="", horizontal=T, ylim=c(-55,35),
+        xlab="", yaxt="n",
+        cex.axis=1.6, cex.lab=1.6, cex=1.4,
+        boxwex = 0.4, xaxt="n")
+segments(x0 = -25, y0 =0.2 , x1 =-25 , y1 = 7.8, lwd=0.1)
+segments(x0 = -15, y0 =0.2 , x1 =-15 , y1 = 7.8, lwd=0.1)
+segments(x0 = -5, y0 =0.2 , x1 =-5 , y1 = 7.8, lwd=0.1)
+segments(x0 = 0, y0 =0.2 , x1 =0 , y1 = 7.8, lwd=0.1, lty=2)
+segments(x0 = 5, y0 =0.2 , x1 =5 , y1 = 7.8, lwd=0.1)
+segments(x0 = 15, y0 =0.2 , x1 =15 , y1 = 7.8, lwd=0.1)
+segments(x0 = 25, y0 =0.2 , x1 =25 , y1 = 7.8, lwd=0.1)
+text(x = -20, y = 7.6, "Pr-C-D", cex = 1.8)
+text(x =   0, y = 7.6, "C-D", cex = 1.8)
+text(x =  20, y = 7.6, "Po-C-D", cex = 1.8)
+axis(cex.axis = 1.3, side=1, at=c(-25,-15,-5, 5, 15, 25, 50),
+     mgp = c(3, 0.15, 0), lwd = 0.5,
+     labels=c("-25","-15","-5", "+5", "+15", "+25", "+50"))
+
+a <- grep("EYR", bird_data$desc)
+eyr <- bird_data[a,]
+eyr$moon <- moon_phase
+boxplot(minute~moon,data=eyr, 
+        ylab="", horizontal=T, ylim=c(-55,35),
+        xlab="", yaxt="n",
+        cex.axis=1.6, cex.lab=1.6, cex=1.4,
+        boxwex = 0.4, xaxt="n")
+segments(x0 = -25, y0 =0.2 , x1 =-25 , y1 = 7.8, lwd=0.1)
+segments(x0 = -15, y0 =0.2 , x1 =-15 , y1 = 7.8, lwd=0.1)
+segments(x0 = -5, y0 =0.2 , x1 =-5 , y1 = 7.8, lwd=0.1)
+segments(x0 = 0, y0 =0.2 , x1 =0 , y1 = 7.8, lwd=0.1, lty=2)
+segments(x0 = 5, y0 =0.2 , x1 =5 , y1 = 7.8, lwd=0.1)
+segments(x0 = 15, y0 =0.2 , x1 =15 , y1 = 7.8, lwd=0.1)
+segments(x0 = 25, y0 =0.2 , x1 =25 , y1 = 7.8, lwd=0.1)
+text(x = -20, y = 7.6, "Pr-C-D", cex = 1.8)
+text(x =   0, y = 7.6, "C-D", cex = 1.8)
+text(x =  20, y = 7.6, "Po-C-D", cex = 1.8)
+axis(cex.axis = 1.3, side=1, at=c(-25,-15,-5, 5, 15, 25, 50),
+     mgp = c(3, 0.15, 0), lwd = 0.5,
+     labels=c("-25","-15","-5", "+5", "+15", "+25", "+50"))
+
+a <- grep("WTH", bird_data$desc)
+wth <- bird_data[a,]
+wth$moon <- moon_phase
+boxplot(minute~moon,data=wth, 
+        ylab="", horizontal=T, ylim=c(-55,35),
+        xlab="", yaxt="n",
+        cex.axis=1.6, cex.lab=1.6, cex=1.4,
+        boxwex = 0.4, xaxt="n")
+segments(x0 = -25, y0 =0.2 , x1 =-25 , y1 = 7.8, lwd=0.1)
+segments(x0 = -15, y0 =0.2 , x1 =-15 , y1 = 7.8, lwd=0.1)
+segments(x0 = -5, y0 =0.2 , x1 =-5 , y1 = 7.8, lwd=0.1)
+segments(x0 = 0, y0 =0.2 , x1 =0 , y1 = 7.8, lwd=0.1, lty=2)
+segments(x0 = 5, y0 =0.2 , x1 =5 , y1 = 7.8, lwd=0.1)
+segments(x0 = 15, y0 =0.2 , x1 =15 , y1 = 7.8, lwd=0.1)
+segments(x0 = 25, y0 =0.2 , x1 =25 , y1 = 7.8, lwd=0.1)
+text(x = -20, y = 7.6, "Pr-C-D", cex = 1.8)
+text(x =   0, y = 7.6, "C-D", cex = 1.8)
+text(x =  20, y = 7.6, "Po-C-D", cex = 1.8)
+axis(cex.axis = 1.3, side=1, at=c(-25,-15,-5, 5, 15, 25, 50),
+     mgp = c(3, 0.15, 0), lwd = 0.5,
+     labels=c("-25","-15","-5", "+5", "+15", "+25", "+50"))
+
+
+
+
+tiff("Commencement_time_boxplots_13.tiff",
+     height=832, width=1536, res=300)
+scale1 <- 0.64 # percentage difference in dimensions
+scale2 <- 1/1.8 # change of scale in cex.axis
+scale3 <- 0.45 # original cex value in original plot
+list2 <- -55:35
+list3 <- c(-25,-15,-5, 5, 15,25)
+tcex <- 1.8; mtcex <- 1; mtcex2 <- 0.7; 
+lcex <- 1.5; acex <- 1.2; line1 <- 2.2; 
+line2 <- 1.6; line3 <- 0.7
+layout(matrix(c(1,1,1,
+                2,2,2,
+                3,3,3,
+                4,4,4,
+                5,5,5,
+                6,6,6,
+                7,7,7,
+                8,8,8,
+                9), nrow = 25, ncol = 1, byrow = TRUE))
+layout.show(9)
+par(mar=c(1, 1.3, 0, 0.7), oma=c(2.2, 2.2, 2.2, 0), 
+    cex.axis=1.8, cex=0.45)
+# Empty plot
+plot(1, type="n", xlab="", ylab="", xlim=c(-55, 35), ylim=c(0, 1),
+     xaxt = "n", yaxt = "n", bty = "n")
+text(x = -20, y = 0.7, "Pr-C-D", cex = tcex)
+text(x =   0, y = 0.7, "C-D", cex = tcex)
+text(x =  20, y = 0.7, "Po-C-D", cex = tcex)
+mtext(cex=mtcex, line=line3,
+      "Commencement time in relation to civil dawn")
+abline(v=c(-25,-15,-5, 5, 15, 25), lwd = 0.2)
+abline(v=0,lty=2, col="black")
+
+# Eastern Yellow Robin----------------------------------
+boxplot(statistics$EYR_min_diff, horizontal=TRUE, 
+        ylim=c(min(list2),max(list2)), xaxt="n",
+        boxwex=0.6, frame = F, lty = 1)
+mtext(line=-0.6, cex = 0.72, "Eastern Yellow Robin (EYR)")
+med <- fivenum(statistics$EYR_min_diff)[c(1,3,5)]
+text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.6)
+text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.6)
+text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.6)
+abline(v=c(-25,-15,-5, 5, 15, 25), lwd = 0.2)
+label <- "EYR"
+abline(v=0,lty=2, col="black")
+list3 <- c(-80,list3, 50)
+
+# White-throated Honeyeater-------------------------
+boxplot(statistics$WTH_min_diff, horizontal=TRUE, 
+        ylim=c(min(list2),max(list2)), xaxt="n",
+        boxwex=0.6, frame = F, lty = 1)
+mtext(line=-0.6, cex = 0.72, "White-throated Honeyeater (WTH)")
+med <- fivenum(statistics$WTH_min_diff)[c(1,3,5)]
+text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.6)
+text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.6)
+text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.6)
+abline(v=c(-25,-15,-5, 5, 15, 25), lwd = 0.2)
+label <- "WTH"
+abline(v=0,lty=2, col="black")
+
+# Laughining Kookaburra----------------------------
+boxplot(statistics$KOOK_min_diff, horizontal=TRUE, 
+        ylim=c(min(list2),max(list2)), xaxt="n",
+        boxwex=0.6, frame = F, lty = 1)
+mtext(line=-0.6, cex = 0.72, "Laughing Kookaburra (LKB)")
+med <- fivenum(statistics$KOOK_min_diff)[c(1,3,5)]
+text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.6)
+text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.6)
+text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.6)
+label <- as.character.default("LKB")
+abline(v=c(-25,-15,-5, 5, 15, 25), lwd = 0.2)
+abline(v=0,lty=2, col="black")
+
+# Scarlet Honeyeater 1--------------------------------------
+boxplot(statistics$SC1_min_diff, horizontal=TRUE, 
+        ylim=c(min(list2),max(list2)), xaxt="n",
+        boxwex=0.6, frame = F, lty = 1)
+mtext(line=-0.6, cex = 0.72, "Scarlet Honeyeater (SC1)")
+med <- fivenum(statistics$SC1_min_diff)[c(1,3,5)]
+text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.6)
+text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.6)
+text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.6)
+abline(v=c(-25,-15,-5, 5, 15, 25), lwd = 0.2)
+label <- "SH1"
+abline(v=0,lty=2, col="black")
+
+# Scarlet Honeyeater 2-------------------
+boxplot(statistics$SC2_min_diff, horizontal=TRUE, 
+        ylim=c(min(list2),max(list2)), xaxt="n",
+        boxwex=0.6, frame = F, lty = 1)
+mtext(line=-0.6, cex = 0.72, "Scarlet Honeyeater (SC2)")
+med <- fivenum(statistics$SC2_min_diff)[c(1,3,5)]
+text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.6)
+text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.6)
+text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.6)
+abline(v=c(-25,-15,-5, 5, 15, 25), lwd = 0.2)
+label <- "SH2"
+abline(v=0,lty=2, col="black")
+
+# White-throated Treecreeper-------------------------------
+boxplot(statistics$WTT_min_diff, horizontal=TRUE, 
+        ylim=c(min(list2), max(list2)), xaxt="n",
+        boxwex=0.6, frame = F, lty = 1)
+mtext(line=-0.6, cex = 0.72,  "White-throated Treecreeper (WTT)")
+med <- fivenum(statistics$WTT_min_diff)[c(1,3,5)]
+text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.6)
+text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.6)
+text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.6)
+abline(v=list3, lwd = 0.2)
+label <- "WTT"
+abline(v=0,lty=2, col="black")
+
+# Eastern Whipbird---------------------------------
+boxplot(statistics$EW_min_diff, horizontal=TRUE, 
+        ylim=c(min(list2),max(list2)), xaxt="n",
+        boxwex=0.6, frame = F, lty = 1)
+mtext(line=-0.6, cex = 0.72, "Eastern Whipbird (EWB)")
+med <- fivenum(statistics$EW_min_diff)[c(1,3,5)]
+text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.6)
+text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.6)
+text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.6)
+abline(v=c(-25,-15,-5, 5, 15, 25), lwd = 0.2)
+label <- "EWB"
+abline(v=0,lty=2, col="black")
+# Empty plot
+plot(1, type="n", xlab="", ylab="", xlim=c(-55, 35), ylim=c(0, 1),
+     xaxt = "n", yaxt = "n", bty = "n")
+abline(v=c(-25,-15,-5, 5, 15, 25), lwd = 0.2)
+axis(cex.axis = acex, side=1, at=list3,
+     mgp = c(3, 0.15, 0), lwd = 0.5,
+     labels=c("-60","-25","-15","-5", "+5", "+15", "+25", "+50"))
+mtext(cex=1, side=1, line = 1.8, "Minutes from Civil Dawn")
+abline(v=0,lty=2, col="black")
+
+dev.off()
+
+#---------------------------------------------
+cbPalette <- c("#000000","#999999", "#56B4E9", 
+               "#D55E00", "#0072B2", 
+               "#CC79A7","#009E73","#E69F00")
+pch <- c(15,1,17,0,19,2,3,4,5,6,7,8,9,10)
+pch1 <- pch[2]
+pch2 <- pch[3]
+pch3 <- pch[1]
+colour1 <- cbPalette[6]
+colour2 <- cbPalette[7]
+colour3 <- cbPalette[4]
+colour1 <- "black"
+colour2 <- "black"
+colour3 <- "black"
+lwd1 <- 1
+lwd2 <- 1
+lwd3 <- 1.5
+lty1 <- 3
+lty2 <- 2
+lty3 <- 1
+pch <- 16
+
+dev.off()
+tiff("Species_temporal_distribution.tiff", 
+     height=2000, width=1713, res=300)
+     list2 <- -55:35
+list3 <- c(-25,-15,-5,5,15,25)
+
+layout(matrix(c(1,1,1,1,
+                8,
+                2,2,2,2,
+                9,
+                3,3,3,3,
+                10,
+                4,4,4,4,
+                11,
+                5,5,5,5,
+                12,
+                6,6,6,6,
+                13,
+                7,7,7,7), nrow = 34, ncol = 1, byrow = TRUE))
+layout.show(34)
+## show the regions that have been allocated to each plot
+par(mar=c(0,1.3,0,0.6), oma = c(2.9, 2.8, 3.1, 0), 
+    cex.axis = 1.8, cex = 0.45, tcl=-0.4)
+
+# Eastern Yellow Robin----------------------------------
 label_name <- "Eastern Yellow Robin"
 list <- c("EYR Far", "EYR Mod", "EYR Near")
 #list1 <- c("EYR Quiet", "EYR Mod", "EYR Loud")
@@ -7058,7 +8144,7 @@ for(i in 1:length(list)) {
 for(i in 1:nrow(kalscpe_data_EYR)) {
   dat <- paste(substr(kalscpe_data_EYR$IN.FILE[i],1,4), 
              substr(kalscpe_data_EYR$IN.FILE[i],5,6),
-             substr(kalscpe_data_EYR$IN.FILE[i],7,8),sep="-")
+             substr(kalscpe_data_EYR$IN.FILE[i],7,8), sep="-")
   a <- which(civil_dawn_2015$dates==dat)
   civ_dawn <- (as.numeric(substr(civil_dawn_2015$CivSunrise[a],1,1))*60 
                + as.numeric(substr(civil_dawn_2015$CivSunrise[a],2,3)))
@@ -7079,13 +8165,34 @@ x <- 1:length(list2)
 y <- counts_EYR_Far
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_EYR_Far, ylim=ylim, xlab="", ylab="", 
-     xaxt="n",  yaxt="n", col="black", las=2)
-lines(list2, predict(lo), col='black', lwd=1.6)
-axis(at=c(200,400), side=2, las=1)
+     xaxt="n",  yaxt="n", col=colour1, las=2, 
+     pch = pch, lwd = lwd1, cex=0.1)
+mtext(side = 3, "a.", cex = 0.9, adj = 0.005, outer = F,
+      line = 0)
+lines(list2, predict(lo), col=colour1, 
+      lwd=lwd1, lty = lty1)
+axis(at=c(200,400), side=2, las=1, 
+     cex.axis=0.64*(1/0.45), hadj = 0.75)
 abline(v=list3)
-#axis(side=1, at=list3, 
-#     labels=c("-25","-15","-5", "+5", "+15", "+25"))
-#mtext(side=3, line=1.1, cex=1.4, "Number of 'calls' over the 56 days in each minute")
+mtext("Eastern Yellow Robin (EYR)", 
+      line=0.1, cex=0.72)
+
+mtext("Calling rates in relation to civil dawn", 
+      line=1.5, cex=1)
+text(x = -20, y = 0.97*ylim[2]-20, "Pr-C-D", cex = 1.8)
+text(x =   0, y = 0.97*ylim[2]-20, "C-D", cex = 1.8)
+text(x =  20, y = 0.97*ylim[2]-20, "Po-C-D", cex = 1.8)
+
+label <- c("Far","Mod","Near")
+legend(x=-55, y=(ylim[2]+0.05*ylim[2]), 
+       col = c(colour1, colour2, colour3),
+       legend = label, cex = 1.8, bty = "n", 
+       horiz = FALSE, xpd=TRUE, pch = c(pch, pch, pch),
+       x.intersp = 0.9, y.intersp = 0.7, 
+       inset=c(-0.15,0), lwd=c(lwd1,lwd2,lwd3),
+       lty=c(3,2,1), pt.cex = c(0.3,0.5,0.7), pt.lwd = 0.8,
+       seg.len=4)
+
 par(new=TRUE)
 
 # EYR Mod
@@ -7100,10 +8207,12 @@ x <- 1:length(list2)
 y <- counts_EYR_Mod
 lo <- loess(y~x , span=0.09)
 plot(list2,counts_EYR_Mod, ylim=ylim, xlab="", ylab="", 
-     xaxt="n",yaxt="n", col="darkgreen", las=1)
-lines(list2, predict(lo), col='darkgreen', lwd=1.6)
+     xaxt="n",yaxt="n", col=colour2, las=1, 
+     pch = pch, lwd = lwd2, cex=0.3)
+lines(list2, predict(lo), col=colour2, 
+      lwd=lwd2, lty=lty2)
 abline(v=list3)
-abline(v=0,lty=2, col="red")
+abline(v=0,lty=2, col="black")
 #axis(side=1, at=list3, 
 #     labels=c("-25","-15","-5", "+5", "+15", "+25"))
 # EYR Near
@@ -7119,24 +8228,14 @@ x <- 1:length(list2)
 y <- counts_EYR_Near
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_EYR_Near, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="red", las=1)
-lines(list2, predict(lo), col='red', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour3, las=1, 
+     pch = pch, lwd = lwd3, cex=0.5)
+lines(list2, predict(lo), col= colour3, 
+      lwd=lwd3, lty = lty3)
 #axis(side=1, at=list3, 
 #     labels=c("-25","-15","-5", "+5", "+15", "+25"))
 
 # White-throated Honeyeater-------------------------
-boxplot(statistics$WTH_min_diff, horizontal=TRUE, 
-        ylim=c(min(list2),max(list2)), xaxt="n")
-med <- fivenum(statistics$WTH_min_diff)[c(1,3,5)]
-text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.4)
-text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.4)
-text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.4)
-leg <- as.character.default("WTH")
-abline(v=c(-25,-15,-5, 5, 15, 25))
-label <- "WTH"
-legend(x=(26-nchar(label)), y=1.5,
-       legend=label, bty = "n", cex=2.2)
-
 ylim <- c(0,650)
 label_name <- "White-throated Honeyeater"
 list <- c("WTH Far", "WTH Mod", "WTH Near")
@@ -7179,14 +8278,30 @@ x <- 1:length(list2)
 y <- counts_WTH_Far
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_WTH_Far, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="black", las=1)
-lines(list2, predict(lo), col='black', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour1, las=1, 
+     pch = pch, lwd = lwd1, cex=0.1)
+mtext(side = 3, "b.", cex = 0.9, adj = 0.005, outer = F,
+      line = 0)
+lines(list2, predict(lo), col=colour1, 
+      lwd=lwd1, lty=lty1)
 abline(v=list3)
-abline(v=0,lty=2, col="red")
-axis(at=c(200,400, 600), side=2, las=1)
+abline(v=0,lty=2, col="black")
+axis(at=c(200,400, 600), side=2, las=1, 
+     cex.axis=0.64*(1/0.45), hadj = 0.75)
+mtext("White-throated Honeyeater (WTH)", 
+      line=0.1, cex=0.72)
 
-#axis(side=1, at=list3, 
-#     labels=c("-25","-15","-5", "+5", "+15", "+25"))
+# legend
+label <- c("Far", "Mod", "Near")
+legend(x=-55, y=(ylim[2]+0.05*ylim[2]), 
+       col = c(colour1, colour2, colour3),
+       legend = label, cex = 1.8, bty = "n", 
+       horiz = FALSE, xpd=TRUE, pch = c(pch1, pch2, pch3),
+       x.intersp = 0.9, y.intersp = 0.7, 
+       inset=c(-0.15,0), lwd=c(lwd1,lwd2,lwd3),
+       lty=c(3,2,1), pt.cex = c(0.3, 0.5, 0.7), pt.lwd = 0.8,
+       seg.len=4)
+
 par(new=TRUE)
 
 # WTH Mod
@@ -7201,13 +8316,13 @@ x <- 1:length(list2)
 y <- counts_WTH_Mod
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_WTH_Mod, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="darkgreen", las=1)
-lines(list2, predict(lo), col='darkgreen', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour2, las=1, 
+     pch = pch, lwd = lwd2, cex=0.3)
+lines(list2, predict(lo), col=colour2, 
+      lwd=lwd2, lty=lty2)
 abline(v=list3)
-abline(v=0,lty=2, col="red")
-#axis(side=1, at=list3, 
-#     labels=c("-25","-15","-5", "+5", "+15", "+25"))
-# WTH Near
+abline(v=0,lty=2, col="black")
+
 par(new=TRUE)
 a <- which(kalscpe_data_WTH$V23=="WTH Near")
 kalscpe_data_WTH_temp_near <- kalscpe_data_WTH[a, ]
@@ -7220,25 +8335,16 @@ x <- 1:length(list2)
 y <- counts_WTH_Near
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_WTH_Near, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="red", las=1)
-lines(list2, predict(lo), col='red', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour3, las=1, 
+     pch = pch, lwd = lwd3, cex=0.5)
+lines(list2, predict(lo), col=colour3, 
+      lwd=lwd3, lty=lty3)
 abline(v=list3)
-abline(v=0,lty=2, col="red")
+abline(v=0,lty=2, col="black")
 #axis(side=1, at=list3, 
 #     labels=c("-25","-15","-5", "+5", "+15", "+25"))
 
-# Laughining Kookaburra----------------------------
-boxplot(statistics$KOOK_min_diff, horizontal=TRUE, 
-        ylim=c(min(list2),max(list2)), xaxt="n")
-med <- fivenum(statistics$KOOK_min_diff)[c(1,3,5)]
-text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.4)
-text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.4)
-text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.4)
-label <- as.character.default("KOOK")
-abline(v=c(-25,-15,-5, 5, 15, 25))
-legend(x=(26-nchar(label)), y=1.5,
-       legend=label, bty = "n", cex=2.2)
-
+# Laughing Kookaburra----------------------------
 ylim <- c(0,53)
 ylim <- c(0,12)
 label_name <- "Laughing Kookaburra"
@@ -7282,11 +8388,30 @@ x <- 1:length(list2)
 y <- counts_KOOK_Far
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_KOOK_Far, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="black", las=1)
-lines(list2, predict(lo), col='black', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour1, las=1, 
+     pch = pch, cex=0.1)
+mtext(side = 3, "c.", cex = 0.9, adj = 0.005, outer = F,
+      line = 0)
+mtext("Laughing Kookaburra (LKB)", 
+      line=0.1, cex=0.72)
+
+lines(list2, predict(lo), col=colour1, 
+      lwd=lwd1, lty=lty1)
 abline(v=list3)
-abline(v=0, lty=2, col="red")
-axis(at=c(5,10,20,25,30,40), side=2, las=1)
+abline(v=0, lty=2, col="black")
+axis(at=c(5,10,20,25,30,40), side=2, las=1, 
+     cex.axis=0.64*(1/0.45), hadj = 0.75)
+# legend
+label <- c("Far", "Mod", "Near")
+legend(x=-55, y=(ylim[2]+0.05*ylim[2]), 
+       col = c(colour1, colour2, colour3),
+       legend = label, cex = 1.8, bty = "n", 
+       horiz = FALSE, xpd=TRUE, pch = c(pch1, pch2, pch3),
+       x.intersp = 0.9, y.intersp = 0.7, 
+       inset=c(-0.15,0), lwd=c(lwd1,lwd2,lwd3),
+       lty=c(3,2,1), pt.cex = c(0.3, 0.5, 0.7), pt.lwd = 0.8,
+       seg.len=4)
+
 par(new=TRUE)
 
 # Kookaburra Mod
@@ -7301,8 +8426,10 @@ x <- 1:length(list2)
 y <- counts_KOOK_Mod
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_KOOK_Mod, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="darkgreen", las=1)
-lines(list2, predict(lo), col='darkgreen', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour2, las=1, 
+     pch = pch, cex=0.3)
+lines(list2, predict(lo), col=colour2, 
+      lwd=lwd2, lty = lty2)
 abline(v=list3)
 
 # Kookaburra Loud
@@ -7318,27 +8445,17 @@ x <- 1:length(list2)
 y <- counts_KOOK_Near
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_KOOK_Near, ylim=ylim, xlab="", ylab="", 
-     xaxt="n",  yaxt="n", col="red", las=1)
-lines(list2, predict(lo), col='red', lwd=1.6)
+     xaxt="n",  yaxt="n", col=colour3, las=1, 
+     pch = pch, cex=0.5)
+lines(list2, predict(lo), col=colour3, 
+      lwd=lwd3, lty=lty3)
 abline(v=list3)
-# Scarlet Honeyeater 1--------------------------------------
-boxplot(statistics$SC1_min_diff, horizontal=TRUE, 
-        ylim=c(min(list2),max(list2)), xaxt="n")
-med <- fivenum(statistics$SC1_min_diff)[c(1,3,5)]
-text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.4)
-text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.4)
-text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.4)
-leg <- as.character.default("SC1")
-abline(v=c(-25,-15,-5, 5, 15, 25))
-label <- "SC1"
-legend(x=(26-nchar(label)), y=1.5,
-       legend=label, bty = "n", cex=2.2)
 
+# Scarlet Honeyeater 1--------------------------------------
 ylim <- c(0, 150)
 label_name <- "Scarlet Honeyeater SC1"
 list <- c("SC1 Far", "SC1 Mod", "SC1 Near")
 #list1 <- c("SC1 Quiet", "SC1 Mod", "SC1 Loud")
-
 kalscpe_data <- NULL
 kalscpe_data_SC1 <- NULL
 for(i in 1:length(list)) {
@@ -7377,11 +8494,19 @@ x <- 1:length(list2)
 y <- counts_SC1_Far
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_SC1_Far, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="black", las=1)
-lines(list2, predict(lo), col='black', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour1, las=1, 
+     pch = pch, cex=0.1)
+mtext(side = 3, "d.", cex = 0.9, adj = 0.005, outer = F,
+      line = 0)
+mtext("Scarlet Honeyeater (SH1)", 
+      line=0.1, cex=0.72)
+
+lines(list2, predict(lo), col=colour1, 
+      lwd=lwd1, lty=lty1)
 abline(v=list3)
-abline(v=0,lty=2, col="red")
-axis(at=c(50,100, 150), side=2, las=1)
+abline(v=0,lty=2, col="black")
+axis(at=c(50,100,150), side=2, las=1, cex.axis=0.64, 
+     cex.axis=0.64*(1/0.45), hadj = 0.75)
 
 #axis(side=1, at=list3, 
 #     labels=c("-25","-15","-5", "+5", "+15", "+25"))
@@ -7399,10 +8524,23 @@ x <- 1:length(list2)
 y <- counts_SC1_Mod
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_SC1_Mod, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="darkgreen", las=1)
-lines(list2, predict(lo), col='darkgreen', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour2, las=1, 
+     pch = pch, cex=0.3)
+lines(list2, predict(lo), col=colour2, 
+      lwd=lwd2, lty=lty2)
 abline(v=list3)
-abline(v=0,lty=2, col="red")
+abline(v=0,lty=2, col="black")
+# legend
+label <- c("Far", "Mod", "Near")
+legend(x=-55, y=(ylim[2]+0.05*ylim[2]), 
+       col = c(colour1, colour2, colour3),
+       legend = label, cex = 1.8, bty = "n", 
+       horiz = FALSE, xpd=TRUE, pch = c(pch1, pch2, pch3),
+       x.intersp = 0.9, y.intersp = 0.7, 
+       inset=c(-0.15,0), lwd=c(lwd1,lwd2,lwd3),
+       lty=c(3,2,1), pt.cex = c(0.3, 0.5, 0.7), pt.lwd = 0.8,
+       seg.len=4)
+
 #axis(side=1, at=list3, 
 #     labels=c("-25","-15","-5", "+5", "+15", "+25"))
 # SC1 Near
@@ -7418,26 +8556,16 @@ x <- 1:length(list2)
 y <- counts_SC1_Near
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_SC1_Near, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="red", las=1)
-lines(list2, predict(lo), col='red', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour3, las=1, 
+     pch = pch, cex=0.5)
+lines(list2, predict(lo), col=colour3, 
+      lwd=lwd3, lty=lty3)
 #axis(side=1, at=list3, 
 #     labels=c("-25","-15","-5", "+5", "+15", "+25"))
-mtext(side=2, cex=1, line=3.7,
-      "Total number of 'calls' over 56 days")
+mtext(side=2, cex=1, line=2.5,
+      "Total number of calls over 56 days")
 
 # Scarlet Honeyeater 2-------------------
-boxplot(statistics$SC2_min_diff, horizontal=TRUE, 
-        ylim=c(min(list2),max(list2)), xaxt="n")
-med <- fivenum(statistics$SC2_min_diff)[c(1,3,5)]
-text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.4)
-text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.4)
-text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.4)
-leg <- as.character.default("SC1")
-abline(v=c(-25,-15,-5, 5, 15, 25))
-label <- "SC2"
-legend(x=(26-nchar(label)), y=1.5,
-       legend=label, bty = "n", cex=2.2)
-
 ylim <- c(0,50)
 label_name <- "Scarlet Honeyeater SC2"
 list <- c("SC3 Chatter Far", "SC3 Chatter Mod", "SC3 Chatter Near")
@@ -7480,11 +8608,28 @@ x <- 1:length(list2)
 y <- counts_SC2_Far
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_SC2_Far, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="black", las=1)
-lines(list2, predict(lo), col='black', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour1, las=1, 
+     pch = pch, cex=0.1)
+mtext(side = 3, "e.", cex = 0.9, adj = 0.005, outer = F,
+      line = 0)
+mtext("Scarlet Honeyeater (SH2)", 
+      line=0.1, cex=0.72)
+lines(list2, predict(lo), col=colour1, 
+      lwd=lwd1, lty=lty1)
 abline(v=list3)
-abline(v=0, lty=2, col="red")
-axis(at=c(20,40), side=2, las=1)
+abline(v=0, lty=2, col="black")
+axis(at=c(20,40), side=2, las=1, 
+     cex.axis=0.64*(1/0.45), hadj = 0.75)
+# legend
+label <- c("Far", "Mod", "Near")
+legend(x=-55, y=(ylim[2]+0.05*ylim[2]), 
+       col = c(colour1, colour2, colour3),
+       legend = label, cex = 1.8, bty = "n", 
+       horiz = FALSE, xpd=TRUE, pch = c(pch1, pch2, pch3),
+       x.intersp = 0.9, y.intersp = 0.7, 
+       inset=c(-0.15,0), lwd=c(lwd1,lwd2,lwd3),
+       lty=c(3,2,1), pt.cex = c(0.3, 0.5, 0.7), pt.lwd = 0.8,
+       seg.len=4)
 
 #axis(side=1, at=list3, 
 #     labels=c("-25","-15","-5", "+5", "+15", "+25"))
@@ -7502,8 +8647,10 @@ x <- 1:length(list2)
 y <- counts_SC2_Mod
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_SC2_Mod, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="darkgreen", las=1)
-lines(list2, predict(lo), col='darkgreen', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour2, las=1, 
+     pch = pch, cex=0.3)
+lines(list2, predict(lo), col=colour2, 
+      lwd=lwd2, lty=lty2)
 abline(v=list3)
 # SC2 Near
 par(new=TRUE)
@@ -7518,26 +8665,16 @@ x <- 1:length(list2)
 y <- counts_SC2_Near
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_SC2_Near, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="red", las=1)
-lines(list2, predict(lo), col='red', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour3, las=1, 
+     pch = pch, cex=0.5)
+lines(list2, predict(lo), col=colour3, 
+      lwd=lwd3, lty=lty3)
 abline(v=list3)
-abline(v=0, lty=2, col="red")
+abline(v=0, lty=2, col="black")
 #axis(side=1, at=list3, 
 #     labels=c("-25","-15","-5", "+5", "+15", "+25"))
 
 # White-throated Treecreeper-------------------------------
-boxplot(statistics$WTT_min_diff, horizontal=TRUE, 
-        ylim=c(min(list2), max(list2)), xaxt="n")
-med <- fivenum(statistics$WTT_min_diff)[c(1,3,5)]
-text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.4)
-text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.4)
-text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.4)
-leg <- as.character.default("WTT")
-abline(v=list3)
-label <- "WTT"
-legend(x=(26-nchar(label)), y=1.5,
-       legend=label, bty = "n", cex=2.2)
-
 label_name <- "White-throated Treecreeper"
 list <- c("WTT trill Far", "WTT trill Mod", "WTT trill Near")
 #list1 <- c("WTT trill Quiet", "WTT trill Mod", "WTT trill Loud")
@@ -7559,7 +8696,7 @@ for(i in 1:length(list)) {
 for(i in 1:nrow(kalscpe_data_WTT)) {
   dat <- paste(substr(kalscpe_data_WTT$IN.FILE[i],1,4), 
                substr(kalscpe_data_WTT$IN.FILE[i],5,6),
-               substr(kalscpe_data_WTT$IN.FILE[i],7,8),sep="-")
+               substr(kalscpe_data_WTT$IN.FILE[i],7,8), sep="-")
   a <- which(civil_dawn_2015$dates==dat)
   civ_dawn <- (as.numeric(substr(civil_dawn_2015$CivSunrise[a],1,1))*60 + as.numeric(substr(civil_dawn_2015$CivSunrise[a],2,3)))
   kalscpe_data_WTT$min[i] <- round(floor(kalscpe_data_WTT$OFFSET[i]/60), 0)
@@ -7580,11 +8717,29 @@ x <- list2
 y <- counts_WTT_Far
 lo <- loess(y~x, span=0.09)
 plot(list2, counts_WTT_Far, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="black", las=1)
-axis(at=c(100,200), side=2, las=1)
-lines(list2, predict(lo), col='black', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour1, las=1, 
+     pch = pch, cex=0.1)
+mtext(side = 3, "f.", cex = 0.9, adj = 0.005, outer = F,
+      line = 0)
+mtext("White-throated Treecreeper (WTT)", 
+      line=0.1, cex=0.72)
+axis(at=c(100,200), side=2, las=1, 
+     cex.axis=0.64*(1/0.45), hadj = 0.75)
+lines(list2, predict(lo), col=colour1, 
+      lwd=lwd1, lty=lty1)
 abline(v=list3)
-abline(v=0,lty=2, col="red")
+abline(v=0,lty=2, col="black")
+# legend
+label <- c("Far", "Mod", "Near")
+legend(x=-55, y=(ylim[2]+0.05*ylim[2]), 
+       col = c(colour1, colour2, colour3),
+       legend = label, cex = 1.8, bty = "n", 
+       horiz = FALSE, xpd=TRUE, pch = c(pch1, pch2, pch3),
+       x.intersp = 0.9, y.intersp = 0.7, 
+       inset=c(-0.15,0), lwd=c(lwd1,lwd2,lwd3),
+       lty=c(3,2,1), pt.cex = c(0.3, 0.5, 0.7), pt.lwd = 0.8,
+       seg.len=4)
+
 par(new=TRUE)
 
 # WTT trill Mod
@@ -7599,10 +8754,12 @@ x <- 1:length(list2)
 y <- counts_WTT_Mod
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_WTT_Mod, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="darkgreen", las=1)
-lines(list2, predict(lo), col='darkgreen', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour2, las=1, 
+     pch = pch, cex=0.3)
+lines(list2, predict(lo), col=colour2, 
+      lwd=lwd2, lty=lty2)
 abline(v=list3)
-abline(v=0, lty=2, col="red")
+abline(v=0, lty=2, col="black")
 #axis(side=1, at=list3, 
 #     labels=c("-25","-15","-5", "+5", "+15", "+25"))
 # WTT trill Near
@@ -7618,25 +8775,16 @@ x <- 1:length(list2)
 y <- counts_WTT_Near
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_WTT_Near, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="red", las=1)
-lines(list2, predict(lo), col='red', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour3, las=1, 
+     pch = pch, cex=0.5)
+lines(list2, predict(lo), col=colour3, 
+      lwd=lwd3, lty=lty3)
 abline(v=list3)
-abline(v=0, lty=2, col="red")
+abline(v=0, lty=2, col="black")
 #axis(side=1, at=list3, 
 #     labels=c("-25","-15","-5", "+5", "+15", "+25"))
 
 # Eastern Whipbird---------------------------------
-boxplot(statistics$EW_min_diff, horizontal=TRUE, 
-        ylim=c(min(list2),max(list2)), xaxt="n")
-med <- fivenum(statistics$EW_min_diff)[c(1,3,5)]
-text(x=med[1], y=0.66, as.character(round(med[1],0)), cex=1.4)
-text(x=med[2], y=0.66, as.character(round(med[2],0)), cex=1.4)
-text(x=med[3], y=0.66, as.character(round(med[3],0)), cex=1.4)
-abline(v=c(-25,-15,-5, 5, 15, 25))
-label <- "EW"
-legend(x=(26-nchar(label)), y=1.5,
-       legend=label, bty = "n", cex=2.2)
-
 ylim <- c(0,150)
 label_name <- "Eastern Whipbird"
 list <- c("EW Far", "EW Mod", "EW Near")
@@ -7679,12 +8827,30 @@ x <- 1:length(list2)
 y <- counts_EW_Far
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_EW_Far, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="black", las=1)
-mtext(side=1, line = 2.6, "Minutes from Civil Dawn", cex=1)
-lines(list2, predict(lo), col='black', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour1, las=1, 
+     pch = pch, cex=0.1)
+mtext(side = 3, "g.", cex = 0.9, adj = 0.005, outer = F,
+      line = 0)
+mtext("Eastern Whipbird (EWB)", 
+      line=0.1, cex=0.72)
+mtext(side=1, line = 1.7, "Minutes from Civil Dawn", cex=1)
+lines(list2, predict(lo), col=colour1, 
+      lwd=lwd1, lty=lty1)
 abline(v=list3)
-abline(v=0,lty=2, col="red")
-axis(at=c(50,100, 150), side=2, las=1)
+abline(v=0,lty=2, col="black")
+axis(at=c(50,100, 150), side=2, las=1, 
+     cex.axis=0.64*(1/0.45), hadj = 0.75)
+# legend
+label <- c("Far", "Mod", "Near")
+legend(x=-55, y=(ylim[2]+0.05*ylim[2]), 
+       col = c(colour1, colour2, colour3),
+       legend = label, cex = 1.8, bty = "n", 
+       horiz = FALSE, xpd=TRUE, pch = c(pch1, pch2, pch3),
+       x.intersp = 0.9, y.intersp = 0.7, 
+       inset=c(-0.15,0), lwd=c(lwd1,lwd2,lwd3),
+       lty=c(3,2,1), pt.cex = c(0.3, 0.5, 0.7), pt.lwd = 0.8,
+       seg.len=4)
+
 par(new=TRUE)
 
 # EW Mod
@@ -7699,8 +8865,10 @@ x <- 1:length(list2)
 y <- counts_EW_Mod
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_EW_Mod, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="darkgreen", las=1)
-lines(list2, predict(lo), col='darkgreen', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour2, las=1, 
+     pch = pch, cex=0.3)
+lines(list2, predict(lo), col=colour2, 
+      lwd=lwd2, lty=lty2)
 abline(v=list3)
 
 # EW Near
@@ -7716,10 +8884,987 @@ x <- 1:length(list2)
 y <- counts_EW_Near
 lo <- loess(y~x , span=0.09)
 plot(list2, counts_EW_Near, ylim=ylim, xlab="", ylab="", 
-     xaxt="n", yaxt="n", col="red", las=1)
-lines(list2, predict(lo), col='red', lwd=1.6)
+     xaxt="n", yaxt="n", col=colour3, las=1, 
+     pch = pch, cex=0.5)
+lines(list2, predict(lo), col=colour3, 
+      lwd=lwd3, lty=lty3)
 abline(v=list3)
-
-mtext(side=1,at=list3, line=1, cex=1,
+mtext(side=1,at=list3, line=0.3, cex=0.64,
       text = c("-25","-15","-5", "+5", "+15", "+25"))
+dev.off()
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Acoustic Indices averages in relation to civil dawn ------------------------------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+rm(list = ls())
+source("scripts/Bird_lists_func.R")
+rm(civil_dawn_2015, civil_dawn_2016, Gym_cluster_list, Woon_cluster_list,
+   a, civ_dawn, civ_dusk, civil_dawn_times, col_names, col_names1, colours, dat,
+   hour, i, k1_value, k2_value, min, min_ref,
+   site, site1, site2, start, reference, pch, start_date, sunrise,
+   sunrise_times, x, xlim, sunset, minute, ylim, ylim1,
+   days, finish, sunset_times, civil_dusk_times)
+
+indices_norm_summary <- cluster_list
+# indices for the first 56 days
+indices_norm_summary <- indices_norm_summary[1:80640,]
+dates <- unique(dates)
+
+dev.off()
+
+list2 <- -55:35
+list3 <- c(-25,-15,-5,5,15,25)
+
+cbPalette <- c("#000000","#999999", "#56B4E9", 
+               "#D55E00", "#0072B2", 
+               "#CC79A7","#009E73","#E69F00")
+dates <- unique(dates)
+dates <- dates[1:56]
+civil_dawn$dates <- as.character(civil_dawn$dates)
+for(i in 1:nrow(civil_dawn)) {
+  civil_dawn$dates[i] <- paste(substr(civil_dawn$dates[i],1,4), 
+                               substr(civil_dawn$dates[i],6,7),
+                            substr(civil_dawn$dates[i],9,10), sep="")
+}
+labels <- colnames(indices_norm_summary)[4:15]
+labels <- c("Background Noise (BGN)", "Signal to noise ratio (SNR)",                     
+            "Activity (ACT)", "Events per second (EVN)",         
+            "High-Frequency Cover (HFC)", "Mid-Frequency Cover (MFC)",
+            "Low-Frequency Cover (LFC)", "Acoustic Complexity (ACI)",      
+            "Entropy of Average Spectrum (EPS)", 
+            "Entropy of Peaks Spectrum (EPS)",  
+            "EntropyOfCoVSpectrum", "Cluster Count (CLC)")
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%here
+dev.off()
+# for an 18 cm wide image
+#tiff("Average_of_Indices_relative_to_Civil_Dawn1.tiff", 
+#     height=1400, width=2200, res=300)
+#par(mar=c(0,2,0,1), oma=c(3.8,3.5,3.2,0), cex.axis=1.8, cex=0.45)
+#mtcex <- 1.2; tcex <- 1.8; mcex2 <- 1; 
+#ptcex <- 1.4; lcex <- 2.2
+#line1 <- 3.6; line2 <- 2.6; line3 <- 1.1
+#lwd1 <- 1.6; lwd2 <- 1.3; ptlwd <- 0.8
+#rain <- c(10,18,54,59)
+rain <- c(2,10,17,18,21,54,59)
+wind <- c(9,19,20,42,47,51)
+pch <- c(8,19,17,0,15,2,3,4,5,6,7,8,9,10)
+
+# for a 13 cm wide image
+tiff("Average_of_Indices_relative_to_Civil_Dawn1.tiff", 
+     height=977, width=1535, res=300)
+factor1 <- 13/18
+par(mar=c(0, 1.3, 0, 0.72222), 
+    oma=c(1.877, 1.3, 1.3, 0), 
+    cex.axis=0.866, cex=0.325)
+mtcex <-  0.8; tcex <- 0.7;  mcex2 <- 0.73; 
+ptcex <-  0.73;   lcex <- 0.98;  acex <- 0.26;
+line1 <-  1.56;   line2 <- 0.94; line3 <- 0.1
+lwd1 <-   0.83; lwd2 <- 0.68;  ptlwd <- 0.42
+acex <-   0.156
+colnames(indices_norm_summary)
+list4 <- c(4,5,7,9,11,13,15)
+ylim <- c(0, 0.9)
+layout(matrix(c(1,1,1,1,1,1,1,1,1,1), 
+              nrow = 10, ncol = 1, byrow = TRUE))
+#layout.show(1)
+#Events per second = 7
+ref2 <- 0
+for(i in 1:length(list4)) {
+  ref1 <- list4[i]
+  ref2 <- ref2 + 1
+  ACT <- NULL
+  for(j in 1:length(dates)) {
+    dat <- dates[j]
+    for(k in 1:length(list2)) {
+      ref <- list2[k]
+      a <- which(civil_dawn$dates==dat)
+      a <- civil_dawn$CivSunrise[a]
+      civ_sun <- as.numeric(substr(a,1,1))*60 + as.numeric(substr(a,2,3))
+      min <- civ_sun + ref
+      a <- which(indices_norm_summary$dates==dat)
+      indices_norm_summary_temp <- indices_norm_summary[a,]
+      act <- indices_norm_summary_temp[min,ref1]
+      if(indices_norm_summary_temp$cluster_list[min] %in% rain) {
+        print(dat)
+        act <- NA
+      }
+      if(indices_norm_summary_temp$cluster_list[min] %in% wind) {
+        print(dat)
+        act <- NA
+      }
+      ACT <- c(ACT, act)
+    }
+  }
+  
+  AVG_ACT <- NULL
+  for(l in 1:length(list2)) {
+    seq1 <- seq(l, length(ACT), length(list2))
+    avg_act <- mean(ACT[seq1], na.rm=T)
+    AVG_ACT <- c(AVG_ACT, avg_act)
+  }
+  x <- 1:length(list2)
+  y <- AVG_ACT
+  lo <- loess(y~x , span=0.09)
+  if(ref2==1) {
+  plot(list2, AVG_ACT, ylim=ylim, xlab="", ylab="", 
+       xaxt="n", col=cbPalette[ref2], las=1, pch=pch[ref2],
+       cex=0.8*ptcex, mgp = c(3, 0.5, 0))
+    lines(list2, predict(lo), col=cbPalette[ref2], lwd=lwd1)
+    mtext(cex=mtcex, line=line3,"Average of acoustic indices relative to civil dawn")
+    mtext(cex=mcex2, side=2, line = line1, "Normalised Acoustic Index value")
+    par(new=TRUE)
+  }
+  if(ref2 > 1) {
+    plot(list2, AVG_ACT, ylim=ylim, xlab="", ylab="", 
+         xaxt="n", yaxt="n", col=cbPalette[ref2], 
+         las=1, pch=pch[ref2], cex=0.8*ptcex)
+    lines(list2, predict(lo), col=cbPalette[ref2], lwd=lwd1)
+    par(new=TRUE)
+  }
+  print(i)
+}
+text(x = -20, y = 0.91, "Pr-C-D", cex = tcex)
+text(x =   0, y = 0.91, "C-D", cex = tcex)
+text(x =  20, y = 0.91, "Po-C-D", cex = tcex)
+label <- c(labels[(list4-3)])
+abline(v=-45, lwd = 0.2)
+axis(side=1, at=-45, cex=acex, mgp = c(3, 0.15, 0), lwd = 0.5,
+     tick = T, labels="-45")
+
+abline(v=list3, lwd = 0.2)
+axis(side=1, at=list3, cex=acex, mgp = c(3, 0.15, 0), lwd = 0.5,
+     tick = T, labels=c("-25","-15","-5", "+5", "+15", "+25"))
+abline(v=0, lty=2, col="red")
+
+legend(x=-58, y=(ylim[2]-0.22*ylim[2]), col = c(cbPalette[1], cbPalette[2],
+                                                cbPalette[3], cbPalette[4],
+                                                cbPalette[5], cbPalette[6],
+                                                cbPalette[7]),
+       legend = label, cex = lcex, #bty = "n", bg = "white",
+       horiz = FALSE, xpd=TRUE, pch = pch, box.lwd=0, box.col = "white",
+       x.intersp = 0.8, y.intersp = 0.9, 
+       inset = c(-0.15, 0), lwd = lwd2, 
+       lty=1, pt.cex = ptcex, pt.lwd = 1)
+mtext(cex=mcex2, side=1, line = line2, "Minutes from Civil Dawn")
+axis(at=c(2,4,6), side=2, las=1, cex=mcex2)
+dev.off()
+
+library(scales)
+show_col(cbPalette)
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%here
+colnames(indices_norm_summary)
+dev.off()
+tiff("Average_of_Indices_relative_to_Civil_Dawn2.tiff", 
+     height=800, width=2200, res=300)
+list4 <- c(6,7,9,11,15)
+list4 <- c(4,5,8,10)
+ylim <- c(0,0.8)
+layout(matrix(c(1,1,1,1,1,1,1,1,1,1), 
+              nrow = 10, ncol = 1, byrow = TRUE))
+#layout.show(1)
+par(mar=c(0,2,0,1), oma=c(3.8,3.5,0.2,0), 
+    cex.axis=1.8, cex=0.45)
+#Events per second = 7
+#
+ref2 <- 0
+for(i in 1:length(list4)) {
+  ref1 <- list4[i]
+  ref2 <- ref2 + 1
+  ACT <- NULL
+  for(j in 1:length(dates)) {
+    dat <- dates[j]
+    for(k in 1:length(list2)) {
+      ref <- list2[k]
+      a <- which(civil_dawn$dates==dat)
+      a <- civil_dawn$CivSunrise[a]
+      civ_sun <- as.numeric(substr(a,1,1))*60 + as.numeric(substr(a,2,3))
+      min <- civ_sun + ref
+      a <- which(indices_norm_summary$dates==dat)
+      indices_norm_summary_temp <- indices_norm_summary[a,]
+      act <- indices_norm_summary_temp[min,ref1]
+      ACT <- c(ACT, act)
+    }
+  }
+  
+  AVG_ACT <- NULL
+  for(l in 1:length(list2)) {
+    seq1 <- seq(l, length(ACT), length(list2))
+    avg_act <- mean(ACT[seq1])
+    AVG_ACT <- c(AVG_ACT, avg_act)
+  }
+  x <- 1:length(list2)
+  y <- AVG_ACT
+  lo <- loess(y~x , span=0.09)
+  if(ref2==1) {
+    plot(list2, AVG_ACT, ylim=ylim, xlab="", ylab="", 
+         xaxt="n", col=cbPalette[ref2], las=1)
+    lines(list2, predict(lo), col=cbPalette[ref2], lwd=1.6)
+    par(new=TRUE)
+  }
+  if(ref2 > 1) {
+    plot(list2, AVG_ACT, ylim=ylim, xlab="", ylab="", 
+         xaxt="n", yaxt="n", col=cbPalette[ref2], las=1)
+    lines(list2, predict(lo), col=cbPalette[ref2], lwd=1.6)
+    par(new=TRUE)
+  }
+}
+label <- c(labels[(list4-3)])
+legend(x=-55, y=(ylim[2]+0.05*ylim[2]), col = c(cbPalette[1], cbPalette[2],
+                                                cbPalette[3], cbPalette[4],
+                                                cbPalette[5], cbPalette[6]),
+       legend = label, cex = 2.2, bty = "n", 
+       horiz = FALSE, xpd=TRUE, pch = 1,
+       x.intersp = 0.9, y.intersp = 0.9, 
+       inset=c(-0.15,0), lwd=1.2, 
+       lty=1, pt.cex = 1.4, pt.lwd = 0.8)
+abline(v=list3)
+axis(side=1, at=list3, 
+     labels=c("-25","-15","-5", "+5", "+15", "+25"))
+abline(v=0,lty=2, col="red")
+mtext(side=1, line = 2.6, "Minutes from Civil Dawn", cex=1)
+axis(at=c(2,4,6), side=2, las=1)
+dev.off()
+
+colnames(indices_norm_summary)
+dev.off()
+tiff("Average_of_Indices_relative_to_Civil_Dawn3.tiff", 
+     height=800, width=2200, res=300)
+list4 <- c(6,7,9,11,15)
+list4 <- c(4,5,8,10)
+list4 <- c(12,13,14)
+ylim <- c(0,0.8)
+layout(matrix(c(1,1,1,1,1,1,1,1,1,1), 
+              nrow = 10, ncol = 1, byrow = TRUE))
+#layout.show(1)
+par(mar=c(0,2,0,1), oma=c(3.8,3.5,0.2,0), cex.axis=1.8, cex=0.45)
+#Events per second = 7
+#
+ref2 <- 0
+for(i in 1:length(list4)) {
+  ref1 <- list4[i]
+  ref2 <- ref2 + 1
+  ACT <- NULL
+  for(j in 1:length(dates)) {
+    dat <- dates[j]
+    for(k in 1:length(list2)) {
+      ref <- list2[k]
+      a <- which(civil_dawn$dates==dat)
+      a <- civil_dawn$CivSunrise[a]
+      civ_sun <- as.numeric(substr(a,1,1))*60 + as.numeric(substr(a,2,3))
+      min <- civ_sun + ref
+      a <- which(indices_norm_summary$dates==dat)
+      indices_norm_summary_temp <- indices_norm_summary[a,]
+      act <- indices_norm_summary_temp[min,ref1]
+      ACT <- c(ACT, act)
+    }
+  }
+  
+  AVG_ACT <- NULL
+  for(l in 1:length(list2)) {
+    seq1 <- seq(l, length(ACT), length(list2))
+    avg_act <- mean(ACT[seq1])
+    AVG_ACT <- c(AVG_ACT, avg_act)
+  }
+  x <- 1:length(list2)
+  y <- AVG_ACT
+  lo <- loess(y~x , span=0.09)
+  if(ref2==1) {
+    plot(list2, AVG_ACT, ylim=ylim, xlab="", ylab="", 
+         xaxt="n", col=cbPalette[ref2], las=1)
+    lines(list2, predict(lo), col=cbPalette[ref2], lwd=1.6)
+    par(new=TRUE)
+  }
+  if(ref2 > 1) {
+    plot(list2, AVG_ACT, ylim=ylim, xlab="", ylab="", 
+         xaxt="n", yaxt="n", col=cbPalette[ref2], las=1)
+    lines(list2, predict(lo), col=cbPalette[ref2], lwd=1.6)
+    par(new=TRUE)
+  }
+}
+label <- c(labels[(list4-3)])
+legend(x=-55, y=(ylim[2]+0.05*ylim[2]), col = c(cbPalette[1], cbPalette[2],
+                                                cbPalette[3], cbPalette[4],
+                                                cbPalette[5], cbPalette[6]),
+       legend = label, cex = 1.8, bty = "n", 
+       horiz = FALSE, xpd=TRUE, pch = 1,
+       x.intersp = 0.9, y.intersp = 0.9, 
+       inset=c(-0.15,0), lwd=1.2, 
+       lty=1)
+abline(v=list3)
+axis(side=1, at=list3, 
+     labels=c("-25","-15","-5", "+5", "+15", "+25"))
+abline(v=0,lty=2, col="red")
+mtext(side=1, line = 2.6, "Minutes from Civil Dawn", cex=1)
+axis(at=c(2,4,6), side=2, las=1)
+dev.off()
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Calculating the Shannon diversity and evenness -----------------
+# of the 20 minute species samples
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+species_acoustic_indices <- read.csv("species_each_minute_protected_final.csv", header = T)
+
+colnames(species_acoustic_indices)
+
+colnames(species_acoustic_indices)
+species_acoustic_indices$SCI_mod_near <- species_acoustic_indices$SC1.Mod + species_acoustic_indices$SC1.Near 
+species_acoustic_indices$SC3_mod_near <- species_acoustic_indices$SC3.Chatter.Mod + species_acoustic_indices$SC3.Chatter.Near
+species_acoustic_indices$EW_mod_near <-  species_acoustic_indices$EW.Mod + species_acoustic_indices$EW.Near
+species_acoustic_indices$WTH_mod_near <- species_acoustic_indices$WTH.Mod + species_acoustic_indices$WTH.Near
+species_acoustic_indices$EYR_mod_near <- species_acoustic_indices$EYR.Mod + species_acoustic_indices$EYR.Near
+species_acoustic_indices$Lewins_mod_near <- species_acoustic_indices$Lewins.Mod + species_acoustic_indices$Lewins.Mod + species_acoustic_indices$Lewins.Near
+species_acoustic_indices$Kook_mod_near <- species_acoustic_indices$Kookaburra.Mod + species_acoustic_indices$Kookaburra.Loud
+species_acoustic_indices$WTT_mod_near <- species_acoustic_indices$WTT.trill.Mod + species_acoustic_indices$WTT.trill.Near
+species_acoustic_indices$TORR_mod_near <- species_acoustic_indices$Torresian.Crow.Mod + species_acoustic_indices$Torresian.Crow.Near
+species_acoustic_indices$PiedC_mod_near <- species_acoustic_indices$Pied.Currawong.Mod + species_acoustic_indices$Pied.Currawong.Near
+species_acoustic_indices$RainbowL_mod_near <- species_acoustic_indices$Rainbow.Lorikeet.Mod + species_acoustic_indices$Rainbow.Lorikeet.Near
+species_acoustic_indices$RFW_mod_near <- species_acoustic_indices$Rufous.Whistler.Near
+species_acoustic_indices$GoldW_mod_near <- species_acoustic_indices$Golden.Whistler.Near
+species_acoustic_indices$YellTailBC_mod_near <- species_acoustic_indices$Yellow.tailed.Black.Cockatoo.Near
+species_acoustic_indices$SoutBoob <- species_acoustic_indices$Southern.Boobook.Mod
+
+library(data.table)
+species_acoustic_indices_copy <- data.table(species_acoustic_indices)
+# make a copy of the copy
+
+species_acoustic_indices_copy2 = copy(species_acoustic_indices_copy)
+
+# reorder according to EYR column
+species_acoustic_indices_copy2$EYR_mod_near <- as.numeric(species_acoustic_indices_copy2$EYR_mod_near)
+setkey(species_acoustic_indices_copy2, EYR_mod_near)
+View(species_acoustic_indices_copy2[c(80640:80601),])
+write.csv(species_acoustic_indices_copy2[c(80640:80581),], "EYR_ordered_final_60.csv")
+
+# reorder according to WTH column
+species_acoustic_indices_copy2$WTH_mod_near <- as.numeric(species_acoustic_indices_copy2$WTH_mod_near)
+setkey(species_acoustic_indices_copy2, WTH_mod_near)
+View(species_acoustic_indices_copy2[c(80640:80601),])
+write.csv(species_acoustic_indices_copy2[c(80640:80581),], "WTH_ordered_final_60.csv")
+
+# reorder according to LKB column
+species_acoustic_indices_copy2$Kook_mod_near <- as.numeric(species_acoustic_indices_copy2$Kook_mod_near)
+setkey(species_acoustic_indices_copy2, Kook_mod_near)
+View(species_acoustic_indices_copy2[c(80640:80541),])
+write.csv(species_acoustic_indices_copy2[c(80640:80541),], "LKB_ordered_final_100.csv")
+
+# reorder according to SC1 column
+species_acoustic_indices_copy2$SCI_mod_near <- as.numeric(species_acoustic_indices_copy2$SCI_mod_near)
+setkey(species_acoustic_indices_copy2, SCI_mod_near)
+View(species_acoustic_indices_copy2[c(80640:80601),])
+write.csv(species_acoustic_indices_copy2[c(80640:80581),], "SH1_ordered_final_60.csv")
+
+# reorder according to SC2 column
+species_acoustic_indices_copy2$SC3_mod_near <- as.numeric(species_acoustic_indices_copy2$SC3_mod_near)
+setkey(species_acoustic_indices_copy2, SC3_mod_near)
+View(species_acoustic_indices_copy2[c(80640:80601),])
+write.csv(species_acoustic_indices_copy2[c(80640:80581),], "SH2_ordered_final_60.csv")
+
+# reorder according to WTT column
+species_acoustic_indices_copy2$WTT_mod_near <- as.numeric(species_acoustic_indices_copy2$WTT_mod_near)
+setkey(species_acoustic_indices_copy2, WTT_mod_near)
+View(species_acoustic_indices_copy2[c(80640:80561),])
+write.csv(species_acoustic_indices_copy2[c(80640:80561),], "WTT_ordered_final_80.csv")
+
+# reorder according to EWB column
+species_acoustic_indices_copy2$EW_mod_near <- as.numeric(species_acoustic_indices_copy2$EW_mod_near)
+setkey(species_acoustic_indices_copy2, EW_mod_near)
+View(species_acoustic_indices_copy2[c(80640:80601),])
+write.csv(species_acoustic_indices_copy2[c(80640:80581),], "EWB_ordered_final_60.csv")
+
+
+
+library(vegan)
+
+list1 <- c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
+           "11", "12", "13", "14", "15", "16", "17", "18", "19", "20")
+list3 <- c("SC1", "SC3", "EYR", "EW", "WTH", "Kookaburra", "Tor", "PDC", "WTT")
+for(i in 1:length(list3)) {
+  S <- NULL
+  H <- NULL
+  list2 <- list3[i]
+  a_list <- NULL
+  for(i in 1:length(list2)) {
+    for(j in 1:length(list1)) {
+      label <- paste(list2[i],list1[j],sep = " ")
+      a <- grep(label, species_acoustic_indices$Species) 
+      a_list <- c(a_list, a)
+    }
+  }
+  print(label)
+  # Calculate the Shannon diversity
+  H <- diversity(species_acoustic_indices[a_list,76:90])
+  S <- specnumber(species_acoustic_indices[a_list,76:90])
+  E <- H/log(S)
+  assign(x = paste(label,"Shannon_diversity", sep="_"), H)
+  assign(x = paste(label,"Species_richness", sep="_"), S)
+  assign(x = paste(label,"Evenness", sep="_"), E)
+}
+
+par(mfrow=c(1,7), mar=c(2,0,2,1), oma=c(1,3,2,1))
+boxplot(`EYR 20_Species_richness`, ylim=c(1,4), col="white", cex=1.2, 
+        frame = F)
+mtext("EYR")
+boxplot(`WTH 20_Species_richness`, ylim=c(1,4), col="white", cex=1.2,
+        frame="F", yaxt="n")
+mtext("WTH")
+boxplot(`SC1 20_Species_richness`, ylim=c(1,4), col="white", yaxt="n", cex=1.2,
+        frame=F, yaxt="n")
+mtext("SC1")
+boxplot(`SC3 20_Species_richness`, ylim=c(1,4), col="white", cex=1.2,
+        frame=F, yaxt="n")
+mtext("SC2")
+mtext(side=3, line=1.6, "Species richness", cex=1.4)
+boxplot(`Kookaburra 20_Species_richness`, ylim=c(1,4), col="white", cex=1.2,
+        frame=F, yaxt="n")
+mtext("LKB")
+boxplot(`WTT 20_Species_richness`, ylim=c(1,4), col="white", cex=1.2,
+        frame="F", yaxt="n")
+mtext("WTT")
+boxplot(`EW 20_Species_richness`, ylim=c(1,4), col="white", cex=1.2,
+        frame="F", yaxt="n")
+mtext("EWB")
+
+
+par(mfrow=c(1,7), mar=c(2,0,2,1), oma=c(1,3,2,1))
+boxplot(`EYR 20_Evenness`, ylim=c(0,1), col="white", cex=1.2, 
+        frame = F, yaxt="n")
+mtext("EYR")
+axis(side=2, at=c(0.5,1,1.5,2,2.5), labels = c("0.5","1","1.5","2.5","3"))
+boxplot(`WTH 20_Evenness`, ylim=c(0,1), col="white", cex=1.2,
+        frame="F", yaxt="n")
+mtext("WTH")
+boxplot(`SC1 20_Evenness`, ylim=c(0,1), col="white", yaxt="n", cex=1.2,
+        frame=F, yaxt="n")
+mtext("SC1")
+boxplot(`SC3 20_Evenness`, ylim=c(0,1), col="white", cex=1.2,
+        frame=F, yaxt="n")
+mtext("SC2")
+mtext(side=3, line=1.6, "Evenness", cex=1.4)
+boxplot(`Kookaburra 20_Evenness`, ylim=c(0,1), col="white", cex=1.2,
+        frame=F, yaxt="n")
+mtext("LKB")
+boxplot(`WTT 20_Evenness`, ylim=c(0,1), col="white", cex=1.2,
+        frame="F", yaxt="n")
+mtext("WTT")
+boxplot(`EW 20_Evenness`, ylim=c(0,1), col="white", cex=1.2,
+        frame="F", yaxt="n")
+mtext("EWB")
+
+
+par(mfrow=c(1,7), mar=c(2,0,2,1), oma=c(1,3,2,1))
+boxplot(`EYR 20_Shannon_diversity`, ylim=c(0,(log(4)+0.1*log(4))), col="white", cex=1.2, 
+        frame = F, yaxt="n")
+mtext("EYR")
+axis(side=2, at=c(0,1,2,3,4), labels = c("0","1","2","3","4"))
+boxplot(`WTH 20_Shannon_diversity`, ylim=c(0,(log(4)+0.1*log(4))), col="white", cex=1.2,
+        frame="F", yaxt="n")
+mtext("WTH")
+boxplot(`SC1 20_Shannon_diversity`, ylim=c(0,(log(4)+0.1*log(4))), col="white", yaxt="n", cex=1.2,
+        frame=F, yaxt="n")
+mtext("SC1")
+boxplot(`SC3 20_Shannon_diversity`, ylim=c(0,(log(4)+0.1*log(4))), col="white", cex=1.2,
+        frame=F, yaxt="n")
+mtext("SC2")
+mtext(side=3, line=1.6, "Shannon diversity", cex=1.4)
+boxplot(`Kookaburra 20_Shannon_diversity`, ylim=c(0,(log(4)+0.1*log(4))), col="white", cex=1.2,
+        frame=F, yaxt="n")
+mtext("LKB")
+boxplot(`WTT 20_Shannon_diversity`, ylim=c(0,(log(4)+0.1*log(4))), col="white", cex=1.2,
+        frame="F", yaxt="n")
+mtext("WTT")
+boxplot(`EW 20_Shannon_diversity`, ylim=c(0,(log(4)+0.1*log(4))), col="white", cex=1.2,
+        frame="F", yaxt="n")
+mtext("EWB")
+
+
+par(mfrow=c(2,4), mar=c(2,3,0.6,1), oma=c(0,0,2,0), mgp=c(1.8,0.6,0),
+    cex.axis=1, cex=1)
+b <- barplot(tabulate(`EYR 20_Species_richness`, nbins=10), 
+             ylim=c(0,18), ylab="Frequency", las=1)
+axis(side=1, line=-0.2, at=b, labels=c("1","2","3","4"), lwd=-1)
+mtext("EYR", line=0.3)
+b <- barplot(tabulate(`WTH 20_Species_richness`, nbins=10), 
+             ylim=c(0,18), ylab="Frequency", las=1)
+mtext("WTH", line=0.3)
+axis(side=1, line=-0.2, at=b, labels=c("1","2","3","4"), lwd=-1)
+mtext("                                         Species Richness", 
+      line=1.4)
+barplot(tabulate(`Kookaburra 20_Species_richness`, nbins=10), 
+        ylim=c(0,18), ylab="Frequency", las=1)
+mtext("LKB", line=0.3)
+axis(side=1, line=-0.2, at=b, labels=c("1","2","3","4"), lwd=-1)
+barplot(tabulate(`SC1 20_Species_richness`, nbins=10), 
+        ylim=c(0,18), ylab="Frequency", las=1)
+mtext("SC1", line=0.3)
+axis(side=1, line=-0.2, at=b, labels=c("1","2","3","4"), lwd=-1)
+barplot(tabulate(`SC3 20_Species_richness`, nbins=10), 
+        ylim=c(0,18), ylab="Frequency", las=1)
+mtext("SC2", line=0.3)
+axis(side=1, line=-0.2,  at=b, labels=c("1","2","3","4"), lwd=-1)
+barplot(tabulate(`WTT 20_Species_richness`, nbins=10), 
+        ylim=c(0,18), ylab="Frequency", las=1)
+mtext("WTT", line=0.3)
+axis(side=1, line=-0.2, at=b, labels=c("1","2","3","4"), lwd=-1)
+barplot(tabulate(`EW 20_Species_richness`, nbins=10), 
+        ylim=c(0,18), ylab="Frequency", las=1)
+mtext("EWB", line=0.3)
+axis(side=1, line=-0.2, at=b, labels=c("1","2","3","4"), lwd=-1)
+
+median(`EYR 20_Species_richness`)
+median(`WTH 20_Species_richness`)
+median(`Kookaburra 20_Species_richness`)
+median(`SC1 20_Species_richness`)
+median(`SC3 20_Species_richness`)
+median(`WTT 20_Species_richness`)
+median(`EW 20_Species_richness`)
+
+mean(`EYR 20_Species_richness`)
+mean(`WTH 20_Species_richness`)
+mean(`Kookaburra 20_Species_richness`)
+mean(`SC1 20_Species_richness`)
+mean(`SC3 20_Species_richness`)
+mean(`WTT 20_Species_richness`)
+mean(`EW 20_Species_richness`)
+
+sd(`EYR 20_Species_richness`)
+sd(`WTH 20_Species_richness`)
+sd(`Kookaburra 20_Species_richness`)
+sd(`SC1 20_Species_richness`)
+sd(`SC3 20_Species_richness`)
+sd(`WTT 20_Species_richness`)
+sd(`EW 20_Species_richness`)
+
+# ----------------------------------------------
+list <- c("EYR_ordered_final.csv",
+          "WTH_ordered_final.csv",
+          "LKB_ordered_final.csv",
+          "SH1_ordered_final.csv",
+          "SH2_ordered_final.csv",
+          "WTT_ordered_final.csv",
+          "EWB_ordered_final.csv")
+
+statistics <-  data.frame(desc1=NA,
+                          "BGN"=NA,
+                          "SNR"=NA,
+                          "ACT"=NA, 
+                          "EVN"=NA,
+                          "HFC"=NA,
+                          "MFC"=NA,
+                          "LFC"=NA,
+                          "ACI"=NA,
+                          "EAS"=NA,
+                          "EPS"=NA,
+                          "ECS"=NA,
+                          "CLC"=NA)
+ref <- 0
+for(i in 1:length(list)) {
+  bird_data <- read.csv(list[i])
+  a <- grep("yes", bird_data$X.1)
+  bird_data <- bird_data[a,]
+  length_20 <- length(a)
+  label <- NULL
+  if(i==1) {
+    label <- substr(list[i],1,3)
+  }
+  if(i==2) {
+    label <- substr(list[i],1,3)
+  }
+  if(i==3) {
+    label <- substr(list[i],1,3)
+  }
+  if(i==4) {
+    label <- substr(list[i],1,3)
+  }
+  if(i==5) {
+    label <- substr(list[i],1,3)
+  }
+  if(i==6) {
+    label <- substr(list[i],1,3)
+  }
+  if(i==7) {
+    label <- substr(list[i],1,3)
+  }
+  for(j in 1:length_20) {
+    ref <- ref + 1
+    statistics[ref,1] <- label[1]
+    statistics[ref,2] <- bird_data$BackgroundNoise[j]
+    statistics[ref,3] <- bird_data$Snr[j]
+    statistics[ref,4] <- bird_data$Activity[j]
+    statistics[ref,5] <- bird_data$EventsPerSecond[j]
+    statistics[ref,6] <- bird_data$HighFreqCover[j]
+    statistics[ref,7] <- bird_data$MidFreqCover[j]
+    statistics[ref,8] <- bird_data$LowFreqCover[j]
+    statistics[ref,9] <- bird_data$AcousticComplexity[j]
+    statistics[ref,10] <- bird_data$EntropyOfAverageSpectrum[j]
+    statistics[ref,11] <- bird_data$EntropyOfPeaksSpectrum[j]
+    statistics[ref,12] <- bird_data$EntropyOfCoVSpectrum[j]
+    statistics[ref,13] <- bird_data$ClusterCount[j]
+  }
+}
+par(mfrow=c(2,3), mar=c(3,3,2,1))
+boxplot(statistics$MFC~statistics$desc1,data=statistics,
+        xlab="Species",
+        col="yellow",
+        ylab="Normalised Index",
+        main="MFC", ylim=c(0,1))
+boxplot(statistics$ACI~statistics$desc1,data=statistics,
+          xlab="Species",
+          col="yellow",
+          ylab="Normalised Index",
+        main="ACI", ylim=c(0,1))
+boxplot(statistics$CLC~statistics$desc1,data=statistics,
+        xlab="Species",
+        col="yellow",
+        ylab="Normalised Index",
+        main="CLC", ylim=c(0,1))
+boxplot(statistics$SNR~statistics$desc1,data=statistics,
+        xlab="Species",
+        col="yellow",
+        ylab="Normalised Index",
+        main="SNR", ylim=c(0,1))
+boxplot(statistics$EPS~statistics$desc1,data=statistics,
+        xlab="Species",
+        col="yellow",
+        ylab="Normalised Index",
+        main="EPS", ylim=c(0,1))
+boxplot(statistics$EVN~statistics$desc1,data=statistics,
+        xlab="Species",
+        col="yellow",
+        ylab="Normalised Index",
+        main="EVN", ylim=c(0,1))
+
+library(gplots)
+par(mfrow=c(2,3), mar=c(3,3,2,1))
+plotmeans(MFC~desc1, data=statistics, ylim=c(0,1), las=1, main="MFC")
+plotmeans(ACI~desc1, data=statistics, ylim=c(0,1), las=1, main="ACI")
+plotmeans(BGN~desc1, data=statistics, ylim=c(0,1), las=1, main="BGN")
+plotmeans(SNR~desc1, data=statistics, ylim=c(0,1), las=1, main="SNR")
+plotmeans(EVN~desc1, data=statistics, ylim=c(0,1), las=1, main="EVN")
+plotmeans(EPS~desc1, data=statistics, ylim=c(0,1), las=1, main="EPS")
+
+# Confidence Intervals
+list1 <- c("BGN", "SNR", "ACI", "EVN", "ACT", "LFC", "MFC", "HFC",
+           "EPS", "EAS", "ECV", "CLC")
+list2 <- c("EYR","WTH","LKB","SH1","SH2","WTT","EWB")
+
+conf_inter <- data.frame("index"=NA,
+                      "EYR"=NA,
+                      "WTH"=NA,
+                      "LKB"=NA, 
+                      "SH1"=NA,
+                      "SH2"=NA,
+                      "WTT"=NA,
+                      "EWB"=NA)
+
+for(i in 1:length(list2)) {
+  for(j in 1:length(list1)) {
+    conf_inter[j,1] <- list1[j]
+    a <- which(statistics$desc1==list2[i])
+    p <- 0.95 # confidence level
+    # confidence interval for a t distribution
+    if(list1[j]=="BGN") {
+      ci <- qt((1+p)/2, length(a)-1)*sqrt(var(statistics$BGN[a])/length(a))  
+    }
+    if(list1[j]=="SNR") {
+      ci <- qt((1+p)/2, length(a)-1)*sqrt(var(statistics$SNR[a])/length(a))  
+    }
+    if(list1[j]=="ACI") {
+      ci <- qt((1+p)/2, length(a)-1)*sqrt(var(statistics$ACI[a])/length(a))  
+    }
+    if(list1[j]=="EVN") {
+      ci <- qt((1+p)/2, length(a)-1)*sqrt(var(statistics$EVN[a])/length(a))  
+    }
+    if(list1[j]=="ACT") {
+      ci <- qt((1+p)/2, length(a)-1)*sqrt(var(statistics$ACT[a])/length(a))  
+    }
+    if(list1[j]=="LFC") {
+      ci <- qt((1+p)/2, length(a)-1)*sqrt(var(statistics$LFC[a])/length(a))  
+    }
+    if(list1[j]=="MFC") {
+      ci <- qt((1+p)/2, length(a)-1)*sqrt(var(statistics$MFC[a])/length(a))  
+    }
+    if(list1[j]=="HFC") {
+      ci <- qt((1+p)/2, length(a)-1)*sqrt(var(statistics$HFC[a])/length(a))  
+    }
+    if(list1[j]=="EPS") {
+      ci <- qt((1+p)/2, length(a)-1)*sqrt(var(statistics$EPS[a])/length(a))  
+    }
+    if(list1[j]=="EAS") {
+      ci <- qt((1+p)/2, length(a)-1)*sqrt(var(statistics$EAS[a])/length(a))  
+    }
+    if(list1[j]=="ECS") {
+      ci <- qt((1+p)/2, length(a)-1)*sqrt(var(statistics$ECS[a])/length(a))  
+    }
+    if(list1[j]=="CLC") {
+      ci <- qt((1+p)/2, length(a)-1)*sqrt(var(statistics$CLC[a])/length(a))  
+    }
+    conf_inter[j,i+1] <- ci
+  }  
+}
+rm(a, ci, i,j,label, length_20, list, p, ref, bird_data)
+
+# Calculate averages
+averages <- data.frame("index"=NA,
+                       "EYR"=NA,
+                       "WTH"=NA,
+                       "LKB"=NA, 
+                       "SH1"=NA,
+                       "SH2"=NA,
+                       "WTT"=NA,
+                       "EWB"=NA)
+
+for(i in 1:length(list2)) {
+  for(j in 1:length(list1)) {
+    averages[j,1] <- list1[j]
+    a <- which(statistics$desc1==list2[i])
+    # averages
+    if(list1[j]=="BGN") {
+      av <- mean(statistics$BGN[a])
+    }
+    if(list1[j]=="SNR") {
+      av <- mean(statistics$SNR[a])
+    }
+    if(list1[j]=="ACI") {
+      av <- mean(statistics$ACI[a])
+    }
+    if(list1[j]=="EVN") {
+      av <- mean(statistics$EVN[a])
+    }
+    if(list1[j]=="ACT") {
+      av <- mean(statistics$ACT[a])
+    }
+    if(list1[j]=="LFC") {
+      av <- mean(statistics$LFC[a])
+    }
+    if(list1[j]=="MFC") {
+      av <- mean(statistics$MFC[a])
+    }
+    if(list1[j]=="HFC") {
+      av <- mean(statistics$HFC[a])
+    }
+    if(list1[j]=="EPS") {
+      av <- mean(statistics$EPS[a])
+    }
+    if(list1[j]=="EAS") {
+      av <- mean(statistics$EAS[a])
+    }
+    if(list1[j]=="ECS") {
+      av <- mean(statistics$ECS[a])
+    }
+    if(list1[j]=="CLC") {
+      av <- mean(statistics$CLC[a])
+    }
+    averages[j,i+1] <- av
+  }  
+}
+rm(a, av, i, j, list1, list2)
+
+#Choose the rows needed for MFC, ACI, BGN, SNR, EPS and EVN
+list <- c("MFC", "ACI", "BGN", "SNR", "EPS", "EVN")
+list_spec <- colnames(plot_means)[2:length(plot_means)]
+rows <- NULL
+a <- grep(list[1], averages$index)
+rows <- c(rows, a)
+a <- grep(list[2], averages$index)
+rows <- c(rows, a)
+a <- grep(list[3], averages$index)
+rows <- c(rows, a)
+a <- grep(list[4], averages$index)
+rows <- c(rows, a)
+a <- grep(list[5], averages$index)
+rows <- c(rows, a)
+a <- grep(list[6], averages$index)
+rows <- c(rows, a)
+plot_means <- averages[rows,]
+plot_conf <- conf_inter[rows,]
+
+dev.off()
+tiff(paste("Species_acoustic_Indices_test4",list_spec,"_final_.tiff",sep=""),
+     height = 950, width = 1536, res = 300)
+par(mfrow=c(2,3), mar=c(0.4, 1, 1.4, 0.4), cex.axis=1, 
+    cex.main=0.5, cex.lab=0.3, oma=c(1.8, 1.5, 0.6, 0), 
+    mgp=c(1, 0.2, 0))
+ref <- 0
+
+x <- c(-1, 5, 11, 17, 23, 29, 35)
+x <- as.vector(x) + 2.5
+pch <- c(15,1,17,0,19,2,3,4,5,6,7,8,9,10)
+lty <- c(2,1,5,4,3,6)
+
+for(i in 1:nrow(plot_means)) {
+  INDEX <- plot_means[i,2:length(plot_means)]
+  CON_IN <- plot_conf[i,2:length(plot_conf)]  
+  CI.up <- INDEX + CON_IN
+  # check
+  for(k in 1:length(CI.up)) {
+    if(CI.up[k] > 1) {
+      CI.up[k] <- 1 + 0.01
+    }  
+  }
+  CI.dn <- INDEX - CON_IN
+  for(k in 1:length(CI.dn)) {
+    if(CI.dn[k] < 0) {
+      CI.dn[k] <- 0
+    }  
+  }
+  stat <- cbind(x, as.numeric(as.vector(unname(INDEX))))
+  plot(x = x, y = INDEX, xaxt='n', ylim=c(0,1),
+       col="black", pch=pch[5], las=1, ylab = "", 
+       cex=0.6, xlim = c(0,38), cex.axis=0.6,
+       mgp=c(1, 0.35, 0), yaxt="n", xlab="", yaxt="n")
+  abline(v=c(4,10,16,22,28,34,40))
+  abline(h=c(0,0.2,0.4,0.6,0.8,1.0), lty=2, lwd=0.1)
+  lines(stat, lty=lty[[2]], lwd=0.8)
+  arrows(x, as.numeric(as.vector((CI.dn))), x, as.numeric(as.vector((CI.up))), code=3, length=0.04, angle=90, col="black") #colour[i])
+  ref <- ref + 1  
+  axis(side=2, las=1, cex.axis=0.7, tck=-0.015, mgp=c(1, 0.3, 0))
+  axis(1, at=x, labels=list_spec, cex.axis=0.62, 
+       tck=-0.015, mgp=c(1, 0., 0))
+  #figures <- c(figures, BGN)
+  
+  #par(xpd=FALSE) #x = 33.9, y = 1.06, 
+  if(i==1) {
+    mtext(list[i], cex=0.7, line=0)
+    mtext(side = 3, "a.", cex = 0.9, adj = -0.1, outer = F,
+          line = 0)
+    mtext(side = 2, cex = 1, line=1.3,
+          'Normalised Index ± 95% C.I.                          ')
+  }
+  if(i==2) {
+    mtext(list[i], cex=0.7, line=0)
+    mtext(side = 3, "b.", cex = 0.9, adj = -0.1, outer = F,
+          line = 0)
+    mtext(line=0.9, cex=1,
+          "Average of the Normalised Acoustic Index per Species")
+  }
+  if(i==3) {
+    mtext(list[i], cex=0.7)
+    mtext(side = 3, "c.", cex = 0.9, adj = -0.1, outer = F,
+          line = 0)
+  }
+  if(i==4) {
+    mtext(list[i], cex=0.7)
+    mtext(side = 3, "d.", cex = 0.9, adj = -0.1, outer = F,
+          line = 0)
+  }
+  if(i==5) {
+    mtext(list[i], cex=0.7)
+    mtext(side = 3, "e.", cex = 0.9, adj = -0.1, outer = F,
+          line = 0)
+    mtext(side=1, "Species", line=1.1, cex=1)
+  }
+  if(i==6) {
+    mtext(list[i], cex=0.7)
+    mtext(side = 3, "f.", cex = 0.9, adj = -0.1, outer = F,
+          line = 0)
+  }
+}
+dev.off()
+
+# Kruskal wallis tests on plotmeans
+library(stats)
+# Mid-frequency cover kruskal-wallis test
+statistics$desc1 <- as.factor(statistics$desc1)
+kruskal.test(statistics$MFC~statistics$desc1)
+
+# Acoustic Complexity Index kruskal-wallis test
+kruskal.test(statistics$ACI~statistics$desc1)
+b <- grep("SH2", statistics$desc1)
+f <- grep("SH1", statistics$desc1)
+kruskal.test(statistics$ACI[c(b,f)]~statistics$desc1[c(b,f)]) # all species
+
+# Background Noise kruskal-wallis test
+kruskal.test(statistics$BGN~statistics$desc1)
+
+# Background Noise kruskal-wallis test
+kruskal.test(statistics$SNR~statistics$desc1)
+
+# Entropy of Peaks Spectrum kruskal-wallis test
+kruskal.test(statistics$EPS~statistics$desc1) # all species
+
+# Events per second Spectrum kruskal-wallis test
+kruskal.test(statistics$EVN~statistics$desc1) # all species
+a <- grep("WTH", statistics$desc1)
+b <- grep("SH2", statistics$desc1)
+d <- grep("LKB", statistics$desc1)
+e <- grep("WTT", statistics$desc1)
+f <- grep("SH1", statistics$desc1)
+
+kruskal.test(statistics$EPS~statistics$desc1) # all species
+kruskal.test(statistics$EPS[c(a,b)]~statistics$desc1[c(a,b)]) # all species
+kruskal.test(statistics$EPS[c(b,d)]~statistics$desc1[c(b,d)]) # all species
+kruskal.test(statistics$EPS[c(b,e)]~statistics$desc1[c(b,e)]) # all species
+kruskal.test(statistics$EPS[c(b,f)]~statistics$desc1[c(b,f)]) # all species
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ref <- 0
+for(i in 1:length(list3)) {
+  a <- which(statistics[,1]==a11_list[i])
+  if(i <= length(a11_list)) {
+    BGN <- statistics[a, 2:length(statistics)]
+    BGN <- as.numeric(as.vector(BGN))
+    a <- which(statistics[,1]==a22_list[i])
+    BGN_CI <- statistics[a, 2:length(statistics)]
+    BGN_CI <- as.numeric(as.vector(BGN_CI))
+    CI.up <- BGN + BGN_CI + 0.00001
+    CI.dn <- BGN - BGN_CI + 0.00001
+    x <- c(-1, 5, 11, 17, 23, 29, 35)
+    x <- as.vector(x) + 2.5
+    stat <- cbind(x,BGN)
+    #x <- x + ref
+    #par(new=T)
+    plot(x = x, y = BGN, xaxt='n', ylim=c(0,1),
+         col="black", pch=pch[i+3], las=1, ylab = "", 
+         cex=0.6, xlim = c(0,38), cex.axis=0.6,
+         mgp=c(1, 0.35, 0), yaxt="n", xlab="", yaxt="n")
+    lines(stat, lty=lty[[i]], lwd=0.8)
+    arrows(x, CI.dn, x, CI.up, code=3, length=0.04, angle=90, col="black") #colour[i])
+    ref <- ref + 1  
+    axis(side=2, las=1, cex.axis=0.7, tck=-0.015, mgp=c(1, 0.3, 0))
+    axis(1, at=x, labels=names, cex.axis=0.62, 
+         tck=-0.015, mgp=c(1, -0.2, 0))
+    figures <- c(figures, BGN)
+  }
+  legend <- substr(a22_list, 4,6)
+  par(xpd=FALSE) #x = 33.9, y = 1.06, 
+  if(i==1) {
+    mtext("SNR", cex=0.7)
+    mtext(side = 3, "d.", cex = 0.9, adj = -0.1, outer = F,
+          line = 0)
+    mtext(side = 1, line=0.6, "Species", cex = 0.6)
+    mtext(side = 2, cex = 0.55, line=1.2,
+          'Normalised Index ± 95% C.I.')
+    #legend(x=x[5], y=1.04, col = "black", #c(colour[1:5]), 
+    #       legend = legend[1], 
+    #       cex = 0.8, bty = "n", pch=pch[4], lty = 1,
+    #       horiz = FALSE, xpd=TRUE,
+    #       x.intersp = 0.6, y.intersp = 0.9, inset=c(-0.15,0))
+  }
+  if(i==2) {
+    mtext("EPS", cex=0.7)
+    mtext(side = 3, "e.", cex = 0.9, adj = -0.1, outer = F,
+          line = 0)
+    mtext(side = 1, line=0.6, "Species", cex = 0.6)
+    #legend(x=x[5], y=1.04, col = "black", #c(colour[1:5]), 
+    #       legend = legend[2], 
+    #       cex = 0.8, bty = "n", pch=pch[5], lty = 2,
+    #       horiz = FALSE, xpd=TRUE,
+    #       x.intersp = 0.6, y.intersp = 0.9, inset=c(-0.15,0))
+  }
+  if(i==3) {
+    mtext(side = 3, "f.", cex = 0.9, adj = -0.1, outer = F,
+          line = 0)
+    mtext("EVN", cex=0.7)
+    #legend(x=x[5], y=1.04, col = "black", #c(colour[1:5]), 
+    #       legend = legend[3], 
+    #       cex = 0.8, bty = "n", pch=pch[6], lty = 3,
+    #       horiz = FALSE, xpd=TRUE,
+    #       x.intersp = 0.6, y.intersp = 0.9, inset=c(-0.15,0))
+    mtext(side = 1, line = 0.6, "Species", cex = 0.6)
+  }
+  abline(v=c(4,10,16,22,28,34,40))
+  abline(h=c(0,0.2,0.4,0.6,0.8,1.0), lty=2, lwd=0.1)
+  #if(ref %in% c(1:(length(a11_list)-1))) {
+  #  par(new=T)  
+  #}
+}
 dev.off()

@@ -2,8 +2,62 @@
 # Plot 1 -----------------------------
 # was produced in illustrator and photoshop
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Empty plot
+windowsFonts()
+windowsFonts(JP1 = windowsFont("Calibri"),
+             JP2 = windowsFont("MS Gothic"),
+             JP3 = windowsFont("Arial Unicode MS"))
 
+tiff("test.tiff", width=2025, height=1000, res = 300)
+par(mar=c(0,0,0,0))
+plot(c(0, 25), c(0.39, 1.6), type = "n", axes=TRUE, frame.plot=FALSE,
+     xlab="", ylab="")
+#abline(v=c(0,5,10,15,20,25))
+#abline(h=c(0,1,2,3,4))
 
+library(diagram)
+textrect(mid = c(2.5, 1), radx = 2.1, rady = 0.6,
+         lab = "", col="black", 
+         shadow.size = 0.02,
+         cex = 1, adj=c(0.5,-5.1))
+
+text(x=2.5, y=1.5,"RECORDING", family = "JP1", cex=1.1)
+text(x=2.5, y=1.35,"ACQUISITION", family = "JP1", cex=1.1)
+text(x=2.5, y=1,"Long-duration", family = "JP1", cex=1)
+text(x=2.5, y=0.9,"audio recording", family = "JP1", cex=1)
+
+textrect(mid = c(7.5, 1), radx = 2.1, rady = 0.6,
+         lab = "", col="black",
+         cex = 1, shadow.size = 0.02, adj=c(0.5,-5.1))
+text(x=7.5, y=1.5,"RECORDING", family = "JP1", cex=1.1)
+text(x=7.5, y=1.35,"ACQUISITION", family = "JP1", cex=1.1)
+text(x=7.5, y=1,"Long-duration", family = "JP1", cex=1)
+text(x=7.5, y=0.9,"audio recording", family = "JP1", cex=1)
+
+textrect(mid = c(12.5, 1), radx = 2.2, rady = 0.6,
+         lab = "", col="black",
+         cex = 1, shadow.size = 0.02, adj=c(0.5,-5.1))
+text(x=12.5, y=1.5,"RECORDING", family = "JP1", cex=1.1)
+text(x=12.5, y=1.35,"ACQUISITION", family = "JP1", cex=1.1)
+text(x=12.5, y=1,"Long-duration", family = "JP1", cex=1)
+text(x=12.5, y=0.9,"audio recording", family = "JP1", cex=1)
+
+textrect(mid = c(17.5, 1), radx = 2.2, rady = 0.6,
+         lab = "", col="black",
+         cex = 1, shadow.size = 0.02, adj=c(0.5,-5.1))
+text(x=17.5, y=1.5,"RECORDING", family = "JP1", cex=1.1)
+text(x=17.5, y=1.35,"ACQUISITION", family = "JP1", cex=1.1)
+text(x=17.5, y=1,"Long-duration", family = "JP1", cex=1)
+text(x=17.5, y=0.9,"audio recording", family = "JP1", cex=1)
+
+textrect(mid = c(22.5, 1), radx = 2.2, rady = 0.6,
+         lab = "", col="black",
+         cex = 1, shadow.size = 0.02, adj=c(0.5,-5.1))
+text(x=22.5, y=1.5,"RECORDING", family = "JP1", cex=1.1)
+text(x=22.5, y=1.35,"ACQUISITION", family = "JP1", cex=1.1)
+text(x=22.5, y=1,"Long-duration", family = "JP1", cex=1)
+text(x=22.5, y=0.9,"audio recording", family = "JP1", cex=1)
+dev.off()
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Plot 3 -----------------------------
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,7 +133,7 @@ dev.off()
 # remove all objects in the global environment
 rm(list = ls())
 
-ID3_values <- read.csv("ID3_values.csv")
+ID3_values <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\ID3_values.csv")
 col <- rep("black", 8)
 pch = c(15,20,17,18,16,21,22,23)
 labels <- as.character(seq(12500, 30000, 2500))
@@ -127,6 +181,7 @@ dev.off()
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # plot 6 Sammon map ------------------------------
+# also see sammon map showing diameters.R
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # remove all objects in the global environment
 rm(list = ls())
@@ -136,12 +191,13 @@ library(cluster) # needed for pam function in order to find the medoids
 # plot SAMMON projection
 library(MASS)
 # see below on how this is generated
-medoids1 <- read.csv("medoids_all_data.csv", header = T)
+medoids1 <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\medoids_all_data.csv", header = T)
 distances <- as.matrix(dist(medoids1))
 clusters.sam <- sammon(distances, k=2)
 
 # size of clusters
-clust_sizes <- read.csv("data/2hour_plots_25000_60/Summary_25000_60_annotated.csv", header = T)
+
+clust_sizes <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\2hour_plots_25000_60\\Summary_25000_60_annotated.csv", header = T)
 clust_sizes <- clust_sizes$Cluster.total
 clust_sizes1 <- clust_sizes
 
@@ -500,42 +556,43 @@ plot_funct <- function(clust_num, colour, site) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # plot 7 ------------------------------
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-tiff("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\Figures for plos article/Fig7.tiff", width = 2250, 
-     height = 1500, units = 'px', res = 300)
+tiff("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\Figures for plos article/Fig7.tiff",
+     width = 2025, height = 1350, units = 'px', res = 300)
 #par(mar=c(2, 2.5, 2, 0.4), mfrow = c(4,1),
 #    cex = 1, cex.axis = 1, cex.main = 2.4)
 par(mfrow=c(4, 14), 
     mar=c(1, 0, 2, 0.1), oma=c(0.1, 2.1, 0, 0), xpd = NA,
-    cex = 1, cex.axis = 0.6, cex.main = 1)
+    cex = 0.9, cex.axis = 0.54, cex.main = 0.9)
 
 # Start insect image
 clust_num <- 29
 colour <- insects_col
 plot_funct(clust_num, colour, "site2")
-mtext(side = 3, line = 1, "ORTHOPTERA - Cluster 29                                                                                                                                 ", cex=1.1)
+mtext(side = 3, line = 1, "a. ORTHOPTERA - Cluster 29                                                                                                                                 ", cex=1.1)
 
 # Start Bird image
 clust_num <- 37
 colour <- birds_col
 plot_funct(clust_num, colour, "site2")
-mtext(side = 3, line = 1, "BIRDS - Cluster 37                                                                                                                                 ", cex=1.1)
-mtext(side = 2, line = 1.3, outer = T, cex = 0.92,
+mtext(side = 3, line = 1, "b. BIRDS - Cluster 37                                                                                                                                 ", cex=1.1)
+mtext(side = 2, line = 1.3, outer = T, cex = 0.8,
       "Average number of cluster minutes in 2 hour period each month")
 
 # Start cicada image
 clust_num <- 48
 colour <- cicadas_col
 plot_funct(clust_num, colour, "site2")
-mtext(side = 3, line = 1, "CICADAS - Cluster 48                                                                                                                                 ", cex=1.1)
+mtext(side = 3, line = 1, "c. CICADAS - Cluster 48                                                                                                                                 ", cex=1.1)
 
 # Start quiet image
 cluster <- 13
 colour <- quiet_col
 plot_funct(cluster, colour, "site2")
-mtext(side = 3, line = 1, "QUIET - Cluster 13                                                                                                                                 ", cex=1.1)
+mtext(side = 3, line = 1, "d. QUIET - Cluster 13                                                                                                                                 ", cex=1.1)
 
 dev.off()
 
+# Plots for Supplementary S3 
 # define cluster classes 
 rain <- c(2,10,17,18,21,54,59,60) 
 wind <- c(9,19,20,24,25,30,40,42,45,46,47,51,52,56)
@@ -2354,11 +2411,13 @@ dev.off()
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # remove all objects in the global environment
 rm(list = ls())
-source("scripts/radarPlot.R")
+source("C:/Work/Projects/Twelve_month_clustering/Saving_dataset/scripts/radarPlot.R")
 # load normalised summary indices this has had the missing minutes
 # and microphone problem minutes removed 
-# the dataframe is called "indices_norm_summary"
+# the dataframe is called " indices_norm_summary "
 load(file="data/datasets/normalised_summary_indices.RData")
+
+temp_indices_norm_summary <- indices_norm_summary[1:100,]
 
 k1_value <- 25000
 k2_value <- 60
@@ -2422,51 +2481,52 @@ dd <- data.frame(dd)
 all <- c("quiet5", "birds11", "rain59", 
          "wind42", "cicadas48", "planes49")
 
-tiff("Figures for plos article/Fig10.tiff", width = 2250, height = 1500, units = 'px', res = 300)
+tiff("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\Figures for plos article\\Fig10.tiff", 
+     width = 2025, height = 1350, units = 'px', res = 300)
 ref <- 1
 par(mfrow=c(2,3), xpd=NA, #decrease default margin
-    mgp = c(0, 0.2, 0), cex = 0.6, oma = c(0,0.5,1,0)) 
+    mgp = c(0, 0.2, 0), cex = 0.6, oma = c(0, 0, 0, 0)) 
 radarPlot(rbind(rep(1,60), rep(0,60), dd[5,-1]), 
-          pfcol=colours[ref], seg = 5, vlcex = 1.6, 
-          axistype=0, centerzero = TRUE, plwd = 1.5, 
-          pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
-mtext("a. QUIET", side = 3, cex = 1.1, line = -0.1)
-text(x = -0.9, y = 1.26, paste("Cluster 5"), cex = 1.6)
+           pfcol=colours[ref], seg = 5, vlcex = 1.6, 
+           axistype=0, centerzero = TRUE, plwd = 1.5, 
+           pdensity = 60, x1 = 1, y1 = 0, x2 = 1, y2 = 2)
+mtext("a. QUIET (Cluster 5)", side = 3, cex = 1.1, line = -0.1, adj=0)
+#text(x = -0.9, y = 1.26, paste("Cluster 5"), cex = 1.6)
 ref <- ref + 1
 radarPlot(rbind(rep(1,60), rep(0,60), dd[11,-1]), 
-          pfcol=colours[ref], seg = 5, vlcex = 1.6, 
-          axistype=0, centerzero = TRUE, plwd = 1.5, 
-          pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
-text(x = -0.9, y = 1.26, paste("Cluster 11"), cex = 1.6)
-mtext("b. BIRDS", side = 3, cex = 1.1, line = -0.1)
+           pfcol=colours[ref], seg = 5, vlcex = 1.6, 
+           axistype=0, centerzero = TRUE, plwd = 1.5, 
+           pdensity = 60, x1 = 1, y1 = 0, x2 = 1, y2 = 2)
+#text(x = -0.9, y = 1.26, paste("Cluster 11"), cex = 1.6)
+mtext("b. BIRDS (Cluster 11)", side = 3, cex = 1.1, line = -0.1, adj=0)
 ref <- ref + 1
 radarPlot(rbind(rep(1,60), rep(0,60), dd[59,-1]), 
-          pfcol=colours[ref], seg = 5, vlcex = 1.6, 
-          axistype=0, centerzero = TRUE, plwd = 1.5, 
-          pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 1, y2 = 0.5)
-text(x = -0.9, y = 1.26, paste("Cluster 59"), cex = 1.6)
-mtext("c. RAIN", side = 3, cex = 1.1, line = -0.1)
+           pfcol=colours[ref], seg = 5, vlcex = 1.6, 
+           axistype=0, centerzero = TRUE, plwd = 1.5, 
+           pdensity = 60, x1 = 1, y1 = 0, x2 = 1, y2 = 2)
+#text(x = -0.9, y = 1.26, paste("Cluster 59"), cex = 1.6)
+mtext("c. RAIN (Cluster 59)", side = 3, cex = 1.1, line = -0.1, adj=0)
 ref <- ref + 1
 radarPlot(rbind(rep(1,60), rep(0,60), dd[42,-1]), 
-          pfcol=colours[ref], seg = 5, vlcex = 1.6, 
-          axistype=0, centerzero = TRUE, plwd = 1.5, 
-          pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
-text(x = -0.9, y = 1.26, paste("Cluster 42"), cex = 1.6)
-mtext("d. WIND", side = 3, cex = 1.1, line = -0.1)
+           pfcol=colours[ref], seg = 5, vlcex = 1.6, 
+           axistype=0, centerzero = TRUE, plwd = 1.5, 
+           pdensity = 60, x1 = 1, y1 = 0, x2 = 1, y2 = 2)
+#text(x = -0.9, y = 1.26, paste("Cluster 42"), cex = 1.6)
+mtext("d. WIND (Cluster 42)", side = 3, cex = 1.1, line = -0.1, adj=0)
 ref <- ref + 1
 radarPlot(rbind(rep(1,60), rep(0,60), dd[48,-1]), 
-          pfcol=colours[ref], seg = 5, vlcex = 1.6, 
-          axistype=0, centerzero = TRUE, plwd = 1.5, 
-          pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 2, y2 = 0.5)
-text(x = -0.9, y = 1.26, paste("Cluster 48"), cex = 1.6)
-mtext("e. CICADAS", side = 3, cex = 1.1, line = -0.1)
+           pfcol=colours[ref], seg = 5, vlcex = 1.6, 
+           axistype=0, centerzero = TRUE, plwd = 1.5, 
+           pdensity = 60, x1 = 1, y1 = 0, x2 = 1, y2 = 2)
+#text(x = -0.9, y = 1.26, paste("Cluster 48"), cex = 1.6)
+mtext("e. CICADAS (Cluster 48)", side = 3, cex = 1.1, line = -0.1, adj=0)
 ref <- ref + 1
 radarPlot(rbind(rep(1,60), rep(0,60), dd[49,-1]), 
-          pfcol=colours[ref], seg = 5, vlcex = 1.6, 
-          axistype=0, centerzero = TRUE, plwd = 1.5, 
-          pdensity = 60, x1 = 0.5, y1 = 0.5, x2 = 1, y2 = 0.5)
-text(x = -0.9, y = 1.26, paste("Cluster 49"), cex = 1.6)
-mtext("f. PLANES", side = 3, cex = 1.1, line = -0.1)
+           pfcol=colours[ref], seg = 5, vlcex = 1.6, 
+           axistype=0, centerzero = TRUE, plwd = 1.5, 
+           pdensity = 60, x1 = 1, y1 = 0, x2 = 1, y2 = 2)
+#text(x = -0.9, y = 1.26, paste("Cluster 49"), cex = 1.6)
+mtext("f. PLANES (Cluster 49)", side = 3, cex = 1.1, line = -0.1, adj=0)
 ref <- ref + 1
 dev.off()
 
@@ -2670,6 +2730,73 @@ for(i in 1:length(quiet)) {
 mtext(side = 1, outer = T,line = -0.5, cex = 1,
       "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
 dev.off()
+################################-------------------
+# radar_plot_clust this code produces the coloured radar plots for the thesis
+insects_col <- "#F0E442"
+rain_col <- "#0072B2"
+wind_col <- "#56B4E9"
+birds_col <- "#009E73"
+cicadas_col <- "#E69F00"
+quiet_col <- "#999999"
+planes_col <- "#CC79A7"
+
+load(file="C:/Work2/Projects/Twelve_,month_clustering/Saving_dataset/data/datasets/normalised_summary_indices.RData")
+
+temp_indices_norm_summary <- indices_norm_summary[1:100,]
+
+k1_value <- 25000
+k2_value <- 60
+column <- k2_value/5
+
+file_name <- paste("C:/Work/Projects/Twelve_month_clustering/Saving_dataset/data/datasets/hclust_results/hclust_clusters",
+                   k1_value, ".RData", sep = "")
+file_name_short <- paste("hclust_clusters_",k1_value, sep = "")
+# remove unneeded values
+load(file_name)
+# load the cluster list 
+cluster.list <- get(file_name_short, envir=globalenv())[,column]
+medoids1 <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\medoids_all_data.csv", header = T)
+
+library(graphics)
+ref<- 1
+clust <- 37
+col <- birds_col
+indices_norm_summary$cluster_list <- cluster.list
+a <- which(indices_norm_summary$cluster_list==clust)
+
+length(a)
+a <- sample(a, 600)
+temp_indices_norm_summary <- indices_norm_summary[a,]
+colnames(temp_indices_norm_summary)[] <- c("BGN","SNR","ACT",
+                    "EVN", "HFC", "MFC", "LFC",
+                    "ACI", "EAS", "EPS", "ECV",
+                    "CLC", "list")
+#source("C:/Work/Projects/Twelve_month_clustering/Saving_dataset/scripts/radarPlot1.R")
+source("C:/Work/Projects/Twelve_month_clustering/Saving_dataset/scripts/radarPlot.R")
+dev.off()
+
+
+tiff(paste("C:/Work2/Projects/Twelve_,month_clustering/Saving_dataset/radar_plot_clust", clust, ".tiff", sep=""), 
+     height=900, width=900, res=300)
+for(i in 1:nrow(temp_indices_norm_summary)){
+  radarPlot(rbind(rep(1,60), rep(0,60), 
+            temp_indices_norm_summary[i,-13]), 
+            pfcol=col, seg = 3, vlcex = 0.8, 
+            pcol=col, calcex =0.6, palcex = 0.6, pty=32,
+            axistype=0, centerzero = TRUE, plwd = 0.6, 
+            pdensity = 0, x1 = 1, y1 = 0, x2 = 1, y2 = 2)
+  par(new=T)
+}
+colnames(medoids1)[] <- c("BGN","SNR","ACT",
+                          "EVN", "HFC", "MFC", "LFC",
+                          "ACI", "EAS", "EPS", "ECV",
+                          "CLC")
+radarPlot(rbind(rep(1,60), rep(0,60), medoids1[clust,]), 
+          pfcol=col, seg = 3, vlcex = 0.8, caxislabels = NULL,
+          pcol="black", calcex =0.6, palcex = 0.6, pty=32,
+          axistype=0, centerzero = TRUE, plwd=1.2, 
+          pdensity = 0, x1 = 1, y1 = 0, x2 = 1, y2 = 2)
+dev.off()
 
 # Figure11 -----------------------------------------
 # Set the layout matrix to divide page into two frames one
@@ -2699,36 +2826,36 @@ layout.show(22)
 vp_top <- viewport(x = 0, y = 0, width = 7.5, height = 8.7, 
                    name = "vp_top", default.units = "in")
 vp9 <- viewport(x=0, y=0, width=2.5, height=2.5, just = c("right","top"), 
-                name = "vp9", default.units = "in")
+         name = "vp9", default.units = "in")
 vp10 <- viewport(x=2.5, y=0, width=2.5, height=2.5, just = c("right","top"), 
-                 name = "vp10", default.units = "in")
+         name = "vp10", default.units = "in")
 vp11 <- viewport(x=5, y=0, width=2.5, height=2.5, just = c("right","top"), 
-                 name = "vp11", default.units = "in")
+         name = "vp11", default.units = "in")
 margin1 <- viewport(x=0, y=2.5, width=7.5, height=0.4, just = c("right","top"), 
-                    name = "margin1", default.units = "in")
+         name = "margin1", default.units = "in")
 vp6 <- viewport(x=0, y=2.9, width=2.5, height=2.5, just = c("right","top"), 
-                name = "vp6", default.units = "in")
+         name = "vp6", default.units = "in")
 vp7 <- viewport(x=2.5, y=2.9, width=2.5, height=2.5, just = c("right","top"), 
-                name = "vp7", default.units = "in")
+         name = "vp7", default.units = "in")
 vp8 <- viewport(x=5, y=2.9, width=2.5, height=2.5, just = c("right","top"), 
-                name = "vp8", default.units = "in")
+         name = "vp8", default.units = "in")
 margin2 <- viewport(x=0, y=5.4, width=7.5, height=0.4, just = c("right","top"), 
-                    name = "margin2", default.units = "in")
+         name = "margin2", default.units = "in")
 vp1 <- viewport(x=0, y=5.8, width=1.5, height=2.5, just = c("right","top"), 
-                name = "vp1", default.units = "in")
+         name = "vp1", default.units = "in")
 vp2 <- viewport(x=1.5, y=5.8, width=1.5, height=2.5, just = c("right","top"), 
-                name = "vp2", default.units = "in")
+         name = "vp2", default.units = "in")
 vp3 <- viewport(x=3, y=5.8, width=1.5, height=2.5, just = c("right","top"), 
-                name = "vp3", default.units = "in")
+         name = "vp3", default.units = "in")
 vp4 <- viewport(x=4.5, y=5.8, width=1.5, height=2.5, just = c("right","top"), 
-                name = "vp4", default.units = "in")
+         name = "vp4", default.units = "in")
 vp5 <- viewport(x=6, y=5.8, width=1.5, height=2.5, just = c("right","top"), 
-                name = "vp5", default.units = "in")
+         name = "vp5", default.units = "in")
 margin3 <- viewport(x=0, y=8.3, width=7.5, height=0.4, just = c("right","top"), 
-                    name = "margin3", default.units = "in")
+         name = "margin3", default.units = "in")
 splot <- vpTree(vp_top, vpList(vp1, vp2, vp3, vp4, vp5, 
-                               vp6, vp7, vp8, vp9, vp10, 
-                               vp11, margin1, margin2, margin3))
+                       vp6, vp7, vp8, vp9, vp10, 
+                       vp11, margin1, margin2, margin3))
 pushViewport(splot)
 seekViewport("vp10")
 par(mar=c(0,0,0,0))
@@ -3660,7 +3787,7 @@ polarHistogram365 <-function (df, family = NULL,
   #if(normalised)
   df <- ddply(df, .(family, item), transform, 
               value = cumsum(value/(sum(value))))
-  
+
   df <- ddply(df, .(family, item), transform, previous = c(0, head(value, length(value) - 1)))
   
   df2 <- ddply(df, .(family, item), summarise, indexItem = 1)
@@ -3762,19 +3889,35 @@ polarHistogram365 <-function (df, family = NULL,
   p <- p + ylim(0, outerRadius + 0.2)
   p <- p + coord_polar(start = alphaStart)
   #p <- p + scale_fill_brewer(palette = "Set1", type = "qual")
-  p <- p + scale_fill_manual(values = c('birds'="#009E73",
-                                        'cicada'="#E69F00", 
-                                        'insects'= "#F0E442",
-                                        'planes'="#CC79A7", 
-                                        'rain'="#0072B2",
-                                        'wind'="lightblue",
-                                        'quiet'="#999999"))
+  p <- p + scale_fill_manual(values = c('a birds'="#009E73",
+                                        'b cicada'="#E69F00", 
+                                        'c insects'= "#F0E442",
+                                        'd planes'="#CC79A7", 
+                                        'e rain'="#0072B2",
+                                        'f wind'="#56B4E9",
+                                        'g quiet'="#999999"))
   p <- p + theme(legend.text=element_text(size=1))
   p <- p + theme(legend.position="none")
 }
 
 gympie_clusters365 <- gympie_clusters[1:2555,]
 gympie_clusters365 <- gympie_clusters
+
+a <- which(gympie_clusters365$score=="birds")
+gympie_clusters365$score[a] <- "a birds"
+a <- which(gympie_clusters365$score=="cicada")
+gympie_clusters365$score[a] <- "b cicada"
+a <- which(gympie_clusters365$score=="insects")
+gympie_clusters365$score[a] <- "c insects"
+a <- which(gympie_clusters365$score=="planes")
+gympie_clusters365$score[a] <- "d planes"
+a <- which(gympie_clusters365$score=="rain")
+gympie_clusters365$score[a] <- "e rain"
+a <- which(gympie_clusters365$score=="wind")
+gympie_clusters365$score[a] <- "f wind"
+a <- which(gympie_clusters365$score=="quiet")
+gympie_clusters365$score[a] <- "g quiet"
+
 p1 <- polarHistogram365(gympie_clusters365, 
                         familyLabels = TRUE,
                         circleProportion = 0.98,
@@ -3782,11 +3925,27 @@ p1 <- polarHistogram365(gympie_clusters365,
 p1 <- p1 + ggtitle("Gympie NP") + theme(title = element_text(vjust = -6)) + theme(title = element_text(size=20)) 
 p1 <- p1 + theme(plot.margin=unit(c(0,-10,0,0),"mm"))
 print(p1)
-ggsave('Figures for plos article/Fig14_gym_unedited.tiff', 
+ggsave('C://Work//Projects//Twelve_month_clustering//Saving_dataset//Figures for plos article//Fig14_gym_unedited.tiff', 
        width = 7.5, height = 7.5, dpi = 300, bg = "transparent")
 
 woondum_clusters365 <- woondum_clusters[1:2555,]
 woondum_clusters365 <- woondum_clusters
+
+a <- which(woondum_clusters365$score=="birds")
+woondum_clusters365$score[a] <- "a birds"
+a <- which(woondum_clusters365$score=="cicada")
+woondum_clusters365$score[a] <- "b cicada"
+a <- which(woondum_clusters365$score=="insects")
+woondum_clusters365$score[a] <- "c insects"
+a <- which(woondum_clusters365$score=="planes")
+woondum_clusters365$score[a] <- "d planes"
+a <- which(woondum_clusters365$score=="rain")
+woondum_clusters365$score[a] <- "e rain"
+a <- which(woondum_clusters365$score=="wind")
+woondum_clusters365$score[a] <- "f wind"
+a <- which(woondum_clusters365$score=="quiet")
+woondum_clusters365$score[a] <- "g quiet"
+
 p1 <- polarHistogram365(woondum_clusters365, 
                         familyLabels = TRUE,
                         circleProportion = 0.98,
@@ -3794,9 +3953,8 @@ p1 <- polarHistogram365(woondum_clusters365,
 p1 <- p1 + ggtitle("Woondum NP") + theme(title = element_text(vjust = -6)) + theme(title = element_text(size=20)) 
 p1 <- p1 + theme(plot.margin=unit(c(0,-10,0,0),"mm"))
 print(p1)
-ggsave("Figures for plos article/Fig14_unedited.tiff", 
+ggsave("C://Work//Projects//Twelve_month_clustering//Saving_dataset//Figures for plos article//Fig14_unedited.tiff", 
        width = 7.5, height = 7.5, dpi = 300, bg = "transparent")
-
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Plot 15 Rain and insect correlation ---------------------------
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3804,7 +3962,7 @@ ggsave("Figures for plos article/Fig14_unedited.tiff",
 rm(list = ls())
 
 # read file containing summary of 30 minute segments
-df <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\polarHistograms\\polar_data.csv", header = T)
+df <- read.csv("C:/Work/Projects/Twelve_month_clustering/Saving_dataset/polarHistograms/polar_data.csv", header = T)
 
 # convert from 30 minute to 24 hour summaries
 length <- nrow(df)
@@ -3873,7 +4031,7 @@ blank_date_list <- rep("", length(date.list))
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # choose the day numbers
-n <- 1:100
+n <- 1:101
 # choose the rain clusters
 rain_clusters <- c(10, 18, 21, 59)
 x <- cbind(gym_matrix[n, rain_clusters])
@@ -3888,6 +4046,7 @@ gym_y <- rowSums(y)
 
 max_x <- max(gym_x)
 max_y <- max(gym_y)
+
 
 # Woondum
 # choose the rain clusters
@@ -3913,13 +4072,33 @@ m <- rbind(c(1,1,1),
 layout(m)
 layout.show(2)
 
-#par(mar=c(1,3,3,0))
-tiff("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\Figures for plos article\\Fig15.tiff", width = 2250, 
-     height = 1500, units = 'px', res = 300)
+for(i in 1:length(date.list)) {
+  if(date.list[i]=="2015-07-01") {
+    date.list[i] <- paste(substr(date.list[i],10,10),
+                          "Jul",
+                          substr(date.list[i],1,4), sep=" ")
+  }
+  if(date.list[i]=="2015-08-01") {
+    date.list[i] <- paste(substr(date.list[i],10,10),
+                          "Aug",
+                          substr(date.list[i],1,4), sep=" ")
+  }
+  if(date.list[i]=="2015-09-01") {
+    date.list[i] <- paste(substr(date.list[i],10,10),
+                          "Sept",
+                          substr(date.list[i],1,4), sep=" ")
+  }
+}
 
-par(mar=c(0, 3.4, 1.5, 0),  #, mfcol=c(2,1) ,
+date.list
+#par(mar=c(1,3,3,0))
+tiff("C:/Work/Projects/Twelve_month_clustering/Saving_dataset/Figures for plos article/Fig15.tiff", 
+     width = 2025, height = 1380, units = 'px', res = 300)
+
+par(mar=c(0.1, 3.4, 3.5, 0),  #, mfcol=c(2,1) ,
     cex = 0.6, cex.axis = 1, cex.main = 1)
 m <- rbind(c(1,1,1),
+           c(1,1,1),
            c(1,1,1),
            c(1,1,1),
            c(1,1,1),
@@ -3930,20 +4109,21 @@ m <- rbind(c(1,1,1),
            c(3,3,3),
            c(3,3,3),
            c(3,3,3),
+           c(3,3,3),
+           c(3,3,3),
            c(3,3,3))
 layout(m)
-#layout.show(2)
+layout.show(3)
 
 # space between sets not columns
-gap <- 10
+gap <- 20
 # width and spacing of columns
 width <- 3
 space <- 0.4
 # empty plot
 plot(x = c(0,((width+space)*(length(n)-1))), type = "n",
      y = c(-(max_x+12),(max_y+12)), xlab="", ylab="",
-     frame.plot = FALSE, axes = FALSE, las=1) 
-mtext(side = 1, "Days from 22 June to 29 September 2015", line = 0)
+     frame.plot = FALSE, axes = FALSE) 
 ref <- 0
 maxim <- 0
 for(i in 1:length(woon_x)) {
@@ -3953,52 +4133,62 @@ for(i in 1:length(woon_x)) {
     maxim <- woon_y[i]+gap
   }
 }
+
 ref <- 0
 for(i in 1:length(woon_x)) {
   rect(ref, -gap, ref+width, -(woon_x[i]+gap), col = rain_col)
   ref <- ref + (width+space)
+  
 }
-axis(side = 2, at = (seq(50, max(rowSums(x)),50)+gap), 
-     seq(50, max(rowSums(x)), 50), line = -1.4, cex=2.2, las=1)
+axis(side = 2, at = (seq(0, max(rowSums(y)),50)+gap), 
+     seq(0, max(rowSums(y)), 50), line = -1.4, cex=2.2)
 axis(side = 2, at = -(seq(0,max(rowSums(x)),50)+gap), 
-     seq(0, max(rowSums(x)), 50), line = -1.4, cex=2.2, las=1)
+     seq(0, max(rowSums(x)), 50), line = -1.4, cex=2.2)
 date.ref <- a[which(a > min(n))]
 date.ref <- date.ref[1:3]
+
 for(i in 1:length(date.ref)) {
   text(x = ((date.ref[i]-min(n))*(width+space)-1), 
-       y = (max(rowSums(y)) - 10), cex= 1.4,  
+       y = (max(rowSums(y)) - 10), cex= 1,  
        paste(date.list[date.ref[i]]), pos = 4)
 }
 abline(v=((a-min(n))*(width+space)))
 #par(font=2, mar=c(2, 3, 3, 0), mfcol=c(2,1),
 #            cex = 0.6, cex.axis = 1, cex.main = 1)
-mtext(side = 3, paste("WoondumNP - Rain clusters (", 
+mtext(side = 3, paste(site, " - Rain clusters (", 
                       toString(rain_clusters),
                       ") and Insect clusters (", 
                       toString(insect_clusters),")"),
-      outer = F, cex = 1)
+      outer = F, cex = 1, line=2)
+mtext(side=3,"Days from 22 June to 30 September 2015",
+      line=0.6, cex=0.8)
 
 #par(font=1)
-mtext(side = 2, "Minutes per day", line = 1.8)
+mtext(side = 2, "Minutes per day", line = 1.2)
 mtext(side = 3, "a.", cex = 1.2, adj = 0.005, outer = TRUE,
-      line = -2)
+      line = -1.8)
 # Perform cross correlation on both the Woondum data
 #png(paste("plots\\cross-corr_woondum_insects",toString(insect_clusters),"_rain",
 #          toString(rain_clusters), "_n_", min(n), "_", max(n), ".png", sep = ""), 
 #    height = 450, width = 600)
 #par(mar=c(3.8, 3.8, 0, 1), oma=c(0,0,2,0), cex = 1.2, 
 #    cex.axis = 1.2)
-plot()
+# empty plot to fill the plot 2 space
+plot(c(0, 1440), c(1440, 0), 
+     type = "n",axes=FALSE, frame.plot=FALSE,
+     xlab="", ylab="")
+
 ylim <- c(-0.2, 0.58)
 par(mar=c(3.8, 4.8, 0, 1), oma= c(0,0,0.5,0),
     cex = 0.6, cex.axis = 1, cex.main = 1)
 par(new=T)
 ccf(woon_y, woon_x, main = "", bty = "n",
     xlab = "", ylab = "", ylim = ylim)
-mtext(side = 1, "Lag between rain and insects (days)", line = 2.5)
-mtext(side = 2, "Cross-correlation", line = 3)
+mtext(side=3,"Cross-correlation between rain and insects")
+mtext(side = 1, "Lag (days)", line = 2.5)
+mtext(side = 2, "Cross-correlation", line = 2.5)
 mtext(side = 3, "b.", cex = 1.2, adj = 0.005, outer = TRUE,
-      line = -23.8)
+      line = -20)
 dev.off()
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -4578,12 +4768,13 @@ library(cluster)
 # plot SAMMON projection
 library(MASS)
 # see below on how this is generated
-medoids1 <- read.csv("medoids_all_data.csv", header = T)
+medoids1 <- read.csv("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\medoids_all_data.csv", header = T)
 distances <- as.matrix(dist(medoids1))
 clusters.sam <- sammon(distances, k=2)
 
 # size of clusters
-clust_sizes <- read.csv("data/2hour_plots_25000_60/Summary_25000_60_annotated.csv", header = T)
+clust_sizes <- read.csv("C:/Work/Projects/Twelve_month_clustering/Saving_dataset/data/2hour_plots_25000_60/Summary_25000_60_annotated.csv"
+, header = T)
 clust_sizes <- clust_sizes$Cluster.total
 clust_sizes1 <- clust_sizes
 
@@ -4630,18 +4821,18 @@ clusters1[13, 6:11]  <-  c(quiet, quiet,"y","y","y","y")
 clusters1[14, 6:11]  <-  c(birds, birds,"y","y","n","n")
 clusters1[15, 6:11]  <-  c(birds, birds,"n","n","n","n")
 clusters1[16, 6:11]  <-  c(cicadas, cicadas,"n","n","n","n")
-clusters1[17, 6:11]  <-  c(rain, insects,"n","n","n","n")
+clusters1[17, 6:11]  <-  c("white", rain,"n","n","n","n") # Inconsistent c(rain, insects,"n","n","n","n")
 clusters1[18, 6:11]  <-  c(rain, rain,"n","n","n","n")
 clusters1[19, 6:11]  <-  c(wind, wind,"n","n","n","n")
 clusters1[20, 6:11]  <-  c(wind, wind,"n","n","n","n")
 clusters1[21, 6:11]  <-  c(rain, rain,"n","n","n","n")
 clusters1[22, 6:11]  <-  c(insects, birds,"n","n","y","n")
 clusters1[23, 6:11]  <-  c(planes, planes,"n","n","n","n")
-clusters1[24, 6:11]  <-  c(wind, cicadas,"n","n","n","n")
+clusters1[24, 6:11]  <-  c("white", wind,"n","n","n","n") # Inconsistent c(wind, cicadas,"n","n","n","n")
 clusters1[25, 6:11]  <-  c(wind, wind,"n","n","n","n")
 clusters1[26, 6:11]  <-  c(insects, wind,"n","n","n","n")
 clusters1[27, 6:11]  <-  c(insects, insects,"n","n","y","y")
-clusters1[28, 6:11]  <-  c(birds, insects,"n","n","n","n")
+clusters1[28, 6:11]  <-  c("white", birds,"n","n","n","n") # Inconsistent c(birds, insects,"n","n","n","n") 
 clusters1[29, 6:11]  <-  c(insects, insects,"n","n","y","y")
 clusters1[30, 6:11]  <-  c(wind, quiet,"n","n","n","n")
 clusters1[31, 6:11]  <-  c(quiet, quiet,"y","y","n","n")
@@ -4649,11 +4840,11 @@ clusters1[32, 6:11]  <-  c(cicadas, cicadas,"n","n","n","n")
 clusters1[33, 6:11]  <-  c(birds, birds,"n","n","n","n")
 clusters1[34, 6:11]  <-  c(cicadas, cicadas,"n","n","y","y")
 clusters1[35, 6:11]  <-  c(quiet, quiet,"y","y","y","n")
-clusters1[36, 6:11]  <-  c(quiet, planes,"n","n","n","n")
+clusters1[36, 6:11]  <-  c("white", quiet,"n","n","n","n") # Inconsistent c(quiet, planes,"n","n","n","n")
 clusters1[37, 6:11]  <-  c(birds, birds,"y","y","n","n")
 clusters1[38, 6:11]  <-  c(quiet, quiet,"n","n","n","n")
 clusters1[39, 6:11]  <-  c(birds, planes,"y","y","n","n")
-clusters1[40, 6:11]  <-  c(wind, birds,"n","n","n","n")
+clusters1[40, 6:11]  <-  c("white", wind,"n","n","n","n") # Inconsistent c(wind, birds,"n","n","n","n")
 clusters1[41, 6:11]  <-  c(quiet, quiet,"y","y","n","n")
 clusters1[42, 6:11]  <-  c(wind, wind,"n","n","n","n")
 clusters1[43, 6:11]  <-  c(birds, birds,"y","y","n","n")
@@ -4663,14 +4854,14 @@ clusters1[46, 6:11]  <-  c(wind, wind,"n","n","n","n")
 clusters1[47, 6:11]  <-  c(wind, wind,"n","n","n","n")
 clusters1[48, 6:11]  <-  c(cicadas, cicadas,"n","n","y","y")
 clusters1[49, 6:11]  <-  c(planes, planes,"n","n","n","n")
-clusters1[50, 6:11]  <-  c(quiet, insects,"n","n","n","n")
+clusters1[50, 6:11]  <-  c("white", quiet,"n","n","n","n") # Inconsistent c(quiet, insects,"n","n","n","n")
 clusters1[51, 6:11]  <-  c(wind, wind,"n","n","n","n")
 clusters1[52, 6:11]  <-  c(wind, wind,"n","n","n","n") 
 clusters1[53, 6:11]  <-  c(quiet, quiet,"n","n","n","n")
 clusters1[54, 6:11]  <-  c(rain, birds,"n","n","n","n")
 clusters1[55, 6:11]  <-  c(quiet, quiet,"n","n","n","n")
 clusters1[56, 6:11]  <-  c(wind, wind,"n","n","n","n")
-clusters1[57, 6:11]  <-  c(birds, wind,"n","n","n","n")
+clusters1[57, 6:11]  <-  c("white", birds,"n","n","n","n") # Inconsistent c(birds, wind,"n","n","n","n")
 clusters1[58, 6:11]  <-  c(birds, birds,"n","n","n","n")
 clusters1[59, 6:11]  <-  c(rain, rain,"n","n","n","n") 
 clusters1[60, 6:11]  <-  c(rain , birds,"n","n","n","n") 
@@ -4678,25 +4869,33 @@ clusters1 <- clusters1[order(-clusters1$size),]
 leg_col <- as.character(c(rain, birds, cicadas, wind, planes, quiet, insects))
 leg_names <- c("rain", "birds", "cicadas", "wind","planes", "quiet","insects")
 library(plotrix) # needed for draw.cirle function
-max <- 0.0009
+max <- 0.00075
 
-tiff("Figures for plos article/Fig16.tiff", 
+tiff("C:/Work/Projects/Twelve_month_clustering/Saving_dataset/Figures for plos article/Fig16_white.tif", 
      width = 2250, height = 870, units = 'px', res = 300)
-par(mar=c(0, 0, 0.55, 0), mfrow=c(1,2),
+par(mar=c(0, 0, 0.3, 0), mfrow=c(1,2),
     cex = 1, cex.axis = 1, cex.main = 1.2)
 
 for(i in 1:2) {
-  # plot an empty plot
-  if(i==1) {
-    main <- " a. Winter"  
-  }
-  if(i==2) {
-    main <- " b. Summer"  
-  }
+    # plot an empty plot
   if(i==1) {
     plot(clusters1$points1, 
          clusters1$points2, type = "n",
-         main = main, 
+         xaxt='n', yaxt='n',
+         xlab = "",ylab = "", frame.plot=FALSE,
+         xlim = c((min(clusters1$points1)-0.04),
+                  (max(clusters1$points1)+0.1)),
+         ylim = c((min(clusters1$points2)-0.11),
+                  (max(clusters1$points2)+0.08)),
+         cex.axis=1, cex.lab=0.6, las=1, cex.main=1)
+  }
+  if(i==1) {
+    mtext(side = 3, text = "a Winter                                                                             ", 
+          cex = 0.8, line = -0.5)
+  }
+  if(i==2) {
+    plot(clusters1$points1, 
+         clusters1$points2, type = "n",
          xaxt='n', yaxt='n',
          xlab = "",ylab = "", frame.plot=FALSE,
          xlim = c((min(clusters1$points1)-0.04),
@@ -4706,16 +4905,8 @@ for(i in 1:2) {
          cex.axis=1, cex.lab=0.6, las=1, cex.main=1)
   }
   if(i==2) {
-    plot(clusters1$points1, 
-         clusters1$points2, type = "n",
-         main = main, 
-         xaxt='n', yaxt='n',
-         xlab = "",ylab = "", frame.plot=FALSE,
-         xlim = c((min(clusters1$points1)-0.04),
-                  (max(clusters1$points1)+0.1)),
-         ylim = c((min(clusters1$points2)-0.11),
-                  (max(clusters1$points2)+0.08)),
-         cex.axis=1, cex.lab=0.6, las=1, cex.main=1)
+    mtext(side = 3, text = "b Summer                                                                             ", 
+          cex = 0.8, line = -0.5)
   }
   #mtext(side=2, "y", las=1, cex = 3, line = 3.5)
   #abline(h = seq(-10, 10, 0.1), col = "lightgray", lty = 3)
@@ -4750,7 +4941,7 @@ for(i in 1:2) {
   #text(x = -1.6, y = -1.05, "III", cex = 0.6, family="A", font = 2)
   #text(x = 1.1, y = -1.05, "IV", cex = 0.6, family="A", font = 2)
   if(i == 1) {
-    text(x = 0.45, y = -1.1, "Gympie 19-08-2015", 
+    text(x = 0.5, y = -1.1, "Gympie, 19 August 2015", 
          cex = 0.6)
     list1 <- c(14,43,37,39,11,31,35,31,13,5,37)
     for(m in 1:length(list1)) {
@@ -4765,7 +4956,7 @@ for(i in 1:2) {
     }
   }
   if(i == 2) {
-    text(x = 0.45, y = -1.1, "Gympie 23-12-2015", 
+    text(x = 0.56, y = -1.1, "Gympie, 23 December 2015", 
          cex = 0.6)
     list1 <- c(48,34,48,22,35,29)
     for(m in 1:length(list1)) {
@@ -4806,18 +4997,68 @@ for(i in 1:2) {
                     lwd = 1.6)
       if(clusters1$summer2[j]=="y")
         draw.circle(clusters1$points1[j],
-                    clusters1$points2[j]+0.09, 
-                    radius = 0.036,
-                    col = clusters1$colours[j],
-                    border = "black",
-                    lwd = 1.2)
+                  clusters1$points2[j]+0.09, 
+                  radius = 0.036,
+                  col = clusters1$colours[j],
+                  border = "black",
+                  lwd = 1.2)
     }
     for(j in 1:nrow(clusters1)) {
-      # plot the cluster numbers
-      text(clusters1$points1, clusters1$points2, 
-           labels = as.character(clusters1$clusters), 
-           cex = 0.8)
+    # plot the cluster numbers
+    text(clusters1$points1, clusters1$points2, 
+         labels = as.character(clusters1$clusters), 
+         cex = 0.6)
     }
   }
 }
 dev.off()
+
+# combined Gympie and Woondum plots -------------------
+tiff("Figures for plos article/S4_rain_Gym_test.tiff", width = 2300, 
+     height = (370*length(rain)+20), units = 'px', res = 300)
+par(mfrow=c(length(rain), 14), mar=c(1, 0, 2, 0.1), 
+    oma=c(1.1, 2.1, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in rain) {
+  clust_num <- i
+  colour <- rain_col
+  plot_funct(clust_num, colour, "site1")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Gympie NP 22 June 2015 - 23 July 2016", outer = T)
+mtext(side = 2, line = 1.3, outer = T,
+      "       Average number of cluster minutes in 2 hour period each month")
+mtext(side = 1, outer = T,line = 0.15, cex = 1,
+      "(MIX) - Cluster with more than one dominant acoustic class; (IC) - Inconsistent cluster")
+dev.off()
+
+tiff("Figures for plos article/S4_rain_Woon.tiff", width = 2240, 
+     height = (370*length(rain)+20), units = 'px', res = 300)
+par(mfrow=c(length(rain), 14), 
+    mar=c(1, 0, 2, 0.1), oma=c(1.1, 1.5, 1, 0.2), xpd = NA,
+    cex = 1, cex.axis = 0.6, cex.main = 1)
+for(i in rain) {
+  clust_num <- i
+  colour <- rain_col
+  plot_funct(clust_num, colour, "site2")
+  if(i %in% mixtures) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (MIX)","             ", sep = ""))  
+  }
+  if(i %in% inconsistent) {
+    mtext(side = 3, line = 1, paste("Cluster",i," (IC)","          ", sep = ""))  
+  }
+  if(!(i %in% mixtures) & !(i %in% inconsistent)) {
+    mtext(side = 3, line = 1, paste("Cluster",i,"          ", sep = ""))  
+  }
+}
+mtext(side = 3, "Woondum NP 22 June 2015 - 23 July 2016", outer = T)
+dev.off()
+#############

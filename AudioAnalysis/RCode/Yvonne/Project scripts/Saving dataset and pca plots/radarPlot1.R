@@ -1,11 +1,11 @@
 # adaptation of radarchart in fmsb
-df <- 
-radarPlot <- function (df, axistype = 0, seg = 4, pty = 16, pcol = 1:8, plty = 1:6, 
-                       plwd = 1, pdensity = NULL, pangle = 45, pfcol = NA, cglty = 3, 
-                       cglwd = 1, cglcol = "navy", axislabcol = "blue", title = "", 
-                       maxmin = TRUE, na.itp = TRUE, centerzero = FALSE, vlabels = NULL, 
-                       vlcex = NULL, caxislabels = NULL, calcex = NULL, paxislabels = NULL, 
-                       palcex = NULL, y1 = 1.2, x1 = 1.2, y2 = 1.2, x2 = 1.2, ...) 
+radarPlot <- function (df, axistype = 0, seg = 4, pty = 16, 
+                       pcol = 1:8, plty = 1:6, 
+          plwd = 1, pdensity = NULL, pangle = 45, pfcol = NA, cglty = 3, 
+          cglwd = 1, cglcol = "navy", axislabcol = "blue", title = "", 
+          maxmin = TRUE, na.itp = TRUE, centerzero = FALSE, vlabels = NULL, 
+          vlcex = NULL, caxislabels = NULL, calcex = NULL, paxislabels = NULL, 
+          palcex = NULL, y1 = 1, x1 = 1, y2 = 1, x2 = 1, ...) 
 {
   if (!is.data.frame(df)) {
     cat("The data must be given as dataframe.\n")
@@ -68,8 +68,8 @@ radarPlot <- function (df, axistype = 0, seg = 4, pty = 16, pcol = 1:8, plty = 1
   if (!is.null(vlabels)) 
     VLABELS <- vlabels
   if (is.null(vlcex)) 
-    text(xx * 1.16, yy * 1.16, VLABELS)
-  else text(xx * 1.16, yy * 1.16, VLABELS, cex = vlcex)
+    text(xx * 1.2, yy * 1.2, VLABELS)
+  else text(xx * 1.2, yy * 1.2, VLABELS, cex = vlcex)
   series <- length(df[[1]])
   SX <- series - 2
   if (length(pty) < SX) {

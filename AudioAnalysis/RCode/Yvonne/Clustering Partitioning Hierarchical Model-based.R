@@ -152,13 +152,14 @@ par(mfrow=c(3,1), mar=c(5,7,2,11), cex.main=2,
 wss <- (nrow(ds3.norm_2_98)*sum(apply(ds3.norm_2_98, 2, var)))
 wss <- NULL
 #for (i in 2:50) {
-for (i in seq(1,40,1)) {
+for (i in seq(1,70,1)) {
   set.seed(123)
   wss[i] <- kmeans(ds3.norm_2_98, centers=i, iter.max = 50)$tot.withinss
+  print(i)
 }
 
 error.wss <- NULL
-for (i in 1:40) {
+for (i in 1:70) {
   error.wss[i] <- (wss[i]-wss[i+1])/wss[i]
 }
 
@@ -201,7 +202,7 @@ colnames(clusters) <- column.names
 write.csv(clusters, file = "kmeans_clust.csv")
 kmean_clust <- read.csv("kmeans_clust.csv", header=T)
 
-plot(1:50,c(min.size), type = "l", ylim=c(0,8000), 
+plot(1:49, c(min.size), type = "l", ylim=c(0,8000), 
      ylab = "Cluster size", xlab = "Number of clusters",
      main = "kmeans Cluster Size Range")
 mtext("Maximum cluster size",side=2,
@@ -212,7 +213,7 @@ par(new=TRUE)
 png("kmeans error_test.png", width = 700, height=600)
 par(mar=c(4.5,4.5,1.5,4.5), cex = 1.3, cex.axis =1.5,
     cex.lab=1.5)
-plot(error.wss,type="l",main="kmeans",xlab = "k value",
+plot(error.wss, type="l",main="kmeans",xlab = "k value",
      ylab = expression(paste(Delta, " ", Sigma, "wss / ", Sigma, 
                              "wss")),cex.axis=1.6,cex.main=1.5, cex=0.8, lwd = 2)
 abline(v=8,col="red",lty=2)
@@ -722,6 +723,7 @@ setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\")
 k = 55
 
 clusters <- NULL
+wss <- NULL
 for (i in seq(1000, 4500, 500)) {
   set.seed(123)
   kmeansObj <- kmeans(ds3.norm_2_98, centers = i, iter.max = 100)
@@ -745,7 +747,15 @@ for (i in seq(1000, 4500, 500)) {
   pr <- predict(z, test)
   clusts <- as.integer(pr$class)
   clusters <- cbind(clusters, clusts)
+  #find the wss
+  print(i)
 }
+# WSS is calculate by finding the sum of squared distances from the centroid
+# WSS = sigma sigma (x-centroid)^2
+# BSS = sigma (c(centroid-mean)^2) where C is the number in the cluster
+# betweenss/withinss
+plot(wss2/wss[1:7], xaxt="n", type="l")
+axis(side=1,at=1:length(seq(1000, 4500, 500)),seq(1000, 4500, 500))
 
 # produce 24 hour fingerprints from this clusterlist
 column.names <- NULL

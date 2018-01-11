@@ -26,3 +26,14 @@ citEntry(entry="Article",
   district of R. R-News, 6(4): 8-12."
 )
 
+# stats package
+#Package: stats
+#Version: 3.2.0
+#Priority: base
+#Title: The R Stats Package
+#Author: R Core Team and contributors worldwide
+#Maintainer: R Core Team <R-core@r-project.org>
+#  Description: R statistical functions.
+#License: Part of R 3.2.0
+#Built: R 3.2.0; x86_64-w64-mingw32; 2015-04-17 11:43:10 UTC; windows
+paste("R Core Team, R: A Language and Environment for Statistical Computing in R Foundation for Statistical Computing, ed. Vienna, Austria, 2016.")
