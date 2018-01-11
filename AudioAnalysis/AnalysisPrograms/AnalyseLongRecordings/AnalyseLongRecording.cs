@@ -46,7 +46,7 @@ Output  to  directory: {1}
         {
             if (arguments == null)
             {
-                arguments = Dev();
+                throw new NoDeveloperMethodException();
             }
 
             LoggedConsole.WriteLine("# PROCESS LONG RECORDING");

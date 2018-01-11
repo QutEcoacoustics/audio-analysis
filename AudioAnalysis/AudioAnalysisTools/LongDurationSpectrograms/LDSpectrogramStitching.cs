@@ -12,9 +12,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using AnalysisBase.ResultBases;
-
     using AudioAnalysisTools.StandardSpectrograms;
-
     using Indices;
     using TowseyLibrary;
 
@@ -84,8 +82,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             DirectoryInfo opDir,
             SiteDescription siteDescription,
             FileInfo sunriseDataFile = null,
-            List<ErroneousIndexSegments> segmentErrors = null,
-            bool verbose = false)
+            List<GapsAndJoins> segmentErrors = null)
         {
             // derive new indices such as sqrt(POW), NCDI etc -- main reason for this is to view what their distributions look like.
             dictionary = IndexMatrices.AddDerivedIndices(dictionary);
@@ -99,7 +96,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionary, opDir, opFileStem);
 
-                SummaryIndexBase[] summaryIndices = null;
+                //SummaryIndexBase[] summaryIndices = null;
                 string analysisType = "Towsey.Acoustic";
 
                 Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
@@ -111,13 +108,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     opFileStem,
                     analysisType,
                     dictionary,
-                    summaryIndices,
+                    null, //summaryIndices,
                     indexDistributions,
                     siteDescription,
                     sunriseDataFile,
                     segmentErrors,
-                    ImageChrome.With,
-                    verbose);
+                    ImageChrome.With);
             }
         }
 
@@ -164,7 +160,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             DirectoryInfo opDir,
             SiteDescription siteDescription,
             FileInfo sunriseDatafile = null,
-            List<ErroneousIndexSegments> erroneousSegments = null, // info if have fatal errors i.e. no signal
+            List<GapsAndJoins> erroneousSegments = null, // info if have fatal errors i.e. no signal
             bool verbose = false)
         {
             var dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
@@ -225,16 +221,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         /// <summary>
-        /// MOST RECENT METHOD TO CONCATENATE SUMMARY INDEX.CSV FILES - August 2015. Revised september 2016
-        /// WRITTEN FOR THE NATURE CONSERVANCY DATA
+        /// Joins summary indices csv files together.
         /// This method merges ALL the passed files of acoustic indices
         /// It is assumed you are concatenating a sequence of consecutive short recordings.
         /// </summary>
-        public static Dictionary<string, double[]> ConcatenateAllSummaryIndexFiles(
+        public static List<SummaryIndexValues> ConcatenateAllSummaryIndexFiles(
             FileInfo[] summaryIndexFiles,
             DirectoryInfo opDir,
             IndexGenerationData indexGenerationData,
-            string opFileStem)
+            string outputFileBaseName)
         {
             var indexResolution = indexGenerationData.IndexCalculationDuration;
 
@@ -247,70 +242,28 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // check length of data and make adjustments if required.
             // NOTHING done with this info at the moment. Could be used to truncate data to 24 hours.
-            int totalRowMinutes = (int)Math.Round(summaryIndices.Count() * indexResolution.TotalMinutes);
+            //int totalRowMinutes = (int)Math.Round(summaryIndices.Count() * indexResolution.TotalMinutes);
 
             // write out the list of data file names to JSON file.
             var arrayOfFileNames = summaryIndices.Select(x => x.FileName).ToArray();
-            string indexType = "SummaryIndex";
-            var path = FilenameHelpers.AnalysisResultPath(opDir, opFileStem, indexType, "FileNames.json");
+            var path = FilenameHelpers.AnalysisResultPath(opDir, outputFileBaseName, "FileNames", "json");
             Json.Serialise(new FileInfo(path), arrayOfFileNames);
 
+            return summaryIndices;
+        }
+
+        public static Dictionary<string, double[]> ConvertToDictionaryOfSummaryIndices(List<SummaryIndexValues> summaryIndices)
+        {
             // Now add in derived indices i.e. NCDI etc
             // Decided NOT to do this anymore
             // dictionaryOfSummaryIndices = IndexMatrices.AddDerivedIndices(dictionaryOfSummaryIndices);
 
-            const string csvFileExt = "csv";
-            var indicesFile = FilenameHelpers.AnalysisResultPath(opDir, opFileStem, indexType, csvFileExt);
-            var indicesCsvfile = new FileInfo(indicesFile);
-            Csv.WriteToCsv(indicesCsvfile, summaryIndices);
-
-            // Put SUMMARY indices into dictionary. ################# WARNING: THIS METHOD ONLY GETS A "HARD CODED" LIST OF SUMMARY INDICES. See the method.
+            // Put SUMMARY indices into dictionary. TODO need to generalise the following method
+            // ################# WARNING: THIS METHOD ONLY GETS A "HARD CODED" LIST OF SUMMARY INDICES. See the method.
             var dictionaryOfSummaryIndices = IndexMatrices.GetDictionaryOfSummaryIndices(summaryIndices);
 
             // return the dictionary - it will be used later to produce an index tracks image.
             return dictionaryOfSummaryIndices;
-        }
-
-        /// <summary>
-        /// There can be issues with this method because images are not at same dpi.
-        /// https://msdn.microsoft.com/en-us/library/system.drawing.bitmap.setresolution(v=vs.110).aspx
-        /// I.e. resolution = 96dpi rather than 120 dpi
-        ///
-        /// If having resolution problems i.e. the bitmap does not draw at the correct size into the larger Graphics canvas,
-        ///  then may need to comment out the line: ((Bitmap)image).SetResolution(96, 96);
-        /// </summary>
-        public static void ConcatenateFalsecolourSpectrograms()
-        {
-            //DirectoryInfo dirInfo = new DirectoryInfo(@"G:\Documents\Karlina\BickertonIsSpectrograms_2013Dec-2014Jun");
-            DirectoryInfo dirInfo = new DirectoryInfo(@"G:\Documents\Karlina\Bickerton 20131212_20140104Copy");
-            FileInfo[] files = dirInfo.GetFiles();
-
-            //FileInfo opPath = new FileInfo(@"G:\Documents\Karlina\BickertonIsSpectrograms_2013Dec-2014Jun.png");
-            FileInfo opPath = new FileInfo(@"G:\Documents\Karlina\BickertonIsSpectrograms_2013Dec-2014Jan.png");
-
-            double verticalScaleReduction = 0.4;
-            int width = 785;
-            Image spacer = new Bitmap(width, 8);
-
-            // float standardresolution = 96;
-            float standardresolution = ((Bitmap)spacer).VerticalResolution;
-            Graphics g = Graphics.FromImage(spacer);
-            g.Clear(Color.LightGray);
-
-            var imageList = new List<Image>();
-            foreach (FileInfo file in files)
-            {
-                Image image = ImageTools.ReadImage2Bitmap(file.FullName);
-                float verticalresolution = ((Bitmap)image).VerticalResolution;
-
-                //float horizontalresolution = ((Bitmap)image).HorizontalResolution;
-                ((Bitmap)image).SetResolution(standardresolution, (float)(verticalresolution / verticalScaleReduction));
-                imageList.Add(image);
-                imageList.Add(spacer);
-            }
-
-            var opImage = ImageTools.CombineImagesVertically(imageList);
-            opImage.Save(opPath.FullName);
         }
 
         // ##############################################################################################################
@@ -348,7 +301,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //######################################################
 
             string[] fileEntries = Directory.GetFiles(inputDirectory.FullName);
-            List<Image> images = new List<Image>();
+            var images = new List<Image>();
             bool interpolateSpacer = true;
             var imagePair = new Image[2];
 

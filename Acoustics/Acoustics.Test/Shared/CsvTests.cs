@@ -351,8 +351,8 @@ namespace Acoustics.Test.Shared
             var baseExpected = $@"{nameof(SummaryIndexBase.RankOrder)},{nameof(SummaryIndexBase.FileName)},{nameof(SummaryIndexBase.ResultStartSeconds)},{nameof(SummaryIndexBase.SegmentDurationSeconds)},{nameof(SummaryIndexBase.ResultMinute)}
 0,,0,0,0
 ".NormalizeToCrLf();
-            var childExpected = $@"NoFile,ZeroSignal,HighAmplitudeIndex,ClippingIndex,AvgSignalAmplitude,BackgroundNoise,Snr,AvgSnrOfActiveFrames,Activity,EventsPerSecond,HighFreqCover,MidFreqCover,LowFreqCover,AcousticComplexity,TemporalEntropy,EntropyOfAverageSpectrum,AvgEntropySpectrum,EntropyOfVarianceSpectrum,VarianceEntropySpectrum,EntropyOfPeaksSpectrum,EntropyPeaks,EntropyOfCoVSpectrum,ClusterCount,ThreeGramCount,Ndsi,SptDensity,{nameof(SummaryIndexBase.RankOrder)},{nameof(SummaryIndexBase.FileName)},{nameof(SummaryIndexBase.ResultStartSeconds)},{nameof(SummaryIndexBase.SegmentDurationSeconds)},{nameof(SummaryIndexBase.ResultMinute)}
-0,0,0,0,-100,-100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,0,0,0
+            var childExpected = $@"ZeroSignal,HighAmplitudeIndex,ClippingIndex,AvgSignalAmplitude,BackgroundNoise,Snr,AvgSnrOfActiveFrames,Activity,EventsPerSecond,HighFreqCover,MidFreqCover,LowFreqCover,AcousticComplexity,TemporalEntropy,EntropyOfAverageSpectrum,AvgEntropySpectrum,EntropyOfVarianceSpectrum,VarianceEntropySpectrum,EntropyOfPeaksSpectrum,EntropyPeaks,EntropyOfCoVSpectrum,ClusterCount,ThreeGramCount,Ndsi,SptDensity,{nameof(SummaryIndexBase.RankOrder)},{nameof(SummaryIndexBase.FileName)},{nameof(SummaryIndexBase.ResultStartSeconds)},{nameof(SummaryIndexBase.SegmentDurationSeconds)},{nameof(SummaryIndexBase.ResultMinute)}
+0,0,0,-100,-100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,0,0,0
 ".NormalizeToCrLf();
 
             Csv.WriteToCsv(this.testFile, childArray);
@@ -384,6 +384,28 @@ namespace Acoustics.Test.Shared
             var baseText = File.ReadAllText(this.testFile.FullName);
 
             Assert.AreEqual(childText, baseText);
+        }
+
+        /// <summary>
+        /// For some inane reason CsvHelper does not downcast to derived types!
+        /// </summary>
+        [TestMethod]
+        public void TestBaseTypesAreSerializedAsEnumerableAcousticEvent()
+        {
+            var exampleEvent = new AcousticEvent(100.Seconds(), 15, 4, 100, 3000);
+            var exampleEvent2 = new AcousticEvent(100.Seconds(), 15, 4, 100, 3000);
+            AcousticEvent[] childArray = { exampleEvent, exampleEvent2 };
+            EventBase[] baseArray = { exampleEvent, exampleEvent2 };
+
+            Csv.WriteToCsv(this.testFile, childArray);
+
+            var childText = File.ReadAllText(this.testFile.FullName);
+
+            Csv.WriteToCsv(this.testFile, baseArray);
+
+            var baseText = File.ReadAllText(this.testFile.FullName);
+
+            Assert.AreNotEqual(childText, baseText);
         }
 
         [TestMethod]

@@ -174,7 +174,8 @@ namespace AnalysisPrograms.Recognizers
                 maxDuration,
                 out scores,
                 out events,
-                out hits);
+                out hits,
+                segmentStartOffset);
 
             // DEBUG: Following line used to search for where indeterminism creeps into the event detection
             //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.BaseName+"_ScoreArray.csv"), scores);

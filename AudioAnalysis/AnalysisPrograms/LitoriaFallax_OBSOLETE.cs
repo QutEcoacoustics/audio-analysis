@@ -397,7 +397,8 @@ namespace AnalysisPrograms
                 maxDuration,
                 out scores,
                 out acousticEvents,
-                out hits);
+                out hits,
+                segmentStartOffset);
 
             acousticEvents.ForEach(ae =>
                     {
