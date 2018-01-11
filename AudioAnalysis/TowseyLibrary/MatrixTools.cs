@@ -817,18 +817,9 @@ namespace TowseyLibrary
                 throw new ArgumentException("maxPercentile must be greater than or equal to minPercentile");
             }
 
-            if (minPercentile < 0.0)
-            {
-                minPercentile = 0.0;
-            }
+            if (minPercentile < 0.0) throw new ArgumentException("minPercentile must be at least 0.0");
+            if (maxPercentile > 1.0) throw new ArgumentException("maxPercentile must be at most 1.0");
 
-            if (maxPercentile > 1.0)
-            {
-                maxPercentile = 1.0;
-            }
-
-            //if (minPercentile < 0.0) throw new ArgumentException("minPercentile must be at least 0.0");
-            //if (maxPercentile > 1.0) throw new ArgumentException("maxPercentile must be at most 1.0");
             double min;
             double max;
             DataTools.MinMax(matrix, out min, out max);

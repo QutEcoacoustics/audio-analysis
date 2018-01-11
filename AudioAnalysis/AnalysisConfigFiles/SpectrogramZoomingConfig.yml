@@ -5,7 +5,7 @@ TileWidth: 180
 # - PanoJsTilingProfile
 # - AbsoluteDateTilingProfile
 TilingProfile: AbsoluteDateTilingProfile
-SpectralIndexScale: 
+SpectralIndexScale:
     - 240
     - 120
     - 60
