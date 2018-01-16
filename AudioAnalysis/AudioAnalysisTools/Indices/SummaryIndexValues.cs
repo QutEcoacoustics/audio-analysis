@@ -31,6 +31,7 @@ namespace AudioAnalysisTools.Indices
             this.Hits = null;
             this.Tracks = null;
             this.TrackScores = new List<Plot>();
+            this.AmplitudeSpectrogram = null;
 
             this.SummaryIndexValues = new SummaryIndexValues(durationOfResult, indexProperties)
                                           {
@@ -63,6 +64,8 @@ namespace AudioAnalysisTools.Indices
         public double[,] Hits { get; set; }
 
         public List<Plot> TrackScores { get; set; }
+
+        public double[,] AmplitudeSpectrogram { get; set; }
     }
 
     /// <summary>

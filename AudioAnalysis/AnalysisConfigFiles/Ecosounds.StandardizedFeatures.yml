@@ -7,6 +7,11 @@ SegmentDuration: 1
 #SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 
+# Bands array with 4 properties:
+# FftWindow. units=samples. Typical value=512. Overwrites FrameLength. 
+# MelScale. units=frequencybins. Overwrites FrequencyScale. Whether frequency is rescaled.
+# Filter. units=?. Whether some filter will be applied. Not implemented yet.
+# Bandwidth. units=fraction. Selects band from amplitude spectrogram. Bandwidth 0.0 - 1.0 equals complete ampliude spectrogram
 Bands:
   - FftWindow: 1024
     MelScale: ~
@@ -20,11 +25,17 @@ Bands:
     Bandwidth: 
       Min: 0.33
       Max: 0.66
+  - FftWindow: 1024
+    MelScale: 200
+    Filter: None
+    Bandwidth: 
+      Min: 0.33
+      Max: 0.66
 
 
-# IndexCalculationDuration: units=seconds (default=60 seconds; use 0.1 for zooming spectrogram tiles)
+# IndexCalculationDuration: units=seconds (default=1 second. This is the chosen resolution for ML tasks, it roughly matches; syllable count; use 0.1 for zooming spectrogram tiles)
 # The Timespan (in seconds) over which summary and spectral indices are calculated
-IndexCalculationDuration: 10.0
+IndexCalculationDuration: 1.0
 
 # BgNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
 # BG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.

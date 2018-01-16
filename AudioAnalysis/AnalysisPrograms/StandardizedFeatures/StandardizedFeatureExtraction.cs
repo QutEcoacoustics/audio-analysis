@@ -29,26 +29,6 @@ namespace AnalysisPrograms.StandardizedFeatures
     {
         private static readonly ILog Log = LogManager.GetLogger(nameof(StandardizedFeatureExtraction));
 
-        private const string Sentence = "Hello World";
-
-        // Input is a class object of Arguments, class is made below
-        public static void Execute(Arguments arguments)
-        {
-            LoggedConsole.WriteLine("The sentence was printed {0} times", arguments.Multiplication);
-            for (int i = 0; i < arguments.Multiplication; i++)
-            {
-                LoggedConsole.WriteLine(Sentence);
-            }
-        }
-
-        // Creates a class that constructs arguments, the description is shown in help StandardizedFeatureExtraction
-        // The variable Multiplication can later be used
-        public class Arguments
-        {
-            [ArgDescription("How many times hello world")]
-            public int Multiplication { get; set; }
-        }
-
         public override void BeforeAnalyze(AnalysisSettings analysisSettings)
         {
             // Construct variable 'configuration' that stores the properties of config file in non-dynamic way
@@ -70,7 +50,7 @@ namespace AnalysisPrograms.StandardizedFeatures
 
         public virtual string Description
         {
-            get { return "Performs a standardized feature extraction."; }
+            get { return "Performs a standardized feature extraction for ML tasks identifying faunal vocalisations."; }
         }
 
         public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
@@ -87,8 +67,8 @@ namespace AnalysisPrograms.StandardizedFeatures
             // Bands
             List<StandardizedFeatureExtractionConfig.BandsProperties> bandsList = configuration.Bands;
 
-            // Remove bands that are identical
-            bandsList = CreateUniqueBandsList(bandsList);
+            // Check if there are identical bands
+            CheckForIdenticalBands(bandsList);
 
             // Estimate total number of subsegments
             double segmentDurationSeconds = segmentSettings.AnalysisIdealSegmentDuration.TotalSeconds;
@@ -106,21 +86,15 @@ namespace AnalysisPrograms.StandardizedFeatures
             analysisResults.SummaryIndices = new SummaryIndexBase[totalSubsegmentCount];
             analysisResults.SpectralIndices = new SpectralIndexBase[totalSubsegmentCount];
 
-            // Default behaviour: set SUBSEGMENT = total recording
-            AudioRecording subsegmentRecording = recording;
-
-            //// Create list to store images so they can be combined later
-            //var list = new List<Image>();
-            //string imagePath = segmentSettings.SegmentImageFile.FullName;
-            //int maxImageWidth = 0;
+            // Create list to store images, one for each band. They are later combined into one image.
+            var list = new List<Image>();
+            string imagePath = segmentSettings.SegmentImageFile.FullName;
+            int maxImageWidth = 0;
 
             int bandCount = 0;
             foreach (var band in bandsList)
             {
-                Log.DebugFormat("Starting band {0}/{1}", bandCount+1, bandsList.Count);
-
-                // Create Spectrogram
-                this.CreateSpectrogram(analysisSettings, segmentSettings, band, subsegmentRecording, analysisResults);
+                Log.DebugFormat("Starting band {0}/{1}", bandCount + 1, bandsList.Count);
 
                 // Calculate spectral indices
 
@@ -154,10 +128,8 @@ namespace AnalysisPrograms.StandardizedFeatures
                     segmentSettings.Segment.SourceMetadata.SampleRate,
                     config);
 
-                // Store indices results per band per segment, only used to write csv files per minute
-                // Can't use analysisResults.SummaryIndices, because in there results for all bands are stored and is thus incomplete before results for all bands have been calculated
-                var resultsSummaryIndicesTemp = new SummaryIndexBase[subsegmentResults.Length];
-                var resultsSpectralIndicesTemp = new SpectralIndexBase[subsegmentResults.Length];
+                int columnsAmplitudeSpectrogram = subsegmentResults[0].AmplitudeSpectrogram.GetLength(1);
+                double[,] amplitudeSpectrogramSegment = new double[0, columnsAmplitudeSpectrogram];
 
                 for (int i = 0; i < subsegmentResults.Length; i++)
                 {
@@ -165,9 +137,6 @@ namespace AnalysisPrograms.StandardizedFeatures
 
                     indexCalculateResult.SummaryIndexValues.FileName = segmentSettings.Segment.SourceMetadata.Identifier;
                     indexCalculateResult.SpectralIndexValues.FileName = segmentSettings.Segment.SourceMetadata.Identifier;
-
-                    resultsSummaryIndicesTemp[i] = indexCalculateResult.SummaryIndexValues;
-                    resultsSpectralIndicesTemp[i] = indexCalculateResult.SpectralIndexValues;
 
                     analysisResults.SummaryIndices[bandCount + i * bandsList.Count] = indexCalculateResult.SummaryIndexValues;
                     analysisResults.SpectralIndices[bandCount + i * bandsList.Count] = indexCalculateResult.SpectralIndexValues;
@@ -177,133 +146,92 @@ namespace AnalysisPrograms.StandardizedFeatures
                     {
                         tracks.AddRange(indexCalculateResult.Tracks);
                     }
+
+                    if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave())
+                    {
+                        // Add amplitude spectrograms of each subsegment together to get amplitude spectrogram of one segment
+                        double[,] amplitudeSpectrogramSubsegment = indexCalculateResult.AmplitudeSpectrogram;
+                        amplitudeSpectrogramSegment = MatrixTools.ConcatenateMatrixRows(
+                            amplitudeSpectrogramSegment,
+                            amplitudeSpectrogramSubsegment);
+                    }
+
                 }
 
-                // Set to analysSettings.AnalysisDataSaveBehavior to true for debugging
-                analysisSettings.AnalysisDataSaveBehavior = false;
-                if (analysisSettings.AnalysisDataSaveBehavior)
+                if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave())
                 {
-                    this.WriteSummaryIndicesFile(segmentSettings.SegmentSummaryIndicesFile, resultsSummaryIndicesTemp);
-                    analysisResults.SummaryIndicesFile = segmentSettings.SegmentSummaryIndicesFile;
-                }
+                    // Create image of amplitude spectrogram
+                    var image = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(amplitudeSpectrogramSegment));
 
-                if (analysisSettings.AnalysisDataSaveBehavior)
-                {
-                    analysisResults.SpectraIndicesFiles =
-                        this.WriteSpectrumIndicesFiles(
-                            segmentSettings.SegmentSpectrumIndicesDirectory,
-                            Path.GetFileNameWithoutExtension(segmentSettings.SegmentAudioFile.Name),
-                            resultsSpectralIndicesTemp);
+                    // Label information
+                    string minBandWidth = band.Bandwidth.Min.ToString();
+                    string maxBandWidth = band.Bandwidth.Max.ToString();
+                    string fftWindow = band.FftWindow.ToString();
+                    string mel;
+                    string melScale;
+                    if (band.MelScale != 0)
+                    {
+                        mel = "Mel";
+                        melScale = band.MelScale.ToString();
+                    }
+                    else
+                    {
+                        mel = "Standard";
+                        melScale = 0.ToString();
+                    }
+
+                    // Create label
+                    string segmentSeparator = "_";
+                    string[] segments = { minBandWidth, maxBandWidth, fftWindow, mel, melScale };
+                    string labelText = segments.Aggregate(string.Empty, (aggregate, item) => aggregate + segmentSeparator + item);
+
+                    Font stringFont = new Font("Arial", 14);
+                    int width = 250;
+                    int height = image.Height;
+                    var label = new Bitmap(width, height);
+                    var g1 = Graphics.FromImage(label);
+                    g1.Clear(Color.Gray);
+                    g1.DrawString(labelText, stringFont, Brushes.Black, new PointF(4, 30));
+                    g1.DrawLine(new Pen(Color.Black), 0, 0, width, 0); //draw upper boundary
+                    g1.DrawLine(new Pen(Color.Black), 0, 1, width, 1); //draw upper boundary
+
+                    Image[] imagearray = { label, image };
+                    var labelledImage = ImageTools.CombineImagesInLine(imagearray);
+
+                    // Add labeled image to list
+                    list.Add(labelledImage);
+
+                    // Update maximal width of image
+                    if (image.Width > maxImageWidth)
+                    {
+                        maxImageWidth = image.Width;
+                    }
                 }
 
                 bandCount += 1;
-
                 Log.InfoFormat("Completed band {0}/{1}", bandCount, bandsList.Count);
             }
 
-            //// Set savebehavior to always so it saves image
-            //analysisSettings.AnalysisImageSaveBehavior = SaveBehavior.Always;
-
-            //if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave())
-            //{
-            //    Image finalImage = ImageTools.CombineImagesVertically(list, maxImageWidth);
-            //    finalImage.Save(imagePath, ImageFormat.Png);
-            //    analysisResults.ImageFile = new FileInfo(imagePath);
-            //    LoggedConsole.WriteLine("See {0} for spectrogram pictures", imagePath);
-            //}
-
-            return analysisResults;
-        }
-
-        public void CreateSpectrogram<T>(
-            AnalysisSettings analysisSettings,
-            SegmentSettings<T> segmentSettings,
-            StandardizedFeatureExtractionConfig.BandsProperties band,
-            AudioRecording subsegmentRecording,
-            AnalysisResult2 analysisResults)
-        {
-            int frameSize = band.FftWindow;
-            int frameStep = frameSize;
-
-            // EXTRACT ENVELOPE and SPECTROGRAM FROM SUBSEGMENT
-            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(subsegmentRecording, frameSize, frameStep);
-
-            // Prepare amplitude spectrogram
-            double[,] amplitudeSpectrogramData = dspOutput1.AmplitudeSpectrogram; // get amplitude spectrogram.
-
-            // Transform from Linear frequency scale to Mel Scale
-            if (band.MelScale != 0)
+            if (analysisSettings.AnalysisDataSaveBehavior)
             {
-                amplitudeSpectrogramData = MFCCStuff.MelFilterBank(
-                    amplitudeSpectrogramData,
-                    band.MelScale,
-                    subsegmentRecording.Nyquist,
-                    0,
-                    subsegmentRecording.Nyquist);
+                this.WriteSummaryIndicesFile(segmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
+                analysisResults.SummaryIndicesFile = segmentSettings.SegmentSummaryIndicesFile;
+                analysisResults.SpectraIndicesFiles =
+                    this.WriteSpectrumIndicesFiles(
+                        segmentSettings.SegmentSpectrumIndicesDirectory,
+                        Path.GetFileNameWithoutExtension(segmentSettings.SegmentAudioFile.Name),
+                        analysisResults.SpectralIndices);
             }
 
-            // Select band by making a submatrix of original matrix. Rows stay the same, columns are determined by min and max bandwidth
-            int minBand = (int)(amplitudeSpectrogramData.GetLength(1) * band.Bandwidth.Min);
-            int maxBand = (int)(amplitudeSpectrogramData.GetLength(1) * band.Bandwidth.Max) - 1;
-            double[,] amplitudeSpectrogramDataBand = MatrixTools.Submatrix(
-                amplitudeSpectrogramData,
-                0,
-                minBand,
-                amplitudeSpectrogramData.GetLength(0) - 1,
-                maxBand);
-
-            // Create image of amplitude spectrogram
-            var image = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(amplitudeSpectrogramDataBand));
-
-            //// Add image to list
-            //list.Add(image);
-
-            //// Update maximal width of image
-            //if (image.Width > maxImageWidth)
-            //{
-            //    maxImageWidth = image.Width;
-            //}
-
-            // Save image when debugging
-            analysisSettings.AnalysisImageSaveBehavior = SaveBehavior.Always;
             if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave())
             {
-                string minBandWidth = band.Bandwidth.Min.ToString();
-                string maxBandWidth = band.Bandwidth.Max.ToString();
-                string mel;
-                string melScale;
-                if (band.MelScale != 0)
-                {
-                    mel = "Mel";
-                    melScale = band.MelScale.ToString();
-                }
-                else
-                {
-                    mel = "Standard";
-                    melScale = 0.ToString();
-                }
-
-                string fftWindow = band.FftWindow.ToString();
-
-                var filename = FilenameHelpers.AnalysisResultPath(
-                    segmentSettings.SegmentOutputDirectory,
-                    Path.GetFileNameWithoutExtension(segmentSettings.SegmentAudioFile.Name),
-                    this.Identifier,
-                    "png",
-                    minBandWidth,
-                    maxBandWidth,
-                    mel,
-                    melScale,
-                    "FftWindow",
-                    fftWindow);
-                string imagePath = Path.GetFullPath(filename);
-                //segmentSettings.SegmentImageFile.FullName;
-                image.Save(imagePath, ImageFormat.Png);
-                // There has to be an image with .FullName as filename, otherwrise error saying that image doesn't exist
-                image.Save(segmentSettings.SegmentImageFile.FullName, ImageFormat.Png);
+                Image finalImage = ImageTools.CombineImagesVertically(list.ToArray(), maxImageWidth);
+                finalImage.Save(imagePath, ImageFormat.Png);
                 analysisResults.ImageFile = new FileInfo(imagePath);
                 LoggedConsole.WriteLine("See {0} for spectrogram pictures", imagePath);
             }
+
+            return analysisResults;
         }
 
         public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
@@ -316,10 +244,47 @@ namespace AnalysisPrograms.StandardizedFeatures
             Csv.WriteToCsv(destination, results.Cast<SummaryIndexValues>());
         }
 
-        public List<FileInfo> WriteSpectrumIndicesFilesCustom(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
+        private static Dictionary<IndexCalculateConfig, List<SpectralIndexBase>> GroupResultsOnConfiguration(IEnumerable<SpectralIndexBase> results)
+        {
+            Dictionary<IndexCalculateConfig, List<SpectralIndexBase>> dict = new Dictionary<IndexCalculateConfig, List<SpectralIndexBase>>();
+
+            // Group the results based on the band configuration they have
+            foreach (var spectralIndexBase in results)
+            {
+                var spectralIndexValues = (SpectralIndexValues)spectralIndexBase;
+
+                var spectralIndexValuesConfiguration = spectralIndexValues.Configuration;
+
+                if (dict.ContainsKey(spectralIndexValuesConfiguration))
+                {
+                    dict[spectralIndexValuesConfiguration].Add(spectralIndexBase);
+                }
+                else
+                {
+                    dict.Add(spectralIndexValuesConfiguration, new List<SpectralIndexBase>());
+                    dict[spectralIndexValuesConfiguration].Add(spectralIndexBase);
+                }
+            }
+
+            return dict;
+        }
+
+        public static void CheckForIdenticalBands(
+            List<StandardizedFeatureExtractionConfig.BandsProperties> bandsList)
+        {
+            var distinctItems = bandsList.Distinct().ToList().Count();
+
+            if (distinctItems != bandsList.Count)
+            {
+                var message = "There are one or more identical bands in the configuration file";
+                throw new ConfigFileException(message);
+            }
+        }
+
+        public override List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
             // Group results based on configuration
-            Dictionary<string, List<SpectralIndexBase>> dict = GroupResultsOnConfiguration(results);
+            Dictionary<IndexCalculateConfig, List<SpectralIndexBase>> dict = GroupResultsOnConfiguration(results);
 
             var spectralIndexFiles = new List<FileInfo>();
 
@@ -336,7 +301,7 @@ namespace AnalysisPrograms.StandardizedFeatures
                 string maxBandWidth = config.Configuration.MaxBandWidth.ToString();
                 string mel;
                 string melScale;
-                if (config.Configuration.MelScale!= 0)
+                if (config.Configuration.MelScale != 0)
                 {
                     mel = "Mel";
                     melScale = config.Configuration.MelScale.ToString();
@@ -359,67 +324,6 @@ namespace AnalysisPrograms.StandardizedFeatures
             }
 
             return spectralIndexFiles;
-        }
-
-        public static Dictionary<string, List<SpectralIndexBase>> GroupResultsOnConfiguration(IEnumerable<SpectralIndexBase> results)
-        {
-            Dictionary<string, List<SpectralIndexBase>> dict = new Dictionary<string, List<SpectralIndexBase>>();
-
-            // Group the results based on the band configuration they have
-            foreach (var spectralIndexBase in results)
-            {
-                var spectralIndexValues = (SpectralIndexValues)spectralIndexBase;
-
-                // HACK: This is a really cheap and dodgy way to do structural equality, but Anthony told me to do it
-                var spectralIndexValuesConfiguration = Json.SerialiseToString(spectralIndexValues.Configuration, false);
-
-                if (dict.ContainsKey(spectralIndexValuesConfiguration))
-                {
-                    dict[spectralIndexValuesConfiguration].Add(spectralIndexBase);
-                }
-                else
-                {
-                    dict.Add(spectralIndexValuesConfiguration, new List<SpectralIndexBase>());
-                    dict[spectralIndexValuesConfiguration].Add(spectralIndexBase);
-                }
-            }
-
-            return dict;
-        }
-
-        public static List<StandardizedFeatureExtractionConfig.BandsProperties> CreateUniqueBandsList(
-            List<StandardizedFeatureExtractionConfig.BandsProperties> bandsList)
-        {
-            for (int i = 0; i < bandsList.Count - 1; i++)
-            {
-                for (int j = i + 1; j < bandsList.Count; j++)
-                {
-
-                    if (bandsList[i] != null && bandsList[j] != null)
-                    {
-                        if (bandsList[i].Equals(bandsList[j]))
-                        {
-                            bandsList[j] = null;
-                        }
-                    }
-                }
-            }
-
-            int totalbands = bandsList.Count;
-            bandsList.RemoveAll(i => i == null);
-            int uniquebands = bandsList.Count;
-
-            if (totalbands > uniquebands)
-            {
-                Log.InfoFormat("{0} Identical bands were removed", totalbands - uniquebands);
-            }
-
-            return bandsList;
-        }
-
-        public override List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
-        {
-            return this.WriteSpectrumIndicesFilesCustom(destination, fileNameBase, results);
         }
 
         public override void SummariseResults(

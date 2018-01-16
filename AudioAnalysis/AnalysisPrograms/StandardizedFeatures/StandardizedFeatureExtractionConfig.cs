@@ -8,8 +8,9 @@ namespace AnalysisPrograms.StandardizedFeatures
     using System.Collections.Generic;
     using System.IO;
     using AnalysisBase;
-    using AudioAnalysisTools.Indices;
+    using Equ;
 
+    // Note: Most of the properties in this class will likely be removed in the future to some common base class (e.g. an theoretical AnalyzerConfiguration class).
     [Serializable]
     public class StandardizedFeatureExtractionConfig
     {
@@ -50,6 +51,10 @@ namespace AnalysisPrograms.StandardizedFeatures
         [Serializable]
         public class BandsProperties : IEquatable<BandsProperties>
         {
+            // Make sure the comparer is static, so that the equality operations are only generated once
+            private static readonly MemberwiseEqualityComparer<BandsProperties> _comparer =
+                MemberwiseEqualityComparer<BandsProperties>.ByFields;
+
             public int FftWindow { get; set; }
 
             public int MelScale { get; set; }
@@ -60,26 +65,44 @@ namespace AnalysisPrograms.StandardizedFeatures
 
             public bool Equals(BandsProperties other)
             {
-                if (other == null) return false;
-                return this.FftWindow == other.FftWindow && 
-                    this.MelScale == other.MelScale && 
-                    this.Filter == other.Filter &&
-                    this.Bandwidth.Equals(other.Bandwidth);
+                return _comparer.Equals(this, other);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return Equals(obj as BandsProperties);
+            }
+
+            public override int GetHashCode()
+            {
+                return _comparer.GetHashCode(this);
             }
         }
 
         [Serializable]
         public class Bandwidth : IEquatable<Bandwidth>
         {
+            // Make sure the comparer is static, so that the equality operations are only generated once
+            private static readonly MemberwiseEqualityComparer<Bandwidth> _comparer =
+                MemberwiseEqualityComparer<Bandwidth>.ByFields;
+
             public double Min { get; set; }
 
             public double Max { get; set; }
 
             public bool Equals(Bandwidth other)
             {
-                if (other == null) return false;
-                return this.Min == other.Min &&
-                       this.Max == other.Max;
+                return _comparer.Equals(this, other);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return Equals(obj as Bandwidth);
+            }
+
+            public override int GetHashCode()
+            {
+                return _comparer.GetHashCode(this);
             }
         }
     }

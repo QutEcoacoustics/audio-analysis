@@ -153,9 +153,10 @@ namespace AudioAnalysisTools.Indices
                 dspOutput1.AmplitudeSpectrogram.GetLength(0) - 1,
                 maxBand);
 
+            // TODO: Michael to review whether bandwidth filter should be moved to DSP_Frames??
             // Recalculate NyquistBin and FreqBinWidth, because they change with band selection
-            dspOutput1.NyquistBin = dspOutput1.AmplitudeSpectrogram.GetLength(1) - 1;
-            dspOutput1.FreqBinWidth = sampleRate / (double)dspOutput1.AmplitudeSpectrogram.GetLength(1) / 2;
+            //dspOutput1.NyquistBin = dspOutput1.AmplitudeSpectrogram.GetLength(1) - 1;
+            //dspOutput1.FreqBinWidth = sampleRate / (double)dspOutput1.AmplitudeSpectrogram.GetLength(1) / 2;
 
             // Linear or Octave or Mel frequency scale? Set Linear as default.
             var freqScale = new FrequencyScale(nyquist: nyquist, frameSize: frameSize, hertzLinearGridInterval: 1000);
@@ -180,12 +181,20 @@ namespace AudioAnalysisTools.Indices
             }
             else if (melScale)
             {
+                int minFreq = 0;
+                int maxFreq = recording.Nyquist;
                 dspOutput1.AmplitudeSpectrogram = MFCCStuff.MelFilterBank(
                     dspOutput1.AmplitudeSpectrogram,
                     config.MelScale,
                     recording.Nyquist,
-                    0,
-                    recording.Nyquist);
+                    minFreq,
+                    maxFreq);
+
+                dspOutput1.NyquistBin = dspOutput1.AmplitudeSpectrogram.GetLength(1) - 1;
+
+                // TODO: This doesn't make any sense, since the frequency width changes for each bin. Probably need to set this to NaN.
+                // TODO: Whatever uses this value below, should probably be changed to not be depending on it.
+                dspOutput1.FreqBinWidth = sampleRate / (double)dspOutput1.AmplitudeSpectrogram.GetLength(1) / 2;
             }
 
             // NOW EXTRACT SIGNAL FOR BACKGROUND NOISE CALCULATION
@@ -345,6 +354,8 @@ namespace AudioAnalysisTools.Indices
             amplitudeSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(amplitudeSpectrogram, nhThreshold: 0.015);
             ////ImageTools.DrawMatrix(spectrogramData, @"C:\SensorNetworks\WavFiles\Crows\image.png", false);
             ////DataTools.writeBarGraph(modalValues);
+
+            result.AmplitudeSpectrogram = amplitudeSpectrogram;
 
             // v: ENTROPY OF AVERAGE SPECTRUM & VARIANCE SPECTRUM - at this point the spectrogram is a noise reduced amplitude spectrogram
             var tuple = AcousticEntropy.CalculateSpectralEntropies(amplitudeSpectrogram, lowerBinBound, midBandBinCount);
