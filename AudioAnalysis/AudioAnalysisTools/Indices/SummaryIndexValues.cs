@@ -20,7 +20,8 @@ namespace AudioAnalysisTools.Indices
             int freqBinCount,
             Dictionary<string, IndexProperties> indexProperties,
             TimeSpan indexCalculationDuration,
-            TimeSpan subsegmentOffset)
+            TimeSpan subsegmentOffset,
+            IndexCalculateConfig configuration)
         {
             TimeSpan durationOfResult = indexCalculationDuration; // subsegment TimeSpan
 
@@ -30,6 +31,7 @@ namespace AudioAnalysisTools.Indices
             this.Hits = null;
             this.Tracks = null;
             this.TrackScores = new List<Plot>();
+            this.AmplitudeSpectrogram = null;
 
             this.SummaryIndexValues = new SummaryIndexValues(durationOfResult, indexProperties)
                                           {
@@ -40,7 +42,7 @@ namespace AudioAnalysisTools.Indices
                                                   durationOfResult.TotalSeconds,
                                           };
 
-            this.SpectralIndexValues = new SpectralIndexValues(freqBinCount, indexProperties)
+            this.SpectralIndexValues = new SpectralIndexValues(freqBinCount, indexProperties, configuration)
                                            {
                                                // give the results object an offset value so it can be sorted.
                                                ResultStartSeconds =
@@ -62,6 +64,8 @@ namespace AudioAnalysisTools.Indices
         public double[,] Hits { get; set; }
 
         public List<Plot> TrackScores { get; set; }
+
+        public double[,] AmplitudeSpectrogram { get; set; }
     }
 
     /// <summary>

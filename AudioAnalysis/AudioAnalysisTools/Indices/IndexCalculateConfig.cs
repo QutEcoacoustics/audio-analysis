@@ -8,12 +8,17 @@ namespace AudioAnalysisTools.Indices
     using System.IO;
     using Acoustics.Shared;
     using DSP;
+    using Equ;
 
     /// <summary>
     /// CONFIG CLASS FOR the class IndexCalculate.cs
     /// </summary>
-    public class IndexCalculateConfig
+    public class IndexCalculateConfig : IEquatable<IndexCalculateConfig>
     {
+        // Make sure the comparer is static, so that the equality operations are only generated once
+        private static readonly MemberwiseEqualityComparer<IndexCalculateConfig> _comparer =
+            MemberwiseEqualityComparer<IndexCalculateConfig>.ByFields;
+
         // EXTRACT INDICES: IF (frameLength = 128 AND sample rate = 22050) THEN frame duration = 5.805ms.
         // EXTRACT INDICES: IF (frameLength = 256 AND sample rate = 22050) THEN frame duration = 11.61ms.
         // EXTRACT INDICES: IF (frameLength = 512 AND sample rate = 22050) THEN frame duration = 23.22ms.
@@ -33,6 +38,10 @@ namespace AudioAnalysisTools.Indices
 
         public const string DefaultFrequencyScaleType = "Linear";
 
+        public const double DefaultMinBandWidth = 0.0;
+        public const double DefaultMaxBandWidth = 1.0;
+
+        public const int DefaultMelScale = 0;
         /// <summary>
         /// Initializes a new instance of the <see cref="IndexCalculateConfig"/> class.
         /// CONSTRUCTOR
@@ -49,6 +58,11 @@ namespace AudioAnalysisTools.Indices
             this.LowFreqBound = DefaultLowFreqBound;
             this.MidFreqBound = DefaultMidFreqBound;
             this.SetTypeOfFreqScale(DefaultFrequencyScaleType);
+
+            this.MinBandWidth = DefaultMinBandWidth;
+            this.MaxBandWidth = DefaultMaxBandWidth;
+
+            this.MelScale = DefaultMelScale;
         }
 
         /// <summary>
@@ -103,6 +117,13 @@ namespace AudioAnalysisTools.Indices
         /// Frequency scale is Linear or OCtave
         /// </summary>
         public FreqScaleType frequencyScaleType;
+
+        // Added details for bands
+        public double MinBandWidth { get; set; }
+
+        public double MaxBandWidth { get; set; }
+
+        public int MelScale { get; set; }
 
         /// <summary>
         /// Gets or sets the type of Herz frequency scale
@@ -190,6 +211,21 @@ namespace AudioAnalysisTools.Indices
         public static void WriteConfig(IndexCalculateConfig config, FileInfo configFile)
         {
             Yaml.Serialise<IndexCalculateConfig>(configFile, config);
+        }
+
+        public bool Equals(IndexCalculateConfig other)
+        {
+            return _comparer.Equals(this, other);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as IndexCalculateConfig);
+        }
+
+        public override int GetHashCode()
+        {
+            return _comparer.GetHashCode(this);
         }
     }
 }
