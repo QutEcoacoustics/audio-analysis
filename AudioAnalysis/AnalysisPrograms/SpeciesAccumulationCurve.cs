@@ -1,24 +1,28 @@
-﻿namespace AnalysisPrograms
-{
+﻿// <copyright file="SpeciesAccumulationCurve.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
 
+namespace AnalysisPrograms
+{
     using System;
     using System.Collections.Generic;
     using System.Data;
     using System.IO;
     using System.Linq;
-    using Acoustics.Shared.Extensions;
-    using Production;
-    using AudioAnalysisTools;
     using PowerArgs;
+    using Production;
     using TowseyLibrary;
 
     public class SpeciesAccumulationStats
     {
         // Fixed number of samples an ecologist is prepared to process.
-        public int s25  { get; set; }
-        public int s50  { get; set; }
-        public int s75  { get; set; }
-        public int s100 { get; set; }
+        public int S25 { get; set; }
+
+        public int S50 { get; set; }
+
+        public int S75 { get; set; }
+
+        public int S100 { get; set; }
 
         //these variables are for stats from a single run
         public double percentRecognitionWith10Samples  = 0;
@@ -36,10 +40,10 @@
             int s75threshold = (int)Math.Round(totalSpeciesCount * 0.75);
             int s100threshold = totalSpeciesCount;
 
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s25threshold) { this.s25 = i + 1; break; }
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s50threshold) { this.s50 = i + 1; break; }
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s75threshold) { this.s75 = i + 1; break; }
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s100threshold) { this.s100 = i + 1; break; }
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s25threshold) { this.S25 = i + 1; break; }
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s50threshold) { this.S50 = i + 1; break; }
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s75threshold) { this.S75 = i + 1; break; }
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s100threshold) { this.S100 = i + 1; break; }
 
             //% of total species identified with N samples
             this.percentRecognitionWith10Samples = (int)Math.Round(accumulationCurve[10 - 1] * 100 / (double)totalSpeciesCount);
@@ -53,10 +57,10 @@
 
         public void WriteStats()
         {
-            LoggedConsole.WriteLine("s25={0}\t  s50={1}\t  s75={2}\t  s100={3}", this.s25, this.s50, this.s75, this.s100);
+            LoggedConsole.WriteLine("s25={0}\t  s50={1}\t  s75={2}\t  s100={3}", this.S25, this.S50, this.S75, this.S100);
             LoggedConsole.WriteLine("samples\t10\t30\t60\t90\t120\t180\t240");
             LoggedConsole.WriteLine("percent\t{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}", this.percentRecognitionWith10Samples, this.percentRecognitionWith30Samples,
-                this.percentRecognitionWith60Samples, this.percentRecognitionWith90Samples, this.percentRecognitionWith120Samples,
+                percentRecognitionWith60Samples, this.percentRecognitionWith90Samples, this.percentRecognitionWith120Samples,
                 this.percentRecognitionWith180Samples, this.percentRecognitionWith240Samples);
         }
 
@@ -68,6 +72,7 @@
             {
                 array[i] = list[i].percentRecognitionWith10Samples;
             }
+
             double av10, sd10;
             NormalDist.AverageAndSD(array, out av10, out sd10);
 
@@ -76,6 +81,7 @@
             {
                 array[i] = list[i].percentRecognitionWith30Samples;
             }
+
             double av30, sd30;
             NormalDist.AverageAndSD(array, out av30, out sd30);
 
@@ -84,6 +90,7 @@
             {
                 array[i] = list[i].percentRecognitionWith60Samples;
             }
+
             double av60, sd60;
             NormalDist.AverageAndSD(array, out av60, out sd60);
 
@@ -92,6 +99,7 @@
             {
                 array[i] = list[i].percentRecognitionWith90Samples;
             }
+
             double av90, sd90;
             NormalDist.AverageAndSD(array, out av90, out sd90);
 
@@ -100,6 +108,7 @@
             {
                 array[i] = list[i].percentRecognitionWith120Samples;
             }
+
             double av120, sd120;
             NormalDist.AverageAndSD(array, out av120, out sd120);
 
@@ -116,6 +125,7 @@
             {
                 array[i] = list[i].percentRecognitionWith240Samples;
             }
+
             double av240, sd240;
             NormalDist.AverageAndSD(array, out av240, out sd240);
 
@@ -131,7 +141,6 @@
 
         public class Arguments
         {
-
             [ArgDescription("Path of the input  file to be processed.")]
             [Production.ArgExistingFile()]
             [ArgPosition(1)]
@@ -150,13 +159,12 @@
         [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static void Dev()
         {
-
             //SET VERBOSITY
             DateTime tStart = DateTime.Now;
             Log.Verbosity = 1;
             Log.WriteLine("# Start Time = " + tStart);
 
-            if(false)
+            if (false)
             {
                 // this bracket tests sampling from an array using a probability distribution
                 int distributionlength = 1435;
@@ -174,6 +182,7 @@
                 Log.WriteLine("# Finished everything!");
                 return;
             }
+
             if (false)
             {
                 // this bracket tests sampling from an array using a probability distribution
@@ -191,6 +200,7 @@
                     //sortedSamples = DataTools.reverseArray(sortedSamples);
                     for (int j = 0; j < samples.Length; j++) histogram[samples[j]]++;
                 }
+
                 DataTools.writeBarGraph(histogram);
 
                 Log.WriteLine("# Finished histogram!");
@@ -264,7 +274,6 @@
                     LoggedConsole.WriteLine(line);
 
                     for (int i = 0; i < row.Length; i++) if (row[i] == 1) DataTools.SetColumnZero(callMatrix, i);
-
                 }
 
                 string outputfile = "SE_2010Oct13_Calls_GreedySampling.txt"; //used only for greedy sampling.
@@ -273,10 +282,8 @@
                 int[] finalRowSums = DataTools.GetRowSums(callMatrix);
                 int totalSum = finalRowSums.Sum();
                 LoggedConsole.WriteLine("remaining species =" + totalSum);
-
                 return;
-
-            }// end GREEDY ALGORITHM FOR EFFICIENT SAMPLING
+            } // end GREEDY ALGORITHM FOR EFFICIENT SAMPLING
 
             //RANDOM SAMPLING OVER ENTIRE 24 HOURS
             int seed1 = tStart.Millisecond;
@@ -295,6 +302,7 @@
                 double[] samples180 = new double[trialCount];
                 double[] samples240 = new double[trialCount];
                 int N = callMatrix.GetLength(0); //maximum Sample Number
+
                 //int C = occurenceMatrix.GetLength(1); //total species count
                 for (int i = 0; i < trialCount; i++)  //DO REPEATED TRIALS
                 {
@@ -304,10 +312,10 @@
                     SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
                     stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, callingSpeciesList.Count);
                     //LoggedConsole.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
-                    s25array[i] = stats.s25;
-                    s50array[i] = stats.s50;
-                    s75array[i] = stats.s75;
-                    s100array[i] = stats.s100;
+                    s25array[i] = stats.S25;
+                    s50array[i] = stats.S50;
+                    s75array[i] = stats.S75;
+                    s100array[i] = stats.S100;
                     samples10[i] = stats.percentRecognitionWith10Samples;
                     samples30[i] = stats.percentRecognitionWith30Samples;
                     samples60[i] = stats.percentRecognitionWith60Samples;
@@ -318,6 +326,7 @@
 
                     if (i % 100 == 0) LoggedConsole.WriteLine("trial " + i);
                 } //over all trials
+
                 double av25, sd25, av50, sd50, av75, sd75, av100, sd100;
                 NormalDist.AverageAndSD(s25array, out av25, out sd25);
                 NormalDist.AverageAndSD(s50array, out av50, out sd50);
@@ -339,7 +348,6 @@
                 LoggedConsole.WriteLine("samples\t10\t30\t60\t90\t120\t180\t240");
                 LoggedConsole.WriteLine("mean % \t{0:f1}\t{1:f1}\t{2:f1}\t{3:f1}\t{4:f1}\t{5:f1}\t{6:f1}", avFixed10Sample, avFixed30Sample, avFixed60Sample, avFixed90Sample, avFixed120Sample, avFixed180Sample, avFixed240Sample);
                 LoggedConsole.WriteLine("std dev\t{0:f2}\t{1:f2}\t{2:f2}\t{3:f2}\t{4:f2}\t{5:f2}\t{6:f2}", sdFixed10Sample, sdFixed30Sample, sdFixed60Sample, sdFixed90Sample, sdFixed120Sample, sdFixed180Sample, sdFixed240Sample);
-
             } // ######################## END OF RANDOM SAMPLING #############################
 
             //random sampling OVER FIXED INTERVAL GIVEN START and END
@@ -370,10 +378,10 @@
                     stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, callingSpeciesList.Count);
 
                     //LoggedConsole.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
-                    s25array[i] = stats.s25;
-                    s50array[i] = stats.s50;
-                    s75array[i] = stats.s75;
-                    s100array[i] = stats.s100;
+                    s25array[i] = stats.S25;
+                    s50array[i] = stats.S50;
+                    s75array[i] = stats.S75;
+                    s100array[i] = stats.S100;
                     fixedsampleArray[i] = stats.percentRecognitionWith60Samples;
                     if (i % 100 == 0) LoggedConsole.WriteLine("trial " + i);
                 } //over all trials
@@ -384,6 +392,7 @@
                 NormalDist.AverageAndSD(s100array, out av100, out sd100);
                 NormalDist.AverageAndSD(fixedsampleArray, out avFixedSample, out sdFixedSample);
                 LoggedConsole.WriteLine("s25={0:f1}+/-{1:f1}\t s50={2:f1}+/-{3:f1}\t s75={4:f1}+/-{5:f1}\t s100={6:f1}+/-{7:f1}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
+
                 //LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", SpeciesAccumulationStats.SAMPLE_1HOUR, avFixedSample, sdFixedSample);
             }
 
@@ -434,6 +443,7 @@
                     stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, callingSpeciesList.Count);
                     list.Add(stats);
                 }
+
                 SpeciesAccumulationStats.WriteArrayStats(list);
 
                 // OPTION 6: SEARCH WEIGHT SPACE FOR OPTIMSED RANK ORDER USING WEIGHTED COMBINATIONS OF INDICES
@@ -451,7 +461,6 @@
         /// EXECUTABLE
         /// extracts acoustic richness indices from a single recording.
         /// </summary>
-        /// <param name="args"></param>
         public static void Execute(Arguments arguments)
         {
             if (arguments == null)
@@ -509,8 +518,6 @@
         /// returns the row indices for a single column of an array, ranked by value.
         /// Used to order the sampling of an acoustic recording split into one minute chunks.
         /// </summary>
-        /// <param name="fileName"></param>
-        /// <param name="colNumber"></param>
         /// <returns>array of index locations in descending order</returns>
         public static int[] GetRankOrder(string fileName, int colNumber)
         {
