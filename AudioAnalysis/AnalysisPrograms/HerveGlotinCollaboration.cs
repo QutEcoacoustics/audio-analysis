@@ -1,14 +1,15 @@
-﻿namespace AnalysisPrograms
+﻿// <copyright file="HerveGlotinCollaboration.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
     using System.Linq;
-    using System.Text;
-    using Acoustics.Shared;
     using AudioAnalysisTools;
-    using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.LongDurationSpectrograms.Zooming;
     using Draw.Zooming;
@@ -18,7 +19,6 @@
 
     public static class HerveGlotinCollaboration
     {
-
         /// <summary>
         /// HERVE GLOTIN
         /// Combined audio2csv + zooming spectrogram task.
@@ -29,7 +29,6 @@
         /// need to change    AnalysisMinSegmentDuration = TimeSpan.FromSeconds(20),
         /// to                AnalysisMinSegmentDuration = TimeSpan.FromSeconds(1),
         /// THIS iS to analyse BIRD50 short recordings.
-
         /// </summary>
         public static void HiRes1()
         {
@@ -116,7 +115,7 @@
                 csvDir = parentDir + @"\" + learningMode + @"\" + name + @"\Towsey.Acoustic";
                 zoomOutputDir = outputDir;
                 Console.WriteLine("\n\n");
-                Console.WriteLine(string.Format(@">>>>{0}: File<{1}>", i, name));
+                Console.WriteLine($@">>>>{i}: File<{name}>");
 
                 try
                 {
@@ -132,10 +131,12 @@
                     {
                         LoggedConsole.WriteWarnLine(" >>>>>>>>>>>> WARNING! The Source Recording file cannot be found! This will cause an exception.");
                     }
+
                     if (!audio2csvArguments.Config.Exists)
                     {
                         LoggedConsole.WriteWarnLine(" >>>>>>>>>>>> WARNING! The Configuration file cannot be found! This will cause an exception.");
                     }
+
                     AnalyseLongRecordings.AnalyseLongRecording.Execute(audio2csvArguments);
 
                     // B: Concatenate the summary indices and produce images
@@ -147,10 +148,14 @@
                     List<string> data = FileTools.ReadTextFile(Path.Combine(csvDir, testFileName));
                     int lineCount = data.Count - 1;  // -1 for header.
                     int imageWidth = lineCount;
+
                     //assume scale is index calculation duration = 0.1s
                     // i.e. image resolution  0.1s/px. or 600px/min
                     double focalMinute = (double)lineCount / 600 / 2;
-                    if (focalMinute < 0.016666) focalMinute = 0.016666; // shortest recording = 1 second.
+                    if (focalMinute < 0.016666)
+                    {
+                        focalMinute = 0.016666; // shortest recording = 1 second.
+                    }
 
                     var zoomingArguments = new DrawZoomingSpectrograms.Arguments
                     {
@@ -161,7 +166,6 @@
 
                         // draw a focused multi-resolution pyramid of images
                         ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Focused,
-                        //FocusMinute = (int)focalMinute,
                     };
 
                     LoggedConsole.WriteLine("# Spectrogram Zooming config  : " + zoomingArguments.SpectrogramZoomingConfig);
@@ -187,27 +191,30 @@
                     // DRAW THE VARIOUS IMAGES
                     string fileStem = fileName;
                     if (fileStemFormatString != null)
+                    {
                         fileStem = string.Format(fileStemFormatString, (i + 1)); // training images
+                    }
 
-                    var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
+                    var ldfcSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
                     {
                         // use the default set of index properties in the AnalysisConfig directory.
                         InputDataDirectory = csvDir.ToDirectoryInfo(),
                         OutputDirectory = imageOutputDir.ToDirectoryInfo(),
                         IndexPropertiesConfig = indexPropertiesConfig.ToFileInfo(),
                     };
+
                     // Create directory if not exists
-                    if (!LDFCSpectrogramArguments.OutputDirectory.Exists)
+                    if (!ldfcSpectrogramArguments.OutputDirectory.Exists)
                     {
-                        LDFCSpectrogramArguments.OutputDirectory.Create();
+                        ldfcSpectrogramArguments.OutputDirectory.Create();
                     }
 
                     // there are two possible tasks
                     // 1: draw the aggregated grey scale spectrograms
-                    int secDuration = DrawLongDurationSpectrograms.DrawAggregatedSpectrograms(LDFCSpectrogramArguments, fileStem);
+                    int secDuration = DrawLongDurationSpectrograms.DrawAggregatedSpectrograms(ldfcSpectrogramArguments, fileStem);
 
                     // 2: draw the coloured ridge spectrograms
-                    secDuration = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(LDFCSpectrogramArguments, fileStem);
+                    secDuration = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(ldfcSpectrogramArguments, fileStem);
 
                     // copy files
                     // POW, EVN, SPT, RHZ, RVT, RPS, RNG
@@ -224,17 +231,14 @@
                         string destinationPath = Path.Combine(destinationDirectory, destinationFileName);
                         File.Copy(sourcePath, destinationPath, true);
                     }
-
                 } // try block
                 catch (Exception e)
                 {
                     LoggedConsole.WriteErrorLine(string.Format("ERROR!!!!! RECORDING {0}   FILE {1}", i, name));
                     LoggedConsole.WriteErrorLine(string.Format(e.ToString()));
-
                 }
 
             } // end loop through all wav files
-
         } // HiRes1()
 
         /// <summary>
@@ -247,6 +251,7 @@
         {
             string histoDir = @"C:\SensorNetworks\Output\BIRD50";
             string histoPath = Path.Combine(histoDir, "TrainingRecordingDurations.png");
+
             //string histoPath = Path.Combine(histoDir, "TestingRecordingDurations.png");
             // set up  histogram of recording durations
             int histogramWidth = 600; // equivalent to ten minutes at 0.1 second resolution
@@ -255,30 +260,31 @@
             // set up IP and OP directories
             string inputDir = @"C:\SensorNetworks\Output\BIRD50\Training";
             string imageOutputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingImages";
+
             //string imageOutputDir = @"C:\SensorNetworks\Output\BIRD50\TestingRidgeImages";
             string indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
 
             // comment next two lines when debugging a single recording file
             var inputDirInfo = new DirectoryInfo(inputDir);
+
             //string match = @"*.wav";
             //DirectoryInfo[] directories = inputDirInfo.GetDirectories(match, SearchOption.AllDirectories);
             DirectoryInfo[] directories = inputDirInfo.GetDirectories();
             int count = directories.Length;
+
             //count = 3;
 
             //string fileStem = "ID0003";      //\ID0001\Towsey.Acoustic\
             string fileStemFormatString = "ID{0:d4}"; // for training files
+
             //string fileStemFormatString = "ID1{0:d3}"; // for testing files
 
             for (int i = 0; i < count; i++)
             {
-
                 string fileStem = string.Format(fileStemFormatString, (i + 1));
-
                 string dataDir = directories[i].FullName + @"\Towsey.Acoustic\";
-                //string imageOutputDir = inputDir + @"\" + fileStem;
 
-                var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
+                var ldfcSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
                 {
                     // use the default set of index properties in the AnalysisConfig directory.
                     InputDataDirectory = dataDir.ToDirectoryInfo(),
@@ -288,18 +294,22 @@
 
                 // there are two possible tasks
                 // 1: draw the aggregated grey scale spectrograms
-                int secDuration = DrawLongDurationSpectrograms.DrawAggregatedSpectrograms(LDFCSpectrogramArguments, fileStem);
+                int secDuration = DrawLongDurationSpectrograms.DrawAggregatedSpectrograms(ldfcSpectrogramArguments, fileStem);
 
                 // 2: draw the coloured ridge spectrograms
-                DrawLongDurationSpectrograms.DrawRidgeSpectrograms(LDFCSpectrogramArguments, fileStem);
+                DrawLongDurationSpectrograms.DrawRidgeSpectrograms(ldfcSpectrogramArguments, fileStem);
 
-                if (secDuration >= recordingDurations.Length) secDuration = recordingDurations.Length - 1;
+                if (secDuration >= recordingDurations.Length)
+                {
+                    secDuration = recordingDurations.Length - 1;
+                }
+
                 recordingDurations[secDuration]++;
             }
+
             string title = "Recording Duration: Width = " + histogramWidth + "secs";
             Image histoImage = GraphsAndCharts.DrawHistogram(title, recordingDurations, 95, null, histogramWidth, 50);
             histoImage.Save(histoPath);
-
         } // HiRes2() produces spectrogram images
 
         /// <summary>
@@ -311,6 +321,7 @@
         {
             string histoDir = @"C:\SensorNetworks\Output\BIRD50";
             string histoPath = Path.Combine(histoDir, "TrainingRecordingDurations.png");
+
             //string histoPath = Path.Combine(histoDir, "TestingRecordingDurations.png");
             // set up  histogram of recording durations
             //int histogramWidth = 600; // equivalent to ten minutes at 0.1 second resolution
@@ -319,32 +330,36 @@
             // set up IP and OP directories
             string inputDir = @"C:\SensorNetworks\Output\BIRD50\Training";
             string imageOutputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingImagesTEMP";
+
             //string imageOutputDir = @"C:\SensorNetworks\Output\BIRD50\TestingRidgeImages";
             string indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
 
             // comment next two lines when debugging a single recording file
             var inputDirInfo = new DirectoryInfo(inputDir);
+
             //string match = @"*.wav";
             //DirectoryInfo[] directories = inputDirInfo.GetDirectories(match, SearchOption.AllDirectories);
             DirectoryInfo[] directories = inputDirInfo.GetDirectories();
             int count = directories.Length;
+
             //count = 619;
 
             //string fileStem = "ID0003";      //\ID0001\Towsey.Acoustic\
             string fileStemFormatString = "ID{0:d4}"; // for training files
+
             //string fileStemFormatString = "ID1{0:d3}"; // for testing files
 
             for (int i = 0; i < count; i++)
             {
-
                 string fileStem = string.Format(fileStemFormatString, (i + 1));
                 Console.WriteLine("\n\n");
-                Console.WriteLine(string.Format(@">>>>{0}: File<{1}>", i, fileStem));
+                Console.WriteLine($@">>>>{i}: File<{fileStem}>");
 
                 string dataDir = directories[i].FullName + @"\Towsey.Acoustic\";
+
                 //string imageOutputDir = inputDir + @"\" + fileStem;
 
-                var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
+                var ldfcSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
                 {
                     // use the default set of index properties in the AnalysisConfig directory.
                     InputDataDirectory = dataDir.ToDirectoryInfo(),
@@ -354,7 +369,7 @@
 
                 // there are two possible tasks
                 // 1: draw the aggregated grey scale spectrograms
-                int rowCount = DrawLongDurationSpectrograms.DrawAggregatedSpectrograms(LDFCSpectrogramArguments, fileStem);
+                int rowCount = DrawLongDurationSpectrograms.DrawAggregatedSpectrograms(ldfcSpectrogramArguments, fileStem);
 
                 // 2: draw the coloured ridge spectrograms
                 //DrawLongDurationSpectrograms.DrawRidgeSpectrograms(LDFCSpectrogramArguments, fileStem);
@@ -364,12 +379,12 @@
                 totalRecordingLength += rowCount;
                 Console.WriteLine("Recording length = " + rowCount);
             }
+
             //string title = "Recording Duration: Width = " + histogramWidth + "secs";
             //Image histoImage = ImageTools.DrawHistogram(title, recordingDurations, 95, null, histogramWidth, 50);
             //histoImage.Save(histoPath);
             Console.WriteLine("\nTotal recording length = " + totalRecordingLength);
             Console.WriteLine("Av recording length = " + (totalRecordingLength / (double)count));
-
         } // HiRes3() spectrogram images
 
         /// <summary>
@@ -384,11 +399,13 @@
             string inputDir = @"C:\SensorNetworks\Output\BIRD50\Testing";
             string imageInputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingRidgeImages";
             string imageOutputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingSpeciesImages"; //
+
             //string imageOutputDir = @"C:\SensorNetworks\Output\BIRD50\TestingRidgeImages";
             string speciesLabelsFile = @"C:\SensorNetworks\Output\BIRD50\AmazonBird50_training_output.csv";
             string countsArrayFilePath = @"C:\SensorNetworks\Output\BIRD50\AmazonBird50_training_Counts.txt";
             int speciesCount = 50;
             int count = 924; //trainingCount
+
             //int count = 375; //testCount
             //count = 3;
 
@@ -411,7 +428,10 @@
 
                 for (int j = 0; j < count; j++)
                 {
-                    if (speciesID[j] != speciesLabel) continue;
+                    if (speciesID[j] != speciesLabel)
+                    {
+                        continue;
+                    }
 
                     // get the file name
                     FileInfo file = new FileInfo(Path.Combine(imageInputDir, fileID[j] + ".Ridges.png"));
@@ -425,7 +445,6 @@
                 string outputFileName = string.Format("Species{0}.png", speciesLabel);
                 string imagePath = Path.Combine(imageOutputDir, outputFileName);
                 combinedImage.Save(imagePath);
-
             } // end for loop i
 
             int sum = speciesNumbers.Sum();
@@ -467,7 +486,11 @@
             int peakCount = 0;
             for (int i = 0; i < peaks.Length - searchWindow; i++)
             {
-                if (!peaks[i]) continue;
+                if (!peaks[i])
+                {
+                    continue;
+                }
+
                 peakCount++;
 
                 //accumulate peak distances in histogram
@@ -476,15 +499,13 @@
                     if (peaks[i + j])
                     {
                         histogram[j] += 1;
-                        weightedHistogram[j] += ((entropy[i] + entropy[i + j]) / (double)2);
+                        weightedHistogram[j] += (entropy[i] + entropy[i + j]) / 2;
                     }
                 }
-
             }
 
             FileTools.WriteArray2File(histogram, false, histoFileName);
             FileTools.WriteArray2File(weightedHistogram, weightedHistoFileName);
         }
-
     }
-    }
+}

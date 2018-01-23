@@ -1,7 +1,10 @@
-﻿namespace TowseyLibrary
+﻿// <copyright file="GraphsAndCharts.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace TowseyLibrary
 {
     using System;
-    using System.Collections.Generic;
     using System.Text;
 
     /// <summary>
@@ -11,9 +14,8 @@
     /// All methods are static.
     /// Author: Michael Towsey
     /// </summary>
-    public class LLR
+    public static class LLR
     {
-
         public static double ColumnRelativeFrequency(int[,] table, int column, int totalCount)
         {
             return DataTools.SumColumn(table, column) / (double)totalCount;
@@ -34,7 +36,6 @@
             return value;
         }
 
-
         /**
          * returns a matrix of LLR values from a given contingency table.
          * @param contingencyTable
@@ -51,7 +52,6 @@
                 for(int col = 0; col < colNum; col++) totalCount += contingencyTable[row, col];
 		    }
 
-		    //LoggedConsole.WriteLine("sequences: " + sequences);
 		    double[,] llrs = new double[rowNum, colNum];
 		    for(int row = 0; row < rowNum; row++)
 		    {
@@ -71,16 +71,15 @@
 		    return llrs;
 	    }
 
-
     /// <summary>
     /// Calculates the chi square statistic from a contingency table and the transition frequenices of a Markov Model.
     /// See my statistics book for engineers and scientists, Walpole and Myers, p345.
     /// </summary>
     /// <param name="contingencyTable"></param>
-    /// <param name="expectedRF"></param>
+    /// <param name="expectedRf"></param>
     /// <param name="chi2"></param>
     /// <param name="df"></param>
-    public static void ChiSquare(int[,] contingencyTable, double[,] expectedRF, out double chi2, out int df)
+    public static void ChiSquare(int[,] contingencyTable, double[,] expectedRf, out double chi2, out int df)
     {
 		int rowNum = contingencyTable.GetLength(0);
         int colNum = contingencyTable.GetLength(1);
@@ -94,9 +93,8 @@
 		for(int row = 0; row < rowNum; row++)
 		{
 		    for(int col = 0; col < colNum; col++)
-                expectedCounts[row, col] = (int)Math.Round(total * expectedRF[row, col]);
+                expectedCounts[row, col] = (int)Math.Round(total * expectedRf[row, col]);
         }
-        //DataTools.writeMatrix(expectedCounts);
 
         //calculate chi square
         chi2 = 0.0;
@@ -116,7 +114,6 @@
         }//for all rows
 
     }//end method ChiSquare()
-
 
     public static double ChiSquare_DFn(double chi2, int df)
     {
@@ -406,10 +403,6 @@
         return 0.0;
     }
 
-
-
-
-
         /**
          * returns the p value for a given value of chi2 in a CHI-SQUARE table.
          * Assumes one degree of freedom.
@@ -427,7 +420,7 @@
             return 0.001;
         }
 
-        public static string writeLlrMatrix(double[,] m)
+        public static string WriteLogLikelihoodRatioMatrix(double[,] m)
         {
             StringBuilder sb = new StringBuilder("Matrix of log odds (LLR = ln(observed freq/expected freq)\n");
             int rows = m.GetLength(0);
@@ -451,10 +444,10 @@
                 }
                 sb.Append("\n");
             }
+
             sb.Append("NOTE: p<0.05 for 2*llr>3.84\n");
             return sb.ToString();
         } // end WriteLlrMatrix()
-
 
         /// <summary>
         /// See Wikipedia on LLR
@@ -467,13 +460,9 @@
         /// <param name="unigramLogScore">log likelihood of the null hypothesis</param>
         /// <param name="bigramLogScore">log likelihood of the alernative hypothesis</param>
         /// <returns></returns>
-        public static double CalculateLLR(double unigramLogScore, double bigramLogScore)
+        public static double CalculateLogLikelihoodRatio(double unigramLogScore, double bigramLogScore)
         {
             return unigramLogScore - bigramLogScore;
         }
-
-
-
     }//end class
-
 }

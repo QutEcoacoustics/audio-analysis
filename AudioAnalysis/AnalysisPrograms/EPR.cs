@@ -1,18 +1,19 @@
-﻿namespace AnalysisPrograms
+﻿// <copyright file="EPR.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
     using System.IO;
     using System.Linq;
-    using System.Text;
-    using Acoustics.Shared.Extensions;
-    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using PowerArgs;
+    using Production;
     using TowseyLibrary;
 
     /// <summary>
@@ -151,76 +152,37 @@
     ///       Console.ReadKey();
     ///     }
     /// }
-    ///
-    ///
-    /// ###############################################################################################################
+    ///         [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
     /// </summary>
     public class EPR
     {
-
-        // GROUND PARROT
-        // epr2 "C:\SensorNetworks\WavFiles\GroundParrot\Aug2010_Site1\audio\DM420013_0342m_00s__0344m_00s.mp3" C:\SensorNetworks\Output\EPR_GroundParrot\EPR_GroundParrot_Params.txt gp1
-
-        // Keys to recognise identifiers in PARAMETERS - INI file.
-        public static string key_CALL_NAME          = "CALL_NAME";
-        public static string key_DO_SEGMENTATION    = "DO_SEGMENTATION";
-        public static string key_EVENT_START        = "EVENT_START";
-        public static string key_EVENT_END          = "EVENT_END";
-        public static string key_MIN_HZ             = "MIN_HZ";
-        public static string key_MAX_HZ             = "MAX_HZ";
-        public static string key_TEMPLATE_MIN_INTENSITY = "TEMPLATE_MIN_INTENSITY";
-        public static string key_TEMPLATE_MAX_INTENSITY = "TEMPLATE_MAX_INTENSITY";
-        public static string key_FRAME_OVERLAP      = "FRAME_OVERLAP";
-        public static string key_SMOOTH_WINDOW      = "SMOOTH_WINDOW";
-        public static string key_SOURCE_RECORDING   = "SOURCE_RECORDING";
-        public static string key_SOURCE_DIRECTORY   = "SOURCE_DIRECTORY";
-        public static string key_MIN_DURATION       = "MIN_DURATION";
-        public static string key_DECIBEL_THRESHOLD  = "DECIBEL_THRESHOLD";        // Used when extracting analog template from spectrogram.
-        public static string key_TEMPLATE_THRESHOLD = "TEMPLATE_THRESHOLD";       // Value in 0-1. Used when preparing binary, trinary and syntactic templates.
-        public static string key_DONT_CARE_NH       = "DONT_CARE_BOUNDARY";       // Used when preparing trinary template.
-        public static string key_LINE_LENGTH        = "SPR_LINE_LENGTH";          // Used when preparing syntactic PR template.
-        public static string key_DRAW_SONOGRAMS     = "DRAW_SONOGRAMS";
-
         public class Arguments : SourceAndConfigArguments
         {
             [ArgDescription("prefix of name of the created output files")]
             [ArgValidFilename()]
             [ArgRequired]
             public string Target { get; set; }
-
-        }
-
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        public static Arguments Dev()
-        {
-
-            return new Arguments();
         }
 
         public static void Execute(Arguments arguments)
         {
-            if (arguments == null)
-            {
-                arguments = Dev();
-            }
-
             string title = "# EVENT PATTERN RECOGNITION.";
-            string date  = "# DATE AND TIME: " + DateTime.Now;
+            string date = "# DATE AND TIME: " + DateTime.Now;
             Log.WriteLine(title);
             Log.WriteLine(date);
 
             Log.Verbosity = 1;
 
-            string targetName    = arguments.Target; // prefix of name of created files
+            string targetName = arguments.Target; // prefix of name of created files
 
-            string recordingFileName   = arguments.Source.Name;
-            string recordingDirectory  = arguments.Source.DirectoryName;
-            DirectoryInfo outputDir    = arguments.Config.Directory;
-            FileInfo targetPath        = outputDir.CombineFile(targetName  + "_target.txt");
-            FileInfo targetNoNoisePath = outputDir.CombineFile(targetName  + "_targetNoNoise.txt");
-            FileInfo noisePath         = outputDir.CombineFile(targetName  + "_noise.txt");
-            FileInfo targetImagePath   = outputDir.CombineFile(targetName  + "_target.png");
-            FileInfo paramsPath        = outputDir.CombineFile(targetName  + "_params.txt");
+            string recordingFileName = arguments.Source.Name;
+            string recordingDirectory = arguments.Source.DirectoryName;
+            DirectoryInfo outputDir = arguments.Config.Directory;
+            FileInfo targetPath = outputDir.CombineFile(targetName + "_target.txt");
+            FileInfo targetNoNoisePath = outputDir.CombineFile(targetName + "_targetNoNoise.txt");
+            FileInfo noisePath = outputDir.CombineFile(targetName + "_noise.txt");
+            FileInfo targetImagePath = outputDir.CombineFile(targetName + "_target.png");
+            FileInfo paramsPath = outputDir.CombineFile(targetName + "_params.txt");
 
             Log.WriteIfVerbose("# Output folder =" + outputDir);
 
@@ -235,21 +197,18 @@
 
             // framing parameters
             //double frameOverlap      = FeltTemplates_Use.FeltFrameOverlap;   // default = 0.5
-            double frameOverlap = double.Parse(dict[key_FRAME_OVERLAP]);
+            double frameOverlap = double.Parse(dict["FRAME_OVERLAP"]);
 
             //frequency band
-            int minHz = int.Parse(dict[key_MIN_HZ]);
-            int maxHz = int.Parse(dict[key_MAX_HZ]);
+            int minHz = int.Parse(dict["MIN_HZ"]);
+            int maxHz = int.Parse(dict["MAX_HZ"]);
 
             // oscillation OD parameters
             double dctDuration = double.Parse(dict[OscillationRecogniser.key_DCT_DURATION]);   // 2.0; // seconds
             double dctThreshold = double.Parse(dict[OscillationRecogniser.key_DCT_THRESHOLD]);  // 0.5;
-            int minOscilFreq    = int.Parse(dict[OscillationRecogniser.key_MIN_OSCIL_FREQ]);  // 4;
-            int maxOscilFreq    = int.Parse(dict[OscillationRecogniser.key_MAX_OSCIL_FREQ]);  // 5;
+            int minOscilFreq = int.Parse(dict[OscillationRecogniser.key_MIN_OSCIL_FREQ]);  // 4;
+            int maxOscilFreq = int.Parse(dict[OscillationRecogniser.key_MAX_OSCIL_FREQ]);  // 5;
             bool normaliseDCT = false;
-
-            //double dBThreshold       = Double.Parse(dict[key_DECIBEL_THRESHOLD]);   //threshold to set MIN DECIBEL BOUND
-            int DRAW_SONOGRAMS       = int.Parse(dict[key_DRAW_SONOGRAMS]);       //options to draw sonogram
 
             // iii initialize the sonogram config class.
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
@@ -273,7 +232,7 @@
             double Q = 0.0;
             double SD = 0.0;
             throw new NotImplementedException("Mike changed the API here, I don't know how to fix it.");
-            dBArray =  new []{0.0};// SNR.NoiseSubtractMode(dBArray, out Q, out SD);
+            dBArray = new []{0.0};// SNR.NoiseSubtractMode(dBArray, out Q, out SD);
             double maxDB = 6.0;
             double dBThreshold = (2 * SD) / maxDB;  //set dB threshold to 2xSD above background noise
             dBArray = SNR.NormaliseDecibelArray_ZeroOne(dBArray, maxDB);
@@ -314,9 +273,8 @@
 
             // v: SAVE image of extracted event in the original sonogram
             string sonogramImagePath = outputDir + Path.GetFileNameWithoutExtension(recordingFileName) + ".png";
-            DrawSonogram(sonogram, sonogramImagePath, dBArray, dBThreshold / maxDB, odScores, dctThreshold, gpScores, template);
 
-            Log.WriteLine("# Finished everything!");
+            //DrawSonogram(sonogram, sonogramImagePath, dBArray, dBThreshold / maxDB, odScores, dctThreshold, gpScores, template);
         } // Dev()
 
         public static double[] DetectEPR(List<AcousticEvent> template, BaseSonogram sonogram, double[] odScores, double odThreshold)
@@ -388,28 +346,5 @@
             if (score < 0.0) score = 0.0;
             return score;
         }
-
-        public static void DrawSonogram(BaseSonogram sonogram, string path, double[] normalizedDBArray, double dBThreshold,
-                                                       double[] odScores, double odThreshold, double[] gpScores, List<AcousticEvent> list)
-        {
-            Log.WriteLine("# Save image of sonogram.");
-            bool doHighlightSubband = false; bool add1kHzLines = true;
-
-            using (Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
-            using (Image_MultiTrack image = new Image_MultiTrack(img))
-            {
-                //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
-                image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-                image.AddTrack(ImageTrack.GetScoreTrack(normalizedDBArray, 0, 1.0, dBThreshold));
-                image.AddTrack(ImageTrack.GetScoreTrack(odScores, 0, 1.0, odThreshold));
-                image.AddTrack(ImageTrack.GetScoreTrack(gpScores, 0, 1.0, 0.3));
-                //image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
-                //var aes = new List<AcousticEvent>();
-                //aes.Add(ae);
-                image.AddEvents(list, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
-                image.Save(path);
-            }
-        } //end DrawSonogram
-
     } // end class
 }

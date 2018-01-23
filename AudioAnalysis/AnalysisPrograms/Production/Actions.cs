@@ -11,14 +11,8 @@
 namespace AnalysisPrograms.Production
 {
     using System;
-    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
-    using System.Reflection;
-    using System.Text;
     using AnalyseLongRecordings;
-    using AudioAnalysisTools;
-    using Dong.Felt;
     using Draw.Zooming;
     using EventStatistics;
     using PowerArgs;
@@ -127,6 +121,7 @@ namespace AnalysisPrograms.Production
 
         [ArgDescription("Calls Acoustic.Dev(): Extracts spectral and summary acoustic indices from a short (one minute) recording segment.")]
         public Acoustic.Arguments AcousticIndicesArgs { get; set; }
+
         public static Action<Acoustic.Arguments> AcousticIndices()
         {
             // extracts acoustic indices from one minute
@@ -185,6 +180,7 @@ namespace AnalysisPrograms.Production
             return FELT.Runner.Main.ProgramEntry;
         }
 
+        /*
         [ArgDescription("Calls Human1.Dev():  Recognises human speech but does not do word recognition.")]
         public Human1.Arguments HumanArgs { get; set; }
         public static Action<Human1.Arguments> Human()
@@ -193,6 +189,7 @@ namespace AnalysisPrograms.Production
             // Execute() signed off: Michael Towsey 27th July 2012
             return Human1.Dev;
         }
+        */
 
         [ArgDescription("Calls LSKiwi3.Dev():  Only of use for Little Brown Kiwi recordings from New Zealand.")]
         public LSKiwi3.Arguments KiwiArgs { get; set; }
@@ -246,6 +243,7 @@ namespace AnalysisPrograms.Production
             return OscillationsGeneric.Main;
         }
 
+        /*
         [ArgDescription("Calls Rain.Dev():  Used to recognise one minute segments of rain. Revise code if intend to use.")]
         public Rain_OBSOLETE.Arguments RainArgs { get; set; }
         public static Action<Rain_OBSOLETE.Arguments> Rain()
@@ -253,7 +251,9 @@ namespace AnalysisPrograms.Production
             // IAnalyser - detects rain
             return Rain_OBSOLETE.Dev;
         }
+        */
 
+            /*
         [ArgDescription("Calls LewinsRail3.Dev():  Dates back to 2012. Revise code if intend to use.")]
         public LewinsRail3OBSOLETE.Arguments LewinsRailArgs { get; set; }
         public static Action<LewinsRail3OBSOLETE.Arguments> LewinsRail()
@@ -262,7 +262,9 @@ namespace AnalysisPrograms.Production
             // Execute() signed off: Michael Towsey 27th July 2012
             return LewinsRail3OBSOLETE.Dev;
         }
+        */
 
+            /*
         [ArgDescription("Calls PlanesTrainsAndAutomobiles.Execute():  Dates back to 2013. Revise code if intend to use.")]
         public PlanesTrainsAndAutomobiles.Arguments MachinesArgs { get; set; }
         public static Action<PlanesTrainsAndAutomobiles.Arguments> Machines()
@@ -271,6 +273,7 @@ namespace AnalysisPrograms.Production
             // Execute() signed off: Michael Towsey 27th July 2012
             return PlanesTrainsAndAutomobiles.Dev;
         }
+        */
 
         public Segment.Arguments SegmentArgs { get; set; }
         public static Action<Segment.Arguments> Segment()
@@ -295,6 +298,7 @@ namespace AnalysisPrograms.Production
             return SPT.Execute;
         }
 
+        /*
         [ArgDescription("Calls SPR.Execute():  spr = Syntactic Pattern Recognition. OBSOLETE.")]
         public SPR_OBSOLETE.Arguments SprArgs { get; set; }
         public static Action<SPR_OBSOLETE.Arguments> Spr()
@@ -309,13 +313,16 @@ namespace AnalysisPrograms.Production
         {
             return FeltAnalysis.Dev;
         }
+        */
 
+        /*
         [ArgDescription("Calls XiesAnalysis.Execute(): Jie's work area.")]
         public XiesAnalysis.Arguments XiesAnalysisArgs { get; set; }
         public static Action<XiesAnalysis.Arguments> XiesAnalysis()
         {
             return AnalysisPrograms.XiesAnalysis.Execute;
         }
+        */
 
         [ArgDescription("Calls AnalysisPrograms.Sandpit.Dev(): Michael's experimental area.")]
         public Sandpit.Arguments SandpitArgs { get; set; }
@@ -344,6 +351,7 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.FileRenamer.Execute;
         }
 
+        /*
         [ArgDescription("Calls Crow.Dev(): Detects Crow calls - the short 'caw' NOT the longer sigh.")]
         public Crow.Arguments CrowArgs { get; set; }
         public static Action<Crow.Arguments> Crow()
@@ -352,6 +360,7 @@ namespace AnalysisPrograms.Production
             // Execute() signed off: Michael Towsey 27th July 2012
             return AnalysisPrograms.Crow.Dev;
         }
+        */
 
         [ArgDescription("Calls GroundParrotRecogniser.Dev():  event pattern recognition - used for ground-parrots (BRAD version).")]
         public GroundParrotRecogniser.Arguments EprArgs { get; set; }
@@ -369,6 +378,7 @@ namespace AnalysisPrograms.Production
             return EPR.Execute;
         }
 
+        /*
         [ArgDescription("DEPRACATED:  All frog recognizers should now enter through EventRecognizer.Execute() or Multirecognizer.Execute().")]
         public CanetoadOld_OBSOLETE.Arguments CanetoadArgs { get; set; }
         public static Action<CanetoadOld_OBSOLETE.Arguments> Canetoad()
@@ -377,6 +387,7 @@ namespace AnalysisPrograms.Production
             // Execute() signed off: Michael Towsey 27th July 2012
             return CanetoadOld_OBSOLETE.Dev;
         }
+        */
 
         [ArgDescription("No further practical use. Used in 2014 to prepare short recordings of bird calls for analysis by Convolution Neural Networks.")]
         public Audio2InputForConvCnn.Arguments CreateConvCnnSonogramsArgs { get; set; }
@@ -385,6 +396,7 @@ namespace AnalysisPrograms.Production
             return Audio2InputForConvCnn.Execute;
         }
 
+        /*
         [ArgDescription("DEPRACATED:  All frog recognizers should now enter through EventRecognizer.Execute() or Multirecognizer.Execute().")]
         public FrogRibit_OBSOLETE.Arguments FrogRibitArgs { get; set; }
         public static Action<FrogRibit_OBSOLETE.Arguments> FrogRibit()
@@ -392,7 +404,7 @@ namespace AnalysisPrograms.Production
             // frog calls
             return FrogRibit_OBSOLETE.Dev;
         }
-
+        
         [ArgDescription("DEPRACATED:  All frog recognizers should now enter through EventRecognizer.Execute() or Multirecognizer.Execute().")]
         public Frogs_OBSOLETE.Arguments FrogArgs { get; set; }
         public static Action<Frogs_OBSOLETE.Arguments> Frog()
@@ -400,7 +412,9 @@ namespace AnalysisPrograms.Production
             // IAnalyser - detects Gastric Brooding Frog
             return Frogs_OBSOLETE.Dev;
         }
+        */
 
+        /*
         [ArgDescription("DEPRACATED:  All frog recognizers should now enter through EventRecognizer.Execute() or Multirecognizer.Execute().")]
         public RheobatrachusSilus.Arguments RheobatrachusArgs { get; set; }
         public static Action<RheobatrachusSilus.Arguments> Rheobatrachus()
@@ -408,7 +422,9 @@ namespace AnalysisPrograms.Production
             // IAnalyser - detects Gastric Brooding Frog
             return RheobatrachusSilus.Dev;
         }
+        */
 
+        /*
         [ArgDescription("DEPRACATED. Calls GratingDetection.Execute():  An attempt to find alternative to oscillation detection. NOT USEFUL any more!")]
         public GratingDetection_OBSOLETE.Arguments GratingsArgs { get; set; }
         public static Action<GratingDetection_OBSOLETE.Arguments> Gratings()
@@ -440,6 +456,7 @@ namespace AnalysisPrograms.Production
             // find other acoustic events like this
             return FeltTemplates_Use.Execute;
         }
+        */
 
         #endregion
     }

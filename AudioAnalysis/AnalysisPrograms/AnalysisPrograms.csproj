@@ -326,9 +326,6 @@
     <Compile Include="EventStatistics\EventStatisticsAnalysis.cs" />
     <Compile Include="EventStatistics\EventStatisticsEntry.cs" />
     <Compile Include="EventStatistics\ImportedEvent.cs" />
-    <Compile Include="LitoriaFallax_OBSOLETE.cs" />
-    <Compile Include="LimnodynastesConvex_OBSOLETE.cs" />
-    <Compile Include="CanetoadOld_OBSOLETE.cs" />
     <Compile Include="Audio2InputForConvCNN.cs" />
     <Compile Include="ChannelIntegrity.cs" />
     <Compile Include="DrawEasyImage.cs" />
@@ -375,12 +372,10 @@
     <Compile Include="SURFAnalysis.cs" />
     <Compile Include="OscillationsGeneric.cs" />
     <Compile Include="DifferenceSpectrogram.cs" />
-    <Compile Include="Dong.Felt.Main.cs" />
     <Compile Include="DrawLongDurationSpectrograms.cs" />
     <Compile Include="DummyAnalysis.cs" />
     <Compile Include="EPR.cs" />
     <Compile Include="FileRenamer.cs" />
-    <Compile Include="Frogs_OBSOLETE.cs" />
     <Compile Include="GroundParrotRecogniser.cs" />
     <Compile Include="Production\Actions.cs" />
     <Compile Include="Production\CustomArgumentParsing.cs" />
@@ -389,11 +384,9 @@
     <Compile Include="Production\MainEntryUtilities.cs" />
     <Compile Include="Production\Exceptions.cs" />
     <Compile Include="Crow.cs" />
-    <Compile Include="GratingDetection_OBSOLETE.cs" />
     <Compile Include="Human1.cs" />
     <Compile Include="DrawSummaryIndexTracks.cs" />
     <Compile Include="KoalaMale.cs" />
-    <Compile Include="LewinsRail3OBSOLETE.cs" />
     <Compile Include="LSKiwi3.cs" />
     <Compile Include="LSKiwiHelper.cs" />
     <Compile Include="LSKiwiROC.cs" />
@@ -401,23 +394,16 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PlanesTrainsAndAutomobiles.cs" />
-    <Compile Include="Rain_OBSOLETE.cs" />
     <Compile Include="RheobatrachusSilus.cs" />
     <Compile Include="Sandpit.cs" />
     <Compile Include="SpeciesAccumulationCurve.cs" />
     <Compile Include="AcousticIndices.cs" />
-    <Compile Include="FrogRibit_OBSOLETE.cs" />
-    <Compile Include="FeltTemplate_Edit.cs" />
-    <Compile Include="FeltTemplate_Create.cs" />
-    <Compile Include="FeltTemplates_Use.cs" />
     <Compile Include="MainEntry.cs" />
     <Compile Include="Create4Sonograms.cs" />
     <Compile Include="Segment.cs" />
     <Compile Include="SnrAnalysis.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SPR_OBSOLETE.cs" />
     <Compile Include="Spt.cs" />
-    <Compile Include="XiesAnalysis.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj">
