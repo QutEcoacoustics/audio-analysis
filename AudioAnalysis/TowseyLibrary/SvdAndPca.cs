@@ -1,13 +1,11 @@
-﻿namespace TowseyLibrary
+﻿// <copyright file="GraphsAndCharts.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace TowseyLibrary
 {
 
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using MathNet.Numerics;
-    //using MathNet.Numerics.ComplexExtensions;
-    using MathNet.Numerics.LinearAlgebra;
     using MathNet.Numerics.LinearAlgebra.Double;
     using MathNet.Numerics.LinearAlgebra.Generic;
     using MathNet.Numerics.LinearAlgebra.Generic.Factorization;
@@ -22,7 +20,6 @@
     /// </summary>
     public static class SvdAndPca
     {
-
         /// <summary>
         /// The singular value decomposition of an M by N rectangular matrix A has the form
         ///        A(mxn) = U(mxm) * S(mxn) * V'(nxn)
@@ -33,22 +30,19 @@
         ///     Note 1: the transpose of V is used in the decomposition, and that the diagonal matrix S is typically stored as a vector.
         ///     Note 2: the values on the diagonal of S are the square-root of the eigenvalues.
         ///
-        /// THESE TWO METHODS HAVE BEEN TESTED ON TOY EXAMPLES AND WORKED i.e. returned conrrect values
+        /// THESE TWO METHODS HAVE BEEN TESTED ON TOY EXAMPLES AND returned correct values
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
         public static double[] SingularValueDecompositionVector(double[,] matrix)
         {
-            bool computeVectors = false;
-            var svd = new MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseSvd(DenseMatrix.OfArray(matrix), computeVectors);
+            var svd = new MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseSvd(DenseMatrix.OfArray(matrix), false);
             Vector<double> singularValues = svd.S();
             return singularValues.ToArray();
         }
-        public static System.Tuple<Vector<double>, Matrix<double>> SingularValueDecompositionOutput(double[,] matrix)
+
+        public static Tuple<Vector<double>, Matrix<double>> SingularValueDecompositionOutput(double[,] matrix)
         {
             // we want to compute the U and V matrices of singular vectors.
-            bool computeVectors = true;
-            var svd = new MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseSvd(DenseMatrix.OfArray(matrix), computeVectors);
+            var svd = new MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseSvd(DenseMatrix.OfArray(matrix), true);
 
             // svd.W returns the singular values on diagonal in matrix
             //Matrix<double> singularValues = svd.W();
@@ -57,24 +51,21 @@
             Vector<double> singularValues = svd.S();
 
             // svd.U returns the singular vectors in matrix
-            Matrix<double> UMatrix = svd.U();
-            return Tuple.Create(singularValues, UMatrix);
+            Matrix<double> uMatrix = svd.U();
+            return Tuple.Create(singularValues, uMatrix);
         }
-
 
         /// <summary>
         /// returns the eigen values and eigen vectors of a matrix
         /// IMPORTANT: THIS METHOD NEEDS DEBUGGING.
-        /// IT RETURNS THE NEGATIVE VALUES OF HTE EIGEN VECTORS ON A TOY EXMAPLE
+        /// IT RETURNS THE NEGATIVE VALUES OF THE EIGEN VECTORS ON A TOY EXMAPLE
         ///                 double[,] matrix = {
         ///                                { 3.0, -1.0 },
         ///                                { -1.0, 3.0 }
         ///                            };
-        /// eigen values are correct ie, 2.0, 4.0; but in the wrong order????
+        /// eigen values are correct ie, 2.0, 4.0; but in the wrong order
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
-        public static System.Tuple<double[], double[,]> EigenVectors(double[,] matrix)
+        public static Tuple<double[], double[,]> EigenVectors(double[,] matrix)
         {
             Evd<double> eigen = DenseMatrix.OfArray(matrix).Evd();
             Vector<System.Numerics.Complex> eigenvaluesComplex = eigen.EigenValues();
@@ -104,16 +95,16 @@
             return Tuple.Create(eigenvaluesReal, eigenvectorsReal);
         }
 
-        public static void WriteArrayOfComplexNumbers(Vector<System.Numerics.Complex> v)
-        {
-            Console.WriteLine("A column vector of complex numbers");
-            for (int i = 0; i < v.Count; i++)
-            {
-                System.Numerics.Complex c = v[i];
-                double magnitude = c.Magnitude;
-                Console.WriteLine("eigen value[{0}]     {1}     Magnitude={2}", i, c.ToString(), magnitude);
-            }
-        }
+        //public static void WriteArrayOfComplexNumbers(Vector<System.Numerics.Complex> v)
+        //{
+        //    Console.WriteLine("A column vector of complex numbers");
+        //    for (int i = 0; i < v.Count; i++)
+        //    {
+        //        System.Numerics.Complex c = v[i];
+        //        double magnitude = c.Magnitude;
+        //        Console.WriteLine("eigen value[{0}]     {1}     Magnitude={2}", i, c.ToString(), magnitude);
+        //    }
+        //}
 
 
         //=============================================================================
@@ -128,7 +119,6 @@
                                     };
             EigenVectors(matrix1);
 
-
             //double[,] matrix2 = {
             //                        {1, 1},
             //                        {0, 0},
@@ -142,7 +132,7 @@
                                      };
             var tuple = SingularValueDecompositionOutput(matrix2);
             Vector<double> sdValues = tuple.Item1;
-            Matrix<double> UMatrix = tuple.Item2;
+            Matrix<double> uMatrix = tuple.Item2;
 
             foreach (double d in sdValues) Console.WriteLine("sdValue = {0}", d);
             double ratio = (sdValues[0] - sdValues[1]) / sdValues[0];
@@ -151,13 +141,11 @@
             string path1 = @"C:\SensorNetworks\Output\Test\testMatrix.png";
             ImageTools.DrawReversedMatrix(matrix2, path1);
             string path2 = @"C:\SensorNetworks\Output\Test\SvdMatrix.png";
-            ImageTools.DrawReversedMDNMatrix(UMatrix, path2);
-
+            ImageTools.DrawReversedMDNMatrix(uMatrix, path2);
         }
 
         public static void ExampleOfSVD_2()
         {
-
             //// this example given in
             //double[,] matrix1 = {
             //                            { 1.0, 1.0, 1.0, 0.0, 0.0 },
@@ -204,12 +192,8 @@
              * The fifth dimension indicates a grouping in which doctor and hospital occur in the absence of wheel.
              * */
 
-
-
-
             // we want to compute the U and V matrices of singular vectors.
-            bool computeVectors = true;
-            var svd = new MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseSvd(DenseMatrix.OfArray(matrix1), computeVectors);
+            var svd = new MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseSvd(DenseMatrix.OfArray(matrix1), true);
 
             // svd.S returns the singular values in a vector
             Vector<double> singularValues = svd.S();
@@ -217,19 +201,18 @@
                 Console.WriteLine("singular value = {0}", d);
 
             // svd.U returns the LEFT singular vectors in matrix
-            Matrix<double> UMatrix = svd.U();
+            Matrix<double> uMatrix = svd.U();
             Console.WriteLine("\n\n");
-            MatrixTools.WriteMatrix(UMatrix.ToArray());
+            MatrixTools.WriteMatrix(uMatrix.ToArray());
             string path1 = @"C:\SensorNetworks\Output\Test\testMatrixSVD_U.png";
-            ImageTools.DrawReversedMDNMatrix(UMatrix, path1);
+            ImageTools.DrawReversedMDNMatrix(uMatrix, path1);
 
             // svd.VT returns the RIGHT singular values
-            Matrix<double> VMatrix = svd.VT();
+            Matrix<double> vMatrix = svd.VT();
             Console.WriteLine("\n\n");
-            MatrixTools.WriteMatrix(VMatrix.ToArray());
+            MatrixTools.WriteMatrix(vMatrix.ToArray());
             string path2 = @"C:\SensorNetworks\Output\Test\testMatrixSVD_VT.png";
-            ImageTools.DrawReversedMDNMatrix(VMatrix, path2);
-
+            ImageTools.DrawReversedMDNMatrix(vMatrix, path2);
         }
 
         /// <summary>
@@ -255,10 +238,11 @@
             //                    1, 1, 0.5, 0, -0.5, -1.0, -1.0, -0.5, 0, 0.5, 1.0, 1.0, 0.5, 0.0, -0.5, -1, -1, -0.5, 0, 0.5, 1.0, 1.0, 0.5, 0.0, -0.5, -1.0, -1.0,  -0.5, 0, 0.5, 1.0, 1.0 };
 
             //this 128 sample signal contains 32 cycles
-            double[] signal = { 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
-                                    1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
-                                    1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
-                                    1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, };
+            //double[] signal = { 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
+            //                        1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
+            //                        1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
+            //                        1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, };
+
             // add noise to signal
             RandomNumber rn = new RandomNumber();
             double[] rv = RandomNumber.GetRandomVector(128, rn);
@@ -268,59 +252,46 @@
             // relative noise amplitude
             double noiseAmplitude = 2.0;
             DataTools.Normalise(rv, 0.0, noiseAmplitude);
+
             // signal plus noise
-            signal = DataTools.AddVectors(signal, rv);
-            // normalising seems to make little difference to the result
-            signal = DataTools.normalise(signal);
-
-            int levelNumber = 5;
-            //double[] V = Wavelets.GetWPDSequenceAggregated(signal, levelNumber);
-
-            //for (int i = 0; i < V.Length; i++)
-            //{
-            //    if (Math.Abs(V[i]) > 0.01) Console.WriteLine("energy[{0}] = {1}", i, V[i]);
-            //    else Console.WriteLine("energy[{0}] = {1}", i, " ");
-            //}
+            //signal = DataTools.AddVectors(signal, rv);
         }
-
 
         public static void TestEigenValues()
         {
-            /// used to caluclate eigen values and singular valuse
-                //double[,] M = {
-                //                    { 1.0,  1.0 },
-                //                    { 1.0,  1.0 }
-                //                };
-                //double[,] M = {
-                //                    { 2.0,  7.0 },
-                //                    {-1.0, -6.0 }
-                //                };
+            // used to caluclate eigen values and singular valuse
+            //double[,] M = {
+            //                    { 1.0,  1.0 },
+            //                    { 1.0,  1.0 }
+            //                };
+            //double[,] M = {
+            //                    { 2.0,  7.0 },
+            //                    {-1.0, -6.0 }
+            //                };
 
-                // NOTE: When the matrix is square symmetric, the singular values equal the eigenvalues.
-                // e1=4.0     e2=2.0 and the singular values are the same
-                double[,] M = {
-                                    { 3.0, -1.0 },
-                                    {-1.0,  20.0 },
-                                };
+            // NOTE: When the matrix is square symmetric, the singular values equal the eigenvalues.
+            // e1=4.0     e2=2.0 and the singular values are the same
+            double[,] m = {
+                                { 3.0, -1.0 },
+                                {-1.0,  20.0 },
+                            };
 
-                // e1=e2=0.333333
-                //double[,] M = {
-                //                    { 1.0, -1.0 },
-                //                    {4/(double)9,  -1.0/(double)3 }
-                //                };
-                System.Tuple<double[], double[,]> result = EigenVectors(M);
+            // e1=e2=0.333333
+            //double[,] M = {
+            //                    { 1.0, -1.0 },
+            //                    {4/(double)9,  -1.0/(double)3 }
+            //                };
+            // Tuple<double[], double[,]> result = EigenVectors(m);
 
-                Log.WriteLine("\n\n Singlar values");
-                double[] singValues = SingularValueDecompositionVector(M);
-                foreach (double value in singValues)
-                {
-                    Console.WriteLine(value);
-                }
+            Log.WriteLine("\n\n Singlar values");
+            double[] singValues = SingularValueDecompositionVector(m);
+            foreach (double value in singValues)
+            {
+                Console.WriteLine(value);
+            }
 
-
-                double[] eigenValues = StructureTensor.CalculateEigenValues(M);
-                Console.WriteLine("\n\n EigenValues = {0} and {1}", eigenValues[0], eigenValues[1]);
+            double[] eigenValues = StructureTensor.CalculateEigenValues(m);
+            Console.WriteLine("\n\n EigenValues = {0} and {1}", eigenValues[0], eigenValues[1]);
         }
-
     }
 }

@@ -9,47 +9,6 @@ namespace AudioAnalysisTools.DSP
 
     public class MFCCStuff
     {
-        public static void Main(string[] args)
-        {
-            int DCTLength = 32;
-            int coeffCount = 32;
-
-            double[,] cosines = Cosines(DCTLength, coeffCount + 1); //set up the cosine coefficients
-
-            var array = new double[DCTLength];
-
-            //linear spectrum
-//            for (int i = 0; i < DCTLength; i++) if((i % 16)==0) array[i] = 10;
-            //sinusoid spectrum
-            int k = 4;
-            double kPiOnM = k * 2 * Math.PI / DCTLength;
-            for (int i = 0; i < DCTLength; i++) // spectral bin
-            {
-                array[i] = 10 * Math.Cos(kPiOnM * (i + 0.5)); //can also be Cos(kPiOnM * (m - 0.5)
-            }
-
-            //array = DataTools.SubtractMean(array);
-            array = DataTools.normalise2UnitLength(array);
-
-            //array = DataTools.NormaliseMatrixValues(array);
-            DataTools.writeBarGraph(array);
-
-            double[] dct = DCT(array, cosines);
-            for (int i = 0; i < dct.Length; i++)
-            {
-                dct[i] = Math.Abs(dct[i]*10);
-            }
-
-            dct[0] = 0.0; //dct[1] = 0.0; dct[2] = 0.0; dct[3] = 0.0;
-
-            //int maxIndex = DataTools.GetMaxIndex(dct);
-            //double max = dct[maxIndex];
-            //DataTools.MinMax(dct, out min, out max);
-            DataTools.writeBarGraph(dct);
-            LoggedConsole.WriteLine("FINISHED");
-            Console.ReadLine();
-        }
-
         /// <summary>
         /// Converts spectral amplitudes directly to dB, normalising for window power and sample rate.
         /// NOTE 1: The window contributes power to the signal which must subsequently be removed from the spectral power.
@@ -100,7 +59,7 @@ namespace AudioAnalysisTools.DSP
                     }
                     else
                     {
-                        spectra[i, j] = 10 * Math.Log10(amplitudeM[i, j] * amplitudeM[i, j] *2 / windowPower / sampleRate);
+                        spectra[i, j] = 10 * Math.Log10(amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower / sampleRate);
                     }
                 }
             } //end of all freq bins
@@ -129,7 +88,7 @@ namespace AudioAnalysisTools.DSP
             int[] state = new int[L];
             int lowEnergyId = 0;
             int hiEnergyId = -k1_k2delay; // to prevent setting early frames to state=2
-            for (int i = 0; i < L; i++) // foreach time step
+            for (int i = 0; i < L; i++)
             {
                 if (decibels[i] < lowerDbThreshold)
                 {
@@ -165,7 +124,7 @@ namespace AudioAnalysisTools.DSP
             // fill in probable inter-syllable gaps
             bool sig = true;
             int count = syllableGap; //do not want silence before first vocal frame to be treated as gap
-            for (int i = 1; i < decibels.Length; i++) //foreach time step
+            for (int i = 1; i < decibels.Length; i++)
             {
                 if (state[i] == 0)
                 {
@@ -184,7 +143,7 @@ namespace AudioAnalysisTools.DSP
                         }
                     }
 
-                    sig = true;
+                        sig = true;
                         count = 0;
                     }
             }
@@ -196,7 +155,7 @@ namespace AudioAnalysisTools.DSP
         {
             double dX = x1 - x0;
             double dY = y1 - y0;
-            double ratio = (x2-x0) / dX;
+            double ratio = (x2 - x0) / dX;
             double y2 = y0 + (ratio * dY);
             return y2;
         }
@@ -242,8 +201,6 @@ namespace AudioAnalysisTools.DSP
         /// 1000Hz is used as the common reference point i.e. 1000Hz = 1000Mel.  
         /// In speech processing, typically use a linear conversion below 1000Hz.
         /// </summary>
-        /// <param name="f"></param>
-        /// <returns></returns>
         public static double Mel(double f)
         {
             if (f <= 1000)
@@ -251,7 +208,7 @@ namespace AudioAnalysisTools.DSP
                 return f; //linear below 1 kHz
             }
 
-            return 2595.0 * Math.Log10(1.0 + f / 700.0);
+            return 2595.0 * Math.Log10(1.0 + (f / 700.0));
         }
 
         public static double InverseMel(double m)
@@ -264,14 +221,14 @@ namespace AudioAnalysisTools.DSP
             return (Math.Pow(10.0, m / 2595.0) - 1.0) * 700.0;
         }
 
-        public static double HerzTranform(double f, double C, double div)
+        public static double HerzTranform(double f, double c, double div)
         {
-            return C * Math.Log10(1.0 + f / div);
+            return c * Math.Log10(1.0 + (f / div));
         }
 
-        public static double InverseHerzTranform(double m, double C, double div)
+        public static double InverseHerzTranform(double m, double c, double div)
         {
-            return (Math.Pow(10.0, m / C) - 1.0) * div;
+            return (Math.Pow(10.0, m / c) - 1.0) * div;
         }
 
         /// <summary>
@@ -281,11 +238,10 @@ namespace AudioAnalysisTools.DSP
         /// </summary>
         /// <param name="matrix">the sonogram</param>
         /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist</param>
-        /// <param name="Nyquist">max frequency in original spectra</param>
+        /// <param name="nyquist">max frequency in original spectra</param>
         /// <param name="minFreq">min freq in passed sonogram matrix</param>
         /// <param name="maxFreq">max freq in passed sonogram matrix</param>
-        /// <returns></returns>
-        public static double[,] LinearFilterBank(double[,] matrix, int filterBankCount, double Nyquist, int minFreq, int maxFreq)
+        public static double[,] LinearFilterBank(double[,] matrix, int filterBankCount, double nyquist, int minFreq, int maxFreq)
         {
             int freqRange = maxFreq - minFreq;
             if (freqRange <= 0)
@@ -294,7 +250,7 @@ namespace AudioAnalysisTools.DSP
                 throw new Exception("Speech.LinearFilterBank(): WARNING!!!! Freq range = zero. Check values of min & max freq.");
             }
 
-            double fraction = freqRange / Nyquist;
+            double fraction = freqRange / nyquist;
             filterBankCount = (int)Math.Ceiling(filterBankCount * fraction);
 
             int M = matrix.GetLength(0); //number of spectra or time steps
@@ -304,10 +260,11 @@ namespace AudioAnalysisTools.DSP
             double opBand = freqRange / (double)filterBankCount;  //width of output freq band
 
             //LoggedConsole.WriteLine(" NCount=" + N + " filterCount=" + filterBankCount + " freqRange=" + freqRange + " ipBand=" + ipBand.ToString("F1") + " opBand=" + opBand.ToString("F1"));
-
-            for (int i = 0; i < M; i++) //for all spectra or time steps
+            //for all spectra or time steps
+            for (int i = 0; i < M; i++)
             {
-                for (int j = 0; j < filterBankCount; j++) //for all output bands in the frequency range
+                //for all output bands in the frequency range
+                for (int j = 0; j < filterBankCount; j++)
                 {
                     // find top and bottom input bin id's corresponding to the output interval
                     double opA = (j * opBand) + minFreq;
@@ -322,7 +279,7 @@ namespace AudioAnalysisTools.DSP
 
                     if (ipAint > 0)
                     {
-                        double ya = LinearInterpolate((double)(ipAint - 1), (double)ipAint, matrix[i, ipAint - 1], matrix[i, ipAint], ipA);
+                        double ya = LinearInterpolate(ipAint - 1, ipAint, matrix[i, ipAint - 1], matrix[i, ipAint], ipA);
                         sum += LinearIntegral(ipA * ipBand, ipAint * ipBand, ya, matrix[i, ipAint]);
                     }
 
@@ -338,7 +295,7 @@ namespace AudioAnalysisTools.DSP
 
                     if (ipBint < N)
                     {
-                        double yb = LinearInterpolate((double)ipBint, (double)(ipBint + 1), matrix[i, ipBint], matrix[i, ipBint + 1], ipB);
+                        double yb = LinearInterpolate(ipBint, ipBint + 1, matrix[i, ipBint], matrix[i, ipBint + 1], ipB);
                         sum += LinearIntegral(ipBint * ipBand, ipB * ipBand, matrix[i, ipBint], yb);
                     }
 
@@ -363,21 +320,21 @@ namespace AudioAnalysisTools.DSP
         /// </summary>
         /// <param name="matrix">the sonogram</param>
         /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist</param>
-        /// <param name="Nyquist">max frequency in original spectra</param>
-        /// <returns></returns>
-        public static double[,] MelFilterBank(double[,] matrix, int filterBankCount, double Nyquist)
+        /// <param name="nyquist">max frequency in original spectra</param>
+        public static double[,] MelFilterBank(double[,] matrix, int filterBankCount, double nyquist)
         {
             int M = matrix.GetLength(0); //number of spectra or time steps
             int N = matrix.GetLength(1); //number of Hz bands = 2^N +1
             double[,] outData = new double[M, filterBankCount];
-            double linBand = Nyquist / (double)N;
-            double melBand = Mel(Nyquist) / (double)filterBankCount;  //width of mel band
+            double linBand = nyquist / N;
+            double melBand = Mel(nyquist) / filterBankCount;  //width of mel band
 
             //LoggedConsole.WriteLine(" linBand=" + linBand + " melBand=" + melBand);
-
-            for (int i = 0; i < M; i++) //for all spectra or time steps
+            //for all spectra or time steps
+            for (int i = 0; i < M; i++)
             {
-                for (int j = 0; j < filterBankCount; j++) //for all mel bands
+                //for all mel bands
+                for (int j = 0; j < filterBankCount; j++)
                 {
                     double a = InverseMel(j * melBand) / linBand;       //location of lower f in Hz bin units
                     double b = InverseMel((j + 1) * melBand) / linBand; //location of upper f in Hz bin units
@@ -386,19 +343,20 @@ namespace AudioAnalysisTools.DSP
 
                     double sum = 0.0;
 
-                    if (bi < ai) //a and b are in same Hz band
+                    if (bi < ai)
                     {
+                        //a and b are in same Hz band
                         ai = (int)Math.Floor(a);
                         bi = (int)Math.Ceiling(b);
-                        double ya = LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], a);
-                        double yb = LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], b);
+                        double ya = LinearInterpolate(ai, bi, matrix[i, ai], matrix[i, bi], a);
+                        double yb = LinearInterpolate(ai, bi, matrix[i, ai], matrix[i, bi], b);
                         sum = MelIntegral(a * linBand, b * linBand, ya, yb);
                     }
                     else
                     {
                         if (ai > 0)
                         {
-                            double ya = LinearInterpolate((double)(ai - 1), (double)ai, matrix[i, ai - 1], matrix[i, ai], a);
+                            double ya = LinearInterpolate(ai - 1, ai, matrix[i, ai - 1], matrix[i, ai], a);
                             sum += MelIntegral(a * linBand, ai * linBand, ya, matrix[i, ai]);
                         }
 
@@ -414,7 +372,7 @@ namespace AudioAnalysisTools.DSP
 
                         if (bi < N)
                         {
-                            double yb = LinearInterpolate((double)bi, (double)(bi + 1), matrix[i, bi], matrix[i, bi + 1], b);
+                            double yb = LinearInterpolate(bi, bi + 1, matrix[i, bi], matrix[i, bi + 1], b);
                             sum += MelIntegral(bi * linBand, b * linBand, matrix[i, bi], yb);
                         }
                     }
@@ -424,7 +382,6 @@ namespace AudioAnalysisTools.DSP
             }
 
             //implicit end of for all spectra or time steps
-
             return outData;
         }
 
@@ -435,38 +392,38 @@ namespace AudioAnalysisTools.DSP
         /// </summary>
         /// <param name="matrix">the sonogram</param>
         /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist</param>
-        /// <param name="Nyquist">max frequency in original spectra</param>
+        /// <param name="nyquist">max frequency in original spectra</param>
         /// <param name="minFreq">min freq in the passed sonogram matrix</param>
         /// <param name="maxFreq">max freq in the passed sonogram matrix</param>
-        /// <returns></returns>
-        public static double[,] MelFilterBank(double[,] matrix, int filterBankCount, double Nyquist, int minFreq, int maxFreq)
+        public static double[,] MelFilterBank(double[,] matrix, int filterBankCount, double nyquist, int minFreq, int maxFreq)
         {
-            double freqRange  = maxFreq - minFreq;
+            double freqRange = maxFreq - minFreq;
             if (freqRange <= 0)
             {
                 Log.WriteLine("Speech.MelFilterBank(): WARNING!!!! Freq range = zero");
                 throw new Exception("Speech.LinearFilterBank(): WARNING!!!! Freq range = zero. Check values of min & max freq.");
             }
 
-            double melNyquist = Mel(Nyquist);
-            double minMel     = Mel(minFreq);
-            double maxMel     = Mel(maxFreq);
-            double melRange   = maxMel - minMel;
-            double fraction   = melRange / melNyquist;
-            filterBankCount   = (int)Math.Ceiling(filterBankCount * fraction);
+            double melNyquist = Mel(nyquist);
+            double minMel = Mel(minFreq);
+            double maxMel = Mel(maxFreq);
+            double melRange = maxMel - minMel;
+            double fraction = melRange / melNyquist;
+            filterBankCount = (int)Math.Ceiling(filterBankCount * fraction);
 
             int M = matrix.GetLength(0); //number of spectra or time steps
             int N = matrix.GetLength(1); //number of bins in freq band
             double[,] outData = new double[M, filterBankCount];
-            double linBand = freqRange / (N-1); //(N-1) because have additional DC band
-            double melBand = melRange / (double)filterBankCount;  //width of mel band
+            double linBand = freqRange / (N - 1); //(N-1) because have additional DC band
+            double melBand = melRange / filterBankCount;  //width of mel band
 
             //LoggedConsole.WriteLine(" N     Count=" + N + " freqRange=" + freqRange.ToString("F1") + " linBand=" + linBand.ToString("F3"));
             //LoggedConsole.WriteLine(" filterCount=" + filterBankCount + " melRange=" + melRange.ToString("F1") + " melBand=" + melBand.ToString("F3"));
-
-            for (int i = 0; i < M; i++) //for all spectra or time steps
+            //for all spectra or time steps
+            for (int i = 0; i < M; i++)
             {
-                for (int j = 0; j < filterBankCount; j++) //for all mel bands in the frequency range
+                //for all mel bands in the frequency range
+                for (int j = 0; j < filterBankCount; j++)
                 {
                     // find top and bottom freq bin id's corresponding to the mel interval
                     double melA = (j * melBand) + minMel;
@@ -479,19 +436,20 @@ namespace AudioAnalysisTools.DSP
                     //if (i < 2) LoggedConsole.WriteLine("i="+i+" j="+j+": a=" + a.ToString("F1") + " b=" + b.ToString("F1") + " ai=" + ai + " bi=" + bi);
                     double sum = 0.0;
 
-                    if (bi < ai) //a and b are in same Hz band
+                    if (bi < ai)
                     {
+                        //a and b are in same Hz band
                         ai = (int)Math.Floor(ipA);
                         bi = (int)Math.Ceiling(ipB);
-                        double ya = LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], ipA);
-                        double yb = LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], ipB);
+                        double ya = LinearInterpolate(ai, bi, matrix[i, ai], matrix[i, bi], ipA);
+                        double yb = LinearInterpolate(ai, bi, matrix[i, ai], matrix[i, bi], ipB);
                         sum = MelIntegral(ipA * linBand, ipB * linBand, ya, yb);
                     }
                     else
                     {
                         if (ai > 0)
                         {
-                            double ya = LinearInterpolate((double)(ai - 1), (double)ai, matrix[i, ai - 1], matrix[i, ai], ipA);
+                            double ya = LinearInterpolate(ai - 1, ai, matrix[i, ai - 1], matrix[i, ai], ipA);
                             sum += MelIntegral(ipA * linBand, ai * linBand, ya, matrix[i, ai]);
                         }
 
@@ -506,9 +464,9 @@ namespace AudioAnalysisTools.DSP
                             sum += MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
                         }
 
-                        if (bi < (N-1))
+                        if (bi < (N - 1))
                         {
-                            double yb = LinearInterpolate((double)bi, (double)(bi + 1), matrix[i, bi], matrix[i, bi + 1], ipB);
+                            double yb = LinearInterpolate(bi, bi + 1, matrix[i, bi], matrix[i, bi + 1], ipB);
                             sum += MelIntegral(bi * linBand, ipB * linBand, matrix[i, bi], yb);
                         }
                     }
@@ -521,84 +479,8 @@ namespace AudioAnalysisTools.DSP
             }
 
             //implicit end of for all spectra or time steps
-
             return outData;
         }
-
-        // Following two commented methods were an attempt to emulate the MATLAB code for performing the Mel Converison
-        //In the end decided to stick with the INTEGRATION APPROACH.
-
-        //public static double[,] MelFilterbank(double[,] matrix, int filterBankCount, double Nyquist)
-        //{
-        //    LoggedConsole.WriteLine(" MelFilterbank(double[,] matrix, int filterBankCount, double Nyquist) -- uses the Matlab algorithm");
-        //    int M = matrix.GetLength(0); //number of spectra or time steps
-        //    int N = matrix.GetLength(1); //number of Hz bands = 2^N +1
-        //    int FFTbins = N - 1;
-        //    double[,] filterBank = CreateMelFilterBank(filterBankCount, FFTbins, Nyquist);
-        //    //string fPath = @"C:\SensorNetworks\Sonograms\filterbank.bmp";
-        //    //ImageTools.DrawMatrix(filterBank, fPath);
-
-        //    double[,] outData = new double[M, filterBankCount];
-
-        //    for (int i = 0; i < M; i++) //for all spectra or time steps
-        //    {
-        //        double sum = 0.0;
-        //        for (int j = 0; j < filterBankCount; j++) //for all mel bands
-        //        {
-        //            for (int f = 0; f < filterBankCount; f++) sum += (filterBank[j,f] * matrix[i,f]);
-        //            outData[i, j] = sum; //
-        //        } //end of for all mel bands
-        //    }//end of for all spectra or time steps
-
-        //    return outData;
-        //}
-
-        //public static double[,] CreateMelFilterBank(int filterBankCount, int FFTbins, double Nyquist)
-        //{
-        //    double hzGap = Nyquist / FFTbins;
-        //    double melGap = Speech.Mel(Nyquist) / (double)(filterBankCount);  //mel gap between filter centres
-        //    //LoggedConsole.WriteLine(" melNyquist=" + Speech.Mel(Nyquist) + " melGap=" + melGap);
-
-        //    double[] filterCentres = new double[filterBankCount + 2]; //+2 for outside edges
-        //    for (int i = 1; i <= filterBankCount+1; i++) filterCentres[i] = Speech.InverseMel(i * melGap);
-        //    //DataTools.writeArray(filterCentres);
-
-        //    double[] filterBases   = new double[filterBankCount + 2]; //excludes outside edges
-        //    for (int i = 1; i <= filterBankCount; i++) filterBases[i] = filterCentres[i+1] - filterCentres[i-1];
-        //    //DataTools.writeArray(filterBases);
-
-        //    double[] filterHeights = new double[filterBankCount + 2]; //excludes outside edges which have zero height
-        //    for (int i = 1; i <= filterBankCount; i++) filterHeights[i] = 2 / filterBases[i];
-        //    //DataTools.writeArray(filterHeights);
-
-        //    double[,] filters = new double[filterBankCount, FFTbins];
-        //    for (int i = 1; i < filterBankCount; i++)
-        //    {
-        //        int lowerIndex  = (int)Math.Truncate(filterCentres[i - 1] / hzGap);
-        //        int centreIndex = (int)Math.Round(filterCentres[i] / hzGap);
-        //        int upperIndex  = (int)Math.Ceiling(filterCentres[i + 1] / hzGap);
-        //        //set up ascending side of triangle
-        //        int halfBase = centreIndex - lowerIndex;
-        //        for (int j = lowerIndex; j < centreIndex; j++)
-        //        {
-        //            filters[i, j] = filterHeights[i] * (j - lowerIndex) / (double)halfBase;
-        //            //LoggedConsole.WriteLine(i + "  " + j + "  " + filters[i, j]);
-        //        }
-        //        //set up decending side of triangle
-        //        halfBase = upperIndex - centreIndex;
-        //        for (int j = centreIndex; j < upperIndex; j++)
-        //        {
-        //            filters[i, j] = filterHeights[i] * (upperIndex - j) / (double)halfBase;
-        //            //LoggedConsole.WriteLine(i + "  " + j + "  " + filters[i, j]);
-        //        }
-
-        //    }//end over all filters
-        //    //following two lines write matrix of cos values for checking.
-        //    //string fPath = @"C:\SensorNetworks\Sonograms\filterBank.txt";
-        //    //FileTools.WriteMatrix2File_Formatted(filters, fPath, "F3");
-
-        //    return filters;
-        //}
 
         //********************************************************************************************************************
         //********************************************************************************************************************
@@ -608,7 +490,7 @@ namespace AudioAnalysisTools.DSP
         public static double[,] Cepstra(double[,] spectra, int coeffCount)
         {
             int frameCount = spectra.GetLength(0);  //number of frames
-            int binCount   = spectra.GetLength(1);  //number of filters in filter bank
+            int binCount = spectra.GetLength(1);  //number of filters in filter bank
 
             //set up the cosine coefficients. Need one extra to compensate for DC coeff.
             double[,] cosines = Cosines(binCount, coeffCount + 1);
@@ -621,70 +503,62 @@ namespace AudioAnalysisTools.DSP
             //string fPath = @"C:\SensorNetworks\Sonograms\cosines.bmp";
             //ImageTools.DrawMatrix(cosines, fPath);
 
-            double[,] OP = new double[frameCount, coeffCount];
-            for (int i = 0; i < frameCount; i++) //foreach time step
+            double[,] op = new double[frameCount, coeffCount];
+            for (int i = 0; i < frameCount; i++)
             {
                 double[] spectrum = DataTools.GetRow(spectra, i); //transfer matrix row=i to vector
                 double[] cepstrum = DCT(spectrum, cosines);
 
                 for (int j = 0; j < coeffCount; j++)
                 {
-                    OP[i, j] = cepstrum[j+1]; //+1 in order to skip first DC value
+                    op[i, j] = cepstrum[j + 1]; //+1 in order to skip first DC value
                 }
             } //end of all frames
 
-            return OP;
+            return op;
         }
 
         /// <summary>
         /// use this version when want to make matrix of Cosines only one time.
         /// </summary>
-        /// <param name="spectra"></param>
-        /// <param name="coeffCount"></param>
-        /// <param name="cosines"></param>
-        /// <returns></returns>
         public static double[,] Cepstra(double[,] spectra, int coeffCount, double[,] cosines)
         {
             int frameCount = spectra.GetLength(0);  //number of frames
-
-            //int binCoun = spectra.GetLength(1);    // number of filters in filter bank
-            double[,] OP = new double[frameCount, coeffCount];
-            for (int i = 0; i < frameCount; i++) //foreach time step
+            double[,] op = new double[frameCount, coeffCount];
+            for (int i = 0; i < frameCount; i++)
             {
                 double[] spectrum = DataTools.GetRow(spectra, i); //transfer matrix row=i to vector
                 double[] cepstrum = DCT(spectrum, cosines);
 
                 for (int j = 0; j < coeffCount; j++)
                 {
-                    OP[i, j] = cepstrum[j + 1]; //+1 in order to skip first DC value
+                    op[i, j] = cepstrum[j + 1]; //+1 in order to skip first DC value
                 }
             } //end of all frames
 
-            return OP;
+            return op;
         }
 
-        public static double[,] DCT_2D(double[,] spectra, int coeffCount)
-        {
-            int frameCount = spectra.GetLength(0);  //number of frames
-            int binCount = spectra.GetLength(1);    // number of filters in filter bank
-
-            double[,] OP = Cepstra(spectra, coeffCount);
-            return OP;
-        }
+        //public static double[,] DCT_2D(double[,] spectra, int coeffCount)
+        //{
+        //    double[,] op = Cepstra(spectra, coeffCount);
+        //    return op;
+        //}
 
         /// <summary>
-        ///
+        /// cosines
         /// </summary>
         /// <param name="spectrumLength">Same as bin count or filter bank count ie length of spectrum = N</param>
-        /// <param name="coeffCount"></param>
-        /// <returns></returns>
+        /// <param name="coeffCount">count of coefficients</param>
         public static double[,] Cosines(int spectrumLength, int coeffCount)
         {
             double[,] cosines = new double[coeffCount + 1, spectrumLength]; //get an extra coefficient because do not want DC coeff
-            for (int k = 0; k < coeffCount + 1; k++) //foreach coeff
+            for (int k = 0; k < coeffCount + 1; k++)
             {
                 double kPiOnM = k * Math.PI / spectrumLength;
-                for (int m = 0; m < spectrumLength; m++) // spectral bin
+
+                // for each spectral bin
+                for (int m = 0; m < spectrumLength; m++)
                 {
                     cosines[k, m] = Math.Cos(kPiOnM * (m + 0.5)); //can also be Cos(kPiOnM * (m - 0.5)
                 }
@@ -699,9 +573,11 @@ namespace AudioAnalysisTools.DSP
             int coeffCount = cosines.GetLength(0);
 
             double k0Factor = 1 / Math.Sqrt(length);
-            double kLFactor = Math.Sqrt(2/(double)length);
+            double kLFactor = Math.Sqrt(2 / (double)length);
             double[] cepstrum = new double[coeffCount];
-            for (int k = 0; k < coeffCount; k++) //foreach coeff
+
+            //foreach coeff
+            for (int k = 0; k < coeffCount; k++)
             {
                 double factor = kLFactor;
                 if (k == 0)
@@ -710,21 +586,23 @@ namespace AudioAnalysisTools.DSP
                 }
 
                 double sum = 0.0;
-                for (int m = 0; m < length; m++) // over all spectral bins
+
+                // over all spectral bins
+                for (int m = 0; m < length; m++)
                 {
-                    sum += (spectrum[m] * cosines[k,m]);
+                    sum += spectrum[m] * cosines[k,m];
                 }
 
-                cepstrum[k] = factor*sum;
+                cepstrum[k] = factor * sum;
             }
 
             return cepstrum;
         }
 
         public static int[,] Zigzag12X12 = {
-        {  1,  2,  6,  7, 15, 16, 28, 29, 45, 46, 66, 67},
-        {  3,  5,  8, 14, 17, 27, 30, 44, 47, 65, 68, 89},
-        {  4,  9, 13, 18, 26, 31, 43, 48, 64, 69, 88, 90},
+        { 1,  2,  6,  7, 15, 16, 28, 29, 45, 46, 66, 67},
+        { 3,  5,  8, 14, 17, 27, 30, 44, 47, 65, 68, 89},
+        { 4,  9, 13, 18, 26, 31, 43, 48, 64, 69, 88, 90},
         { 10, 12, 19, 25, 32, 42, 49, 63, 70, 87, 91,108},
         { 11, 20, 24, 33, 41, 50, 62, 71, 86, 92,107,109},
         { 21, 23, 34, 40, 51, 61, 72, 85, 93,106,110,123},
@@ -742,58 +620,16 @@ namespace AudioAnalysisTools.DSP
         //*********************************************** GET ACOUSTIC VECTORS
 
         /// <summary>
-        /// This method assumes that the supplied mfcc matrix contains dB values in column one.
-        /// These are added in from the supplied dB array.
-        /// </summary>
-        /// <param name="mfcc"></param>
-        /// <param name="includeDelta"></param>
-        /// <param name="includeDoubleDelta"></param>
-        /// <returns></returns>
-        public static double[,] AcousticVectors(double[,] mfcc, bool includeDelta, bool includeDoubleDelta)
-        {
-            //both the matrix of mfcc's and the array of decibels have been normed in 0-1.
-            int frameCount = mfcc.GetLength(0); //number of frames
-            int coeffcount = mfcc.GetLength(1); //number of MFCCs + 1 for energy
-            int dim = coeffcount; //
-            if (includeDelta)
-            {
-                dim += coeffcount;
-            }
-
-            if (includeDoubleDelta)
-            {
-                dim += coeffcount;
-            }
-
-            double[,] acousticM = new double[frameCount, dim];
-            for (int t = 0; t < frameCount; t++) //for all spectra or time steps
-            {
-                double[] fv = GetFeatureVector(mfcc, t, includeDelta, includeDoubleDelta);//get feature vector for frame (t)
-                for (int i = 0; i < dim; i++)
-                {
-                    acousticM[t, i] = fv[i];  //transfer feature vector to acoustic matrix.
-                }
-            }
-
-            return acousticM;
-        } //AcousticVectors()
-
-        /// <summary>
         /// This method assumes that the supplied mfcc matrix DOES NOT contain dB values in column one.
         /// These are added in from the supplied dB array.
         /// </summary>
-        /// <param name="mfcc"></param>
-        /// <param name="dBNormed"></param>
-        /// <param name="includeDelta"></param>
-        /// <param name="includeDoubleDelta"></param>
-        /// <returns></returns>
         public static double[,] AcousticVectors(double[,] mfcc, double[] dBNormed, bool includeDelta, bool includeDoubleDelta)
         {
             //both the matrix of mfcc's and the array of decibels have been normed in 0-1.
             int frameCount = mfcc.GetLength(0); //number of frames
-            int mfccCount  = mfcc.GetLength(1); //number of MFCCs
+            int mfccCount = mfcc.GetLength(1); //number of MFCCs
             int coeffcount = mfccCount + 1; //number of MFCCs + 1 for energy
-            int dim = coeffcount; //
+            int dim = coeffcount;
             if (includeDelta)
             {
                 dim += coeffcount;
@@ -804,10 +640,8 @@ namespace AudioAnalysisTools.DSP
                 dim += coeffcount;
             }
 
-            //LoggedConsole.WriteLine(" mfccCount=" + mfccCount + " coeffcount=" + coeffcount + " dim=" + dim);
-
             double[,] acousticM = new double[frameCount, dim];
-            for (int t = 0; t < frameCount; t++) //for all spectra or time steps
+            for (int t = 0; t < frameCount; t++)
             {
                 double[] fv = GetFeatureVector(dBNormed, mfcc, t, includeDelta, includeDoubleDelta);//get feature vector for frame (t)
                 for (int i = 0; i < dim; i++)
@@ -817,14 +651,14 @@ namespace AudioAnalysisTools.DSP
             }
 
             return acousticM;
-        } //AcousticVectors()
+        }
 
         public static double[] AcousticVector(int index, double[,] mfcc, double[] dB, bool includeDelta, bool includeDoubleDelta)
         {
             //both the matrix of mfcc's and the array of decibels have been normed in 0-1.
             int mfccCount = mfcc.GetLength(1); //number of MFCCs
             int coeffcount = mfccCount + 1; //number of MFCCs + 1 for energy
-            int dim = coeffcount; //
+            int dim = coeffcount;
             if (includeDelta)
             {
                 dim += coeffcount;
@@ -850,12 +684,8 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// returns full feature vector from the passed matrix of energy+cepstral+delta+deltaDelta coefficients
         /// </summary>
-        /// <param name="cepstralM"></param>
-        /// <param name="timeID"></param>
-        /// <returns></returns>
-        public static double[] GetTriAcousticVector(double[,] cepstralM, int timeID, int deltaT)
+        public static double[] GetTriAcousticVector(double[,] cepstralM, int timeId, int deltaT)
         {
-            int frameCount = cepstralM.GetLength(0); //number of frames
             int coeffcount = cepstralM.GetLength(1); //number of MFCC deltas etcs
             int featureCount = coeffcount;
             if (deltaT > 0)
@@ -870,7 +700,7 @@ namespace AudioAnalysisTools.DSP
             {
                 for (int i = 0; i < coeffcount; i++)
                 {
-                    fv[i] = cepstralM[timeID, i];
+                    fv[i] = cepstralM[timeId, i];
                 }
 
                 return fv;
@@ -879,27 +709,27 @@ namespace AudioAnalysisTools.DSP
             //else extract tri-acoustic vector
             for (int i = 0; i < coeffcount; i++)
             {
-                fv[i] = cepstralM[timeID - deltaT, i];
+                fv[i] = cepstralM[timeId - deltaT, i];
             }
 
             for (int i = 0; i < coeffcount; i++)
             {
-                fv[coeffcount+i] = cepstralM[timeID, i];
+                fv[coeffcount + i] = cepstralM[timeId, i];
             }
 
             for (int i = 0; i < coeffcount; i++)
             {
-                fv[coeffcount + coeffcount+ i] = cepstralM[timeID + deltaT, i];
+                fv[coeffcount + coeffcount + i] = cepstralM[timeId + deltaT, i];
             }
 
             return fv;
         }
 
-        public static double[] GetFeatureVector(double[,] M, int timeID, bool includeDelta, bool includeDoubleDelta)
+        public static double[] GetFeatureVector(double[,] matrix, int timeId, bool includeDelta, bool includeDoubleDelta)
         {
-            int frameCount = M.GetLength(0); //number of frames
-            int coeffcount = M.GetLength(1); //number of MFCCs + 1 for energy
-            int dim = coeffcount; //
+            int frameCount = matrix.GetLength(0); //number of frames
+            int coeffcount = matrix.GetLength(1); //number of MFCCs + 1 for energy
+            int dim = coeffcount;
             if (includeDelta)
             {
                 dim += coeffcount;
@@ -915,14 +745,15 @@ namespace AudioAnalysisTools.DSP
             //add in the CEPSTRAL coefficients
             for (int i = 0; i < coeffcount; i++)
             {
-                fv[i] = M[timeID, i];
+                fv[i] = matrix[timeId, i];
             }
 
             //add in the DELTA coefficients
             int offset = coeffcount;
             if (includeDelta)
             {
-                if (((timeID + 1) >= frameCount) || ((timeID - 1) < 0)) //deal with edge effects
+                //deal with edge effects
+                if (((timeId + 1) >= frameCount) || ((timeId - 1) < 0))
                 {
                     for (int i = offset; i < dim; i++)
                     {
@@ -934,7 +765,7 @@ namespace AudioAnalysisTools.DSP
 
                 for (int i = 0; i < coeffcount; i++)
                 {
-                    fv[offset + i] = M[timeID + 1, i] - M[timeID - 1, i];
+                    fv[offset + i] = matrix[timeId + 1, i] - matrix[timeId - 1, i];
                 }
 
                 for (int i = offset; i < offset + coeffcount; i++)
@@ -950,7 +781,9 @@ namespace AudioAnalysisTools.DSP
             if (includeDoubleDelta)
             {
                 offset += coeffcount;
-                if (((timeID + 2) >= frameCount) || ((timeID - 2) < 0)) //deal with edge effects
+
+                //deal with edge effects
+                if (((timeId + 2) >= frameCount) || ((timeId - 2) < 0))
                 {
                     for (int i = offset; i < dim; i++)
                     {
@@ -962,12 +795,13 @@ namespace AudioAnalysisTools.DSP
 
                 for (int i = 0; i < coeffcount; i++)
                 {
-                    fv[offset + i] = (M[timeID + 2, i] - M[timeID, i]) - (M[timeID, i] - M[timeID - 2, i]);
+                    fv[offset + i] = (matrix[timeId + 2, i] - matrix[timeId, i]) - (matrix[timeId, i] - matrix[timeId - 2, i]);
                 }
 
                 for (int i = offset; i < offset + coeffcount; i++)
                 {
-                    fv[i] = (fv[i] + 2) / 4;   //NormaliseMatrixValues values that potentially range from -2 to +2
+                    //NormaliseMatrixValues values that potentially range from -2 to +2
+                    fv[i] = (fv[i] + 2) / 4;
 
                     //if (fv[i] < 0.0) fv[i] = 0.0;
                     //if (fv[i] > 1.0) fv[i] = 1.0;
@@ -977,11 +811,11 @@ namespace AudioAnalysisTools.DSP
             return fv;
         }
 
-        public static double[] GetFeatureVector(double[] dB, double[,] M, int timeID, bool includeDelta, bool includeDoubleDelta)
+        public static double[] GetFeatureVector(double[] dB, double[,] matrix, int timeId, bool includeDelta, bool includeDoubleDelta)
         {
             //the dB array has been normalised in 0-1.
-            int frameCount = M.GetLength(0); //number of frames
-            int mfccCount = M.GetLength(1);  //number of MFCCs
+            int frameCount = matrix.GetLength(0); //number of frames
+            int mfccCount = matrix.GetLength(1);  //number of MFCCs
             int coeffcount = mfccCount + 1;  //number of MFCCs + 1 for energy
             int dim = coeffcount; //
             if (includeDelta)
@@ -997,17 +831,17 @@ namespace AudioAnalysisTools.DSP
             double[] fv = new double[dim];
 
             //add in the CEPSTRAL coefficients
-            fv[0] = dB[timeID];
+            fv[0] = dB[timeId];
             for (int i = 0; i < mfccCount; i++)
             {
-                fv[1 + i] = M[timeID, i];
+                fv[1 + i] = matrix[timeId, i];
             }
 
             //add in the DELTA coefficients
             int offset = coeffcount;
             if (includeDelta)
             {
-                if (((timeID + 1) >= frameCount) || ((timeID - 1) < 0)) //deal with edge effects
+                if (((timeId + 1) >= frameCount) || ((timeId - 1) < 0)) //deal with edge effects
                 {
                     for (int i = offset; i < dim; i++)
                     {
@@ -1017,10 +851,10 @@ namespace AudioAnalysisTools.DSP
                     return fv;
                 }
 
-                fv[offset] = dB[timeID + 1] - dB[timeID - 1];
+                fv[offset] = dB[timeId + 1] - dB[timeId - 1];
                 for (int i = 0; i < mfccCount; i++)
                 {
-                    fv[1 + offset + i] = M[timeID + 1, i] - M[timeID - 1, i];
+                    fv[1 + offset + i] = matrix[timeId + 1, i] - matrix[timeId - 1, i];
                 }
 
                 for (int i = offset; i < offset + mfccCount + 1; i++)
@@ -1032,8 +866,9 @@ namespace AudioAnalysisTools.DSP
             //add in the DOUBLE DELTA coefficients
             if (includeDoubleDelta)
             {
+                //deal with edge effects
                 offset += coeffcount;
-                if (((timeID + 2) >= frameCount) || ((timeID - 2) < 0)) //deal with edge effects
+                if (((timeId + 2) >= frameCount) || ((timeId - 2) < 0))
                 {
                     for (int i = offset; i < dim; i++)
                     {
@@ -1043,10 +878,10 @@ namespace AudioAnalysisTools.DSP
                     return fv;
                 }
 
-                fv[offset] = (dB[timeID + 2] - dB[timeID]) - (dB[timeID] - dB[timeID - 2]);
+                fv[offset] = (dB[timeId + 2] - dB[timeId]) - (dB[timeId] - dB[timeId - 2]);
                 for (int i = 0; i < mfccCount; i++)
                 {
-                    fv[1 + offset + i] = (M[timeID + 2, i] - M[timeID, i]) - (M[timeID, i] - M[timeID - 2, i]);
+                    fv[1 + offset + i] = (matrix[timeId + 2, i] - matrix[timeId, i]) - (matrix[timeId, i] - matrix[timeId - 2, i]);
                 }
 
                 for (int i = offset; i < offset + mfccCount + 1; i++)
@@ -1060,6 +895,5 @@ namespace AudioAnalysisTools.DSP
 
             return fv;
         }
-
     }//end of class Speech
 }

@@ -71,10 +71,13 @@ namespace AnalysisPrograms
             //HerveGlotinMethods();
             //KarlHeinzFrommolt();
             //OTSU_TRHESHOLDING();
+            //ResourcesForEventPatternRecognition();
+            //ResourcesForRheobatrachusSilusRecogniser();
             //TestAnalyseLongRecordingUsingArtificialSignal();
             //TestArbimonSegmentationAlgorithm();
             //TestEigenValues();
             //TestChannelIntegrity();
+            //TestDct();
             //TEST_FilterMovingAverage();
             //TestImageProcessing();
             //TestMatrix3dClass();
@@ -85,6 +88,7 @@ namespace AnalysisPrograms
             //TestFft2D();
             //TestTernaryPlots();
             //TestDirectorySearchAndFileSearch();
+            //TestNoiseReduction();
 
             Console.WriteLine("# Finished Sandpit Task!");
         }
@@ -1849,6 +1853,137 @@ namespace AnalysisPrograms
             // GROUND PARROT recording at
             // epr2 "C:\SensorNetworks\WavFiles\GroundParrot\Aug2010_Site1\audio\DM420013_0342m_00s__0344m_00s.mp3"
             //       C:\SensorNetworks\Output\EPR_GroundParrot\EPR_GroundParrot_Params.txt gp1
+        }
+
+        /// <summary>
+        /// THIS METHOD IS JUST A CONTAINER FOR TESTING SNIPPETS OF CODE TO DO WITH NOISE REMOVAL FROM SPECTROGRAMS
+        /// the following libraries are required to run these tests. They are in the SANDPIT class
+        /// using System.Drawing;
+        /// using System.Drawing.Imaging;
+        /// using System.IO;
+        /// using AudioAnalysisTools;
+        /// </summary>
+        public static void TestNoiseReduction()
+        {
+            //#######################################################################################################################################
+            // experiments with noise reduction of spectrograms
+            //THE FOLLOWING CODE tests the use of the Noise Reduction types listed in the enum SNR.NoiseReductionType
+            //The enum types include NONE, STANDARD, MODAL, Binary, etc.
+            //COPY THE FOLLOWING CODE INTO THE CLASS Sandpit.cs to do the testing.
+            if (true)
+            {
+                //string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
+                string wavFilePath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
+                string outputDir = @"C:\SensorNetworks\Output\Test";
+                string imageFname = "test3.png";
+                //string imagePath = Path.Combine(outputDir, imageFname);
+                //string imageViewer = @"C:\Windows\system32\mspaint.exe";
+
+                //var recording = new AudioRecording(wavFilePath);
+                //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.0 };
+                //config.NoiseReductionParameter = 0.0; // backgroundNeighbourhood noise reduction in dB
+                //var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+                //Plot scores = null;
+                //double eventThreshold = 0.5; // dummy variable - not used
+                //Image image = DrawSonogram(spectrogram, scores, null, eventThreshold);
+                //image.Save(imagePath, ImageFormat.Png);
+                //FileInfo fiImage = new FileInfo(imagePath);
+                //if (fiImage.Exists) // Display the image using MsPaint.exe
+                //{
+                //    TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(imageViewer);
+                //    process.Run(imagePath, outputDir);
+                //}
+            } // if(true)
+
+            //#######################################################################################################################################
+            //THE FOLLOWING CODE tests the effect of changing the order of 1) CONVERT TO dB 2) NOISE REMOVAL
+            //                                                     versus  1) NOISE REMOVAL 2) CONVERT TO dB.
+            //THe results are very different. The former is GOOD. The latter is A MESS.
+            if (true)
+            {
+                //string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
+                string wavFilePath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
+                string outputDir = @"C:\SensorNetworks\Output\Test";
+                string imageFname = "test3.png";
+                //string imagePath = Path.Combine(outputDir, imageFname);
+                //string imageViewer = @"C:\Windows\system32\mspaint.exe";
+
+                //var recording = new AudioRecording(wavFilePath);
+                //int frameSize = 512;
+                //double windowOverlap = 0.0;
+                //// i: EXTRACT ENVELOPE and FFTs
+                //var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, windowOverlap);
+
+                //// get amplitude spectrogram and remove the DC column ie column zero.
+                //double[,] spectrogramData = results2.Spectrogram;
+                //spectrogramData = MatrixTools.Submatrix(spectrogramData, 0, 1, spectrogramData.GetLength(0) - 1, spectrogramData.GetLength(1) - 1);
+                //double epsilon = Math.Pow(0.5, 16 - 1);
+                //double windowPower = frameSize * 0.66; //power of a rectangular window =frameSize. Hanning is less
+
+                //// convert spectrum to decibels BEFORE noise removal
+                ////spectrogramData = Speech.DecibelSpectra(spectrogramData, windowPower, recording.SampleRate, epsilon);
+
+                //// vi: remove background noise from the spectrogram
+                //double SD_COUNT = 0.1;
+                //double SpectralBgThreshold = 0.003; // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
+                //SNR.NoiseProfile profile = SNR.CalculateNoiseProfile(spectrogramData, SD_COUNT); //calculate noise profile - assumes a dB spectrogram.
+                //double[] noiseValues = DataTools.filterMovingAverage(profile.noiseThreshold, 7);      // smooth the noise profile
+                //spectrogramData = SNR.NoiseReduce_Standard(spectrogramData, noiseValues, SpectralBgThreshold);
+
+                //// convert spectrum to decibels AFTER noise removal
+                ////spectrogramData = Speech.DecibelSpectra(spectrogramData, windowPower, recording.SampleRate, epsilon);
+
+                //spectrogramData = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
+                //ImageTools.DrawMatrix(spectrogramData, imagePath);
+                //FileInfo fiImage = new FileInfo(imagePath);
+                //if (fiImage.Exists) // Display the image using MsPaint.exe
+                //{
+                //    TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(imageViewer);
+                //    process.Run(imagePath, outputDir);
+                //}
+            }
+        }
+
+        public static void TestDct(string[] args)
+        {
+            int dctLength = 32;
+            int coeffCount = 32;
+
+            double[,] cosines = MFCCStuff.Cosines(dctLength, coeffCount + 1); //set up the cosine coefficients
+
+            var array = new double[dctLength];
+
+            //linear spectrum
+            // for (int i = 0; i < DCTLength; i++) if((i % 16)==0) array[i] = 10;
+
+            //sinusoid spectrum
+            int k = 4;
+            double kPiOnM = k * 2 * Math.PI / dctLength;
+            for (int i = 0; i < dctLength; i++)
+            {
+                array[i] = 10 * Math.Cos(kPiOnM * (i + 0.5)); //can also be Cos(kPiOnM * (m - 0.5)
+            }
+
+            //array = DataTools.SubtractMean(array);
+            array = DataTools.normalise2UnitLength(array);
+
+            //array = DataTools.NormaliseMatrixValues(array);
+            DataTools.writeBarGraph(array);
+
+            double[] dct = MFCCStuff.DCT(array, cosines);
+            for (int i = 0; i < dct.Length; i++)
+            {
+                dct[i] = Math.Abs(dct[i] * 10);
+            }
+
+            dct[0] = 0.0; //dct[1] = 0.0; dct[2] = 0.0; dct[3] = 0.0;
+
+            //int maxIndex = DataTools.GetMaxIndex(dct);
+            //double max = dct[maxIndex];
+            //DataTools.MinMax(dct, out min, out max);
+            DataTools.writeBarGraph(dct);
+            LoggedConsole.WriteLine("FINISHED");
+            Console.ReadLine();
         }
     }
 }
