@@ -290,7 +290,7 @@
       <HintPath>..\..\AudioAnalysis\packages\Zio.0.3.6\lib\net45\Zio.dll</HintPath>
     </Reference>
     <Reference Include="Zio.FileSystems.Community.SqliteFileSystem, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\AudioAnalysis\packages\Zio.FileSystems.Community.SqliteFileSystem.1.0.0-build-017\lib\netstandard2.0\Zio.FileSystems.Community.SqliteFileSystem.dll</HintPath>
+      <HintPath>..\..\AudioAnalysis\packages\Zio.FileSystems.Community.SqliteFileSystem.1.0.0\lib\netstandard2.0\Zio.FileSystems.Community.SqliteFileSystem.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
