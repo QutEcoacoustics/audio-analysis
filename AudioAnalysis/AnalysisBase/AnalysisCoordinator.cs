@@ -629,7 +629,7 @@ namespace AnalysisBase
 
             for (var index = 0; index < analysisSegmentsList.Count; index++)
             {
-                Log.Debug("Starting segment {0}/{1}".Format2(index, analysisSegmentsList.Count));
+                Log.Debug("Starting segment {0}/{1}".Format2(index + 1, analysisSegmentsList.Count));
 
                 var item = analysisSegmentsList[index];
 

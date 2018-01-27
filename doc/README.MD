@@ -8,7 +8,7 @@
 - can calculate critical statistics of annotations downloaded from an Acoustic Workbench
 - is capable of running various acoustic event recognizers
 
-All the analyses are performed by a single executable file, _AnalysisPrograms.exe) (henceforth abbreviated to _AP.exe_), with command-line arguments determining what analyses are to be done and on which files.
+All the analyses are performed by a single executable file, _AnalysisPrograms.exe_ (henceforth abbreviated to _AP.exe_), with command-line arguments determining what analyses are to be done and on which files.
 
 ## Table of contents
 

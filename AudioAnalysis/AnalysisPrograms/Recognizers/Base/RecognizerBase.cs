@@ -399,6 +399,11 @@ namespace AnalysisPrograms.Recognizers.Base
             SegmentSettings<T> segmentSettings,
             Acoustic.AcousticIndicesParsedConfiguration acousticConfiguration)
         {
+            // Convert the dynamic config to IndexCalculateConfig class and merge in the unnecesary parameters.
+            IndexCalculateConfig config = IndexCalculateConfig.GetConfig(analysisSettings.Configuration, false);
+            config.IndexCalculationDuration = acousticConfiguration.IndexCalculationDuration;
+            config.BgNoiseBuffer = acousticConfiguration.BgNoiseNeighborhood;
+
             IndexCalculateResult[] Callback()
             {
                 IndexCalculateResult[] subsegmentResults = Acoustic.CalculateIndicesInSubsegments(
@@ -409,7 +414,7 @@ namespace AnalysisPrograms.Recognizers.Base
                     acousticConfiguration.BgNoiseNeighborhood,
                     acousticConfiguration.IndexPropertiesFile,
                     segmentSettings.Segment.SourceMetadata.SampleRate,
-                    analysisSettings.Configuration);
+                    config);
 
                 return subsegmentResults;
             }

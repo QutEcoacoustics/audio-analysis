@@ -1,0 +1,84 @@
+---
+# Summary: Calculates standardized features for machine learning tasks
+
+AnalysisName: Ecosounds.StandardizedFeatures
+#SegmentDuration: units=minutes;
+SegmentDuration: 1
+#SegmentOverlap: units=seconds;
+SegmentOverlap: 0
+
+# Bands array with 4 properties:
+# FftWindow. units=samples. Typical value=512. Overwrites FrameLength. 
+# MelScale. units=frequencybins. Overwrites FrequencyScale. Whether frequency is rescaled.
+# Filter. units=?. Whether some filter will be applied. Not implemented yet.
+# Bandwidth. units=fraction. Selects band from amplitude spectrogram. Bandwidth 0.0 - 1.0 equals complete ampliude spectrogram
+Bands:
+  - FftWindow: 1024
+    MelScale: ~
+    Filter: None
+    Bandwidth: 
+      Min: 0.0
+      Max: 1.0
+  - FftWindow: 512
+    MelScale: 200
+    Filter: None
+    Bandwidth: 
+      Min: 0.33
+      Max: 0.66
+  - FftWindow: 1024
+    MelScale: 200
+    Filter: None
+    Bandwidth: 
+      Min: 0.33
+      Max: 0.66
+
+
+# IndexCalculationDuration: units=seconds (default=1 second. This is the chosen resolution for ML tasks, it roughly matches; syllable count; use 0.1 for zooming spectrogram tiles)
+# The Timespan (in seconds) over which summary and spectral indices are calculated
+IndexCalculationDuration: 1.0
+
+# BgNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
+# BG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
+#    Ten seconds is considered a minimum interval to obtain a reliable estimate of BG noise.
+#    The  BG noise interval is not extended beyond start or end of recording segment.
+#    Consequently for a 60sec Index calculation duration, the  BG noise is calculated form the 60sec segment only.
+BgNoiseNeighbourhood: 5
+
+# Resample rate must be 2 X the desired Nyquist
+ResampleRate: 22050
+
+# FRAME LENGTH. units=samples
+# FrameWidth is used without overlap to calculate the spectral indices. Typical value=512
+FrameLength: 512
+
+
+#Default values in code are LowFreqBound=1000Hz & MidFreqBound=8000
+LowFreqBound: 1000
+MidFreqBound: 8000
+HighFreqBound: 11000
+
+# FrequencyScale options are currently only Linear and Octave
+# Octave scale is to be used only for Jasco Marine recordings @ sample rate = 64000
+FrequencyScale: Linear
+
+# SAVE INTERMEDIARY FILES
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+SaveIntermediateCsvFiles: false
+# One-minute spectrograms can be saved in any analysis task.
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
+
+# if true, an unambiguous date time must be provided in the source file's name.
+# if true, an exception will be thrown if no such date is found
+# if false, and a valid date is still found in file name, it will still be parsed
+# supports formats like:
+#     prefix_20140101T235959+1000.mp3
+#     prefix_20140101T235959+Z.mp3
+#     prefix_20140101-235959+1000.mp3
+#     prefix_20140101-235959+Z.mp3
+RequireDateInFilename: false
+
+IndexPropertiesConfig: 'C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml'
+...
+

@@ -24,7 +24,7 @@ There are, in broad terms, these types of sub-programs:
 
 Processes large audio recording with the specified analysis. Can run recognizers, calculate indices, or do other things, for very long recordings.
 
-See [details on Analyze Long Recordings](./actions/analyze_long_recordings.md)
+See [details on Analyze Long Recordings](./actions/analyze_long_recording.md)
 
 ### Colour Spectrogram
 
