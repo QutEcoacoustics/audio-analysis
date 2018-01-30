@@ -30,7 +30,8 @@ $RECYCLE.BIN/
 [Dd]ebugPublic/
 [Rr]elease/
 x64/
-build/
+artefacts/
+artifacts/
 bld/
 [Bb]in/
 [Oo]bj/

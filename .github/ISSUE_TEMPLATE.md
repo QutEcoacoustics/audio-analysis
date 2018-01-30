@@ -1,12 +1,17 @@
 <!---
-Use this issue tracker to file *bugs* or feature requests with the audio-analysis
-code *only*! Please fill out the below template.
+Use this issue tracker to file:
+
+- *bugs*
+- feature requests
+- or support requests
+
+for the AnalysisPrograms.exe program *only*!
+Please fill out the below template.
 
 Off topic issues will be closed immediately. 
 
-If you need an analysis done, please use the Ecoacoustics issue tracker. 
-For help on choosing the right place, please read: 
-https://github.com/QutBioacoustics/Ecoacoustics/blob/master/Repositories.md
+This issue tracker does not actually run any analysis.
+It only deals with the code that makes AnalysisPrograms.exe.
 
 (All of the above is a comment, you can remove it)
 -->
@@ -29,6 +34,5 @@ https://github.com/QutBioacoustics/Ecoacoustics/blob/master/Repositories.md
     ```
 - Where can we find the source data used?
   - `Y:\...?`
-
 
 ### Any other details
