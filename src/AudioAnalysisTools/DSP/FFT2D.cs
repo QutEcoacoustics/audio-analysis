@@ -2,6 +2,9 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
+using System.Numerics;
+using MathNet.Numerics.IntegralTransforms;
+
 namespace AudioAnalysisTools.DSP
 {
     using System;
@@ -10,7 +13,6 @@ namespace AudioAnalysisTools.DSP
     using System.Linq;
     using System.Text;
     using MathNet.Numerics; // this is needed for the class ComplexExtensions which does the calculation of the magnitude of a complex number.
-    using MathNet.Numerics.Transformations; // this is needed for the 2D FFT
     //using MathNet.Numerics.ComplexExtensions;
     using TowseyLibrary;
 
@@ -29,17 +31,19 @@ namespace AudioAnalysisTools.DSP
         public static double[,] FFT2Dimensional(double[,] M)
         {
             // Step 1: convert matrix to complex array
-            double[] sampleData = Matrix2PaddedVector(M);
+            //double[] sampleData = Matrix2PaddedVector(M);
+
+            // AT 20180202: updated call to support newer MathNet API
+            var sampleData = Matrix2ComplexVector(M);
+
             int rowCount = M.GetLength(0);
             int colCount = M.GetLength(1);
 
             // Step 2: do 2d fft
-            int[] dims = { rowCount, colCount };
-            var cft = new ComplexFourierTransformation();
-            cft.TransformForward(sampleData, dims);
+            Fourier.Forward2D(sampleData, rowCount, colCount, FourierOptions.Matlab);
 
             // Step 3: Convert complex output array to array of real magnitude values
-            var magnitudeMatrix = FFT2DOutput2MatrixOfMagnitude(sampleData, dims);
+            var magnitudeMatrix = Fft2DOutputToMatrixOfMagnitude(rowCount, colCount, sampleData);
 
             // Step 3: do the shift for array of magnitude values.
             // var outputData = magnitudeMatrix; // no shifting
@@ -47,7 +51,6 @@ namespace AudioAnalysisTools.DSP
 
             return outputData;
         }
-
 
         /// <summary>
         /// Concatenates the columns of the passed matrix and inserts zeros in every second position.
@@ -74,6 +77,35 @@ namespace AudioAnalysisTools.DSP
             return sampleData;
         }
 
+        /// <summary>
+        /// Concatenates the columns of the passed matrix and inserts zeros in every second position.
+        /// The matrix is assumed to be an image and therefore read it using image coordinates.
+        /// The output vector is now a vector of Complex numbers, with the imaginary part set to 0.
+        /// </summary>
+        /// <remarks>
+        /// This method was created to replicate the functionality of <see cref="Matrix2PaddedVector(double[,])"/>
+        /// to support a changed MathNet API.
+        /// </remarks>
+        /// <param name="M">The input matrix</param>
+        /// <returns>A flattened <see cref="M"/> as a vactor</returns>
+        public static Complex[] Matrix2ComplexVector(double[,] M)
+        {
+            int rowCount = M.GetLength(0);
+            int colCount = M.GetLength(1);
+
+            // set up sampleData with additional space for padding zeroes.
+            var sampleData = new Complex[rowCount * colCount];
+            for (var r = 0; r < rowCount; r++)
+            {
+                for (var c = 0; c < colCount; c++)
+                {
+                    sampleData[(r * rowCount) + c] = new Complex(real: M[r, c], imaginary: 0.0);
+                }
+            }
+
+            return sampleData;
+        }
+
 
         /// <summary>
         /// First construct complex sampleData, then calculate the magnitude of sampleData.
@@ -88,13 +120,13 @@ namespace AudioAnalysisTools.DSP
             Complex[] sampleComplexPairs = new Complex[sampleData.Length / 2];
             for (int i = 0; i < sampleData.Length; i++)
             {
-                var item = new Complex();
                 // even number save real values for complex
                 if (i % 2 == 0)
                 {
-                    item.Real = sampleData[i];
-                    item.Imag = sampleData[i + 1];
-                    sampleComplexPairs[i / 2]= item;
+                    var item = new Complex(
+                        real: sampleData[i],
+                        imaginary: sampleData[i + 1]);
+                    sampleComplexPairs[i / 2] = item;
                 }
             }
 
@@ -103,20 +135,24 @@ namespace AudioAnalysisTools.DSP
             int rowCount = dims[0];
             int colCount = dims[1];
 
+            return Fft2DOutputToMatrixOfMagnitude(rowCount, colCount, sampleComplexPairs);
+        }
+
+        private static double[,] Fft2DOutputToMatrixOfMagnitude(int rowCount, int colCount, Complex[] sampleComplexPairs)
+        {
             var outputData = new double[rowCount, colCount];
             for (var r = 0; r < rowCount; r++)
             {
                 for (var c = 0; c < colCount; c++)
                 {
                     outputData[r, c] = Math.Sqrt(Math.Pow(sampleComplexPairs[(r * rowCount) + c].Real, 2.0)
-                                               + Math.Pow(sampleComplexPairs[(r * rowCount) + c].Imag, 2.0));
+                                                 + Math.Pow(sampleComplexPairs[(r * rowCount) + c].Imaginary, 2.0));
                     //var magnitude = ComplexExtensions.SquareRoot(sampleComplexPairs[r * matrixRowCount + c]);
                 }
             }
+
             return outputData;
         }
-
-
 
 
         /// <summary>

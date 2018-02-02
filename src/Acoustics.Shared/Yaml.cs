@@ -13,7 +13,6 @@ namespace Acoustics.Shared
     using System.IO;
     using YamlDotNet.Core;
     using YamlDotNet.Core.Events;
-    using YamlDotNet.Dynamic;
     using YamlDotNet.RepresentationModel;
     using YamlDotNet.Serialization;
 
@@ -21,12 +20,13 @@ namespace Acoustics.Shared
 
     public class Yaml
     {
-        public static DynamicYaml Deserialise(FileInfo file)
+        // this method is broken - my first priority is a working build, I'll need to come back to this
+        public static dynamic Deserialise(FileInfo file)
         {
             using (var stream = file.OpenText())
             {
                 // allow merging in yaml back references
-                var parser = new EventReader(new MergingParser(new Parser(stream)));
+                var parser = new MergingParser(new Parser(stream));
 
                 // MEGA HACK TIME - I APOLOGIZE TO FUTURE ME :-(
                 // There's a bug in the YamlStream implementation that does not allow the MergingParser's magic to work because it produces a
@@ -36,18 +36,18 @@ namespace Acoustics.Shared
                 // TODO: file a bug against the YamlDotNet project.
                 var d = new Deserializer();
                 var deserializedObject = d.Deserialize(parser);
-                var s = new Serializer();
+//                var s = new Serializer();
+//
+//                DynamicYaml data;
+//                using (var stream2 = new StringWriter())
+//                {
+//                    s.Serialize(stream2, deserializedObject);
+//
+//                    var yaml = stream2.ToString();
+//                    data = new DynamicYaml(yaml);
+//                }
 
-                DynamicYaml data;
-                using (var stream2 = new StringWriter())
-                {
-                    s.Serialize(stream2, deserializedObject);
-
-                    var yaml = stream2.ToString();
-                    data = new DynamicYaml(yaml);
-                }
-
-                return data;
+                return deserializedObject;
             }
         }
 
@@ -67,7 +67,7 @@ namespace Acoustics.Shared
             using (var stream = file.OpenText())
             {
                 // allow merging in yaml back references
-                var parser = new EventReader(new MergingParser(new Parser(stream)));
+                var parser = new MergingParser(new Parser(stream));
                 var deserializer = new Deserializer();
 
                 return deserializer.Deserialize<T>(parser);
@@ -78,7 +78,8 @@ namespace Acoustics.Shared
         {
             using (var stream = file.CreateText())
             {
-                var serializer = new Serializer(SerializationOptions.EmitDefaults);
+                var serializer = new SerializerBuilder().EmitDefaults().Build();
+
                 serializer.Serialize(stream, obj);
             }
         }

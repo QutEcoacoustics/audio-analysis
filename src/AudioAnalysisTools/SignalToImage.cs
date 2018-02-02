@@ -2,13 +2,15 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
+using Acoustics.Unsafe;
+using MathNet.Numerics.IntegralTransforms;
+
 namespace AudioAnalysisTools
 {
     using System;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.Linq;
-    using MathNet.Numerics.Transformations;
 
     using Acoustics.Tools.Wav;
     using StandardSpectrograms;
@@ -495,8 +497,6 @@ namespace AudioAnalysisTools
 
             var window = new double[windowSize];
 
-            var rft = new RealFourierTransformation(TransformationConvention.Matlab);
-
             // foreach frame or time step (all frames)
             for (int i = 0; i < frameCount; i++)
             {
@@ -507,7 +507,7 @@ namespace AudioAnalysisTools
                 }
 
                 // returns fft amplitude spectrum
-                double[] f1 = InvokeDotNetFft(window, windowSize, coeffCount, windowWeights, rft);
+                double[] f1 = InvokeDotNetFft(window, windowSize, coeffCount, windowWeights);
 
                 ////double[] f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
                 ////double[] f1 = fft.Invoke(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
@@ -545,7 +545,7 @@ namespace AudioAnalysisTools
         /// <returns>
         /// Transformed samples.
         /// </returns>
-        private static double[] InvokeDotNetFft(double[] data, int windowSize, int coeffCount, double[] windowWeights, RealFourierTransformation rft)
+        private static double[] InvokeDotNetFft(double[] data, int windowSize, int coeffCount, double[] windowWeights)
         {
             if (windowSize != data.Length)
             {
@@ -566,14 +566,22 @@ namespace AudioAnalysisTools
                 }
             }
 
-            double[] freqReal, freqImag;
-            rft.TransformForward(data, out freqReal, out freqImag);
+            // math.net needs complex data, internet suggests setting complex part to zero is good enough
+            var complex = new System.Numerics.Complex[data.Length];
+            for (int i = 0; i < data.Length; i++)
+            {
+                complex[i] = new System.Numerics.Complex(data[i], 0);
+            }
+
+            Fourier.Forward(complex, FourierOptions.Matlab);
 
             var amplitude = new double[half];
 
             for (int i = 0; i < half; i++)
             {
-                amplitude[i] = Math.Sqrt((freqReal[i] * freqReal[i]) + (freqImag[i] * freqImag[i]));
+                var real = complex[i].Real;
+                var imag = complex[i].Imaginary;
+                amplitude[i] = Math.Sqrt((real * real) + (imag * imag));
             }
 
             return amplitude;
@@ -664,7 +672,7 @@ namespace AudioAnalysisTools
 
             double minIntensity; // min value in matrix
             double maxIntensity; // max value in matrix
-            MinMax(matrix, out minIntensity, out maxIntensity);
+            DoubleSquareArrayExtensions.MinMax(matrix, out minIntensity, out maxIntensity);
             double binWidth = (maxIntensity - minIntensity) / binCount;  // width of an intensity bin
             // LoggedConsole.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + "  binWidth=" + binWidth);
 
@@ -695,41 +703,6 @@ namespace AudioAnalysisTools
                 //LoggedConsole.WriteLine("  modal index=" + maxindex + "  modalIntensity=" + modalIntensity.ToString("F3"));
             }//end for all cols
             return modalNoise;
-        }
-
-        /// <summary>
-        /// returns the min and max values in a matrix of doubles.
-        /// </summary>
-        /// <param name="data">
-        /// The audio data.
-        /// </param>
-        /// <param name="min">
-        /// The min value.
-        /// </param>
-        /// <param name="max">
-        /// The max value.
-        /// </param>
-        private static void MinMax(double[,] data, out double min, out double max)
-        {
-            int rows = data.GetLength(0);
-            int cols = data.GetLength(1);
-            min = data[0, 0];
-            max = data[0, 0];
-
-            for (int i = 1; i < rows; i++)
-            {
-                for (int j = 1; j < cols; j++)
-                {
-                    if (data[i, j] < min)
-                    {
-                        min = data[i, j];
-                    }
-                    else if (data[i, j] > max)
-                    {
-                        max = data[i, j];
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -886,89 +859,9 @@ namespace AudioAnalysisTools
             int width = data.GetLength(0);
             int fftBins = data.GetLength(1);
 
-            // set up min, max, range for normalising of dB values
-            double min;
-            double max;
-            MinMax(data, out min, out max);
-
-            var bmp = GetImage(data, fftBins, width);
+            var bmp = UnsafeImage.GetImage(data, fftBins, width);
 
             return bmp;
-        }
-
-        /// <summary>
-        /// Get spectrogram image.
-        /// </summary>
-        /// <param name="audioData">Audio data.</param>
-        /// <param name="height">Spectrogram height.</param>
-        /// <param name="width">Spectrogram width.</param>
-        /// <returns>Spectrogram image.</returns>
-        private static Bitmap GetImage(double[,] audioData, int height, int width)
-        {
-            var managedImage = new Bitmap(width, height, PixelFormat.Format24bppRgb);
-            AForge.Imaging.UnmanagedImage image = AForge.Imaging.UnmanagedImage.FromManagedImage(managedImage);
-
-            int pixelSize = Image.GetPixelFormatSize(image.PixelFormat) / 8;
-
-            // image dimension
-            int imageWidth = image.Width;
-            int imageHeight = image.Height;
-            int stride = image.Stride;
-
-            const int StartX = 0;
-            int stopX = imageWidth - 1;
-
-            // spectrogram is drawn from the bottom
-            const int StartY = 0;
-            int stopY = imageHeight - 1;
-
-            // min, max, range
-            double min;
-            double max;
-            MinMax(audioData, out min, out max);
-            double range = max - min;
-
-            int offset = stride - (stopX - StartX + 1) * pixelSize;
-
-            int heightOffset = imageHeight;
-
-            unsafe
-            {
-                // do the job
-                byte* ptr = (byte*)image.ImageData.ToPointer() + (StartY * stride) + (StartX * pixelSize);
-
-                // height
-                for (int y = StartY; y <= stopY; y++)
-                {
-                    // width
-                    for (int x = StartX; x <= stopX; x++, ptr += pixelSize)
-                    {
-                        // required to render spectrogram correct way up
-                        int spectrogramY = heightOffset - 1;
-
-                        // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
-                        // this is the amplitude
-                        double value = (audioData[x, spectrogramY] - min) / (double)range;
-                        double colour = 255.0 - Math.Floor(255.0 * value);
-
-                        colour = Math.Min(colour, 255);
-                        colour = Math.Max(colour, 0);
-
-                        byte paintColour = Convert.ToByte(colour);
-
-                        // set colour
-                        ptr[AForge.Imaging.RGB.R] = paintColour;
-                        ptr[AForge.Imaging.RGB.G] = paintColour;
-                        ptr[AForge.Imaging.RGB.B] = paintColour;
-                    }
-
-                    ptr += offset;
-
-                    heightOffset--;
-                }
-            }
-
-            return image.ToManagedImage();
         }
     }
 }

@@ -2,13 +2,14 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
+using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.LinearAlgebra.Factorization;
+
 namespace TowseyLibrary
 {
 
     using System;
     using MathNet.Numerics.LinearAlgebra.Double;
-    using MathNet.Numerics.LinearAlgebra.Generic;
-    using MathNet.Numerics.LinearAlgebra.Generic.Factorization;
 
     /// <summary>
     /// contains methods and test example to do Singular Value decomposition and Principal Components Analysis
@@ -34,24 +35,24 @@ namespace TowseyLibrary
         /// </summary>
         public static double[] SingularValueDecompositionVector(double[,] matrix)
         {
-            var svd = new MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseSvd(DenseMatrix.OfArray(matrix), false);
-            Vector<double> singularValues = svd.S();
+            var svd = DenseMatrix.OfArray(matrix).Svd(false);
+            Vector<double> singularValues = svd.S;
             return singularValues.ToArray();
         }
 
         public static Tuple<Vector<double>, Matrix<double>> SingularValueDecompositionOutput(double[,] matrix)
         {
             // we want to compute the U and V matrices of singular vectors.
-            var svd = new MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseSvd(DenseMatrix.OfArray(matrix), true);
+            var svd = DenseMatrix.OfArray(matrix).Svd(true);
 
             // svd.W returns the singular values on diagonal in matrix
             //Matrix<double> singularValues = svd.W();
 
             // svd.S returns the singular values in a vector
-            Vector<double> singularValues = svd.S();
+            Vector<double> singularValues = svd.S;
 
             // svd.U returns the singular vectors in matrix
-            Matrix<double> uMatrix = svd.U();
+            Matrix<double> uMatrix = svd.U;
             return Tuple.Create(singularValues, uMatrix);
         }
 
@@ -68,7 +69,7 @@ namespace TowseyLibrary
         public static Tuple<double[], double[,]> EigenVectors(double[,] matrix)
         {
             Evd<double> eigen = DenseMatrix.OfArray(matrix).Evd();
-            Vector<System.Numerics.Complex> eigenvaluesComplex = eigen.EigenValues();
+            Vector<System.Numerics.Complex> eigenvaluesComplex = eigen.EigenValues;
 
             //WriteArrayOfComplexNumbers(eigenvalues);
 
@@ -80,7 +81,7 @@ namespace TowseyLibrary
                 Console.WriteLine("eigen value[{0}]     {1}     Magnitude={2}", i, c.ToString(), magnitude);
             }
 
-            Matrix<double> eigenvectorsComplex = eigen.EigenVectors();
+            Matrix<double> eigenvectorsComplex = eigen.EigenVectors;
             double[,] eigenvectorsReal = new double[eigenvaluesComplex.Count, matrix.GetLength(0)];
             for (int col = 0; col < eigenvectorsComplex.RowCount; col++)
             {
@@ -193,22 +194,22 @@ namespace TowseyLibrary
              * */
 
             // we want to compute the U and V matrices of singular vectors.
-            var svd = new MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseSvd(DenseMatrix.OfArray(matrix1), true);
+            var svd = DenseMatrix.OfArray(matrix1).Svd(true);
 
             // svd.S returns the singular values in a vector
-            Vector<double> singularValues = svd.S();
+            Vector<double> singularValues = svd.S;
             foreach (double d in singularValues)
                 Console.WriteLine("singular value = {0}", d);
 
             // svd.U returns the LEFT singular vectors in matrix
-            Matrix<double> uMatrix = svd.U();
+            Matrix<double> uMatrix = svd.U;
             Console.WriteLine("\n\n");
             MatrixTools.WriteMatrix(uMatrix.ToArray());
             string path1 = @"C:\SensorNetworks\Output\Test\testMatrixSVD_U.png";
             ImageTools.DrawReversedMDNMatrix(uMatrix, path1);
 
             // svd.VT returns the RIGHT singular values
-            Matrix<double> vMatrix = svd.VT();
+            Matrix<double> vMatrix = svd.VT;
             Console.WriteLine("\n\n");
             MatrixTools.WriteMatrix(vMatrix.ToArray());
             string path2 = @"C:\SensorNetworks\Output\Test\testMatrixSVD_VT.png";

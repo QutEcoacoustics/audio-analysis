@@ -5,7 +5,7 @@
     using System.Collections.Generic;
     using System.Text;
     using MathNet.Numerics;
-    using MathNet.Numerics.Transformations;
+    using MathNet.Numerics.IntegralTransforms;
 
     public enum WindowFunctions { NONE, HAMMING, HANNING };
 
@@ -13,7 +13,6 @@
 
     public sealed class FFT
     {
-        RealFourierTransformation rft; //only used if calling the .NET numerical math library
 
         public const string Key_NoWindow = "NONE";
         public const string Key_HammingWindow = "HAMMING";
@@ -46,36 +45,6 @@
         public FFT(int windowSize, WindowFunc w)
         {
             if (!IsPowerOf2(windowSize)) throw new ArgumentException("WindowSize must be a power of 2.");
-
-            this.WindowSize = windowSize;
-            this.CoeffCount = (windowSize / 2) + 1; //f[0]=DC;  f[256]=Nyquist
-
-            //calculate the window weights and power
-            this.WindowPower = windowSize; //the default power of a rectangular window.
-            if (w != null)
-            {
-                //set up the FFT window
-                this.WindowWeights = new double[windowSize];
-                for (int i = 0; i < windowSize; i++) this.WindowWeights[i] = w(i, windowSize);
-
-                //calculate power of the FFT window
-                double power = 0.0;
-                for (int i = 0; i < windowSize; i++)
-                {
-                    power += (this.WindowWeights[i] * this.WindowWeights[i]);
-                }
-                this.windowPower = power;
-            }
-        }
-
-
-
-        public FFT(int windowSize, WindowFunc w, bool dotNetVersion)
-        {
-            if (!IsPowerOf2(windowSize)) throw new ArgumentException("WindowSize must be a power of 2.");
-
-            //rft = new RealFourierTransformation();
-            this.rft = new RealFourierTransformation(TransformationConvention.Matlab);
 
             this.WindowSize = windowSize;
             this.CoeffCount = (windowSize / 2) + 1; //f[0]=DC;  f[256]=Nyquist
@@ -221,7 +190,7 @@
         /// <summary>
         /// This .NET FFT library was downloaded from  http://www.mathdotnet.com/Iridium.aspx
         /// The documentation and various examples of code are available at http://www.mathdotnet.com/doc/IridiumFFT.ashx
-        ///
+        /// WARNING: THIS METHOD HAS NOT BEEN RECENTLY TESTED
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
@@ -235,16 +204,26 @@
             if (this.WindowWeights != null) //apply the window
                 for (int i = 0; i < this.WindowSize; i++) data[i] = this.WindowWeights[i] * data[i]; //window
 
-            double[] freqReal, freqImag;
-            this.rft.TransformForward(data, out freqReal, out freqImag);
+            // math.net needs complex data, internet suggests setting complex part to zero is good enough
+            var complex = new System.Numerics.Complex[data.Length];
+            for (int i = 0; i < data.Length; i++)
+            {
+                complex[i] = new System.Numerics.Complex(data[i], 0);
+            }
 
-            double[] amplitude = new double[half];
+            Fourier.Forward(complex, FourierOptions.Matlab);
+
+            var amplitude = new double[half];
+
             for (int i = 0; i < half; i++)
-                amplitude[i] = Math.Sqrt((freqReal[i] * freqReal[i]) + (freqImag[i] * freqImag[i]));
+            {
+                var real = complex[i].Real;
+                var imag = complex[i].Imaginary;
+                amplitude[i] = Math.Sqrt((real * real) + (imag * imag));
+            }
+
             return amplitude;
         }
-
-
 
 
         #region Window functions

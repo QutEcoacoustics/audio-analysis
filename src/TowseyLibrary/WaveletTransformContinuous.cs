@@ -7,7 +7,6 @@
     using System.IO;
     using System.Linq;
     using System.Text;
-    using MathNet.Numerics.LinearAlgebra.Generic;
 
     /// <summary>
     /// An implementation of Continuous Wavelet Transform (CWT) using the Haar wavelet.

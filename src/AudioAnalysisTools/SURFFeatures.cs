@@ -13,17 +13,6 @@ namespace AudioAnalysisTools
     using System.Runtime.InteropServices;
     using System.Text;
 
-    /*
-    using Emgu.CV;
-    using Emgu.CV.CvEnum;
-    using Emgu.CV.Features2D;
-    using Emgu.CV.GPU;
-    using Emgu.CV.Structure;
-    using Emgu.CV.Util;
-    */
-
-    using MathNet.Numerics.LinearAlgebra.Generic;
-
     public static class SURFFeatures
     {
         /*

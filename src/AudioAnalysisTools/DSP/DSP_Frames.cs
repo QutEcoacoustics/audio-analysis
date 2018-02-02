@@ -197,7 +197,7 @@ namespace AudioAnalysisTools.DSP
             }
 
             FFT.WindowFunc w = FFT.GetWindowFunction(windowName);
-            var fft = new FFT(frameSize, w, true); // init class which calculates the MATLAB compatible .NET FFT
+            var fft = new FFT(frameSize, w); // init class which calculates the MATLAB compatible .NET FFT
             double[,] spectrogram = new double[frameCount, fft.CoeffCount]; // init amplitude sonogram
             double minSignalValue = double.MaxValue;
             double maxSignalValue = double.MinValue;

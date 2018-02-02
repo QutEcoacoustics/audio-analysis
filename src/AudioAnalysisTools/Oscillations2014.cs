@@ -2,6 +2,9 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
+using MathNet.Numerics;
+using MathNet.Numerics.LinearAlgebra;
+
 namespace AudioAnalysisTools
 {
     using System;
@@ -14,8 +17,6 @@ namespace AudioAnalysisTools
     using Acoustics.Shared;
     using DSP;
     using MathNet.Numerics.LinearAlgebra.Double;
-    using MathNet.Numerics.LinearAlgebra.Generic;
-    using MathNet.Numerics.NumberTheory;
     using StandardSpectrograms;
     using TowseyLibrary;
     using WavTools;
@@ -470,10 +471,10 @@ namespace AudioAnalysisTools
 
             // do singular value decomp on the xcorrelation vectors.
             // we want to compute the U and V matrices of singular vectors.
-            var svd = new MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseSvd(DenseMatrix.OfArray(xCorrByTimeMatrix), computeVectors: true);
+            var svd = DenseMatrix.OfArray(xCorrByTimeMatrix).Svd(true);
 
             // svd.S returns the singular values in a vector
-            Vector<double> singularValues = svd.S();
+            Vector<double> singularValues = svd.S;
 
             // get total energy in first singular values
             double energySum = 0.0;
@@ -502,7 +503,7 @@ namespace AudioAnalysisTools
             //Console.WriteLine("Freq bin:{0}  Count Of Significant SingularValues = {1}", binNumber, countOfSignificantSingularValues);
 
             // svd.U returns the LEFT singular vectors in matrix
-            Matrix<double> uMatrix = svd.U();
+            Matrix<double> uMatrix = svd.U;
 
             //Matrix<double> relevantU = UMatrix.SubMatrix(0, UMatrix.RowCount-1, 0, eigenVectorCount);
 

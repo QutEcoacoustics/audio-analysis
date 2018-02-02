@@ -161,7 +161,7 @@ module EprInternals =
             let (cs, bls) = centroidsBottomLefts st sf ttd tfr xl yl rs // pixels
             let g candidateCentroid candidateBottomLeft= 
                 let  indexOfTemplate = indexMinMap (euclidianDist candidateCentroid) tcs
-                overlap (Seq.nth indexOfTemplate tbls) (Seq.nth indexOfTemplate tcs) candidateBottomLeft candidateCentroid
+                overlap (Seq.item indexOfTemplate tbls) (Seq.item indexOfTemplate tcs) candidateBottomLeft candidateCentroid
             Seq.map2 g cs bls |> Seq.sum
         
         let (saes, cs) = candidates tb ttd tfr aes // cs are the groups of acoustic events that are candiates for template matching

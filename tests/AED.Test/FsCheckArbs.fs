@@ -1,16 +1,15 @@
 ﻿module FsCheckArbs
 
 open FsCheck
-open FsCheckXunit
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
 open QutSensors.AudioAnalysis.AED.Util
 
-let nonNeg = arbitrary |> fmapGen abs
+let nonNeg = Arb.generate<int>|> Gen.map abs
 
-let pos = nonNeg |> fmapGen ((+) 1)
+let pos = nonNeg |> Gen.map ((+) 1)
 
-let pairGen = liftGen2 (fun x y -> (x,y))
-                          
+let pairGen = Gen.zip
+
 let sequenceGen ms =
     let k m' m = gen { let! x = m
                        let! xs = m'
@@ -21,16 +20,18 @@ let replicateGenM n g = List.replicate n g |> sequenceGen
 
 type ArbitraryModifiers = 
     static member Rectangle () =
-         { new Arbitrary<Rectangle<int, int>>() with
-            override x.Arbitrary = liftGen4 (fun l t w h -> lengthsToRect l t w h) nonNeg nonNeg pos pos }
+         { 
+            new Arbitrary<Rectangle<int, int>>() with
+                override x.Generator = Gen.map4 (fun l t w h -> lengthsToRect l t w h) nonNeg nonNeg pos pos
+         }
     static member AcousticEvent () =
         { new Arbitrary<AcousticEvent>()with
-            override x.Arbitrary = gen { let! rect = arbitrary
+            override x.Generator = gen { let! rect = Arb.generate
                                          let r, b = right rect, bottom rect
-                                         let! c = choose (1, (height rect) * (width rect))                                    
-                                         let! elms = pairGen (choose (rect.Top,b)) (choose (rect.Left,r)) |> replicateGenM c 
+                                         let! c = Gen.choose (1, (height rect) * (width rect))                                    
+                                         let! elms = pairGen (Gen.choose (rect.Top, b)) (Gen.choose (rect.Left, r)) |> replicateGenM c 
                                          return {Bounds=rect;Elements=Set.ofList elms}}} 
      
 let chk f = 
-    overwriteGenerators<ArbitraryModifiers>()
-    check config f
+    Arb.register<ArbitraryModifiers>() |> ignore
+    Check.Quick f

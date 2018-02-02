@@ -7,6 +7,8 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
+using System.Dynamic;
+
 namespace Acoustics.Shared.ConfigFile
 {
     using System;
@@ -17,7 +19,6 @@ namespace Acoustics.Shared.ConfigFile
     using System.Reflection;
     using Contracts;
     using Fasterflect;
-    using YamlDotNet.Dynamic;
     using YamlDotNet.RepresentationModel;
 
     using Zio;
@@ -54,7 +55,8 @@ namespace Acoustics.Shared.ConfigFile
 
         public static dynamic GetProfile(dynamic configuration, string profileName)
         {
-            if (configuration.GetType() != typeof(DynamicYaml))
+            // TODO: broken when dynamic yaml removed
+            if (configuration.GetType() != typeof(DynamicObject))
             {
                 throw new ArgumentException("The configuration parameter must be a DynamicYaml object", nameof(configuration));
             }
@@ -64,19 +66,21 @@ namespace Acoustics.Shared.ConfigFile
 
         public static bool HasProfiles(dynamic configuration)
         {
-            if (configuration.GetType() != typeof(DynamicYaml))
+            // TODO: broken when dynamic yaml removed
+            if (configuration.GetType() != typeof(DynamicObject))
             {
                 throw new ArgumentException("The configuration parameter must be a DynamicYaml object", nameof(configuration));
             }
 
-            DynamicYaml profiles = configuration[ProfilesKey] ?? null;
+            DynamicObject profiles = configuration[ProfilesKey] ?? null;
 
             return profiles != null;
         }
 
         public static bool TryGetProfile(dynamic configuration, string profileName, out dynamic profile)
         {
-            if (configuration.GetType() != typeof(DynamicYaml))
+            // TODO: broken when dynamic yaml removed
+            if (configuration.GetType() != typeof(DynamicObject))
             {
                 throw new ArgumentException("The configuration parameter must be a DynamicYaml object", nameof(configuration));
             }
@@ -97,7 +101,8 @@ namespace Acoustics.Shared.ConfigFile
 
         public static string[] GetProfileNames(dynamic configuration)
         {
-            if (configuration.GetType() != typeof(DynamicYaml))
+            // TODO: broken when dynamic yaml removed
+            if (configuration.GetType() != typeof(DynamicObject))
             {
                 throw new ArgumentException("The configuration parameter must be a DynamicYaml object", nameof(configuration));
             }
@@ -107,7 +112,8 @@ namespace Acoustics.Shared.ConfigFile
                 return null;
             }
 
-            DynamicYaml profiles = configuration[ProfilesKey];
+            // TODO: broken when dynamic yaml removed
+            DynamicObject profiles = configuration[ProfilesKey];
 
             // WARN: This is a dirty, dirty, hack. I apologize to my mother for writing this vulgarity.
             var yamlMappingNode = (YamlMappingNode)profiles.GetFieldValue("mappingNode");
@@ -119,7 +125,8 @@ namespace Acoustics.Shared.ConfigFile
 
         public static Dictionary<string, dynamic> GetAllProfiles(dynamic configuration)
         {
-            if (configuration.GetType() != typeof(DynamicYaml))
+            // TODO: broken when dynamic yaml removed
+            if (configuration.GetType() != typeof(DynamicObject))
             {
                 throw new ArgumentException("The configuration parameter must be a DynamicYaml object", nameof(configuration));
             }

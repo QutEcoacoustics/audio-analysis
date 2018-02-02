@@ -141,5 +141,40 @@ namespace System
         }
 
         #endregion
+
+        /// <summary>
+        /// returns the min and max values in a matrix of doubles.
+        /// </summary>
+        /// <param name="data">
+        /// The audio data.
+        /// </param>
+        /// <param name="min">
+        /// The min value.
+        /// </param>
+        /// <param name="max">
+        /// The max value.
+        /// </param>
+        public static void MinMax(this double[,] data, out double min, out double max)
+        {
+            int rows = data.GetLength(0);
+            int cols = data.GetLength(1);
+            min = data[0, 0];
+            max = data[0, 0];
+
+            for (int i = 1; i < rows; i++)
+            {
+                for (int j = 1; j < cols; j++)
+                {
+                    if (data[i, j] < min)
+                    {
+                        min = data[i, j];
+                    }
+                    else if (data[i, j] > max)
+                    {
+                        max = data[i, j];
+                    }
+                }
+            }
+        }
     }
 }

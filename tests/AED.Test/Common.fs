@@ -2,11 +2,11 @@
 
 open System.IO
 
-open QutSensors.AudioAnalysis.AED.Util
 open Xunit
 open System
 open System.Reflection
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
+open QutSensors.AudioAnalysis.AED.Util
                        
 type TestMetadata = {Dir:string; BWthresh:double; smallThreshIn:int; smallThreshOut:int}
 let BAC2_20071015_045040 =

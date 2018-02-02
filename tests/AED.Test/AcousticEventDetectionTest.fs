@@ -81,7 +81,7 @@ let aeToMatrixElements () =
         if x = 1.0 then inSet else not inSet
     chk (fun ae -> aeToMatrix ae |> Math.Matrix.foralli (f ae))
     
-[<Fact(Timeout=600000)>]
+[<Fact>]
 let testSeparateLargeEvents () =
     let f md =
         let ae2 = loadTestFile "I6.csv" md |> getAcousticEvents |> separateLargeEvents sleDefaults |> selectBounds
