@@ -6,11 +6,13 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.Data;
     using System.IO;
     using System.Linq;
-    using PowerArgs;
+    using McMaster.Extensions.CommandLineUtils;
     using Production;
+    using Production.Validation;
     using TowseyLibrary;
 
     public class SpeciesAccumulationStats
@@ -139,17 +141,20 @@ namespace AnalysisPrograms
     {
         private const string Header = "sample,additional,total";
 
+        public const string CommandName = "SpeciesAccumulationCurve";
+
+        [Command(
+            CommandName,
+            Description = "[INOPERABLE]")]
         public class Arguments
         {
-            [ArgDescription("Path of the input  file to be processed.")]
-            [Production.ArgExistingFile()]
-            [ArgPosition(1)]
-            [ArgRequired]
+            [Option("Path of the input  file to be processed.")]
+            [ExistingFile()]
+            [Required]
             public FileInfo Source { get; set; }
 
-            [ArgDescription("Path of the output file to store results.")]
-            [ArgPosition(2)]
-            [ArgRequired]
+            [Option("Path of the output file to store results.")]
+            [Required]
             public FileInfo Output { get; set; }
         }
 

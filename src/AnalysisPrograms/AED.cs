@@ -17,7 +17,7 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using Acoustics.Shared.Extensions;
@@ -33,9 +33,9 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.WavTools;
 
     using log4net;
-
+    using McMaster.Extensions.CommandLineUtils;
     using Microsoft.FSharp.Core;
-
+    using Production.Arguments;
     using QutSensors.AudioAnalysis.AED;
 
     using TowseyLibrary;
@@ -48,11 +48,21 @@ namespace AnalysisPrograms
     [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder", Justification = "Reviewed. Suppression is OK here.", Scope = "Class")]
     public class Aed : AbstractStrongAnalyser
     {
+        public const string CommandName = "AED";
+
         /// <summary>
         /// The arguments.
         /// </summary>
+        [Command(
+            CommandName,
+            Description = "Acosutic event detection, for short files (~ 1min)")]
         public class Arguments : SourceConfigOutputDirArguments
         {
+            public override Task<int> Execute(CommandLineApplication app)
+            {
+                Aed.Execute(this);
+                return this.Ok();
+            }
         }
 
         public class AedConfiguration

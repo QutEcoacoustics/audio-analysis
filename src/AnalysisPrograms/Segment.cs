@@ -5,11 +5,14 @@
     using System.IO;
     using System.Linq;
     using System.Text;
+    using System.Threading.Tasks;
     using Acoustics.Shared.Extensions;
     using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
+    using McMaster.Extensions.CommandLineUtils;
+    using Production.Arguments;
     using TowseyLibrary;
 
     public class Segment
@@ -27,8 +30,18 @@
 
         public static string eventsFile = "events.txt";
 
+        public const string CommandName = "Segment";
+
+        [Command(
+            CommandName,
+            Description = "[UNMAINTAINED] Cuts up audio, segments the recording, and draws spectrograms")]
         public class Arguments : SourceConfigOutputDirArguments
         {
+            public override Task<int> Execute(CommandLineApplication app)
+            {
+                Segment.Execute(this);
+                return this.Ok();
+            }
         }
 
         [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]

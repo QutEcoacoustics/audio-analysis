@@ -42,6 +42,10 @@ Output  to  directory: {1}
 
         private static readonly ILog Log = LogManager.GetLogger(nameof(AnalyseLongRecording));
 
+        /// <summary>
+        /// 2. Analyses long audio recording (mp3 or wav) as per passed config file. Outputs an events.csv file AND an indices.csv file
+        /// Signed off: Michael Towsey 4th December 2012
+        /// </summary>
         public static void Execute(Arguments arguments)
         {
             if (arguments == null)
@@ -89,6 +93,16 @@ Output  to  directory: {1}
             if (arguments.WhenExitCopyConfig || arguments.WhenExitCopyLog)
             {
                 AppDomain.CurrentDomain.ProcessExit += (sender, args) => { Cleanup(arguments, configFile); };
+            }
+
+            if (arguments.StartOffset.HasValue ^ arguments.EndOffset.HasValue)
+            {
+                throw new InvalidStartOrEndException("If StartOffset or EndOffset is specified, then both must be specified");
+            }
+
+            if (arguments.StartOffset.HasValue && arguments.EndOffset.HasValue && arguments.EndOffset.Value <= arguments.StartOffset.Value)
+            {
+                throw new InvalidStartOrEndException("Start offset must be less than end offset.");
             }
 
             // 2. get the analysis config

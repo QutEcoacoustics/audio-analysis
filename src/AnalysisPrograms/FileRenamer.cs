@@ -1,13 +1,8 @@
 ﻿namespace AnalysisPrograms
 {
-    using Acoustics.Shared;
-    using Acoustics.Tools.Audio;
-    using AnalysisBase;
-    using Production;
-    using log4net;
-    using PowerArgs;
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
@@ -16,34 +11,36 @@
     using System.Text;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
+    using Acoustics.Shared;
+    using Acoustics.Tools.Audio;
+    using AnalysisBase;
+    using log4net;
+    using McMaster.Extensions.CommandLineUtils;
+    using Production;
+    using Production.Arguments;
 
     public class FileRenamer
     {
-        [CustomDescription]
-        public class Arguments : IArgClassValidator
-        {
-            public static string Description()
-            {
-                return "Renames files based on modified and created date.";
-            }
+        public const string CommandName = "FileRenamer";
 
-            [ArgDescription("The directory containing audio files.")]
-            [Production.ArgExistingDirectory(createIfNotExists: false)]
-            [ArgRequired]
-            [ArgPosition(1)]
+        [Command(
+            CommandName,
+            Description = "[UNMAINTAINED] Renames files based on modified and created date.")]
+        public class Arguments : SubCommandBase
+        {
+            [Option("The directory containing audio files.")]
+            [DirectoryExists]
+            [Required]
             public virtual DirectoryInfo InputDir { get; set; }
 
-            [ArgDescription("Specify the timezone (e.g. '+1000', '-0700').")]
-            [ArgRequired]
-            [ArgPosition(2)]
+            [Option("Specify the timezone (e.g. '+1000', '-0700').")]
+            [Required]
             public string Timezone { get; set; }
 
-            [ArgDescription("Whether to recurse into subfolders (defaults to true).")]
-            [DefaultValue(true)]
+            [Option("Whether to recurse into subfolders.")]
             public bool Recursive { get; set; }
 
-            [ArgDescription("Only print rename actions, don't actually rename files (defaults to true).")]
-            [DefaultValue(true)]
+            [Option("Only print rename actions, don't actually rename files.")]
             public bool DryRun { get; set; }
 
             public void Validate()
@@ -68,6 +65,12 @@
                     }
                 }
             }
+
+            public override Task<int> Execute(CommandLineApplication app)
+            {
+                FileRenamer.Execute(this);
+                return this.Ok();
+            }
         }
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -78,6 +81,8 @@
             {
                 throw new NoDeveloperMethodException();
             }
+
+            arguments.Validate();
 
             var validExtensions = new[] { ".wav", ".mp3", ".wv", ".ogg", ".wma" };
             var searchOption = arguments.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;

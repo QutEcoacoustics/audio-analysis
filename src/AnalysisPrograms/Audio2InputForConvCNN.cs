@@ -18,6 +18,7 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Reflection;
     using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using Acoustics.Tools;
@@ -29,7 +30,9 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using log4net;
+    using McMaster.Extensions.CommandLineUtils;
     using Production;
+    using Production.Arguments;
     using TowseyLibrary;
 
     /// <summary>
@@ -38,22 +41,23 @@ namespace AnalysisPrograms
     /// </summary>
     public class Audio2InputForConvCnn
     {
+        public const string CommandName = "DrawConvCnnSpectrograms";
+
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        [CustomDetailedDescription]
-        [CustomDescription]
+        [Command(
+            CommandName,
+            Description = "[UNMAINTAINED] No further practical use. Used in 2014 to prepare short recordings of bird calls for analysis by Convolution Neural Networks.",
+            ExtendedHelpText = "The Source file in this case is a csv file showing locations of short audio segments and the call bounds within each audio segment.")]
         public class Arguments : SourceConfigOutputDirArguments
         {
+            [Option]
             public string TargetEventBounds { get; set; }
 
-            public static string Description()
+            public override Task<int> Execute(CommandLineApplication app)
             {
-                return "Generates multiple spectrogram images and SNR info.";
-            }
-
-            public static string AdditionalNotes()
-            {
-                return "The Source file in this case is a csv file showing locations of short audio segments and the call bounds within each audio segment.";
+                Audio2InputForConvCnn.Execute(this);
+                return this.Ok();
             }
         }
 

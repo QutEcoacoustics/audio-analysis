@@ -7,12 +7,16 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
+using System.Threading.Tasks;
+
 namespace AnalysisPrograms
 {
     using System;
     using System.Reflection;
     using log4net;
+    using McMaster.Extensions.CommandLineUtils;
     using Production;
+    using Production.Arguments;
 
     /// <summary>
     /// Main Entry for Analysis Programs.
@@ -21,7 +25,7 @@ namespace AnalysisPrograms
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public static int Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
             // HACK: Disable the following two line when argument refactoring is done
             //var options = DebugOptions.Yes;
@@ -35,25 +39,19 @@ namespace AnalysisPrograms
 
             NoConsole.Log.Info("Executable called with these arguments: {1}{0}{1}".Format2(Environment.CommandLine, Environment.NewLine));
 
-            Arguments = ParseArguments(args);
+            IConsole loggingConsole = new PhysicalConsoleLogger();
 
-            var debugOptions = Arguments.Args.DebugOption;
-            AttachDebugger(ref debugOptions);
-
-            ModifyVerbosity(Arguments.Args);
-
-            LoadNativeCode();
-
+            // Note: See MainEntry.BeforeExecute for commands run before invocation.
             // note: Exception handling can be found in CurrentDomainOnUnhandledException
-            Execute(Arguments);
+            var result = await CommandLineApplication.ExecuteAsync<MainArgs>(loggingConsole, args);
 
             LogProgramStats();
 
             HangBeforeExit();
 
             // finally return error level
-            NoConsole.Log.Info("ERRORLEVEL: " + ExceptionLookup.Ok);
-            return ExceptionLookup.Ok;
+            NoConsole.Log.Info("ERRORLEVEL: " + result);
+            return result;
         }
     }
 }

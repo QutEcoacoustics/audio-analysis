@@ -10,46 +10,51 @@
 namespace AnalysisPrograms
 {
     using System;
+    using System.ComponentModel.DataAnnotations;
     using System.Drawing;
     using System.IO;
-
+    using System.Threading.Tasks;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
+    using McMaster.Extensions.CommandLineUtils;
     using Microsoft.FSharp.Math;
 
-    using PowerArgs;
-
+    using Production;
+    using Production.Arguments;
+    using Production.Validation;
     using QutSensors.AudioAnalysis.AED;
-
     using TowseyLibrary;
 
     public class SPT
     {
+        public const string CommandName = "SPT";
 
-        public class Arguments
+        [Command(
+            CommandName,
+            Description = "[UNMAINTAINED] Spectral Peak Tracking.Probably not useful anymore.")]
+        public class Arguments : SubCommandBase
         {
 
-            [ArgDescription("The source audio file to operate on")]
-            [Production.ArgExistingFile()]
-            [ArgPosition(1)]
-            [ArgRequired]
+            [Option("The source audio file to operate on")]
+            [ExistingFile()]
+            [Required]
             public FileInfo Source{get;set;}
 
-            [ArgDescription("A directory to write output to")]
-            [Production.ArgExistingDirectory(createIfNotExists: true)]
-            [ArgPosition(2)]
-            [ArgRequired]
+            [Option("A directory to write output to")]
+            [DirectoryExistsOrCreate(createIfNotExists: true)]
             public DirectoryInfo Output{get;set;}
 
-            [ArgDescription("")]
-            [ArgPosition(3)]
-            [ArgRequired]
-            //[ArgRange(0,0)]
+            [Option("Intensity Threshold")]
+            [Required]
             public double IntensityThreshold { get; set; }
 
+            public override Task<int> Execute(CommandLineApplication app)
+            {
+                SPT.Execute(this);
+                return this.Ok();
+            }
         }
 
         [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]

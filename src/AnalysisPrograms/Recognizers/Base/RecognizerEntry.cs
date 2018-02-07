@@ -15,6 +15,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using System;
     using System.IO;
     using System.Reflection;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools;
@@ -22,17 +23,28 @@ namespace AnalysisPrograms.Recognizers.Base
     using AnalysisBase.Extensions;
     using AudioAnalysisTools;
     using log4net;
+    using McMaster.Extensions.CommandLineUtils;
     using Production;
+    using Production.Arguments;
 
     public class RecognizerEntry
     {
-        [CustomDetailedDescription]
+        public const string CommandName = "EventRecognizer";
+        private const string Description =
+            "The entry point for all species or event recognizers.Only to be used on short recordings(< 2 mins)." +
+            "This recognizer runs any IEventRecognizer. The recognizer run is based on the " +
+            "Identifier field and parsed from the AnalysisName field in the config file of the same name";
+
+        [Command(
+            CommandName,
+            Description = Description)]
         public class Arguments : SourceConfigOutputDirArguments
         {
-            public static string AdditionalNotes()
+            public override Task<int> Execute(CommandLineApplication app)
             {
-                return "This recognizer runs any IEventRecognizer. The recognizer run is based on the "
-                    + "Identifier field and parsed from the AnalysisName field in the config file of the same name";
+                RecognizerEntry.Execute(this);
+
+                return this.Ok();
             }
         }
 

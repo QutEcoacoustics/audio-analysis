@@ -62,7 +62,6 @@ namespace AnalysisPrograms
 
         public const string AnalysisName = "KoalaMale";
 
-        public const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
 
         public const int ResampleRate = 17640;
 
@@ -114,6 +113,7 @@ namespace AnalysisPrograms
         #region Public Methods and Operators
 
         [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
+        /*
         public static void Dev(Arguments arguments)
         {
             bool executeDev = arguments == null;
@@ -185,7 +185,7 @@ namespace AnalysisPrograms
             }
 
             Execute(arguments);
-        }
+        }*/
 
         public static KoalaMaleResults Analysis(FileInfo segmentOfSourceFile, IDictionary<string, string> configDict, TimeSpan segmentStartOffset)
         {
@@ -321,63 +321,6 @@ namespace AnalysisPrograms
                            RecordingtDuration = recordingDuration,
                            Sonogram = sonogram,
                        };
-        }
-
-        /// <summary>
-        /// A WRAPPER AROUND THE analyser.Analyze(analysisSettings) METHOD
-        ///     To be called as an executable with command line arguments.
-        /// </summary>
-        /// <param name="arguments">
-        /// The arguments for excuting the analysis.
-        /// </param>
-        public static void Execute(Arguments arguments)
-        {
-            Contract.Requires(arguments != null);
-
-            var (analysisSettings, segmentSettings) = arguments.ToAnalysisSettings();
-            TimeSpan start = TimeSpan.FromSeconds(arguments.Start ?? 0);
-            TimeSpan duration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
-
-            // EXTRACT THE REQUIRED RECORDING SEGMENT
-            FileInfo tempF = segmentSettings.SegmentAudioFile;
-            if (duration == TimeSpan.Zero)
-            {
-                // Process entire file
-                AudioFilePreparer.PrepareFile(
-                    arguments.Source,
-                    tempF,
-                    new AudioUtilityRequest { TargetSampleRate = ResampleRate },
-                    analysisSettings.AnalysisTempDirectoryFallback);
-            }
-            else
-            {
-                AudioFilePreparer.PrepareFile(
-                    arguments.Source,
-                    tempF,
-                    new AudioUtilityRequest
-                        {
-                            TargetSampleRate = ResampleRate,
-                            OffsetStart = start,
-                            OffsetEnd = start.Add(duration),
-                        },
-                    analysisSettings.AnalysisTempDirectoryFallback);
-            }
-
-            // DO THE ANALYSIS
-            /* ############################################################################################################################################# */
-            IAnalyser2 analyser = new KoalaMale();
-            analyser.BeforeAnalyze(analysisSettings);
-            AnalysisResult2 result = analyser.Analyze(analysisSettings, segmentSettings);
-
-            /* ############################################################################################################################################# */
-            if (result.Events.Length > 0)
-            {
-                LoggedConsole.WriteLine("{0} events found", result.Events.Length);
-            }
-            else
-            {
-                LoggedConsole.WriteLine("No events found");
-            }
         }
 
         /// <summary>
@@ -563,10 +506,6 @@ namespace AnalysisPrograms
         }
 
         #endregion
-
-        public class Arguments : AnalyserArguments
-        {
-        }
 
         public class KoalaMaleResults
         {

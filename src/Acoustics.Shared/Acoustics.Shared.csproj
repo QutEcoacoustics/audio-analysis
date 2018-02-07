@@ -191,8 +191,11 @@
     <Compile Include="GraphicsSegmented.cs" />
     <Compile Include="ImageTooLargeForGraphicsException.cs" />
     <Compile Include="Json.cs" />
-    <Compile Include="Logging\Logging.cs" />
+    <Compile Include="Logging\Log4NetTextWriter.cs" />
+    <Compile Include="Logging\LoggedConsole.cs" />
+    <Compile Include="Logging\LogExtensions.cs" />
     <Compile Include="Csv\MatrixMapper.cs" />
+    <Compile Include="Logging\NoConsole.cs" />
     <Compile Include="MediaTypes.cs" />
     <Compile Include="Meta.cs" />
     <Compile Include="NonClosingStreamWrapper.cs" />

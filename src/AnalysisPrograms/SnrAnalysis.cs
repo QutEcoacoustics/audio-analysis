@@ -6,6 +6,7 @@
     using System.IO;
     using System.Linq;
     using System.Text;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Extensions;
     using Acoustics.Tools;
@@ -14,38 +15,23 @@
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using PowerArgs;
+    using McMaster.Extensions.CommandLineUtils;
+    using Production.Arguments;
     using TowseyLibrary;
 
     public class SnrAnalysis
     {
+        public const string CommandName = "SnrAnalysis";
+
+        [Command(
+            CommandName,
+            Description = "Calculates signal to noise ratio for short files.")]
         public class Arguments : SourceConfigOutputDirArguments
         {
-            //[ArgDescription("Path to input audio file")]
-            //[Production.ArgExistingFile]
-            //[ArgRequired]
-            //public FileInfo RecordingPath { get; set; }
-
-            //[ArgDescription("Path to configuration file in YAML format")]
-            //[Production.ArgExistingFile]
-            //[ArgRequired]
-            //public FileInfo ConfigFile { get; set; }
-
-            //[ArgDescription("The directory containing the input files.")]
-            //[Production.ArgExistingDirectory]
-            //[ArgPosition(1)]
-            //[ArgRequired]
-            //public DirectoryInfo InputDirectory { get; set; }
-
-            public static string Description()
+            public override Task<int> Execute(CommandLineApplication app)
             {
-                return "Comparison of different noise removal algorithms";
-            }
-
-            public static string AdditionalNotes()
-            {
-                // add long explantory notes here if you need to
-                return "";
+                SnrAnalysis.Execute(this);
+                return this.Ok();
             }
         }
 

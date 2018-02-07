@@ -13,11 +13,9 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
-    [Obsolete("This class has been dismembered keeping only hte core method")]
+    [Obsolete("This class has been dismembered keeping only the core method")]
     public class Human1
     {
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-
         public const string AnalysisName = "Human2";
 
         /// <summary>

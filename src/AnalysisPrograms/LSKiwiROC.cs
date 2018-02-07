@@ -1,35 +1,58 @@
-﻿namespace AnalysisPrograms
+﻿// <copyright file="LSKiwiROC.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AnalysisPrograms
 {
 
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.Data;
     using System.IO;
     using System.Linq;
     using System.Text;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Production;
     using AudioAnalysisTools;
-    using PowerArgs;
+    using McMaster.Extensions.CommandLineUtils;
+    using Production.Arguments;
+    using Production.Validation;
     using TowseyLibrary;
 
+    /// <summary>
+    /// SEPARATE PROCESSING TASK FOR KIWI OUTPUT
+    /// little spotted kiwi calls from Andrew @ Victoria university.
+    /// Signed off: Michael Towsey 27th July 2012
+    /// </summary>
+    [Obsolete]
     public class LSKiwiROC
     {
         // LoggedConsole.WriteLine("EventsFilePath:-     ");
         //   LoggedConsole.WriteLine("SelectionsFilePath:- ");
 
-        public class Arguments
+        public const string CommandName = "KiwiROC";
+
+        [Command(
+            CommandName,
+            Description = "[DEPRACATED]. Only used in 2012 to analyse output from LSKiwi3.Dev().")]
+        public class Arguments : SubCommandBase
         {
-            [ArgDescription("Full path of the csv file containing description of potential kiwi calls. File must be in correct csv format.")]
-            [Production.ArgExistingFile(Extension = ".csv")]
-            [ArgPosition(1)]
-            [ArgRequired]
+            [Option("Full path of the csv file containing description of potential kiwi calls. File must be in correct csv format.")]
+            [ExistingFile(Extension = ".csv")]
+            [Required]
             public FileInfo Events { get; set; }
 
-            [ArgDescription("Full path of the csv file containing description of true kiwi calls. File must be in the correct format.")]
-            [Production.ArgExistingFile(Extension = ".csv")]
-            [ArgPosition(2)]
+            [Option("Full path of the csv file containing description of true kiwi calls. File must be in the correct format.")]
+            [ExistingFile(Extension = ".csv")]
             public FileInfo Selections { get; set; }
+
+            public override Task<int> Execute(CommandLineApplication app)
+            {
+                LSKiwiROC.Main(this);
+                return this.Ok();
+            }
         }
 
         public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\Output\LSKiwi3\TOWER_20100208_204500_ANDREWS_SELECTIONS.csv";

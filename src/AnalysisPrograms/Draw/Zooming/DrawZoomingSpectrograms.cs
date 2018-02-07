@@ -12,7 +12,6 @@ namespace AnalysisPrograms.Draw.Zooming
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.LongDurationSpectrograms.Zooming;
     using log4net;
-    using PowerArgs;
     using Production;
 
     using Zio;
@@ -76,7 +75,7 @@ namespace AnalysisPrograms.Draw.Zooming
                     }
                     else
                     {
-                        throw new ArgException("FocusMinute is null, cannot proceed");
+                        throw new ArgumentException("FocusMinute is null, cannot proceed");
                     }
 
                     const int ImageWidth = 1500;

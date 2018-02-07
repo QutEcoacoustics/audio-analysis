@@ -6,17 +6,21 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using PowerArgs;
+    using McMaster.Extensions.CommandLineUtils;
     using Production;
+    using Production.Arguments;
+    using Production.Validation;
     using TowseyLibrary;
 
     /// <summary>
@@ -24,31 +28,22 @@ namespace AnalysisPrograms
     /// </summary>
     public static class Create4Sonograms
     {
-        [CustomDetailedDescription]
-        [CustomDescription]
+        public const string CommandName = "DrawSpectrograms";
+
+        [Command(
+            CommandName,
+            Description = "Creates a set of four standard spectrograms derived using different algorithms. For short recordings only.")]
         public class Arguments : SourceAndConfigArguments
         {
-            [ArgDescription("A file path to write output to")]
-            [ArgNotExistingFile]
-            [ArgRequired]
+            [Option("A file path to write output to")]
+            [NotExistingFile]
+            [Required]
             public FileInfo Output { get; set; }
 
-            //[ArgDescription("The start offset (in minutes) of the source audio file to operate on")]
-            //[ArgRange(0, double.MaxValue)]
-            //public double? StartOffset { get; set; }
-
-            //[ArgDescription("The end offset (in minutes) of the source audio file to operate on")]
-            //[ArgRange(0, double.MaxValue)]
-            //public double? EndOffset { get; set; }
-
-            public static string Description()
+            public override Task<int> Execute(CommandLineApplication app)
             {
-                return "Does cool stuff";
-            }
-
-            public static string AdditionalNotes()
-            {
-                return "StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.";
+                Create4Sonograms.Main(this);
+                return this.Ok();
             }
         }
 

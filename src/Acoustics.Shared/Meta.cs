@@ -11,6 +11,10 @@ namespace Acoustics.Shared
 
     public static class Meta
     {
+        public const string Description = "QUT Aacoustics Analysis Program - version ";
+
+        public const string Name = "AnalysisPrograms.exe";
+
         public static string Organization { get; } = "QUT";
 
         public static string Copyright { get; } = "©";

@@ -18,6 +18,7 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Reflection;
     using System.Text;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using Acoustics.Tools.Wav;
@@ -30,36 +31,42 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.WavTools;
 
     using log4net;
-    using MathNet.Numerics.NumberTheory;
-    using PowerArgs;
+    using MathNet.Numerics;
+    using McMaster.Extensions.CommandLineUtils;
+    using Production.Arguments;
+    using Production.Validation;
     using TowseyLibrary;
 
+    /// <summary>
+    /// 3. Produces a sonogram from an audio file - EITHER custom OR via SOX
+    /// Signed off: Michael Towsey 31st July 2012
+    /// </summary>
     public class Audio2Sonogram
     {
+        public const string CommandName = "Audio2Sonogram";
+
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         // use the following paths for the command line for the <audio2sonogram> task.
         // audio2sonogram "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
-        [CustomDetailedDescription]
-        [CustomDescription]
+        [Command(
+            Name = CommandName,
+            Description = "Generates multiple standarf spectrogram images and oscilllations info")]
         public class Arguments : SourceConfigOutputDirArguments
         {
-            [ArgDescription("The start offset (in minutes) of the source audio file to operate on")]
-            [ArgRange(0, double.MaxValue)]
+
+            [Option("The start offset to start analyzing from (in seconds)")]
+            [InRange(min: 0)]
             public double? StartOffset { get; set; }
 
-            [ArgDescription("The end offset (in minutes) of the source audio file to operate on")]
-            [ArgRange(0, double.MaxValue)]
+            [Option("The end offset to stop analyzing (in seconds)")]
+            [InRange(min: 0)]
             public double? EndOffset { get; set; }
 
-            public static string Description()
+            public override Task<int> Execute(CommandLineApplication app)
             {
-                return "Generates multiple spectrogram images and ascilllations info";
-            }
-
-            public static string AdditionalNotes()
-            {
-                return string.Empty;
+                Main(this);
+                return this.Ok();
             }
         }
 
@@ -123,8 +130,8 @@ namespace AnalysisPrograms
             TimeSpan? endOffset = null;
             if (offsetsProvided)
             {
-                startOffset = TimeSpan.FromMinutes(arguments.StartOffset.Value);
-                endOffset = TimeSpan.FromMinutes(arguments.EndOffset.Value);
+                startOffset = TimeSpan.FromSeconds(arguments.StartOffset.Value);
+                endOffset = TimeSpan.FromSeconds(arguments.EndOffset.Value);
             }
 
             const string title = "# MAKE FOUR SONOGRAMS FROM AUDIO RECORDING";

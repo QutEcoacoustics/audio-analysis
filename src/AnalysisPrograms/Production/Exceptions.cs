@@ -7,12 +7,12 @@ namespace AnalysisPrograms.Production
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.IO;
 
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
 
-    using PowerArgs;
     using AnalysisBase;
 
     public static class ExceptionLookup
@@ -34,45 +34,18 @@ namespace AnalysisPrograms.Production
 
         #region Constructors and Destructors
 
-        /// <summary>
-        ///
-        /// </summary>
         static ExceptionLookup()
         {
             // WARNING: EXIT CODES CANNOT BE > 255 (for linux compatibility)
             ErrorLevels = new Dictionary<Type, ExceptionStyle>
                               {
                                   {
-                                      typeof(UnknownActionArgException),
-                                      new ExceptionStyle { ErrorCode = 1 }
-                                  },
-                                  {
-                                      typeof(ArgException),
+                                      typeof(ValidationException),
                                       new ExceptionStyle { ErrorCode = 2 }
                                   },
                                   {
-                                      typeof(MissingArgException),
-                                      new ExceptionStyle { ErrorCode = 3 }
-                                  },
-                                  {
-                                      typeof(InvalidArgDefinitionException),
-                                      new ExceptionStyle { ErrorCode = 4 }
-                                  },
-                                  {
-                                      typeof(DuplicateArgException),
-                                      new ExceptionStyle { ErrorCode = 5 }
-                                  },
-                                  {
-                                      typeof(UnexpectedArgException),
-                                      new ExceptionStyle { ErrorCode = 6 }
-                                  },
-                                  {
-                                      typeof(FormatException),
-                                      new ExceptionStyle { ErrorCode = 7 }
-                                  },
-                                  {
-                                      typeof(ValidationArgException),
-                                      new ExceptionStyle { ErrorCode = 50 }
+                                      typeof(ArgumentException),
+                                      new ExceptionStyle() { ErrorCode = 3 }
                                   },
                                   {
                                       typeof(DirectoryNotFoundException),
@@ -138,6 +111,14 @@ namespace AnalysisPrograms.Production
             get
             {
                 return 0;
+            }
+        }
+
+        public static int Fail
+        {
+            get
+            {
+                return 1;
             }
         }
 

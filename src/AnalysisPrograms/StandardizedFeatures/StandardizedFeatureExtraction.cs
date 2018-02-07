@@ -22,7 +22,6 @@ namespace AnalysisPrograms.StandardizedFeatures
     using AudioAnalysisTools.WavTools;
     using log4net;
     using log4net.Repository.Hierarchy;
-    using PowerArgs;
     using TowseyLibrary;
 
     public class StandardizedFeatureExtraction : AbstractStrongAnalyser

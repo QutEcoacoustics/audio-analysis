@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
@@ -10,125 +11,95 @@
     using Acoustics.Shared;
     using AnalysisBase;
     using AnalysisBase.Segment;
+    using McMaster.Extensions.CommandLineUtils;
     using Production;
+    using Production.Arguments;
+    using Production.Validation;
     using SourcePreparers;
-    using PowerArgs;
 
     public class AudioCutter
     {
-        [CustomDescription]
-        public class Arguments : IArgClassValidator
-        {
-            public static string Description()
-            {
-                return "Cuts audio into segments of desired length and format";
-            }
+        public const string CommandName = "AudioCutter";
 
+        [Command(
+            CommandName,
+            Description = "Cuts audio into segments of desired length and format")]
+        public class Arguments :SubCommandBase
+        {
             //[ArgDescription("The directory containing audio files.")]
             //[Production.ArgExistingDirectory(createIfNotExists: false)]
             //[ArgRequired]
             //[ArgPosition(1)]
             //public virtual DirectoryInfo Input { get; set; }
 
-            [ArgDescription("The audio file to segment.")]
-            [ArgRequired]
-            [ArgPosition(1)]
+            [Option("The audio file to segment.")]
+            [Required]
+            [FileExists]
             public FileInfo InputFile { get; set; }
 
-            [ArgDescription("The directory to create segmented audio files.")]
-            [Production.ArgExistingDirectory(createIfNotExists: true)]
-            [ArgRequired]
-            [ArgPosition(2)]
+            [Option("The directory to create segmented audio files.")]
+            [DirectoryExistsOrCreate(createIfNotExists: true)]
+            [Required]
             public DirectoryInfo OutputDir { get; set; }
 
-            [ArgDescription("The directory for temporary files.")]
-            [Production.ArgExistingDirectory(createIfNotExists: true)]
+            [Option("The directory for temporary files.")]
+            [DirectoryExistsOrCreate(createIfNotExists: true)]
             public DirectoryInfo TemporaryFilesDir { get; set; }
 
             //[ArgDescription("Whether to recurse into subdirectories.")]
             //[DefaultValue(false)]
             //public bool Recurse { get; set; }
 
-            [ArgDescription("The offset to start creating segmented audio files (in seconds, defaults to start of original file).")]
-            [ArgRange(0, double.MaxValue)]
-            [DefaultValue(0)]
-            public double StartOffset { get; set; }
+            [Option(
+                "The offset to start creating segmented audio files (in seconds, defaults to start of original file).")]
+            [InRange(min: 0)]
+            public double StartOffset { get; set; } = 0;
 
-            [ArgDescription("The offset to stop creating segmented audio files (in seconds, defaults to end of original file).")]
-            [ArgRange(0, double.MaxValue)]
+            [Option("The offset to stop creating segmented audio files (in seconds, defaults to end of original file).")]
+            [InRange(min: 0)]
             public double? EndOffset { get; set; }
 
-            [ArgDescription("The minimum duration of a segmented audio file (in seconds, defaults to 10; cannot be lower than 1 second).")]
-            [ArgRange(1, double.MaxValue)]
-            [DefaultValue(10)]
-            public double SegmentDurationMinimum { get; set; }
+            [Option(
+                "The minimum duration of a segmented audio file (in seconds, defaults to 10; must be within [0,3600]).")]
+            [InRange(1, 3600)]
+            public double SegmentDurationMinimum { get; set; } = 10;
 
-            [ArgDescription("The duration of a segmented audio file (in seconds, defaults to 60; cannot be lower than 1 second).")]
-            [ArgRange(1, double.MaxValue)]
-            [DefaultValue(60)]
-            public double SegmentDuration { get; set; }
+            [Option("The duration of a segmented audio file (in seconds, defaults to 60; must be within [0,3600]).")]
+            [InRange(1, 3600)]
+            public double SegmentDuration { get; set; } = 60;
 
-            [ArgDescription("The duration of overlap between segmented audio files (in seconds, defaults to 0).")]
-            [ArgRange(0, double.MaxValue)]
-            [DefaultValue(0)]
-            public double SegmentOverlap { get; set; }
+            [Option("The duration of overlap between segmented audio files (in seconds, defaults to 0).")]
+            [InRange(0, 3600)]
+            public double SegmentOverlap { get; set; } = 0;
 
-            [ArgDescription("The file type (file extension) of segmented audio files (defaults to wav; some possible values are wav, mp3, ogg, webm).")]
-            [DefaultValue("wav")]
-            public string SegmentFileExtension { get; set; }
+            [Option(
+                "The file type (file extension) of segmented audio files (defaults to wav; some possible values are wav, mp3, ogg, webm).")]
+            [OneOfThese("wav", "mp3", "ogg", "webm")]
+            public string SegmentFileExtension { get; set; } = "wav";
 
-            [ArgDescription("The sample rate for segmented audio files (in hertz, defaults to 22050; valid values are 17640, 22050, 44100).")]
-            [DefaultValue(22050)]
-            [ArgRange(8000, 44100)]
-            public int SampleRate { get; set; }
+            [Option(
+                "The sample rate for segmented audio files (in hertz, defaults to 22050; valid values are 17640, 22050, 44100).")]
+            [InRange(8000, 96000)]
+            public int SampleRate { get; set; } = 22050;
 
             //[ArgDescription("The channel(s) to include in the segmented audio files (default is no modifications).")]
             //[ArgRange(1, int.MaxValue)]
             //public int? Channel { get; set; }
 
-            [ArgDescription("Whether to mix all channels down to mono (defaults to true).")]
-            [DefaultValue(true)]
-            public bool MixDownToMono { get; set; }
+            [Option(
+                CommandOptionType.SingleValue,
+                Description = "Whether to mix all channels down to mono (defaults to true).")]
+            public bool MixDownToMono { get; set; } = true;
 
-            [ArgDescription("Whether to create segments in parallel or sequentially (defaults to true - parallel).")]
-            [DefaultValue(true)]
-            public bool RunParallel { get; set; }
+            [Option(
+                CommandOptionType.SingleValue,
+                Description = "Whether to create segments in parallel or sequentially (defaults to true - parallel).")]
+            public bool RunParallel { get; set; } = true;
 
-            public void Validate()
+            public override Task<int> Execute(CommandLineApplication app)
             {
-                //var recurse = this.Recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-
-                // check that any files are in Input dir
-                //if (!Directory.EnumerateFiles(this.Input.FullName, "*.*", recurse).Any())
-                //{
-                //    throw new ArgumentException("Input directory contains no files.");
-                //}
-
-                // check that start offset (if specified) is less than end offset (if specified)
-                if (this.EndOffset.HasValue && this.StartOffset >= this.EndOffset.Value)
-                {
-                    throw new InvalidStartOrEndException(
-                        $"StartOffset {this.StartOffset} must be less than EndOffset {this.EndOffset.Value}.");
-                }
-
-                // check that min duration is less than max duration
-                if (this.SegmentDurationMinimum >= this.SegmentDuration)
-                {
-                    throw new InvalidDurationException(
-                        $"SegmentDurationMinimum {this.SegmentDurationMinimum} must be less than AnalysisIdealSegmentDuration {this.SegmentDuration}.");
-                }
-
-                // check that mix down to mono and a a channel haven't both been specified
-                //if (this.Channel.HasValue && this.MixDownToMono)
-                //{
-                //    throw new ArgumentException("You cannot specify a channel and mix down to mono.");
-                //}
-
-                // check media type
-                if (!MediaTypes.IsFileExtRecognised(this.SegmentFileExtension))
-                {
-                    throw new ArgumentException(string.Format("File extension {0} is not recognised.", this.SegmentFileExtension));
-                }
+                AudioCutter.Execute(this);
+                return this.Ok();
             }
         }
 
@@ -138,6 +109,8 @@
             {
                 throw new NoDeveloperMethodException();
             }
+
+            Validate(arguments);
 
             var sw = new Stopwatch();
             sw.Start();
@@ -236,6 +209,43 @@
                 itemNumber,
                 itemCount,
                 preparedFile.SourceMetadata.Identifier);
+        }
+
+        private static void Validate(Arguments arguments)
+        {
+            //var recurse = this.Recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+
+            // check that any files are in Input dir
+            //if (!Directory.EnumerateFiles(this.Input.FullName, "*.*", recurse).Any())
+            //{
+            //    throw new ArgumentException("Input directory contains no files.");
+            //}
+
+            // check that start offset (if specified) is less than end offset (if specified)
+            if (arguments.EndOffset.HasValue && arguments.StartOffset >= arguments.EndOffset.Value)
+            {
+                throw new InvalidStartOrEndException(
+                    $"StartOffset {arguments.StartOffset} must be less than EndOffset {arguments.EndOffset.Value}.");
+            }
+
+            // check that min duration is less than max duration
+            if (arguments.SegmentDurationMinimum >= arguments.SegmentDuration)
+            {
+                throw new InvalidDurationException(
+                    $"SegmentDurationMinimum {arguments.SegmentDurationMinimum} must be less than AnalysisIdealSegmentDuration {arguments.SegmentDuration}.");
+            }
+
+            // check that mix down to mono and a a channel haven't both been specified
+            //if (this.Channel.HasValue && this.MixDownToMono)
+            //{
+            //    throw new ArgumentException("You cannot specify a channel and mix down to mono.");
+            //}
+
+            // check media type
+            if (!MediaTypes.IsFileExtRecognised(arguments.SegmentFileExtension))
+            {
+                throw new ArgumentException($"File extension {arguments.SegmentFileExtension} is not recognised.");
+            }
         }
     }
 }

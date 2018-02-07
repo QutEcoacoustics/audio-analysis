@@ -21,7 +21,6 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Dong.Felt;
     using log4net;
     using Base;
     using TowseyLibrary;

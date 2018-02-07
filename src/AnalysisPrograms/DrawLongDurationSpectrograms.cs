@@ -30,6 +30,7 @@ namespace AnalysisPrograms
     using System.Drawing;
     using System.IO;
     using System.Linq;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using AudioAnalysisTools;
@@ -37,9 +38,10 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.LongDurationSpectrograms.Zooming;
     using AudioAnalysisTools.StandardSpectrograms;
-
-    using PowerArgs;
+    using McMaster.Extensions.CommandLineUtils;
     using Production;
+    using Production.Arguments;
+    using Production.Validation;
     using TowseyLibrary;
 
     using Zio;
@@ -62,24 +64,27 @@ namespace AnalysisPrograms
     /// </summary>
     public static class DrawLongDurationSpectrograms
     {
-        public class Arguments
+        public const string CommandName = "DrawLongDurationSpectrograms";
+
+        [Command(
+            CommandName,
+            Description = "Produces long - duration false - colour spectrograms from matrices of spectral indices.")]
+        public class Arguments : SubCommandBase
         {
-            [ArgDescription("Directory where the input data is located.")]
+            [Option("Directory where the input data is located.")]
+            [DirectoryExists]
             public DirectoryInfo InputDataDirectory { get; set; }
 
-            [ArgDescription("Directory where the output is to go.")]
+            [Option("Directory where the output is to go.")]
+            [DirectoryExistsOrCreate(createIfNotExists: true)]
             public DirectoryInfo OutputDirectory { get; set; }
 
-            [ArgDescription("User specified file containing a list of indices and their properties.")]
-            [Production.ArgExistingFile(Extension = ".yml")]
-
-            //[ArgPosition(1)]
+            [Option("User specified file containing a list of indices and their properties.")]
+            [ExistingFile(Extension = ".yml")]
             public FileInfo IndexPropertiesConfig { get; set; }
 
-            [ArgDescription("Config file specifying directory containing indices.csv files and other parameters.")]
-            [Production.ArgExistingFile(Extension = ".yml")]
-
-            //[ArgPosition(1)]
+            [Option("Config file specifying directory containing indices.csv files and other parameters.")]
+            [ExistingFile(Extension = ".yml")]
             public FileInfo SpectrogramConfigPath { get; set; }
 
             public string ColourMap1 { get; set; }
@@ -87,6 +92,12 @@ namespace AnalysisPrograms
             public string ColourMap2 { get; set; }
 
             public TimeSpan TemporalScale { get; set; }
+
+            public override Task<int> Execute(CommandLineApplication app)
+            {
+                DrawLongDurationSpectrograms.Execute(this);
+                return this.Ok();
+            }
         }
 
         public static void Execute(Arguments arguments)

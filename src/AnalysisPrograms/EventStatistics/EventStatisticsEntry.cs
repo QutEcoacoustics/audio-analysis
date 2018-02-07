@@ -20,18 +20,14 @@ namespace AnalysisPrograms.EventStatistics
     using global::AcousticWorkbench;
     using global::AcousticWorkbench.Models;
     using log4net;
+    using Production;
     using SourcePreparers;
 
     public partial class EventStatisticsEntry
     {
         private static readonly ILog Log = LogManager.GetLogger(nameof(EventStatisticsAnalysis));
 
-        public static void Execute(Arguments arguments)
-        {
-            MainEntry.ExecuteAsync(ExecuteAsync, arguments);
-        }
-
-        public static async Task ExecuteAsync(Arguments arguments)
+        public static async Task<int> ExecuteAsync(Arguments arguments)
         {
             if (arguments == null)
             {
@@ -126,7 +122,7 @@ namespace AnalysisPrograms.EventStatistics
             if (events.Length == 0)
             {
                 Log.Warn("No events imported - source file empty. Exiting");
-                return;
+                return ExceptionLookup.Fail;
             }
 
             Log.Info($"Events read, {events.Length} read.");
@@ -218,6 +214,8 @@ namespace AnalysisPrograms.EventStatistics
             Log.Info("Summary statistics:\n" + Json.SerialiseToString(summaryStats));
 
             Log.Success("Event statistics analysis complete!");
+
+            return ExceptionLookup.Ok;
         }
 
         /// <summary>

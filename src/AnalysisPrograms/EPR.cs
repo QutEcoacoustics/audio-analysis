@@ -6,14 +6,17 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.IO;
     using System.Linq;
+    using System.Threading.Tasks;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using PowerArgs;
+    using McMaster.Extensions.CommandLineUtils;
     using Production;
+    using Production.Arguments;
     using TowseyLibrary;
 
     /// <summary>
@@ -156,12 +159,23 @@ namespace AnalysisPrograms
     /// </summary>
     public class EPR
     {
+        public const string CommandName = "EPR";
+
+        [Command(
+            CommandName,
+            Description = "[UNMAINTAINED] Event Pattern Recognition - used for ground-parrots (TOWSEY version). Revise code if intend to use.")]
         public class Arguments : SourceAndConfigArguments
         {
-            [ArgDescription("prefix of name of the created output files")]
-            [ArgValidFilename()]
-            [ArgRequired]
+            [Option("prefix of name of the created output files")]
+            [LegalFilePath]
+            [Required]
             public string Target { get; set; }
+
+            public override Task<int> Execute(CommandLineApplication app)
+            {
+                EPR.Execute(this);
+                return this.Ok();
+            }
         }
 
         public static void Execute(Arguments arguments)

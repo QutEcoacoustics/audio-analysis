@@ -13,11 +13,13 @@ namespace AnalysisPrograms
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
+    using System.Threading.Tasks;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
-    using PowerArgs;
+    using McMaster.Extensions.CommandLineUtils;
     using Production;
+    using Production.Arguments;
     using TowseyLibrary;
 
     /// <summary>
@@ -25,34 +27,35 @@ namespace AnalysisPrograms
     /// </summary>
     public static class DrawEasyImage
     {
+        public const string CommandName = "DrawEasyImage";
 
-        public class Arguments
+        [Command(
+            CommandName,
+            Description = "Concatenates multiple consecutive index results into a format suitable for years of data.")]
+        public class Arguments : SubCommandBase
         {
-            [ArgDescription("One or more directories where the original csv files are located.")]
+            [Option(
+                CommandOptionType.MultipleValue,
+                Description = "One or more directories where the original csv files are located.")]
             public DirectoryInfo[] InputDataDirectories { get; set; }
 
-            [ArgDescription("Directory where the output is to go.")]
+            [Option("Directory where the output is to go.")]
             public DirectoryInfo OutputDirectory { get; set; }
 
-            [ArgDescription("Filter string used to search for the required csv files - assumed to be in directory path.")]
+            [Option("Filter string used to search for the required csv files - assumed to be in directory path.")]
             public string FileFilter { get; set; }
 
-            [ArgDescription("File stem name for output files.")]
+            [Option("File stem name for output files.")]
             public string FileStemName { get; set; }
 
-            [ArgDescription("The start DateTime.")]
+            [Option("The start DateTime.")]
             public DateTimeOffset? StartDate { get; set; }
 
-            [ArgDescription("The end DateTime at which concatenation ends. If missing|null, then will be set = today's date or last available file.")]
+            [Option("The end DateTime at which concatenation ends. If missing|null, then will be set = today's date or last available file.")]
             public DateTimeOffset? EndDate { get; set; }
 
-            public TimeSpan? timeSpanOffsetHint = new TimeSpan(10, 0, 0);
-
-            [ArgDescription("TimeSpan offset hint required if file names do not contain time zone info. Set default to east coast Australia")]
-            public TimeSpan? TimeSpanOffsetHint {
-                get { return this.timeSpanOffsetHint; }
-                set { this.timeSpanOffsetHint = value; }
-            }
+            [Option("TimeSpan offset hint required if file names do not contain time zone info. Set default to east coast Australia")]
+            public TimeSpan? TimeSpanOffsetHint { get; set; } = new TimeSpan(10, 0, 0);
 
             //[ArgDescription("User specified file containing a list of indices and their properties.")]
             //[Production.ArgExistingFile(Extension = ".yml")]
@@ -60,6 +63,11 @@ namespace AnalysisPrograms
             internal FileInfo IndexPropertiesConfig { get; set; }
 
             public FileInfo BrisbaneSunriseDatafile { get; set; }
+            public override Task<int> Execute(CommandLineApplication app)
+            {
+                DrawEasyImage.Execute(this);
+                return this.Ok();
+            }
         }
 
         /// <summary>

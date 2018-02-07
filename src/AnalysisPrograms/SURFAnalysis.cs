@@ -18,6 +18,7 @@ namespace AnalysisPrograms
     using System.Drawing.Imaging;
     using System.IO;
     using System.Reflection;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using Acoustics.Tools;
@@ -29,35 +30,41 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using log4net;
+    using McMaster.Extensions.CommandLineUtils;
     using Production;
+    using Production.Arguments;
     using TowseyLibrary;
 
     public class SurfAnalysis
     {
+        public const string CommandName = "SURFAnalysis";
+
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         // use the following paths for the command line for the <audio2sonogram> task.
         // audio2InputForConvCNN "Path to CSV file"   @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml"  "Output directory" true
-        [CustomDetailedDescription]
-        [CustomDescription]
+
+        [Command(
+            CommandName,
+            Description = "[UNMAINTAINED] Uses SURF points of interest to classify recording segments of bird calls.")]
         public class Arguments : SourceConfigOutputDirArguments
         {
+            [Option]
             public FileInfo QueryWavFile { get; set; }
 
+            [Option]
             public FileInfo QueryCsvFile { get; set; }
 
+            [Option]
             public FileInfo TargtWavFile { get; set; }
 
+            [Option]
             public FileInfo TargtCsvFile { get; set; }
 
-            public static string Description()
+            public override Task<int> Execute(CommandLineApplication app)
             {
-                return "Uses SURF points of interest to classify recording segments of bird calls.";
-            }
-
-            public static string AdditionalNotes()
-            {
-                return "Nothing to add.";
+                SurfAnalysis.Main(this);
+                return this.Ok();
             }
         }
 

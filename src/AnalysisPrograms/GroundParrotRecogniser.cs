@@ -16,7 +16,7 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
@@ -31,7 +31,8 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.WavTools;
 
     using log4net;
-
+    using McMaster.Extensions.CommandLineUtils;
+    using Production.Arguments;
     using QutSensors.AudioAnalysis.AED;
 
     using TowseyLibrary;
@@ -41,8 +42,18 @@ namespace AnalysisPrograms
     /// </summary>
     public class GroundParrotRecogniser : AbstractStrongAnalyser
     {
+        public const string CommandName = "GroundParrot";
+
+        [Command(
+            CommandName,
+            Description = "event pattern recognition - used for ground-parrots (BRAD version)")]
         public class Arguments : SourceAndConfigArguments
         {
+            public override Task<int> Execute(CommandLineApplication app)
+            {
+                GroundParrotRecogniser.Dev(this);
+                return this.Ok();
+            }
         }
 
         #region Constants and Fields

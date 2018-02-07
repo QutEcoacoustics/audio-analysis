@@ -36,8 +36,9 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
-    using PowerArgs;
+    using McMaster.Extensions.CommandLineUtils;
+    using Production.Arguments;
+    using Production.Validation;
     using TowseyLibrary;
 
     /// <summary>
@@ -69,26 +70,26 @@ namespace AnalysisPrograms
 
         // use the following paths for the command line for the <audio2sonogram> task.
         // oscillationsGeneric "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
-        [CustomDetailedDescription]
-        [CustomDescription]
+
+        public const string CommandName = "OscillationsGeneric";
+
+        [Command(
+            CommandName,
+            Description = "Does a generic search for oscillations in the passed audio file. Short recordings only.")]
         public class Arguments : SourceConfigOutputDirArguments
         {
-            [ArgDescription("The start offset (in minutes) of the source audio file to operate on")]
-            [ArgRange(0, double.MaxValue)]
+            [Option("The start offset (in seconds) of the source audio file to operate on")]
+            [InRange(0, double.MaxValue)]
             public double? StartOffset { get; set; }
 
-            [ArgDescription("The end offset (in minutes) of the source audio file to operate on")]
-            [ArgRange(0, double.MaxValue)]
+            [Option("The end offset (in minutes) of the source audio file to operate on")]
+            [InRange(0, double.MaxValue)]
             public double? EndOffset { get; set; }
 
-            public static string Description()
+            public override Task<int> Execute(CommandLineApplication app)
             {
-                return "Does a generic search for oscillations in the passed audio file.";
-            }
-
-            public static string AdditionalNotes()
-            {
-                return "StartOffset and EndOffset are both required when either is included.";
+                OscillationsGeneric.Main(this);
+                return this.Ok();
             }
         }
 
@@ -137,8 +138,8 @@ namespace AnalysisPrograms
             TimeSpan? endOffset = null;
             if (offsetsProvided)
             {
-                startOffset = TimeSpan.FromMinutes(arguments.StartOffset.Value);
-                endOffset   = TimeSpan.FromMinutes(arguments.EndOffset.Value);
+                startOffset = TimeSpan.FromSeconds(arguments.StartOffset.Value);
+                endOffset   = TimeSpan.FromSeconds(arguments.EndOffset.Value);
             }
 
             const string Title = "# MAKE A SONOGRAM FROM AUDIO RECORDING and do OscillationsGeneric activity.";

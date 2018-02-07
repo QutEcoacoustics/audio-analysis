@@ -13,7 +13,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
     using global::AnalysisPrograms.AnalyseLongRecordings;
     using global::AnalysisPrograms.Draw.Zooming;
     using global::AnalysisPrograms.Production;
-
+    using global::AnalysisPrograms.Production.Arguments;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.LongDurationSpectrograms;

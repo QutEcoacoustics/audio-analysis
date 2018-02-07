@@ -33,7 +33,6 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.TileImage;
     using AudioAnalysisTools.WavTools;
     using log4net;
-    using PowerArgs;
     using Production;
     using TowseyLibrary;
     using Zio;
@@ -42,87 +41,6 @@ namespace AnalysisPrograms
 
     public class Acoustic : IAnalyser2
     {
-        [CustomDetailedDescription]
-        public class Arguments : IArgClassValidator
-        {
-            [ArgDescription("The task to execute, either `" + TaskAnalyse + "` or `" + TaskLoadCsv + "`")]
-            [ArgRequired]
-            [ArgPosition(1)]
-            [ArgOneOfThese(TaskAnalyse, TaskLoadCsv, ExceptionMessage = "The task to execute is not recognized.")]
-            public string Task { get; set; }
-
-            [ArgIgnore]
-            public bool TaskIsAnalyse => string.Equals(this.Task, TaskAnalyse, StringComparison.InvariantCultureIgnoreCase);
-
-            [ArgIgnore]
-            public bool TaskIsLoadCsv => string.Equals(this.Task, TaskLoadCsv, StringComparison.InvariantCultureIgnoreCase);
-
-            [ArgDescription("The path to the config file")]
-            [Production.ArgExistingFile]
-            [ArgRequired]
-            public FileInfo Config { get; set; }
-
-            [ArgDescription("The source csv file to operate on")]
-            [Production.ArgExistingFile(Extension = ".csv")]
-            public FileInfo InputCsv { get; set; }
-
-            [ArgDescription("The source audio file to operate on")]
-            [Production.ArgExistingFile]
-            public FileInfo Source { get; set; }
-
-            [ArgDescription("A directory to write output to")]
-            [Production.ArgExistingDirectory(createIfNotExists: true)]
-            public DirectoryInfo Output { get; set; }
-
-            public string TmpWav { get; set; }
-
-            public string Indices { get; set; }
-
-            [ArgDescription("The start offset to start analysing from (in seconds)")]
-            [ArgRange(0, double.MaxValue)]
-            public int? Start { get; set; }
-
-            [ArgDescription("The duration of each segment to analyse (seconds) - a maximum of 10 minutes")]
-            [ArgRange(0, 10 * 60)]
-            public int? Duration { get; set; }
-
-            public void Validate()
-            {
-                if (this.TaskIsLoadCsv)
-                {
-                    if (this.InputCsv == null || this.Output != null || this.Source != null || this.TmpWav != null
-                        || this.Indices != null || this.Start != null || this.Duration != null)
-                    {
-                        throw new ValidationArgException(
-                            "For the " + TaskLoadCsv + "task, InputCsv must be specified and other fields not specified");
-                    }
-                }
-
-                if (this.TaskIsAnalyse)
-                {
-                    if (this.InputCsv != null)
-                    {
-                        throw new ValidationArgException(
-                            "InputCsv should be specifiec in the " + TaskAnalyse + " action");
-                    }
-
-                    if (this.Source == null)
-                    {
-                        throw new MissingArgException("Source is required for action:" + TaskAnalyse);
-                    }
-
-                    if (this.Output == null)
-                    {
-                        throw new MissingArgException("Output is required for action:" + TaskAnalyse);
-                    }
-                }
-            }
-
-            public static string AdditionalNotes()
-            {
-                return "NOTE: This class has two distinct options";
-            }
-        }
 
         // OTHER CONSTANTS
         public const string AnalysisName = "Acoustic";

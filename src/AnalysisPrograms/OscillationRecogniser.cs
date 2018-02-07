@@ -13,10 +13,13 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Linq;
     using System.Text;
+    using System.Threading.Tasks;
     using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
+    using McMaster.Extensions.CommandLineUtils;
+    using Production.Arguments;
     using TowseyLibrary;
 
     public class OscillationRecogniser
@@ -53,8 +56,18 @@ namespace AnalysisPrograms
 
         public static string eventsFile  = "events.txt";
 
+        public const string CommandName = "Od";
+
+        [Command(
+            CommandName,
+            Description = "[UNMAINTAINED] Oscillation Detection. On short files only.")]
         public class Arguments : SourceConfigOutputDirArguments
         {
+            public override Task<int> Execute(CommandLineApplication app)
+            {
+                OscillationRecogniser.Execute(this);
+                return this.Ok();
+            }
         }
 
         [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]

@@ -10,6 +10,7 @@ namespace AnalysisPrograms
     using System.Globalization;
     using System.IO;
     using System.Linq;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using AnalyseLongRecordings;
@@ -19,7 +20,9 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using MathNet.Numerics.LinearAlgebra.Complex.Solvers.Iterative;
+    using McMaster.Extensions.CommandLineUtils;
+    using Production;
+    using Production.Arguments;
     using TowseyLibrary;
 
     /// <summary>
@@ -42,10 +45,18 @@ namespace AnalysisPrograms
     // TODO: [OPENSOURCE] empty out this file
     public class Sandpit
     {
-        //public const string imageViewer = @"C:\Windows\system32\mspaint.exe";
+        public const string CommandName = "Sandpit";
 
-        public class Arguments
+        [Command(
+            CommandName,
+            Description = "Michael's experimental area.",
+            ShowInHelpText = false)]
+        public class Arguments : SubCommandBase
         {
+            public override Task<int> Execute(CommandLineApplication app)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         /// <summary>
@@ -1792,7 +1803,8 @@ namespace AnalysisPrograms
         /// </summary>
         public static void AnalyseFrogDataSet()
         {
-            HighResolutionAcousticIndices.Execute(null);
+
+            //HighResolutionAcousticIndices.Execute(null);
         }
 
         /// <summary>

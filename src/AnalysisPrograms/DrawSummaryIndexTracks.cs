@@ -1,46 +1,64 @@
-﻿namespace AnalysisPrograms
+﻿// <copyright file="DrawSummaryIndexTracks.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AnalysisPrograms
 {
 
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.Data;
     using System.Drawing;
     using System.IO;
     using System.Linq;
     using System.Text;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Extensions;
     using AnalysisBase;
     using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
-    using PowerArgs;
+    using McMaster.Extensions.CommandLineUtils;
+    using Production.Arguments;
+    using Production.Validation;
     using TowseyLibrary;
 
     using Zio;
 
+    /// <summary>
+    /// 4. Produces a tracks image of column values in a csv file - one track per csv column.
+    /// Signed off: Michael Towsey 27th July 2012
+    /// </summary>
     public class DrawSummaryIndexTracks
     {
+        public const string CommandName = "IndicesCsv2Image";
+
+        [Command(
+            CommandName,
+            Description = "Input a csv file of summary indices.Outputs a tracks image.")]
         public class Arguments
+            : SubCommandBase
         {
-            [ArgDescription("The csv file containing rows of summary indices, one row per time segment - typical one minute segments.")]
-            [Production.ArgExistingFile(Extension = ".csv")]
-            [ArgPosition(1)]
+            [Option("The csv file containing rows of summary indices, one row per time segment - typical one minute segments.")]
+            [ExistingFile(Extension = ".csv")]
             public FileInfo InputCsv { get; set; }
 
-            /* // Note: not required
-            [ArgDescription("The path to the image config file")]
-            [Production.ArgExistingFile]
-            public FileInfo ImageConfig { get; set; } */
-
-            [ArgDescription("Config file containing properties of summary indices.")]
-            [Production.ArgExistingFile]
+            [Option("Config file containing properties of summary indices.")]
+            [ExistingFile]
             public FileInfo IndexPropertiesConfig { get; set; }
 
-            [ArgDescription("A file path to write output image")]
-            [ArgNotExistingFile(Extension = ".png")]
-            [ArgRequired]
+            [Option("A file path to write output image")]
+            [NotExistingFile(Extension = ".png")]
+            [Required]
             public FileInfo Output { get; set; }
+
+            public override Task<int> Execute(CommandLineApplication app)
+            {
+                Main(this);
+                return this.Ok();
+            }
         }
 
         /// <summary>

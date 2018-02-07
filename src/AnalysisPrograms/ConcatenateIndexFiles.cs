@@ -37,11 +37,13 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.StandardSpectrograms;
 
     using log4net;
-    using PowerArgs;
     using Production;
     using TowseyLibrary;
     using System.IO.Compression;
-
+    using System.Threading.Tasks;
+    using McMaster.Extensions.CommandLineUtils;
+    using Production.Arguments;
+    using Production.Validation;
     using Zio;
 
     /// <summary>
@@ -51,63 +53,79 @@ namespace AnalysisPrograms
     /// </summary>
     public static class ConcatenateIndexFiles
     {
+        public const string CommandName = "ConcatenateIndexFiles";
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public class Arguments
+        [Command(
+            CommandName,
+            Description = "Concatenates multiple consecutive index.csv files.")]
+        public class Arguments : SubCommandBase
         {
-            [ArgDescription("One or more directories where the original csv files are located.")]
+            [Option(
+                CommandOptionType.MultipleValue,
+                Description = "One or more directories where the original csv files are located.")]
             public DirectoryInfo[] InputDataDirectories { get; set; }
 
-            [ArgDescription("One directory where the original csv files are located. This option exists as well as a hack to get around commas in paths conflicting with PowerArgs' array parsing feature.")]
+            [Obsolete("Originally hack to get around powerargs limitation, can probably be removed soon")]
+            [Option(
+                "One directory where the original csv files are located. This option exists as an alternative to input data directories")]
             public DirectoryInfo InputDataDirectory { get; set; }
 
-            [ArgDescription("Directory where the output is to go.")]
+            [Option("Directory where the output is to go.")]
+            [DirectoryExistsOrCreate(createIfNotExists: true)]
             public DirectoryInfo OutputDirectory { get; set; }
 
-            [ArgDescription("Used to get the required data.csv files, which are assumed to be in a matching dir or subdirectory. E.g. use name of audio file suffix e.g.: *.wav")]
+            [Option("Used to get the required data.csv files, which are assumed to be in a matching dir or subdirectory. E.g. use name of audio file suffix e.g.: *.wav")]
             public string DirectoryFilter { get; set; }
 
-            [ArgDescription("File stem name for output files.")]
+            [Option("File stem name for output files.")]
             public string FileStemName { get; set; }
 
-            [ArgDescription("DateTimeOffset (inclusive) at which concatenation begins. If null, then start with earliest available file. Can parse an ISO8601 date.")]
+            [Option("DateTimeOffset (inclusive) at which concatenation begins. If null, then start with earliest available file. Can parse an ISO8601 date.")]
             public DateTimeOffset? StartDate { get; set; }
 
-            [ArgDescription("DateTimeOffset (exclusive) at which concatenation ends. If null, then will be set = today's date or last available file. Can parse an ISO8601 date.")]
+            [Option("DateTimeOffset (exclusive) at which concatenation ends. If null, then will be set = today's date or last available file. Can parse an ISO8601 date.")]
             public DateTimeOffset? EndDate { get; set; }
 
-            [ArgDescription("TimeSpan offset hint required if file names do not contain time zone info. NO DEFAULT IS SET")]
+            [Option("TimeSpan offset hint required if file names do not contain time zone info. NO DEFAULT IS SET")]
             public TimeSpan? TimeSpanOffsetHint { get; set; }
 
-            [ArgDescription("Draw false-colour spectrograms after concatenating index files")]
+            [Option(
+                CommandOptionType.SingleValue,
+                Description = "Draw false-colour spectrograms after concatenating index files")]
             public bool DrawImages { get; set; } = true;
 
-            [ArgDescription("The mapping of indices to colour channel in false-colour spectrogram 1")]
+            [Option("The mapping of indices to colour channel in false-colour spectrogram 1")]
             public string ColorMap1 { get; set; }
 
-            [ArgDescription("The mapping of indices to colour channel in false-colour spectrogram 2")]
+            [Option("The mapping of indices to colour channel in false-colour spectrogram 2")]
             public string ColorMap2 { get; set; }
 
-            [ArgDescription("User specified file containing a list of indices and their properties.")]
-            [Production.ArgExistingFile(Extension = ".yml")]
-
+            [Option("User specified file containing a list of indices and their properties.")]
+            [ExistingFile(Extension = ".yml")]
             public FileInfo IndexPropertiesConfig { get; set; }
 
-            [ArgDescription("Config file for drawing the false colour spectrograms.")]
-            [Production.ArgExistingFile(Extension = ".yml")]
+            [Option("Config file for drawing the false colour spectrograms.")]
+            [ExistingFile(Extension = ".yml")]
             public FileInfo FalseColourSpectrogramConfig { get; set; }
 
-            [ArgDescription("Set true only when concatenating more than 24-hours of data into one image - e.g. PNG/Indonesian data.")]
+            [Option("Set true only when concatenating more than 24-hours of data into one image")]
             public bool ConcatenateEverythingYouCanLayYourHandsOn { get; set; }
 
-            [ArgDescription("How to render gaps in a recording. Valid options: `" + nameof(ConcatMode.TimedGaps) + "` (default), `" + nameof(ConcatMode.NoGaps) + "`, `"+ nameof(ConcatMode.EchoGaps) + "`")]
+            [Option("How to render gaps in a recording. Valid options: `" + nameof(ConcatMode.TimedGaps) + "` (default), `" + nameof(ConcatMode.NoGaps) + "`, `"+ nameof(ConcatMode.EchoGaps) + "`")]
             public ConcatMode GapRendering { get; set; }
 
-            [ArgDescription("One or more directories where the RECOGNIZER event scores are located in csv files. This is optional")]
+            [Option("One or more directories where the RECOGNIZER event scores are located in csv files. This is optional")]
             public DirectoryInfo[] EventDataDirectories { get; set; }
 
-            [ArgDescription("Used only to get Event Recognizer files.")]
+            [Option("Used only to get Event Recognizer files.")]
             public string EventFilePattern { get; set; }
+
+            public override Task<int> Execute(CommandLineApplication app)
+            {
+                ConcatenateIndexFiles.Execute(this);
+                return this.Ok();
+            }
         }
 
         public static void Execute(Arguments arguments)

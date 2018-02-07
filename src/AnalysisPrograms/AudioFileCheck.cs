@@ -8,76 +8,44 @@
     using System.Reflection;
     using System.Security.Cryptography;
     using System.Text;
+    using System.Threading.Tasks;
     using Acoustics.Shared.Contracts;
     using Acoustics.Tools.Audio;
     using Production;
     using log4net;
-    using PowerArgs;
+    using McMaster.Extensions.CommandLineUtils;
+    using Production.Arguments;
 
     public class AudioFileCheck
     {
+        public const string CommandName = "AudioFileCheck";
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        [CustomDetailedDescription]
-        [CustomDescription]
-        public class Arguments : IArgClassValidator
+        [Command(
+            CommandName,
+            Description = "Writes information about audio files to a csv file.",
+            ExtendedHelpText = "Note: Specify a directory to process or an input file containing file paths, but not both.")]
+        public class Arguments : SubCommandBase
         {
-            [ArgIgnore]
-            public bool TaskIsProcessDirectory
-            {
-                get
-                {
-                    return this.InputDirectory != null;
-                }
-            }
-
-            [ArgDescription("Csv file containing audio file information.")]
-            [ArgValidPathName]
-            [ArgPosition(1)]
-            [ArgRequired]
+            [Option("Csv file to write audio file information to.")]
+            [LegalFilePath]
             public FileInfo OutputFile { get; set; }
 
-            [ArgDescription("Directory containing audio files.")]
-            [Production.ArgExistingDirectory]
+            [Option("Directory containing audio files.")]
+            [DirectoryExists]
             public DirectoryInfo InputDirectory { get; set; }
 
-            [ArgDescription("true to recurse into subdirectories (if processing directories).")]
-            [DefaultValue(false)]
+            [Option("true to recurse into subdirectories (if processing directories).")]
             public bool Recurse { get; set; }
 
-            [ArgDescription("A text file containing one path per line.")]
-            [Production.ArgExistingFile]
+            [Option("A text file containing one path per line.")]
+            [FileExists]
             public FileInfo InputFile { get; set; }
 
-            public void Validate()
+            public override Task<int> Execute(CommandLineApplication app)
             {
-                // three args:
-                // first is output file path
-                // second is whether to recurse or not
-                // third is dir containing audio files
-                // e.g. AnalysisPrograms.exe "<dir path>" recurse "<output file path>"
-                // e.g. AnalysisPrograms.exe "<dir path>" norecurse "<output file path>"
-                if (this.TaskIsProcessDirectory)
-                {
-                    if (this.InputFile != null)
-                    {
-                        throw new ValidationArgException("Cannot specify an input file if an input directory is given.");
-                    }
-                }
-
-                // at least two args:
-                // first is output file path
-                // second is text file path containing audio file paths (one per line)
-            }
-
-            public static string Description()
-            {
-                return "Writes information about audio files to a csv file.";
-            }
-
-            public static string AdditionalNotes()
-            {
-                return "Note: Specify a directory to process or an input file containing file paths, but not both.";
+                AudioFileCheck.Execute(this);
+                return this.Ok();
             }
         }
 
@@ -90,7 +58,7 @@
 
             IEnumerable<FileInfo> files = null;
 
-            if (args.TaskIsProcessDirectory)
+            if (args.InputDirectory != null)
             {
                 var shouldRecurse = args.Recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
                 files = args.InputDirectory.EnumerateFiles("*.*", shouldRecurse);
@@ -221,6 +189,27 @@
             }
 
             return Guid.Empty;
+        }
+
+        public void Validate(Arguments arguments)
+        {
+            // three args:
+            // first is output file path
+            // second is whether to recurse or not
+            // third is dir containing audio files
+            // e.g. AnalysisPrograms.exe "<dir path>" recurse "<output file path>"
+            // e.g. AnalysisPrograms.exe "<dir path>" norecurse "<output file path>"
+            if (arguments.InputDirectory != null)
+            {
+                if (arguments.InputFile != null)
+                {
+                    throw new ArgumentException("Cannot specify an input file if an input directory is given.");
+                }
+            }
+
+            // at least two args:
+            // first is output file path
+            // second is text file path containing audio file paths (one per line)
         }
     }
 }

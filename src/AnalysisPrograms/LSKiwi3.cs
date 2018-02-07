@@ -10,6 +10,7 @@
     using System.IO;
     using System.Linq;
     using System.Text;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Extensions;
@@ -22,13 +23,25 @@
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
+    using McMaster.Extensions.CommandLineUtils;
+    using Production.Arguments;
     using TowseyLibrary;
 
     [Obsolete("This code does not work. It should be ported to be a modern recognizer")]
     public class LSKiwi3
     {
+        public const string CommandName = "Kiwi";
+
+        [Command(
+            CommandName,
+            Description = "[INOPERABLE] Only of use for Little Brown Kiwi recordings from New Zealand.")]
         public class Arguments : AnalyserArguments
         {
+            public override Task<int> Execute(CommandLineApplication app)
+            {
+                LSKiwi3.Execute(this);
+                return this.Ok();
+            }
         }
 
         //CONSTANTS

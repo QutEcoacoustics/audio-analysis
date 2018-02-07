@@ -11,6 +11,7 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.Linq;
     using System.Reflection;
     using System.Text;
@@ -20,40 +21,40 @@ namespace AnalysisPrograms
     using Production;
 
     using log4net;
-
-    using PowerArgs;
+    using McMaster.Extensions.CommandLineUtils;
+    using Production.Arguments;
+    using Production.Validation;
 
     /// <summary>
     /// The purpose of this analyser is to make inter-program parallelisation easier to develop
     /// </summary>
     public class DummyAnalysis
     {
-        [CustomDetailedDescription]
-        [CustomDescription]
-        public class Arguments
+        public const string CommandName = "FakeAnalysis";
+
+        [Command(
+            CommandName,
+            Description = "An program desinged to simulate load - does nothing other than burn CPU;")]
+        public class Arguments : SubCommandBase
         {
-            [DefaultValue(true)]
+            [Option("Burn load on multiple CPU threads?")]
             public bool Parallel { get; set; }
 
-            [DefaultValue(20)]
-            [ArgRange(0, 3600)]
-            public double DurationSeconds { get; set; }
+            [Option("How many seconds to run for (roughly)")]
+            [InRange(0, 3600)]
+            public double DurationSeconds { get; set; } = 30;
 
-            [DefaultValue(0.0)]
-            [ArgRange(0.0, 1.0)]
-            public double Jitter { get; set; }
+            [Option("How much jitter should be applied to execution time of each thread. A random amount is chosen where 0 <= `Jitter` <= 1.")]
+            [InRange(0.0, 1.0)]
+            public double Jitter { get; set; } = 0.1;
 
+            [Option("Supply a seed to repeat the same randomnesss as a previous run")]
             public int? Seed { get; set; }
 
-            public static string Description()
+            public override Task<int> Execute(CommandLineApplication app)
             {
-                return "An analysis program to simulate load";
-            }
-
-            public static string AdditionalNotes()
-            {
-                // add long explanatory notes here if you need to
-                return string.Empty;
+                DummyAnalysis.Execute(this);
+                return this.Ok();
             }
         }
 
