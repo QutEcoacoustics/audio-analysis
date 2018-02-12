@@ -7,16 +7,28 @@ namespace AudioAnalysisTools.Indices
     using System;
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
+
     using DSP;
     using Equ;
+
+    using Fasterflect;
+
+    using log4net;
+
+    using Newtonsoft.Json;
+
+    using YamlDotNet.Serialization;
 
     /// <summary>
     /// CONFIG CLASS FOR the class IndexCalculate.cs
     /// </summary>
-    public class IndexCalculateConfig : IEquatable<IndexCalculateConfig>
+    public class IndexCalculateConfig : AnalyzerConfigIndexProperties, IEquatable<IndexCalculateConfig>, ICloneable
     {
+        private static readonly ILog Log = LogManager.GetLogger(nameof(IndexCalculateConfig));
+
         // Make sure the comparer is static, so that the equality operations are only generated once
-        private static readonly MemberwiseEqualityComparer<IndexCalculateConfig> _comparer =
+        private static readonly MemberwiseEqualityComparer<IndexCalculateConfig> Comparer =
             MemberwiseEqualityComparer<IndexCalculateConfig>.ByFields;
 
         // EXTRACT INDICES: IF (frameLength = 128 AND sample rate = 22050) THEN frame duration = 5.805ms.
@@ -36,12 +48,17 @@ namespace AudioAnalysisTools.Indices
         public const int DefaultMidFreqBound = 8000;
         public const int DefaultLowFreqBound = 1000;
 
-        public const string DefaultFrequencyScaleType = "Linear";
+        public const FreqScaleType DefaultFrequencyScaleType = FreqScaleType.Linear;
 
         public const double DefaultMinBandWidth = 0.0;
         public const double DefaultMaxBandWidth = 1.0;
 
         public const int DefaultMelScale = 0;
+
+        public const double DefaultBgNoiseNeighborhood = 5;
+
+        private FreqScaleType frequencyScaleType;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="IndexCalculateConfig"/> class.
         /// CONSTRUCTOR
@@ -49,7 +66,7 @@ namespace AudioAnalysisTools.Indices
         public IndexCalculateConfig()
         {
             this.IndexCalculationDuration = TimeSpan.FromSeconds(DefaultIndexCalculationDurationInSeconds);
-            this.BgNoiseBuffer = TimeSpan.FromSeconds(5);
+            this.BgNoiseNeighborhood = DefaultBgNoiseNeighborhood;
 
             this.FrameLength = DefaultWindowSize;
 
@@ -57,7 +74,7 @@ namespace AudioAnalysisTools.Indices
 
             this.LowFreqBound = DefaultLowFreqBound;
             this.MidFreqBound = DefaultMidFreqBound;
-            this.SetTypeOfFreqScale(DefaultFrequencyScaleType);
+            this.FrequencyScaleType = DefaultFrequencyScaleType;
 
             this.MinBandWidth = DefaultMinBandWidth;
             this.MaxBandWidth = DefaultMaxBandWidth;
@@ -67,37 +84,40 @@ namespace AudioAnalysisTools.Indices
 
         /// <summary>
         /// Gets or sets the Timespan (in seconds) over which summary and spectral indices are calculated
-        /// Default=
+        /// Default=60.0
         /// Units=seconds
         /// </summary>
         public TimeSpan IndexCalculationDuration { get; set; }
 
         /// <summary>
         /// Gets or sets bG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
+        /// </summary>
+        [YamlIgnore]
+        [JsonIgnore]
+        public TimeSpan BgNoiseBuffer => this.BgNoiseNeighborhood.Seconds();
+
+        /// <summary>
+        /// Gets the amount of audio either side of the required subsegment from which to derive an estimate of background noise.
+        /// Units = seconds
+        /// As an example: IF (IndexCalculationDuration = 1 second) AND (BGNNeighborhood = 10 seconds)
+        ///                THEN BG noise estimate will be derived from 21 seconds of audio centred on the subsegment.
+        ///                In case of edge effects, the BGnoise neighborhood will be truncated to start or end of the audio segment (typically expected to be one minute long).
+        /// </summary>
+        /// <remarks>
         /// Ten seconds is considered a minimum interval to obtain a reliable estimate of BG noise.
         /// The  BG noise interval is not extended beyond start or end of recording segment.
         /// Consequently for a 60sec Index calculation duration, the  BG noise is calculated form the 60sec segment only.
         /// Default=5 seconds
-        /// Units=seconds
-        /// </summary>
-        public TimeSpan BgNoiseBuffer { get; set; }
+        /// </remarks>
+        public double BgNoiseNeighborhood { get; set; }
 
         /// <summary>
-        /// Gets or sets the FrameWidth.
+        /// Gets or sets the FrameWidth - the number of samples to use per FFT window.
         /// FrameWidth is used WITHOUT overlap to calculate the spectral indices.
         /// Default value = 512.
         /// Units=samples
         /// </summary>
         public int FrameLength { get; set; }
-
-        /// <summary>
-        /// Gets or sets the ResampleRate.
-        /// ResampleRate must be 2 X the desired Nyquist.
-        /// Default value = 22050.
-        /// Once upon a time we used 17640.
-        /// Units=samples
-        /// </summary>
-        public int ResampleRate { get; set; }
 
         /// <summary>
         /// Gets or sets the LowFreqBound.
@@ -116,84 +136,71 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// Frequency scale is Linear or OCtave
         /// </summary>
-        public FreqScaleType frequencyScaleType;
+        public FreqScaleType FrequencyScaleType
+        {
+            get => this.frequencyScaleType;
+            set
+            {
+                // only a subset of FreqScaleType are supported
+                switch (value)
+                {
+                    case FreqScaleType.Linear:
+                    case FreqScaleType.Octave:
+                        this.frequencyScaleType = value;
+                        break;
+                    default:
+                        throw new ArgumentException($"Invalid value set for {nameof(this.frequencyScaleType)}");
+                }
+                this.frequencyScaleType = value;
+            }
+        }
 
-        // Added details for bands
+        /// <summary>
+        /// Gets or sets the fraction-valued minimum to be used in a pseudo-bandpass filter.
+        /// </summary>
         public double MinBandWidth { get; set; }
 
+        /// <summary>
+        /// Gets or sets the fraction-valued maximum to be used in a pseudo-bandpass filter.
+        /// </summary>
         public double MaxBandWidth { get; set; }
 
+        /// <summary>
+        /// Gets or sets the number of Mel-scale filter banks to use.
+        /// </summary>
+        /// <remarks>
+        /// The default, 0, implies no operation
+        /// </remarks>
         public int MelScale { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of Herz frequency scale
-        /// </summary>
-        public void SetTypeOfFreqScale(string scaleName)
-        {
-            if (scaleName == "Linear")
-            {
-                this.frequencyScaleType = FreqScaleType.Linear;
-            }
-            else
-            if (scaleName == "Linear125Octaves7Tones28Nyquist32000")
-            {
-                this.frequencyScaleType = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
-            }
-            else
-            if (scaleName == "Octave")
-            {
-                this.frequencyScaleType = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
-            }
-            else
-            {
-                throw new Exception("ERROR:    Invalid FrequencyScaleType");
-            }
-        }
-
-        public FreqScaleType GetTypeOfFreqScale()
-        {
-            return this.frequencyScaleType;
-        }
-
-        public static IndexCalculateConfig GetDefaultConfig()
-        {
-            return new IndexCalculateConfig();
-        }
-
-        /// <summary>
-        /// Link method to one which does the real work.
-        /// </summary>
-        /// <param name="configFile">the config file to be read dynamically</param>
-        public static IndexCalculateConfig GetConfig(FileInfo configFile)
-        {
-            dynamic dynamicConfig = Yaml.Deserialise(configFile);
-            var config = IndexCalculateConfig.GetConfig(dynamicConfig, false);
-            return config;
-        }
 
         /// <summary>
         /// WARNING: This method does not incorporate all the parameters in the config.yml file.
         /// Only those that are likely to change.
         /// If you want to change a config parameter in the yml file make sure it appears in this method.
         /// </summary>
-        /// <param name="dynamicConfig">the dynamic config</param>
+        /// <param name="configuration">the Config config</param>
         /// <param name="writeParameters">default = false</param>
-        public static IndexCalculateConfig GetConfig(dynamic dynamicConfig, bool writeParameters = false)
+        [Obsolete("Incorporation of statically typed config should obviate need for this method")]
+        public static IndexCalculateConfig GetConfig(Config configuration,  bool writeParameters = false)
         {
             var config = new IndexCalculateConfig
             {
-                ResampleRate = (int?)dynamicConfig[AnalysisKeys.ResampleRate] ?? DefaultResampleRate,
-                FrameLength = (int?)dynamicConfig[AnalysisKeys.FrameLength] ?? DefaultWindowSize,
-                MidFreqBound = (int?)dynamicConfig[AnalysisKeys.MidFreqBound] ?? DefaultMidFreqBound,
-                LowFreqBound = (int?)dynamicConfig[AnalysisKeys.LowFreqBound] ?? DefaultLowFreqBound,
+                ResampleRate = configuration.GetIntOrNull(AnalysisKeys.ResampleRate) ?? DefaultResampleRate,
+                FrameLength = configuration.GetIntOrNull(AnalysisKeys.FrameLength) ?? DefaultWindowSize,
+                MidFreqBound = configuration.GetIntOrNull(AnalysisKeys.MidFreqBound) ?? DefaultMidFreqBound,
+                LowFreqBound = configuration.GetIntOrNull(AnalysisKeys.LowFreqBound) ?? DefaultLowFreqBound,
             };
 
-            double duration = (double?)dynamicConfig[AnalysisKeys.IndexCalculationDuration] ?? DefaultIndexCalculationDurationInSeconds;
-            config.IndexCalculationDuration = TimeSpan.FromSeconds(duration);
-            duration = (double?)dynamicConfig[AnalysisKeys.BgNoiseNeighbourhood] ?? 5.0;
-            config.BgNoiseBuffer = TimeSpan.FromSeconds(duration);
-            string stringvalue = (string)dynamicConfig["FrequencyScale"];
-            config.SetTypeOfFreqScale(stringvalue);
+            var duration = configuration.GetDoubleOrNull(AnalysisKeys.IndexCalculationDuration);
+            config.IndexCalculationDuration = (duration ?? DefaultIndexCalculationDurationInSeconds).Seconds();
+            duration = configuration.GetDoubleOrNull(AnalysisKeys.BgNoiseNeighbourhood) ;
+            config.BgNoiseNeighborhood = duration ?? DefaultBgNoiseNeighborhood;
+
+            if (!Enum.TryParse<FreqScaleType>(configuration["FrequencyScale"], true, out var scaleType))
+            {
+                scaleType = DefaultFrequencyScaleType;
+            }
+            config.FrequencyScaleType = scaleType;
 
             if (writeParameters)
             {
@@ -208,14 +215,9 @@ namespace AudioAnalysisTools.Indices
             return config;
         }
 
-        public static void WriteConfig(IndexCalculateConfig config, FileInfo configFile)
-        {
-            Yaml.Serialise<IndexCalculateConfig>(configFile, config);
-        }
-
         public bool Equals(IndexCalculateConfig other)
         {
-            return _comparer.Equals(this, other);
+            return Comparer.Equals(this, other);
         }
 
         public override bool Equals(object obj)
@@ -225,7 +227,14 @@ namespace AudioAnalysisTools.Indices
 
         public override int GetHashCode()
         {
-            return _comparer.GetHashCode(this);
+            return Comparer.GetHashCode(this);
+        }
+
+        object ICloneable.Clone()
+        {
+            IndexCalculateConfig deepClone = this.DeepClone<IndexCalculateConfig>();
+            Log.Trace("Cloning a copy of IndexCalculateConfig");
+            return deepClone;
         }
     }
 }

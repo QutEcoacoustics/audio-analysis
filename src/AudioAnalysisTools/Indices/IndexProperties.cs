@@ -22,6 +22,8 @@ namespace AudioAnalysisTools.Indices
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Contracts;
 
+    using AnalysisBase;
+
     using TowseyLibrary;
     using YamlDotNet.Serialization;
 
@@ -30,6 +32,27 @@ namespace AudioAnalysisTools.Indices
     public interface IIndexPropertyReferenceConfiguration
     {
         string IndexPropertiesConfig { get; set; }
+
+        Dictionary<string, IndexProperties> IndexProperties { get; }
+    }
+
+    public abstract class AnalyzerConfigIndexProperties : AnalyzerConfig, IIndexPropertyReferenceConfiguration
+    {
+        private string indexPropertiesConfig;
+
+        public string IndexPropertiesConfig
+        {
+            get => this.indexPropertiesConfig;
+            set
+            {
+                this.indexPropertiesConfig = value;
+                var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
+                this.indexPropertiesConfig = indicesPropertiesConfig.Path.ToOsPath();
+                this.IndexProperties = Indices.IndexProperties.GetIndexProperties(indicesPropertiesConfig);
+            }
+        }
+
+        public Dictionary<string, IndexProperties> IndexProperties { get; private set; }
     }
 
     /// <summary>
@@ -40,6 +63,12 @@ namespace AudioAnalysisTools.Indices
     /// </summary>
     public class IndexProperties
     {
+
+        static IndexProperties()
+        {
+            ConfigFile.Defaults.Add(typeof(Dictionary<string, IndexProperties>), "IndexPropertiesConfig.yml");
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="IndexProperties"/> class.
         /// constructor sets default values
@@ -272,13 +301,14 @@ namespace AudioAnalysisTools.Indices
             return GetIndexProperties(configFile.ToFileEntry());
         }
 
+        // TODO: refactor this caching into ConfigFile generally
         public static Dictionary<string, IndexProperties> GetIndexProperties(FileEntry configFile)
         {
             Contract.RequiresNotNull(configFile, nameof(configFile));
 
             // AT: the effects of this method have been significantly altered
             // a) caching introduced - unknown effects for parallelism and dodgy file rewriting stuff
-            // b) static deserialization utilized (instead of dynamic)
+            // b) static deserialization utilized (instead of Config)
             lock (CachedProperties)
             {
                 Dictionary<string, IndexProperties> props;
@@ -307,45 +337,45 @@ namespace AudioAnalysisTools.Indices
             }
         }
 
-        public static FileInfo Find(dynamic configuration, FileInfo originalConfigFile)
+        public static FileInfo Find(Config configuration, FileInfo originalConfigFile, bool allowDefault = false)
         {
             if (configuration == null)
             {
                 return null;
             }
 
-            return Find((string)configuration[AnalysisKeys.KeyIndexPropertiesConfig], originalConfigFile?.ToFileEntry())?.ToFileInfo();
+            return Find(configuration[AnalysisKeys.KeyIndexPropertiesConfig], originalConfigFile?.ToFileEntry(), allowDefault)?.ToFileInfo();
         }
 
         /// <summary>
         /// Locate and IndexPropertiesConfig.yml file from the IndexPropertiesConfig key in a config file.
         /// </summary>
-        public static FileEntry Find(IIndexPropertyReferenceConfiguration configuration, FileInfo originalConfigFile)
+        public static FileEntry Find(IIndexPropertyReferenceConfiguration configuration, string originalConfigpath, bool allowDefault = false)
         {
             if (configuration == null)
             {
                 return null;
             }
 
-            return Find(configuration.IndexPropertiesConfig, originalConfigFile.ToFileEntry());
+            return Find(configuration.IndexPropertiesConfig, originalConfigpath.ToFileEntry());
         }
 
         /// <summary>
         /// Locate and IndexPropertiesConfig.yml file from the IndexPropertiesConfig key in a config file.
         /// </summary>
-        public static FileEntry Find(IIndexPropertyReferenceConfiguration configuration, FileEntry originalConfigFile)
+        public static FileEntry Find(IIndexPropertyReferenceConfiguration configuration, FileEntry originalConfigFile, bool allowDefault = false)
         {
             if (configuration == null)
             {
                 return null;
             }
 
-            return Find(configuration.IndexPropertiesConfig, originalConfigFile);
+            return Find(configuration.IndexPropertiesConfig, originalConfigFile, allowDefault);
         }
 
-        public static FileEntry Find(string relativePath, FileEntry originalConfigFile)
+        public static FileEntry Find(string relativePath, FileEntry originalConfigFile, bool allowDefault = false)
         {
-            var found = ConfigFile.TryResolveConfigFile(
+            var found = ConfigFile.TryResolve(
                 relativePath,
                 new[] { originalConfigFile.Parent },
                 out var configFile);

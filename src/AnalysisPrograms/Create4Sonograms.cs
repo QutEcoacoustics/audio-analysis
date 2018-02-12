@@ -13,6 +13,8 @@ namespace AnalysisPrograms
     using System.Linq;
     using System.Threading.Tasks;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
+
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -85,9 +87,9 @@ namespace AnalysisPrograms
             FileInfo fiImage = arguments.Output;
 
             //2. get the config dictionary
-            dynamic configuration = Yaml.Deserialise(fiConfig);
+            Config configuration = ConfigFile.Deserialize(fiConfig);
 
-            //below three lines are examples of retrieving info from dynamic config
+            //below three lines are examples of retrieving info from Config config
             //string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
             //bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
             //scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
@@ -96,22 +98,22 @@ namespace AnalysisPrograms
             var configDict = new Dictionary<string, string>();
 
             // #Resample rate must be 2 X the desired Nyquist. Default is that of recording.
-            configDict["ResampleRate"] = configuration[AnalysisKeys.ResampleRate] ?? 17640;
-            configDict["FrameLength"] = configuration[AnalysisKeys.FrameLength] ?? 512;
-            int frameSize = configuration[AnalysisKeys.FrameLength] ?? 512;
+            configDict["ResampleRate"] = (configuration.GetIntOrNull(AnalysisKeys.ResampleRate) ?? 17640).ToString();
+            configDict["FrameLength"] = configuration[AnalysisKeys.FrameLength] ?? "512";
+            int frameSize = configuration.GetIntOrNull(AnalysisKeys.FrameLength) ?? 512;
 
             // #Frame Overlap as fraction: default=0.0
-            configDict["FrameOverlap"] = configuration[AnalysisKeys.FrameOverlap] ?? 0.0;
-            double windowOverlap = configuration[AnalysisKeys.FrameOverlap] ?? 0.0;
+            configDict["FrameOverlap"] = configuration[AnalysisKeys.FrameOverlap] ?? "0.0";
+            double windowOverlap = configuration.GetDoubleOrNull(AnalysisKeys.FrameOverlap) ?? 0.0;
 
             // #MinHz: 500
             // #MaxHz: 3500
             // #NOISE REDUCTION PARAMETERS
-            configDict["DoNoiseReduction"] = configuration["DoNoiseReduction"] ?? true;
-            configDict["BgNoiseThreshold"] = configuration["BgNoiseThreshold"] ?? 3.0;
+            configDict["DoNoiseReduction"] = configuration["DoNoiseReduction"] ?? "true";
+            configDict["BgNoiseThreshold"] = configuration["BgNoiseThreshold"] ?? "3.0";
 
-            configDict["ADD_AXES"] = configuration["ADD_AXES"] ?? true;
-            configDict["AddSegmentationTrack"] = configuration["AddSegmentationTrack"] ?? true;
+            configDict["ADD_AXES"] = configuration["ADD_AXES"] ?? "true";
+            configDict["AddSegmentationTrack"] = configuration["AddSegmentationTrack"] ?? "true";
 
             // 3: GET RECORDING
             var startOffsetMins = TimeSpan.Zero;
@@ -124,7 +126,7 @@ namespace AnalysisPrograms
                 fiOutputSegment = new FileInfo(Path.Combine(arguments.Output.DirectoryName, "tempWavFile.wav"));
 
                 //This method extracts segment and saves to disk at the location fiOutputSegment.
-                var resampleRate = (int?)configuration[AnalysisKeys.ResampleRate] ?? AppConfigHelper.DefaultTargetSampleRate;
+                var resampleRate = configuration.GetIntOrNull(AnalysisKeys.ResampleRate) ?? AppConfigHelper.DefaultTargetSampleRate;
                 AudioRecording.ExtractSegment(fiSourceRecording, startOffsetMins, endOffsetMins, buffer, resampleRate, fiOutputSegment);
             }
 
@@ -231,8 +233,8 @@ namespace AnalysisPrograms
             //double backgroundThreshold = 4.0;   //SETS MIN DECIBEL BOUND
             //var output = SNR.NoiseReduce(mnr, NoiseReductionType.STANDARD, backgroundThreshold);
 
-            //double dynamicRange = 70;        //sets the the max dB
-            //mnr = SNR.SetDynamicRange(output.Item1, 0.0, dynamicRange);
+            //double ConfigRange = 70;        //sets the the max dB
+            //mnr = SNR.SetConfigRange(output.Item1, 0.0, ConfigRange);
 
             ////3: Spectral tracks sonogram
             //byte[,] binary = MatrixTools.IdentifySpectralRidges(mnr);

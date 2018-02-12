@@ -9,8 +9,8 @@
 #
 
 AnalysisName: Towsey.ChannelIntegrity
-#SegmentDuration: units=minutes;     SegmentOverlap: units=seconds;
-SegmentDuration: 1
+#SegmentDuration: units=seconds;     SegmentOverlap: units=seconds;
+SegmentDuration: 60
 SegmentOverlap: 0
 
 # Resample rate must be 2 X the desired Nyquist

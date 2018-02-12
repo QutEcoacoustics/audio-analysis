@@ -67,8 +67,8 @@ Profiles:
 ResampleRate: 22050
 
 ## Specifically for AnalyzeLongRecording
-# SegmentDuration: units=minutes;    
-SegmentDuration: 1
+# SegmentDuration: units=seconds;    
+SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]

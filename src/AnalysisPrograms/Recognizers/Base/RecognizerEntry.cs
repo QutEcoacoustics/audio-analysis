@@ -21,6 +21,9 @@ namespace AnalysisPrograms.Recognizers.Base
     using Acoustics.Tools;
     using AnalysisBase;
     using AnalysisBase.Extensions;
+
+    using AnalysisPrograms.AnalyseLongRecordings;
+
     using AudioAnalysisTools;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
@@ -40,6 +43,9 @@ namespace AnalysisPrograms.Recognizers.Base
             Description = Description)]
         public class Arguments : SourceConfigOutputDirArguments
         {
+            [Option("Sets the name of the analysis to run. If not set, analysis identifer is parsed from the config file name.")]
+            public string AnalysisIdentifier { get; set; }
+
             public override Task<int> Execute(CommandLineApplication app)
             {
                 RecognizerEntry.Execute(this);
@@ -262,21 +268,24 @@ namespace AnalysisPrograms.Recognizers.Base
             else if (!configFile.Exists)
             {
                 Log.Warn($"Config file {configFile.FullName} not found... attempting to resolve config file");
-                arguments.Config = configFile = ConfigFile.ResolveConfigFile(configFile.Name, Directory.GetCurrentDirectory().ToDirectoryInfo());
+                arguments.Config = configFile = ConfigFile.Resolve(configFile.Name, Directory.GetCurrentDirectory().ToDirectoryInfo());
             }
 
             LoggedConsole.WriteLine("# Recording file:      " + sourceAudio.FullName);
             LoggedConsole.WriteLine("# Configuration file:  " + configFile);
             LoggedConsole.WriteLine("# Output folder:       " + outputDirectory);
 
-            Log.Info("Reading configuration file");
-            dynamic configuration = Yaml.Deserialise(configFile);
-            string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
 
-            Log.Info("Attempting to run recognizer: " + analysisIdentifier);
 
             // find an appropriate event IAnalyzer
-            IAnalyser2 recognizer = AnalyseLongRecordings.AnalyseLongRecording.FindAndCheckAnalyser(analysisIdentifier);
+            IAnalyser2 recognizer = AnalyseLongRecording.FindAndCheckAnalyser<IEventRecognizer>(
+                arguments.AnalysisIdentifier,
+                configFile.Name);
+
+            Log.Info("Attempting to run recognizer: " + recognizer.Identifier);
+
+            Log.Info("Reading configuration file");
+            Config configuration = ConfigFile.Deserialize<RecognizerBase.RecognizerConfig>(configFile);
 
             // get default settings
             AnalysisSettings analysisSettings = recognizer.DefaultSettings;
@@ -322,11 +331,11 @@ namespace AnalysisPrograms.Recognizers.Base
             recognizer.BeforeAnalyze(analysisSettings);
 
             // execute actual analysis - output data will be written
-            Log.Info("Running recognizer: " + analysisIdentifier);
+            Log.Info("Running recognizer: " + recognizer.Identifier);
             AnalysisResult2 results = recognizer.Analyze(analysisSettings, segmentSettings);
 
             // run summarize code - output data can be written
-            Log.Info("Running recognizer summary: " + analysisIdentifier);
+            Log.Info("Running recognizer summary: " + recognizer.Identifier);
             recognizer.SummariseResults(
                 analysisSettings,
                 source,

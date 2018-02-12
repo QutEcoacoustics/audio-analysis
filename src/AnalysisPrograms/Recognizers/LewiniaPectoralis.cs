@@ -75,7 +75,7 @@ namespace AnalysisPrograms.Recognizers
         /// </summary>
         public override RecognizerResults Recognize(
             AudioRecording recording,
-            dynamic configuration,
+            Config configuration,
             TimeSpan segmentStartOffset,
             Lazy<IndexCalculateResult[]> getSpectralIndexes,
             DirectoryInfo outputDirectory,
@@ -470,12 +470,12 @@ namespace AnalysisPrograms.Recognizers
 
         public double EventThreshold { get; set; }
 
-        public void ReadConfigFile(dynamic configuration, string profileName)
+        public void ReadConfigFile(Config configuration, string profileName)
         {
             // common properties
-            this.AnalysisName = (string)configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
-            this.SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
-            this.AbbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            this.AnalysisName = configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
+            this.SpeciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
+            this.AbbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             // KEYS TO PARAMETERS IN CONFIG FILE
             const string keyUpperfreqbandTop = "UpperFreqBandTop";
@@ -483,38 +483,37 @@ namespace AnalysisPrograms.Recognizers
             const string keyLowerfreqbandTop = "LowerFreqBandTop";
             const string keyLowerfreqbandBtm = "LowerFreqBandBottom";
 
-            // dynamic profile = ConfigFile.GetProfile(configuration, profileName);
-            dynamic profile;
-            bool success = ConfigFile.TryGetProfile(configuration, profileName, out profile);
+            // Config profile = ConfigFile.GetProfile(configuration, profileName);
+            bool success = ConfigFile.TryGetProfile(configuration, profileName, out var profile);
             if (!success)
             {
                 throw new InvalidOperationException($"The Config file for {this.SpeciesName} must contain a valid {profileName} profile.");
             }
 
             // extract parameters
-            this.UpperBandMaxHz = (int)profile[keyUpperfreqbandTop];
-            this.UpperBandMinHz = (int)profile[keyUpperfreqbandBtm];
-            this.LowerBandMaxHz = (int)profile[keyLowerfreqbandTop];
-            this.LowerBandMinHz = (int)profile[keyLowerfreqbandBtm];
+            this.UpperBandMaxHz = profile.GetInt(keyUpperfreqbandTop);
+            this.UpperBandMinHz = profile.GetInt(keyUpperfreqbandBtm);
+            this.LowerBandMaxHz = profile.GetInt(keyLowerfreqbandTop);
+            this.LowerBandMinHz = profile.GetInt(keyLowerfreqbandBtm);
 
             //double dctDuration = (double)profile[AnalysisKeys.DctDuration];
             // This is the intensity threshold above
             //double dctThreshold = (double)profile[AnalysisKeys.DctThreshold];
 
             // Periods and Oscillations
-            this.MinPeriod = (double)profile[AnalysisKeys.MinPeriodicity]; //: 0.18
-            this.MaxPeriod = (double)profile[AnalysisKeys.MaxPeriodicity]; //: 0.25
+            this.MinPeriod = profile.GetDouble(AnalysisKeys.MinPeriodicity); //: 0.18
+            this.MaxPeriod = profile.GetDouble(AnalysisKeys.MaxPeriodicity); //: 0.25
 
             // minimum duration in seconds of a trill event
-            this.MinDuration = (double)profile[AnalysisKeys.MinDuration]; //:3
+            this.MinDuration = profile.GetDouble(AnalysisKeys.MinDuration); //:3
 
             // maximum duration in seconds of a trill event
-            this.MaxDuration = (double)profile[AnalysisKeys.MaxDuration]; //: 15
-            this.DecibelThreshold = (double?)profile[AnalysisKeys.DecibelThreshold] ?? 3.0;
+            this.MaxDuration = profile.GetDouble(AnalysisKeys.MaxDuration); //: 15
+            this.DecibelThreshold = profile.GetDoubleOrNull(AnalysisKeys.DecibelThreshold) ?? 3.0;
 
             //// minimum acceptable value of a DCT coefficient
-            this.IntensityThreshold = (double?)profile[AnalysisKeys.IntensityThreshold] ?? 0.4;
-            this.EventThreshold = (double?)profile[AnalysisKeys.EventThreshold] ?? 0.2;
+            this.IntensityThreshold = profile.GetDoubleOrNull(AnalysisKeys.IntensityThreshold) ?? 0.4;
+            this.EventThreshold = profile.GetDoubleOrNull(AnalysisKeys.EventThreshold) ?? 0.2;
         } // ReadConfigFile()
     } // class
 }

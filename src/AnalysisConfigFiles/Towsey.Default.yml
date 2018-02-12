@@ -1,7 +1,7 @@
 ---
 AnalysisName: Towsey.Default
-#SegmentDuration: minutes,   SegmentOverlap=seconds        
-SegmentDuration: 1
+#SegmentDuration: units=seconds,   SegmentOverlap=seconds        
+SegmentDuration: 60
 SegmentOverlap: 0
 # min and max of the freq band to search
 MinHz: 100          

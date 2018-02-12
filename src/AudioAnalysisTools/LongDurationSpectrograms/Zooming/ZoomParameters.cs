@@ -10,6 +10,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
     using System.Linq;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Contracts;
     using Indices;
 
@@ -23,14 +24,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 
         public ZoomParameters(DirectoryEntry inputDirectory, FileEntry config, bool omitBasename)
         {
-            this.SpectrogramZoomingConfig = Yaml.Deserialise<SpectrogramZoomingConfig>(config);
+            this.SpectrogramZoomingConfig = ConfigFile.Deserialize<SpectrogramZoomingConfig>(config.ToFileInfo());
 
-            // search for index properties config
-            var indexPropertiesPath = Indices.IndexProperties.Find(this.SpectrogramZoomingConfig, config);
-            Log.Debug("Using index properties file: " + indexPropertiesPath?.FullName);
-
-            // load the index properties
-            this.IndexProperties = Indices.IndexProperties.GetIndexProperties(indexPropertiesPath);
+            // results of search for index properties config
+            Log.Debug("Using index properties file: " + this.SpectrogramZoomingConfig.IndexPropertiesConfig);
 
             // get the indexDistributions and the indexGenerationData AND the common.OriginalBasename
             var paths = CheckNeededFilesExist(inputDirectory);
@@ -47,8 +44,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
         public string OriginalBasename => this.IndexGenerationData.RecordingBasename;
 
         public SpectrogramZoomingConfig SpectrogramZoomingConfig { get; }
-
-        public Dictionary<string, IndexProperties> IndexProperties { get; }
 
         public IndexGenerationData IndexGenerationData { get; }
 

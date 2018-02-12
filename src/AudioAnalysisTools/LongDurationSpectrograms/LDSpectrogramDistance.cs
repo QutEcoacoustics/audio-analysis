@@ -11,6 +11,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Drawing.Imaging;
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
+
     using Indices;
     using TowseyLibrary;
 
@@ -36,12 +38,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         // assume one minute spectra and hourly time lines
         private static TimeSpan xScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
 
-        public static void DrawDistanceSpectrogram(dynamic configuration)
+        public static void DrawDistanceSpectrogram(Config configuration)
         {
-            var inputDirectory = ((string)configuration.InputDirectory).ToDirectoryInfo();
-            var inputFileName1 = ((string)configuration.IndexFile1).ToFileInfo();
-            var inputFileName2 = ((string)configuration.IndexFile2).ToFileInfo();
-            var outputDirectory = ((string)configuration.OutputDirectory).ToDirectoryInfo();
+            var inputDirectory = ((string)configuration["InputDirectory"]).ToDirectoryInfo();
+            var inputFileName1 = ((string)configuration["IndexFile1"]).ToFileInfo();
+            var inputFileName2 = ((string)configuration["IndexFile2"]).ToFileInfo();
+            var outputDirectory = ((string)configuration["OutputDirectory"]).ToDirectoryInfo();
 
             // First, need to make an optional cast:
             // int? minuteOffset = confirguration.AnalysisStartOffset;
@@ -56,23 +58,22 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // int minuteOffset = (int?)configuration.AnalysisStartOffset ?? 0;
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
-            string map = configuration.ColorMap;
+            string map = configuration.GetStringOrNull("ColorMap");
 
             // assigns indices to RGB
             colorMap = map ?? SpectrogramConstants.RGBMap_ACI_ENT_CVR;
-            backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? backgroundFilterCoeff;
+
+            backgroundFilterCoeff = configuration.GetDoubleOrNull("BackgroundFilterCoeff") ?? backgroundFilterCoeff;
+
 
             // must be value <=1.0
 
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
             // default recording starts at zero minute of day i.e. midnight
-            minuteOffset = (TimeSpan?)configuration.MinuteOffset ?? TimeSpan.Zero;
-
-            xScale = (TimeSpan?)configuration.X_Scale ?? SpectrogramConstants.X_AXIS_TIC_INTERVAL;
-
-            // default is one minute spectra i.e. 60 per hour
-            sampleRate = (int?)configuration.SampleRate ?? sampleRate; // default value - after resampling
-            frameWidth = (int?)configuration.FrameWidth ?? frameWidth;
+            minuteOffset = configuration.GetTimeSpanOrNull("MinuteOffset") ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
+            xScale = configuration.GetTimeSpanOrNull("X_Scale") ?? SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default is one minute spectra i.e. 60 per hour
+            sampleRate = configuration.GetIntOrNull("SampleRate") ?? sampleRate;
+            frameWidth = configuration.GetIntOrNull("FrameWidth") ?? frameWidth;
 
             // frame width from which spectrogram was derived. Assume no frame overlap.
             DrawDistanceSpectrogram(inputDirectory, inputFileName1, inputFileName2, outputDirectory);

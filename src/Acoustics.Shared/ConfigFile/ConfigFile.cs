@@ -7,8 +7,6 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-using System.Dynamic;
-
 namespace Acoustics.Shared.ConfigFile
 {
     using System;
@@ -19,23 +17,21 @@ namespace Acoustics.Shared.ConfigFile
     using System.Reflection;
     using Contracts;
     using Fasterflect;
+
+    using log4net;
+
     using YamlDotNet.RepresentationModel;
 
     using Zio;
 
-    public static class ConfigFile
+    public static partial class ConfigFile
     {
-        public const string ProfilesKey = "Profiles";
+        public const string ProfilesKey = nameof(IProfile<object>.Profiles);
 
-        private static readonly string ExecutingAssemblyPath =
-            (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).Location;
+        public static readonly Dictionary<Type, string> Defaults = new Dictionary<Type, string>();
 
-        private static readonly string ExecutingAssemblyDirectory = Path.GetDirectoryName(ExecutingAssemblyPath);
-
-        private static string defaultConfigFolder = Path.Combine(ExecutingAssemblyDirectory, "ConfigFiles");
-
-        // Dirty Hack, clean up!
-        public static string LogFolder { get; } = Path.Combine(ExecutingAssemblyDirectory, "Logs");
+        private static readonly ILog Log = LogManager.GetLogger(nameof(ConfigFolder));
+        private static string defaultConfigFolder = Path.Combine(AppConfigHelper.ExecutingAssemblyDirectory, "ConfigFiles");
 
         public static string ConfigFolder
         {
@@ -50,127 +46,130 @@ namespace Acoustics.Shared.ConfigFile
                     $"Cannot find currently set ConfigFiles directory. {defaultConfigFolder} does not exist!");
             }
 
-            set => defaultConfigFolder = value;
+            internal set => defaultConfigFolder = value;
         }
 
-        public static dynamic GetProfile(dynamic configuration, string profileName)
+        public static Config Deserialize(FileInfo file)
         {
-            // TODO: broken when dynamic yaml removed
-            if (configuration.GetType() != typeof(DynamicObject))
-            {
-                throw new ArgumentException("The configuration parameter must be a DynamicYaml object", nameof(configuration));
-            }
-
-            return configuration[ProfilesKey][profileName];
+            return new Config(Yaml.Load(file), file.FullName);
         }
 
-        public static bool HasProfiles(dynamic configuration)
+        public static T Deserialize<T>(FileInfo file)
+            where T : Config
         {
-            // TODO: broken when dynamic yaml removed
-            if (configuration.GetType() != typeof(DynamicObject))
-            {
-                throw new ArgumentException("The configuration parameter must be a DynamicYaml object", nameof(configuration));
-            }
+            
+            (YamlDocument document, T config) = Yaml.LoadAndDeserialize<T>(file);
 
-            DynamicObject profiles = configuration[ProfilesKey] ?? null;
+            config.ConfigYamlDocument = document;
 
-            return profiles != null;
+            return config;
         }
 
-        public static bool TryGetProfile(dynamic configuration, string profileName, out dynamic profile)
+
+        public static FileInfo ResolveOrDefault<T>(FileInfo file, params DirectoryInfo[] searchPaths)
         {
-            // TODO: broken when dynamic yaml removed
-            if (configuration.GetType() != typeof(DynamicObject))
-            {
-                throw new ArgumentException("The configuration parameter must be a DynamicYaml object", nameof(configuration));
-            }
-
-            profile = null;
-
-            var hasProfiles = HasProfiles(configuration);
-
-            if (!hasProfiles)
-            {
-                return false;
-            }
-
-            profile = configuration[ProfilesKey][profileName] ?? null;
-
-            return profile != null;
+            return ResolveOrDefault<T>(file.FullName, searchPaths);
         }
 
-        public static string[] GetProfileNames(dynamic configuration)
+        public static FileInfo ResolveOrDefault<T>(string path, params DirectoryInfo[] searchPaths)
         {
-            // TODO: broken when dynamic yaml removed
-            if (configuration.GetType() != typeof(DynamicObject))
+            if (!path.IsNullOrEmpty())
             {
-                throw new ArgumentException("The configuration parameter must be a DynamicYaml object", nameof(configuration));
+                var success = TryResolve(path, searchPaths.Select(x => x.ToDirectoryEntry()), out FileEntry configFile);
+
+                if (success)
+                {
+                    return configFile.ToFileInfo();
+                }
             }
 
-            if (!HasProfiles(configuration))
+            if (TryDefault<T>(out var errorMessage, out var fileInfo))
             {
-                return null;
+                return fileInfo;
             }
 
-            // TODO: broken when dynamic yaml removed
-            DynamicObject profiles = configuration[ProfilesKey];
-
-            // WARN: This is a dirty, dirty, hack. I apologize to my mother for writing this vulgarity.
-            var yamlMappingNode = (YamlMappingNode)profiles.GetFieldValue("mappingNode");
-            var yamlNodes = yamlMappingNode.Children.Select(kvp => kvp.Key.ToString());
-            var keys = yamlNodes.ToArray();
-
-            return keys;
+            var message = NotFoundMessage(path, searchPaths)
+                          + "\nAdditionally, no default could be found either because "
+                          + errorMessage;
+            throw new ConfigFileException(message);
         }
-
-        public static Dictionary<string, dynamic> GetAllProfiles(dynamic configuration)
+        public static FileInfo Default<T>()
         {
-            // TODO: broken when dynamic yaml removed
-            if (configuration.GetType() != typeof(DynamicObject))
+            if (TryDefault<T>(out var errorMessage, out var fileInfo))
             {
-                throw new ArgumentException("The configuration parameter must be a DynamicYaml object", nameof(configuration));
+                return fileInfo;
             }
 
-            var profiles = configuration[ProfilesKey];
-
-            if (profiles == null)
-            {
-                return null;
-            }
-
-            return (Dictionary<string, dynamic>)profiles;
+            throw new ConfigFileException("Loading default config failed because " + errorMessage);
         }
 
-        public static FileInfo ResolveConfigFile(FileInfo file, params DirectoryInfo[] searchPaths)
+        private static bool TryDefault<T>(out string errorMessage, out FileInfo fileInfo)
+        {
+            errorMessage = string.Empty;
+            fileInfo = null;
+            Type configType = typeof(T);
+
+            // lookup default config from well known names list
+            if (Defaults.TryGetValue(configType, out var defaultName))
+            {
+                FileEntry defaultConfig = null;
+                if (TryResolveInConfigFolder(defaultName, ref defaultConfig))
+                {
+                    var file = defaultConfig.ToFileInfo();
+                    Log.Info($"Supplied config file not found, but a default was found and returned (`{file}`)");
+                    {
+                        fileInfo = file;
+                        return true;
+                    }
+                }
+
+                errorMessage = $"attempt to find default file `{defaultName}` in config folders failed";
+            }
+            else
+            {
+                errorMessage = $"no default was registered for type `{configType.Name}`";
+            }
+
+            return false;
+        }
+
+        public static FileInfo Resolve(FileInfo file, params DirectoryInfo[] searchPaths)
         {
             Contract.Requires<ArgumentNullException>(file != null);
 
-            return ResolveConfigFile(file.FullName, searchPaths);
+            return Resolve(file.FullName, searchPaths);
         }
 
-        public static FileInfo ResolveConfigFile(string file, params DirectoryInfo[] searchPaths)
+        public static FileInfo Resolve(string file, params DirectoryInfo[] searchPaths)
         {
             if (file.IsNullOrEmpty())
             {
                 throw new ArgumentException("Try to resolve config failed, because supplied file argument was null or empty.", nameof(file));
             }
 
-            var success = TryResolveConfigFile(file, searchPaths.Select(x => x.ToDirectoryEntry()), out FileEntry configFile);
+            var success = TryResolve(file, searchPaths.Select(x => x.ToDirectoryEntry()), out FileEntry configFile);
 
             if (success)
             {
                 return configFile.ToFileInfo();
             }
 
-            var searchedIn =
-                searchPaths.Select(x => x.FullName)
-                    .Concat(new[] { ConfigFolder + " (and all subdirectories)", Directory.GetCurrentDirectory() })
-                    .Aggregate(string.Empty, (lines, dir) => lines += "\n\t" + dir);
-            var message = $"The specified config file ({file}) could not be found.\nSearched in: {searchedIn}";
+            var message = NotFoundMessage(file, searchPaths);
             throw new ConfigFileException(message, file);
         }
 
-        public static bool TryResolveConfigFile(string file, IEnumerable<DirectoryEntry> searchPaths, out FileEntry configFile)
+        private static string NotFoundMessage(string file, DirectoryInfo[] searchPaths)
+        {
+            var searchedIn = searchPaths
+                .Select(x => x.FullName)
+                .Distinct()
+                .Concat(new[] { ConfigFolder + " (and all subdirectories)", Directory.GetCurrentDirectory() })
+                .Aggregate(string.Empty, (lines, dir) => lines + "\n\t" + dir);
+            var message = $"The specified config file ({file}) could not be found.\nSearched in: {searchedIn}";
+            return message;
+        }
+
+        public static bool TryResolve(string file, IEnumerable<DirectoryEntry> searchPaths, out FileEntry configFile)
         {
             configFile = null;
             if (string.IsNullOrWhiteSpace(file))
@@ -207,6 +206,11 @@ namespace Acoustics.Shared.ConfigFile
                 }
             }
 
+            return TryResolveInConfigFolder(file, ref configFile);
+        }
+
+        private static bool TryResolveInConfigFolder(string file, ref FileEntry configFile)
+        {
             // config files are always packaged with the app so use a physical file system
             var defaultConfigFile = Path.GetFullPath(Path.Combine(ConfigFolder, file));
             if (File.Exists(defaultConfigFile))
@@ -225,7 +229,6 @@ namespace Acoustics.Shared.ConfigFile
                     return true;
                 }
             }
-
             return false;
         }
     }

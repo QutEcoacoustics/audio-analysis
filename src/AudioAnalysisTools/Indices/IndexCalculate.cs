@@ -38,17 +38,17 @@ namespace AudioAnalysisTools.Indices
         /// <param name="subsegmentOffsetTimeSpan">
         /// The start time of the required subsegment relative to start of SOURCE audio recording.
         ///     i.e. SegmentStartOffset + time duration from Segment start to subsegment start. </param>
-        /// <param name="indicesPropertiesConfig">file containing info about index value distributions. Used when drawing false-colour spectrograms. </param>
+        /// <param name="indexProperties">info about index value distributions. Used when drawing false-colour spectrograms. </param>
         /// <param name="sampleRateOfOriginalAudioFile"> That is, prior to being resample to the default of 22050.</param>
         /// <param name="segmentStartOffset"> Time elapsed from absolute start of total recording and start of the passed recording segment i.e. line37. </param>
-        /// <param name="config"> dynamic variable containing info about the configuration for index calculation</param>
+        /// <param name="config"> Config variable containing info about the configuration for index calculation</param>
         /// <param name="returnSonogramInfo"> boolean with default value = false </param>
         /// <returns> An IndexCalculateResult </returns>
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Reviewed. Suppression is OK here.")]
         public static IndexCalculateResult Analysis(
             AudioRecording recording,
             TimeSpan subsegmentOffsetTimeSpan,
-            FileInfo indicesPropertiesConfig,
+            Dictionary<string, IndexProperties> indexProperties,
             int sampleRateOfOriginalAudioFile,
             TimeSpan segmentStartOffset,
             IndexCalculateConfig config,
@@ -60,7 +60,6 @@ namespace AudioAnalysisTools.Indices
             int sampleRate = recording.WavReader.SampleRate;
             var segmentDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
             var indexCalculationDuration = config.IndexCalculationDuration;
-            var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
             int nyquist = sampleRate / 2;
 
             // Get FRAME parameters for the calculation of Acoustic Indices
@@ -160,7 +159,7 @@ namespace AudioAnalysisTools.Indices
 
             // Linear or Octave or Mel frequency scale? Set Linear as default.
             var freqScale = new FrequencyScale(nyquist: nyquist, frameSize: frameSize, hertzLinearGridInterval: 1000);
-            var freqScaleType = config.GetTypeOfFreqScale();
+            var freqScaleType = config.FrequencyScaleType;
             bool octaveScale = freqScaleType == FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
             bool melScale = freqScaleType == FreqScaleType.Mel;
             if (octaveScale)

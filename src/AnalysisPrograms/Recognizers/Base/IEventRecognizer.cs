@@ -15,6 +15,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using System.Linq;
     using System.Reflection;
 
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools.Wav;
 
     using AnalysisBase;
@@ -38,62 +39,6 @@ namespace AnalysisPrograms.Recognizers.Base
         /// <param name="outputDirectory">The current output directory</param>
         /// <param name="imageWidth">The expected width of output images</param>
         /// <returns>A recognizer results object</returns>
-        RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth);
-    }
-
-    public static class EventRecognizers
-    {
-        private static IEnumerable<IEventRecognizer> eventRecognizersCached;
-
-        /// <summary>
-        /// Get recognizers using a method that is compatible with MONO environment..
-        /// </summary>
-        /// <param name="assembly">
-        /// The assembly.
-        /// </param>
-        /// <returns>
-        /// The System.Collections.Generic.IEnumerable`1[T -&gt; AnalysisPrograms.IEventRecognizer].
-        /// </returns>
-        public static IEnumerable<IEventRecognizer> GetRecognizers(Assembly assembly)
-        {
-            if (eventRecognizersCached == null)
-            {
-                // to find the assembly, get the type of a class in that assembly
-                // eg. typeof(MainEntry).Assembly
-                var analyzerType = typeof(IEventRecognizer);
-
-                var recognizers =
-                    assembly.GetTypes()
-                        .Where(analyzerType.IsAssignableFrom)
-                        .Where(t => t.IsClass && !t.IsAbstract)
-                        .Select(t => Activator.CreateInstance(t) as IEventRecognizer);
-
-                eventRecognizersCached = recognizers;
-            }
-
-            return eventRecognizersCached;
-        }
-
-        public static IEventRecognizer FindAndCheckRecognizers(string analysisIdentifier)
-        {
-            var eventRecognizers = GetRecognizers(typeof(MainEntry).Assembly).ToList();
-            IEventRecognizer foundRecognizer = eventRecognizers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
-            if (foundRecognizer == null)
-            {
-                LoggedConsole.WriteLine("###################################################\n");
-                LoggedConsole.WriteLine("Analysis failed. UNKNOWN EventRecognizer/Analyzer: <{0}>", analysisIdentifier);
-                LoggedConsole.WriteLine("Available analyzers are:");
-                foreach (IEventRecognizer recognizer in eventRecognizers)
-                {
-                    LoggedConsole.WriteLine("\t  " + recognizer.Identifier);
-                }
-                LoggedConsole.WriteLine("###################################################\n");
-
-                throw new Exception("Cannot find a valid IEventRecognizer");
-            }
-
-            return foundRecognizer;
-        }
-
+        RecognizerResults Recognize(AudioRecording audioRecording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth);
     }
 }

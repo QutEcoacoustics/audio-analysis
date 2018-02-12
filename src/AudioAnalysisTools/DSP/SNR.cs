@@ -8,6 +8,8 @@ namespace AudioAnalysisTools.DSP
     using System.Collections.Generic;
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
+
     using StandardSpectrograms;
     using TowseyLibrary;
     using WavTools;
@@ -695,8 +697,8 @@ namespace AudioAnalysisTools.DSP
             var sourceDir = csvFileInfo.Directory;
             var opDir = csvFileInfo.Directory;
 
-            dynamic configuration = Yaml.Deserialise(configFile);
-            var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
+            Config configuration = ConfigFile.Deserialize(configFile);
+            var configDict = new Dictionary<string, string>(configuration.ToDictionary());
 
             //set up text for the output file
             var opText = new List<string>();

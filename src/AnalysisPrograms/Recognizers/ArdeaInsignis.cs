@@ -14,6 +14,8 @@ namespace AnalysisPrograms.Recognizers
     using System.IO;
     using System.Linq;
     using System.Reflection;
+
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
@@ -58,14 +60,14 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
-        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             // common properties
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            string speciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
+            string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
-            int minHz = (int)configuration[AnalysisKeys.MinHz];
-            int maxHz = (int)configuration[AnalysisKeys.MaxHz];
+            int minHz = configuration.GetInt(AnalysisKeys.MinHz);
+            int maxHz = configuration.GetInt(AnalysisKeys.MaxHz);
 
             // BETTER TO CALCULATE THIS. IGNORE USER!
             // double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);
@@ -74,8 +76,8 @@ namespace AnalysisPrograms.Recognizers
 
             // minimum acceptable value of a DCT coefficient
             //double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
-            double noiseReductionParameter = (double?)configuration["SeverityOfNoiseRemoval"] ?? 2.0;
-            double decibelThreshold = (double)configuration["DecibelThreshold"];
+            double noiseReductionParameter = configuration.GetDoubleOrNull("SeverityOfNoiseRemoval") ?? 2.0;
+            double decibelThreshold = configuration.GetDouble("DecibelThreshold");
 
             //double minPeriod = (double)configuration["MinPeriod"]; //: 0.18
             //double maxPeriod = (double)configuration["MaxPeriod"]; //
@@ -84,13 +86,13 @@ namespace AnalysisPrograms.Recognizers
             //int minOscilRate = (int)Math.Floor(1 /maxPeriod);
 
             // min duration of event in seconds
-            double minDuration = (double)configuration[AnalysisKeys.MinDuration];
+            double minDuration = configuration.GetDouble(AnalysisKeys.MinDuration);
 
             // max duration of event in second
-            var maxDuration = (double)configuration[AnalysisKeys.MaxDuration];
+            var maxDuration = configuration.GetDouble(AnalysisKeys.MaxDuration);
 
             // min score for an acceptable event
-            var eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
+            var eventThreshold = configuration.GetDouble(AnalysisKeys.EventThreshold);
 
             // this default framesize and overlap is best for the White Hrron of Bhutan.
             const int frameSize = 2048;

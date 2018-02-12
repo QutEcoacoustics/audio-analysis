@@ -8,6 +8,8 @@ namespace AnalysisPrograms.Production.Arguments
     using System.ComponentModel.DataAnnotations;
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
+
     using AnalysisBase;
     using McMaster.Extensions.CommandLineUtils;
     using Validation;
@@ -41,7 +43,7 @@ namespace AnalysisPrograms.Production.Arguments
             AnalysisSettings defaults = null,
             bool outputIntermediate = false,
             string resultSubDirectory = null,
-            dynamic configuration = null)
+            Config configuration = null)
         {
             var analysisSettings = defaults ?? new AnalysisSettings();
 
@@ -59,7 +61,7 @@ namespace AnalysisPrograms.Production.Arguments
                 analysisSettings.AnalysisDataSaveBehavior = true;
             }
 
-            analysisSettings.Configuration = configuration ?? Yaml.Deserialise(this.Config);
+            analysisSettings.Configuration = configuration ?? ConfigFile.Deserialize(this.Config);
 
             return analysisSettings;
         }

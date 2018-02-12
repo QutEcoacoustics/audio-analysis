@@ -20,12 +20,15 @@ namespace AudioAnalysisTools.DSP
     /// </summary>
     public enum FreqScaleType
     {
-        Linear,
-        Mel,
-        Linear62Octaves7Tones31Nyquist11025,
-        Linear125Octaves6Tones30Nyquist11025,
-        Octaves24Nyquist32000,
-        Linear125Octaves7Tones28Nyquist32000
+        Linear = 0,
+        Mel = 1,
+        Linear62Octaves7Tones31Nyquist11025 = 2,
+        Linear125Octaves6Tones30Nyquist11025 = 3,
+        Octaves24Nyquist32000 = 4,
+        Linear125Octaves7Tones28Nyquist32000 = 5,
+
+        // alias Octave to predefined choice
+        Octave = Linear125Octaves7Tones28Nyquist32000,
     }
 
     public class FrequencyScale

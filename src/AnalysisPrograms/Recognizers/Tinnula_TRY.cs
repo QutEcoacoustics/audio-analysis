@@ -17,6 +17,7 @@ namespace AnalysisPrograms.Recognizers
     using System.Text;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools.Wav;
 
     using AnalysisBase;
@@ -76,16 +77,17 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording audioRecording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             RecognizerResults results = Gruntwork(audioRecording, configuration, outputDirectory, segmentStartOffset);
 
             return results;
         }
 
-        internal RecognizerResults Gruntwork(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
+        internal RecognizerResults Gruntwork(AudioRecording audioRecording, Config configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
         {
-            double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 0.1;
+            
+            double noiseReductionParameter = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 0.1;
             // make a spectrogram
             var config = new SonogramConfig
             {
@@ -110,10 +112,10 @@ namespace AnalysisPrograms.Recognizers
             double framesPerSec = 1 / frameStepInSeconds;
 
             // reading in variables from the config file
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-            int minHz = (int)configuration[AnalysisKeys.MinHz];
-            int maxHz = (int)configuration[AnalysisKeys.MaxHz];
+            string speciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            int minHz = configuration.GetInt(AnalysisKeys.MinHz);
+            int maxHz = configuration.GetInt(AnalysisKeys.MaxHz);
 
             // ## THREE THRESHOLDS ---- only one of these is given to user.
             // minimum dB to register a dominant freq peak. After noise removal
@@ -121,7 +123,7 @@ namespace AnalysisPrograms.Recognizers
             // The threshold dB amplitude in the dominant freq bin required to yield an event
             double eventThresholdDb = 6;
             // minimum score for an acceptable event - that is when processing the score array.
-            double similarityThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? 0.2;
+            double similarityThreshold = configuration.GetDoubleOrNull(AnalysisKeys.EventThreshold) ?? 0.2;
 
             // IMPORTANT: The following frame durations assume a sampling rate = 22050 and window size of 256.
             int minFrameWidth = 7;

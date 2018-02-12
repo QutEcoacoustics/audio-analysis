@@ -57,7 +57,7 @@ namespace AnalysisPrograms.EventStatistics
                 // e.g. We require a missing absolute path to fail... that wouldn't work with .Name
                 // e.g. We require a relative path to try and resolve, using .FullName would fail the first absolute 
                 //    check inside ResolveConfigFile
-                arguments.Config = ConfigFile.ResolveConfigFile(
+                arguments.Config = ConfigFile.Resolve(
                     arguments.Config.ToString(),
                     Directory.GetCurrentDirectory().ToDirectoryInfo());
             }
@@ -77,9 +77,6 @@ namespace AnalysisPrograms.EventStatistics
             Log.Info("Output folder:       " + arguments.Output);
             Log.Info("Temp File Directory: " + arguments.TempDir);
             Log.Info("Api:                 " + api);
-
-            // derserialize the config file
-            var configuration = Yaml.Deserialise<EventStatisticsConfiguration>(arguments.Config);
 
             // Remote: Test we can log in to the workbench
             var auth = new AuthenticationService(api);
@@ -163,6 +160,9 @@ namespace AnalysisPrograms.EventStatistics
 
             // instantiate the Analysis
             EventStatisticsAnalysis analysis = new EventStatisticsAnalysis();
+
+            // derserialize the config file
+            var configuration = analysis.ParseConfig(arguments.Config);
 
             AnalysisSettings settings = analysis.DefaultSettings;
             settings.AnalysisOutputDirectory = arguments.Output;

@@ -20,6 +20,7 @@ namespace AnalysisPrograms
     using System.Reflection;
     using System.Threading.Tasks;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
@@ -93,17 +94,17 @@ namespace AnalysisPrograms
             DirectoryInfo opDir = arguments.Output;
 
             // 2. get the config dictionary
-            dynamic configuration = Yaml.Deserialise(configFile);
+            Config configuration = ConfigFile.Deserialize(configFile);
 
-            // below four lines are examples of retrieving info from dynamic config
-            //dynamic configuration = Yaml.Deserialise(configFile);
+            // below four lines are examples of retrieving info from Config config
+            //Config configuration = Yaml.Deserialise(configFile);
             // string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
             // int resampleRate = (int?)configuration[AnalysisKeys.ResampleRate] ?? AppConfigHelper.DefaultTargetSampleRate;
 
-            var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
+            var configDict = new Dictionary<string, string>(configuration.ToDictionary());
 
-            configDict[AnalysisKeys.AddAxes] = ((bool?)configuration[AnalysisKeys.AddAxes] ?? true).ToString();
-            configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true;
+            configDict[AnalysisKeys.AddAxes] = configuration[AnalysisKeys.AddAxes] ?? "true";
+            configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
 
             //bool makeSoxSonogram = (bool?)configuration[AnalysisKeys.MakeSoxSonogram] ?? false;
             configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
@@ -499,6 +500,11 @@ namespace AnalysisPrograms
 
         public AnalysisSettings DefaultSettings { get; private set; }
 
+        public AnalyzerConfig ParseConfig(FileInfo file)
+        {
+            return ConfigFile.Deserialize<AnalyzerConfig>(file);
+        }
+
         public void BeforeAnalyze(AnalysisSettings analysisSettings)
         {
             // noop
@@ -511,17 +517,17 @@ namespace AnalysisPrograms
             var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
             var analysisResult = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
-            dynamic configuration = Yaml.Deserialise(analysisSettings.ConfigFile);
+            Config configuration = ConfigFile.Deserialize(analysisSettings.ConfigFile);
 
             bool saveCsv = analysisSettings.AnalysisDataSaveBehavior;
 
-            if ((bool?)configuration[AnalysisKeys.MakeSoxSonogram] == true)
+            if (configuration.GetBool(AnalysisKeys.MakeSoxSonogram))
             {
                 Log.Warn("SoX spectrogram generation config variable found (and set to true) but is ignored when running as an IAnalyzer");
             }
 
             // generate spectrogram
-            var configurationDictionary = new Dictionary<string, string>((Dictionary<string, string>)configuration);
+            var configurationDictionary = new Dictionary<string, string>(configuration.ToDictionary());
             configurationDictionary[ConfigKeys.Recording.Key_RecordingCallName] = audioFile.FullName;
             configurationDictionary[ConfigKeys.Recording.Key_RecordingFileName] = audioFile.Name;
             var soxImage = new FileInfo(Path.Combine(segmentSettings.SegmentOutputDirectory.FullName, audioFile.Name + ".SOX.png"));

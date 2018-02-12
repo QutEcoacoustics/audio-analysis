@@ -15,6 +15,8 @@ namespace AnalysisBase
     using System.Collections.Generic;
     using System.IO;
 
+    using Acoustics.Shared.ConfigFile;
+
     using ResultBases;
 
     /// <summary>
@@ -35,7 +37,7 @@ namespace AnalysisBase
         string Identifier { get; }
 
         /// <summary>
-        /// A user friendly string describing the analyzer. Intending for printing in the console.
+        /// Gets a user friendly string describing the analyzer. Intending for printing in the console.
         /// </summary>
         string Description { get; }
 
@@ -43,6 +45,13 @@ namespace AnalysisBase
         /// Gets the initial (default) settings for the analysis.
         /// </summary>
         AnalysisSettings DefaultSettings { get; }
+
+        /// <summary>
+        /// An (optional) method for returning a strongly typed config file
+        /// </summary>
+        /// <param name="file">The file that represents the config to read.</param>
+        /// <returns>Ideally a strongly typed config, but as a fallback, a base <see cref="Config"/> can be returned.</returns>
+        AnalyzerConfig ParseConfig(FileInfo file);
 
         /// <summary>
         /// A hook to modify analysis settings before an analysis is run.

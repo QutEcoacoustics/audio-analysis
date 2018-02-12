@@ -25,6 +25,9 @@ namespace AnalysisPrograms.Recognizers.Base
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+
+    using AnalysisPrograms.AnalyseLongRecordings;
+
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
@@ -35,15 +38,26 @@ namespace AnalysisPrograms.Recognizers.Base
 
     public class MultiRecognizer : RecognizerBase
     {
+        public class MultiRecognizerConfig : RecognizerConfig
+        {
+            public string[] SpeciesList { get; set; }    
+        }
+
         public override string Author => "Ecosounds";
 
         public override string SpeciesName => "MultiRecognizer";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
+        public override AnalyzerConfig ParseConfig(FileInfo file)
+        {
+            return ConfigFile.Deserialize<MultiRecognizerConfig>(file);
+        }
+
+        public override RecognizerResults Recognize(AudioRecording audioRecording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             // this is a multi recognizer - it does no actual analysis itself
+            MultiRecognizerConfig multiRecognizerConfig = (MultiRecognizerConfig)configuration;
 
             // make a standard spectrogram in which to render acoustic events and to append score tracks
             // currently using Hamming window. Worth trying Hanning Window
@@ -55,14 +69,13 @@ namespace AnalysisPrograms.Recognizers.Base
             };
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
 
-            // Get list of ID names from config file
-            List <string> speciesList = configuration["SpeciesList"] ?? null;
             var scoreTracks = new List<Image>();
             var plots = new List<Plot>();
             var events = new List<AcousticEvent>();
 
+            // Get list of ID names from config file
             // Loop through recognizers and accumulate the output
-            foreach (string name in speciesList)
+            foreach (string name in multiRecognizerConfig.SpeciesList)
             {
                 // AT: Fixed this... the following should not be needed. If it happens, let me know.
                 // SEEM TO HAVE LOST SAMPLES
@@ -123,16 +136,18 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public static RecognizerResults DoCallRecognition(string name, TimeSpan segmentStartOffset, AudioRecording recording, Lazy<IndexCalculateResult[]> indices, DirectoryInfo outputDirectory, int imageWidth)
         {
-            // load up the standard config file for this species
+
             Log.Debug("Looking for recognizer and config files for " + name);
-            var configurationFile = ConfigFile.ResolveConfigFile(name + ".yml");
-            var configuration = (dynamic)Yaml.Deserialise(configurationFile);
 
             // find an appropriate event recognizer
-            IEventRecognizer recognizer = EventRecognizers.FindAndCheckRecognizers(name);
+            var recognizer = AnalyseLongRecording.FindAndCheckAnalyser<IEventRecognizer>(name, name + ".yml");
+
+            // load up the standard config file for this species
+            var configurationFile = ConfigFile.Resolve(name + ".yml");
+            var configuration = recognizer.ParseConfig(configurationFile);
 
             // TODO: adapt sample rate to required rate
-            int? resampleRate = (int?)configuration[AnalysisKeys.ResampleRate];
+            int? resampleRate = configuration.ResampleRate;
             if (resampleRate.HasValue && recording.WavReader.SampleRate != resampleRate.Value)
             {
                 Log.Warn("Sample rate of provided file does does match");

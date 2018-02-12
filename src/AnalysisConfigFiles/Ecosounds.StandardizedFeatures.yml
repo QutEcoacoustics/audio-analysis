@@ -2,8 +2,8 @@
 # Summary: Calculates standardized features for machine learning tasks
 
 AnalysisName: Ecosounds.StandardizedFeatures
-#SegmentDuration: units=minutes;
-SegmentDuration: 1
+#SegmentDuration: units=seconds;
+SegmentDuration: 60
 #SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 

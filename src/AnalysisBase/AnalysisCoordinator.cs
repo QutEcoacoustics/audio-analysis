@@ -103,17 +103,18 @@ namespace AnalysisBase
         /// <returns>
         /// The System.Collections.Generic.IEnumerable`1[T -&gt; AnalysisBase.IAnalyzer2].
         /// </returns>
-        public static IEnumerable<IAnalyser2> GetAnalyzers(Assembly assembly)
+        public static IEnumerable<T> GetAnalyzers<T>(Assembly assembly)
+            where T : class, IAnalyser2
         {
             // to find the assembly, get the type of a class in that assembly
             // eg. typeof(MainEntry).Assembly
-            var analyzerType = typeof(IAnalyser2);
+            var analyzerType = typeof(T);
 
             var types = assembly.GetTypes();
             var analyzers = types
                 .Where(analyzerType.IsAssignableFrom)
                 .Where(t => t.IsClass && !t.IsAbstract)
-                .Select(t => Activator.CreateInstance(t) as IAnalyser2);
+                .Select(t => Activator.CreateInstance(t) as T);
 
             return analyzers;
         }

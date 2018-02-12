@@ -19,6 +19,7 @@ namespace AnalysisPrograms
     using System.Reflection;
     using System.Threading.Tasks;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using Acoustics.Shared.Extensions;
 
@@ -39,8 +40,6 @@ namespace AnalysisPrograms
     using QutSensors.AudioAnalysis.AED;
 
     using TowseyLibrary;
-
-    using YamlDotNet.Dynamic;
 
     /// <summary>
     ///     Acoustic Event Detection.
@@ -65,7 +64,7 @@ namespace AnalysisPrograms
             }
         }
 
-        public class AedConfiguration
+        public class AedConfiguration : Config
         {
             public AedConfiguration()
             {
@@ -84,6 +83,7 @@ namespace AnalysisPrograms
 
             public NoiseReductionType NoiseReductionType { get; set; }
 
+            [YamlDotNet.Serialization.YamlMember(Alias = AnalysisKeys.NoiseBgThreshold)]
             public double NoiseReductionParameter { get; set; }
 
             public int ResampleRate { get; set; }
@@ -92,7 +92,7 @@ namespace AnalysisPrograms
 
             public Color AedHitColor { get; set; }
 
-            public bool IncludeHitElementsInOutput { get; set; }
+            public bool IncludeHitElementsInOutput { get; set; } = false;
         }
 
         #region Constants
@@ -278,7 +278,7 @@ namespace AnalysisPrograms
             Log.Info("# Recording file: " + recodingFile.Name);
 
             // READ PARAMETER VALUES FROM INI FILE
-            DynamicYaml configruation = Yaml.Deserialise(arguments.Config);
+            AedConfiguration configruation = ConfigFile.Deserialize<AedConfiguration>(arguments.Config);
             var aedConfig = GetAedParametersFromConfigFileOrDefaults(configruation);
             var results = Detect(recodingFile, aedConfig, TimeSpan.Zero);
 
@@ -305,7 +305,7 @@ namespace AnalysisPrograms
 
             var results = Detect(audioFile, aedConfig, segmentSettings.SegmentStartOffset);
 
-            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, results.Item2.Duration());
+            var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, results.Item2.Duration);
             analysisResults.AnalysisIdentifier = this.Identifier;
             analysisResults.Events = results.Item1;
             BaseSonogram sonogram = results.Item3;
@@ -336,30 +336,26 @@ namespace AnalysisPrograms
             return analysisResults;
         }
 
-        public static AedConfiguration GetAedParametersFromConfigFileOrDefaults(dynamic configuration)
+        public static AedConfiguration GetAedParametersFromConfigFileOrDefaults(Config configuration)
         {
-            NoiseReductionType noiseReduction = NoiseReductionType.None;
-            if ((bool)configuration[AnalysisKeys.NoiseDoReduction])
+            if (!configuration.TryGetEnum(AnalysisKeys.NoiseDoReduction, out NoiseReductionType? noiseReduction) || noiseReduction == null)
             {
-                noiseReduction = (NoiseReductionType?)configuration[AnalysisKeys.NoiseReductionType] ?? noiseReduction;
-            }
-            else
-            {
+                noiseReduction = NoiseReductionType.None;
                 Log.Warn("Noise reduction disabled, default AED noise removal used - this indicates a bad config file");
             }
 
             return new AedConfiguration()
                        {
-                           IntensityThreshold = configuration.IntensityThreshold,
-                           SmallAreaThreshold = configuration.SmallAreaThreshold,
-                           BandpassMinimum = configuration.BandpassMinimum,
-                           BandpassMaximum = configuration.BandpassMaximum,
-                           IncludeHitElementsInOutput = (bool?)configuration.IncludeHitElementsInOutput ?? false,
-                           AedEventColor = ((string)configuration.AedEventColor).ParseAsColor(),
-                           AedHitColor = ((string)configuration.AedHitColor).ParseAsColor(),
-                           ResampleRate = configuration[AnalysisKeys.ResampleRate],
-                           NoiseReductionType = noiseReduction,
-                           NoiseReductionParameter = configuration[AnalysisKeys.NoiseBgThreshold],
+                           IntensityThreshold = configuration.GetDouble(nameof(AedConfiguration.IntensityThreshold)),
+                           SmallAreaThreshold = configuration.GetInt(nameof(AedConfiguration.SmallAreaThreshold)),
+                           BandpassMinimum = configuration.GetInt(nameof(AedConfiguration.BandpassMinimum)),
+                           BandpassMaximum = configuration.GetInt(nameof(AedConfiguration.BandpassMaximum)),
+                           IncludeHitElementsInOutput = configuration.GetBoolOrNull(nameof(AedConfiguration.IncludeHitElementsInOutput)) ?? false,
+                           AedEventColor = configuration[nameof(AedConfiguration.AedEventColor)].ParseAsColor(),
+                           AedHitColor = configuration[nameof(AedConfiguration.AedHitColor)].ParseAsColor(),
+                           ResampleRate = configuration.GetInt(nameof(AedConfiguration.ResampleRate)),
+                           NoiseReductionType = noiseReduction.Value,
+                           NoiseReductionParameter = configuration.GetDouble(AnalysisKeys.NoiseBgThreshold),
                        };
         }
 

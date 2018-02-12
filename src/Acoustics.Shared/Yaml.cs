@@ -20,41 +20,30 @@ namespace Acoustics.Shared
 
     public class Yaml
     {
-        // this method is broken - my first priority is a working build, I'll need to come back to this
-        public static dynamic Deserialise(FileInfo file)
+        internal static Deserializer Deserializer => new Deserializer();
+
+        public static YamlDocument Load(FileInfo file)
         {
             using (var stream = file.OpenText())
             {
-                // allow merging in yaml back references
-                var parser = new MergingParser(new Parser(stream));
-
-                // MEGA HACK TIME - I APOLOGIZE TO FUTURE ME :-(
-                // There's a bug in the YamlStream implementation that does not allow the MergingParser's magic to work because it produces a
-                // a duplicate key in an object mapping graph in a yaml back referencing scenario.
-                // So to deserialize the graph properly, we first deserialize it generically - which expands all the yaml back references - and we
-                // then reserialize to an in memory string, which we can finally send to DynamicYaml (which uses yamlDocument.Load under the sheets).
-                // TODO: file a bug against the YamlDotNet project.
-                var d = new Deserializer();
-                var deserializedObject = d.Deserialize(parser);
-//                var s = new Serializer();
-//
-//                DynamicYaml data;
-//                using (var stream2 = new StringWriter())
-//                {
-//                    s.Serialize(stream2, deserializedObject);
-//
-//                    var yaml = stream2.ToString();
-//                    data = new DynamicYaml(yaml);
-//                }
-
-                return deserializedObject;
+                return Load(stream);
             }
         }
 
-        public static void SerialiseDynamic(FileInfo file, dynamic obj)
+        public static YamlDocument Load(TextReader stream)
         {
-            // YMMV - not tested
-            Serialise(file, obj);
+            // allow merging in yaml back references
+            var parser = new MergingParser(new Parser(stream));
+
+            YamlStream yamlStream = new YamlStream();
+            yamlStream.Load(parser);
+
+            if (yamlStream.Documents.Count != 1)
+            {
+                throw new InvalidOperationException("Acoustics.Shared.Yaml supports loading only one document at a time");
+            }
+
+            return yamlStream.Documents[0];
         }
 
         public static T Deserialise<T>(FileInfo file)
@@ -66,12 +55,17 @@ namespace Acoustics.Shared
         {
             using (var stream = file.OpenText())
             {
-                // allow merging in yaml back references
-                var parser = new MergingParser(new Parser(stream));
-                var deserializer = new Deserializer();
-
-                return deserializer.Deserialize<T>(parser);
+                return Deserialize<T>(stream);
             }
+        }
+
+        public static T Deserialize<T>(TextReader stream)
+        {
+            // allow merging in yaml back references
+            var parser = new MergingParser(new Parser(stream));
+            var deserializer = Deserializer;
+
+            return deserializer.Deserialize<T>(parser);
         }
 
         public static void Serialise<T>(FileInfo file, T obj)
@@ -83,28 +77,27 @@ namespace Acoustics.Shared
                 serializer.Serialize(stream, obj);
             }
         }
-    }
 
-    /// <summary>
-    /// An attempt to desrialize custom types - does not work.
-    /// See: https://github.com/aaubry/YamlDotNet/issues/103.
-    /// For now, serialize special types through proxy properties.
-    /// </summary>
-    public class YamlFileInfoConverter : IYamlTypeConverter
-    {
-        public bool Accepts(Type type)
+        internal static (YamlDocument, T) LoadAndDeserialize<T>(FileInfo file)
         {
-            return type == typeof(FileInfo);
-        }
+            using (var stream = file.OpenText())
+            {
+                // allow merging in yaml back references
+                var parser = new MergingParser(new Parser(stream));
 
-        public object ReadYaml(IParser parser, Type type)
-        {
-            throw new NotImplementedException();
-        }
+                YamlStream yamlStream = new YamlStream();
+                yamlStream.Load(parser);
 
-        public void WriteYaml(IEmitter emitter, object value, Type type)
-        {
-            throw new NotImplementedException();
+                if (yamlStream.Documents.Count != 1)
+                {
+                    throw new InvalidOperationException(
+                        "Acoustics.Shared.Yaml supports loading only one document at a time");
+                }
+
+                T obj = Deserializer.Deserialize<T>(parser);
+
+                return (yamlStream.Documents[0], obj);
+            }
         }
     }
 }

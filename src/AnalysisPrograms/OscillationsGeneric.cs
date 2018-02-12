@@ -23,6 +23,7 @@ namespace AnalysisPrograms
     using System.Threading.Tasks;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     //using Acoustics.Shared.Extensions;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
@@ -156,24 +157,24 @@ namespace AnalysisPrograms
             string sourceName = Path.GetFileNameWithoutExtension(sourceRecording.FullName);
 
             // 2. get the config dictionary
-            dynamic configuration = Yaml.Deserialise(configFile);
+            Config configuration = ConfigFile.Deserialize(configFile);
 
-            // below three lines are examples of retrieving info from dynamic config
+            // below three lines are examples of retrieving info from Config config
             // string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
             // bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
             // scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
 
             // Resample rate must be 2 X the desired Nyquist. Default is that of recording.
-            var resampleRate = (int?)configuration[AnalysisKeys.ResampleRate] ?? AppConfigHelper.DefaultTargetSampleRate;
+            var resampleRate = (int?)configuration.GetIntOrNull(AnalysisKeys.ResampleRate) ?? AppConfigHelper.DefaultTargetSampleRate;
 
-            var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
+            var configDict = new Dictionary<string, string>(configuration.ToDictionary());
             // #NOISE REDUCTION PARAMETERS
             //string noisereduce = configDict[ConfigKeys.Mfcc.Key_NoiseReductionType];
             configDict[AnalysisKeys.NoiseDoReduction]   = "false";
             configDict[AnalysisKeys.NoiseReductionType] = "NONE";
 
-            configDict[AnalysisKeys.AddAxes] = ((bool?)configuration[AnalysisKeys.AddAxes] ?? true).ToString();
-            configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true;
+            configDict[AnalysisKeys.AddAxes] = configuration[AnalysisKeys.AddAxes] ?? "true";
+            configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
 
             configDict[ConfigKeys.Recording.Key_RecordingCallName] = arguments.Source.FullName;
             configDict[ConfigKeys.Recording.Key_RecordingFileName] = arguments.Source.Name;
@@ -284,7 +285,7 @@ namespace AnalysisPrograms
 
             // 3) now draw the noise reduced decibel spectrogram
             sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
-            sonoConfig.NoiseReductionParameter = configuration["BgNoiseThreshold"] ?? 3.0;
+            sonoConfig.NoiseReductionParameter = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold)?? 3.0;
 
             sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
             image = sonogram.GetImageFullyAnnotated("NOISE-REDUCED DECIBEL  SPECTROGRAM");

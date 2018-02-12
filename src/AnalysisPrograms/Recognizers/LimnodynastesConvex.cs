@@ -15,6 +15,8 @@ namespace AnalysisPrograms.Recognizers
     using System.Linq;
     using System.Reflection;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
+
     using AnalysisBase;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools;
@@ -64,7 +66,7 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
-        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording audioRecording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             // The next line actually calculates the high resolution indices!
             // They are not much help for frogs recognition but could be useful for HiRes spectrogram display
@@ -94,10 +96,10 @@ namespace AnalysisPrograms.Recognizers
             return results;
         }
 
-        internal RecognizerResults Gruntwork1(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
+        internal RecognizerResults Gruntwork1(AudioRecording audioRecording, Config configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
         {
             // make a spectrogram
-            double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 0.1;
+            double noiseReductionParameter = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 0.1;
             var config = new SonogramConfig
             {
                 WindowSize = 512,
@@ -137,7 +139,7 @@ namespace AnalysisPrograms.Recognizers
             double eventThresholdDb = 10.0;
 
             // minimum score for an acceptable event - that is when processing the score array.
-            double similarityThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? 0.2;
+            double similarityThreshold = configuration.GetDoubleOrNull(AnalysisKeys.EventThreshold) ?? 0.2;
 
             // IMPORTANT: The following frame durations assume a sampling rate = 22050 and window size of 512.
             int minFrameWidth = 3;
@@ -168,7 +170,7 @@ namespace AnalysisPrograms.Recognizers
             // To this end we produce two templates each of length 25, but having 2nd and 3rd peaks at different intervals.
             var templates = GetLconvexTemplates(callBinWidth, silenceBinBuffer);
 
-            int dominantFrequency = (int)configuration["DominantFrequency"];
+            int dominantFrequency = (int)configuration.GetIntOrNull("DominantFrequency");
 
             // NOTE: could give user control over other call features
             //  Such as frequency gap between peaks. But not in this first iteration of the recognizer.
@@ -324,10 +326,10 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// New and alternative version of Lconvex recogniser because discovered that the call is more variable than I first realised.
         /// </summary>
-        internal RecognizerResults Gruntwork2(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
+        internal RecognizerResults Gruntwork2(AudioRecording audioRecording, Config configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
         {
             // make a spectrogram
-            double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 0.1;
+            double noiseReductionParameter = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 0.1;
             int frameStep = 512;
             int sampleRate = audioRecording.SampleRate;
             double frameStepInSeconds = frameStep / (double)sampleRate;
@@ -357,10 +359,10 @@ namespace AnalysisPrograms.Recognizers
 
             // ## TWO THRESHOLDS
             // The threshold dB amplitude in the dominant freq bin required to yield an event
-            double eventThresholdDb = (double?)configuration["PeakThresholdDecibels"] ?? 3.0;
+            double eventThresholdDb = configuration.GetDoubleOrNull("PeakThresholdDecibels") ?? 3.0;
 
             // minimum score for an acceptable event - that is when processing the score array.
-            double similarityThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? 0.5;
+            double similarityThreshold = configuration.GetDoubleOrNull(AnalysisKeys.EventThreshold) ?? 0.5;
 
             // IMPORTANT: The following frame durations assume a sampling rate = 22050 and window size of 512.
             int callFrameWidth = 5;
@@ -370,7 +372,7 @@ namespace AnalysisPrograms.Recognizers
             // call has binWidth=25 but we want zero buffer of four bins either side.
             int callBinWidth = 25;
             int binSilenceBuffer = 4;
-            int topFrequency = (int)configuration["TopFrequency"];
+            int topFrequency = (int)configuration.GetInt("TopFrequency");
 
             // # The Limnodynastes call has a duration of 3-5 frames given the above settings.
             // # But we will assume 5-7 because sometimes the three harmonics are not exactly alligned!!

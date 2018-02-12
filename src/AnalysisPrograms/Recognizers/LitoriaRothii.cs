@@ -18,6 +18,8 @@ namespace AnalysisPrograms.Recognizers
     using System.Drawing;
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
+
     using AnalysisBase;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools;
@@ -61,41 +63,41 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
-        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            string speciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
             const int frameSize = 256;
             const double windowOverlap = 0.0;
 
-            double noiseReductionParameter = (double?)configuration["SeverityOfNoiseRemoval"] ?? 2.0;
+            double noiseReductionParameter = configuration.GetDoubleOrNull("SeverityOfNoiseRemoval") ?? 2.0;
 
-            int minHz = (int)configuration[AnalysisKeys.MinHz];
-            int maxHz = (int)configuration[AnalysisKeys.MaxHz];
+            int minHz = configuration.GetInt(AnalysisKeys.MinHz);
+            int maxHz = configuration.GetInt(AnalysisKeys.MaxHz);
 
             // ignore oscillations below this threshold freq
-            int minOscilFreq = (int)configuration[AnalysisKeys.MinOscilFreq];
+            int minOscilFreq = configuration.GetInt(AnalysisKeys.MinOscilFreq);
 
             // ignore oscillations above this threshold freq
-            int maxOscilFreq = (int)configuration[AnalysisKeys.MaxOscilFreq];
+            int maxOscilFreq = configuration.GetInt(AnalysisKeys.MaxOscilFreq);
 
             // duration of DCT in seconds
             //double dctDuration = (double)configuration[AnalysisKeys.DctDuration];
 
             // minimum acceptable value of a DCT coefficient
-            double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
+            double dctThreshold = configuration.GetDouble(AnalysisKeys.DctThreshold);
 
             // min duration of event in seconds
-            double minDuration = (double)configuration[AnalysisKeys.MinDuration];
+            double minDuration = configuration.GetDouble(AnalysisKeys.MinDuration);
 
             // max duration of event in seconds
-            double maxDuration = (double)configuration[AnalysisKeys.MaxDuration];
+            double maxDuration = configuration.GetDouble(AnalysisKeys.MaxDuration);
 
             // min score for an acceptable event
-            double decibelThreshold = (double)configuration[AnalysisKeys.DecibelThreshold];
+            double decibelThreshold = configuration.GetDouble(AnalysisKeys.DecibelThreshold);
 
             // min score for an acceptable event
-            double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
+            double eventThreshold = configuration.GetDouble(AnalysisKeys.EventThreshold);
 
             if (recording.WavReader.SampleRate != 22050)
             {

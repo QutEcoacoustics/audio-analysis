@@ -176,11 +176,11 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             // Now need to rewrite the config file with new parameter settings
             var configPath = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
 
-            // Convert the dynamic config to IndexCalculateConfig class and merge in the unnecesary parameters.
-            //dynamic configuration = Yaml.Deserialise(configPath);
+            // Convert the Config config to IndexCalculateConfig class and merge in the unnecesary parameters.
+            //Config configuration = Yaml.Deserialise(configPath);
             //IndexCalculateConfig config = IndexCalculateConfig.GetConfig(configuration, false);
 
-            // because of difficulties in dealing with dynamic config files, just edit the text file!!!!!
+            // because of difficulties in dealing with Config config files, just edit the text file!!!!!
             var configLines = File.ReadAllLines(configPath.FullName);
             configLines[configLines.IndexOf(x => x.StartsWith("IndexCalculationDuration: "))] = "IndexCalculationDuration: 15.0";
 
@@ -299,7 +299,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             //indexPropertiesFile.CopyTo(Path.Combine(this.outputDirectory.FullName, "IndexPropertiesConfig.yml"));
 
             // modify config file
-            // because of difficulties in dealing with dynamic config files, just edit the text file!!!!!
+            // because of difficulties in dealing with Config config files, just edit the text file!!!!!
             var configLines = File.ReadAllLines(configPath.FullName);
             configLines[configLines.IndexOf(x => x.StartsWith("RequireDateInFilename:"))] = "RequireDateInFilename: true";
 
@@ -328,7 +328,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             //indexPropertiesFile.CopyTo(Path.Combine(this.outputDirectory.FullName, "IndexPropertiesConfig.yml"));
 
             // modify config file
-            // because of difficulties in dealing with dynamic config files, just edit the text file!!!!!
+            // because of difficulties in dealing with Config config files, just edit the text file!!!!!
             var configLines = File.ReadAllLines(configPath.FullName);
             configLines[configLines.IndexOf(x => x.StartsWith("RequireDateInFilename:"))] = "RequireDateInFilename: true";
 

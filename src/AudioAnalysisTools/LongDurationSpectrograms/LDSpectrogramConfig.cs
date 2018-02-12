@@ -98,7 +98,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         /// <summary>
-        /// READS A YAML CONFIG FILE into a dynamic variable and then transfers all values into the appropriate config class
+        /// READS A YAML CONFIG FILE into a Config variable and then transfers all values into the appropriate config class
         /// </summary>
         /// <returns>
         /// The <see cref="LdSpectrogramConfig"/>.

@@ -10,6 +10,7 @@
 namespace AnalysisPrograms.AnalyseLongRecordings
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Drawing;
     using System.IO;
@@ -17,6 +18,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Tools.Audio;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
@@ -43,7 +45,8 @@ Output  to  directory: {1}
         private static readonly ILog Log = LogManager.GetLogger(nameof(AnalyseLongRecording));
 
         /// <summary>
-        /// 2. Analyses long audio recording (mp3 or wav) as per passed config file. Outputs an events.csv file AND an indices.csv file
+        /// 2. Analyses long audio recording (mp3 or wav) as per passed config file. Outputs an events.csv file AND an
+        /// indices.csv file
         /// Signed off: Michael Towsey 4th December 2012
         /// </summary>
         public static void Execute(Arguments arguments)
@@ -81,18 +84,7 @@ Output  to  directory: {1}
                 // we use .ToString() here to get the original input string - Using fullname always produces an absolute path wrt to pwd... we don't want to prematurely make asusmptions:
                 // e.g. We require a missing absolute path to fail... that wouldn't work with .Name
                 // e.g. We require a relative path to try and resolve, using .FullName would fail the first absolute check inside ResolveConfigFile
-                configFile = ConfigFile.ResolveConfigFile(configFile.ToString(), Directory.GetCurrentDirectory().ToDirectoryInfo());
-            }
-
-            LoggedConsole.WriteLine("# Recording file:      " + sourceAudio.FullName);
-            LoggedConsole.WriteLine("# Configuration file:  " + configFile);
-            LoggedConsole.WriteLine("# Output folder:       " + outputDirectory);
-            LoggedConsole.WriteLine("# Temp File Directory: " + tempFilesDirectory);
-
-            // optionally copy logs / config to make results easier to understand
-            if (arguments.WhenExitCopyConfig || arguments.WhenExitCopyLog)
-            {
-                AppDomain.CurrentDomain.ProcessExit += (sender, args) => { Cleanup(arguments, configFile); };
+                configFile = ConfigFile.Resolve(configFile.ToString(), Directory.GetCurrentDirectory().ToDirectoryInfo());
             }
 
             if (arguments.StartOffset.HasValue ^ arguments.EndOffset.HasValue)
@@ -105,49 +97,67 @@ Output  to  directory: {1}
                 throw new InvalidStartOrEndException("Start offset must be less than end offset.");
             }
 
+            LoggedConsole.WriteLine("# Recording file:      " + sourceAudio.FullName);
+            LoggedConsole.WriteLine("# Configuration file:  " + configFile);
+            LoggedConsole.WriteLine("# Output folder:       " + outputDirectory);
+            LoggedConsole.WriteLine("# Temp File Directory: " + tempFilesDirectory);
+
+            // optionally copy logs / config to make results easier to understand
+            // TODO: remove, see https://github.com/QutEcoacoustics/audio-analysis/issues/133
+            if (arguments.WhenExitCopyConfig || arguments.WhenExitCopyLog)
+            {
+                AppDomain.CurrentDomain.ProcessExit += (sender, args) => { Cleanup(arguments, configFile); };
+            }
+
+            // 2. initialize the analyzer
+            // we're changing the way resolving config files works. Ideally, we'd like to use static type config files
+            // but we can't do that unless we know which type we have to load first! Currently analyzer to load is in 
+            // the config file so we can't know which analyzer we can use. Thus we will change to using the file name,
+            //or an argument to resolve the analyzer to load.
+            // Get analysis name:
+            Log.Warn("The way analysis names are determined has changed. Now either use the CLI option " 
+                + "`AnalysisIdentifier` or name the config file to matach an analysis name");
+
+            IAnalyser2 analyzer = FindAndCheckAnalyser<IAnalyser2>(arguments.AnalysisIdentifier, configFile.Name);
+            
+            
             // 2. get the analysis config
-            dynamic configuration = Yaml.Deserialise(configFile);
+            AnalyzerConfig configuration = analyzer.ParseConfig(configFile);
 
-            SaveBehavior saveIntermediateWavFiles = (SaveBehavior?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? SaveBehavior.Never;
-            bool saveIntermediateDataFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
-            SaveBehavior saveSonogramsImages = (SaveBehavior?)configuration[AnalysisKeys.SaveSonogramImages] ?? SaveBehavior.Never;
 
-            bool filenameDate = (bool?)configuration[AnalysisKeys.RequireDateInFilename] ?? false;
+            SaveBehavior saveIntermediateWavFiles = configuration.SaveIntermediateWavFiles;
+            bool saveIntermediateDataFiles = configuration.SaveIntermediateCsvFiles;
+            SaveBehavior saveSonogramsImages = configuration.SaveSonogramImages;
 
-            string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
+            bool filenameDate = configuration.RequireDateInFilename;
+
+            if (configuration[AnalysisKeys.AnalysisName].IsNotWhitespace())
+            {
+                Log.Warn("Your config file has `AnalysisName` set - this property is deprecated and ignored");
+            }
+
+            // AT 2018-02: changed logic so default index properties loaded if not provided
             FileInfo indicesPropertiesConfig = IndexProperties.Find(configuration, arguments.Config);
-
             if (indicesPropertiesConfig == null || !indicesPropertiesConfig.Exists)
             {
-                Log.Warn("IndexProperties config can not be found! This will result in an exception if it is needed later on.");
+                Log.Warn("IndexProperties config can not be found! Loading a default");
+                indicesPropertiesConfig = ConfigFile.Default<Dictionary<string, IndexProperties>>();
             }
-            else
-            {
-                LoggedConsole.WriteLine("# IndexProperties Cfg: " + indicesPropertiesConfig.FullName);
-            }
-
-            DirectoryInfo[] searchPaths = { configFile.Directory };
-            FileInfo ipConfig = ConfigFile.ResolveConfigFile((string)configuration.IndexPropertiesConfig, searchPaths);
-            LoggedConsole.WriteLine("# Resolved IndexProperties Cfg: " + ipConfig);
+            
+            LoggedConsole.WriteLine("# IndexProperties Cfg: " + indicesPropertiesConfig.FullName);
 
             // min score for an acceptable event
-            double scoreThreshold = 0.2;
-            if ((double?)configuration[AnalysisKeys.EventThreshold] != null)
-            {
-                scoreThreshold = (double)configuration[AnalysisKeys.EventThreshold];
-                Log.Info("Minimum event threshold has been set to " + scoreThreshold);
-            }
-            else
-            {
-                Log.Warn("Minimum event threshold has been set to the default: " + scoreThreshold);
-            }
+            Log.Info("Minimum event threshold has been set to " + configuration.EventThreshold);
+            
 
             FileSegment.FileDateBehavior defaultBehavior = FileSegment.FileDateBehavior.Try;
             if (filenameDate)
             {
                 if (!FileDateHelpers.FileNameContainsDateTime(sourceAudio.Name))
                 {
-                    throw new InvalidFileDateException("When RequireDateInFilename option is set, the filename of the source audio file must contain a valid AND UNAMBIGUOUS date. Such a date was not able to be parsed.");
+                    throw new InvalidFileDateException(
+                        "When RequireDateInFilename option is set, the filename of the source audio file must contain " 
+                        + "a valid AND UNAMBIGUOUS date. Such a date was not able to be parsed.");
                 }
 
                 defaultBehavior = FileSegment.FileDateBehavior.Required;
@@ -173,10 +183,7 @@ Output  to  directory: {1}
             {
                 Log.Debug("Neither start nor end segment offsets provided. Therefore both were ignored.");
             }
-
-            // 5. initialize the analyzer
-            var analyzer = FindAndCheckAnalyser(analysisIdentifier);
-
+            
             // 6. initialize the analysis settings object
             var analysisSettings = analyzer.DefaultSettings;
             analysisSettings.ConfigFile = configFile;
@@ -188,40 +195,42 @@ Output  to  directory: {1}
             analysisSettings.AnalysisChannelSelection = arguments.Channels;
             analysisSettings.AnalysisMixDownToMono = arguments.MixDownToMono;
 
-            // #SEGMENT_DURATION=minutes, SEGMENT_OVERLAP=seconds   FOR EXAMPLE: SEGMENT_DURATION=5  and SEGMENT_OVERLAP=10
-            // set the segment offset i.e. time between consecutive segment starts - the key used for this in config file = "SEGMENT_DURATION"
-            try
+            var segmentDuration = configuration.SegmentDuration?.Seconds();
+            if (!segmentDuration.HasValue)
             {
-                int rawDuration = configuration[AnalysisKeys.SegmentDuration];
-                analysisSettings.AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(rawDuration);
+                segmentDuration = analysisSettings.AnalysisMaxSegmentDuration ?? TimeSpan.FromMinutes(1);
+                Log.Warn(
+                    $"Can't read `{nameof(AnalyzerConfig.SegmentDuration)}` from config file. "
+                    + $"Default value of {segmentDuration} used)");
             }
-            catch (Exception ex)
-            {
-                analysisSettings.AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1.0);
-                Log.Warn("Can't read AnalysisMaxSegmentDuration from config file (exceptions squashed, default value of " + analysisSettings.AnalysisMaxSegmentDuration + " used)");
-            }
+            analysisSettings.AnalysisMaxSegmentDuration = segmentDuration.Value;
 
-            try
+            var segmentOverlap = configuration.SegmentOverlap?.Seconds();
+            if (!segmentOverlap.HasValue)
             {
-                int rawOverlap = configuration[AnalysisKeys.SegmentOverlap];
-                analysisSettings.SegmentOverlapDuration = TimeSpan.FromSeconds(rawOverlap);
+                segmentOverlap = analysisSettings.SegmentOverlapDuration;
+                Log.Warn(
+                    $"Can't read `{nameof(AnalyzerConfig.SegmentOverlap)}` from config file. "
+                    + $"Default value of {segmentOverlap} used)");
             }
-            catch (Exception ex)
-            {
-                analysisSettings.SegmentOverlapDuration = TimeSpan.Zero;
-                Log.Warn("Can't read SegmentOverlapDuration from config file (exceptions squashed, default value of " + analysisSettings.SegmentOverlapDuration + " used)");
-            }
+            analysisSettings.SegmentOverlapDuration = segmentOverlap.Value;
+
 
             // set target sample rate
-            try
+            var resampleRate = configuration.ResampleRate;
+            if (!resampleRate.HasValue)
             {
-                int resampleRate = configuration[AnalysisKeys.ResampleRate];
-                analysisSettings.AnalysisTargetSampleRate = resampleRate;
+                resampleRate = analysisSettings.AnalysisTargetSampleRate ?? AppConfigHelper.DefaultTargetSampleRate;
+                Log.Warn(
+                    $"Can't read {nameof(configuration.ResampleRate)} from config file. "
+                    + $"Default value of {resampleRate} used)");
             }
-            catch (Exception ex)
-            {
-                Log.Warn("Can't read AnalysisTargetSampleRate from config file (exceptions squashed, default value  of " + analysisSettings.AnalysisTargetSampleRate + " used)");
-            }
+            analysisSettings.AnalysisTargetSampleRate = resampleRate;
+
+            Log.Info(
+                $"{nameof(configuration.SegmentDuration)}={segmentDuration}, "
+                + $"{nameof(configuration.SegmentOverlap)}={segmentOverlap}, "
+                + $"{nameof(configuration.ResampleRate)}={resampleRate}");
 
             // 7. ####################################### DO THE ANALYSIS ###################################
             LoggedConsole.WriteLine("START ANALYSIS ...");
@@ -272,7 +281,12 @@ Output  to  directory: {1}
 #endif
             var duration = fileSegment.TargetFileDuration.Value;
 
-            ResultsTools.ConvertEventsToIndices(analyzer, mergedEventResults, ref mergedIndicesResults, duration, scoreThreshold);
+            ResultsTools.ConvertEventsToIndices(
+                analyzer,
+                mergedEventResults,
+                ref mergedIndicesResults,
+                duration,
+                configuration.EventThreshold);
             int eventsCount = mergedEventResults?.Length ?? 0;
             int numberOfRowsOfIndices = mergedIndicesResults?.Length ?? 0;
 
@@ -350,23 +364,44 @@ Output  to  directory: {1}
             LoggedConsole.WriteLine(FinishedMessage, sourceAudio.Name, instanceOutputDirectory.FullName);
         }
 
-        public static IAnalyser2 FindAndCheckAnalyser(string analysisIdentifier)
+        public static T FindAndCheckAnalyser<T>(string analysisIdentifier, string partialIdentifier)
+            where T : class, IAnalyser2
         {
-            var analysers = AnalysisCoordinator.GetAnalyzers(typeof(MainEntry).Assembly).ToList();
-            IAnalyser2 analyser = analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
+            string searchName;
+            if (analysisIdentifier.IsNotWhitespace())
+            {
+                searchName = analysisIdentifier;
+                Log.Debug($"Searching for exact analysis identifier name {searchName} (from a CLI option)");
+            }
+            else
+            {
+                // split name (e.g. "Towsey.Acoustics.Zooming.yml") on periods
+                var fragments = partialIdentifier.Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
+
+                Contract.Requires<CommandLineArgumentException>(
+                    fragments.Length >= 2,
+                    $"We need at least two segments to search for an analyzer, supplied name `{partialIdentifier}` is insufficient.");
+
+                // assume indentifier (e.g. "Towsey.Acoustic") in first two segments
+                searchName = fragments[0] + "." + fragments[1];
+                Log.Debug($"Searching for partial analysis identifier name. `{searchName}` extracted from `{partialIdentifier}`");
+            }
+
+            var analysers = AnalysisCoordinator.GetAnalyzers<T>(typeof(MainEntry).Assembly).ToList();
+            T analyser = analysers.FirstOrDefault(a => a.Identifier == searchName);
             if (analyser == null)
             {
-                LoggedConsole.WriteLine("###################################################\n");
-                LoggedConsole.WriteLine("Analysis failed. UNKNOWN Analyser: <{0}>", analysisIdentifier);
-                LoggedConsole.WriteLine("Available analysers are:");
-                foreach (IAnalyser2 anal in analysers)
-                {
-                    LoggedConsole.WriteLine("\t  " + anal.Identifier);
-                }
+                var error = $@"###
 
-                LoggedConsole.WriteLine("###################################################\n");
+We can not determine what analysis you want to run. We tried to search for ""{searchName}""
 
-                throw new Exception("Cannot find a valid IAnalyser2");
+###
+";
+                LoggedConsole.WriteError(error);
+                var knownAnalyzers = analysers.Aggregate(string.Empty, (a, i) => a + $"\t {i.Identifier}\n");
+                LoggedConsole.WriteLine("Available analysers are:\n" + knownAnalyzers);
+
+                throw new CommandLineArgumentException("Cannot find a valid IAnalyser2");
             }
 
             return analyser;
@@ -384,7 +419,7 @@ Output  to  directory: {1}
 
             if (args.WhenExitCopyLog)
             {
-                var logDirectory = ConfigFile.LogFolder;
+                var logDirectory = LoggedConsole.LogFolder;
                 var logFile = Path.Combine(logDirectory, "log.txt");
 
                 File.Copy(logFile, Path.Combine(args.Output.FullName, "log.txt"), true);

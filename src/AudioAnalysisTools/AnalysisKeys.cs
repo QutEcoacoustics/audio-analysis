@@ -123,6 +123,7 @@ namespace AudioAnalysisTools
         public const string KeyVocalGap = "VocalGap";
         public const string KeyMinVocalDuration = "MinVocalDuraton";
         public const string KeyDrawSonograms = "DrawSonograms";
+        public const string KeyOctaveFreqScale = "OctaveFreqScale";
 
         // Other config keys
         public const string KeyIndexPropertiesConfig = "IndexPropertiesConfig";

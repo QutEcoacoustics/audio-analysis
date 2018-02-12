@@ -9,6 +9,7 @@ namespace AnalysisPrograms.EventStatistics
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
     using AcousticWorkbench.Orchestration;
@@ -39,6 +40,11 @@ namespace AnalysisPrograms.EventStatistics
             // bounds defined by a fixed sample rate. Thus, do not normalize sample rate.
             AnalysisTargetSampleRate = null,
         };
+
+        public override AnalyzerConfig ParseConfig(FileInfo file)
+        {
+            return ConfigFile.Deserialize<EventStatisticsConfiguration>(file);
+        }
 
         public override void BeforeAnalyze(AnalysisSettings analysisSettings)
         {

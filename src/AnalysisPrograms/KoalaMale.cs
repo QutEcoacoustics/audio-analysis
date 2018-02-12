@@ -393,7 +393,7 @@ namespace AnalysisPrograms
             FileInfo audioFile = segmentSettings.SegmentAudioFile;
 
             /* ###################################################################### */
-            Dictionary<string, string> configuration = analysisSettings.Configuration;
+            Dictionary<string, string> configuration = analysisSettings.Configuration.ToDictionary();
             KoalaMaleResults results = Analysis(audioFile, configuration, segmentSettings.SegmentStartOffset);
 
             /* ###################################################################### */

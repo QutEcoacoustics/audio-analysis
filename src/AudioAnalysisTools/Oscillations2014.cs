@@ -15,6 +15,8 @@ namespace AudioAnalysisTools
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
+
     using DSP;
     using MathNet.Numerics.LinearAlgebra.Double;
     using StandardSpectrograms;
@@ -140,12 +142,12 @@ namespace AudioAnalysisTools
 
         public static Dictionary<string, string> GetConfigDictionary(FileInfo configFile, bool writeParameters)
         {
-            dynamic configuration = Yaml.Deserialise(configFile);
+            Config configuration = ConfigFile.Deserialize(configFile);
 
             // var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
-            var configDict = new Dictionary<string, string>(dictionary: (Dictionary<string, string>)configuration)
+            var configDict = new Dictionary<string, string>()
             {
-                // below three lines are examples of retrieving info from dynamic config
+                // below three lines are examples of retrieving info from Config config
                 // string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
                 // bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
                 // scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
@@ -153,10 +155,10 @@ namespace AudioAnalysisTools
 
                 // Resample rate must be 2 X the desired Nyquist.
                 // WARNING: Default used to be the SR of the recording. NOW DEFAULT = 22050.
-                [AnalysisKeys.ResampleRate] = (string)configuration[AnalysisKeys.ResampleRate] ?? "22050",
+                [AnalysisKeys.ResampleRate] = configuration[AnalysisKeys.ResampleRate] ?? "22050",
 
-                [AnalysisKeys.AddAxes] = ((bool?)configuration[AnalysisKeys.AddAxes] ?? true).ToString(),
-                [AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true,
+                [AnalysisKeys.AddAxes] = (configuration.GetBoolOrNull(AnalysisKeys.AddAxes) ?? true).ToString(),
+                [AnalysisKeys.AddSegmentationTrack] = (configuration.GetBoolOrNull(AnalysisKeys.AddSegmentationTrack) ?? true).ToString(),
             };
 
             configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";

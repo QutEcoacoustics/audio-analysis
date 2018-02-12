@@ -1,6 +1,6 @@
 ---
 AnalysisName: Towsey.LSKiwi2
-#SegmentDuration: minutes,   SegmentOverlap=seconds        
+#SegmentDuration: units=seconds,   SegmentOverlap=seconds        
 SegmentDuration: 5
 SegmentOverlap: 10
 FrameLength: 2048

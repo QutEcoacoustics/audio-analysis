@@ -22,6 +22,7 @@ namespace Acoustics.Test.Shared
         private const string TestObjectYaml = @"---
 TestFile: C:\\Temp\\test.tmp
 SomeProperty: Hello world
+PrivateSetter: 123456
 ...";
 
         private const string WrapperDocument = @"
@@ -170,31 +171,18 @@ EventThreshold: 0.2
         }
 
         [TestMethod]
-        public void OurDefaultDeserializerSupportsMergingDocumentsDynamic()
+        public void SerializerCanDecodePrivateSetters()
         {
-            dynamic wrapper = Yaml.Deserialise(this.testDocument);
+            YamlTestDataClass testObject;
+            using (var stream = new StringReader(TestObjectYaml))
+            {
+                testObject = Yaml.Deserialize<YamlTestDataClass>(stream);
+            }
 
-            Assert.AreEqual(this.wrapperTestCase.InfoA.SomeProperty, (string)wrapper.InfoA.SomeProperty);
-            Assert.AreEqual(this.wrapperTestCase.InfoB.SomeProperty, (string)wrapper.InfoB.SomeProperty);
-            Assert.AreEqual(this.wrapperTestCase.InfoC.SomeProperty, (string)wrapper.InfoC.SomeProperty);
-            Assert.AreEqual(this.wrapperTestCase.InfoA.TestFile, (string)wrapper.InfoA.TestFile);
-            Assert.AreEqual(this.wrapperTestCase.InfoB.TestFile, (string)wrapper.InfoB.TestFile);
-            Assert.AreEqual(this.wrapperTestCase.InfoC.TestFile, (string)wrapper.InfoC.TestFile);
-        }
-
-        [TestMethod]
-        public void OurDefaultDeserializerSupportDynamic()
-        {
-            File.WriteAllText(this.testDocument.FullName, ConfigDocument);
-
-            dynamic config = Yaml.Deserialise(this.testDocument);
-
-
-            Assert.AreEqual(60.0, (double)config.IndexCalculationDuration);
-            Assert.AreEqual(1000, (int)config.LowFreqBound);
-            Assert.AreEqual(false, (bool)config.SaveIntermediateWavFiles);
-            Assert.AreEqual("./IndexPropertiesConfig.yml", (string)config.IndexPropertiesConfig);
-            Assert.AreEqual("Towsey.Acoustic", (string)config.AnalysisName);
+            Assert.AreEqual("C:\\Temp\\test.tmp", testObject.TestFile);
+            Assert.AreEqual("Hello world", testObject.SomeProperty);
+            Assert.IsTrue(testObject.PrivateSetter.HasValue);
+            Assert.AreEqual(123456, testObject.PrivateSetter.Value);
         }
 
         [TestCleanup]
@@ -210,51 +198,13 @@ EventThreshold: 0.2
             File.WriteAllText(this.testDocument.FullName, WrapperDocument);
         }
 
-//        [TestMethod]
-//        [ExpectedException(typeof(InvalidCastException))]
-//        public void TestYamlFileInfoDeserializerFails()
-//        {
-//            var stringStream = new StringReader(TestObjectYaml);
-//
-//            using (var stream = stringStream)
-//            {
-//                var deserializer = new Deserializer();
-//                deserializer.Deserialize<YamlTestDataClass>(stream);
-//            }
-//        }
-//
-//        [TestMethod]
-//        [ExpectedException(typeof(Exception), AllowDerivedTypes = true)]
-//        public void TestYamlFileInfoSerializerFails()
-//        {
-//            using (var stream = new StringWriter())
-//            {
-//                var serializer = new Serializer(SerializationOptions.EmitDefaults);
-//                serializer.Serialize(stream, TestObject);
-//            }
-//        }
-//
-//        [TestMethod]
-//        public void TestYamlFileInfoSerializerWithResolver()
-//        {
-//            var fileInfoResolver = new YamlFileInfoConverter();
-//
-//            // this functionality is blocked by the yaml library not properly traversing object graphs
-//            // see: https://github.com/aaubry/YamlDotNet/issues/103.
-//            Assert.Inconclusive();
-//            using (var stream = new StringWriter())
-//            {
-//                var serialiser = new Serializer(SerializationOptions.EmitDefaults);
-//                serialiser.RegisterTypeConverter(fileInfoResolver);
-//                serialiser.Serialize(stream, TestObject);
-//            }
-//        }
-
         public class YamlTestDataClass
         {
             public string SomeProperty { get; set; }
 
             public string TestFile { get; set; }
+
+            public int? PrivateSetter { get; }
         }
 
         public class YamlTestWrapperClass

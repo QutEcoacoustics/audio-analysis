@@ -13,6 +13,8 @@ namespace AnalysisBase
     using System.Collections.Generic;
     using System.IO;
 
+    using Acoustics.Shared.ConfigFile;
+
     using ResultBases;
 
     /// <summary>
@@ -36,6 +38,12 @@ namespace AnalysisBase
             {
                 return new AnalysisSettings();
             }
+        }
+
+        /// <inheritdoc cref="IAnalyser2.ParseConfig"/>
+        public virtual AnalyzerConfig ParseConfig(FileInfo file)
+        {
+            return ConfigFile.Deserialize<AnalyzerConfig>(file);
         }
 
         /// <inheritdoc/>

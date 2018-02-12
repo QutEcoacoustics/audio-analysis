@@ -15,6 +15,8 @@ namespace AnalysisPrograms.Recognizers
     using System.IO;
     using System.Linq;
     using System.Reflection;
+
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
@@ -72,7 +74,7 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording audioRecording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             const double minAmplitudeThreshold = 0.1;
             const int percentile = 5;
@@ -100,7 +102,7 @@ namespace AnalysisPrograms.Recognizers
             //string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             // min score for an acceptable event
-            double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
+            double eventThreshold = (double)configuration.GetDoubleOrNull(AnalysisKeys.EventThreshold);
 
             // get samples
             var samples = audioRecording.WavReader.Samples;
@@ -338,7 +340,7 @@ namespace AnalysisPrograms.Recognizers
             var config = new SonogramConfig
             {
                 NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = (double?)configuration[AnalysisKeys.NoiseBgThreshold] ?? 0.0,
+                NoiseReductionParameter = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 0.0,
             };
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
 

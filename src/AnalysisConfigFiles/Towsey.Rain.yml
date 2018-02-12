@@ -1,7 +1,7 @@
 ---
 AnalysisName: Towsey.Rain
-#SegmentDuration: minutes,   SegmentOverlap=seconds        
-SegmentDuration: 1
+#SegmentDuration: units=seconds,   SegmentOverlap=seconds        
+SegmentDuration: 60
 SegmentOverlap: 0
 #FRAME LENGTH in samples and Frame Overlap as fraction 
 FrameLength: 128

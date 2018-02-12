@@ -8,8 +8,8 @@ MinHz:
 MaxHz: 
 
 # BELOW PARAMETERS FROM ORIGINAl RECOGNISER
-#SegmentDuration: minutes,   SegmentOverlap=seconds        
-SegmentDuration: 1
+#SegmentDuration: units=seconds,   SegmentOverlap=seconds        
+SegmentDuration: 60
 SegmentOverlap: 0
 MinPeriod: 0.01
 MaxPeriod: 0.04

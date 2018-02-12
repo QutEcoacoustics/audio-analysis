@@ -14,6 +14,8 @@ namespace AnalysisPrograms.Recognizers
     using System.IO;
     using System.Reflection;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
+
     using AnalysisBase;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools;
@@ -70,14 +72,14 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             var recognizerConfig = new LitoriaNasutaConfig();
             recognizerConfig.ReadConfigFile(configuration);
 
             // common properties
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            string speciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
+            string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             // BETTER TO SET THESE. IGNORE USER!
             // This framesize is large because the oscillation we wish to detect is due to repeated croaks
@@ -281,35 +283,35 @@ namespace AnalysisPrograms.Recognizers
         public double MaxDuration { get; set; }
         public double EventThreshold { get; set; }
 
-        internal void ReadConfigFile(dynamic configuration)
+        internal void ReadConfigFile(Config configuration)
         {
             // common properties
-            this.AnalysisName = (string)configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
-            this.SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
-            this.AbbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            this.AnalysisName = configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
+            this.SpeciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
+            this.AbbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
             // frequency band of the call
-            this.MinHz = (int)configuration[AnalysisKeys.MinHz];
-            this.MaxHz = (int)configuration[AnalysisKeys.MaxHz];
-            this.DominantFreq = (int)configuration[AnalysisKeys.DominantFrequency];
-            this.SubdominantFreq = (int)configuration["SubDominantFrequency"];
+            this.MinHz = configuration.GetInt(AnalysisKeys.MinHz);
+            this.MaxHz = configuration.GetInt(AnalysisKeys.MaxHz);
+            this.DominantFreq = configuration.GetInt(AnalysisKeys.DominantFrequency);
+            this.SubdominantFreq = configuration.GetInt("SubDominantFrequency");
 
             // duration of DCT in seconds
-            this.DctDuration = (double)configuration[AnalysisKeys.DctDuration];
+            this.DctDuration = configuration.GetDouble(AnalysisKeys.DctDuration);
             // minimum acceptable value of a DCT coefficient
-            this.DctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
+            this.DctThreshold = configuration.GetDouble(AnalysisKeys.DctThreshold);
 
-            this.MinPeriod = configuration["MinInterval"];
-            this.MaxPeriod = configuration["MaxInterval"];
+            this.MinPeriod = configuration.GetDouble("MinInterval");
+            this.MaxPeriod = configuration.GetDouble("MaxInterval");
 
             // min and max duration of a sequence of croaks or a croak train
-            this.MinDuration = (double)configuration[AnalysisKeys.MinDuration];
-            this.MaxDuration = (double)configuration[AnalysisKeys.MaxDuration];
+            this.MinDuration = configuration.GetDouble(AnalysisKeys.MinDuration);
+            this.MaxDuration = configuration.GetDouble(AnalysisKeys.MaxDuration);
             // min and max duration of a single croak event in seconds
-            this.MinCroakDuration = (double)configuration["MinCroakDuration"];
-            this.MaxCroakDuration = (double)configuration["MaxCroakDuration"];
+            this.MinCroakDuration = configuration.GetDouble("MinCroakDuration");
+            this.MaxCroakDuration = configuration.GetDouble("MaxCroakDuration");
 
             // min score for an acceptable event
-            this.EventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
+            this.EventThreshold = configuration.GetDouble(AnalysisKeys.EventThreshold);
         }
 
     } // Config class

@@ -12,7 +12,6 @@ namespace System
 {
     using System;
     using Collections.Generic;
-    using Dynamic;
     using Linq.Expressions;
     using Reflection;
 
@@ -147,6 +146,18 @@ namespace System
 
             return result;
         }
+        public static string[] GetGetterNames<TBase>()
+        {
+            Type thisType = typeof(TBase);
+
+            var props = thisType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var result = new string[props.Length];
+
+            props.ForEach((p,i) => result[i] = p.Name);
+            
+            return result;
+        }
+
         public static Dictionary<string, Action<TBase, TType>> GetSetters<TBase, TType>()
         {
             Type thisType = typeof(TBase);

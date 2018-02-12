@@ -43,7 +43,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             LdSpectrogramConfig ldsConfig = common.SpectrogramZoomingConfig.LdSpectrogramConfig;
             var distributions = common.IndexDistributions;
             var indexGenerationData = common.IndexGenerationData;
-            var indexProperties = common.IndexProperties;
+            var indexProperties = zoomConfig.IndexProperties;
 
             string fileStem = common.OriginalBasename;
 

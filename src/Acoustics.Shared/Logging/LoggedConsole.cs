@@ -5,6 +5,10 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
+    using System.IO;
+
+    using Acoustics.Shared;
+
     using DotSpinners;
     using log4net;
     using Text;
@@ -16,7 +20,9 @@ namespace System
     /// The logging appenders filter out messages for this class and print them in a clean format.
     /// </summary>
     public static class LoggedConsole
-    {
+    {       
+        public static string LogFolder { get; } = Path.Combine(AppConfigHelper.ExecutingAssemblyDirectory, "Logs");
+
         public static readonly ILog Log = LogManager.GetLogger("CleanLogger");
         private static readonly TimeSpan PromptTimeout = TimeSpan.FromSeconds(60);
 

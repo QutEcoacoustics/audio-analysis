@@ -17,6 +17,7 @@ namespace AnalysisPrograms.Recognizers
     using System.Reflection;
     using System.Text;
 
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools.Wav;
 
     using AnalysisBase;
@@ -70,7 +71,7 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
 
             // WARNING: TODO TODO TODO = this method simply duplicates the CANETOAD analyser!!!!!!!!!!!!!!!!!!!!! ###################
@@ -78,37 +79,37 @@ namespace AnalysisPrograms.Recognizers
             string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
-            int minHz = (int)configuration[AnalysisKeys.MinHz];
-            int maxHz = (int)configuration[AnalysisKeys.MaxHz];
+            int minHz = configuration.GetInt(AnalysisKeys.MinHz);
+            int maxHz = configuration.GetInt(AnalysisKeys.MaxHz);
 
             // BETTER TO CALCULATE THIS. IGNORE USER!
             // double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);
 
             // duration of DCT in seconds
-            double dctDuration = (double)configuration[AnalysisKeys.DctDuration];
+            double dctDuration = configuration.GetDouble(AnalysisKeys.DctDuration);
 
             // minimum acceptable value of a DCT coefficient
-            double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
+            double dctThreshold = configuration.GetDouble(AnalysisKeys.DctThreshold);
 
             // ignore oscillations below this threshold freq
-            int minOscilFreq = (int)configuration[AnalysisKeys.MinOscilFreq];
+            int minOscilFreq = configuration.GetInt(AnalysisKeys.MinOscilFreq);
 
             // ignore oscillations above this threshold freq
-            int maxOscilFreq = (int)configuration[AnalysisKeys.MaxOscilFreq];
+            int maxOscilFreq = configuration.GetInt(AnalysisKeys.MaxOscilFreq);
 
             // min duration of event in seconds
-            double minDuration = (double)configuration[AnalysisKeys.MinDuration];
+            double minDuration = configuration.GetDouble(AnalysisKeys.MinDuration);
 
             // max duration of event in seconds
-            double maxDuration = (double)configuration[AnalysisKeys.MaxDuration];
+            double maxDuration = configuration.GetDouble(AnalysisKeys.MaxDuration);
+
+            // min score for an acceptable event
+            double eventThreshold = configuration.GetDouble(AnalysisKeys.EventThreshold);
 
             // The default was 512 for Canetoad.
             // Framesize = 128 seems to work for Littoria fallax.
             // frame size
-            int frameSize = (int)configuration[AnalysisKeys.KeyFrameSize];
-
-            // min score for an acceptable event
-            double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
+            int frameSize = configuration.GetInt(AnalysisKeys.KeyFrameSize);
 
             if (recording.WavReader.SampleRate != 22050)
             {

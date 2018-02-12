@@ -35,6 +35,28 @@ namespace AnalysisPrograms.Recognizers.Base
 
     public abstract class RecognizerBase : AbstractStrongAnalyser, IEventRecognizer
     {
+        public class RecognizerConfig : AnalyzerConfig
+        {
+            private string highResolutionIndicesConfig;
+
+            public string HighResolutionIndicesConfig
+            {
+                get
+                {
+                    return this.highResolutionIndicesConfig;
+                }
+                set
+                {
+                     
+                    this.highResolutionIndicesConfig = value;
+                    var file = ConfigFile.Resolve(this.highResolutionIndicesConfig);
+                    var config = ConfigFile.Deserialize<Acoustic.AcousticIndicesConfig>(file);
+                    this.HighResolutionIndices = config;
+                }
+            }
+
+            public Acoustic.AcousticIndicesConfig HighResolutionIndices { get; private set; }
+        }
 
         public abstract string Author { get; }
 
@@ -53,21 +75,32 @@ namespace AnalysisPrograms.Recognizers.Base
             AnalysisTargetSampleRate = AppConfigHelper.DefaultTargetSampleRate,
         };
 
+        public override AnalyzerConfig ParseConfig(FileInfo file)
+        {
+            return ConfigFile.Deserialize<RecognizerConfig>(file);
+        }
+
         public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
             var recording = new AudioRecording(segmentSettings.SegmentAudioFile.FullName);
 
             // get indices configuration - extracted in BeforeAnalyze
-            var acousticIndicesParsedConfiguration = (Acoustic.AcousticIndicesParsedConfiguration)analysisSettings.AnalysisAnalyzerSpecificConfiguration;
+            var acousticIndicesConfig = (RecognizerConfig)analysisSettings.Configuration;
 
             // get a lazily calculated indices function - if you never get the lazy value, the indices will never be calculated
-            var lazyIndices = this.GetLazyIndices(recording, analysisSettings, segmentSettings, acousticIndicesParsedConfiguration);
+            var lazyIndices = this.GetLazyIndices(
+                recording,
+                analysisSettings,
+                segmentSettings,
+                acousticIndicesConfig.HighResolutionIndices);
 
             // determine imageWidth for output images
-            int imageWidth = (int)Math.Floor(recording.Duration.TotalSeconds / acousticIndicesParsedConfiguration.IndexCalculationDuration.TotalSeconds);
+            int imageWidth = (int)Math.Floor(
+                recording.Duration.TotalSeconds
+                / acousticIndicesConfig.HighResolutionIndices.IndexCalculationDuration);
 
             // execute actual analysis
-            dynamic configuration = analysisSettings.Configuration;
+            Config configuration = analysisSettings.Configuration;
             RecognizerResults results = this.Recognize(
                 recording,
                 analysisSettings.Configuration,
@@ -94,7 +127,10 @@ namespace AnalysisPrograms.Recognizers.Base
             // IF they aren't used, empty values are returned.
             if (lazyIndices.IsValueCreated)
             {
-                this.SummarizeHighResolutionIndices(analysisResults, lazyIndices.Value, acousticIndicesParsedConfiguration);
+                this.SummarizeHighResolutionIndices(
+                    analysisResults,
+                    lazyIndices.Value,
+                    acousticIndicesConfig.HighResolutionIndices);
             }
 
             // write intermediate output if necessary
@@ -137,7 +173,7 @@ namespace AnalysisPrograms.Recognizers.Base
                         recording.BaseName,
                         results.ScoreTrack,
                         lazyIndices.Value,
-                        acousticIndicesParsedConfiguration);
+                        acousticIndicesConfig.HighResolutionIndices);
                 }
             }
 
@@ -149,16 +185,15 @@ namespace AnalysisPrograms.Recognizers.Base
             string fileStem,
             Image scoreTrack,
             IndexCalculateResult[] indexResults,
-            Acoustic.AcousticIndicesParsedConfiguration acousticIndicesParsedConfiguration)
+            Acoustic.AcousticIndicesConfig acousticIndicesConfig)
         {
-            dynamic highResolutionConfiguration = acousticIndicesParsedConfiguration.Configuration;
             var dictionaryOfSpectra = indexResults.Select(icr => icr.SpectralIndexValues).ToArray().ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.Rotate90ClockWise);
 
-            FileInfo ipConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile;
-            double hiResScale = acousticIndicesParsedConfiguration.IndexCalculationDuration.TotalSeconds;
-            TimeSpan hiResTimeScale = TimeSpan.FromSeconds((double)hiResScale);
+            FileInfo ipConfig = acousticIndicesConfig.IndexPropertiesConfig.ToFileInfo();
+            double hiResScale = acousticIndicesConfig.IndexCalculationDuration;
+            TimeSpan hiResTimeScale = TimeSpan.FromSeconds(hiResScale);
 
-            FileInfo spectrogramConfig = ConfigFile.ResolveConfigFile((string)highResolutionConfiguration.SpectrogramConfig);
+            FileInfo spectrogramConfig = ConfigFile.Resolve(acousticIndicesConfig["SpectrogramConfig"]);
 
             // Assemble arguments for drawing the GRAY-SCALE and RIDGE SPECTROGRAMS
             var ldfcSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
@@ -167,7 +202,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 InputDataDirectory = null,
                 OutputDirectory = outputDirectory.Combine("SpectrogramImages"),
                 SpectrogramConfigPath = spectrogramConfig,
-                IndexPropertiesConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile,
+                IndexPropertiesConfig = ipConfig,
                 ColourMap1 = "BGN-DMN-EVN",
                 ColourMap2 = "R3D-RVT-SPT", //R3D replaces PHN as new derived index
                 TemporalScale = hiResTimeScale,
@@ -179,7 +214,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 ldfcSpectrogramArguments.OutputDirectory.Create();
             }
 
-            bool saveRidgeSpectrograms = (bool?)highResolutionConfiguration["SaveRidgeSpectrograms"] ?? false;
+            bool saveRidgeSpectrograms = acousticIndicesConfig.GetBoolOrNull("SaveRidgeSpectrograms") ?? false;
             if (saveRidgeSpectrograms)
             {
                 // 1: DRAW the coloured ridge spectrograms
@@ -199,7 +234,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
             // 2. DRAW the aggregated GREY-SCALE SPECTROGRAMS of SPECTRAL INDICES
             Image opImage;
-            bool saveGrayScaleSpectrograms = (bool?)highResolutionConfiguration["SaveGrayScaleSpectrograms"] ?? false;
+            bool saveGrayScaleSpectrograms = acousticIndicesConfig.GetBoolOrNull("SaveGrayScaleSpectrograms") ?? false;
             if (saveGrayScaleSpectrograms)
             {
                 opImage = DrawLongDurationSpectrograms.DrawGrayScaleSpectrograms(ldfcSpectrogramArguments, fileStem, hiResTimeScale, dictionaryOfSpectra);
@@ -208,7 +243,7 @@ namespace AnalysisPrograms.Recognizers.Base
             }
 
             // 3. DRAW False-colour Spectrograms
-            bool saveTwoMapsSpectrograms = (bool?)highResolutionConfiguration["SaveTwoMapsSpectrograms"] ?? false;
+            bool saveTwoMapsSpectrograms = acousticIndicesConfig.GetBoolOrNull("SaveTwoMapsSpectrograms") ?? false;
             if (saveTwoMapsSpectrograms)
             {
                 opImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(ldfcSpectrogramArguments, fileStem, dictionaryOfSpectra);
@@ -229,14 +264,13 @@ namespace AnalysisPrograms.Recognizers.Base
         private void SummarizeHighResolutionIndices(
             AnalysisResult2 analysisResults,
             IndexCalculateResult[] indexResults,
-            Acoustic.AcousticIndicesParsedConfiguration highResolutionParsedConfiguration)
+            Acoustic.AcousticIndicesConfig highResolutionParsedConfiguration)
         {
-            dynamic highResolutionConfig = highResolutionParsedConfiguration.Configuration;
 
             // NOW COMPRESS THE HI-RESOLUTION SPECTRAL INDICES TO LOW RES
-            double lowResolution = (double?)highResolutionConfig["LowResolution"] ?? 60.0;
+            double lowResolution = highResolutionParsedConfiguration.GetDoubleOrNull("LowResolution") ?? 60.0;
             TimeSpan imageScale = TimeSpan.FromSeconds(lowResolution);
-            TimeSpan dataScale = highResolutionParsedConfiguration.IndexCalculationDuration;
+            TimeSpan dataScale = highResolutionParsedConfiguration.IndexCalculationDuration.Seconds();
 
             var dictionaryOfSpectra = indexResults.Select(icr => icr.SpectralIndexValues).ToArray().ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.Rotate90ClockWise);
 
@@ -250,7 +284,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
             // Place LOW RESOLUTION SPECTRAL INDICES INTO analysisResults before returning.
             //int windowLength = (int?)highResolutionConfig[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
-            var indexProperties = IndexProperties.GetIndexProperties(highResolutionParsedConfiguration.IndexPropertiesFile);
+            var indexProperties = highResolutionParsedConfiguration.IndexProperties;
             SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);
 
             // Init a new spectral indices class and populate it with spectral indices
@@ -308,7 +342,7 @@ namespace AnalysisPrograms.Recognizers.Base
         }
 
         /// <inheritdoc />
-        public abstract RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth);
+        public abstract RecognizerResults Recognize(AudioRecording audioRecording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth);
 
         protected virtual Image DrawSonogram(
             BaseSonogram sonogram,
@@ -361,22 +395,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// <param name="analysisSettings"></param>
         public override void BeforeAnalyze(AnalysisSettings analysisSettings)
         {
-            var configuration = analysisSettings.Configuration;
-
-            FileInfo indicesConfigFile = ConfigFile.ResolveConfigFile(
-                (string)configuration.HighResolutionIndicesConfig,
-                analysisSettings.ConfigFile.Directory
-            );
-
-            var indicesConfiguration = Yaml.Deserialise(indicesConfigFile);
-
-            // extract settings for generating indices
-            var acousticConfiguration = Acoustic.AcousticIndicesParsedConfiguration.FromConfigFile(
-                indicesConfiguration,
-                indicesConfigFile,
-                analysisSettings.AnalysisMaxSegmentDuration.Value);
-
-            analysisSettings.AnalysisAnalyzerSpecificConfiguration = acousticConfiguration;
+            // noop
         }
 
         public override void SummariseResults(
@@ -397,12 +416,9 @@ namespace AnalysisPrograms.Recognizers.Base
             AudioRecording recording,
             AnalysisSettings analysisSettings,
             SegmentSettings<T> segmentSettings,
-            Acoustic.AcousticIndicesParsedConfiguration acousticConfiguration)
+            Acoustic.AcousticIndicesConfig acousticConfiguration)
         {
-            // Convert the dynamic config to IndexCalculateConfig class and merge in the unnecesary parameters.
-            IndexCalculateConfig config = IndexCalculateConfig.GetConfig(analysisSettings.Configuration, false);
-            config.IndexCalculationDuration = acousticConfiguration.IndexCalculationDuration;
-            config.BgNoiseBuffer = acousticConfiguration.BgNoiseNeighborhood;
+            // Convert the Config config to IndexCalculateConfig class and merge in the unnecesary parameters.
 
             IndexCalculateResult[] Callback()
             {
@@ -410,11 +426,10 @@ namespace AnalysisPrograms.Recognizers.Base
                     recording,
                     segmentSettings.SegmentStartOffset,
                     segmentSettings.AnalysisIdealSegmentDuration,
-                    acousticConfiguration.IndexCalculationDuration,
-                    acousticConfiguration.BgNoiseNeighborhood,
-                    acousticConfiguration.IndexPropertiesFile,
+                    acousticConfiguration.IndexCalculationDuration.Seconds(),
+                    acousticConfiguration.IndexProperties,
                     segmentSettings.Segment.SourceMetadata.SampleRate,
-                    config);
+                    acousticConfiguration);
 
                 return subsegmentResults;
             }

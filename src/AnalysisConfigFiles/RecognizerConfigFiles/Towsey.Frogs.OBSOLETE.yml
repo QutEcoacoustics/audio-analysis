@@ -6,8 +6,8 @@ DisplayColumns: Frog
 # FROG_DATA_FILE=FrogDataAndCompilationFile.csv
 FROG_DATA_FILE: CompilationOf31FrogSpeciesForCurramoreSE-QLD.csv
 
-#SegmentDuration: minutes,   SegmentOverlap=seconds        
-SegmentDuration: 1
+#SegmentDuration: units=seconds,   SegmentOverlap=seconds        
+SegmentDuration: 60
 SegmentOverlap: 0
 MinPeriod: 0.01
 MaxPeriod: 0.04

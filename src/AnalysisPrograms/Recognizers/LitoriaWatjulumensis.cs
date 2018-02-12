@@ -85,7 +85,7 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             var recognizerConfig = new LitoriaWatjulumConfig();
             recognizerConfig.ReadConfigFile(configuration);
@@ -401,17 +401,17 @@ namespace AnalysisPrograms.Recognizers
         public double MaxDurationOfTink { get; set; }
         public string[] ProfileNames { get; set; }
 
-        internal void ReadConfigFile(dynamic configuration)
+        internal void ReadConfigFile(Config configuration)
         {
             // common properties
-            this.AnalysisName = (string)configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
-            this.SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            this.AbbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-            this.UpperBandMaxHz = (int)configuration["UpperFreqBandTop"];
-            this.UpperBandMinHz = (int)configuration["UpperFreqBandBottom"];
-            this.LowerBandMaxHz = (int)configuration["LowerFreqBandTop"];
-            this.LowerBandMinHz = (int)configuration["LowerFreqBandBottom"];
-            this.DecibelThreshold = (double?)configuration[AnalysisKeys.DecibelThreshold] ?? 3.0;
+            this.AnalysisName = configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
+            this.SpeciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            this.AbbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            this.UpperBandMaxHz = configuration.GetInt("UpperFreqBandTop");
+            this.UpperBandMinHz = configuration.GetInt("UpperFreqBandBottom");
+            this.LowerBandMaxHz = configuration.GetInt("LowerFreqBandTop");
+            this.LowerBandMinHz = configuration.GetInt("LowerFreqBandBottom");
+            this.DecibelThreshold = configuration.GetDoubleOrNull(AnalysisKeys.DecibelThreshold) ?? 3.0;
 
             // extract profiles
             bool hasProfiles = ConfigFile.HasProfiles(configuration);
@@ -425,8 +425,8 @@ namespace AnalysisPrograms.Recognizers
                 LoggedConsole.WriteLine($"The Config file for {this.SpeciesName}  contains the profile <{name}>.");
             }
 
-            // dynamic profile = ConfigFile.GetProfile(configuration, "Trill");
-            dynamic trillProfile;
+            // Config profile = ConfigFile.GetProfile(configuration, "Trill");
+            Config trillProfile;
             bool success = ConfigFile.TryGetProfile(configuration, "Trill", out trillProfile);
             if (!success)
             {
@@ -436,31 +436,31 @@ namespace AnalysisPrograms.Recognizers
             LoggedConsole.WriteLine($"Analyzing profile: {this.ProfileNames[0]}");
 
             // Periods and Oscillations
-            this.MinPeriod = (double)trillProfile[AnalysisKeys.MinPeriodicity]; //: 0.18
-            this.MaxPeriod = (double)trillProfile[AnalysisKeys.MaxPeriodicity]; //: 0.25
+            this.MinPeriod = trillProfile.GetDouble(AnalysisKeys.MinPeriodicity); //: 0.18
+            this.MaxPeriod = trillProfile.GetDouble(AnalysisKeys.MaxPeriodicity); //: 0.25
 
             // minimum duration in seconds of a trill event
-            this.MinDurationOfTrill = (double)trillProfile[AnalysisKeys.MinDuration]; //:3
+            this.MinDurationOfTrill = trillProfile.GetDouble(AnalysisKeys.MinDuration); //:3
             // maximum duration in seconds of a trill event
-            this.MaxDurationOfTrill = (double)trillProfile[AnalysisKeys.MaxDuration]; //: 15
+            this.MaxDurationOfTrill = trillProfile.GetDouble(AnalysisKeys.MaxDuration); //: 15
             //// minimum acceptable value of a DCT coefficient
-            this.IntensityThreshold = (double?)trillProfile[AnalysisKeys.IntensityThreshold] ?? 0.4;
+            this.IntensityThreshold = trillProfile.GetDoubleOrNull(AnalysisKeys.IntensityThreshold) ?? 0.4;
 
-            //double dctDuration = (double)configuration[AnalysisKeys.DctDuration];
+            //double dctDuration = (double)configuration.GetDouble(AnalysisKeys.DctDuration);
             // This is the intensity threshold above
-            //double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
+            //double dctThreshold = (double)configuration.GetDouble(AnalysisKeys.DctThreshold);
 
             LoggedConsole.WriteLine($"Analyzing profile: {this.ProfileNames[1]}");
-            dynamic tinkProfile;
+            Config tinkProfile;
             success = ConfigFile.TryGetProfile(configuration, "Tink", out tinkProfile);
             if (!success)
             {
                 throw new ConfigFileException($"The Config file for {this.SpeciesName} must contain a \"Tink\" profile.");
             }
-            this.MinDurationOfTink = (double)tinkProfile[AnalysisKeys.MinDuration]; //
+            this.MinDurationOfTink = tinkProfile.GetDouble(AnalysisKeys.MinDuration); //
             // maximum duration in seconds of a tink event
-            this.MaxDurationOfTink = (double)tinkProfile[AnalysisKeys.MaxDuration]; //
-            this.EventThreshold = (double?)trillProfile[AnalysisKeys.EventThreshold] ?? 0.2;
+            this.MaxDurationOfTink = tinkProfile.GetDouble(AnalysisKeys.MaxDuration); //
+            this.EventThreshold = trillProfile.GetDoubleOrNull(AnalysisKeys.EventThreshold) ?? 0.2;
         }
 
     } //class LitoriaWatjulumConfig

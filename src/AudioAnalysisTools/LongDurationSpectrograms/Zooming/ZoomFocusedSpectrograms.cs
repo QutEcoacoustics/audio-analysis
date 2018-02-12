@@ -28,6 +28,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
+
     using DSP;
     using Indices;
     using StandardSpectrograms;
@@ -43,7 +45,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             var distributions = common.IndexDistributions;
             var indexGeneration = common.IndexGenerationData;
-            var indexProperties = common.IndexProperties;
+            var indexProperties = zoomConfig.IndexProperties;
 
             string fileStem = common.OriginalBasename;
 
@@ -456,17 +458,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         private static Dictionary<string, string> GetConfigurationForConvCNN(FileInfo configFile)
         {
-            dynamic configuration = Yaml.Deserialise(configFile);
+            Config configuration = ConfigFile.Deserialize(configFile);
 
-            var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
+            var configDict = new Dictionary<string, string>(configuration.ToDictionary()) {
+                [AnalysisKeys.AddAxes] = (configuration.GetBoolOrNull(AnalysisKeys.AddAxes) ?? true).ToString(),
+                [AnalysisKeys.AddSegmentationTrack] = (configuration.GetBoolOrNull(AnalysisKeys.AddSegmentationTrack) ?? true).ToString(),
+                [AnalysisKeys.AddTimeScale] = (string) configuration[AnalysisKeys.AddTimeScale] ?? "true",
 
-            configDict[AnalysisKeys.AddAxes] = ((bool?)configuration[AnalysisKeys.AddAxes] ?? true).ToString();
-            configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true;
+                [AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes] ?? "true",
 
-            ////bool makeSoxSonogram = (bool?)configuration[AnalysisKeys.MakeSoxSonogram] ?? false;
-            configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
-            configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes] ?? "true";
-            configDict[AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
+                [AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true",
+            };
             return configDict;
         }
 

@@ -30,10 +30,8 @@ namespace AnalysisPrograms.StandardizedFeatures
 
         public override void BeforeAnalyze(AnalysisSettings analysisSettings)
         {
-            // Construct variable 'configuration' that stores the properties of config file in non-dynamic way
+ 
             base.BeforeAnalyze(analysisSettings);
-            StandardizedFeatureExtractionConfig configuration = Yaml.Deserialise<StandardizedFeatureExtractionConfig>(analysisSettings.ConfigFile);
-            analysisSettings.AnalysisAnalyzerSpecificConfiguration = configuration;
         }
 
         // Implemented from AbstractStrongAnalyser
@@ -52,16 +50,21 @@ namespace AnalysisPrograms.StandardizedFeatures
             get { return "Performs a standardized feature extraction for ML tasks identifying faunal vocalisations."; }
         }
 
+        public override AnalyzerConfig ParseConfig(FileInfo file)
+        {
+            // Construct variable 'configuration' that stores the properties of config file as strongly typed object
+            return ConfigFile.Deserialize<StandardizedFeatureExtractionConfig>(file);
+        }
+
         public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
-            StandardizedFeatureExtractionConfig configuration = (StandardizedFeatureExtractionConfig)analysisSettings.AnalysisAnalyzerSpecificConfiguration;
+            var configuration = (StandardizedFeatureExtractionConfig)analysisSettings.Configuration;
             var audioFile = segmentSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
 
             // Configurations non-specific for bands
-            FileInfo indexPropertiesConfig = new FileInfo(configuration.IndexPropertiesConfig);
-            TimeSpan indexCalculationDuration = configuration.IndexCalculationDuration.Seconds();
-            TimeSpan bgNoiseNeighbourhood = configuration.BgNoiseNeighbourhood;
+            TimeSpan indexCalculationDuration = configuration.IndexCalculationDuration;
+            TimeSpan bgNoiseNeighbourhood = configuration.BgNoiseBuffer;
 
             // Bands
             List<StandardizedFeatureExtractionConfig.BandsProperties> bandsList = configuration.Bands;
@@ -97,23 +100,21 @@ namespace AnalysisPrograms.StandardizedFeatures
 
                 // Calculate spectral indices
 
-                // Convert the dynamic config to IndexCalculateConfig class and merge in the unnecesary parameters.
-                IndexCalculateConfig config = IndexCalculateConfig.GetConfig(analysisSettings.Configuration, false);
-                config.IndexCalculationDuration = indexCalculationDuration;
-                config.BgNoiseBuffer = bgNoiseNeighbourhood;
-
+                // get a fresh copy of the ICC config
+                var config = (IndexCalculateConfig)((ICloneable)configuration).Clone();
+                
                 // Add values specific for band from custom configuration file to config
                 config.MinBandWidth = band.Bandwidth.Min;
                 config.MaxBandWidth = band.Bandwidth.Max;
                 config.FrameLength = band.FftWindow;
                 if (band.MelScale != 0)
                 {
-                    config.frequencyScaleType = FreqScaleType.Mel;
+                    config.FrequencyScaleType = FreqScaleType.Mel;
                     config.MelScale = band.MelScale;
                 }
                 else
                 {
-                    config.frequencyScaleType = FreqScaleType.Linear;
+                    config.FrequencyScaleType = FreqScaleType.Linear;
                 }
 
                 // Calculate indices for each subsegment and for each band
@@ -122,8 +123,7 @@ namespace AnalysisPrograms.StandardizedFeatures
                     segmentSettings.SegmentStartOffset,
                     segmentSettings.AnalysisIdealSegmentDuration,
                     indexCalculationDuration,
-                    bgNoiseNeighbourhood,
-                    indexPropertiesConfig,
+                    config.IndexProperties,
                     segmentSettings.Segment.SourceMetadata.SampleRate,
                     config);
 

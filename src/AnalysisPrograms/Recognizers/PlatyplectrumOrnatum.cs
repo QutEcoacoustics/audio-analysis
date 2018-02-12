@@ -15,6 +15,8 @@ namespace AnalysisPrograms.Recognizers
     using System.Reflection;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
+
     using AnalysisBase;
     using AnalysisBase.ResultBases;
     using Base;
@@ -84,7 +86,7 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording audioRecording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
 
             // The next line actually calculates the high resolution indices!
@@ -115,9 +117,9 @@ namespace AnalysisPrograms.Recognizers
             return results;
         }
 
-        internal RecognizerResults Algorithm1(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
+        internal RecognizerResults Algorithm1(AudioRecording audioRecording, Config configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
         {
-            double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 0.1;
+            double noiseReductionParameter = configuration.GetDoubleOrNull("BgNoiseThreshold") ?? 0.1;
             // make a spectrogram
             var config = new SonogramConfig
             {
@@ -152,9 +154,9 @@ namespace AnalysisPrograms.Recognizers
             // minimum dB to register a dominant freq peak. After noise removal
             double peakThresholdDb = 3.0;
             // The threshold dB amplitude in the dominant freq bin required to yield an event
-            double eventDecibelThreshold = (double?)configuration["EventDecibelThreshold"] ?? 6.0;
+            double eventDecibelThreshold = configuration.GetDoubleOrNull("EventDecibelThreshold") ?? 6.0;
             // minimum score for an acceptable event - that is when processing the score array.
-            double eventSimilarityThreshold = (double?)configuration["EventSimilarityThreshold"] ?? 0.2;
+            double eventSimilarityThreshold = configuration.GetDoubleOrNull("EventSimilarityThreshold") ?? 0.2;
 
             // IMPORTANT: The following frame durations assume a sampling rate = 22050 and window size of 512.
             int minFrameWidth = 2;
@@ -169,7 +171,7 @@ namespace AnalysisPrograms.Recognizers
             // To this end we produce two templates.
             var templates = GetTemplatesForAlgorithm1(callBinWidth);
 
-            int dominantFrequency = (int)configuration["DominantFrequency"];
+            int dominantFrequency = configuration.GetInt("DominantFrequency");
             // NOTE: could give user control over other call features
             //  Such as frequency gap between peaks. But not in this first iteration of the recognizer.
             //int peakGapInHerz = (int)configuration["PeakGap"];
@@ -321,9 +323,9 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="outputDirectory"></param>
         /// <param name="segmentStartOffset"></param>
         /// <returns></returns>
-        internal RecognizerResults Algorithm2(AudioRecording recording, dynamic configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
+        internal RecognizerResults Algorithm2(AudioRecording recording, Config configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
         {
-            double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 0.1;
+            double noiseReductionParameter = configuration.GetDoubleOrNull("BgNoiseThreshold") ?? 0.1;
             // make a spectrogram
             var config = new SonogramConfig
             {
@@ -358,9 +360,9 @@ namespace AnalysisPrograms.Recognizers
             // minimum dB to register a dominant freq peak. After noise removal
             double peakThresholdDb = 3.0;
             // The threshold dB amplitude in the dominant freq bin required to yield an event
-            double eventDecibelThreshold = (double?)configuration["EventDecibelThreshold"] ?? 6.0;
+            double eventDecibelThreshold = configuration.GetDoubleOrNull("EventDecibelThreshold") ?? 6.0;
             // minimum score for an acceptable event - that is when processing the score array.
-            double eventSimilarityThreshold = (double?)configuration["EventSimilarityThreshold"] ?? 0.2;
+            double eventSimilarityThreshold = configuration.GetDoubleOrNull("EventSimilarityThreshold") ?? 0.2;
 
             // IMPORTANT: The following frame durations assume a sampling rate = 22050 and window size of 512.
             //int minFrameWidth = 2;
@@ -375,7 +377,7 @@ namespace AnalysisPrograms.Recognizers
             // Get the call templates and their dimensions
             var templates = GetTemplatesForAlgorithm2(out callFrameDuration, out callBinWidth);
 
-            int dominantFrequency = (int)configuration["DominantFrequency"];
+            int dominantFrequency = configuration.GetInt("DominantFrequency");
 
             const int hzBuffer = 100;
             int dominantBin = (int)Math.Round(dominantFrequency / herzPerBin);

@@ -44,6 +44,9 @@ AlignToMinute Options:
 #endif
             }
 
+            [Option("Sets the name of the analysis to run. If not set, analysis identifer is parsed from the config file name.")]
+            public string AnalysisIdentifier { get; set; }
+
             [Option(
                 "A TEMP directory where cut files will be stored. Use this option for efficiency (e.g. write to a RAM Disk).",
                 ShortName = "t"

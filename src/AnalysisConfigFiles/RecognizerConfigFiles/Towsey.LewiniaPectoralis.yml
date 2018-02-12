@@ -37,8 +37,8 @@ ResampleRate: 22050
 #WindowSize:
 
 ## Specifically for AnalyzeLongRecording
-#SegmentDuration: minutes,   SegmentOverlap=seconds        
-SegmentDuration: 1
+#SegmentDuration: units=seconds,   SegmentOverlap=seconds        
+SegmentDuration: 60
 SegmentOverlap: 0
 
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]

@@ -7,6 +7,8 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using System;
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
+
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.WavTools;
@@ -59,7 +61,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
                 this.outputDirectory.Create();
             }
 
-            var indexCalculateConfig = IndexCalculateConfig.GetConfig(configFile);
+            var indexCalculateConfig = ConfigFile.Deserialize<IndexCalculateConfig>(configFile);
 
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
             //indexCalculateConfig.IndexCalculationDuration = TimeSpan.FromSeconds(20);
@@ -68,7 +70,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             var results = IndexCalculate.Analysis(
                 new AudioRecording(sourceRecording),
                 TimeSpan.Zero,
-                indexPropertiesConfig,
+                indexCalculateConfig.IndexProperties,
                 22050,
                 TimeSpan.Zero,
                 indexCalculateConfig,
@@ -118,7 +120,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
                 this.outputDirectory.Create();
             }
 
-            var indexCalculateConfig = IndexCalculateConfig.GetConfig(configFile);
+            var indexCalculateConfig = ConfigFile.Deserialize<IndexCalculateConfig>(configFile);
 
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
             //indexCalculateConfig.IndexCalculationDuration = TimeSpan.FromSeconds(20);
@@ -127,7 +129,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             var results = IndexCalculate.Analysis(
                 new AudioRecording(sourceRecording),
                 TimeSpan.Zero,
-                indexPropertiesConfig,
+                indexCalculateConfig.IndexProperties,
                 22050,
                 TimeSpan.Zero,
                 indexCalculateConfig,
@@ -254,13 +256,13 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             var recording = new AudioRecording(sourceRecording);
 
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
-            var indexCalculateConfig = IndexCalculateConfig.GetConfig(configFile);
+            var indexCalculateConfig = ConfigFile.Deserialize<IndexCalculateConfig>(configFile);
             indexCalculateConfig.IndexCalculationDuration = TimeSpan.FromSeconds(20);
 
             var results = IndexCalculate.Analysis(
                 recording,
                 TimeSpan.FromSeconds(40), // assume that this is the third of three 20 second subsegments
-                indexPropertiesConfig,
+                indexCalculateConfig.IndexProperties,
                 22050,
                 TimeSpan.Zero,
                 indexCalculateConfig,
@@ -317,15 +319,16 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             }
 
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
-            var indexCalculateConfig = IndexCalculateConfig.GetConfig(configFile);
-            indexCalculateConfig.SetTypeOfFreqScale("Octave");
-            var freqScale = new FrequencyScale(indexCalculateConfig.GetTypeOfFreqScale());
+            var indexCalculateConfig = ConfigFile.Deserialize<IndexCalculateConfig>(configFile);
+            indexCalculateConfig.FrequencyScaleType = FreqScaleType.Octave;
+
+            var freqScale = new FrequencyScale(indexCalculateConfig.FrequencyScaleType);
             indexCalculateConfig.FrameLength = freqScale.WindowSize;
 
             var results = IndexCalculate.Analysis(
                 subsegmentRecording,
                 TimeSpan.Zero,
-                indexPropertiesConfig,
+                indexCalculateConfig.IndexProperties,
                 sampleRate,
                 TimeSpan.Zero,
                 indexCalculateConfig,

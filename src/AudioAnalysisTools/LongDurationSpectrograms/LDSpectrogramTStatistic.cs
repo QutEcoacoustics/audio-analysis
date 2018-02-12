@@ -9,6 +9,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
+
+    using Acoustics.Shared.ConfigFile;
+
     using TowseyLibrary;
 
     public static class LdSpectrogramTStatistic
@@ -34,39 +37,40 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public const double T_STAT_THRESHOLD = 3.29;    // 0.05% confidence @ df=infinity
         private static double tStatThreshold = T_STAT_THRESHOLD;
 
-        public static void DrawTStatisticThresholdedDifferenceSpectrograms(dynamic configuration)
+        public static void DrawTStatisticThresholdedDifferenceSpectrograms(Config configuration)
         {
-            string ipdir = configuration.InputDirectory;
-            string ipFileName1 = configuration.IndexFile1;
-            string ipSdFileName1 = configuration.StdDevFile1;
-            string ipFileName2 = configuration.IndexFile2;
-            string ipSdFileName2 = configuration.StdDevFile2;
-            string opdir = configuration.OutputDirectory;
+            var ipdir = configuration["InputDirectory"].ToDirectoryInfo();
+            var ipFileName1 = configuration["IndexFile1"].ToFileInfo();
+            var ipFileName2 = configuration["IndexFile2"].ToFileInfo();
+            var opdir = configuration["OutputDirectory"].ToDirectoryInfo();
+            var ipSdFileName1 = configuration.GetStringOrNull("StdDevFile1").ToFileInfo();
+            var ipSdFileName2 = configuration.GetStringOrNull("StdDevFile2").ToFileInfo();
+            
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
-            string map = configuration.ColorMap;
+            string map = configuration.GetStringOrNull("ColorMap");
             colorMap = map ?? SpectrogramConstants.RGBMap_ACI_ENT_CVR;
 
-            backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+            backgroundFilterCoeff = configuration.GetDoubleOrNull("BackgroundFilterCoeff") ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
 
             // depracated May 2017
             // colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
-            minuteOffset = (TimeSpan?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET; // default = zero minute of day i.e. midnight
-            xScale = (TimeSpan?)configuration.X_Scale ?? SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default is one minute spectra i.e. 60 per hour
-            sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE;
-            frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_LENGTH;
+            minuteOffset = configuration.GetTimeSpanOrNull("MinuteOffset") ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
+            xScale = configuration.GetTimeSpanOrNull("X_Scale") ?? SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default is one minute spectra i.e. 60 per hour
+            sampleRate = configuration.GetIntOrNull("SampleRate") ?? SpectrogramConstants.SAMPLE_RATE;
+            frameWidth = configuration.GetIntOrNull("FrameWidth") ?? SpectrogramConstants.FRAME_LENGTH;
 
-            tStatThreshold = (double?)configuration.TStatThreshold ?? T_STAT_THRESHOLD;
+            tStatThreshold = configuration.GetDoubleOrNull("TStatThreshold") ?? T_STAT_THRESHOLD;
 
             DrawTStatisticThresholdedDifferenceSpectrograms(
-                new DirectoryInfo(ipdir),
-                new FileInfo(ipFileName1),
-                new FileInfo(ipSdFileName1),
-                new FileInfo(ipFileName2),
-                new FileInfo(ipSdFileName2),
-                new DirectoryInfo(opdir));
+                ipdir,
+                ipFileName1,
+                ipSdFileName1,
+                ipFileName2,
+                ipSdFileName2,
+                opdir);
         }
 
         /// <summary>

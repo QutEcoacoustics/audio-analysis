@@ -8,6 +8,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
+
+    using Acoustics.Shared.ConfigFile;
+
     using TowseyLibrary;
 
     public static class LdSpectrogramDifference
@@ -25,29 +28,29 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         // depracated May 2017
         // private static double colourGain = SpectrogramConstants.COLOUR_GAIN;
 
-        public static void DrawDifferenceSpectrogram(dynamic configuration)
+        public static void DrawDifferenceSpectrogram(Config configuration)
         {
-            string ipdir = configuration.InputDirectory;
-            string ipFileName1 = configuration.IndexFile1;
-            string ipFileName2 = configuration.IndexFile2;
-            string opdir = configuration.OutputDirectory;
-            string map = configuration.ColorMap;
+            var ipdir = configuration["InputDirectory"].ToDirectoryInfo();
+            var ipFileName1 = configuration["IndexFile1"].ToFileInfo();
+            var ipFileName2 = configuration["IndexFile2"].ToFileInfo();
+            var opdir = configuration["OutputDirectory"].ToDirectoryInfo();
+            string map = configuration.GetStringOrNull("ColorMap");
 
             // assigns indices to RGB
             colorMap = map ?? SpectrogramConstants.RGBMap_ACI_ENT_CVR;
 
-            backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+            backgroundFilterCoeff = configuration.GetDoubleOrNull("BackgroundFilterCoeff") ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
 
             // depracated May 2017
             // colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
-            minuteOffset = (TimeSpan?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
-            xScale = (TimeSpan?)configuration.X_Scale ?? SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default is one minute spectra i.e. 60 per hour
-            sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE;
-            frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_LENGTH;
+            minuteOffset = configuration.GetTimeSpanOrNull("MinuteOffset") ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
+            xScale = configuration.GetTimeSpanOrNull("X_Scale") ?? SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default is one minute spectra i.e. 60 per hour
+            sampleRate = configuration.GetIntOrNull("SampleRate") ?? SpectrogramConstants.SAMPLE_RATE;
+            frameWidth = configuration.GetIntOrNull("FrameWidth") ?? SpectrogramConstants.FRAME_LENGTH;
 
-            DrawDifferenceSpectrogram(new DirectoryInfo(ipdir), new FileInfo(ipFileName1), new FileInfo(ipFileName2), new DirectoryInfo(opdir));
+            DrawDifferenceSpectrogram(ipdir, ipFileName1, ipFileName2, opdir);
         }
 
         /// <summary>

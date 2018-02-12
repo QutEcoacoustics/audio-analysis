@@ -8,6 +8,7 @@
     using System.Text;
     using System.Threading.Tasks;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Extensions;
     using Acoustics.Tools;
     using Production;
@@ -85,28 +86,24 @@
 
             //READ PARAMETER VALUES FROM INI FILE
             // load YAML configuration
-            dynamic configuration = Yaml.Deserialise(arguments.Config);
-            /*
-             * Warning! The `configuration` variable is dynamic.
-             * Do not use it outside of this method. Extract all params below.
-             */
+            Config configuration = ConfigFile.Deserialize(arguments.Config);
 
             //ii: SET SONOGRAM CONFIGURATION
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName = arguments.Source.FullName;
-            sonoConfig.WindowSize = (int?)configuration.FrameSize ?? 512; //
-            sonoConfig.WindowOverlap = (double?)configuration.FrameOverlap ?? 0.5;
-            sonoConfig.WindowFunction = configuration.WindowFunction;
-            sonoConfig.NPointSmoothFFT = (int?)configuration.NpointSmoothFFT ?? 256;
-            sonoConfig.NoiseReductionType = SNR.KeyToNoiseReductionType((string)configuration.NoiseReductionType);
+            sonoConfig.WindowSize = configuration.GetIntOrNull(AnalysisKeys.KeyFrameSize) ?? 512; //
+            sonoConfig.WindowOverlap = configuration.GetDoubleOrNull(AnalysisKeys.FrameOverlap) ?? 0.5;
+            sonoConfig.WindowFunction = configuration[AnalysisKeys.KeyWindowFunction];
+            sonoConfig.NPointSmoothFFT = configuration.GetIntOrNull(AnalysisKeys.KeyNPointSmoothFft) ?? 256;
+            sonoConfig.NoiseReductionType = SNR.KeyToNoiseReductionType(configuration[AnalysisKeys.NoiseReductionType]);
 
-            int minHz = (int?)configuration.MIN_HZ ?? 0;
-            int maxHz = (int?)configuration.MAX_HZ ?? 11050;
-            double segK1 = (double?)configuration.SEGMENTATION_THRESHOLD_K1 ?? 0;
-            double segK2 = (double?)configuration.SEGMENTATION_THRESHOLD_K2 ?? 0;
-            double latency = (double?)configuration.K1_K2_LATENCY ?? 0;
-            double vocalGap = (double?)configuration.VOCAL_GAP ?? 0;
-            double minVocalLength = (double?)configuration.MIN_VOCAL_DURATION ?? 0;
+            int minHz = configuration.GetIntOrNull("MIN_HZ") ?? 0;
+            int maxHz = configuration.GetIntOrNull("MAX_HZ") ?? 11050;
+            double segK1 = configuration.GetDoubleOrNull("SEGMENTATION_THRESHOLD_K1") ?? 0;
+            double segK2 = configuration.GetDoubleOrNull("SEGMENTATION_THRESHOLD_K2") ?? 0;
+            double latency = configuration.GetDoubleOrNull("K1_K2_LATENCY") ?? 0;
+            double vocalGap = configuration.GetDoubleOrNull("VOCAL_GAP") ?? 0;
+            double minVocalLength = configuration.GetDoubleOrNull("MIN_VOCAL_DURATION") ?? 0;
             //bool DRAW_SONOGRAMS = (bool?)configuration.DrawSonograms ?? true;    //options to draw sonogram
 
             //double intensityThreshold = QutSensors.AudioAnalysis.AED.Default.intensityThreshold;
@@ -137,7 +134,7 @@
             TimeSpan frameDuration = TimeSpan.FromTicks((long)(frameDurationInSeconds * TimeSpan.TicksPerSecond));
             int stepSize = (int)Math.Floor(sonoConfig.WindowSize * (1 - sonoConfig.WindowOverlap));
             double stepDurationInSeconds = sonoConfig.WindowSize * (1 - sonoConfig.WindowOverlap)
-                                           / (double)recording.SampleRate;
+                                           / recording.SampleRate;
             TimeSpan stepDuration = TimeSpan.FromTicks((long)(stepDurationInSeconds * TimeSpan.TicksPerSecond));
             double framesPerSecond = 1 / stepDuration.TotalSeconds;
             int frameCount = signalLength / stepSize;

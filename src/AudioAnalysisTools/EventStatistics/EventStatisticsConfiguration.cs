@@ -6,8 +6,10 @@ namespace AudioAnalysisTools.EventStatistics
 {
     using System;
 
+    using AnalysisBase;
+
     [Serializable]
-    public class EventStatisticsConfiguration
+    public class EventStatisticsConfiguration : AnalyzerConfig
     {
         public int FrameSize { get; set; } = 512;
 

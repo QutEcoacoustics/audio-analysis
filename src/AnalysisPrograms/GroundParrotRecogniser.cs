@@ -178,7 +178,8 @@ namespace AnalysisPrograms
             // "Example: \"trunk\\AudioAnalysis\\Matlab\\EPR\\Ground Parrot\\GParrots_JB2_20090607-173000.wav_minute_3.wav\""
 
             // READ PARAMETER VALUES FROM INI FILE
-            var aedConfig = Aed.GetAedParametersFromConfigFileOrDefaults(arguments.Config);
+            var config = ConfigFile.Deserialize(arguments.Config);
+            var aedConfig = Aed.GetAedParametersFromConfigFileOrDefaults(config);
 
             Tuple<BaseSonogram, List<AcousticEvent>> result = Detect(arguments.Source, aedConfig, Default.eprNormalisedMinScore, TimeSpan.Zero);
             List<AcousticEvent> eprEvents = result.Item2;
@@ -212,10 +213,10 @@ namespace AnalysisPrograms
         /// <summary>
         /// Get epr parameters from init file.
         /// </summary>
-        /// <param name="configuration">Th=e dynamic configuration object to read</param>
-        internal static double GetEprParametersFromConfigFileOrDefaults(dynamic configuration)
+        /// <param name="configuration">The Config configuration object to read</param>
+        internal static double GetEprParametersFromConfigFileOrDefaults(Config configuration)
         {
-            return (double?)configuration[KeyNormalizedMinScore] ?? Default.eprNormalisedMinScore;
+            return configuration.GetDoubleOrNull(KeyNormalizedMinScore) ?? Default.eprNormalisedMinScore;
         }
 
         /// <summary>
@@ -296,11 +297,11 @@ namespace AnalysisPrograms
 
             var eprNormalizedMinScore = GetEprParametersFromConfigFileOrDefaults(analysisSettings.Configuration);
 
-            var aedConfigFile = ConfigFile.ResolveConfigFile(
-                (string)analysisSettings.Configuration.AedConfig,
+            var aedConfigFile = ConfigFile.Resolve(
+                (string)analysisSettings.Configuration["AedConfig"],
                 analysisSettings.ConfigFile.Directory);
 
-            var rawAedConfig = Yaml.Deserialise(aedConfigFile);
+            var rawAedConfig = ConfigFile.Deserialize(aedConfigFile);
             var aedConfig = Aed.GetAedParametersFromConfigFileOrDefaults(rawAedConfig);
 
             Tuple<BaseSonogram, List<AcousticEvent>> results = Detect(audioFile, aedConfig, eprNormalizedMinScore, segmentSettings.SegmentStartOffset);

@@ -10,17 +10,38 @@
 namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 {
     using System;
+    using System.Collections.Generic;
+
+    using Acoustics.Shared.ConfigFile;
 
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.TileImage;
 
-    public class SpectrogramZoomingConfig : IIndexPropertyReferenceConfiguration
+    using Zio;
+
+    public class SpectrogramZoomingConfig : Config, IIndexPropertyReferenceConfiguration
     {
         public SpectrogramZoomingConfig()
         {
         }
 
-        public string IndexPropertiesConfig { get; set; }
+        private string indexPropertiesConfig;
+
+        public string IndexPropertiesConfig
+        {
+            get => this.indexPropertiesConfig;
+            set
+            {
+                this.indexPropertiesConfig = value;
+                // search
+                var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
+                this.indexPropertiesConfig = indicesPropertiesConfig.Path.ToOsPath();
+                // load
+                this.IndexProperties = Indices.IndexProperties.GetIndexProperties(indicesPropertiesConfig);
+            }
+        }
+
+        public Dictionary<string, IndexProperties> IndexProperties { get; set; }
 
         /// <summary>
         /// Gets or sets an optional reference to a config that defines

@@ -1,7 +1,7 @@
 ---
 AnalysisName: Towsey.Grids
-#SegmentDuration: minutes,   SegmentOverlap=seconds        
-SegmentDuration: 1
+#SegmentDuration: units=seconds,   SegmentOverlap=seconds        
+SegmentDuration: 60
 SegmentOverlap: 0
 #use this threshold if averaging over a period - averaging seems to work better
 IntensityThreshold: 0.03

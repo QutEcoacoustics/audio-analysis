@@ -14,6 +14,7 @@ namespace AnalysisPrograms.Recognizers
     using System.Reflection;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
 
     using AnalysisBase;
     using AnalysisBase.ResultBases;
@@ -71,7 +72,7 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             var recognizerConfig = new LitoriaNasutaConfig();
             recognizerConfig.ReadConfigFile(configuration);
@@ -187,27 +188,27 @@ namespace AnalysisPrograms.Recognizers
         public double MaxDuration { get; set; }
         public double EventThreshold { get; set; }
 
-        internal void ReadConfigFile(dynamic configuration)
+        internal void ReadConfigFile(Config configuration)
         {
             // common properties
             this.AnalysisName = (string)configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
             this.SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
             this.AbbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
             // frequency band of the call
-            this.MinHz = (int)configuration[AnalysisKeys.MinHz];
-            this.MaxHz = (int)configuration[AnalysisKeys.MaxHz];
+            this.MinHz = configuration.GetInt(AnalysisKeys.MinHz);
+            this.MaxHz = configuration.GetInt(AnalysisKeys.MaxHz);
 
             // duration of DCT in seconds
-            this.DctDuration = (double)configuration[AnalysisKeys.DctDuration];
+            this.DctDuration = configuration.GetDouble(AnalysisKeys.DctDuration);
             // minimum acceptable value of a DCT coefficient
-            this.DctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
+            this.DctThreshold = configuration.GetDouble(AnalysisKeys.DctThreshold);
 
             // min and max duration of event in seconds
-            this.MinDuration = (double)configuration[AnalysisKeys.MinDuration];
-            this.MaxDuration = (double)configuration[AnalysisKeys.MaxDuration];
+            this.MinDuration = configuration.GetDouble(AnalysisKeys.MinDuration);
+            this.MaxDuration = configuration.GetDouble(AnalysisKeys.MaxDuration);
 
             // min score for an acceptable event
-            this.EventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
+            this.EventThreshold = configuration.GetDouble(AnalysisKeys.EventThreshold);
         }
 
     } // Config class

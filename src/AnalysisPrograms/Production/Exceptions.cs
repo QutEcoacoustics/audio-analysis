@@ -44,7 +44,7 @@ namespace AnalysisPrograms.Production
                                       new ExceptionStyle { ErrorCode = 2 }
                                   },
                                   {
-                                      typeof(ArgumentException),
+                                      typeof(CommandLineArgumentException),
                                       new ExceptionStyle() { ErrorCode = 3 }
                                   },
                                   {
@@ -176,6 +176,13 @@ namespace AnalysisPrograms.Production
             public bool PrintUsage { get; set; }
 
             #endregion
+        }
+    }
+
+    public class CommandLineArgumentException : Exception
+    {
+        public CommandLineArgumentException(string message) : base(message)
+        {
         }
     }
 

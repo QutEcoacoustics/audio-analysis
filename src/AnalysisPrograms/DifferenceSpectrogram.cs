@@ -9,6 +9,8 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Threading.Tasks;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
+
     using AudioAnalysisTools.LongDurationSpectrograms;
     using McMaster.Extensions.CommandLineUtils;
     using Production;
@@ -96,7 +98,7 @@ namespace AnalysisPrograms
             // WRITE THE YAML CONFIG FILE
             string configPath = Path.Combine(opdir, "differenceSpectrogramConfig.yml");
             var cfgFile = new FileInfo(configPath);
-            Yaml.SerialiseDynamic(cfgFile, new
+            Yaml.Serialise(cfgFile, new
             {
                 //paths to required directories and files
                 InputDirectory = ipdir,
@@ -134,11 +136,7 @@ namespace AnalysisPrograms
             }
 
             // load YAML configuration
-            dynamic configuration = Yaml.Deserialise(arguments.Config);
-            /*
-             * Warning! The `configuration` variable is dynamic.
-             * Do not use it outside of this method. Extract all params below.
-             */
+            Config configuration = ConfigFile.Deserialize(arguments.Config);
 
             LDSpectrogramDistance.DrawDistanceSpectrogram(configuration);
 

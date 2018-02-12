@@ -30,6 +30,7 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.Indices;
     using System.Drawing;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
 
     /// <summary>
     /// To call this LitoriaBicolor recognizer, the first command line argument must be "EventRecognizer".
@@ -80,7 +81,7 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
 
             var recognizerConfig = new LitoriaBicolorConfig();
@@ -385,29 +386,29 @@ namespace AnalysisPrograms.Recognizers
         public double DecibelThreshold { get; set; }
         public double EventThreshold { get; set; }
 
-        internal void ReadConfigFile(dynamic configuration)
+        internal void ReadConfigFile(Config configuration)
         {
             // common properties
-            this.AnalysisName = (string)configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
-            this.SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
-            this.AbbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-            this.UpperBandMaxHz = (int)configuration["UpperFreqBandTop"];
-            this.UpperBandMinHz = (int)configuration["UpperFreqBandBottom"];
-            this.LowerBandMaxHz = (int)configuration["LowerFreqBandTop"];
-            this.LowerBandMinHz = (int)configuration["LowerFreqBandBottom"];
+            this.AnalysisName = configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
+            this.SpeciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
+            this.AbbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            this.UpperBandMaxHz = configuration.GetInt("UpperFreqBandTop");
+            this.UpperBandMinHz = configuration.GetInt("UpperFreqBandBottom");
+            this.LowerBandMaxHz = configuration.GetInt("LowerFreqBandTop");
+            this.LowerBandMinHz = configuration.GetInt("LowerFreqBandBottom");
 
             // Periods and Oscillations
-            this.MinPeriod = (double)configuration[AnalysisKeys.MinPeriodicity]; //: 0.18
-            this.MaxPeriod = (double)configuration[AnalysisKeys.MaxPeriodicity]; //: 0.25
+            this.MinPeriod = configuration.GetDouble(AnalysisKeys.MinPeriodicity); //: 0.18
+            this.MaxPeriod = configuration.GetDouble(AnalysisKeys.MaxPeriodicity); //: 0.25
 
             // minimum duration in seconds of an event
-            this.MinDuration = (double)configuration[AnalysisKeys.MinDuration]; //:3
+            this.MinDuration = configuration.GetDouble(AnalysisKeys.MinDuration); //:3
             // maximum duration in seconds of an event
-            this.MaxDuration = (double)configuration[AnalysisKeys.MaxDuration]; //: 15
+            this.MaxDuration = configuration.GetDouble(AnalysisKeys.MaxDuration); //: 15
             // minimum acceptable value of a DCT coefficient
-            this.IntensityThreshold = (double?)configuration[AnalysisKeys.IntensityThreshold] ?? 0.4;
-            this.DecibelThreshold = (double?)configuration[AnalysisKeys.DecibelThreshold] ?? 3.0;
-            this.EventThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? 0.2;
+            this.IntensityThreshold = configuration.GetDoubleOrNull(AnalysisKeys.IntensityThreshold) ?? 0.4;
+            this.DecibelThreshold = configuration.GetDoubleOrNull(AnalysisKeys.DecibelThreshold) ?? 3.0;
+            this.EventThreshold = configuration.GetDoubleOrNull(AnalysisKeys.EventThreshold) ?? 0.2;
         } // ReadConfigFile()
 
     } // class LitoriaBicolorConfig

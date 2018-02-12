@@ -32,7 +32,7 @@ namespace Acoustics.Test.Shared
             // check for file of the same name in (relative to) working directory
             var config = this.WriteConfigFile().Name;
 
-            var actual = ConfigFile.ResolveConfigFile(config);
+            var actual = ConfigFile.Resolve(config);
 
             Assert.AreEqual(config, actual.Name);
             Assert.IsTrue(actual.Exists);
@@ -44,7 +44,7 @@ namespace Acoustics.Test.Shared
             // check for file of the same name in (relative to AnalysisPrograms.exe) ConfigFiles directory
             var config = "Towsey.Acoustic.yml";
 
-            var actual = ConfigFile.ResolveConfigFile(config);
+            var actual = ConfigFile.Resolve(config);
 
             Assert.AreEqual(config, actual.Name);
             Assert.IsTrue(actual.Exists);
@@ -57,7 +57,7 @@ namespace Acoustics.Test.Shared
             string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "nested folder", "nestedAgain!");
             var config = this.WriteConfigFile(fullPath.ToDirectoryInfo());
 
-            var actual = ConfigFile.ResolveConfigFile(config);
+            var actual = ConfigFile.Resolve(config);
 
             Assert.AreEqual(config.FullName, actual.FullName);
 
@@ -79,7 +79,7 @@ namespace Acoustics.Test.Shared
             Assert.Throws<DirectoryNotFoundException>(
                 () =>
                     {
-                        var actual = ConfigFile.ResolveConfigFile("whatever.yml");
+                        var actual = ConfigFile.Resolve("whatever.yml");
                     });
         }
 
@@ -89,7 +89,7 @@ namespace Acoustics.Test.Shared
             // an absolute file path returns whatever config exists
             var config = this.WriteConfigFile(TempFileHelper.TempDir());
 
-            var actual = ConfigFile.ResolveConfigFile(config.FullName);
+            var actual = ConfigFile.Resolve(config.FullName);
 
             Assert.AreEqual(config.FullName, actual.FullName);
         }
@@ -101,7 +101,7 @@ namespace Acoustics.Test.Shared
             // the below file will not exist
             var config = TempFileHelper.NewTempFile();
 
-            var actual = ConfigFile.TryResolveConfigFile(config.FullName, null, out _);
+            var actual = ConfigFile.TryResolve(config.FullName, null, out _);
 
             Assert.IsFalse(actual);
         }
@@ -111,9 +111,9 @@ namespace Acoustics.Test.Shared
         {
             string config = "doesNotExist.yml";
 
-            Assert.Throws<ConfigFileException>(() => { ConfigFile.ResolveConfigFile(config); });
+            Assert.Throws<ConfigFileException>(() => { ConfigFile.Resolve(config); });
             Assert.Throws<ConfigFileException>(
-                () => { ConfigFile.ResolveConfigFile(config, Environment.CurrentDirectory.ToDirectoryInfo()); });
+                () => { ConfigFile.Resolve(config, Environment.CurrentDirectory.ToDirectoryInfo()); });
         }
 
         [TestMethod]
@@ -121,21 +121,21 @@ namespace Acoustics.Test.Shared
         {
             string config = "C:\\doesNotExist.yml";
 
-            Assert.Throws<ConfigFileException>(() => { ConfigFile.ResolveConfigFile(config); });
+            Assert.Throws<ConfigFileException>(() => { ConfigFile.Resolve(config); });
             Assert.Throws<ConfigFileException>(
-                () => { ConfigFile.ResolveConfigFile(config, Environment.CurrentDirectory.ToDirectoryInfo()); });
+                () => { ConfigFile.Resolve(config, Environment.CurrentDirectory.ToDirectoryInfo()); });
         }
 
         [TestMethod]
         public void TheResolveMethodThrowsForBadInput()
         {
-            Assert.Throws<ConfigFileException>(() => { ConfigFile.ResolveConfigFile("   "); });
+            Assert.Throws<ConfigFileException>(() => { ConfigFile.Resolve("   "); });
 
-            Assert.Throws<ArgumentException>(() => { ConfigFile.ResolveConfigFile(string.Empty); });
+            Assert.Throws<ArgumentException>(() => { ConfigFile.Resolve(string.Empty); });
 
-            Assert.Throws<ArgumentException>(() => { ConfigFile.ResolveConfigFile((string)null); });
+            Assert.Throws<ArgumentException>(() => { ConfigFile.Resolve((string)null); });
 
-            Assert.Throws<ArgumentNullException>(() => { ConfigFile.ResolveConfigFile((FileInfo)null); });
+            Assert.Throws<ArgumentNullException>(() => { ConfigFile.Resolve((FileInfo)null); });
         }
 
         [TestMethod]
@@ -143,7 +143,7 @@ namespace Acoustics.Test.Shared
         {
             var config = this.WriteConfigFile();
 
-            var actual = ConfigFile.ResolveConfigFile(config);
+            var actual = ConfigFile.Resolve(config);
 
             Assert.AreEqual(config.FullName, actual.FullName);
         }
@@ -153,7 +153,7 @@ namespace Acoustics.Test.Shared
         {
             string config = "doesNotExist.yml";
 
-            Assert.IsFalse(ConfigFile.TryResolveConfigFile(config, null, out _));
+            Assert.IsFalse(ConfigFile.TryResolve(config, null, out _));
         }
 
         [TestCleanup]

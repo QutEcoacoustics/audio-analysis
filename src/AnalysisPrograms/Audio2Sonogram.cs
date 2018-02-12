@@ -20,6 +20,7 @@ namespace AnalysisPrograms
     using System.Text;
     using System.Threading.Tasks;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using Acoustics.Tools.Wav;
     using AnalysisBase;
@@ -167,36 +168,36 @@ namespace AnalysisPrograms
 
         private static Dictionary<string, string> GetConfigDictionary(FileInfo configFile, bool writeParameters)
         {
-            dynamic configuration = Yaml.Deserialise(configFile);
+            Config configuration = ConfigFile.Deserialize(configFile);
 
             // var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
-            var configDict = new Dictionary<string, string>(dictionary: (Dictionary<string, string>)configuration)
+            var configDict = new Dictionary<string, string>(configuration.ToDictionary())
             {
-                // below three lines are examples of retrieving info from dynamic config
+                // below three lines are examples of retrieving info from Config config
                 // string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
                 // bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
                 // scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
 
                 // Resample rate must be 2 X the desired Nyquist.
                 // WARNING: Default used to be the SR of the recording. NOW DEFAULT = 22050.
-                [AnalysisKeys.ResampleRate] = (string)configuration[AnalysisKeys.ResampleRate] ?? "22050",
+                [AnalysisKeys.ResampleRate] = configuration[AnalysisKeys.ResampleRate] ?? "22050",
 
-                [AnalysisKeys.AddAxes] = ((bool?)configuration[AnalysisKeys.AddAxes] ?? true).ToString(),
-                [AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true
+                [AnalysisKeys.AddAxes] = (configuration.GetBoolOrNull(AnalysisKeys.AddAxes) ?? true).ToString(),
+                [AnalysisKeys.AddSegmentationTrack] = (configuration.GetBoolOrNull(AnalysisKeys.AddSegmentationTrack) ?? true).ToString()
             };
 
             // # REDUCTION FACTORS for freq and time dimensions
             // #TimeReductionFactor: 1
             // #FreqReductionFactor: 1
 
-            bool makeSoxSonogram = (bool?)configuration[AnalysisKeys.MakeSoxSonogram] ?? false;
-            configDict[AnalysisKeys.SonogramTitle] = (string)configuration[AnalysisKeys.SonogramTitle] ?? "Sonogram";
-            configDict[AnalysisKeys.SonogramComment] = (string)configuration[AnalysisKeys.SonogramComment] ?? "Sonogram produced using SOX";
-            configDict[AnalysisKeys.SonogramColored] = (string)configuration[AnalysisKeys.SonogramColored] ?? "false";
-            configDict[AnalysisKeys.SonogramQuantisation] = (string)configuration[AnalysisKeys.SonogramQuantisation] ?? "128";
-            configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
-            configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes] ?? "true";
-            configDict[AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
+            bool makeSoxSonogram = configuration.GetBoolOrNull(AnalysisKeys.MakeSoxSonogram) ?? false;
+            configDict[AnalysisKeys.SonogramTitle] = configuration[AnalysisKeys.SonogramTitle] ?? "Sonogram";
+            configDict[AnalysisKeys.SonogramComment] = configuration[AnalysisKeys.SonogramComment] ?? "Sonogram produced using SOX";
+            configDict[AnalysisKeys.SonogramColored] = configuration[AnalysisKeys.SonogramColored] ?? "false";
+            configDict[AnalysisKeys.SonogramQuantisation] = configuration[AnalysisKeys.SonogramQuantisation] ?? "128";
+            configDict[AnalysisKeys.AddTimeScale] = configuration[AnalysisKeys.AddTimeScale] ?? "true";
+            configDict[AnalysisKeys.AddAxes] = configuration[AnalysisKeys.AddAxes] ?? "true";
+            configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
 
             if (!writeParameters)
             {
@@ -459,6 +460,11 @@ namespace AnalysisPrograms
 
         public AnalysisSettings DefaultSettings { get; private set; }
 
+        public AnalyzerConfig ParseConfig(FileInfo file)
+        {
+            return ConfigFile.Deserialize<AnalyzerConfig>(file);
+        }
+
         public void BeforeAnalyze(AnalysisSettings analysisSettings)
         {
             // noop
@@ -471,17 +477,17 @@ namespace AnalysisPrograms
             var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
             var analysisResult = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
-            dynamic configuration = Yaml.Deserialise(analysisSettings.ConfigFile);
 
-            bool saveCsv = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
 
-            if ((bool?)configuration[AnalysisKeys.MakeSoxSonogram] == true)
+            bool saveCsv = analysisSettings.AnalysisDataSaveBehavior;
+
+            if (analysisSettings.Configuration.GetBool(AnalysisKeys.MakeSoxSonogram))
             {
                 Log.Warn("SoX spectrogram generation config variable found (and set to true) but is ignored when running as an IAnalyzer");
             }
 
             // generate spectrogram
-            var configurationDictionary = new Dictionary<string, string>((Dictionary<string, string>)configuration);
+            var configurationDictionary = new Dictionary<string, string>(analysisSettings.Configuration.ToDictionary());
             configurationDictionary[ConfigKeys.Recording.Key_RecordingCallName] = audioFile.FullName;
             configurationDictionary[ConfigKeys.Recording.Key_RecordingFileName] = audioFile.Name;
             var spectrogramResult = Audio2Sonogram.GenerateFourSpectrogramImages(

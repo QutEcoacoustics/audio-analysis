@@ -18,6 +18,7 @@ namespace AnalysisBase
     using System.Runtime.Serialization;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Contracts;
     using GeorgeCloney;
 
@@ -200,7 +201,7 @@ namespace AnalysisBase
         /// <summary>
         /// Gets or sets the object of other configuration properties. Should be mutually exclusive with ConfigFile.
         /// </summary>
-        public dynamic Configuration { get; set; }
+        public Config Configuration { get; set; }
 
         /// <summary>
         /// Gets or sets an object that can be used to store arbitrary configuration or options.
