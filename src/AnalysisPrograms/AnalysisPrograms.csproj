@@ -437,15 +437,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>
-      xcopy "$(ProjectDir)..\..\lib\ffmpeg" "$(TargetDir)audio-utils\ffmpeg\" /S /Y
-      xcopy "$(ProjectDir)..\..\lib\mp3splt" "$(TargetDir)audio-utils\mp3splt\" /S /Y
-      xcopy "$(ProjectDir)..\..\lib\sox" "$(TargetDir)audio-utils\sox\" /S /Y
-      xcopy "$(ProjectDir)..\..\lib\wavpack" "$(TargetDir)audio-utils\wavpack\" /S /Y
-      xcopy "$(ProjectDir)..\..\lib\shntool" "$(TargetDir)audio-utils\shntool\" /S /Y
-
-      rem copy configs
-      xcopy "$(ProjectDir)..\AnalysisConfigFiles" "$(TargetDir)ConfigFiles\" /S /Y
-</PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <MSBuildCommunityTasksPath>$(ProjectDir)..\.build</MSBuildCommunityTasksPath>
@@ -498,6 +490,16 @@
     <TemplateFile Tokens="@(Tokens)" Template=".\Properties\AssemblyInfo.cs.template" OutputFilename="AssemblyInfo.cs" />
   </Target>
   <Target Name="AfterBuild">
+    <!-- Copy our audio tools from lib to build dir -->
+    <Message Text="[AfterBuild]: Scanning for lib files and config files" Importance="High" />
+    <ItemGroup>
+        <AudioTools Include="$(SolutionDir)\lib\audio-utils\**\*.*" />
+        <ConfigFiles Include="$(ProjectDir)..\AnalysisConfigFiles\**\*" /> 
+    </ItemGroup>
+    <Message Text="[AfterBuild]: Copying lib files" Importance="High" />
+    <Copy SourceFiles="@(AudioTools)" DestinationFolder="$(TargetDir)\audio-utils\%(RecursiveDir)" SkipUnchangedFiles="true" />
+    <Message Text="[AfterBuild]: Copying config files" Importance="High" />
+    <Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(TargetDir)\ConfigFiles\%(RecursiveDir)" SkipUnchangedFiles="true" />
     <!-- Copy our linux sqlite native code to our pseudo runtime folder -->
     <Message Text="[AfterBuild]: Reading in packages.config" Importance="High" />
     <XmlPeek Query="packages/package[@id='SQLitePCLRaw.lib.e_sqlite3.linux']/@*[name()='id' or name()='version']" XmlInputPath="packages.config">
