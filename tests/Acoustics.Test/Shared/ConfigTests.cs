@@ -8,7 +8,6 @@ namespace Acoustics.Test.Shared
     using System.Collections.Generic;
     using System.IO;
 
-    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;

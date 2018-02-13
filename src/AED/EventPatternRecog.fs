@@ -1,5 +1,4 @@
-﻿
-module QutSensors.AudioAnalysis.AED.EventPatternRecog
+﻿module QutSensors.AudioAnalysis.AED.EventPatternRecog
 
 open Microsoft.FSharp.Math.SI
 

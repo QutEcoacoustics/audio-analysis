@@ -422,7 +422,10 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.1.0-beta006\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
+    <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.1.0-beta006\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -493,8 +496,8 @@
     <!-- Copy our audio tools from lib to build dir -->
     <Message Text="[AfterBuild]: Scanning for lib files and config files" Importance="High" />
     <ItemGroup>
-        <AudioTools Include="$(SolutionDir)\lib\audio-utils\**\*.*" />
-        <ConfigFiles Include="$(ProjectDir)..\AnalysisConfigFiles\**\*" /> 
+      <AudioTools Include="$(SolutionDir)\lib\audio-utils\**\*.*" />
+      <ConfigFiles Include="$(ProjectDir)..\AnalysisConfigFiles\**\*" />
     </ItemGroup>
     <Message Text="[AfterBuild]: Copying lib files" Importance="High" />
     <Copy SourceFiles="@(AudioTools)" DestinationFolder="$(TargetDir)\audio-utils\%(RecursiveDir)" SkipUnchangedFiles="true" />
