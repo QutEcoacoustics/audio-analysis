@@ -298,5 +298,17 @@ namespace System
 
             return true;
         }
+
+        public static IEnumerable<T> Append<T>(this IEnumerable<T> items, T newItem)
+        {
+            Contract.RequiresNotNull(items, nameof(items));
+
+            foreach (var item in items)
+            {
+                yield return item;
+            }
+
+            yield return newItem;
+        }
     }
 }

@@ -20,38 +20,14 @@ namespace Acoustics.Shared
 
     public class Yaml
     {
-        internal static Deserializer Deserializer => new Deserializer();
+        internal static Deserializer Deserializer => new DeserializerBuilder().IgnoreUnmatchedProperties().Build();
 
-        public static YamlDocument Load(FileInfo file)
+        public static T Deserialize<T>(FileInfo file)
         {
-            using (var stream = file.OpenText())
-            {
-                return Load(stream);
-            }
+            return Deserialize<T>(file.ToFileEntry());
         }
 
-        public static YamlDocument Load(TextReader stream)
-        {
-            // allow merging in yaml back references
-            var parser = new MergingParser(new Parser(stream));
-
-            YamlStream yamlStream = new YamlStream();
-            yamlStream.Load(parser);
-
-            if (yamlStream.Documents.Count != 1)
-            {
-                throw new InvalidOperationException("Acoustics.Shared.Yaml supports loading only one document at a time");
-            }
-
-            return yamlStream.Documents[0];
-        }
-
-        public static T Deserialise<T>(FileInfo file)
-        {
-            return Deserialise<T>(file.ToFileEntry());
-        }
-
-        public static T Deserialise<T>(FileEntry file)
+        public static T Deserialize<T>(FileEntry file)
         {
             using (var stream = file.OpenText())
             {
@@ -68,7 +44,7 @@ namespace Acoustics.Shared
             return deserializer.Deserialize<T>(parser);
         }
 
-        public static void Serialise<T>(FileInfo file, T obj)
+        public static void Serialize<T>(FileInfo file, T obj)
         {
             using (var stream = file.CreateText())
             {
@@ -78,25 +54,23 @@ namespace Acoustics.Shared
             }
         }
 
-        internal static (YamlDocument, T) LoadAndDeserialize<T>(FileInfo file)
+        internal static (object, T) LoadAndDeserialize<T>(FileInfo file)
         {
             using (var stream = file.OpenText())
             {
                 // allow merging in yaml back references
                 var parser = new MergingParser(new Parser(stream));
 
-                YamlStream yamlStream = new YamlStream();
-                yamlStream.Load(parser);
+                var generic = Deserializer.Deserialize<object>(parser);
 
-                if (yamlStream.Documents.Count != 1)
-                {
-                    throw new InvalidOperationException(
-                        "Acoustics.Shared.Yaml supports loading only one document at a time");
-                }
+                // it appears we can't just reuse the parser :-/ so we have to recreate it :-(
+                stream.DiscardBufferedData();
+                stream.BaseStream.Seek(0, SeekOrigin.Begin);
+                parser = new MergingParser(new Parser(stream));
 
                 T obj = Deserializer.Deserialize<T>(parser);
 
-                return (yamlStream.Documents[0], obj);
+                return (generic, obj);
             }
         }
     }

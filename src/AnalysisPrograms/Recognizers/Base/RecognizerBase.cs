@@ -37,23 +37,17 @@ namespace AnalysisPrograms.Recognizers.Base
     {
         public class RecognizerConfig : AnalyzerConfig
         {
-            private string highResolutionIndicesConfig;
-
-            public string HighResolutionIndicesConfig
+            public RecognizerConfig()
             {
-                get
-                {
-                    return this.highResolutionIndicesConfig;
-                }
-                set
-                {
-                     
-                    this.highResolutionIndicesConfig = value;
-                    var file = ConfigFile.Resolve(this.highResolutionIndicesConfig);
-                    var config = ConfigFile.Deserialize<Acoustic.AcousticIndicesConfig>(file);
-                    this.HighResolutionIndices = config;
-                }
+                this.Loaded += config =>
+                    {
+                        var file = ConfigFile.Resolve(this.HighResolutionIndicesConfig);
+                        var indicesConfig = ConfigFile.Deserialize<Acoustic.AcousticIndicesConfig>(file);
+                        this.HighResolutionIndices = indicesConfig;
+                    };
             }
+
+            public string HighResolutionIndicesConfig { get; set; }
 
             public Acoustic.AcousticIndicesConfig HighResolutionIndices { get; private set; }
         }

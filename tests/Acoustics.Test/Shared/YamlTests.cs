@@ -20,7 +20,7 @@ namespace Acoustics.Test.Shared
     public class YamlTests
     {
         private const string TestObjectYaml = @"---
-TestFile: C:\\Temp\\test.tmp
+TestFile: C:\Temp\test.tmp
 SomeProperty: Hello world
 PrivateSetter: 123456
 ...";
@@ -147,7 +147,7 @@ EventThreshold: 0.2
         [TestMethod]
         public void OurDefaultDeserializerSupportsMergingDocuments()
         {
-            var wrapper = Yaml.Deserialise<YamlTestWrapperClass>(this.testDocument);
+            var wrapper = Yaml.Deserialize<YamlTestWrapperClass>(this.testDocument);
 
             Assert.AreEqual(this.wrapperTestCase.InfoA.SomeProperty, wrapper.InfoA.SomeProperty);
             Assert.AreEqual(this.wrapperTestCase.InfoB.SomeProperty, wrapper.InfoB.SomeProperty);
@@ -160,7 +160,7 @@ EventThreshold: 0.2
         [TestMethod]
         public void OurDefaultDeserializerSupportsMergingDocumentsAndZio()
         {
-            var wrapper = Yaml.Deserialise<YamlTestWrapperClass>(this.testDocument.ToFileEntry());
+            var wrapper = Yaml.Deserialize<YamlTestWrapperClass>(this.testDocument.ToFileEntry());
 
             Assert.AreEqual(this.wrapperTestCase.InfoA.SomeProperty, wrapper.InfoA.SomeProperty);
             Assert.AreEqual(this.wrapperTestCase.InfoB.SomeProperty, wrapper.InfoB.SomeProperty);
@@ -204,7 +204,7 @@ EventThreshold: 0.2
 
             public string TestFile { get; set; }
 
-            public int? PrivateSetter { get; }
+            public int? PrivateSetter { get; private set; }
         }
 
         public class YamlTestWrapperClass

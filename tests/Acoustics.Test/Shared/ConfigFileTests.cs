@@ -9,11 +9,17 @@
 namespace Acoustics.Test.Shared
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Reflection;
 
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
+    using Acoustics.Test.TestHelpers;
+
+    using global::AnalysisPrograms;
+
+    using global::AudioAnalysisTools.Indices;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -22,7 +28,7 @@ namespace Acoustics.Test.Shared
     using Zio;
 
     [TestClass]
-    public class ConfigFileTests : BaseTest
+    public class ConfigFileTests
     {
         private FileInfo currentPath;
 
@@ -70,13 +76,13 @@ namespace Acoustics.Test.Shared
             // A folder that does not exist
             ConfigFile.ConfigFolder = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName().Replace(".", string.Empty));
 
-            Assert.Throws<DirectoryNotFoundException>(
+            Assert.ThrowsException<DirectoryNotFoundException>(
                 () =>
                     {
                         var value = ConfigFile.ConfigFolder;
                     });
 
-            Assert.Throws<DirectoryNotFoundException>(
+            Assert.ThrowsException<DirectoryNotFoundException>(
                 () =>
                     {
                         var actual = ConfigFile.Resolve("whatever.yml");
@@ -111,8 +117,8 @@ namespace Acoustics.Test.Shared
         {
             string config = "doesNotExist.yml";
 
-            Assert.Throws<ConfigFileException>(() => { ConfigFile.Resolve(config); });
-            Assert.Throws<ConfigFileException>(
+            Assert.ThrowsException<ConfigFileException>(() => { ConfigFile.Resolve(config); });
+            Assert.ThrowsException<ConfigFileException>(
                 () => { ConfigFile.Resolve(config, Environment.CurrentDirectory.ToDirectoryInfo()); });
         }
 
@@ -121,21 +127,21 @@ namespace Acoustics.Test.Shared
         {
             string config = "C:\\doesNotExist.yml";
 
-            Assert.Throws<ConfigFileException>(() => { ConfigFile.Resolve(config); });
-            Assert.Throws<ConfigFileException>(
+            Assert.ThrowsException<ConfigFileException>(() => { ConfigFile.Resolve(config); });
+            Assert.ThrowsException<ConfigFileException>(
                 () => { ConfigFile.Resolve(config, Environment.CurrentDirectory.ToDirectoryInfo()); });
         }
 
         [TestMethod]
         public void TheResolveMethodThrowsForBadInput()
         {
-            Assert.Throws<ConfigFileException>(() => { ConfigFile.Resolve("   "); });
+            Assert.ThrowsException<ConfigFileException>(() => { ConfigFile.Resolve("   "); });
 
-            Assert.Throws<ArgumentException>(() => { ConfigFile.Resolve(string.Empty); });
+            Assert.ThrowsException<ArgumentException>(() => { ConfigFile.Resolve(string.Empty); });
 
-            Assert.Throws<ArgumentException>(() => { ConfigFile.Resolve((string)null); });
+            Assert.ThrowsException<ArgumentException>(() => { ConfigFile.Resolve((string)null); });
 
-            Assert.Throws<ArgumentNullException>(() => { ConfigFile.Resolve((FileInfo)null); });
+            Assert.ThrowsException<ArgumentNullException>(() => { ConfigFile.Resolve((FileInfo)null); });
         }
 
         [TestMethod]
@@ -154,6 +160,31 @@ namespace Acoustics.Test.Shared
             string config = "doesNotExist.yml";
 
             Assert.IsFalse(ConfigFile.TryResolve(config, null, out _));
+        }
+
+        [TestMethod]
+        public void SupportForDefaultConfigs()
+        {
+            var indexProperties = ConfigFile.Default<Dictionary<string, IndexProperties>>();
+
+            Assert.IsTrue(indexProperties.Length > 10);
+        }
+
+        [TestMethod]
+        public void SupportForDeserializing()
+        {
+            var file = ConfigFile.Resolve("Towsey.Acoustic.yml");
+
+            // this mainly tests if the machinery works
+            var configuration = ConfigFile.Deserialize<Acoustic.AcousticIndicesConfig>(file);
+
+            // we don't care so much about the value
+            Assert.IsTrue(configuration.IndexCalculationDuration > 0);
+            Assert.IsNotNull(configuration.ConfigPath);
+            Assert.That.FileExists(configuration.ConfigPath);
+
+            // the type should autoload indexproperties
+            Assert.IsNotNull(configuration.IndexProperties);
         }
 
         [TestCleanup]
@@ -176,7 +207,7 @@ namespace Acoustics.Test.Shared
                 Path.GetFullPath(
                     Path.Combine(
                         Assembly.GetExecutingAssembly().Location,
-                        "../../../../../AudioAnalysis/AnalysisPrograms/bin/Debug/ConfigFiles"));
+                        "../ConfigFiles"));
         }
 
         private FileInfo WriteConfigFile(DirectoryInfo directory = null)

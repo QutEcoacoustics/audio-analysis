@@ -23,23 +23,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
     {
         public SpectrogramZoomingConfig()
         {
+            this.Loaded += config =>
+                {
+                    // search
+                    var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
+                    this.IndexPropertiesConfig = indicesPropertiesConfig.Path.ToOsPath();
+                    // load
+                    this.IndexProperties = Indices.IndexProperties.GetIndexProperties(indicesPropertiesConfig);
+                };
         }
 
-        private string indexPropertiesConfig;
-
-        public string IndexPropertiesConfig
-        {
-            get => this.indexPropertiesConfig;
-            set
-            {
-                this.indexPropertiesConfig = value;
-                // search
-                var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
-                this.indexPropertiesConfig = indicesPropertiesConfig.Path.ToOsPath();
-                // load
-                this.IndexProperties = Indices.IndexProperties.GetIndexProperties(indicesPropertiesConfig);
-            }
-        }
+        public string IndexPropertiesConfig { get; set; }
 
         public Dictionary<string, IndexProperties> IndexProperties { get; set; }
 

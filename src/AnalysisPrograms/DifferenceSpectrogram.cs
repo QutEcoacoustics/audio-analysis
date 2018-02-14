@@ -98,7 +98,7 @@ namespace AnalysisPrograms
             // WRITE THE YAML CONFIG FILE
             string configPath = Path.Combine(opdir, "differenceSpectrogramConfig.yml");
             var cfgFile = new FileInfo(configPath);
-            Yaml.Serialise(cfgFile, new
+            Yaml.Serialize(cfgFile, new
             {
                 //paths to required directories and files
                 InputDirectory = ipdir,

@@ -11,6 +11,9 @@
 namespace System
 {
     using System;
+    using System.Linq;
+    using System.Text;
+
     using Collections.Generic;
     using Linq.Expressions;
     using Reflection;
@@ -185,11 +188,28 @@ namespace System
             return result;
         }
 
+        public static string GetFriendlyName(this Type t)
+        {
+            if (!t.IsGenericType)
+            {
+                return t.Name;
+            }
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(t.Name.Substring(0, t.Name.LastIndexOf("`", StringComparison.Ordinal)));
+            sb.Append(t.GetGenericArguments().Aggregate(
+                "<",
+                (aggregate, type) => aggregate + (aggregate == "<" ? string.Empty : ",") + GetFriendlyName(type)));
+            sb.Append(">");
+
+            return sb.ToString();
+        }
+
         internal static bool HasAttr<T>(this MemberInfo info)
         {
             return info.GetCustomAttributes(typeof(T), true).Length > 0;
         }
-
 
         internal static T Attr<T>(this MemberInfo info)
         {

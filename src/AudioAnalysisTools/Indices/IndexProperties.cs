@@ -38,19 +38,17 @@ namespace AudioAnalysisTools.Indices
 
     public abstract class AnalyzerConfigIndexProperties : AnalyzerConfig, IIndexPropertyReferenceConfiguration
     {
-        private string indexPropertiesConfig;
-
-        public string IndexPropertiesConfig
+        protected AnalyzerConfigIndexProperties()
         {
-            get => this.indexPropertiesConfig;
-            set
-            {
-                this.indexPropertiesConfig = value;
-                var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
-                this.indexPropertiesConfig = indicesPropertiesConfig.Path.ToOsPath();
-                this.IndexProperties = Indices.IndexProperties.GetIndexProperties(indicesPropertiesConfig);
-            }
+            this.Loaded += config =>
+                {
+                    var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
+                    this.IndexPropertiesConfig = indicesPropertiesConfig.Path.ToOsPath();
+                    this.IndexProperties = Indices.IndexProperties.GetIndexProperties(indicesPropertiesConfig);
+                };
         }
+
+        public string IndexPropertiesConfig { get; set; }
 
         public Dictionary<string, IndexProperties> IndexProperties { get; private set; }
     }
@@ -318,7 +316,7 @@ namespace AudioAnalysisTools.Indices
                 }
                 else
                 {
-                    var deserialized = Yaml.Deserialise<Dictionary<string, IndexProperties>>(configFile);
+                    var deserialized = Yaml.Deserialize<Dictionary<string, IndexProperties>>(configFile);
 
                     int i = 0;
                     foreach (var kvp in deserialized)

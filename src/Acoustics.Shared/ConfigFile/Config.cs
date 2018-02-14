@@ -11,10 +11,26 @@ namespace Acoustics.Shared.ConfigFile
 
     using Acoustics.Shared.Contracts;
 
-    using YamlDotNet.RepresentationModel;
-
     public class Config
     {
+        private static readonly Convert<bool> BoolConverter =
+            (string value, out bool convertedValue) => bool.TryParse(value, out convertedValue);
+
+        private static readonly Convert<double> DoubleConverter = (string value, out double convertedValue) =>
+            double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out convertedValue);
+
+        private static readonly Convert<int> IntConverter = (string value, out int convertedValue) =>
+            int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out convertedValue);
+
+        private static readonly Convert<string> StringConverter = (string s, out string convertedValue) =>
+            {
+                convertedValue = s;
+                return true;
+            };
+
+        private static readonly Convert<TimeSpan> TimeSpanConverter = (string value, out TimeSpan convertedValue) =>
+            TimeSpan.TryParse(value, CultureInfo.InvariantCulture, out convertedValue);
+
         public Config()
         {
             // no op
@@ -22,253 +38,132 @@ namespace Acoustics.Shared.ConfigFile
 
         internal Config(TextReader streamReader, string configPath)
         {
-            this.ConfigYamlDocument = Yaml.Load(streamReader);
+            this.GenericConfig = Yaml.Deserialize<object>(streamReader);
             this.ConfigPath = configPath;
         }
 
-        internal Config(YamlDocument document, string configPath)
+        internal Config(object document, string configPath)
         {
-            this.ConfigYamlDocument = document;
+            this.GenericConfig = document;
             this.ConfigPath = configPath;
+        }
+
+        private delegate bool Convert<T>(string value, out T convertedValue);
+
+        public event Action<Config> Loaded;
+
+        private enum MatchType
+        {
+            NotFound,
+            NullValue,
+            Found,
         }
 
         public string ConfigPath { get; internal set; }
 
-        public YamlDocument ConfigYamlDocument { get; internal set; }
+        public object GenericConfig { get; internal set; }
 
         public string this[string key] => this.GetStringOrNull(key);
 
-        public string GetString(string path) => this.MustHaveValue(path, this.GetStringOrNull(path));
+        public string GetString(string path) => this.Get(path, StringConverter);
 
-        public int GetInt(string path) => this.MustHaveValue(path, this.GetIntOrNull(path)).Value;
+        public int GetInt(string path) => this.Get(path, IntConverter);
 
-        public double GetDouble(string path) => this.MustHaveValue(path, this.GetDoubleOrNull(path)).Value;
+        public double GetDouble(string path) => this.Get(path, DoubleConverter);
 
-        public bool GetBool(string path) => this.MustHaveValue(path, this.GetBoolOrNull(path)).Value;
+        public bool GetBool(string path) => this.Get(path, BoolConverter);
 
-        public TimeSpan GetTimeSpan(string path) => this.MustHaveValue(path, this.GetTimeSpanOrNull(path)).Value;
+        public TimeSpan GetTimeSpan(string path) => this.Get(path, TimeSpanConverter);
 
         public string GetStringOrNull(string path)
         {
-            var result = this.TryGetString(path, out var value);
-
-            if (result)
-            {
-                return value;
-            }
-
-            throw new ConfigFileException($"Trying to get value at path {path} failed");
+            this.TryGetString(path, out var value);
+            return value;
         }
 
         public int? GetIntOrNull(string path)
         {
             var result = this.TryGetInt(path, out var value);
-
-            if (result)
-            {
-                return value;
-            }
-
-            throw new ConfigFileException($"Trying to get value at path {path} failed");
+            return result ? value : default(int?);
         }
 
         public double? GetDoubleOrNull(string path)
         {
             var result = this.TryGetDouble(path, out var value);
-
-            if (result)
-            {
-                return value;
-            }
-
-            throw new ConfigFileException($"Trying to get value at path {path} failed");
+            return result ? value : default(double?);
         }
 
         public bool? GetBoolOrNull(string path)
         {
             var result = this.TryGetBool(path, out var value);
-
-            if (result)
-            {
-                return value;
-            }
-
-            throw new ConfigFileException($"Trying to get value at path {path} failed");
+            return result ? value : default(bool?);
         }
 
         public TimeSpan? GetTimeSpanOrNull(string path)
         {
             var result = this.TryGetTimeSpan(path, out var value);
-
-            if (result)
-            {
-                return value;
-            }
-
-            throw new ConfigFileException($"Trying to get value at path {path} failed");
+            return result ? value : default(TimeSpan?);
         }
 
-        public bool TryGetString(string path, out string value)
-        {
-            value = default(string);
-            var node = this.GetNode(path);
+        public bool TryGetString(string path, out string value) => this.TryGet(path, out value, StringConverter);
 
-            if (node == null)
-            {
-                return false;
-            }
+        public bool TryGetInt(string path, out int value) => this.TryGet(path, out value, IntConverter);
 
-            if (node.Value == null)
-            {
-                return true;
-            }
+        public bool TryGetDouble(string path, out double value) => this.TryGet(path, out value, DoubleConverter);
 
-            value = node.Value;
-            return true;
-        }
+        public bool TryGetBool(string path, out bool value) => this.TryGet(path, out value, BoolConverter);
 
-        public bool TryGetInt(string path, out int? value)
-        {
-            value = default(int);
-            var node = this.GetNode(path);
-
-            if (node == null)
-            {
-                return false;
-            }
-
-            if (node.Value == null)
-            {
-                return true;
-            }
-
-            var result = int.TryParse(node.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var scalar);
-            value = scalar;
-            return result;
-        }
-
-        public bool TryGetDouble(string path, out double? value)
-        {
-            value = default(double);
-            var node = this.GetNode(path);
-
-            if (node == null)
-            {
-                return false;
-            }
-
-            if (node.Value == null)
-            {
-                return true;
-            }
-
-            var result = double.TryParse(node.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var scalar);
-            value = scalar;
-            return result;
-        }
-
-        public bool TryGetBool(string path, out bool? value)
-        {
-            value = default(bool);
-            var node = this.GetNode(path);
-
-            if (node == null)
-            {
-                return false;
-            }
-
-            if (node.Value == null)
-            {
-                return true;
-            }
-
-            var result = bool.TryParse(node.Value, out var scalar);
-            value = scalar;
-            return result;
-        }
-
-        public bool TryGetEnum<T>(string path, out T? value)
-            where T : struct 
+        public bool TryGetEnum<T>(string path, out T value)
+            where T : struct
         {
             Contract.Requires(typeof(T).IsSubclassOf(typeof(Enum)), "An Enum must be provided");
 
-            value = null;
-
-            var node = this.GetNode(path);
-
-            if (node == null)
-            {
-                return false;
-            }
-
-            if (node.Value == null)
-            {
-                return true;
-            }
-
-            var result = Enum.TryParse<T>(node.Value, true, out var scalar);
-            value = scalar;
-            return result;
+            return this.TryGet(path, out value, GetEnumConverter<T>());
         }
 
-        public bool TryGetTimeSpan(string path, out TimeSpan? value)
-        {
-            value = null;
-
-            var node = this.GetNode(path);
-
-            if (node == null)
-            {
-                return false;
-            }
-
-            if (node.Value == null)
-            {
-                return true;
-            }
-
-            var result = TimeSpan.TryParse(node.Value, CultureInfo.InvariantCulture, out var scalar);
-            value = scalar;
-            return result;
-        }
-
-    
+        public bool TryGetTimeSpan(string path, out TimeSpan value) => this.TryGet(path, out value, TimeSpanConverter);
 
         [Obsolete("Any code that depends on this is way out of date!")]
         public Dictionary<string, string> ToDictionary()
         {
             var result = new Dictionary<string, string>();
 
-            if (!(this.ConfigYamlDocument.RootNode is YamlMappingNode root))
-            {
-                return result;
-            }
-
-            this.VisitAll(root, result, string.Empty);
+            this.VisitAll(this.GenericConfig, result, string.Empty);
 
             return result;
         }
 
+        internal void InvokeLoaded()
+        {
+            this.Loaded?.Invoke(this);
+        }
+
+        private static Convert<T> GetEnumConverter<T>()
+            where T : struct
+        {
+            return (string value, out T convertedValue) => Enum.TryParse(value, true, out convertedValue);
+        }
+
         // Recursive!
-        private void VisitAll(YamlNode node, Dictionary<string, string> result, string prefix)
+        private void VisitAll(object node, Dictionary<string, string> result, string prefix)
         {
             var separator = prefix == string.Empty ? string.Empty : "/";
 
             switch (node)
             {
-                case YamlMappingNode mappingNode:
-                    foreach (var child in mappingNode.Children)
+                case Dictionary<object, object> mappingNode:
+                    foreach (var child in mappingNode)
                     {
-                        var newKey = prefix + separator + ((YamlScalarNode)child.Key);
+                        var newKey = prefix + separator + child.Key;
 
                         VisitChild(child.Value, newKey);
                     }
 
                     return;
-                case YamlSequenceNode sequenceNode:
-                    for (var index = 0; index < sequenceNode.Children.Count; index++)
+                case List<object> sequenceNode:
+                    for (var index = 0; index < sequenceNode.Count; index++)
                     {
-                        var child = sequenceNode.Children[index];
+                        var child = sequenceNode[index];
                         var newKey = prefix + separator + index;
 
                         VisitChild(child, newKey);
@@ -276,23 +171,28 @@ namespace Acoustics.Shared.ConfigFile
 
                     return;
                 default:
-                    throw new InvalidOperationException();
+                    // this case should only happen when the root of the document is a sclar (for some reason)
+                    VisitChild(node, prefix);
+                    break;
             }
 
-            void VisitChild(YamlNode child, string newKey)
+            void VisitChild(object child, string newKey)
             {
                 switch (child)
                 {
-                    case YamlScalarNode scalar:
-                        result.Add(newKey, scalar.Value);
-                        return;
-                    case YamlMappingNode map:
+                    case Dictionary<object, object> map:
                         // recurse
                         this.VisitAll(map, result, newKey);
                         return;
-                    case YamlSequenceNode sequence:
+                    case List<object> sequence:
                         // recurse
                         this.VisitAll(sequence, result, newKey);
+                        return;
+                    case object scalar:
+                        result.Add(newKey, scalar.ToString());
+                        return;
+                    case null:
+                        result.Add(newKey, null);
                         return;
                     default:
                         throw new InvalidOperationException();
@@ -300,46 +200,74 @@ namespace Acoustics.Shared.ConfigFile
             }
         }
 
-        private YamlScalarNode GetNode(string path)
+        private bool TryGet<T>(string path, out T value, Convert<T> converter)
+        {
+            value = default;
+
+            var (match, foundValue) = this.GetNode(path);
+            switch (match)
+            {
+                case MatchType.NotFound:
+                    return false;
+                case MatchType.NullValue:
+                    return false;
+                case MatchType.Found:
+                    return converter(foundValue, out value);
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private T Get<T>(string path, Convert<T> converter)
+        {
+            var (match, foundValue) = this.GetNode(path);
+            switch (match)
+            {
+                case MatchType.NotFound:
+                    throw new ConfigFileException($"The value for {path} was not found and a value is required.");
+                case MatchType.NullValue:
+                    throw new ConfigFileException($"The value for {path} was null or empty and a value is required.");
+                case MatchType.Found:
+                    var success = converter(foundValue, out var value);
+                    if (success)
+                    {
+                        return value;
+                    }
+
+                    throw new ConfigFileException(
+                        $"The value for {path} was not the expected type:"
+                        + $" {foundValue} could not by interpreted as {typeof(T).Name}.");
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private (MatchType Match, string Value) GetNode(string path)
         {
             // path in the form of
             //  /key/list/0/value
 
             if (path.IsNullOrEmpty())
             {
-                return null;
+                return (MatchType.NotFound, null);
             }
 
             var fragments = path.Split(new[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
 
             if (fragments.Length == 0)
             {
-                return null;
+                return (MatchType.NotFound, null);
             }
 
-            YamlNode current = this.ConfigYamlDocument.RootNode;
-            for (var i = 0; i < fragments.Length; i++)
+            var current = this.GenericConfig;
+            foreach (var fragment in fragments)
             {
-                var fragment = fragments[i];
-                var isLast = i == fragments.Length - 1;
-
-                if (isLast)
+                if (current is Dictionary<object, object> mappingNode)
                 {
-                    if (current is YamlScalarNode node)
-                    {
-                        return node;
-                    }
-
-                    // path not found
-                    return null;
-                }
-
-                if (current is YamlMappingNode mappingNode)
-                {
-                    YamlNode newNode = null;
+                    object newNode = null;
                     foreach (var entry in mappingNode)
                     {
-                        if (((YamlScalarNode)entry.Key).Value == fragment)
+                        if ((string)entry.Key == fragment)
                         {
                             newNode = entry.Value;
                             break;
@@ -353,18 +281,17 @@ namespace Acoustics.Shared.ConfigFile
                     }
 
                     // fragment of path not found
-                    return null;
+                    return (MatchType.NotFound, null);
                 }
 
-                if (current is YamlSequenceNode sequenceNode)
+                if (current is List<object> sequenceNode)
                 {
                     // this part of the fragment must be an index
                     if (int.TryParse(fragment, NumberStyles.None, CultureInfo.InvariantCulture, out var seqIndex))
                     {
-                        if (seqIndex > sequenceNode.Children.Count - 1)
+                        if (seqIndex > sequenceNode.Count - 1)
                         {
-                            // path index out of index range
-                            return null;
+                            return (MatchType.NotFound, null);
                         }
 
                         current = sequenceNode[seqIndex];
@@ -372,25 +299,29 @@ namespace Acoustics.Shared.ConfigFile
                     }
 
                     // not a valid index
-                    return null;
+                    return (MatchType.NotFound, null);
                 }
+
+                // if the current value is not map or list we're in an invalid state
+                // or the path requested is too long and we've hit a scalar
+                return (MatchType.NotFound, null);
             }
 
-            // A valid value is returned my the yaml scalar node case above.
-            // If we get to here something hasn't matched.
-            return null;
-        }
-
-        [JetBrains.Annotations.NotNull]
-        private T MustHaveValue<T>(string path, T value)
-        {
-            if (value == null)
+            // returned value is either a scalar (we found it) or a map or list (we didn't find it)
+            switch (current)
             {
-                throw new ConfigFileException($"The value for {path} was null but a value must be provided.");
+                case null:
+                    return (MatchType.NullValue, null);
+                case Dictionary<object, object> _:
+                case List<object> _:
+                    // path not found
+                    // If we get to here something hasn't matched.
+                    return (MatchType.NotFound, null);
+                case string s:
+                    return (MatchType.Found, s);
+                default:
+                    throw new InvalidOperationException();
             }
-
-            return value;
         }
-
     }
 }

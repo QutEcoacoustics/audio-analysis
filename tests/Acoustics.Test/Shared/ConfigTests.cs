@@ -8,6 +8,7 @@ namespace Acoustics.Test.Shared
     using System.Collections.Generic;
     using System.IO;
 
+    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -31,7 +32,6 @@ k:
   - null
   - Null
   - NULL
-  -
 l: true
 m: false
 ";
@@ -58,10 +58,10 @@ m: false
                                    { "f/0/h", "2" },
                                    { "f/1/i", "hello" },
                                    { "f/2/j", "world" },
-                                   { "k/0", "~" },
-                                   { "k/0", "null" },
-                                   { "k/0", "Null" },
-                                   { "k/0", "NULL" },
+                                   { "k/0", null },
+                                   { "k/1", null },
+                                   { "k/2", null },
+                                   { "k/3", null },
                                    { "l", "true" },
                                    { "m", "false" },
                                };
@@ -104,16 +104,21 @@ m: false
                     Assert.AreEqual(i, actualInt);
                     break;
                 case string s:
-                    var actualString = this.config.GetDoubleOrNull(path);
+                    var actualString = this.config.GetStringOrNull(path);
                     Assert.AreEqual(s, actualString);
                     break;
                 case null:
-                    Assert.IsTrue(this.config.TryGetDouble(path, out var actual));
-                    Assert.AreEqual(null, actual);
-                    Assert.IsTrue(this.config.TryGetDouble(path, out var actual1));
-                    Assert.AreEqual(null, actual1);
-                    Assert.IsTrue(this.config.TryGetDouble(path, out var actual2));
-                    Assert.AreEqual(null, actual2);
+                    Assert.IsFalse(this.config.TryGetDouble(path, out var actual));
+                    Assert.AreEqual(default, actual);
+                    Assert.IsFalse(this.config.TryGetDouble(path, out var actual1));
+                    Assert.AreEqual(default, actual1);
+                    Assert.IsFalse(this.config.TryGetDouble(path, out var actual2));
+                    Assert.AreEqual(default, actual2);
+
+                    Assert.AreEqual(null, this.config.GetIntOrNull(path));
+                    Assert.AreEqual(null, this.config.GetDoubleOrNull(path));
+                    Assert.AreEqual(null, this.config.GetStringOrNull(path));
+                    Assert.AreEqual(null, this.config.GetTimeSpanOrNull(path));
                     break;
                 default:
                     throw new InvalidOperationException();
@@ -126,7 +131,7 @@ m: false
         [DataRow("z", 456)]
         [DataRow("///", 456)]
         [DataRow("\\", 456)]
-        [DataRow("a", "whatever")]
+        [DataRow("a/a", "whatever")]
         [DataRow("c/d", 123.456)]
         [DataRow("f/10/g", 1)]
         [DataRow("f/-1/h", 2)]

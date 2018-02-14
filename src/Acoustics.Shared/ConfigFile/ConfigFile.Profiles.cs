@@ -25,38 +25,65 @@
         {
             profile = null;
 
-            var root = configuration.ConfigYamlDocument.RootNode as YamlMappingNode;
-            var profiles =
-                (YamlMappingNode)root?.Children.First(kvp => ((YamlScalarNode)kvp.Key).Value == ProfilesKey).Value;
-
-            // find matching profile
-            var foundNodes = profiles.Where(kvp => (string)kvp.Key == profileName);
-            if (foundNodes.Count() != 1)
+            if (!(configuration.GenericConfig is Dictionary<object, object> root))
             {
                 return false;
             }
 
-            var doc = new YamlDocument(foundNodes.First().Value);
-            profile = new Config(doc, configuration.ConfigPath);
+            if (!root.TryGetValue(ProfilesKey, out var profileNode))
+            {
+                return false;
+            }
 
+            if (!(profileNode is Dictionary<object, object> profileMapping))
+            {
+                return false;
+            }
+
+            // find matching profile
+            if (!profileMapping.TryGetValue(profileName, out var mapping))
+            {
+                return false;
+            }
+
+            profile = new Config(mapping, configuration.ConfigPath);
             return true;
         }
 
         public static bool HasProfiles(Config configuration)
         {
-            var root = configuration.ConfigYamlDocument.RootNode as YamlMappingNode;
-            return root?.Children.Any(kvp => ((YamlScalarNode)kvp.Key).Value == ProfilesKey) ?? false;
+            if (!(configuration.GenericConfig is Dictionary<object, object> root))
+            {
+                return false;
+            }
+
+            if (!root.TryGetValue(ProfilesKey, out var profileNode))
+            {
+                return false;
+            }
+
+            return profileNode is Dictionary<string, object>;
         }
 
         public static string[] GetProfileNames<TConfig>(TConfig configuration)
             where TConfig : Config
         {
-            var root = configuration.ConfigYamlDocument.RootNode as YamlMappingNode;
-            var profiles =
-                (YamlMappingNode)root?.Children.First(kvp => ((YamlScalarNode)kvp.Key).Value == ProfilesKey).Value;
+            if (!(configuration.GenericConfig is Dictionary<object, object> root))
+            {
+                return null;
+            }
 
-            // extract keys
-            return profiles.Select(kvp => (string)kvp.Key).ToArray();
+            if (!root.TryGetValue(ProfilesKey, out var profileNode))
+            {
+                return null;
+            }
+
+            if (!(profileNode is Dictionary<object, object> profileMapping))
+            {
+                return null;
+            }
+
+            return profileMapping.Keys.Cast<string>().ToArray();
         }
 
         public static IEnumerable<(string Name, object Profile)> GetAllProfiles<T>(T configuration)

@@ -63,7 +63,7 @@ namespace AnalysisPrograms.StandardizedFeatures
             var recording = new AudioRecording(audioFile.FullName);
 
             // Configurations non-specific for bands
-            TimeSpan indexCalculationDuration = configuration.IndexCalculationDuration;
+            TimeSpan indexCalculationDuration = configuration.IndexCalculationDurationTimeSpan;
             TimeSpan bgNoiseNeighbourhood = configuration.BgNoiseBuffer;
 
             // Bands

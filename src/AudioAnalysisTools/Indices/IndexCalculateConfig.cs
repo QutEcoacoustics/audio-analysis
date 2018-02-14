@@ -58,6 +58,7 @@ namespace AudioAnalysisTools.Indices
         public const double DefaultBgNoiseNeighborhood = 5;
 
         private FreqScaleType frequencyScaleType;
+        private double indexCalculationDuration = DefaultIndexCalculationDurationInSeconds;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IndexCalculateConfig"/> class.
@@ -65,7 +66,7 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         public IndexCalculateConfig()
         {
-            this.IndexCalculationDuration = TimeSpan.FromSeconds(DefaultIndexCalculationDurationInSeconds);
+            this.IndexCalculationDurationTimeSpan = TimeSpan.FromSeconds(DefaultIndexCalculationDurationInSeconds);
             this.BgNoiseNeighborhood = DefaultBgNoiseNeighborhood;
 
             this.FrameLength = DefaultWindowSize;
@@ -87,17 +88,33 @@ namespace AudioAnalysisTools.Indices
         /// Default=60.0
         /// Units=seconds
         /// </summary>
-        public TimeSpan IndexCalculationDuration { get; set; }
+        [YamlIgnore]
+        [JsonIgnore]
+        public TimeSpan IndexCalculationDurationTimeSpan
+        {
+            get => this.indexCalculationDuration.Seconds();
+            set => this.indexCalculationDuration = value.TotalSeconds;
+        }
 
         /// <summary>
-        /// Gets or sets bG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
+        /// Gets or sets the duration of the sub-segment for which indices are calculated.
+        /// Default = 60 seconds i.e. same duration as the Segment.
+        /// </summary>
+        public double IndexCalculationDuration
+        {
+            get => this.indexCalculationDuration;
+            protected set => this.indexCalculationDuration = value;
+        }
+
+        /// <summary>
+        /// Gets bG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
         /// </summary>
         [YamlIgnore]
         [JsonIgnore]
         public TimeSpan BgNoiseBuffer => this.BgNoiseNeighborhood.Seconds();
 
         /// <summary>
-        /// Gets the amount of audio either side of the required subsegment from which to derive an estimate of background noise.
+        /// Gets or sets the amount of audio either side of the required subsegment from which to derive an estimate of background noise.
         /// Units = seconds
         /// As an example: IF (IndexCalculationDuration = 1 second) AND (BGNNeighborhood = 10 seconds)
         ///                THEN BG noise estimate will be derived from 21 seconds of audio centred on the subsegment.
@@ -192,7 +209,7 @@ namespace AudioAnalysisTools.Indices
             };
 
             var duration = configuration.GetDoubleOrNull(AnalysisKeys.IndexCalculationDuration);
-            config.IndexCalculationDuration = (duration ?? DefaultIndexCalculationDurationInSeconds).Seconds();
+            config.IndexCalculationDurationTimeSpan = (duration ?? DefaultIndexCalculationDurationInSeconds).Seconds();
             duration = configuration.GetDoubleOrNull(AnalysisKeys.BgNoiseNeighbourhood) ;
             config.BgNoiseNeighborhood = duration ?? DefaultBgNoiseNeighborhood;
 

@@ -18,12 +18,12 @@ SegmentOverlap: 0
 # The Timespan (in seconds) over which summary and spectral indices are calculated
 IndexCalculationDuration: 60.0
 
-# BgNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
+# BgNoiseNeighborhood: units=seconds (default IndexCalculationDuration = 60 seconds)
 # BG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
 #    Ten seconds is considered a minimum interval to obtain a reliable estimate of BG noise.
 #    The  BG noise interval is not extended beyond start or end of recording segment.
 #    Consequently for a 60sec Index calculation duration, the  BG noise is calculated form the 60sec segment only.
-BgNoiseNeighbourhood: 5
+BgNoiseNeighborhood: 5
 
 # Resample rate must be 2 X the desired Nyquist
 ResampleRate: 22050

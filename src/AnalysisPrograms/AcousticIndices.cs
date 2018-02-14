@@ -145,7 +145,7 @@ namespace AnalysisPrograms
         public void BeforeAnalyze(AnalysisSettings analysisSettings)
         {
             var configuration = (AcousticIndicesConfig)analysisSettings.Configuration;
-            
+
             configuration.Validate(analysisSettings.AnalysisMaxSegmentDuration.Value);
 
             analysisSettings.AnalysisAnalyzerSpecificConfiguration = configuration;
@@ -175,7 +175,8 @@ namespace AnalysisPrograms
                 }
 
                 // set IndexCalculationDuration i.e. duration of a subsegment
-                if (this.IndexCalculationDuration <= 0) { 
+                if (this.IndexCalculationDuration <= 0)
+                {
                     this.IndexCalculationDuration = defaultIndexCalculationDuration.TotalSeconds;
                     Log.Warn(
                         "IndexCalculationDuration from config file is invalid"
@@ -191,16 +192,6 @@ namespace AnalysisPrograms
             }
 
             public bool TileOutput { get; private set; } = false;
-
-            /// <summary>
-            /// Gets the duration of the sub-segment for which indices are calculated.
-            /// Default = 60 seconds i.e. same duration as the Segment.
-            /// </summary>
-            public new double IndexCalculationDuration
-            {
-                get => base.IndexCalculationDuration.TotalSeconds;
-                private set => base.IndexCalculationDuration = value.Seconds();
-            }
         }
 
         public AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
@@ -376,7 +367,7 @@ namespace AnalysisPrograms
                     SampleRateResampled = sampleRate,
                     FrameLength = frameWidth,
                     FrameStep = settings.Configuration.GetIntOrNull(AnalysisKeys.FrameStep) ?? frameWidth,
-                    IndexCalculationDuration = ((IndexCalculateConfig)acousticIndicesConfig).IndexCalculationDuration,
+                    IndexCalculationDuration = ((IndexCalculateConfig)acousticIndicesConfig).IndexCalculationDurationTimeSpan,
                     BgNoiseNeighbourhood = acousticIndicesConfig.BgNoiseBuffer,
                     AnalysisStartOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
                     MaximumSegmentDuration = settings.AnalysisMaxSegmentDuration,
@@ -400,7 +391,7 @@ namespace AnalysisPrograms
             var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectra, resultsDirectory, basename);
 
             // HACK: do not render false color spectrograms unless IndexCalculationDuration = 60.0 (the normal resolution)
-            if (((IndexCalculateConfig)acousticIndicesConfig).IndexCalculationDuration != 60.0.Seconds())
+            if (((IndexCalculateConfig)acousticIndicesConfig).IndexCalculationDurationTimeSpan != 60.0.Seconds())
             {
                 Log.Warn("False color spectrograms were not rendered");
             }

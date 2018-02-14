@@ -59,7 +59,7 @@ namespace AudioAnalysisTools.Indices
             int signalLength = recording.WavReader.GetChannel(0).Length;
             int sampleRate = recording.WavReader.SampleRate;
             var segmentDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
-            var indexCalculationDuration = config.IndexCalculationDuration;
+            var indexCalculationDuration = config.IndexCalculationDurationTimeSpan;
             int nyquist = sampleRate / 2;
 
             // Get FRAME parameters for the calculation of Acoustic Indices

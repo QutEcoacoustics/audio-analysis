@@ -15,6 +15,8 @@ namespace Acoustics.Shared.ConfigFile
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
+
     using Contracts;
     using Fasterflect;
 
@@ -51,20 +53,22 @@ namespace Acoustics.Shared.ConfigFile
 
         public static Config Deserialize(FileInfo file)
         {
-            return new Config(Yaml.Load(file), file.FullName);
+            var config = new Config(file, file.FullName);
+            config.InvokeLoaded();
+            return config;
         }
 
         public static T Deserialize<T>(FileInfo file)
             where T : Config
         {
-            
-            (YamlDocument document, T config) = Yaml.LoadAndDeserialize<T>(file);
+            (object generic, T config) = Yaml.LoadAndDeserialize<T>(file);
 
-            config.ConfigYamlDocument = document;
+            config.GenericConfig = generic;
+            config.ConfigPath = file.FullName;
+            config.InvokeLoaded();
 
             return config;
         }
-
 
         public static FileInfo ResolveOrDefault<T>(FileInfo file, params DirectoryInfo[] searchPaths)
         {
@@ -93,6 +97,7 @@ namespace Acoustics.Shared.ConfigFile
                           + errorMessage;
             throw new ConfigFileException(message);
         }
+
         public static FileInfo Default<T>()
         {
             if (TryDefault<T>(out var errorMessage, out var fileInfo))
@@ -110,7 +115,21 @@ namespace Acoustics.Shared.ConfigFile
             Type configType = typeof(T);
 
             // lookup default config from well known names list
-            if (Defaults.TryGetValue(configType, out var defaultName))
+            var found = Defaults.TryGetValue(configType, out var defaultName);
+
+            // sometimes static constructors might not have been invoked yet
+            if (!found)
+            {
+                var types = configType.GenericTypeArguments.Append(configType);
+                foreach (var type in types)
+                {
+                    RuntimeHelpers.RunClassConstructor(type.TypeHandle);
+                }
+
+                found = Defaults.TryGetValue(configType, out defaultName);
+            }
+
+            if (found)
             {
                 FileEntry defaultConfig = null;
                 if (TryResolveInConfigFolder(defaultName, ref defaultConfig))
@@ -127,7 +146,7 @@ namespace Acoustics.Shared.ConfigFile
             }
             else
             {
-                errorMessage = $"no default was registered for type `{configType.Name}`";
+                errorMessage = $"no default was registered for type `{configType.GetFriendlyName()}`";
             }
 
             return false;

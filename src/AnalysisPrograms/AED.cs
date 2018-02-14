@@ -338,7 +338,7 @@ namespace AnalysisPrograms
 
         public static AedConfiguration GetAedParametersFromConfigFileOrDefaults(Config configuration)
         {
-            if (!configuration.TryGetEnum(AnalysisKeys.NoiseDoReduction, out NoiseReductionType? noiseReduction) || noiseReduction == null)
+            if (!configuration.TryGetEnum(AnalysisKeys.NoiseDoReduction, out NoiseReductionType noiseReduction))
             {
                 noiseReduction = NoiseReductionType.None;
                 Log.Warn("Noise reduction disabled, default AED noise removal used - this indicates a bad config file");
@@ -354,7 +354,7 @@ namespace AnalysisPrograms
                            AedEventColor = configuration[nameof(AedConfiguration.AedEventColor)].ParseAsColor(),
                            AedHitColor = configuration[nameof(AedConfiguration.AedHitColor)].ParseAsColor(),
                            ResampleRate = configuration.GetInt(nameof(AedConfiguration.ResampleRate)),
-                           NoiseReductionType = noiseReduction.Value,
+                           NoiseReductionType = noiseReduction,
                            NoiseReductionParameter = configuration.GetDouble(AnalysisKeys.NoiseBgThreshold),
                        };
         }

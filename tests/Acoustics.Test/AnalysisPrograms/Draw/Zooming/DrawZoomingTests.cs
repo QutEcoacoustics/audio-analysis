@@ -79,7 +79,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
                 config.IndexPropertiesConfig = ".\\IndexPropertiesConfig.Zooming.yml";
 
                 var newConfigFile = this.outputDirectory.CombineFile("SpectrogramZoomingConfig.yml");
-                Yaml.Serialise(newConfigFile, config);
+                Yaml.Serialize(newConfigFile, config);
 
                 // generate the zooming spectrograms
                 DrawZoomingSpectrograms.Execute(

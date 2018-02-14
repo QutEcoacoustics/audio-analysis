@@ -40,7 +40,7 @@ namespace AnalysisPrograms.Recognizers.Base
     {
         public class MultiRecognizerConfig : RecognizerConfig
         {
-            public string[] SpeciesList { get; set; }    
+            public string[] SpeciesList { get; set; }
         }
 
         public override string Author => "Ecosounds";

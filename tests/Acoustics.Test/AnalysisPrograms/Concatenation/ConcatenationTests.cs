@@ -248,7 +248,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             // get the default config file
             var defaultConfigFile = PathHelper.ResolveConfigFile("SpectrogramFalseColourConfig.yml");
-            var config = Yaml.Deserialise<LdSpectrogramConfig>(defaultConfigFile);
+            var config = Yaml.Deserialize<LdSpectrogramConfig>(defaultConfigFile);
 
             // make changes to config file as required for test
             config.ColorMap1 = "BGN-ENT-POW";
@@ -256,7 +256,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             // write new config
             var testConfig = this.outputDirectory.CombineFile("SpectrogramFalseColourConfig.yml");
-            Yaml.Serialise(testConfig, config);
+            Yaml.Serialize(testConfig, config);
 
             var arguments = new ConcatenateIndexFiles.Arguments
             {

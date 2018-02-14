@@ -257,7 +257,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
             var indexCalculateConfig = ConfigFile.Deserialize<IndexCalculateConfig>(configFile);
-            indexCalculateConfig.IndexCalculationDuration = TimeSpan.FromSeconds(20);
+            indexCalculateConfig.IndexCalculationDurationTimeSpan = TimeSpan.FromSeconds(20);
 
             var results = IndexCalculate.Analysis(
                 recording,
