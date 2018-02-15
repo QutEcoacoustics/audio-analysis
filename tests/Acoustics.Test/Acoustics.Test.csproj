@@ -301,9 +301,6 @@
     <Content Include="ExampleTestTemplate.cs.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="TestResources\1440px.png" />
-  </ItemGroup>
-  <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json">
       <Link>stylecop.json</Link>
     </AdditionalFiles>

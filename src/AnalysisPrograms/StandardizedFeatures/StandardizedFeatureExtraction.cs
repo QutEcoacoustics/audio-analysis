@@ -109,12 +109,12 @@ namespace AnalysisPrograms.StandardizedFeatures
                 config.FrameLength = band.FftWindow;
                 if (band.MelScale != 0)
                 {
-                    config.FrequencyScaleType = FreqScaleType.Mel;
+                    config.FrequencyScale = FreqScaleType.Mel;
                     config.MelScale = band.MelScale;
                 }
                 else
                 {
-                    config.FrequencyScaleType = FreqScaleType.Linear;
+                    config.FrequencyScale = FreqScaleType.Linear;
                 }
 
                 // Calculate indices for each subsegment and for each band

@@ -5,6 +5,7 @@
 namespace Acoustics.Test.TestHelpers
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
 
@@ -13,7 +14,7 @@ namespace Acoustics.Test.TestHelpers
         static PathHelper()
         {
             CodeBase = Environment.CurrentDirectory;
-            TestResources = Path.Combine(CodeBase, "..", "..", "TestResources");
+            TestResources = Path.Combine(CodeBase, "..", "..", "..", "Fixtures");
             SolutionRoot = Path.Combine(CodeBase, "..", "..", "..", "..");
         }
 
@@ -25,7 +26,7 @@ namespace Acoustics.Test.TestHelpers
 
         public static FileInfo ResolveConfigFile(string fileName)
         {
-            return new FileInfo(Path.Combine(SolutionRoot, "AudioAnalysis", "AnalysisConfigFiles", fileName));
+            return new FileInfo(Path.Combine(SolutionRoot, "src", "AnalysisConfigFiles", fileName));
         }
 
         public static FileInfo ResolveAsset(params string[] args)
@@ -81,9 +82,9 @@ namespace Acoustics.Test.TestHelpers
             {
                 Directory.Delete(dir.FullName, true);
             }
-            catch
+            catch(Exception e)
             {
-
+                Debug.WriteLine(e.Message);
             }
         }
     }

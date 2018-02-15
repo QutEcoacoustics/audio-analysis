@@ -89,7 +89,9 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
             var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
             var expectedFile = PathHelper.ResolveAsset("StandardSonograms", "BAC2_20071008_AmplSonogramData.EXPECTED.bin");
 
-            // run this once to generate expected test data (and remember to copy out of bin/debug!)
+            // run this once to generate expected test data
+            // uncomment this to update the binary data. Should be rarely needed
+            // AT: Updated 2017-02-15 because FFT library changed in 864f7a491e2ea0e938161bd390c1c931ecbdf63c
             //Binary.Serialize(expectedFile, sonogram.Data);
 
             var expected = Binary.Deserialize<double[,]>(expectedFile);
@@ -124,7 +126,9 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
 
             var expectedFile = PathHelper.ResolveAsset("StandardSonograms", "BAC2_20071008_DecibelSonogramData.EXPECTED.bin");
 
-            // run this once to generate expected test data (and remember to copy out of bin/debug!)
+            // run this once to generate expected test data
+            // uncomment this to update the binary data. Should be rarely needed
+            // AT: Updated 2017-02-15 because FFT library changed in 864f7a491e2ea0e938161bd390c1c931ecbdf63c
             //Binary.Serialize(expectedFile, decibelSonogram);
 
             var expected = Binary.Deserialize<double[,]>(expectedFile);

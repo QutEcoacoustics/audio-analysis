@@ -113,7 +113,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             if (!expectedFile1.Exists)
             {
                 LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
-                LoggedConsole.WriteErrorLine("If ACTUAL results file is correct, move it to dir <...\\TestResources\\FrequencyScale> and change its suffix to <.EXPECTED.json>");
+                LoggedConsole.WriteErrorLine(
+                    $"If ACTUAL results file is correct, move it to dir `{PathHelper.TestResources}` and change its suffix to <.EXPECTED.json>");
             }
 
             var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
@@ -174,7 +175,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             if (!expectedFile1.Exists)
             {
                 LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
-                LoggedConsole.WriteErrorLine("If ACTUAL results file is correct, move it to dir <...\\TestResources\\FrequencyScale> and change its suffix to <.EXPECTED.json>");
+                LoggedConsole.WriteErrorLine(
+                    $"If ACTUAL results file is correct, move it to dir `{PathHelper.TestResources}` and change its suffix to <.EXPECTED.json>");
             }
 
             var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
@@ -235,7 +237,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             if (!expectedFile1.Exists)
             {
                 LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
-                LoggedConsole.WriteErrorLine("If ACTUAL results file is correct, move it to dir <...\\TestResources\\FrequencyScale> and change its suffix to <.EXPECTED.json>");
+                LoggedConsole.WriteErrorLine(
+                    $"If ACTUAL results file is correct, move it to dir `{PathHelper.TestResources}` and change its suffix to <.EXPECTED.json>");
             }
 
             var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
@@ -249,7 +252,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             if (!expectedFile2.Exists)
             {
                 LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
-                LoggedConsole.WriteErrorLine("If ACTUAL results file is correct, move it to dir <...\\TestResources\\FrequencyScale> and change its suffix to <.EXPECTED.json>");
+                LoggedConsole.WriteErrorLine(
+                    $"If ACTUAL results file is correct, move it to dir `{PathHelper.TestResources}` and change its suffix to <.EXPECTED.json>");
             }
 
             var resultFile2 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
@@ -308,7 +312,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             if (!expectedFile1.Exists)
             {
                 LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
-                LoggedConsole.WriteErrorLine("If ACTUAL results file is correct, move it to dir <...\\TestResources\\FrequencyScale> and change its suffix to <.EXPECTED.json>");
+                LoggedConsole.WriteErrorLine(
+                    $"If ACTUAL results file is correct, move it to dir `{PathHelper.TestResources}` and change its suffix to <.EXPECTED.json>");
             }
 
             var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
@@ -322,7 +327,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             if (!expectedFile2.Exists)
             {
                 LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
-                LoggedConsole.WriteErrorLine("If ACTUAL results file is correct, move it to dir <...\\TestResources\\FrequencyScale> and change its suffix to <.EXPECTED.json>");
+                LoggedConsole.WriteErrorLine(
+                    $"If ACTUAL results file is correct, move it to dir `{PathHelper.TestResources}` and change its suffix to <.EXPECTED.json>");
             }
 
             var resultFile2 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));

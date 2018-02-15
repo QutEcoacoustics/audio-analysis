@@ -39,6 +39,85 @@ namespace Acoustics.Test.TestHelpers
             }
         }
 
+        public static void AreEqual(
+            this CollectionAssert collectionAssert,
+            ICollection<double> expected,
+            ICollection<double> actual,
+            double delta,
+            string message = "")
+        {
+            if (!ReferenceEquals(expected, actual))
+            {
+                if ((expected == null) || (actual == null))
+                {
+                    Assert.Fail("Expected or actual is null");
+                }
+
+                if (expected.Count != actual.Count)
+                {
+                    Assert.Fail("The number of items in the collections differs");
+                }
+
+                var expectedEnum = expected.GetEnumerator();
+                var actualEnum = actual.GetEnumerator();
+                int i = 0;
+                while (expectedEnum.MoveNext() && actualEnum.MoveNext())
+                {
+                    var actualDelta = Math.Abs(expectedEnum.Current - actualEnum.Current);
+                    bool areEqual = actualDelta < delta;
+                    if (!areEqual)
+                    {
+                        Assert.Fail(
+                            $"At index {i}, expected item `{expectedEnum.Current}` does not match `{actualEnum.Current}`. "
+                            + $"Actual delta is `{actualDelta}`");
+                    }
+
+                    i++;
+                }
+
+                expectedEnum.Dispose();
+                actualEnum.Dispose();
+            }
+        }
+        public static void AreEqual(
+            this CollectionAssert collectionAssert,
+            double[,] expected,
+            double[,] actual,
+            double delta,
+            string message = "")
+        {
+            if (!ReferenceEquals(expected, actual))
+            {
+                if ((expected == null) || (actual == null))
+                {
+                    Assert.Fail("Expected or actual is null");
+                }
+
+                if (expected.Length != actual.Length)
+                {
+                    Assert.Fail("The number of items in the collections differs");
+                }
+
+                for (int i = 0; i < expected.GetLength(0); i++)
+                {
+                    for (int j = 0; j < expected.GetLength(1); j++)
+                    {
+                        var expectedItem = expected[i, j];
+                        var actualItem = actual[i, j];
+                        var actualDelta = Math.Abs(expectedItem - actualItem);
+                        bool areEqual = actualDelta < delta;
+                        if (!areEqual)
+                        {
+                            Assert.Fail(
+                                $"At index [{i},{j}], expected item `{expectedItem}` does not match `{actualItem}`. "
+                                + $"Actual delta is `{actualDelta}`");
+                        }
+
+                    }
+                }
+            }
+        }
+
         public static void DirectoryExists(this Assert assert, DirectoryInfo directory)
         {
             DirectoryExists(assert, directory.FullName);

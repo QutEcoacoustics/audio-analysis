@@ -159,7 +159,7 @@ namespace AudioAnalysisTools.Indices
 
             // Linear or Octave or Mel frequency scale? Set Linear as default.
             var freqScale = new FrequencyScale(nyquist: nyquist, frameSize: frameSize, hertzLinearGridInterval: 1000);
-            var freqScaleType = config.FrequencyScaleType;
+            var freqScaleType = config.FrequencyScale;
             bool octaveScale = freqScaleType == FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
             bool melScale = freqScaleType == FreqScaleType.Mel;
             if (octaveScale)

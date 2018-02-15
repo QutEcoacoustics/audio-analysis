@@ -6,6 +6,7 @@
     using System.Text;
     using MathNet.Numerics;
     using MathNet.Numerics.IntegralTransforms;
+    using MathNet.Numerics.Providers.FourierTransform;
 
     public enum WindowFunctions { NONE, HAMMING, HANNING };
 

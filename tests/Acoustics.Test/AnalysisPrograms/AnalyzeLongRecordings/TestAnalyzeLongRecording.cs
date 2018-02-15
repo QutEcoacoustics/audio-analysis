@@ -8,6 +8,8 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+    using Acoustics.Shared.Csv;
+
     using global::AnalysisPrograms.AnalyseLongRecordings;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.Indices;
@@ -112,29 +114,21 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             Assert.AreEqual(7, twoMapsImage.Width);
             Assert.AreEqual(632, twoMapsImage.Height);
 
-            // test integrity of BGN file
             var bgnFile = resultsDirectory.CombineFile("TemporaryRecording1__Towsey.Acoustic.BGN.csv");
-            Assert.AreEqual(34_080, bgnFile.Length);
-            var actualByteArray = File.ReadAllBytes(bgnFile.FullName);
+            double[,] actualBgn = Csv.ReadMatrixFromCsv<double>(bgnFile, TwoDimensionalArray.None);
 
-            var resourcesDir = PathHelper.ResolveAssetPath("LongDuration");
-            var expectedSpectrumFile = new FileInfo(resourcesDir + "\\BgnMatrix.LinearScale.bin");
+            var expectedSpectrumFile = PathHelper.ResolveAsset("LongDuration", "BgnMatrix.LinearScale.csv");
 
             // uncomment the following line when first produce the array
-            // File.WriteAllBytes(expectedSpectrumFile.FullName, actualByteArray);
+            // bgnFile.CopyTo(expectedSpectrumFile.FullName);
 
             // compare actual BGN file with expected file.
-            var expectedByteArray = File.ReadAllBytes(expectedSpectrumFile.FullName);
-            CollectionAssert.AreEqual(expectedByteArray, actualByteArray);
+            var expectedBgn = Csv.ReadMatrixFromCsv<double>(expectedSpectrumFile, TwoDimensionalArray.None);
+            CollectionAssert.That.AreEqual(expectedBgn, actualBgn, 0.000_000_001);
 
-            // cannot get following line or several variants to work, so resort to the subsequent four lines
-            //var bgnArray = Csv.ReadMatrixFromCsv<string[]>(bgnFile);
-            var lines = FileTools.ReadTextFile(bgnFile.FullName);
-            var secondLine = lines[1].Split(',');
-            var subarray = DataTools.Subarray(secondLine, 1, secondLine.Length - 1);
-            var array = DataTools.ConvertStringArrayToDoubles(subarray);
+            var array = MatrixTools.GetRow(actualBgn, 0);
 
-            Assert.AreEqual(8, lines.Count);
+            Assert.AreEqual(7, expectedBgn.RowLength());
             Assert.AreEqual(256, array.Length);
 
             // draw array just to check peaks are in correct places - just for debugging purposes
@@ -221,28 +215,21 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
             Assert.AreEqual(2, pngCount);
 
-            // test integrity of BGN file
             var bgnFile = resultsDirectory.CombineFile(recordingName + "__Towsey.Acoustic.BGN.csv");
-            Assert.AreEqual(131_013, bgnFile.Length);
-            var actualByteArray = File.ReadAllBytes(bgnFile.FullName);
+            double[,] actualBgn = Csv.ReadMatrixFromCsv<double>(bgnFile, TwoDimensionalArray.None);
 
-            var resourcesDir = PathHelper.ResolveAssetPath("LongDuration");
-            var expectedSpectrumFile = new FileInfo(resourcesDir + "\\BgnMatrix.OctaveScale.bin");
+            var expectedSpectrumFile = PathHelper.ResolveAsset("LongDuration", "BgnMatrix.OctaveScale.csv");
 
             // uncomment the following line when first produce the array
-            // File.WriteAllBytes(expectedSpectrumFile.FullName, actualByteArray);
+            // bgnFile.CopyTo(expectedSpectrumFile.FullName);
+
             // compare actual BGN file with expected file.
-            var expectedByteArray = File.ReadAllBytes(expectedSpectrumFile.FullName);
-            CollectionAssert.AreEqual(expectedByteArray, actualByteArray);
+            var expectedBgn = Csv.ReadMatrixFromCsv<double>(expectedSpectrumFile, TwoDimensionalArray.None);
+            CollectionAssert.That.AreEqual(expectedBgn, actualBgn, 0.000_000_001);
 
-            // cannot get following line or several variants to work, so resort to the subsequent four lines
-            //var bgnArray = Csv.ReadMatrixFromCsv<string[]>(bgnFile);
-            var lines = FileTools.ReadTextFile(bgnFile.FullName);
-            var secondLine = lines[1].Split(',');
-            var subarray = DataTools.Subarray(secondLine, 1, secondLine.Length - 1);
-            var array = DataTools.ConvertStringArrayToDoubles(subarray);
+            var array = MatrixTools.GetRow(actualBgn, 0);
 
-            Assert.AreEqual(29, lines.Count);
+            Assert.AreEqual(28, actualBgn.RowLength());
             Assert.AreEqual(256, array.Length);
 
             // draw array just to check peaks are in correct places - just for debugging purposes

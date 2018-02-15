@@ -30,6 +30,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     [TestClass]
     public class IndexCalculateTest
     {
+        private const double AllowedDelta = 0.000001;
         private DirectoryInfo outputDirectory;
 
         [TestInitialize]
@@ -78,28 +79,28 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             var summaryIndices = results.SummaryIndexValues;
 
-            Assert.AreEqual(0.6793287, summaryIndices.AcousticComplexity, 0.000001);
-            Assert.AreEqual(0.484520, summaryIndices.Activity, 0.000001);
-            Assert.AreEqual(0.000000, summaryIndices.AvgEntropySpectrum, 0.000001);
-            Assert.AreEqual(-30.946519, summaryIndices.AvgSignalAmplitude, 0.000001);
-            Assert.AreEqual(11.533420, summaryIndices.AvgSnrOfActiveFrames, 0.000001);
-            Assert.AreEqual(-39.740775, summaryIndices.BackgroundNoise, 0.000001);
+            Assert.AreEqual(0.6793287, summaryIndices.AcousticComplexity, AllowedDelta);
+            Assert.AreEqual(0.484520, summaryIndices.Activity, AllowedDelta);
+            Assert.AreEqual(0.000000, summaryIndices.AvgEntropySpectrum, AllowedDelta);
+            Assert.AreEqual(-30.946519, summaryIndices.AvgSignalAmplitude, AllowedDelta);
+            Assert.AreEqual(11.533420, summaryIndices.AvgSnrOfActiveFrames, AllowedDelta);
+            Assert.AreEqual(-39.740775, summaryIndices.BackgroundNoise, AllowedDelta);
             Assert.AreEqual(21, summaryIndices.ClusterCount);
-            Assert.AreEqual(0.153191, summaryIndices.EntropyOfAverageSpectrum, 0.000001);
-            Assert.AreEqual(0.301929, summaryIndices.EntropyOfCoVSpectrum, 0.000001);
-            Assert.AreEqual(0.260999, summaryIndices.EntropyOfPeaksSpectrum, 0.000001);
-            Assert.AreEqual(0.522080, summaryIndices.EntropyOfVarianceSpectrum, 0.000001);
-            Assert.AreEqual(0.0, summaryIndices.EntropyPeaks, 0.000001);
-            Assert.AreEqual(2.0, summaryIndices.EventsPerSecond, 0.000001);
-            Assert.AreEqual(0.140306, summaryIndices.HighFreqCover, 0.000001);
-            Assert.AreEqual(0.137873, summaryIndices.MidFreqCover, 0.000001);
-            Assert.AreEqual(0.055341, summaryIndices.LowFreqCover, 0.000001);
-            Assert.AreEqual(0.957433, summaryIndices.Ndsi, 0.000001);
-            Assert.AreEqual(27.877206, summaryIndices.Snr, 0.000001);
-            Assert.AreEqual(6.240310, summaryIndices.SptDensity, 0.000001);
+            Assert.AreEqual(0.153191, summaryIndices.EntropyOfAverageSpectrum, AllowedDelta);
+            Assert.AreEqual(0.301929, summaryIndices.EntropyOfCoVSpectrum, AllowedDelta);
+            Assert.AreEqual(0.260999, summaryIndices.EntropyOfPeaksSpectrum, AllowedDelta);
+            Assert.AreEqual(0.522080, summaryIndices.EntropyOfVarianceSpectrum, AllowedDelta);
+            Assert.AreEqual(0.0, summaryIndices.EntropyPeaks, AllowedDelta);
+            Assert.AreEqual(2.0, summaryIndices.EventsPerSecond, AllowedDelta);
+            Assert.AreEqual(0.140306, summaryIndices.HighFreqCover, AllowedDelta);
+            Assert.AreEqual(0.137873, summaryIndices.MidFreqCover, AllowedDelta);
+            Assert.AreEqual(0.055341, summaryIndices.LowFreqCover, AllowedDelta);
+            Assert.AreEqual(0.957433, summaryIndices.Ndsi, AllowedDelta);
+            Assert.AreEqual(27.877206, summaryIndices.Snr, AllowedDelta);
+            Assert.AreEqual(6.240310, summaryIndices.SptDensity, AllowedDelta);
             Assert.AreEqual(0, summaryIndices.ResultStartSeconds);
-            Assert.AreEqual(0.162216, summaryIndices.TemporalEntropy, 0.000001);
-            Assert.AreEqual(401, summaryIndices.ThreeGramCount, 0.000001);
+            Assert.AreEqual(0.162216, summaryIndices.TemporalEntropy, AllowedDelta);
+            Assert.AreEqual(401, summaryIndices.ThreeGramCount, AllowedDelta);
         }
 
         /// <summary>
@@ -145,91 +146,91 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.ACI);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.ACI);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.ACI, AllowedDelta);
 
             // BGN
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\BGN.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.BGN);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.BGN, AllowedDelta);
 
             // CVR
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\CVR.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.CVR);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.CVR, AllowedDelta);
 
             // DMN
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\PMN.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.PMN);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.PMN);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.PMN, AllowedDelta);
 
             // ENT
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\ENT.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.ENT);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.ENT);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.ENT, AllowedDelta);
 
             // EVN
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\EVN.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.EVN);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.EVN);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.EVN, AllowedDelta);
 
             // POW
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\POW.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.POW);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.POW);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.POW, AllowedDelta);
 
             // RHZ
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\RHZ.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.RHZ);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.RHZ);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.RHZ, AllowedDelta);
 
             // RNG
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\RNG.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.RNG);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.RNG);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.RNG, AllowedDelta);
 
             // RPS
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\RPS.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.RPS);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.RPS);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.RPS, AllowedDelta);
 
             // RVT
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\RVT.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.RVT);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.RVT);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.RVT, AllowedDelta);
 
             // R3D
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\R3D.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.R3D);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.R3D);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.R3D, AllowedDelta);
 
             // SPT
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\SPT.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.SPT);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.SPT);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.SPT, AllowedDelta);
 
             var outputImagePath = Path.Combine(this.outputDirectory.FullName, "SpectralIndices.png");
             var image = SpectralIndexValues.CreateImageOfSpectralIndices(spectralIndices);
@@ -276,13 +277,13 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             //Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.BGN);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.BGN, AllowedDelta);
 
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\CVR_ICD20.bin");
 
             //Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.CVR);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.CVR, AllowedDelta);
 
             var outputImagePath1 = Path.Combine(this.outputDirectory.FullName, "SpectralIndices_ICD20.png");
             var image = SpectralIndexValues.CreateImageOfSpectralIndices(spectralIndices);
@@ -320,9 +321,9 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
             var indexCalculateConfig = ConfigFile.Deserialize<IndexCalculateConfig>(configFile);
-            indexCalculateConfig.FrequencyScaleType = FreqScaleType.Octave;
+            indexCalculateConfig.FrequencyScale = FreqScaleType.Octave;
 
-            var freqScale = new FrequencyScale(indexCalculateConfig.FrequencyScaleType);
+            var freqScale = new FrequencyScale(indexCalculateConfig.FrequencyScale);
             indexCalculateConfig.FrameLength = freqScale.WindowSize;
 
             var results = IndexCalculate.Analysis(
@@ -349,13 +350,13 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             //Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.BGN);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.BGN, AllowedDelta);
 
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\CVR_OctaveScale.bin");
 
             //Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralIndices.CVR);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.CVR, AllowedDelta);
         }
     }
 }

@@ -48,3 +48,6 @@ docs/**/*.jpg filter=lfs diff=lfs merge=lfs -text
 # all binaries in lib should be tracked by git-lfs
 lib/**/*.exe filter=lfs diff=lfs merge=lfs -text
 lib/**/*.dll filter=lfs diff=lfs merge=lfs -text
+
+# assets in tests/Fixtures should generally be in lfs
+tests/Fixtures/** filter=lfs diff=lfs merge=lfs -text

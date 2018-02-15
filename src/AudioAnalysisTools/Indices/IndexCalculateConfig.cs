@@ -57,7 +57,7 @@ namespace AudioAnalysisTools.Indices
 
         public const double DefaultBgNoiseNeighborhood = 5;
 
-        private FreqScaleType frequencyScaleType;
+        private FreqScaleType frequencyScale;
         private double indexCalculationDuration = DefaultIndexCalculationDurationInSeconds;
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace AudioAnalysisTools.Indices
 
             this.LowFreqBound = DefaultLowFreqBound;
             this.MidFreqBound = DefaultMidFreqBound;
-            this.FrequencyScaleType = DefaultFrequencyScaleType;
+            this.FrequencyScale = DefaultFrequencyScaleType;
 
             this.MinBandWidth = DefaultMinBandWidth;
             this.MaxBandWidth = DefaultMaxBandWidth;
@@ -153,9 +153,9 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// Frequency scale is Linear or OCtave
         /// </summary>
-        public FreqScaleType FrequencyScaleType
+        public FreqScaleType FrequencyScale
         {
-            get => this.frequencyScaleType;
+            get => this.frequencyScale;
             set
             {
                 // only a subset of FreqScaleType are supported
@@ -163,12 +163,13 @@ namespace AudioAnalysisTools.Indices
                 {
                     case FreqScaleType.Linear:
                     case FreqScaleType.Octave:
-                        this.frequencyScaleType = value;
+                        this.frequencyScale = value;
                         break;
                     default:
-                        throw new ArgumentException($"Invalid value set for {nameof(this.frequencyScaleType)}");
+                        throw new ArgumentException($"Invalid value set for {nameof(this.frequencyScale)}");
                 }
-                this.frequencyScaleType = value;
+
+                this.frequencyScale = value;
             }
         }
 
@@ -217,7 +218,7 @@ namespace AudioAnalysisTools.Indices
             {
                 scaleType = DefaultFrequencyScaleType;
             }
-            config.FrequencyScaleType = scaleType;
+            config.FrequencyScale = scaleType;
 
             if (writeParameters)
             {

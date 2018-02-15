@@ -20,7 +20,8 @@ namespace AnalysisBase
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Contracts;
-    using GeorgeCloney;
+
+    using Force.DeepCloner;
 
     using log4net;
 
@@ -42,7 +43,6 @@ namespace AnalysisBase
     /// The working directory may be deleted after the analysis is complete.
     /// </para>
     /// </remarks>
-    [Serializable]
     public class AnalysisSettings : ICloneable
     {
         [NonSerialized]

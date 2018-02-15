@@ -6,6 +6,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 {
     using System;
     using System.IO;
+    using System.Linq;
+
     using Acoustics.Shared;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.WavTools;
@@ -106,11 +108,16 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // Test sonogram data matrix by comparing the vector of column sums.
             double[] columnSums = MatrixTools.SumColumns(amplSpectrogram);
 
-            // first write to here and move binary file to resources folder.
-            // var sumFile = new FileInfo(this.outputDirectory + @"\BAC2_20071008-085040_DataColumnSums.bin");
-            // Binary.Serialize(sumFile, columnSums);
             var sumFile = PathHelper.ResolveAsset(@"EnvelopeAndFft\BAC2_20071008-085040_DataColumnSums.bin");
+
+            // uncomment this to update the binary data. Should be rarely needed
+            // AT: Updated 2017-02-15 because FFT library changed in 864f7a491e2ea0e938161bd390c1c931ecbdf63c
+            //Binary.Serialize(sumFile, columnSums);
+
             var expectedColSums = Binary.Deserialize<double[]>(sumFile);
+            var totalDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Sum();
+            var avgDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Average();
+            Assert.AreEqual(expectedColSums[0], columnSums[0], $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
             CollectionAssert.AreEqual(expectedColSums, columnSums);
         }
 
@@ -174,6 +181,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             Assert.AreEqual(0.255165257728813, maxSig, 0.000001);
 
             // DO THE TESTS of energy array info
+
+
             // first write to here and move binary file to resources folder.
             // var averageArrayFile = new FileInfo(this.outputDirectory + @"\BAC2_20071008-085040_AvSigArray.bin");
             // Binary.Serialize(averageArrayFile, avArray);
@@ -187,15 +196,21 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var expectedEnvelope = Binary.Deserialize<double[]>(envelopeFile);
             CollectionAssert.AreEqual(expectedEnvelope, envelope);
 
-            // var frameEnergyArrayFile = new FileInfo(this.outputDirectory + @"\BAC2_20071008-085040_FrameEnergyArray.bin");
-            // Binary.Serialize(frameEnergyArrayFile, frameEnergy);
             var frameEnergyFile = PathHelper.ResolveAsset(@"EnvelopeAndFft\BAC2_20071008-085040_FrameEnergyArray.bin");
+
+            // uncomment this to update the binary data. Should be rarely needed
+            // AT: Updated 2017-02-15 because FFT library changed in 864f7a491e2ea0e938161bd390c1c931ecbdf63c
+            //Binary.Serialize(frameEnergyFile, frameEnergy);
+
             var expectedFrameEnergy = Binary.Deserialize<double[]>(frameEnergyFile);
             CollectionAssert.AreEqual(expectedFrameEnergy, frameEnergy);
 
-            var frameDecibelsArrayFile = new FileInfo(this.outputDirectory + @"\BAC2_20071008-085040_FrameDecibelsArray.bin");
-            Binary.Serialize(frameDecibelsArrayFile, frameDecibels);
             var frameDecibelsFile = PathHelper.ResolveAsset(@"EnvelopeAndFft\BAC2_20071008-085040_FrameDecibelsArray.bin");
+
+            // uncomment this to update the binary data. Should be rarely needed
+            // AT: Updated 2017-02-15 because FFT library changed in 864f7a491e2ea0e938161bd390c1c931ecbdf63c
+            //Binary.Serialize(frameDecibelsFile, frameDecibels);
+            
             var expectedFrameDecibels = Binary.Deserialize<double[]>(frameDecibelsFile);
             CollectionAssert.AreEqual(expectedFrameDecibels, frameDecibels);
 
@@ -203,18 +218,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             Assert.AreEqual(255, nyquistBin);
             Assert.AreEqual(11025, nyquistFreq);
             Assert.AreEqual(43.0664, freqBinWidth, 0.00001);
-
-            // CollectionAssert.AreEqual(new[] { 1, 2, 3 }, new[] { 1, 2, 3 });
-            // CollectionAssert.AreEquivalent(new[] { 1, 2, 3 }, new[] { 3, 2, 1 });
-
-            // FileEqualityHelpers.TextFileEqual(new FileInfo("data.txt"), new FileInfo("data.txt"));
-            // FileEqualityHelpers.FileEqual(new FileInfo("data.bin"), new FileInfo("data.bin"));
-
-            // output initial data
-            // var actualData = new[] { 1, 2, 3 };
-            // Json.Serialise("data.json".ToFileInfo(), actualData);
-            // Csv.WriteMatrixToCsv("data.csv".ToFileInfo(), actualData);
-            // Binary.Serialize("data.bin".ToFileInfo(), actualData);
         }
     }
 }

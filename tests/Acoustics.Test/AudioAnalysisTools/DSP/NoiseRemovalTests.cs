@@ -74,7 +74,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             //Binary.Serialize(expectedSpectrumFile, spectralDecibelBgn);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.AreEqual(expectedVector, spectralDecibelBgn);
+            CollectionAssert.That.AreEqual(expectedVector, spectralDecibelBgn, 0.000_000_001);
         }
     }
 }
