@@ -50,4 +50,8 @@ lib/**/*.exe filter=lfs diff=lfs merge=lfs -text
 lib/**/*.dll filter=lfs diff=lfs merge=lfs -text
 
 # assets in tests/Fixtures should generally be in lfs
-tests/Fixtures/** filter=lfs diff=lfs merge=lfs -text
+tests/Fixtures/**/*.zip filter=lfs diff=lfs merge=lfs -text
+tests/Fixtures/**/*.csv filter=lfs diff=lfs merge=lfs -text
+tests/Fixtures/**/*.bin filter=lfs diff=lfs merge=lfs -text
+tests/Fixtures/**/*.json filter=lfs diff=lfs merge=lfs -text
+tests/Fixtures/**/*.png filter=lfs diff=lfs merge=lfs -text

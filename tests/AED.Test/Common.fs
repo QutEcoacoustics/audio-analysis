@@ -4,6 +4,8 @@ open System.IO
 
 open Xunit
 open System
+open System.IO
+open System.IO.Compression
 open System.Reflection
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
 open QutSensors.AudioAnalysis.AED.Util
@@ -15,11 +17,18 @@ let GParrots_JB2_20090607_173000_wav_minute_3 =
     {Dir="GParrots_JB2_20090607-173000.wav_minute_3"; BWthresh=3.0; smallThreshIn=100; smallThreshOut=35}
                           
 let testAll f = Seq.iter f [BAC2_20071015_045040; GParrots_JB2_20090607_173000_wav_minute_3]
-                
 
+/// Sets the current directory to be the fictures folders where test resources are kept
+let matlabPath = @"..\..\..\Fixtures\FSharp\"
 
-/// Sets the current directory to be trunk\AudioAnalysis\AED\Test
-let matlabPath = @"..\..\..\..\AED\Test\matlab\"
+// when module opens, unzip asssets
+do
+    let unzip file =
+        let path = Path.Combine(matlabPath, file)
+        Directory.Delete(path, true)
+        ZipFile.ExtractToDirectory(path+ ".zip", matlabPath)
+    unzip BAC2_20071015_045040.Dir
+    unzip GParrots_JB2_20090607_173000_wav_minute_3.Dir
 
 let basePath relativePath = 
     let codeBaseUrl = new Uri(Assembly.GetExecutingAssembly().CodeBase);
