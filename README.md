@@ -1,91 +1,69 @@
 # audio-analysis
 
-The audio analysis source base for the QUT Bioacoustics Research Group
+The source code for the QUT Ecoacoustics _AnalysisPrograms.exe_ program.
+
+## Quick links
+
+ - See the **[docs](./docs/README.md)** for instructions on
+   - Downloading AnalysisPrograms.exe
+   - Running the program
+   - Understanding concepts
+- See the **[Issues list](https://github.com/QutEcoacoustics/audio-analysis)** for
+  - reporting bugs
+  - requesting new features
+- See the **[Contributing guidelines](./CONTRIBUTING.md)** if you want to
+  - Compile the code yourself
+  - Make a contribution
+
+## Description
+
+*QUT Ecoacoustics Analysis Programs* is a software package that can perform a  suite of analyses on audio recordings of
+the environment. Although the analyses are intended for long-duration recordings (1 – 24 hours), in fact they
+can be performed on any audio file in a format supported by the software. Analysis Programs can:
+
+- calculate of summary and spectral acoustic indices at variable resolutions
+- produce long-duration, false-colour, multi-index spectrograms
+- calculate critical statistics of annotations downloaded from an Acoustic Workbench
+- run various acoustic event recognizers
+
+All the analyses are performed by a single executable file, _AnalysisPrograms.exe_. 
+
+## Citation
+
+Use this citation in all publications that use data or concepts from this code base is required:
+
+> Towsey, M., Truskinger, A., & Roe, P. (2017) Audio Analysis Software (Version 17.04.3813.0) \[Computer software\].
+> Brisbane: QUT Ecoacoustics Research Group, https://github.com/QutEcoacoustics/audio-analysis
+
+Additionally, depending on the analysis that was run, extra work may be required to be cited. Any such additional
+citations will printed in the console and in the log file.
 
 ## Build status
 
 [![Build status](https://ci.appveyor.com/api/projects/status/ntf6vtuy5wnlww37/branch/master?svg=true)](https://ci.appveyor.com/project/QUTEcoacousticsResearchGroup/audio-analysis/branch/master)
 
-**NEW**: Weekly versions of AnalysisPrograms.exe are now built automatically at midnight Monday night.
+Weekly versions of AnalysisPrograms.exe are now built automatically at midnight Monday night.
 You can get copies from the [Releases](https://github.com/QutBioacoustics/audio-analysis/releases) page.
 
-**NEW**: Per-commit builds can be found from the AppVeyor
+Per-commit (the very latest) builds can be found from the AppVeyor
 [artifacts](https://ci.appveyor.com/project/QUTEcoacousticsResearchGroup/audio-analysis/build/artifacts)
 page.
 
-## Licence
+# License
 
-ALL RIGHTS ARE RESERVED.
+This project is very old. We've released the full history for the sake of maintainability and transparency.
+Unfortunately this means all code before our open source release is not open sourced.
 
-THIS CODE BELONGS TO QUT. THIS CODE IS THE COPYRIGHT OF QUT.
+In practice this should never be a problem. We never use our old code, except for historical purposes, and you never
+should need to either.
 
-INTELLECTUAL PROPERTY OF ALL CONCEPTS WITHIN THIS REPOSITORY REMAIN PROPERTY OF QUT WITH THE EXCEPTION OF STUDENT'S CODE.
-IF STUDENTS ASSIGN THEIR INTELLECTUAL PROPERTY TO QUT THEN THOSE CONCEPTS ALSO BELONG TO QUT.
-OTHERWISE, THE INTELLECTUAL PROPERTY OF CONCEPTS WRITTEN BY STUDENTS IN THIS REPOSITORY BELONGS TO THEM.
+## Newer code - All commits after [a275d0bc5744ba43096b43de2ef2aee32dc14c18](https://github.com/QutEcoacoustics/audio-analysis/commit/a275d0bc5744ba43096b43de2ef2aee32dc14c18)
 
-YOU MAY NOT SHARE, USE, REPRODUCE, PUBLISH, OR OTHERWISE MODIFY ANY CONCEPT, CODE, OR ARTEFACT IN THIS REPOSITORY WITHOUT PERMISSION.
-ANY CONTRIBUTIONS TO THIS REPOSITORY REMAIN PROPERTY OF QUT UNLESS OTHERWISE AGREED UPON. IF AN AGREEMENT IS MADE, THAT AGREEMENT MUST
-BE INCLUDED IN EACH RELEVANT FILE.
+All code after a275d0bc5744ba43096b43de2ef2aee32dc14c18 (<time>2018-01-30T06:38:46Z</time>) are licensed under the 
+[Apache License 2.0](https://choosealicense.com/licenses/apache-2.0/)
 
-WE RESERVE THE RIGHT TO CHANGE THE CONDITIONS OF THIS LICENSE AT ANY TIME, IN ANY WAY, AND APPLY THOSE CHANGES RETROACTIVELY.
+## Older code
 
-## Best Practices
-
-- Set the git `autocrlf` config setting. See <https://help.github.com/articles/dealing-with-line-endings/#global-settings-for-line-endings> for instructions.
-- Avoid adding binary content to this repository - especially _RData_ files.
-- NEVER commit if the code does not build
-- Try to work on branches if your code negatively affects production code
-- Write code in American English. Documentation may be written in Australian English.
-
-## Daily routine
-
-- ALWAYS _Sync_ (or `git pull`) before you start work
-- Do your work
-- Add your files (Check the checkboxes or `git add`)
-  - ALWAYS check the files you add - often files you don't want to add are added automatically
-- Commit the files in units of work (press the commit button or `git commit`). Always provide a descriptive message.
-- ALWAYS _Sync_ (or `git push`) after you start work
-
-
-## Structure
-
-The `Acoustics` and `AudioAnalysis` folders contain the code and resources for
-the audio analysis work.  The `Extra Assemblies` folder contains `.dll` files
-and other binary resources.
-
-
-## Blobs
-
-We use [git-lfs](https://git-lfs.github.com/) to store BLOBs for testing audio
-file converters. If you want to run the unit tests you need to have git-lfs 
-installed.
-
-Not all BLOBs are stored in git-lfs. So far only the audio files in 
-`Acoustics\Acoustics.Test\TestResources` have been added.
-
-## Required Software
-
-### .Net Solutions
-
-- Visual Studio 2017
-- Resharper Ulitmate (Academic License)
-  - Install these plugins (_ReSharper_ menu > _Extension Manager_)
-    - ReSpeller Free
-- [msysgit](https://git-for-windows.github.io/)
-
-### R
-	
-- R
-- R Studio
-
-### Matalab
-
-- Matlab
-
-# Making a release
-
- 1. Pull latest changes to your local computer
- 2. Make sure the repo is clean (no uncommitted changes)
- 8. Open a prompt, `cd` to the git repo folder
- 9. Run `. .\release.ps1`
- 10. Profit :sparkles: :moneybag: :dollar: :heavy_dollar_sign: :sparkles:
+All commits before a275d0bc5744ba43096b43de2ef2aee32dc14c18 (<time>2018-01-30T06:38:46Z</time>) are not licensed under
+an open source license. All rights and copyright are retained, however, the public has permission to view, link to, cite
+the code on GitHub.
