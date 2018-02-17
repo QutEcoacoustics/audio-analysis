@@ -8,7 +8,7 @@ The source code for the QUT Ecoacoustics _AnalysisPrograms.exe_ program.
    - Downloading AnalysisPrograms.exe
    - Running the program
    - Understanding concepts
-- See the **[Issues list](https://github.com/QutEcoacoustics/audio-analysis)** for
+- See the **[Issues list](https://github.com/QutEcoacoustics/audio-analysis/issues)** for
   - reporting bugs
   - requesting new features
 - See the **[Contributing guidelines](./CONTRIBUTING.md)** if you want to
